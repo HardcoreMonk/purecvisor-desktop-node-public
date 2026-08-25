@@ -487,6 +487,8 @@ internal sealed class ApplicationRepositoryFixture : IDisposable
     internal string CatalogPath => Path.Combine(Root, "config", "development-verification-suites.json");
     internal string SchemaPath => Path.Combine(Root, "config", "development-verification-suites.schema.json");
     internal string SolutionPath => Path.Combine(Root, "src", "DesktopNode.sln");
+    internal string ActivationState =>
+        JsonNode.Parse(File.ReadAllText(CatalogPath))!["activation_state"]!.GetValue<string>();
 
     internal static ApplicationRepositoryFixture Create()
     {
@@ -511,6 +513,15 @@ internal sealed class ApplicationRepositoryFixture : IDisposable
     }
 
     internal string ArtifactPath(string name) => Path.Combine(Root, "artifacts", name);
+
+    internal void SetActivationState(string activationState)
+    {
+        var catalog = JsonNode.Parse(File.ReadAllText(CatalogPath))!.AsObject();
+        catalog["activation_state"] = activationState;
+        File.WriteAllText(
+            CatalogPath,
+            catalog.ToJsonString(new JsonSerializerOptions { WriteIndented = true }));
+    }
 
     internal VerificationApplication CreateApplication(
         RecordingProcessRunner processRunner,

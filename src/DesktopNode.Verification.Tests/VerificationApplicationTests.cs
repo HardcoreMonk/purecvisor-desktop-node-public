@@ -105,7 +105,7 @@ public sealed class VerificationApplicationTests
         Assert.Equal("Full", summary.RequestedLane);
         Assert.Equal("Full", summary.EffectiveLane);
         Assert.Equal("lane", summary.ExecutionScope);
-        Assert.Equal("plan-only-foundation", summary.CatalogActivationState);
+        Assert.Equal(repository.ActivationState, summary.CatalogActivationState);
         Assert.Equal(7, summary.Results.Count);
         Assert.All(summary.Results, result => Assert.Equal("planned", result.Status));
         Assert.Equal(StartedAt, summary.StartedAt);
@@ -118,6 +118,7 @@ public sealed class VerificationApplicationTests
     public async Task ActualExecutionIsLockedBeforeExecutorAndWritesFailureSummary()
     {
         using var repository = ApplicationRepositoryFixture.Create();
+        repository.SetActivationState("plan-only-foundation");
         var process = new RecordingProcessRunner(failIfCalled: true);
         var managed = new RecordingManagedSuiteRunner(failIfCalled: true);
         var application = repository.CreateApplication(process, managed);
@@ -139,6 +140,69 @@ public sealed class VerificationApplicationTests
         Assert.Empty(summary.Results);
         Assert.NotEmpty(stdout.ToString());
         Assert.Equal(string.Empty, stderr.ToString());
+        Assert.Equal(0, process.CallCount);
+        Assert.Equal(0, managed.CallCount);
+    }
+
+    [Theory]
+    [InlineData("shadow-ready")]
+    [InlineData("active")]
+    public async Task SafeExecutionActivationRunsSelectedProcessSuite(string activationState)
+    {
+        using var repository = ApplicationRepositoryFixture.Create();
+        repository.SetActivationState(activationState);
+        var process = new RecordingProcessRunner(new ProcessExecutionResult(
+            0,
+            1,
+            false,
+            false,
+            string.Empty,
+            string.Empty,
+            "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"));
+        var managed = new RecordingManagedSuiteRunner(failIfCalled: true);
+        var application = repository.CreateApplication(process, managed);
+
+        var outcome = await RunAsync(
+            application,
+            Arguments(
+                "Full",
+                "M",
+                ".github/workflows/development-gates.yml",
+                $"actual-{activationState}",
+                "--suite",
+                "dotnet"));
+        var summary = ReadSummary(
+            repository.ArtifactPath($"actual-{activationState}") + Path.DirectorySeparatorChar + "summary.json");
+
+        Assert.True(
+            summary.Ok,
+            $"exit={outcome.ExitCode};error={summary.ErrorCode};process_calls={process.CallCount};managed_calls={managed.CallCount};results={JsonSerializer.Serialize(summary.Results)}");
+        Assert.Equal(0, outcome.ExitCode);
+        Assert.False(summary.PlanOnly);
+        Assert.Equal(activationState, summary.CatalogActivationState);
+        Assert.Equal("passed", Assert.Single(summary.Results).Status);
+        Assert.Equal(1, process.CallCount);
+        Assert.Equal(0, managed.CallCount);
+    }
+
+    [Fact]
+    public async Task UnknownExecutionActivationIsRejectedBeforeAnyRunnerCall()
+    {
+        using var repository = ApplicationRepositoryFixture.Create();
+        repository.SetActivationState("unknown");
+        var process = new RecordingProcessRunner(failIfCalled: true);
+        var managed = new RecordingManagedSuiteRunner(failIfCalled: true);
+        var application = repository.CreateApplication(process, managed);
+
+        var outcome = await RunAsync(
+            application,
+            Arguments("Full", "M", ".github/workflows/development-gates.yml", "actual-unknown", "--suite", "dotnet"));
+        var summary = ReadSummary(
+            repository.ArtifactPath("actual-unknown") + Path.DirectorySeparatorChar + "summary.json");
+
+        Assert.Equal(2, outcome.ExitCode);
+        Assert.False(summary.Ok);
+        Assert.Equal(VerificationErrorCodes.ConfigInvalid, summary.ErrorCode);
         Assert.Equal(0, process.CallCount);
         Assert.Equal(0, managed.CallCount);
     }

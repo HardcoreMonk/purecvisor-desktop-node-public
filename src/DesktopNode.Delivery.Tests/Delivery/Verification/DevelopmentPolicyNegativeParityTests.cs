@@ -23,6 +23,28 @@ public sealed class DevelopmentPolicyNegativeParityTests
     }
 
     [Fact]
+    public void AcceptsTheShellFreeActiveWorkflowIdentity()
+    {
+        DevelopmentPolicyContractVerifier.ValidateWorkflowText(ActiveWorkflow());
+    }
+
+    [Fact]
+    public void RejectsPesterReintroducedIntoTheActiveWorkflow()
+    {
+        var workflow = ActiveWorkflow().Replace(
+            "Run web shard",
+            "Run web shard\n        run: Invoke-Pester",
+            StringComparison.Ordinal);
+
+        var error = Assert.Throws<InvalidDataException>(() =>
+            DevelopmentPolicyContractVerifier.ValidateWorkflowText(workflow));
+
+        Assert.Equal(
+            "PCV_DELIVERY_DEVELOPMENT_POLICY_INVALID|workflow-active-shell",
+            error.Message);
+    }
+
+    [Fact]
     public void RejectsAForbiddenSuiteExecutable()
     {
         var suites = CanonicalSuites();
@@ -105,4 +127,40 @@ public sealed class DevelopmentPolicyNegativeParityTests
         "git",
         "git.exe",
     ];
+
+    private static string ActiveWorkflow() =>
+        """
+        name: Development Gates
+        on:
+          pull_request:
+          push:
+          workflow_dispatch:
+        permissions:
+          contents: read
+        concurrency:
+          cancel-in-progress: true
+        jobs:
+          dotnet:
+            runs-on: windows-latest
+            timeout-minutes: 15
+            steps:
+              - name: dotnet-version: 10.0.x
+              - name: Run dotnet shard
+          web:
+            runs-on: ubuntu-latest
+            timeout-minutes: 15
+            steps:
+              - name: node-version: 24
+              - name: Run web shard
+          delivery:
+            runs-on: windows-latest
+            timeout-minutes: 15
+            steps:
+              - name: Run delivery shard
+          installer-policy:
+            runs-on: windows-latest
+            timeout-minutes: 15
+            steps:
+              - name: Run installer-policy shard
+        """;
 }

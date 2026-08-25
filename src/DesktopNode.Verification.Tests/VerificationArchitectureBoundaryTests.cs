@@ -31,14 +31,27 @@ public sealed class VerificationArchitectureBoundaryTests
     }
 
     [Fact]
-    public void CatalogContainsNoDecodedPowerShellAndRemainsPlanOnlyFoundation()
+    public void CatalogContainsNoDecodedPowerShellAndHasCoherentActivationState()
     {
         var text = File.ReadAllText(Path.Combine(
             FindRepositoryRoot(), "config", "development-verification-suites.json"));
         using var document = JsonDocument.Parse(text);
 
-        _ = VerificationCatalogFixture.LoadCanonical();
-        Assert.Equal("plan-only-foundation", document.RootElement.GetProperty("activation_state").GetString());
+        var catalog = VerificationCatalogFixture.LoadCanonical();
+        var expectedStates = catalog.ActivationState switch
+        {
+            "plan-only-foundation" => new[]
+            {
+                "native-existing", "native-existing", "wave-b-pending", "mapped", "mapped", "mapped", "wave-a-foundation"
+            },
+            "shadow-ready" => new[]
+            {
+                "native-existing", "native-existing", "mapped", "mapped", "mapped", "mapped", "mapped"
+            },
+            "active" => Enumerable.Repeat("cutover", 7).ToArray(),
+            _ => throw new InvalidOperationException("Unexpected canonical activation state.")
+        };
+        Assert.Equal(expectedStates, catalog.Suites.Select(suite => suite.MigrationState));
         Assert.Empty(VerificationArchitectureBoundaryValidator.FindForbiddenCatalogStrings(
             document.RootElement,
             text));

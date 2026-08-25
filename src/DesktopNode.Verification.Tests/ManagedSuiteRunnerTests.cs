@@ -20,15 +20,24 @@ public sealed class ManagedSuiteRunnerTests
     }
 
     [Fact]
-    public async Task PolicyBoundaryRemainsParityUnmapped()
+    public async Task PolicyBoundaryMatchesCanonicalActivationState()
     {
         var result = await new ManagedSuiteRunner().RunAsync(
             Suite("policy-boundaries"),
             VerificationCatalogFixture.RepositoryRoot,
             CancellationToken.None);
 
-        Assert.Equal(SuiteStatus.Missing, result.Status);
-        Assert.Equal(VerificationErrorCodes.ParityUnmapped, result.ErrorCode);
+        var activationState = VerificationCatalogFixture.LoadCanonical().ActivationState;
+        if (activationState == "plan-only-foundation")
+        {
+            Assert.Equal(SuiteStatus.Missing, result.Status);
+            Assert.Equal(VerificationErrorCodes.ParityUnmapped, result.ErrorCode);
+        }
+        else
+        {
+            Assert.Equal(SuiteStatus.Passed, result.Status);
+            Assert.Null(result.ErrorCode);
+        }
     }
 
     [Fact]

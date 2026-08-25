@@ -24,7 +24,7 @@ internal static class VerificationSummaryFactory
 {
     private const string SummaryContract = "pcv-development-verification-summary-v2";
     private const string CatalogContract = "pcv-development-verification-suite-catalog-v1";
-    private const string CatalogActivationState = "plan-only-foundation";
+    private const string PlanOnlyCatalogActivationState = "plan-only-foundation";
     private const int MaximumOutputCharacters = 8192;
 
     private static readonly string[] ExpectedExecutableNames =
@@ -38,8 +38,12 @@ internal static class VerificationSummaryFactory
     private static readonly HashSet<string> AllowedOwners =
         new(["csharp", "node"], StringComparer.Ordinal);
 
+    private static readonly HashSet<string> AllowedActivationStates = new(
+        [PlanOnlyCatalogActivationState, "shadow-ready", "active"],
+        StringComparer.Ordinal);
+
     private static readonly HashSet<string> AllowedMigrationStates = new(
-        ["native-existing", "wave-a-foundation", "wave-b-pending", "wave-c-pending", "mapped"],
+        ["native-existing", "wave-a-foundation", "wave-b-pending", "wave-c-pending", "mapped", "cutover"],
         StringComparer.Ordinal);
 
     private static readonly HashSet<string> AllowedManagedHandlers =
@@ -391,7 +395,7 @@ internal static class VerificationSummaryFactory
     {
         if (catalog.SchemaVersion != 1 ||
             !string.Equals(catalog.Contract, CatalogContract, StringComparison.Ordinal) ||
-            !string.Equals(catalog.ActivationState, CatalogActivationState, StringComparison.Ordinal) ||
+            !AllowedActivationStates.Contains(catalog.ActivationState) ||
             catalog.MaxParallelism != 4 ||
             catalog.OverallTimeoutSeconds is < 1 or > 3600 ||
             catalog.AllowedExecutables is null ||
@@ -613,7 +617,7 @@ internal static class VerificationSummaryFactory
         return new VerificationCatalog(
             1,
             CatalogContract,
-            CatalogActivationState,
+            PlanOnlyCatalogActivationState,
             4,
             1,
             Array.Empty<string>(),

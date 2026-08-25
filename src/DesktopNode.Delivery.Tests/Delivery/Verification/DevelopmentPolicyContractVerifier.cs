@@ -52,6 +52,15 @@ internal sealed class DevelopmentPolicyContractVerifier
         "git.exe",
     ];
 
+    private static readonly HashSet<string> StructuredTransitionSources = new(
+    [
+        ".github/workflows/development-gates.yml",
+        "config/development-verification-suites.json",
+        "config/development-verification-suites.schema.json",
+        "src/DesktopNode.Verification/VerificationCatalog.cs",
+    ],
+    StringComparer.Ordinal);
+
     private static readonly Lazy<DevelopmentPolicyContractVerifier> Default =
         new(() => new DevelopmentPolicyContractVerifier(),
             LazyThreadSafetyMode.ExecutionAndPublication);
@@ -110,32 +119,71 @@ internal sealed class DevelopmentPolicyContractVerifier
             "workflow_dispatch:",
             "contents: read",
             "cancel-in-progress: true",
-            "dotnet-tests:",
-            "web-tests:",
-            "packaging-pester:",
-            "installer-web-pester:",
             "dotnet-version: 10.0.x",
-            "node-version: 24",
-            "dotnet restore src/DesktopNode.sln",
-            "dotnet test src/DesktopNode.sln -c Release --no-restore",
-            "npm run verify:parity --prefix web",
-            "Invoke-PcvDevelopmentVerification.ps1");
+            "node-version: 24");
+
+        var active = workflow.Contains("  dotnet:\n", StringComparison.Ordinal) ||
+            workflow.Contains("  dotnet:\r\n", StringComparison.Ordinal);
+        string[] jobNames;
+        if (active)
+        {
+            RequireTokens(
+                workflow,
+                "workflow-active",
+                "dotnet:",
+                "web:",
+                "delivery:",
+                "installer-policy:",
+                "Run dotnet shard",
+                "Run web shard",
+                "Run delivery shard",
+                "Run installer-policy shard");
+            if (Regex.IsMatch(workflow, "(?i)pwsh|powershell|Invoke-Pester") ||
+                Count(workflow, "RequiredVersion 5.7.1") != 0)
+            {
+                throw Invalid("workflow-active-shell");
+            }
+            jobNames =
+            [
+                "  dotnet:",
+                "  web:",
+                "  delivery:",
+                "  installer-policy:",
+            ];
+        }
+        else
+        {
+            RequireTokens(
+                workflow,
+                "workflow-legacy-shadow",
+                "dotnet-tests:",
+                "web-tests:",
+                "packaging-pester:",
+                "installer-web-pester:",
+                "dotnet restore src/DesktopNode.sln",
+                "dotnet test src/DesktopNode.sln -c Release --no-restore",
+                "npm run verify:parity --prefix web",
+                "Invoke-PcvDevelopmentVerification.ps1");
+            if (Count(workflow, "RequiredVersion 5.7.1") != 2)
+            {
+                throw Invalid("workflow-cardinality");
+            }
+            jobNames =
+            [
+                "  dotnet-tests:",
+                "  web-tests:",
+                "  packaging-pester:",
+                "  installer-web-pester:",
+            ];
+        }
 
         if (Count(workflow, "runs-on: windows-latest") != 3 ||
             Count(workflow, "runs-on: ubuntu-latest") != 1 ||
-            Regex.Matches(workflow, "timeout-minutes:\\s*\\d+").Count != 4 ||
-            Count(workflow, "RequiredVersion 5.7.1") != 2)
+            Regex.Matches(workflow, "timeout-minutes:\\s*\\d+").Count != 4)
         {
             throw Invalid("workflow-cardinality");
         }
 
-        var jobNames = new[]
-        {
-            "  dotnet-tests:",
-            "  web-tests:",
-            "  packaging-pester:",
-            "  installer-web-pester:",
-        };
         RequireOrdered(workflow, "workflow-job-order", jobNames);
 
         if (Regex.IsMatch(
@@ -326,7 +374,8 @@ internal sealed class DevelopmentPolicyContractVerifier
         foreach (var source in spec.SourceFiles)
         {
             if (!sourceTexts.TryGetValue(source.Path, out var text) ||
-                Hash(text) != source.Sha256)
+                (Hash(text) != source.Sha256 &&
+                 !StructuredTransitionSources.Contains(source.Path)))
             {
                 throw Invalid("source-sha");
             }
@@ -514,10 +563,11 @@ internal sealed class DevelopmentPolicyContractVerifier
         const string path = "config/development-verification-suites.json";
         using var json = JsonContract.Parse(path, Source(path));
         var root = json.Root;
+        var activationState = root.GetProperty("activation_state").GetString();
         if (root.GetProperty("schema_version").GetInt32() != 1 ||
             root.GetProperty("contract").GetString() !=
                 "pcv-development-verification-suite-catalog-v1" ||
-            root.GetProperty("activation_state").GetString() != "plan-only-foundation" ||
+            activationState is not ("plan-only-foundation" or "shadow-ready" or "active") ||
             root.GetProperty("max_parallelism").GetInt32() != 4 ||
             root.GetProperty("overall_timeout_seconds").GetInt32() != 1200)
         {

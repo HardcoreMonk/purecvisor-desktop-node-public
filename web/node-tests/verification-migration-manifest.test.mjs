@@ -17,6 +17,7 @@ const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../
 const manifestPath = path.join(repoRoot, "config/development-verification-migration-manifest.json");
 const schemaPath = path.join(repoRoot, "config/development-verification-migration-manifest.schema.json");
 const evidencePath = "docs/ga-ready/evidence/pester-free-web-verification-wave-b-2026-08-24.md";
+const cutoverEvidencePath = "docs/ga-ready/evidence/pester-free-required-ci-cutover-2026-08-25.md";
 const invalid = (detail) => (error) =>
   error instanceof Error &&
   error.message.includes("PCV_VERIFICATION_MIGRATION_MANIFEST_INVALID") &&
@@ -31,6 +32,16 @@ function published() {
 
 function clone(value) {
   return structuredClone(value);
+}
+
+function preCutover(manifest = published().manifest) {
+  const candidate = clone(manifest);
+  delete candidate.cutover_locator;
+  for (const row of [...candidate.entries, ...candidate.contracts]) {
+    if (row.parity_status === "cutover") row.parity_status = "mapped";
+    row.ci_parity = { status: "pending", evidence: null };
+  }
+  return candidate;
 }
 
 function input(manifest, schema = published().schema) {
@@ -75,7 +86,7 @@ test("generator discovers exact legacy and replacement inventories and is byte d
 });
 
 test("generator advances a newly discovered complete v2 file mapping from unmapped to mapped", () => {
-  const prior = clone(published().manifest);
+  const prior = preCutover();
   const legacyPath = "packaging/windows-desktop-node/installer/tests/PcvDesktopNodeInstaller.InternalTrust.Tests.ps1";
   const priorEntry = prior.entries.find((row) => row.legacy_path === legacyPath);
   priorEntry.parity_status = "unmapped";
@@ -145,21 +156,26 @@ test("entries and contracts are unique, canonical, ordered, and aggregate-cohere
   }
 });
 
-test("Web remains exactly 50 mapped local-pass contracts with CI pending until cutover", () => {
+test("Web remains exactly 50 local-pass contracts with coherent CI cutover state", () => {
   const { manifest } = published();
   const entry = manifest.entries.find((row) => row.domain === "web");
   const contracts = manifest.contracts.filter((row) => row.domain === "web");
+  const cutover = Object.hasOwn(manifest, "cutover_locator");
 
-  assert.equal(entry.parity_status, "mapped");
+  assert.equal(entry.parity_status, cutover ? "cutover" : "mapped");
   assert.deepEqual(entry.local_parity, { status: "pass", evidence: evidencePath });
-  assert.deepEqual(entry.ci_parity, { status: "pending", evidence: null });
+  assert.deepEqual(
+    entry.ci_parity,
+    cutover
+      ? { status: "pass", evidence: cutoverEvidencePath }
+      : { status: "pending", evidence: null });
   assert.equal(contracts.length, 50);
   assert.equal(contracts.every((row) => row.replacement_contract_id.startsWith("web.static.")), true);
   assert.equal(contracts.every((row) => row.local_parity.status === "pass"), true);
 });
 
 test("rejects one missing contract, duplicate ordinal, duplicate ID, and reordered name", () => {
-  const baseline = published().manifest;
+  const baseline = preCutover();
   const cases = [
     ["contracts=missing", (value) => value.contracts.pop()],
     ["contracts=duplicate-key", (value) => {
@@ -183,7 +199,7 @@ test("rejects one missing contract, duplicate ordinal, duplicate ID, and reorder
 });
 
 test("rejects wrong owner, mapping/state incoherence, pass without evidence, and unknown ID prefix", () => {
-  const baseline = published().manifest;
+  const baseline = preCutover();
   const cases = [
     ["replacement=owner", (value) => { firstMappedContract(value).replacement_owner = "wrong/owner"; }],
     ["state=mapped-null", (value) => {
@@ -225,7 +241,7 @@ test("rejects additional properties and every published schema weakening", () =>
 });
 
 test("accepts only an immutable cutover locator paired with all-cutover CI parity", () => {
-  const baseline = published().manifest;
+  const baseline = preCutover();
   const candidate = clone(baseline);
   candidate.cutover_locator = {
     shadow_sha: "1111111111111111111111111111111111111111",

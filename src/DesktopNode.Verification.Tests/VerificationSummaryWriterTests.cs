@@ -31,7 +31,7 @@ public sealed class VerificationSummaryWriterTests
         Assert.Equal("lane", root.GetProperty("execution_scope").GetString());
         Assert.True(root.GetProperty("plan_only").GetBoolean());
         Assert.True(root.GetProperty("ok").GetBoolean());
-        Assert.Equal("plan-only-foundation", root.GetProperty("catalog_activation_state").GetString());
+        Assert.Equal(catalog.ActivationState, root.GetProperty("catalog_activation_state").GetString());
         Assert.Equal(1250, root.GetProperty("duration_ms").GetInt64());
         Assert.Equal(
             [
@@ -59,6 +59,21 @@ public sealed class VerificationSummaryWriterTests
         Assert.Equal(TimeSpan.Zero, root.GetProperty("started_at").GetDateTimeOffset().Offset);
         Assert.Equal(TimeSpan.Zero, root.GetProperty("completed_at").GetDateTimeOffset().Offset);
         Assert.DoesNotContain("Authorization", json, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Theory]
+    [InlineData("shadow-ready")]
+    [InlineData("active")]
+    public void SummaryAcceptsSupportedExecutionActivationState(string activationState)
+    {
+        var catalog = VerificationCatalogFixture.LoadCanonical() with { ActivationState = activationState };
+        var plan = VerificationPlanFixture.ForCatalog(catalog, planOnly: true);
+        var report = VerificationReportFixture.Planned(plan.Suites);
+
+        var summary = VerificationSummaryFactory.Create(
+            plan, catalog, report, StartedAt, StartedAt);
+
+        Assert.Equal(activationState, summary.CatalogActivationState);
     }
 
     [Fact]
