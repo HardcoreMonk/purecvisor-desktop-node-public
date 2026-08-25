@@ -1,0 +1,864 @@
+{
+  "contract": "pcv-installed-smoke-contract-spec-v1",
+  "legacy_contract_count": 31,
+  "legacy_should_site_count": 243,
+  "required_literal_count": 512,
+  "source_files": [
+    {
+      "path": "packaging/windows-desktop-node/tools/Invoke-PcvApiHostJobHardeningInstalledSmoke.ps1",
+      "sha256": "49d672be7218ee56f1d7da04ab7ce12d9aa813bcf21127bbab9da8d6263125c8"
+    },
+    {
+      "path": "packaging/windows-desktop-node/README.md",
+      "sha256": "21d702a42228461fccd195eb0e389d42080abbc921bddcd614563e0a43a78f8f"
+    },
+    {
+      "path": "packaging/windows-desktop-node/tools/Invoke-PcvInstalledAccountLoginSmoke.ps1",
+      "sha256": "6eb155706009d7a951f545211e3efb90175479f2b0f7ec1a026257dabc1de2d7"
+    },
+    {
+      "path": "packaging/windows-desktop-node/tools/Invoke-PcvInstalledLoopbackBootstrapSmoke.ps1",
+      "sha256": "8c4089a6d2e2bd141181befed73ce1f973c4300805d7cbd46f1a08318c16a121"
+    },
+    {
+      "path": "packaging/windows-desktop-node/tools/Invoke-PcvTargetBackedNoVncInstalledStreamingSmoke.ps1",
+      "sha256": "6a111e5e984db9a97306068747c998ea628273fc0517e5c5b961d936fa8fb0cf"
+    },
+    {
+      "path": "packaging/windows-desktop-node/tools/Invoke-PcvInternalHttpsTlsLifecycleSmoke.ps1",
+      "sha256": "e92a1fca85fa12ab4c05fe5d71ac8b9df76a93f6fca4afaf5c19265e261e3b51"
+    },
+    {
+      "path": "packaging/windows-desktop-node/tools/Invoke-PcvOsMutationGateSmoke.ps1",
+      "sha256": "3b809cb6e325691c6d33ca07b639b257d7426ee526fa2a5f08f684f73fa4577f"
+    },
+    {
+      "path": "packaging/windows-desktop-node/tests/fixtures/service-plan-p0-checkpoint-restore-reconciliation.json",
+      "sha256": "0ff7408b49c9da08b6935c1ddf8342883fd8ae39a5e6f48ca586a831ce52c9b5"
+    },
+    {
+      "path": "packaging/windows-desktop-node/tests/fixtures/csharp-architecture-wave2c-checkpoint-create-reconciliation.json",
+      "sha256": "7b495a8e26d02bf07caa55fc52bcf8acb766f5365cb074239b5d0b58c2ff90d5"
+    },
+    {
+      "path": "packaging/windows-desktop-node/tools/New-PcvServiceTokenRotationRevokePreflight.ps1",
+      "sha256": "7ecba40a6c91cfb57e9da5ebd0294c7fc18964239a46676f40f0a6fd17d42038"
+    }
+  ],
+  "legacy_files": [
+    {
+      "key": "api-host-job-hardening-installed-smoke",
+      "path": "packaging/windows-desktop-node/tests/PcvApiHostJobHardeningInstalledSmoke.Tests.ps1",
+      "sha256": "92f40fd9d50d4654424bcfb21f99ed323c3b35c29c7d364c4f5a1249c107275f",
+      "contract_count": 10,
+      "should_site_count": 85,
+      "source_paths": [
+        "packaging/windows-desktop-node/tools/Invoke-PcvApiHostJobHardeningInstalledSmoke.ps1",
+        "packaging/windows-desktop-node/README.md"
+      ]
+    },
+    {
+      "key": "installed-account-login-smoke",
+      "path": "packaging/windows-desktop-node/tests/PcvInstalledAccountLoginSmoke.Tests.ps1",
+      "sha256": "e3e91293515ce3cb98da81e0a066dd83d63a1ca4b8018c2792c77489141d0c13",
+      "contract_count": 1,
+      "should_site_count": 25,
+      "source_paths": [
+        "packaging/windows-desktop-node/tools/Invoke-PcvInstalledAccountLoginSmoke.ps1"
+      ]
+    },
+    {
+      "key": "installed-loopback-bootstrap-smoke",
+      "path": "packaging/windows-desktop-node/tests/PcvInstalledLoopbackBootstrapSmoke.Tests.ps1",
+      "sha256": "3d16e92aec15114aa173ca9586c0954926cf9e0fd88bf933eb7fb7524e700f78",
+      "contract_count": 1,
+      "should_site_count": 11,
+      "source_paths": [
+        "packaging/windows-desktop-node/tools/Invoke-PcvInstalledLoopbackBootstrapSmoke.ps1"
+      ]
+    },
+    {
+      "key": "installed-no-vnc-smoke",
+      "path": "packaging/windows-desktop-node/tests/PcvInstalledNoVncSmoke.Tests.ps1",
+      "sha256": "aeb0fc88f8468002e304f568059e830499f6d1c4796b492c84fb48f420f066ce",
+      "contract_count": 1,
+      "should_site_count": 16,
+      "source_paths": [
+        "packaging/windows-desktop-node/tools/Invoke-PcvTargetBackedNoVncInstalledStreamingSmoke.ps1"
+      ]
+    },
+    {
+      "key": "internal-https-tls-lifecycle-smoke",
+      "path": "packaging/windows-desktop-node/tests/PcvInternalHttpsTlsLifecycleSmoke.Tests.ps1",
+      "sha256": "5494c14b3888b911b789a894a9245e26f7426c413bc177fa935152c55e76dcbe",
+      "contract_count": 1,
+      "should_site_count": 6,
+      "source_paths": [
+        "packaging/windows-desktop-node/tools/Invoke-PcvInternalHttpsTlsLifecycleSmoke.ps1"
+      ]
+    },
+    {
+      "key": "os-mutation-gate-smoke",
+      "path": "packaging/windows-desktop-node/tests/PcvOsMutationGateSmoke.Tests.ps1",
+      "sha256": "f2003fd4f62cc20bc921fc4bd66d876e598f77686cfcb4907a89b0f3d3399fb9",
+      "contract_count": 6,
+      "should_site_count": 17,
+      "source_paths": [
+        "packaging/windows-desktop-node/tools/Invoke-PcvOsMutationGateSmoke.ps1"
+      ]
+    },
+    {
+      "key": "service-plan-p0-checkpoint-restore-reconciliation",
+      "path": "packaging/windows-desktop-node/tests/PcvServicePlanP0CheckpointRestoreReconciliation.Tests.ps1",
+      "sha256": "0909e27ac46204004987cf98df2490d33b59108573fd6e8a6c8b81399117d0dc",
+      "contract_count": 5,
+      "should_site_count": 45,
+      "source_paths": [
+        "packaging/windows-desktop-node/tests/fixtures/service-plan-p0-checkpoint-restore-reconciliation.json",
+        "packaging/windows-desktop-node/tests/fixtures/csharp-architecture-wave2c-checkpoint-create-reconciliation.json"
+      ]
+    },
+    {
+      "key": "service-token-rotation-revoke-preflight",
+      "path": "packaging/windows-desktop-node/tests/PcvServiceTokenRotationRevokePreflight.Tests.ps1",
+      "sha256": "d32063991cc23969c0a36d8836553c2da430bd29b6c7344ba086d277ad236d25",
+      "contract_count": 6,
+      "should_site_count": 38,
+      "source_paths": [
+        "packaging/windows-desktop-node/tools/New-PcvServiceTokenRotationRevokePreflight.ps1"
+      ]
+    }
+  ],
+  "contracts": [
+    {
+      "key": "api-host-job-hardening-installed-smoke",
+      "ordinal": 1,
+      "name": "ships a runner with body cap, route timeout, rate-limit, job, worker, and redaction evidence fields",
+      "required_literals": [
+        "/api/v1/auth/login",
+        "/api/v1/console/capabilities",
+        "/api/v1/jobs/pcv-installed-hardening-missing-job/cancel",
+        "/api/v1/runtime/policy",
+        "/api/v1/runtime/route-timeout-probe",
+        "api/v1/auth/login",
+        "api/v1/console/capabilities",
+        "api/v1/diagnostics/bundles",
+        "api/v1/jobs",
+        "api/v1/jobs/pcv-installed-hardening-missing-job/cancel",
+        "api/v1/runtime/policy",
+        "api/v1/runtime/route-timeout-probe",
+        "content",
+        "cooperative_cancellation_scope",
+        "external_stable_publication",
+        "false",
+        "limit",
+        "LiteralPath",
+        "Match",
+        "not-claimed",
+        "offset",
+        "PCV_RATE_LIMIT_EXCEEDED",
+        "PCV_REQUEST_BODY_TOO_LARGE",
+        "PCV_ROUTE_TIMEOUT",
+        "public_trusted_signing",
+        "Raw",
+        "RunRouteTimeoutProbe",
+        "token_value_observed",
+        "wmi_abort_claim",
+        "worker_responsiveness"
+      ]
+    },
+    {
+      "key": "api-host-job-hardening-installed-smoke",
+      "ordinal": 2,
+      "name": "writes a dry-run summary without requiring an installed service or admin mutation",
+      "required_literals": [
+        "/api/v1/jobs?limit=1&offset=0",
+        "/api/v1/jobs/pcv-installed-hardening-missing-job/cancel",
+        "actual_execution",
+        "api/v1/jobs",
+        "api/v1/jobs/pcv-installed-hardening-missing-job/cancel",
+        "ApiBaseUri",
+        "application/problem",
+        "application/problem+json",
+        "artifactRoot",
+        "ArtifactRoot",
+        "bearer_token_environment_variable_name",
+        "bearer_token_source",
+        "body_cap",
+        "Bypass",
+        "ConvertFrom-Json",
+        "dry-run-no-http",
+        "DryRun",
+        "ExecutionPolicy",
+        "external_stable_publication",
+        "File",
+        "host_mutation_performed",
+        "http://127.0.0.1:7777",
+        "installed_listener_required",
+        "job_cancellation",
+        "job_readability",
+        "Join-Path",
+        "json",
+        "limit",
+        "LiteralPath",
+        "none",
+        "NoProfile",
+        "not-claimed",
+        "offset",
+        "Out-Null",
+        "PCV_API_HOST_JOB_HARDENING_SMOKE_TOKEN",
+        "PCV_RATE_LIMIT_EXCEEDED",
+        "PCV_REQUEST_BODY_TOO_LARGE",
+        "PCV_ROUTE_TIMEOUT",
+        "public_trusted_signing",
+        "pwsh",
+        "rate_limit",
+        "Raw",
+        "route_timeout",
+        "summary",
+        "summary.actual_execution",
+        "summary.json",
+        "summary.ok",
+        "summary.wmi_abort_claim",
+        "summaryPath",
+        "token_value_observed",
+        "wmi_abort_claim"
+      ]
+    },
+    {
+      "key": "api-host-job-hardening-installed-smoke",
+      "ordinal": 3,
+      "name": "requires body cap problem-details content type and job cancel contract in the pass gate",
+      "required_literals": [
+        "application/problem",
+        "bodyCapEvidence",
+        "cancelEvidence",
+        "cancelResponse",
+        "content",
+        "content_type",
+        "error_code",
+        "json",
+        "like",
+        "LiteralPath",
+        "Match",
+        "PCV_AUTH_FORBIDDEN",
+        "PCV_AUTH_REQUIRED",
+        "PCV_JOB_NOT_FOUND",
+        "PCV_RBAC_FORBIDDEN",
+        "Raw",
+        "status_code"
+      ]
+    },
+    {
+      "key": "api-host-job-hardening-installed-smoke",
+      "ordinal": 4,
+      "name": "requires rate-limit Retry-After and problem-details content type when the opt-in probe runs",
+      "required_literals": [
+        "application/problem",
+        "content",
+        "content_type",
+        "expected_content_type_observed",
+        "expected_retry_after_present",
+        "first_429",
+        "json",
+        "like",
+        "LiteralPath",
+        "Match",
+        "rateLimitEvidence",
+        "Raw",
+        "retry_after"
+      ]
+    },
+    {
+      "key": "api-host-job-hardening-installed-smoke",
+      "ordinal": 5,
+      "name": "requires controlled route-timeout 504, Retry-After, and problem-details when the opt-in probe runs",
+      "required_literals": [
+        "/api/v1/runtime/route-timeout-probe",
+        "api/v1/runtime/route-timeout-probe",
+        "application/problem",
+        "content",
+        "content_type",
+        "json",
+        "like",
+        "LiteralPath",
+        "Match",
+        "PCV_ROUTE_TIMEOUT",
+        "Raw",
+        "retry_after",
+        "routeTimeoutEvidence",
+        "RunRouteTimeoutProbe",
+        "status_code"
+      ]
+    },
+    {
+      "key": "api-host-job-hardening-installed-smoke",
+      "ordinal": 6,
+      "name": "requires recorded diagnostics and console read probes in the pass gate",
+      "required_literals": [
+        "Add-PcvEvidenceProperty",
+        "console_capabilities",
+        "consoleResponse",
+        "content",
+        "diagnostics_readability",
+        "diagnosticsResponse",
+        "expected_contract_observed",
+        "LiteralPath",
+        "Match",
+        "Name",
+        "Not",
+        "Object",
+        "Raw",
+        "status_code",
+        "summary"
+      ]
+    },
+    {
+      "key": "api-host-job-hardening-installed-smoke",
+      "ordinal": 7,
+      "name": "allows success response evidence to have no expected problem code",
+      "required_literals": [
+        "Add-PcvEvidenceProperty",
+        "AllowEmptyString",
+        "and",
+        "body_cap",
+        "content",
+        "errorCode",
+        "expected_content_type",
+        "ExpectedErrorCode",
+        "function",
+        "function Add-PcvEvidenceProperty",
+        "IsNullOrWhiteSpace",
+        "LiteralPath",
+        "Mandatory",
+        "Match",
+        "Name",
+        "Object",
+        "Parameter",
+        "Raw",
+        "statusCode",
+        "string",
+        "summary"
+      ]
+    },
+    {
+      "key": "api-host-job-hardening-installed-smoke",
+      "ordinal": 8,
+      "name": "decodes byte-array Invoke-WebRequest content before extracting problem codes",
+      "required_literals": [
+        "body",
+        "content",
+        "Content",
+        "ConvertTo-PcvResponseBodyText",
+        "Encoding",
+        "function",
+        "function ConvertTo-PcvResponseBodyText",
+        "GetString",
+        "LiteralPath",
+        "Match",
+        "Raw",
+        "response",
+        "System",
+        "Text",
+        "UTF8"
+      ]
+    },
+    {
+      "key": "api-host-job-hardening-installed-smoke",
+      "ordinal": 9,
+      "name": "keeps Task 6 artifacts free of Task 7 wording and raw-token README examples",
+      "required_literals": [
+        "AsSecureString",
+        "bearer",
+        "BearerToken",
+        "BearerTokenEnvironmentVariableName",
+        "LiteralPath",
+        "Match",
+        "Not",
+        "PCV_API_HOST_JOB_HARDENING_SMOKE_TOKEN",
+        "Raw",
+        "Read-Host",
+        "Read-Host -AsSecureString",
+        "token"
+      ]
+    },
+    {
+      "key": "api-host-job-hardening-installed-smoke",
+      "ordinal": 10,
+      "name": "does not contain host mutation, service reconfiguration, installer, or public publication commands",
+      "required_literals": [
+        "catalog",
+        "config",
+        "content",
+        "exe",
+        "LiteralPath",
+        "Match",
+        "Not",
+        "Raw",
+        "Restart-Computer",
+        "Restart-Service",
+        "shutdown",
+        "submit",
+        "upload",
+        "winget"
+      ]
+    },
+    {
+      "key": "installed-account-login-smoke",
+      "ordinal": 1,
+      "name": "ships an installed account login smoke runner with redacted evidence fields",
+      "required_literals": [
+        "/api/v1/console/capabilities",
+        "account_file_backup",
+        "acl_restore_status",
+        "acl_sddl",
+        "api/v1/auth/login",
+        "api/v1/auth/rbac",
+        "api/v1/auth/session",
+        "api/v1/console/capabilities",
+        "browser_qa",
+        "capture-installed-listener-qa",
+        "exe",
+        "external_stable_publication",
+        "false",
+        "GET",
+        "Get-Content",
+        "Grant-TemporaryFileWriteAccess",
+        "icacls",
+        "jwt_signing_key_backup",
+        "LiteralPath",
+        "mjs",
+        "password_value_observed",
+        "PCV_BROWSER_QA_ACCOUNT_PASSWORD",
+        "PCV_BROWSER_QA_ACCOUNT_USERNAME",
+        "PCV_BROWSER_QA_TOKEN",
+        "POST",
+        "public_trusted_signing",
+        "Raw",
+        "Restore-SavedFileAcl",
+        "RunBrowserQa",
+        "takeown",
+        "temporary_takeown_status",
+        "temporary_write_grant_status",
+        "Test-Path",
+        "token_value_observed"
+      ]
+    },
+    {
+      "key": "installed-loopback-bootstrap-smoke",
+      "ordinal": 1,
+      "name": "ships a redacted installed loopback session and Chromium bootstrap runner",
+      "required_literals": [
+        "/api/v1/auth/loopback-session",
+        "/api/v1/auth/session",
+        "/api/v1/runtime/policy",
+        "/pcv-config.js",
+        "api/v1/auth/loopback-session",
+        "api/v1/auth/session",
+        "api/v1/runtime/policy",
+        "Authorization",
+        "external_stable_publication",
+        "false",
+        "Get-Content",
+        "host_mutation_performed",
+        "LiteralPath",
+        "Match",
+        "pcv-config.js",
+        "pcvDesktopAccountSession",
+        "public_trusted_signing",
+        "Raw",
+        "Test-Path",
+        "token_value_observed",
+        "value"
+      ]
+    },
+    {
+      "key": "installed-no-vnc-smoke",
+      "ordinal": 1,
+      "name": "ships a target-backed noVNC installed streaming smoke runner with restore and redaction fields",
+      "required_literals": [
+        "--novnc-target-host",
+        "--novnc-target-port",
+        "ClientWebSocket",
+        "config",
+        "echoed_frame_sha256",
+        "exe",
+        "external_stable_publication",
+        "external_stable_publication = 'not-claimed'",
+        "false",
+        "Join-Path",
+        "LiteralPath",
+        "not-claimed",
+        "novnc-target-host",
+        "novnc-target-port",
+        "Parent",
+        "password_value_observed",
+        "path_name_restored",
+        "PcvDesktopNodeProduct",
+        "psm1",
+        "PSScriptRoot",
+        "public_trusted_signing",
+        "public_trusted_signing = 'not-claimed'",
+        "Split-Path",
+        "target_backed_novnc_installed_streaming_smoke",
+        "target_frame_sha256",
+        "TcpListener",
+        "token_value_observed"
+      ]
+    },
+    {
+      "key": "internal-https-tls-lifecycle-smoke",
+      "ordinal": 1,
+      "name": "fails before TLS binding mutation when the installed token source does not match the declared protected-file baseline",
+      "required_literals": [
+        "--api-token-credential-target",
+        "--api-token-protected-file",
+        "api-token-credential-target",
+        "api-token-protected-file",
+        "Assert-ProtectedFileTokenSource",
+        "LiteralPath",
+        "PCV_TLS_SMOKE_TOKEN_SOURCE_MISMATCH",
+        "PCV_TLS_SMOKE_TOKEN_SOURCE_PATH_MISMATCH",
+        "Test-Path"
+      ]
+    },
+    {
+      "key": "os-mutation-gate-smoke",
+      "ordinal": 1,
+      "name": "creates summary.json in plan-only mode",
+      "required_literals": [
+        "ArtifactRoot",
+        "Join-Path",
+        "LiteralPath",
+        "plan_only",
+        "routeparity",
+        "RouteParityArtifactRoot",
+        "summary",
+        "summary.json",
+        "Test-Path"
+      ]
+    },
+    {
+      "key": "os-mutation-gate-smoke",
+      "ordinal": 2,
+      "name": "records the exact OS gate step names in plan-only mode",
+      "required_literals": [
+        "ArtifactRoot",
+        "config-migration-apply-service-running",
+        "eventlog-register",
+        "eventlog-remove",
+        "export-existing-internal-trust-certs",
+        "firewall-enable",
+        "firewall-remove",
+        "ForEach-Object",
+        "Join-Path",
+        "lan-listener-ip-smoke",
+        "name",
+        "preflight",
+        "routeparity",
+        "RouteParityArtifactRoot",
+        "steps",
+        "summary",
+        "trust-store-install-existing",
+        "trust-store-remove-existing",
+        "trust-store-restore-existing"
+      ]
+    },
+    {
+      "key": "os-mutation-gate-smoke",
+      "ordinal": 3,
+      "name": "records evidence classification anchors in plan-only summary",
+      "required_literals": [
+        "ArtifactRoot",
+        "excluded",
+        "external_stable_publication",
+        "GetFullPath",
+        "Join-Path",
+        "lan_prefix",
+        "not-claimed",
+        "public_trusted_signing",
+        "routeparity",
+        "routeparity_artifact",
+        "RouteParityArtifactRoot",
+        "summary",
+        "System.IO.Path",
+        "version"
+      ]
+    },
+    {
+      "key": "os-mutation-gate-smoke",
+      "ordinal": 4,
+      "name": "plans bearer-required LAN probes for runtime policy and static web assets",
+      "required_literals": [
+        "/api/v1/runtime/policy",
+        "/app.js",
+        "/index.html",
+        "api/v1/runtime/policy",
+        "app.js",
+        "ArtifactRoot",
+        "auth",
+        "bearer-required",
+        "command_plan",
+        "Count",
+        "ForEach-Object",
+        "index.html",
+        "Join-Path",
+        "path",
+        "routeparity",
+        "RouteParityArtifactRoot",
+        "summary",
+        "Where-Object"
+      ]
+    },
+    {
+      "key": "os-mutation-gate-smoke",
+      "ordinal": 5,
+      "name": "states that plan-only did not perform host mutation",
+      "required_literals": [
+        "actual_execution",
+        "ArtifactRoot",
+        "host_mutation_performed",
+        "Join-Path",
+        "mutates_host",
+        "not-run",
+        "routeparity",
+        "RouteParityArtifactRoot",
+        "summary"
+      ]
+    },
+    {
+      "key": "os-mutation-gate-smoke",
+      "ordinal": 6,
+      "name": "does not contain reboot or scheduled task command text",
+      "required_literals": [
+        "exe",
+        "Get-Content",
+        "LiteralPath",
+        "Not",
+        "Raw",
+        "Test-Path"
+      ]
+    },
+    {
+      "key": "service-plan-p0-checkpoint-restore-reconciliation",
+      "ordinal": 1,
+      "name": "publishes a code-level, read-only-baseline, non-host-mutating restore decision fixture",
+      "required_literals": [
+        "0.42.73-admin-smoke",
+        "actual_vm_validation_performed",
+        "admin-smoke",
+        "checkpoint.restore",
+        "code_complete",
+        "current_operational_anchor",
+        "host_mutation_performed",
+        "hyperv_mutation_performed",
+        "implementation_change",
+        "operation",
+        "P0-2",
+        "package_candidate_created",
+        "pcv-checkpoint-restore-reconciliation/v1",
+        "product_behavior_changed",
+        "promotion_not_triggered",
+        "schema_version",
+        "status",
+        "wave"
+      ]
+    },
+    {
+      "key": "service-plan-p0-checkpoint-restore-reconciliation",
+      "ordinal": 2,
+      "name": "requires current=true postcondition and fails closed for presence-only or unreadable current",
+      "required_literals": [
+        "ambiguous-duplicate-checkpoint-names",
+        "baseline_capture",
+        "baseline-unavailable",
+        "checkpoint.list",
+        "confirmed_terminal_mapping",
+        "current-unavailable",
+        "failed",
+        "not-applied",
+        "PCV_JOB_RECONCILIATION_REQUIRED",
+        "readback-unavailable",
+        "reconcile_classifications",
+        "required_manual_mapping",
+        "success_requires",
+        "unavailable"
+      ]
+    },
+    {
+      "key": "service-plan-p0-checkpoint-restore-reconciliation",
+      "ordinal": 3,
+      "name": "pins additive route and restore operator parity without a new HTTP route",
+      "required_literals": [
+        "/api/v1/jobs/{jobId}/reconcile",
+        "api/v1/jobs",
+        "checkpoint.delete",
+        "checkpoint.restore",
+        "excluded_operations",
+        "job",
+        "job reconcile <job_id>",
+        "job_id",
+        "jobId",
+        "operate",
+        "operator_surface_parity",
+        "ProductOperation",
+        "reconcile",
+        "Reconcile",
+        "Reconcile restore",
+        "ReconcileJob",
+        "restore",
+        "route"
+      ]
+    },
+    {
+      "key": "service-plan-p0-checkpoint-restore-reconciliation",
+      "ordinal": 4,
+      "name": "leaves the Wave 2C create fixture excluding restore",
+      "required_literals": [
+        "checkpoint.create",
+        "checkpoint.restore",
+        "excluded_operations",
+        "operation",
+        "pcv-checkpoint-create-reconciliation/v1",
+        "schema_version"
+      ]
+    },
+    {
+      "key": "service-plan-p0-checkpoint-restore-reconciliation",
+      "ordinal": 5,
+      "name": "keeps actual VM smoke and package promotion out of this code slice",
+      "required_literals": [
+        "NOT_RUN_BY_DESIGN",
+        "public_boundary",
+        "verification_scope"
+      ]
+    },
+    {
+      "key": "service-token-rotation-revoke-preflight",
+      "ordinal": 1,
+      "name": "creates a non-mutating service token rotation revoke summary",
+      "required_literals": [
+        "actual_execution",
+        "artifactRoot",
+        "ArtifactRoot",
+        "blocked-by-no-mutation-preflight",
+        "external_stable_publication",
+        "host_mutation_performed",
+        "Join-Path",
+        "LiteralPath",
+        "new_token_value_created",
+        "not-claimed",
+        "not-run",
+        "old_token_rejection_status",
+        "plan_only",
+        "public_trusted_signing",
+        "scope",
+        "service_reload_status",
+        "service_token_mutation",
+        "service_token_rotation_revoke",
+        "service_token_value_observed",
+        "service-token-rotation-revoke-preflight",
+        "summary",
+        "summary.json",
+        "token_rotation_audit_status"
+      ]
+    },
+    {
+      "key": "service-token-rotation-revoke-preflight",
+      "ordinal": 2,
+      "name": "records the exact service token rotation revoke check names",
+      "required_literals": [
+        "ArtifactRoot",
+        "audit-record-not-written",
+        "current-token-storage-recorded",
+        "host-mutation-not-executed",
+        "Join-Path",
+        "name",
+        "new-token-not-generated",
+        "old-token-rejection-not-executed",
+        "protected-token-path-recorded",
+        "protected-token-write-not-executed",
+        "rotation_checks",
+        "rotation-mode-recorded",
+        "service-name-present",
+        "service-reload-not-executed",
+        "summary",
+        "token-value-not-read"
+      ]
+    },
+    {
+      "key": "service-token-rotation-revoke-preflight",
+      "ordinal": 3,
+      "name": "writes a rotation revoke plan preview without token generation or writes",
+      "required_literals": [
+        "artifactRoot",
+        "ArtifactRoot",
+        "current_token_storage",
+        "dpapi-local-machine-protected-file",
+        "inspect-current-token-storage-policy",
+        "Join-Path",
+        "LiteralPath",
+        "new_token_value_created",
+        "not-run",
+        "plan",
+        "plan-new-protected-token-record",
+        "planned_operations",
+        "protected_token_path",
+        "protected_token_write_status",
+        "reload-service-token-policy",
+        "replace-protected-token-record",
+        "rollback-to-previous-protected-token",
+        "rotate-and-revoke-old-token",
+        "rotation_mode",
+        "rotation_plan_path",
+        "schema_version",
+        "scope",
+        "service_name",
+        "service_token_value_observed",
+        "service-token-rotation-revoke-preflight",
+        "summary",
+        "verify-old-token-rejected",
+        "write-token-rotation-audit-record"
+      ]
+    },
+    {
+      "key": "service-token-rotation-revoke-preflight",
+      "ordinal": 4,
+      "name": "requires plan-only mode",
+      "required_literals": [
+        "ArtifactRoot",
+        "Join-Path",
+        "Not",
+        "Out-Null",
+        "ProtectedTokenPath",
+        "ServiceName"
+      ]
+    },
+    {
+      "key": "service-token-rotation-revoke-preflight",
+      "ordinal": 5,
+      "name": "rejects an unsupported rotation mode",
+      "required_literals": [
+        "ArtifactRoot",
+        "Join-Path",
+        "Not",
+        "Out-Null",
+        "PlanOnly",
+        "ProtectedTokenPath",
+        "RotationMode",
+        "ServiceName"
+      ]
+    },
+    {
+      "key": "service-token-rotation-revoke-preflight",
+      "ordinal": 6,
+      "name": "does not contain host mutation, token generation, token write, or service reload command text",
+      "required_literals": [
+        "exe",
+        "LiteralPath",
+        "Not"
+      ]
+    }
+  ]
+}
+
