@@ -1,1 +1,236 @@
-{"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"pcv-development-verification-migration-manifest-schema-v1","type":"object","additionalProperties":false,"required":["contract","schema_version","inventory","entries"],"properties":{"contract":{"const":"pcv-development-verification-migration-manifest-v1"},"schema_version":{"const":1},"inventory":{"$ref":"#/$defs/inventory"},"entries":{"type":"array","minItems":62,"maxItems":62,"items":{"$ref":"#/$defs/entry"}}},"$defs":{"inventory":{"type":"object","additionalProperties":false,"required":["total","packaging","installer","web"],"properties":{"total":{"const":62},"packaging":{"const":55},"installer":{"const":6},"web":{"const":1}}},"parity":{"type":"object","additionalProperties":false,"required":["status","evidence"],"properties":{"status":{"enum":["pending","pass","fail"]},"evidence":{"type":["string","null"]}}},"entry":{"type":"object","additionalProperties":false,"required":["legacy_path","domain","legacy_contract_count","replacement_owner","replacement_contract_ids","parity_status","local_parity","ci_parity"],"properties":{"legacy_path":{"type":"string","pattern":"^[^\\/]+(?:/[^\\/]+)*\\.Tests\\.ps1$"},"domain":{"enum":["packaging","installer","web"]},"legacy_contract_count":{"type":"integer","minimum":0},"replacement_owner":{"type":["string","null"]},"replacement_contract_ids":{"type":"array","uniqueItems":true,"items":{"type":"string","pattern":"^web\\.static\\.[a-z0-9]+(?:-[a-z0-9]+)*$"}},"parity_status":{"enum":["unmapped","mapped","dual-run-pass","cutover"]},"local_parity":{"$ref":"#/$defs/parity"},"ci_parity":{"$ref":"#/$defs/parity"}}}}}
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "pcv-development-verification-migration-manifest-schema-v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract",
+    "schema_version",
+    "inventory",
+    "entries",
+    "contracts"
+  ],
+  "properties": {
+    "contract": {
+      "const": "pcv-development-verification-migration-manifest-v2"
+    },
+    "schema_version": {
+      "const": 2
+    },
+    "inventory": {
+      "$ref": "#/$defs/inventory"
+    },
+    "entries": {
+      "type": "array",
+      "minItems": 62,
+      "maxItems": 62,
+      "items": {
+        "$ref": "#/$defs/entry"
+      }
+    },
+    "contracts": {
+      "type": "array",
+      "minItems": 627,
+      "maxItems": 627,
+      "items": {
+        "$ref": "#/$defs/contract"
+      }
+    }
+  },
+  "$defs": {
+    "fileInventory": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "total",
+        "packaging",
+        "installer",
+        "web"
+      ],
+      "properties": {
+        "total": {
+          "const": 62
+        },
+        "packaging": {
+          "const": 55
+        },
+        "installer": {
+          "const": 6
+        },
+        "web": {
+          "const": 1
+        }
+      }
+    },
+    "contractInventory": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "total",
+        "packaging",
+        "installer",
+        "web"
+      ],
+      "properties": {
+        "total": {
+          "const": 627
+        },
+        "packaging": {
+          "const": 528
+        },
+        "installer": {
+          "const": 49
+        },
+        "web": {
+          "const": 50
+        }
+      }
+    },
+    "inventory": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "files",
+        "contracts"
+      ],
+      "properties": {
+        "files": {
+          "$ref": "#/$defs/fileInventory"
+        },
+        "contracts": {
+          "$ref": "#/$defs/contractInventory"
+        }
+      }
+    },
+    "parity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "evidence"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "pending",
+            "pass",
+            "fail"
+          ]
+        },
+        "evidence": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "legacy_path",
+        "domain",
+        "legacy_contract_count",
+        "parity_status",
+        "local_parity",
+        "ci_parity"
+      ],
+      "properties": {
+        "legacy_path": {
+          "type": "string",
+          "pattern": "^[^\\\\/]+(?:/[^\\\\/]+)*\\.Tests\\.ps1$"
+        },
+        "domain": {
+          "enum": [
+            "packaging",
+            "installer",
+            "web"
+          ]
+        },
+        "legacy_contract_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "parity_status": {
+          "enum": [
+            "unmapped",
+            "mapped",
+            "dual-run-pass",
+            "cutover"
+          ]
+        },
+        "local_parity": {
+          "$ref": "#/$defs/parity"
+        },
+        "ci_parity": {
+          "$ref": "#/$defs/parity"
+        }
+      }
+    },
+    "contract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "legacy_path",
+        "legacy_ordinal",
+        "legacy_name",
+        "domain",
+        "replacement_owner",
+        "replacement_contract_id",
+        "parity_status",
+        "local_parity",
+        "ci_parity"
+      ],
+      "properties": {
+        "legacy_path": {
+          "type": "string",
+          "pattern": "^[^\\\\/]+(?:/[^\\\\/]+)*\\.Tests\\.ps1$"
+        },
+        "legacy_ordinal": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "legacy_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "domain": {
+          "enum": [
+            "packaging",
+            "installer",
+            "web"
+          ]
+        },
+        "replacement_owner": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[^\\\\/]+(?:/[^\\\\/]+)*$"
+        },
+        "replacement_contract_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^(?:web\\.static\\.[a-z0-9]+(?:-[a-z0-9]+)*|pcv\\.(?:installer|delivery)\\.[a-z0-9]+(?:-[a-z0-9]+)*\\.[0-9]{3})$"
+        },
+        "parity_status": {
+          "enum": [
+            "unmapped",
+            "mapped",
+            "dual-run-pass",
+            "cutover"
+          ]
+        },
+        "local_parity": {
+          "$ref": "#/$defs/parity"
+        },
+        "ci_parity": {
+          "$ref": "#/$defs/parity"
+        }
+      }
+    }
+  }
+}

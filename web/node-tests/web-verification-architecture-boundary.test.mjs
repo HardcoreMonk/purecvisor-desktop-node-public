@@ -36,7 +36,8 @@ const EXPECTED_TEST_SCRIPT = "npm run check:feature-surfaces && tsc --noEmit -p 
 const EXPECTED_PARITY_SCRIPT = "npm run check:served && node scripts/regenerate-static-parity.mjs --check && node scripts/verify-static-parity.mjs && npm run browser:fixture";
 const EXPECTED_SEPARATE_SCRIPTS = {
   "check:web-contract-registry": "node scripts/verify-web-contract-registry.mjs",
-  "check:verification-migration-manifest": "node scripts/verify-verification-migration-manifest.mjs --require-web-local-pass",
+  "check:verification-migration-manifest": "node scripts/regenerate-verification-migration-manifest.mjs --check && node scripts/verify-verification-migration-manifest.mjs --require-web-local-pass",
+  "generate:verification-migration-manifest": "node scripts/regenerate-verification-migration-manifest.mjs --write",
   "test:web-contracts": "npm run check:web-contract-registry && npm run check:verification-migration-manifest && node --test --test-reporter=spec node-tests/web-static-contracts.test.mjs",
   "verify:web-contract-negative-parity": "node scripts/verify-web-contract-negative-parity.mjs"
 };

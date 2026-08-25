@@ -89,6 +89,36 @@ internal sealed class RepositoryContractContext
         }
     }
 
+    internal IReadOnlyList<string> EnumerateRegularFiles(
+        string repositoryRelativeDirectory,
+        string suffix)
+    {
+        if (string.IsNullOrEmpty(suffix))
+        {
+            throw InvalidPath("suffix");
+        }
+
+        var directory = ResolveDirectory(repositoryRelativeDirectory);
+        var results = new List<string>();
+        foreach (var file in Directory.EnumerateFiles(directory, "*", SearchOption.TopDirectoryOnly))
+        {
+            if (!file.EndsWith(suffix, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            if ((File.GetAttributes(file) & FileAttributes.ReparsePoint) != 0)
+            {
+                throw InvalidPath("reparse-point");
+            }
+
+            results.Add(Path.GetRelativePath(rootPath, file).Replace('\\', '/'));
+        }
+
+        results.Sort(StringComparer.Ordinal);
+        return results;
+    }
+
     private string ResolveRegularFile(string repositoryRelativePath)
     {
         if (string.IsNullOrWhiteSpace(repositoryRelativePath) ||
@@ -131,6 +161,47 @@ internal sealed class RepositoryContractContext
         if (!File.Exists(resolved))
         {
             throw InvalidPath("not-file");
+        }
+
+        return resolved;
+    }
+
+    private string ResolveDirectory(string repositoryRelativePath)
+    {
+        if (string.IsNullOrWhiteSpace(repositoryRelativePath) ||
+            repositoryRelativePath.Contains('\\') ||
+            repositoryRelativePath.Contains('\0') ||
+            Path.IsPathRooted(repositoryRelativePath))
+        {
+            throw InvalidPath("format");
+        }
+
+        var segments = repositoryRelativePath.Split('/');
+        if (segments.Any(segment => segment is "" or "." or ".."))
+        {
+            throw InvalidPath("segment");
+        }
+
+        var resolved = Path.GetFullPath(segments.Aggregate(rootPath, Path.Combine));
+        var boundary = rootPath + Path.DirectorySeparatorChar;
+        if (!resolved.StartsWith(boundary, pathComparison))
+        {
+            throw InvalidPath("containment");
+        }
+
+        var cursor = rootPath;
+        foreach (var segment in segments)
+        {
+            cursor = Path.Combine(cursor, segment);
+            if (!Directory.Exists(cursor))
+            {
+                throw InvalidPath("missing");
+            }
+
+            if ((File.GetAttributes(cursor) & FileAttributes.ReparsePoint) != 0)
+            {
+                throw InvalidPath("reparse-point");
+            }
         }
 
         return resolved;
