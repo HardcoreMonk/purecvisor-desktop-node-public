@@ -846,10 +846,10 @@
       "legacy_path": "packaging/windows-desktop-node/installer/tests/PcvDesktopNodeInstaller.WixSource.Tests.ps1",
       "domain": "installer",
       "legacy_contract_count": 10,
-      "parity_status": "unmapped",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-installer-wave-c-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -10479,12 +10479,12 @@
       "legacy_ordinal": 1,
       "legacy_name": "defines a per-machine MSI product with a fixed UpgradeCode",
       "domain": "installer",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Installer/PcvDesktopNodeInstallerWixSourceContractTests.cs",
+      "replacement_contract_id": "pcv.installer.desktop-node-installer-wix-source.001",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-installer-wave-c-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -10496,12 +10496,12 @@
       "legacy_ordinal": 2,
       "legacy_name": "keeps MSI file ownership separate from service configuration actions",
       "domain": "installer",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Installer/PcvDesktopNodeInstallerWixSourceContractTests.cs",
+      "replacement_contract_id": "pcv.installer.desktop-node-installer-wix-source.002",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-installer-wave-c-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -10513,12 +10513,12 @@
       "legacy_ordinal": 3,
       "legacy_name": "maps install repair uninstall and remove-data custom actions without raw token properties",
       "domain": "installer",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Installer/PcvDesktopNodeInstallerWixSourceContractTests.cs",
+      "replacement_contract_id": "pcv.installer.desktop-node-installer-wix-source.003",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-installer-wave-c-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -10530,12 +10530,12 @@
       "legacy_ordinal": 4,
       "legacy_name": "passes the installed payload root as SourceRoot for MSI product actions",
       "domain": "installer",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Installer/PcvDesktopNodeInstallerWixSourceContractTests.cs",
+      "replacement_contract_id": "pcv.installer.desktop-node-installer-wix-source.004",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-installer-wave-c-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -10547,12 +10547,12 @@
       "legacy_ordinal": 5,
       "legacy_name": "runs deferred product actions from the installed payload directory",
       "domain": "installer",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Installer/PcvDesktopNodeInstallerWixSourceContractTests.cs",
+      "replacement_contract_id": "pcv.installer.desktop-node-installer-wix-source.005",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-installer-wave-c-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -10564,12 +10564,12 @@
       "legacy_ordinal": 6,
       "legacy_name": "calculates ProgramData paths without illegal property references",
       "domain": "installer",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Installer/PcvDesktopNodeInstallerWixSourceContractTests.cs",
+      "replacement_contract_id": "pcv.installer.desktop-node-installer-wix-source.006",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-installer-wave-c-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -10581,12 +10581,12 @@
       "legacy_ordinal": 7,
       "legacy_name": "does not pass a quoted trailing-backslash INSTALLFOLDER as ProductRoot",
       "domain": "installer",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Installer/PcvDesktopNodeInstallerWixSourceContractTests.cs",
+      "replacement_contract_id": "pcv.installer.desktop-node-installer-wix-source.007",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-installer-wave-c-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -10598,12 +10598,12 @@
       "legacy_ordinal": 8,
       "legacy_name": "installs only product-owned Desktop Node MSI payload assets",
       "domain": "installer",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Installer/PcvDesktopNodeInstallerWixSourceContractTests.cs",
+      "replacement_contract_id": "pcv.installer.desktop-node-installer-wix-source.008",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-installer-wave-c-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -10615,12 +10615,12 @@
       "legacy_ordinal": 9,
       "legacy_name": "adds the installed Desktop Node folder to the machine PATH for CLI discovery",
       "domain": "installer",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Installer/PcvDesktopNodeInstallerWixSourceContractTests.cs",
+      "replacement_contract_id": "pcv.installer.desktop-node-installer-wix-source.009",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-installer-wave-c-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -10632,12 +10632,12 @@
       "legacy_ordinal": 10,
       "legacy_name": "includes all WiX source files in the project",
       "domain": "installer",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Installer/PcvDesktopNodeInstallerWixSourceContractTests.cs",
+      "replacement_contract_id": "pcv.installer.desktop-node-installer-wix-source.010",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-installer-wave-c-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",

@@ -11,6 +11,10 @@ public sealed class InstallerNegativeParityTests
     private const string BuildModulePath =
         "packaging/windows-desktop-node/installer/PcvDesktopNodeInstaller.Build.psm1";
     private const string ProductWxsPath = "packaging/windows-desktop-node/installer/Product.wxs";
+    private const string ProductActionsWxsPath =
+        "packaging/windows-desktop-node/installer/ProductActions.wxs";
+    private const string WixProjectPath =
+        "packaging/windows-desktop-node/installer/PureCVisorDesktopNode.wixproj";
 
     [Fact]
     public void InternalTrustVerifierRejectsChangedTrustModel()
@@ -128,4 +132,53 @@ public sealed class InstallerNegativeParityTests
             repository.ReadUtf8Text(ProductWxsPath)));
         Assert.Equal("PCV_INSTALLER_BUILD_SOURCE_INVALID|signing-digest", error.Message);
     }
+
+    [Fact]
+    public void WixSourceVerifierRejectsMissingRequiredElement()
+    {
+        var repository = RepositoryContractContext.Find();
+        var product = repository.ReadUtf8Text(ProductWxsPath);
+        const string cliFile = "<File Id=\"DesktopNodeCli\" Source=\"$(var.PayloadRoot)\\pcvcli.exe\" KeyPath=\"yes\" />";
+        var mutated = product.Replace(cliFile, string.Empty, StringComparison.Ordinal);
+        Assert.NotEqual(product, mutated);
+
+        var error = Assert.Throws<InvalidDataException>(() => NewWixVerifier(repository, mutated));
+        Assert.Equal("PCV_INSTALLER_WIX_SOURCE_INVALID|product-file:DesktopNodeCli", error.Message);
+    }
+
+    [Fact]
+    public void WixSourceVerifierRejectsDuplicateElement()
+    {
+        var repository = RepositoryContractContext.Find();
+        var product = repository.ReadUtf8Text(ProductWxsPath);
+        const string cliFile = "<File Id=\"DesktopNodeCli\" Source=\"$(var.PayloadRoot)\\pcvcli.exe\" KeyPath=\"yes\" />";
+        var mutated = product.Replace(cliFile, $"{cliFile}{Environment.NewLine}        {cliFile}", StringComparison.Ordinal);
+        Assert.NotEqual(product, mutated);
+
+        var error = Assert.Throws<InvalidDataException>(() => NewWixVerifier(repository, mutated));
+        Assert.Equal("PCV_INSTALLER_WIX_SOURCE_INVALID|duplicate:product-file:DesktopNodeCli", error.Message);
+    }
+
+    [Fact]
+    public void WixSourceVerifierRejectsWrongNamespace()
+    {
+        var repository = RepositoryContractContext.Find();
+        var product = repository.ReadUtf8Text(ProductWxsPath);
+        var mutated = product.Replace(
+            WixSourceContractVerifier.NamespaceUri,
+            "https://example.invalid/wrong-wix-namespace",
+            StringComparison.Ordinal);
+        Assert.NotEqual(product, mutated);
+
+        var error = Assert.Throws<InvalidDataException>(() => NewWixVerifier(repository, mutated));
+        Assert.Equal("PCV_INSTALLER_WIX_SOURCE_INVALID|namespace:product", error.Message);
+    }
+
+    private static WixSourceContractVerifier NewWixVerifier(
+        RepositoryContractContext repository,
+        string productSource) =>
+        new(
+            productSource,
+            repository.ReadUtf8Text(ProductActionsWxsPath),
+            repository.ReadUtf8Text(WixProjectPath));
 }
