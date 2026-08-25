@@ -23,6 +23,13 @@ public sealed class VerificationProjectContractTests
         Assert.Single(internalsVisibleTo);
         Assert.Equal("DesktopNode.Verification.Tests", internalsVisibleTo[0].Attribute("Include")?.Value);
         Assert.Empty(project.Root?.Elements("ItemGroup").Elements("ProjectReference") ?? []);
+        var productionPackages = project.Root?.Elements("ItemGroup").Elements("PackageReference")
+            .Where(element => element.Attribute("Include") is not null)
+            .ToList() ?? [];
+        var yamlDotNet = Assert.Single(productionPackages);
+        Assert.Equal("YamlDotNet", yamlDotNet.Attribute("Include")?.Value);
+        Assert.Equal("18.1.0", yamlDotNet.Attribute("Version")?.Value);
+        Assert.Equal(2, yamlDotNet.Attributes().Count());
 
         var expectedPackages = new Dictionary<string, string>(StringComparer.Ordinal)
         {

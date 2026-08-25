@@ -22,11 +22,26 @@ internal sealed class ManagedSuiteRunner : IManagedSuiteRunner
 
             if (suite.ManagedHandler == "policy-boundaries")
             {
-                return Task.FromResult(Result(
-                    suite,
-                    SuiteStatus.Missing,
-                    VerificationErrorCodes.ParityUnmapped,
-                    stopwatch));
+                var root = Path.GetFullPath(repositoryRoot);
+                var catalog = new VerificationCatalogLoader(new PhysicalVerificationFileSystem()).Load(
+                    Path.Combine(root, "config", "development-verification-suites.json"),
+                    Path.Combine(root, "config", "development-verification-suites.schema.json"));
+                if (catalog.ActivationState == "plan-only-foundation")
+                {
+                    return Task.FromResult(Result(
+                        suite,
+                        SuiteStatus.Missing,
+                        VerificationErrorCodes.ParityUnmapped,
+                        stopwatch));
+                }
+
+                var workflow = File.ReadAllText(Path.Combine(
+                    root, ".github", "workflows", "development-gates.yml"));
+                var manifest = File.ReadAllText(Path.Combine(
+                    root, "config", "development-verification-migration-manifest.json"));
+                var policy = RequiredCiPolicy.Validate(workflow, catalog);
+                _ = RequiredCiMigrationLedger.Validate(manifest, policy.Mode);
+                return Task.FromResult(Result(suite, SuiteStatus.Passed, null, stopwatch));
             }
 
             return Task.FromResult(Result(
@@ -39,7 +54,7 @@ internal sealed class ManagedSuiteRunner : IManagedSuiteRunner
         {
             throw;
         }
-        catch (CurrentEvidenceException)
+        catch (Exception error) when (error is CurrentEvidenceException or VerificationException)
         {
             return Task.FromResult(Result(
                 suite,
