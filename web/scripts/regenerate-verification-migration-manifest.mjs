@@ -389,15 +389,22 @@ export function buildMigrationManifest({ repoRoot, previousManifest = null } = {
     const children = contracts.filter((row) => row.legacy_path === entry.legacy_path);
     const mapped = children.filter((row) => row.replacement_contract_id !== null).length;
     if (mapped !== 0 && mapped !== children.length) throw fail("replacement=partial-file");
-    const prior = priorFile(previousManifest, entry.legacy_path);
-    const isV2 = previousManifest?.schema_version === 2;
+    if (mapped !== 0) {
+      const first = children[0];
+      const sameState = children.every((row) =>
+        row.parity_status === first.parity_status &&
+        JSON.stringify(row.local_parity) === JSON.stringify(first.local_parity) &&
+        JSON.stringify(row.ci_parity) === JSON.stringify(first.ci_parity));
+      if (!sameState) throw fail("replacement=file-state");
+    }
+    const projection = mapped === 0 ? null : children[0];
     return {
       legacy_path: entry.legacy_path,
       domain: entry.domain,
       legacy_contract_count: entry.legacy_contract_count,
-      parity_status: mapped === 0 ? "unmapped" : isV2 && prior ? prior.parity_status : prior?.parity_status ?? "mapped",
-      local_parity: mapped === 0 ? pending() : preserveParity(prior?.local_parity),
-      ci_parity: mapped === 0 ? pending() : preserveParity(prior?.ci_parity)
+      parity_status: projection?.parity_status ?? "unmapped",
+      local_parity: projection ? preserveParity(projection.local_parity) : pending(),
+      ci_parity: projection ? preserveParity(projection.ci_parity) : pending()
     };
   });
   return {

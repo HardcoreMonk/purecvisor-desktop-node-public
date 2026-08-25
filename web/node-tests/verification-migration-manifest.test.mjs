@@ -74,6 +74,33 @@ test("generator discovers exact legacy and replacement inventories and is byte d
   assert.equal(canonicalManifestJson(generated), fs.readFileSync(manifestPath, "utf8"));
 });
 
+test("generator advances a newly discovered complete v2 file mapping from unmapped to mapped", () => {
+  const prior = clone(published().manifest);
+  const legacyPath = "packaging/windows-desktop-node/installer/tests/PcvDesktopNodeInstaller.InternalTrust.Tests.ps1";
+  const priorEntry = prior.entries.find((row) => row.legacy_path === legacyPath);
+  priorEntry.parity_status = "unmapped";
+  priorEntry.local_parity = { status: "pending", evidence: null };
+  priorEntry.ci_parity = { status: "pending", evidence: null };
+  for (const row of prior.contracts.filter((contract) => contract.legacy_path === legacyPath)) {
+    row.replacement_owner = null;
+    row.replacement_contract_id = null;
+    row.parity_status = "unmapped";
+    row.local_parity = { status: "pending", evidence: null };
+    row.ci_parity = { status: "pending", evidence: null };
+  }
+
+  const generated = buildMigrationManifest({ repoRoot, previousManifest: prior });
+  const entry = generated.entries.find((row) => row.legacy_path === legacyPath);
+  const contracts = generated.contracts.filter((row) => row.legacy_path === legacyPath);
+
+  assert.equal(entry.parity_status, "mapped");
+  assert.deepEqual(entry.local_parity, { status: "pending", evidence: null });
+  assert.deepEqual(entry.ci_parity, { status: "pending", evidence: null });
+  assert.equal(contracts.length, 4);
+  assert.equal(contracts.every((row) => row.parity_status === "mapped"), true);
+  assert.equal(contracts.every((row) => row.local_parity.status === "pending"), true);
+});
+
 test("literal parser ignores comments and here-strings and rejects dynamic or malformed names", () => {
   const source = [
     "# It 'ignored' { }",

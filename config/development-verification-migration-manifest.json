@@ -790,10 +790,10 @@
       "legacy_path": "packaging/windows-desktop-node/installer/tests/PcvDesktopNodeInstaller.InternalTrust.Tests.ps1",
       "domain": "installer",
       "legacy_contract_count": 4,
-      "parity_status": "unmapped",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-installer-wave-c-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -9867,12 +9867,12 @@
       "legacy_ordinal": 1,
       "legacy_name": "exposes a dry-run plan for CurrentUser signing and LocalMachine trust",
       "domain": "installer",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Installer/PcvDesktopNodeInstallerInternalTrustContractTests.cs",
+      "replacement_contract_id": "pcv.installer.desktop-node-installer-internal-trust.001",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-installer-wave-c-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -9884,12 +9884,12 @@
       "legacy_ordinal": 2,
       "legacy_name": "does not require administrator privileges for LocalMachine dry-run planning",
       "domain": "installer",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Installer/PcvDesktopNodeInstallerInternalTrustContractTests.cs",
+      "replacement_contract_id": "pcv.installer.desktop-node-installer-internal-trust.002",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-installer-wave-c-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -9901,12 +9901,12 @@
       "legacy_ordinal": 3,
       "legacy_name": "records only public certificate output paths and build arguments",
       "domain": "installer",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Installer/PcvDesktopNodeInstallerInternalTrustContractTests.cs",
+      "replacement_contract_id": "pcv.installer.desktop-node-installer-internal-trust.003",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-installer-wave-c-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -9918,12 +9918,12 @@
       "legacy_ordinal": 4,
       "legacy_name": "documents dry-run and admin opt-in boundaries for internal RequireSigned release gates",
       "domain": "installer",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Installer/PcvDesktopNodeInstallerInternalTrustContractTests.cs",
+      "replacement_contract_id": "pcv.installer.desktop-node-installer-internal-trust.004",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-installer-wave-c-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",

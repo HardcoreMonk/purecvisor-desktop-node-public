@@ -32,7 +32,7 @@ inventory_contracts_web=50
 
 | Legacy file | Contracts | Replacement owner | Replacement result | Legacy reference result | Local evidence state |
 | --- | ---: | --- | --- | --- | --- |
-| `PcvDesktopNodeInstaller.InternalTrust.Tests.ps1` | 4 | `PcvDesktopNodeInstallerInternalTrustContractTests.cs` | not-run | not-run | pending |
+| `PcvDesktopNodeInstaller.InternalTrust.Tests.ps1` | 4 | `PcvDesktopNodeInstallerInternalTrustContractTests.cs` | 4/4, failed 0, skipped 0, 47 ms | 4/4, failed 0, skipped 0, not-run 0, Pester 2428 ms | mapped / local pass / CI pending |
 | `PcvDesktopNodeInstaller.Lifecycle.Tests.ps1` | 5 | `PcvDesktopNodeInstallerLifecycleContractTests.cs` | not-run | not-run | pending |
 | `PcvDesktopNodeInstaller.Plan.Tests.ps1` | 21 | `PcvDesktopNodeInstallerPlanContractTests.cs` | not-run | not-run | pending |
 | `PcvDesktopNodeInstaller.Signing.Tests.ps1` | 6 | `PcvDesktopNodeInstallerSigningContractTests.cs` | not-run | not-run | pending |
@@ -49,6 +49,25 @@ inventory_contracts_web=50
 | Installer replacement suite | `dotnet test src/DesktopNode.Delivery.Tests/DesktopNode.Delivery.Tests.csproj -c Release --filter Category=Installer --no-restore --nologo` | not-run |
 | Installer legacy reference | Pester 5.7.1 over the six fixed Installer files | not-run |
 | Full solution | `dotnet test src/DesktopNode.sln -c Release --no-restore --nologo` | not-run |
+
+### InternalTrust fixed-file run
+
+The replacement `Category=Installer` run executed four contracts with exit `0`. The Pester 5.7.1
+reference run executed only
+`packaging/windows-desktop-node/installer/tests/PcvDesktopNodeInstaller.InternalTrust.Tests.ps1`
+and reported total `4`, passed `4`, failed `0`, skipped `0`, not run `0`, duration `2428 ms`, and
+exit `0`. The replacement source verifier did not start PowerShell; the reference script's two
+PowerShell child calls both used `-DryRun` and performed no certificate-store or host mutation.
+
+internal_trust_replacement_result=pass
+internal_trust_replacement_total=4
+internal_trust_replacement_failed=0
+internal_trust_replacement_skipped=0
+internal_trust_legacy_result=pass
+internal_trust_legacy_total=4
+internal_trust_legacy_failed=0
+internal_trust_legacy_skipped=0
+internal_trust_legacy_not_run=0
 
 ## Claim boundary
 
