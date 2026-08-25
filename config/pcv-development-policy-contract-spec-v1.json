@@ -1,7 +1,7 @@
 {
   "contract": "pcv-development-policy-contract-spec-v1",
   "legacy_contract_count": 51,
-  "legacy_should_site_count": 356,
+  "legacy_should_site_count": 371,
   "required_literal_count": 652,
   "source_files": [
     {
@@ -91,9 +91,9 @@
     {
       "key": "gate-workflow",
       "path": "packaging/windows-desktop-node/tests/PcvDevelopmentGateWorkflow.Tests.ps1",
-      "sha256": "7c6a9eadc9b11e5ce52da945ba2ea82776d99b9e4724c91221456f958b032752",
+      "sha256": "504082eea3018e970588ecf44f38072ddd50fcdca7c7dfff440de618089104f4",
       "contract_count": 1,
-      "should_site_count": 36
+      "should_site_count": 51
     },
     {
       "key": "verification-policy",

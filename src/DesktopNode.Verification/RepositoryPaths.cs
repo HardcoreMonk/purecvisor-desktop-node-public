@@ -71,19 +71,28 @@ internal static class ArtifactRootPolicy
                 throw Invalid("repository-root");
             }
 
+            var artifacts = Path.Combine(repository, "artifacts");
+            var withinArtifacts = IsStrictDescendant(candidate, artifacts);
+            var withinRepository = IsStrictDescendant(candidate, repository);
+            var withinRunnerTemp = resolvedRunnerTemp is not null &&
+                IsStrictDescendant(candidate, resolvedRunnerTemp);
+
             if (!string.IsNullOrWhiteSpace(userProfile))
             {
                 var profile = Path.GetFullPath(userProfile);
-                if (PathsEqual(candidate, profile) || IsStrictDescendant(candidate, profile))
+                var allowedProfileContainedRunnerTemp = withinRunnerTemp &&
+                    resolvedRunnerTemp is not null &&
+                    !PathsEqual(resolvedRunnerTemp, profile);
+                if (PathsEqual(candidate, profile) ||
+                    (IsStrictDescendant(candidate, profile) &&
+                     !withinArtifacts &&
+                     !allowedProfileContainedRunnerTemp))
                 {
                     throw Invalid("user-profile");
                 }
             }
 
-            var artifacts = Path.Combine(repository, "artifacts");
-            var withinArtifacts = IsStrictDescendant(candidate, artifacts);
-
-            if (IsStrictDescendant(candidate, repository))
+            if (withinRepository)
             {
                 if (!withinArtifacts)
                 {
@@ -92,9 +101,6 @@ internal static class ArtifactRootPolicy
 
                 return candidate;
             }
-
-            var withinRunnerTemp = resolvedRunnerTemp is not null &&
-                IsStrictDescendant(candidate, resolvedRunnerTemp);
 
             if (!withinArtifacts && !withinRunnerTemp)
             {

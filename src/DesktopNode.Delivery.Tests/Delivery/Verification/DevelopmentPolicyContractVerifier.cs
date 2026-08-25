@@ -13,7 +13,7 @@ internal sealed class DevelopmentPolicyContractVerifier
     internal const string SpecPath = "config/pcv-development-policy-contract-spec-v1.json";
 
     private const string ExpectedSpecSha256 =
-        "5ef297a3e63408b7d3b23d1c4cde6cde9d6686ccf11c4a37c75efa11f776ed06";
+        "d164f7b10c01fcf75c4bbeb63a52caa892f89ea4237591c6ebbbe6fd9aa2f411";
 
     private static readonly string[] ExpectedKeys =
     [
@@ -318,7 +318,7 @@ internal sealed class DevelopmentPolicyContractVerifier
     {
         if (spec.Contract != "pcv-development-policy-contract-spec-v1" ||
             spec.LegacyContractCount != 51 ||
-            spec.LegacyShouldSiteCount != 356 ||
+            spec.LegacyShouldSiteCount != 371 ||
             spec.RequiredLiteralCount != 652 ||
             spec.SourceFiles.Count != 17 ||
             spec.LegacyFiles.Count != 8 ||
