@@ -33,7 +33,7 @@ inventory_contracts_web=50
 | Legacy file | Contracts | Replacement owner | Replacement result | Legacy reference result | Local evidence state |
 | --- | ---: | --- | --- | --- | --- |
 | `PcvDesktopNodeInstaller.InternalTrust.Tests.ps1` | 4 | `PcvDesktopNodeInstallerInternalTrustContractTests.cs` | 4/4, failed 0, skipped 0, 47 ms | 4/4, failed 0, skipped 0, not-run 0, Pester 2428 ms | mapped / local pass / CI pending |
-| `PcvDesktopNodeInstaller.Lifecycle.Tests.ps1` | 5 | `PcvDesktopNodeInstallerLifecycleContractTests.cs` | not-run | not-run | pending |
+| `PcvDesktopNodeInstaller.Lifecycle.Tests.ps1` | 5 | `PcvDesktopNodeInstallerLifecycleContractTests.cs` | 5/5, failed 0, skipped 0, 49 ms | 5/5, failed 0, skipped 0, not-run 0, Pester 1100 ms | mapped / local pass / CI pending |
 | `PcvDesktopNodeInstaller.Plan.Tests.ps1` | 21 | `PcvDesktopNodeInstallerPlanContractTests.cs` | not-run | not-run | pending |
 | `PcvDesktopNodeInstaller.Signing.Tests.ps1` | 6 | `PcvDesktopNodeInstallerSigningContractTests.cs` | not-run | not-run | pending |
 | `PcvDesktopNodeInstaller.WixSource.Tests.ps1` | 10 | `PcvDesktopNodeInstallerWixSourceContractTests.cs` | not-run | not-run | pending |
@@ -68,6 +68,25 @@ internal_trust_legacy_total=4
 internal_trust_legacy_failed=0
 internal_trust_legacy_skipped=0
 internal_trust_legacy_not_run=0
+
+### Lifecycle fixed-file run
+
+The replacement fixture executed five contracts with exit `0`. Its two negative fixtures rejected
+a missing Restart Manager suppression marker and an unconditional Repair-3010 success marker. The
+Pester 5.7.1 reference run executed only
+`packaging/windows-desktop-node/installer/tests/PcvDesktopNodeInstaller.Lifecycle.Tests.ps1`
+and reported total `5`, passed `5`, failed `0`, skipped `0`, not run `0`, duration `1100 ms`, and
+exit `0`. Both paths created only disposable test files; neither invoked MSI nor mutated the host.
+
+lifecycle_replacement_result=pass
+lifecycle_replacement_total=5
+lifecycle_replacement_failed=0
+lifecycle_replacement_skipped=0
+lifecycle_legacy_result=pass
+lifecycle_legacy_total=5
+lifecycle_legacy_failed=0
+lifecycle_legacy_skipped=0
+lifecycle_legacy_not_run=0
 
 ## Claim boundary
 

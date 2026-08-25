@@ -804,10 +804,10 @@
       "legacy_path": "packaging/windows-desktop-node/installer/tests/PcvDesktopNodeInstaller.Lifecycle.Tests.ps1",
       "domain": "installer",
       "legacy_contract_count": 5,
-      "parity_status": "unmapped",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-installer-wave-c-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -9935,12 +9935,12 @@
       "legacy_ordinal": 1,
       "legacy_name": "plans repair through explicit reinstall properties instead of /fa force-all shorthand",
       "domain": "installer",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Installer/PcvDesktopNodeInstallerLifecycleContractTests.cs",
+      "replacement_contract_id": "pcv.installer.desktop-node-installer-lifecycle.001",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-installer-wave-c-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -9952,12 +9952,12 @@
       "legacy_ordinal": 2,
       "legacy_name": "suppresses reboot and Restart Manager actions for every mutating MSI step",
       "domain": "installer",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Installer/PcvDesktopNodeInstallerLifecycleContractTests.cs",
+      "replacement_contract_id": "pcv.installer.desktop-node-installer-lifecycle.002",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-installer-wave-c-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -9969,12 +9969,12 @@
       "legacy_ordinal": 3,
       "legacy_name": "classifies repair 3010 as success only after preservation assertions pass",
       "domain": "installer",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Installer/PcvDesktopNodeInstallerLifecycleContractTests.cs",
+      "replacement_contract_id": "pcv.installer.desktop-node-installer-lifecycle.003",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-installer-wave-c-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -9986,12 +9986,12 @@
       "legacy_ordinal": 4,
       "legacy_name": "keeps repair 3010 out of unconditional success exit codes",
       "domain": "installer",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Installer/PcvDesktopNodeInstallerLifecycleContractTests.cs",
+      "replacement_contract_id": "pcv.installer.desktop-node-installer-lifecycle.004",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-installer-wave-c-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -10003,12 +10003,12 @@
       "legacy_ordinal": 5,
       "legacy_name": "classifies 1641 as reboot-initiated failure for every lifecycle phase",
       "domain": "installer",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Installer/PcvDesktopNodeInstallerLifecycleContractTests.cs",
+      "replacement_contract_id": "pcv.installer.desktop-node-installer-lifecycle.005",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-installer-wave-c-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
