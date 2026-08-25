@@ -2,8 +2,8 @@
 
 evidence_id: `public-authority-bootstrap-2026-08-25`
 contract: `purecvisor-desktop-node-public-authority-bootstrap-v1`
-result: `PUBLIC_BASELINE_PROTECTION_PASS`
-phase: `protected-public-root-cutover-branch`
+result: `PUBLIC_BASELINE_DRAFT_PR_PASS`
+phase: `draft-cutover-pr-open`
 operational_version: `0.42.74-admin-smoke`
 source_commit: `[private-source-commit]`
 source_history_exported: `false`
@@ -16,7 +16,7 @@ visibility_mutation_performed: `true`
 private_vulnerability_reporting_enabled: `true`
 branch_protection_installed: `true`
 cutover_branch_pushed: `true`
-cutover_pull_request: `pending`
+cutover_pull_request: `https://github.com/HardcoreMonk/purecvisor-desktop-node-public/pull/1`
 host_mutation_performed: `false`
 package_candidate_created: `false`
 public_trusted_signing: `false`
@@ -142,10 +142,14 @@ policy categories, CLI/boundary/symlink behavior, binary/media classification, d
 synthetic schema identifiers, and required authority documents. The final focused suite is `20/20 PASS`;
 raw candidate values and scanner matches are intentionally not stored in this repository.
 
-## Pending cutover fields
+## Draft cutover pull request
 
-`codex/pester-free-verification-cutover` exists on the public authority from the protected root. Its draft
-pull-request identity, Wave C/D replacement implementation, same-SHA legacy/replacement shadow, atomic Wave E
-required-check transition, merge SHA, and post-merge CI/evidence remain pending. Current required CI is still
-the four legacy Development Gates identities listed above; this evidence does not claim the Pester-free
-cutover has occurred.
+Draft PR [#1](https://github.com/HardcoreMonk/purecvisor-desktop-node-public/pull/1) targets `main` from
+`codex/pester-free-verification-cutover`. Provider readback at creation returned state `OPEN`, draft `true`,
+base `main`, head branch exact, and creation head
+`b6bd92cfb4c2377f0a9fae9edaaccd482d09566c`. The PR links the Wave C/D/E plans and explicitly states that
+the current required identities still execute the legacy gates.
+
+Wave C/D replacement implementation, same-SHA legacy/replacement shadow, atomic Wave E required-check
+transition, merge SHA, and post-merge CI/evidence remain pending. This evidence does not claim the
+Pester-free cutover has occurred.
