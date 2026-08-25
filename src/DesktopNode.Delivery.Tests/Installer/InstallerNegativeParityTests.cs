@@ -181,4 +181,30 @@ public sealed class InstallerNegativeParityTests
             productSource,
             repository.ReadUtf8Text(ProductActionsWxsPath),
             repository.ReadUtf8Text(WixProjectPath));
+
+    [Fact]
+    public void WrapperVerifierRejectsExitCodeCollapse()
+    {
+        var source = RepositoryContractContext.Find().ReadUtf8Text(BuildScriptPath);
+        var mutated = source.Replace(
+            "$exitCode = [int]$payload.exit_code",
+            "$exitCode = 1",
+            StringComparison.Ordinal);
+        Assert.NotEqual(source, mutated);
+
+        var error = Assert.Throws<InvalidDataException>(() =>
+            InstallerWrapperContractVerifier.Inspect(mutated));
+        Assert.Equal("PCV_INSTALLER_WRAPPER_SOURCE_INVALID|exit-propagation", error.Message);
+    }
+
+    [Fact]
+    public void WrapperVerifierRejectsElevationRequest()
+    {
+        var source = RepositoryContractContext.Find().ReadUtf8Text(BuildScriptPath);
+        var mutated = $"#requires -RunAsAdministrator{Environment.NewLine}{source}";
+
+        var error = Assert.Throws<InvalidDataException>(() =>
+            InstallerWrapperContractVerifier.Inspect(mutated));
+        Assert.Equal("PCV_INSTALLER_WRAPPER_SOURCE_INVALID|elevation", error.Message);
+    }
 }

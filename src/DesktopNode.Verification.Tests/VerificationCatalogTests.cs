@@ -44,7 +44,7 @@ public sealed class VerificationCatalogTests
                 ["run", "verify:parity", "--prefix", "web"], null, 600),
             ("delivery-contracts", "csharp", "wave-d-pending", "process", "dotnet",
                 ["test", "src/DesktopNode.Delivery.Tests/DesktopNode.Delivery.Tests.csproj", "-c", "Release", "--filter", "Category=Delivery", "--nologo"], null, 900),
-            ("installer-contracts", "csharp", "wave-c-pending", "process", "dotnet",
+            ("installer-contracts", "csharp", "mapped", "process", "dotnet",
                 ["test", "src/DesktopNode.Delivery.Tests/DesktopNode.Delivery.Tests.csproj", "-c", "Release", "--filter", "Category=Installer", "--nologo"], null, 900),
             ("evidence-check", "csharp", "wave-d-pending", "managed", null,
                 [], "current-evidence-check", 300),

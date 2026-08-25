@@ -860,10 +860,10 @@
       "legacy_path": "packaging/windows-desktop-node/installer/tests/PcvDesktopNodeInstaller.Wrapper.Tests.ps1",
       "domain": "installer",
       "legacy_contract_count": 3,
-      "parity_status": "unmapped",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-installer-wave-c-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -10649,12 +10649,12 @@
       "legacy_ordinal": 1,
       "legacy_name": "returns JSON and exit zero for an unsigned dry run",
       "domain": "installer",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Installer/PcvDesktopNodeInstallerWrapperContractTests.cs",
+      "replacement_contract_id": "pcv.installer.desktop-node-installer-wrapper.001",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-installer-wave-c-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -10666,12 +10666,12 @@
       "legacy_ordinal": 2,
       "legacy_name": "returns structured JSON for a missing service host",
       "domain": "installer",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Installer/PcvDesktopNodeInstallerWrapperContractTests.cs",
+      "replacement_contract_id": "pcv.installer.desktop-node-installer-wrapper.002",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-installer-wave-c-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -10683,12 +10683,12 @@
       "legacy_ordinal": 3,
       "legacy_name": "preserves signing failure exit code while redacting the certificate thumbprint",
       "domain": "installer",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Installer/PcvDesktopNodeInstallerWrapperContractTests.cs",
+      "replacement_contract_id": "pcv.installer.desktop-node-installer-wrapper.003",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-installer-wave-c-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",

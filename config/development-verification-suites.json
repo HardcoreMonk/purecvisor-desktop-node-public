@@ -86,7 +86,7 @@
     {
       "id": "installer-contracts",
       "owner": "csharp",
-      "migration_state": "wave-c-pending",
+      "migration_state": "mapped",
       "timeout_seconds": 900,
       "executor": {
         "kind": "process",

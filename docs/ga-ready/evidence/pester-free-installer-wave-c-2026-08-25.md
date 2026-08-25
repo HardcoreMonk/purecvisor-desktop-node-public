@@ -37,7 +37,7 @@ inventory_contracts_web=50
 | `PcvDesktopNodeInstaller.Plan.Tests.ps1` | 21 | `PcvDesktopNodeInstallerPlanContractTests.cs` | 21/21, failed 0, skipped 0, 687 ms | 21/21, failed 0, skipped 0, not-run 0, Pester 5734 ms | mapped / local pass / CI pending |
 | `PcvDesktopNodeInstaller.Signing.Tests.ps1` | 6 | `PcvDesktopNodeInstallerSigningContractTests.cs` | 6/6, failed 0, skipped 0, 181 ms | 6/6, failed 0, skipped 0, not-run 0, Pester 2418 ms | mapped / local pass / CI pending |
 | `PcvDesktopNodeInstaller.WixSource.Tests.ps1` | 10 | `PcvDesktopNodeInstallerWixSourceContractTests.cs` | 10/10, failed 0, skipped 0, 76 ms | 10/10, failed 0, skipped 0, not-run 0, Pester 1198 ms | mapped / local pass / CI pending |
-| `PcvDesktopNodeInstaller.Wrapper.Tests.ps1` | 3 | `PcvDesktopNodeInstallerWrapperContractTests.cs` | not-run | not-run | pending |
+| `PcvDesktopNodeInstaller.Wrapper.Tests.ps1` | 3 | `PcvDesktopNodeInstallerWrapperContractTests.cs` | 3/3, failed 0, skipped 0, 106 ms | 3/3, failed 0, skipped 0, not-run 0, Pester 4157 ms | mapped / local pass / CI pending |
 
 ## Verification commands
 
@@ -152,6 +152,28 @@ wix_source_legacy_total=10
 wix_source_legacy_failed=0
 wix_source_legacy_skipped=0
 wix_source_legacy_not_run=0
+
+### Wrapper fixed-file run
+
+The replacement fixture executed three contracts with exit `0`. The exit-code-collapse and
+administrator-elevation negative fixtures were both rejected. The Pester 5.7.1 reference run
+executed only
+`packaging/windows-desktop-node/installer/tests/PcvDesktopNodeInstaller.Wrapper.Tests.ps1`
+and reported total `3`, passed `3`, failed `0`, skipped `0`, not run `0`, duration `4157 ms`, and
+exit `0`. The replacement path validated source and projected independent argument-array values;
+it did not start PowerShell, request elevation, build an MSI, mutate a service, or operate a VM.
+
+wrapper_replacement_result=pass
+wrapper_replacement_total=3
+wrapper_replacement_failed=0
+wrapper_replacement_skipped=0
+wrapper_negative_total=2
+wrapper_negative_failed=0
+wrapper_legacy_result=pass
+wrapper_legacy_total=3
+wrapper_legacy_failed=0
+wrapper_legacy_skipped=0
+wrapper_legacy_not_run=0
 
 ## Claim boundary
 

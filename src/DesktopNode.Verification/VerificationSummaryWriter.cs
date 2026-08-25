@@ -39,7 +39,7 @@ internal static class VerificationSummaryFactory
         new(["csharp", "node"], StringComparer.Ordinal);
 
     private static readonly HashSet<string> AllowedMigrationStates = new(
-        ["native-existing", "wave-a-foundation", "wave-b-pending", "wave-c-pending", "wave-d-pending"],
+        ["native-existing", "wave-a-foundation", "wave-b-pending", "wave-c-pending", "mapped", "wave-d-pending"],
         StringComparer.Ordinal);
 
     private static readonly HashSet<string> AllowedManagedHandlers =

@@ -42,7 +42,7 @@ internal sealed class VerificationCatalogLoader(IVerificationFileSystem fileSyst
     private static readonly string[] ExpectedShardIds = ["dotnet", "web", "delivery", "installer-policy"];
     private static readonly string[] AllowedOwners = ["csharp", "node"];
     private static readonly string[] AllowedMigrationStates =
-        ["native-existing", "wave-a-foundation", "wave-b-pending", "wave-c-pending", "wave-d-pending"];
+        ["native-existing", "wave-a-foundation", "wave-b-pending", "wave-c-pending", "mapped", "wave-d-pending"];
     private static readonly string[] AllowedManagedHandlers = ["current-evidence-check", "policy-boundaries"];
     private static readonly string[] PowerShellTokens = ["pwsh", "powershell", "Invoke-Pester"];
     private static readonly string[] ForbiddenCommandTokens =
