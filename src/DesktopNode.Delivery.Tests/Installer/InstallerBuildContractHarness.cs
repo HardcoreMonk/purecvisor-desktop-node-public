@@ -23,6 +23,9 @@ internal sealed record InstallerBuildInput(string Version, string OutputRoot)
     internal int WixExitCode { get; init; }
     internal string WixStdout { get; init; } = string.Empty;
     internal string WixStderr { get; init; } = string.Empty;
+    internal int SignToolExitCode { get; init; }
+    internal string SignToolStdout { get; init; } = string.Empty;
+    internal string SignToolStderr { get; init; } = string.Empty;
 }
 
 internal sealed record InstallerPublicationProjection(
@@ -51,6 +54,9 @@ internal sealed record InstallerBuildPlanProjection(
     IReadOnlyList<string> WixSourceFiles,
     string SigningMode,
     string SigningTrustModel,
+    bool HasSignTool,
+    bool HasCertificate,
+    bool HasTimestamp,
     string ServiceHostSource,
     string? ServiceHostPath,
     string? ServiceHostSha256,
@@ -79,7 +85,9 @@ internal sealed record InstallerBuildProvenanceProjection(
     string CliSource,
     string CliPath,
     string CliSha256,
+    string SigningMode,
     string SigningTrustModel,
+    bool MsiSigned,
     InstallerPublicationProjection Publication,
     bool HasTuiProperty);
 
@@ -100,6 +108,7 @@ internal sealed record InstallerBuildResultProjection(
     InstallerBuildProvenanceProjection? Provenance,
     InstallerPublicationDescriptorProjection? PublicationDescriptor,
     InstallerToolOutputProjection? WixOutput,
+    InstallerToolOutputProjection? SignToolOutput,
     IReadOnlyList<string> WixArguments,
     bool DotnetPublishRequired);
 
@@ -156,6 +165,14 @@ internal sealed partial class InstallerBuildContractHarness
 
         if (signingMode == "RequireSigned")
         {
+            if (!string.IsNullOrWhiteSpace(input.SignToolPath) && !File.Exists(input.SignToolPath))
+            {
+                return Failure(
+                    1,
+                    "PCV_INSTALLER_SIGNTOOL_NOT_FOUND",
+                    $"SignTool was not found: {input.SignToolPath}");
+            }
+
             var hasCertificate = !string.IsNullOrWhiteSpace(input.CertificateThumbprint) ||
                 !string.IsNullOrWhiteSpace(input.CertificatePath);
             if (string.IsNullOrWhiteSpace(input.SignToolPath) ||
@@ -260,6 +277,9 @@ internal sealed partial class InstallerBuildContractHarness
             wixSources,
             signingMode,
             trustModel,
+            !string.IsNullOrWhiteSpace(input.SignToolPath),
+            !string.IsNullOrWhiteSpace(input.CertificateThumbprint) || !string.IsNullOrWhiteSpace(input.CertificatePath),
+            !string.IsNullOrWhiteSpace(input.TimestampUrl),
             hostSource,
             hostPath,
             hostHash,
@@ -270,7 +290,7 @@ internal sealed partial class InstallerBuildContractHarness
 
         if (input.DryRun)
         {
-            return Success(plan, null, null, null, [], false);
+            return Success(plan, null, null, null, null, [], false);
         }
 
         Directory.CreateDirectory(outputRoot);
@@ -344,11 +364,53 @@ internal sealed partial class InstallerBuildContractHarness
                 "PCV_INSTALLER_WIX_BUILD_FAILED",
                 "WiX build failed.",
                 wixOutput,
+                null,
                 wixArguments,
                 dotnetRequired);
         }
 
         File.WriteAllText(msiPath, "fake-msi", new UTF8Encoding(false));
+        InstallerToolOutputProjection? signToolOutput = null;
+        if (signingMode == "RequireSigned")
+        {
+            var signArguments = new List<string>
+            {
+                "sign", "/fd", "SHA256", "/tr", input.TimestampUrl!, "/td", "SHA256",
+            };
+            if (!string.IsNullOrWhiteSpace(input.CertificateThumbprint))
+            {
+                signArguments.AddRange(["/sha1", input.CertificateThumbprint]);
+            }
+            else
+            {
+                signArguments.AddRange(["/f", input.CertificatePath!]);
+            }
+            signArguments.Add(msiPath);
+            var secrets = new[] { input.CertificateThumbprint, input.CertificatePath }
+                .Where(value => !string.IsNullOrWhiteSpace(value))
+                .Cast<string>()
+                .ToArray();
+            var redactedArguments = signArguments
+                .Select(argument => Redact(argument, secrets))
+                .ToArray();
+            signToolOutput = new InstallerToolOutputProjection(
+                input.SignToolExitCode,
+                Redact(input.SignToolStdout, secrets),
+                Redact(input.SignToolStderr, secrets),
+                redactedArguments);
+            if (input.SignToolExitCode != 0)
+            {
+                return Failure(
+                    input.SignToolExitCode,
+                    "PCV_INSTALLER_SIGNING_FAILED",
+                    "MSI signing failed.",
+                    wixOutput,
+                    signToolOutput,
+                    wixArguments,
+                    dotnetRequired);
+            }
+        }
+
         var msiHash = Sha256(msiPath);
         var payloadCount = Directory.EnumerateFiles(payloadRoot, "*", SearchOption.AllDirectories).Count();
         var provenance = new InstallerBuildProvenanceProjection(
@@ -363,7 +425,9 @@ internal sealed partial class InstallerBuildContractHarness
             cliSource,
             cliPath,
             cliHash!,
+            signingMode,
             trustModel,
+            signingMode == "RequireSigned",
             publication,
             false);
         var descriptor = new InstallerPublicationDescriptorProjection(
@@ -385,7 +449,7 @@ internal sealed partial class InstallerBuildContractHarness
             CliPath = cliPath,
             CliSha256 = cliHash,
         };
-        return Success(finalPlan, provenance, descriptor, wixOutput, wixArguments, dotnetRequired);
+        return Success(finalPlan, provenance, descriptor, wixOutput, signToolOutput, wixArguments, dotnetRequired);
     }
 
     internal static void EnsurePayloadRootContained(string outputRoot, string payloadRoot)
@@ -479,6 +543,7 @@ internal sealed partial class InstallerBuildContractHarness
         InstallerBuildProvenanceProjection? provenance,
         InstallerPublicationDescriptorProjection? descriptor,
         InstallerToolOutputProjection? wixOutput,
+        InstallerToolOutputProjection? signToolOutput,
         IReadOnlyList<string> wixArguments,
         bool dotnetRequired)
     {
@@ -496,6 +561,7 @@ internal sealed partial class InstallerBuildContractHarness
             provenance,
             descriptor,
             wixOutput,
+            signToolOutput,
             wixArguments,
             dotnetRequired);
     }
@@ -505,6 +571,7 @@ internal sealed partial class InstallerBuildContractHarness
         string code,
         string message,
         InstallerToolOutputProjection? wixOutput = null,
+        InstallerToolOutputProjection? signToolOutput = null,
         IReadOnlyList<string>? wixArguments = null,
         bool dotnetRequired = false)
     {
@@ -526,6 +593,20 @@ internal sealed partial class InstallerBuildContractHarness
                 },
             };
         }
+        if (signToolOutput is not null)
+        {
+            var tools = payload.TryGetValue("tool_output", out var existing)
+                ? Assert.IsType<Dictionary<string, object?>>(existing)
+                : new Dictionary<string, object?>();
+            tools["signtool"] = new Dictionary<string, object?>
+            {
+                ["exit_code"] = signToolOutput.ExitCode,
+                ["stdout"] = signToolOutput.Stdout,
+                ["stderr"] = signToolOutput.Stderr,
+                ["arguments"] = signToolOutput.Arguments,
+            };
+            payload["tool_output"] = tools;
+        }
         return new InstallerBuildResultProjection(
             false,
             exitCode,
@@ -535,6 +616,7 @@ internal sealed partial class InstallerBuildContractHarness
             null,
             null,
             wixOutput,
+            signToolOutput,
             wixArguments ?? [],
             dotnetRequired);
     }
@@ -545,10 +627,11 @@ internal sealed partial class InstallerBuildContractHarness
             ["schema_version"] = "1",
             ["product"] = new JsonObject { ["release_channel"] = value.ReleaseChannel },
             ["git_commit"] = value.GitCommit,
-            ["msi"] = new JsonObject { ["path"] = value.MsiPath, ["sha256"] = value.MsiSha256 },
+            ["msi"] = new JsonObject { ["path"] = value.MsiPath, ["sha256"] = value.MsiSha256, ["signed"] = value.MsiSigned },
             ["payload"] = new JsonObject { ["file_count"] = value.PayloadFileCount },
             ["service_host"] = new JsonObject { ["source"] = value.ServiceHostSource, ["source_path"] = value.ServiceHostPath, ["sha256"] = value.ServiceHostSha256 },
             ["cli"] = new JsonObject { ["source"] = value.CliSource, ["source_path"] = value.CliPath, ["sha256"] = value.CliSha256 },
+            ["signing_mode"] = value.SigningMode,
             ["signing_trust_model"] = value.SigningTrustModel,
             ["publication"] = PublicationJson(value.Publication),
         }.ToJsonString(new JsonSerializerOptions { WriteIndented = true });
@@ -582,6 +665,15 @@ internal sealed partial class InstallerBuildContractHarness
 
     private static string Sha256(string path) =>
         Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(path))).ToLowerInvariant();
+
+    private static string Redact(string value, IReadOnlyList<string> secrets)
+    {
+        foreach (var secret in secrets)
+        {
+            value = value.Replace(secret, "[redacted]", StringComparison.Ordinal);
+        }
+        return value;
+    }
 
     private static string ReadGitCommit(string root)
     {
@@ -678,6 +770,8 @@ internal static partial class InstallerBuildSourcePolicy
             ("\"-p:FileVersion=$dotnetPublishFileVersion\"", "publish-file-version"),
             ("\"-p:InformationalVersion=$Version\"", "publish-informational-version"),
             ("PCV_INSTALLER_SIGNING_REQUIRED", "signing-error"),
+            ("PCV_INSTALLER_SIGNTOOL_NOT_FOUND", "signtool-not-found-error"),
+            ("PCV_INSTALLER_SIGNING_FAILED", "signing-failed-error"),
             ("PCV_INSTALLER_SERVICE_HOST_NOT_FOUND", "host-error"),
             ("PCV_INSTALLER_CLI_NOT_FOUND", "cli-error"),
             ("PCV_INSTALLER_RELEASE_SIGNING_REQUIRED", "release-signing-error"),
@@ -699,6 +793,8 @@ internal static partial class InstallerBuildSourcePolicy
             ("git_commit=Get-PcvGitCommit-RepositoryRoot$repoRoot", "git-provenance"),
             ("\"$msiHash$(Split-Path-Leaf$msiPath)\"|Set-Content-LiteralPath$msiSha256Path-EncodingASCII", "hash-sidecar"),
             ("$publicationDescriptor|ConvertTo-Json-Depth8|Set-Content-LiteralPath$publicationPath-EncodingUTF8", "publication-sidecar"),
+            ("$signArgs=@('sign','/fd','SHA256','/tr',$TimestampUrl,'/td','SHA256')", "signing-digest"),
+            ("$signRedactions=@($CertificateThumbprint,$CertificatePath)", "signing-redaction"),
         })
         {
             if (!canonical.Contains(Canonical(expected), StringComparison.Ordinal))

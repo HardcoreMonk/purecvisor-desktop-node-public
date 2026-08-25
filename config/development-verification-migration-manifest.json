@@ -832,10 +832,10 @@
       "legacy_path": "packaging/windows-desktop-node/installer/tests/PcvDesktopNodeInstaller.Signing.Tests.ps1",
       "domain": "installer",
       "legacy_contract_count": 6,
-      "parity_status": "unmapped",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-installer-wave-c-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -10377,12 +10377,12 @@
       "legacy_ordinal": 1,
       "legacy_name": "defines required provenance fields",
       "domain": "installer",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Installer/PcvDesktopNodeInstallerSigningContractTests.cs",
+      "replacement_contract_id": "pcv.installer.desktop-node-installer-signing.001",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-installer-wave-c-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -10394,12 +10394,12 @@
       "legacy_ordinal": 2,
       "legacy_name": "accepts release signing input without writing certificate secrets into dry-run output",
       "domain": "installer",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Installer/PcvDesktopNodeInstallerSigningContractTests.cs",
+      "replacement_contract_id": "pcv.installer.desktop-node-installer-signing.002",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-installer-wave-c-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -10411,12 +10411,12 @@
       "legacy_ordinal": 3,
       "legacy_name": "records InternalEnterprise provenance without writing certificate secrets",
       "domain": "installer",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Installer/PcvDesktopNodeInstallerSigningContractTests.cs",
+      "replacement_contract_id": "pcv.installer.desktop-node-installer-signing.003",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-installer-wave-c-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -10428,12 +10428,12 @@
       "legacy_ordinal": 4,
       "legacy_name": "requires an explicit trust model for signed release builds",
       "domain": "installer",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Installer/PcvDesktopNodeInstallerSigningContractTests.cs",
+      "replacement_contract_id": "pcv.installer.desktop-node-installer-signing.004",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-installer-wave-c-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -10445,12 +10445,12 @@
       "legacy_ordinal": 5,
       "legacy_name": "returns structured JSON when release SignTool input is missing",
       "domain": "installer",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Installer/PcvDesktopNodeInstallerSigningContractTests.cs",
+      "replacement_contract_id": "pcv.installer.desktop-node-installer-signing.005",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-installer-wave-c-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -10462,12 +10462,12 @@
       "legacy_ordinal": 6,
       "legacy_name": "returns parseable JSON with captured SignTool output when signing fails",
       "domain": "installer",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Installer/PcvDesktopNodeInstallerSigningContractTests.cs",
+      "replacement_contract_id": "pcv.installer.desktop-node-installer-signing.006",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-installer-wave-c-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",

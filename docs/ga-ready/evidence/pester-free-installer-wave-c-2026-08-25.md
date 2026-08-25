@@ -35,7 +35,7 @@ inventory_contracts_web=50
 | `PcvDesktopNodeInstaller.InternalTrust.Tests.ps1` | 4 | `PcvDesktopNodeInstallerInternalTrustContractTests.cs` | 4/4, failed 0, skipped 0, 47 ms | 4/4, failed 0, skipped 0, not-run 0, Pester 2428 ms | mapped / local pass / CI pending |
 | `PcvDesktopNodeInstaller.Lifecycle.Tests.ps1` | 5 | `PcvDesktopNodeInstallerLifecycleContractTests.cs` | 5/5, failed 0, skipped 0, 49 ms | 5/5, failed 0, skipped 0, not-run 0, Pester 1100 ms | mapped / local pass / CI pending |
 | `PcvDesktopNodeInstaller.Plan.Tests.ps1` | 21 | `PcvDesktopNodeInstallerPlanContractTests.cs` | 21/21, failed 0, skipped 0, 687 ms | 21/21, failed 0, skipped 0, not-run 0, Pester 5734 ms | mapped / local pass / CI pending |
-| `PcvDesktopNodeInstaller.Signing.Tests.ps1` | 6 | `PcvDesktopNodeInstallerSigningContractTests.cs` | not-run | not-run | pending |
+| `PcvDesktopNodeInstaller.Signing.Tests.ps1` | 6 | `PcvDesktopNodeInstallerSigningContractTests.cs` | 6/6, failed 0, skipped 0, 181 ms | 6/6, failed 0, skipped 0, not-run 0, Pester 2418 ms | mapped / local pass / CI pending |
 | `PcvDesktopNodeInstaller.WixSource.Tests.ps1` | 10 | `PcvDesktopNodeInstallerWixSourceContractTests.cs` | not-run | not-run | pending |
 | `PcvDesktopNodeInstaller.Wrapper.Tests.ps1` | 3 | `PcvDesktopNodeInstallerWrapperContractTests.cs` | not-run | not-run | pending |
 
@@ -109,6 +109,27 @@ plan_legacy_total=21
 plan_legacy_failed=0
 plan_legacy_skipped=0
 plan_legacy_not_run=0
+
+### Signing fixed-file run
+
+The replacement fixture executed six contracts with exit `0`, and the SHA-256 downgrade negative
+fixture was rejected. The Pester 5.7.1 reference run executed only
+`packaging/windows-desktop-node/installer/tests/PcvDesktopNodeInstaller.Signing.Tests.ps1`
+and reported total `6`, passed `6`, failed `0`, skipped `0`, not run `0`, duration `2418 ms`, and
+exit `0`. Certificate material was synthetic, secret values were redacted, and no certificate
+store, real SignTool, administrator, service, MSI lifecycle, or VM operation was used.
+
+signing_replacement_result=pass
+signing_replacement_total=6
+signing_replacement_failed=0
+signing_replacement_skipped=0
+signing_negative_total=1
+signing_negative_failed=0
+signing_legacy_result=pass
+signing_legacy_total=6
+signing_legacy_failed=0
+signing_legacy_skipped=0
+signing_legacy_not_run=0
 
 ## Claim boundary
 

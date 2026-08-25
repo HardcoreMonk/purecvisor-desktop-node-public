@@ -110,4 +110,22 @@ public sealed class InstallerNegativeParityTests
             InstallerBuildContractHarness.EnsurePayloadRootContained(root, escaping));
         Assert.Equal("PCV_INSTALLER_PLAN_INVALID|payload-root", error.Message);
     }
+
+    [Fact]
+    public void SigningVerifierRejectsDigestDowngrade()
+    {
+        var repository = RepositoryContractContext.Find();
+        var module = repository.ReadUtf8Text(BuildModulePath);
+        var mutated = module.Replace(
+            "@('sign', '/fd', 'SHA256', '/tr', $TimestampUrl, '/td', 'SHA256')",
+            "@('sign', '/fd', 'SHA1', '/tr', $TimestampUrl, '/td', 'SHA1')",
+            StringComparison.Ordinal);
+        Assert.NotEqual(module, mutated);
+
+        var error = Assert.Throws<InvalidDataException>(() => InstallerBuildSourcePolicy.Validate(
+            repository.ReadUtf8Text(BuildScriptPath),
+            mutated,
+            repository.ReadUtf8Text(ProductWxsPath)));
+        Assert.Equal("PCV_INSTALLER_BUILD_SOURCE_INVALID|signing-digest", error.Message);
+    }
 }
