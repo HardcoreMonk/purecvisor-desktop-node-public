@@ -7,7 +7,8 @@ internal sealed record RequiredCiMigrationLedgerResult(
     int ContractCount,
     int LocalPassCount,
     int CiPassCount,
-    int CiPendingCount);
+    int CiPendingCount,
+    string? ShadowSha);
 
 internal static class RequiredCiMigrationLedger
 {
@@ -38,6 +39,7 @@ internal static class RequiredCiMigrationLedger
 
             var entries = RequiredArray(root, "entries", 62);
             var contracts = RequiredArray(root, "contracts", 627);
+            var locator = ValidateCutoverLocator(root, mode);
             var expectedParity = mode == RequiredCiMode.Shadow ? "mapped" : "cutover";
             var expectedCi = mode == RequiredCiMode.Shadow ? "pending" : "pass";
             ValidateRows(entries, expectedParity, expectedCi, mode, countContracts: false);
@@ -48,8 +50,49 @@ internal static class RequiredCiMigrationLedger
                 contracts.GetArrayLength(),
                 counts.LocalPass,
                 counts.CiPass,
-                counts.CiPending);
+                counts.CiPending,
+                locator);
         }
+    }
+
+    private static string? ValidateCutoverLocator(JsonElement root, RequiredCiMode mode)
+    {
+        if (mode == RequiredCiMode.Shadow)
+        {
+            if (root.TryGetProperty("cutover_locator", out _))
+            {
+                throw Invalid("required-ci-ledger:cutover-locator=unexpected");
+            }
+
+            return null;
+        }
+
+        if (!root.TryGetProperty("cutover_locator", out var locator) ||
+            locator.ValueKind != JsonValueKind.Object ||
+            locator.EnumerateObject().Count() != 4 ||
+            !StringEquals(locator, "parity_status", "dual-run-pass") ||
+            !locator.TryGetProperty("shadow_sha", out var shadow) ||
+            shadow.ValueKind != JsonValueKind.String ||
+            shadow.GetString() is not { } shadowSha ||
+            !System.Text.RegularExpressions.Regex.IsMatch(
+                shadowSha,
+                "^[0-9a-f]{40}$",
+                System.Text.RegularExpressions.RegexOptions.CultureInvariant) ||
+            !locator.TryGetProperty("shadow_run_id", out var runId) ||
+            runId.ValueKind != JsonValueKind.Number ||
+            !runId.TryGetInt64(out var numericRunId) ||
+            numericRunId < 1 ||
+            !locator.TryGetProperty("shadow_run_url", out var runUrl) ||
+            runUrl.ValueKind != JsonValueKind.String ||
+            !Uri.TryCreate(runUrl.GetString(), UriKind.Absolute, out var uri) ||
+            uri.Scheme != Uri.UriSchemeHttps ||
+            !string.Equals(uri.Host, "github.com", StringComparison.OrdinalIgnoreCase) ||
+            !uri.AbsolutePath.Contains("/actions/runs/", StringComparison.Ordinal))
+        {
+            throw Invalid("required-ci-ledger:cutover-locator=invalid");
+        }
+
+        return shadowSha;
     }
 
     private static (int LocalPass, int CiPass, int CiPending) ValidateRows(

@@ -3,9 +3,11 @@ using System.Runtime.InteropServices;
 
 namespace DesktopNode.Verification;
 
-internal sealed class ManagedSuiteRunner : IManagedSuiteRunner
+internal sealed class ManagedSuiteRunner(IProcessRunner? configuredProcessRunner = null) : IManagedSuiteRunner
 {
-    public Task<SuiteExecutionRecord> RunAsync(
+    private readonly IProcessRunner processRunner = configuredProcessRunner ?? new SystemProcessRunner();
+
+    public async Task<SuiteExecutionRecord> RunAsync(
         SuiteDefinition suite,
         string repositoryRoot,
         CancellationToken cancellationToken)
@@ -17,7 +19,7 @@ internal sealed class ManagedSuiteRunner : IManagedSuiteRunner
             if (suite.ManagedHandler == "current-evidence-check")
             {
                 _ = CurrentEvidenceVerifier.Verify(repositoryRoot, cancellationToken);
-                return Task.FromResult(Result(suite, SuiteStatus.Passed, null, stopwatch));
+                return Result(suite, SuiteStatus.Passed, null, stopwatch);
             }
 
             if (suite.ManagedHandler == "policy-boundaries")
@@ -28,11 +30,11 @@ internal sealed class ManagedSuiteRunner : IManagedSuiteRunner
                     Path.Combine(root, "config", "development-verification-suites.schema.json"));
                 if (catalog.ActivationState == "plan-only-foundation")
                 {
-                    return Task.FromResult(Result(
+                    return Result(
                         suite,
                         SuiteStatus.Missing,
                         VerificationErrorCodes.ParityUnmapped,
-                        stopwatch));
+                        stopwatch);
                 }
 
                 var workflow = File.ReadAllText(Path.Combine(
@@ -40,15 +42,28 @@ internal sealed class ManagedSuiteRunner : IManagedSuiteRunner
                 var manifest = File.ReadAllText(Path.Combine(
                     root, "config", "development-verification-migration-manifest.json"));
                 var policy = RequiredCiPolicy.Validate(workflow, catalog);
-                _ = RequiredCiMigrationLedger.Validate(manifest, policy.Mode);
-                return Task.FromResult(Result(suite, SuiteStatus.Passed, null, stopwatch));
+                var ledger = RequiredCiMigrationLedger.Validate(manifest, policy.Mode);
+                if (policy.Mode == RequiredCiMode.Active)
+                {
+                    var boundary = new CutoverGitBoundary(processRunner);
+                    var head = await boundary.ResolveHeadAsync(root, cancellationToken);
+                    _ = await boundary.ValidateAsync(
+                        root,
+                        head,
+                        ledger.ShadowSha ?? throw new VerificationException(
+                            VerificationErrorCodes.ConfigInvalid,
+                            "required-ci-ledger:cutover-locator=invalid"),
+                        cancellationToken);
+                }
+
+                return Result(suite, SuiteStatus.Passed, null, stopwatch);
             }
 
-            return Task.FromResult(Result(
+            return Result(
                 suite,
                 SuiteStatus.Failed,
                 VerificationErrorCodes.ConfigInvalid,
-                stopwatch));
+                stopwatch);
         }
         catch (OperationCanceledException)
         {
@@ -56,19 +71,19 @@ internal sealed class ManagedSuiteRunner : IManagedSuiteRunner
         }
         catch (Exception error) when (error is CurrentEvidenceException or VerificationException)
         {
-            return Task.FromResult(Result(
+            return Result(
                 suite,
                 SuiteStatus.Failed,
                 VerificationErrorCodes.ConfigInvalid,
-                stopwatch));
+                stopwatch);
         }
         catch (Exception error) when (!IsFatal(error))
         {
-            return Task.FromResult(Result(
+            return Result(
                 suite,
                 SuiteStatus.Failed,
                 VerificationErrorCodes.ConfigInvalid,
-                stopwatch));
+                stopwatch);
         }
     }
 

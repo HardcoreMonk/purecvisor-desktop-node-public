@@ -24,6 +24,10 @@ internal static class MigrationManifestV2
     private const string WebOwner = "web/node-tests/web-static-contracts.test.mjs";
     private static readonly string[] RootKeys =
         ["contract", "schema_version", "inventory", "entries", "contracts"];
+    private static readonly string[] CutoverRootKeys =
+        ["contract", "schema_version", "inventory", "cutover_locator", "entries", "contracts"];
+    private static readonly string[] CutoverLocatorKeys =
+        ["shadow_sha", "shadow_run_id", "shadow_run_url", "parity_status"];
     private static readonly string[] EntryKeys =
         ["legacy_path", "domain", "legacy_contract_count", "parity_status", "local_parity", "ci_parity"];
     private static readonly string[] ContractKeys =
@@ -69,10 +73,15 @@ internal static class MigrationManifestV2
         JsonElement root,
         RepositoryContractContext repository)
     {
-        RequireObject(root, RootKeys, "manifest=shape");
+        var hasCutoverLocator = root.TryGetProperty("cutover_locator", out var cutoverLocator);
+        RequireObject(root, hasCutoverLocator ? CutoverRootKeys : RootKeys, "manifest=shape");
         RequireString(root, "contract", "pcv-development-verification-migration-manifest-v2", "manifest=shape");
         RequireInteger(root, "schema_version", 2, "manifest=shape");
         ValidateInventory(root.GetProperty("inventory"));
+        if (hasCutoverLocator)
+        {
+            ValidateCutoverLocator(cutoverLocator);
+        }
 
         var entryElements = RequireArray(root, "entries", "entries=shape");
         var contractElements = RequireArray(root, "contracts", "contracts=shape");
@@ -163,11 +172,13 @@ internal static class MigrationManifestV2
         }
 
         var entryPaths = new HashSet<string>(StringComparer.Ordinal);
+        var allEntriesCutover = true;
         for (var index = 0; index < entryElements.Count; index++)
         {
             var element = entryElements[index];
             RequireObject(element, EntryKeys, "entry=shape");
             var entry = ParseEntry(element, repository);
+            allEntriesCutover &= entry.ParityStatus == "cutover";
             if (!entryPaths.Add(entry.LegacyPath))
             {
                 throw Invalid("entries=duplicate");
@@ -188,6 +199,12 @@ internal static class MigrationManifestV2
             }
 
             ValidateEntryState(entry, children);
+        }
+
+        var allContractsCutover = parsedContracts.All(row => row.ParityStatus == "cutover");
+        if (hasCutoverLocator != (allEntriesCutover && allContractsCutover))
+        {
+            throw Invalid("cutover-locator=state");
         }
 
         return new MigrationManifestSummary(
@@ -523,11 +540,33 @@ internal static class MigrationManifestV2
             required.GetArrayLength() != 5 ||
             !schema.TryGetProperty("$defs", out var definitions) ||
             definitions.ValueKind != JsonValueKind.Object ||
+            !definitions.TryGetProperty("cutoverLocator", out var cutoverDefinition) ||
+            !cutoverDefinition.TryGetProperty("additionalProperties", out var cutoverAdditional) ||
+            cutoverAdditional.ValueKind != JsonValueKind.False ||
             !definitions.TryGetProperty("contract", out var contract) ||
             !contract.TryGetProperty("additionalProperties", out var contractAdditional) ||
             contractAdditional.ValueKind != JsonValueKind.False)
         {
             throw Invalid("schema=invalid");
+        }
+    }
+
+    private static void ValidateCutoverLocator(JsonElement locator)
+    {
+        RequireObject(locator, CutoverLocatorKeys, "cutover-locator=shape");
+        var sha = RequireString(locator, "shadow_sha", "cutover-locator=shape");
+        var runId = RequirePositiveInteger(locator, "shadow_run_id", "cutover-locator=shape");
+        var runUrl = RequireString(locator, "shadow_run_url", "cutover-locator=shape");
+        var status = RequireString(locator, "parity_status", "cutover-locator=shape");
+        if (!Regex.IsMatch(sha, "^[0-9a-f]{40}$", RegexOptions.CultureInvariant) ||
+            runId < 1 ||
+            !Uri.TryCreate(runUrl, UriKind.Absolute, out var uri) ||
+            uri.Scheme != Uri.UriSchemeHttps ||
+            !string.Equals(uri.Host, "github.com", StringComparison.OrdinalIgnoreCase) ||
+            !uri.AbsolutePath.Contains("/actions/runs/", StringComparison.Ordinal) ||
+            status != "dual-run-pass")
+        {
+            throw Invalid("cutover-locator=invalid");
         }
     }
 

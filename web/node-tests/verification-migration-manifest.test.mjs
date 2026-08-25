@@ -224,6 +224,31 @@ test("rejects additional properties and every published schema weakening", () =>
   }
 });
 
+test("accepts only an immutable cutover locator paired with all-cutover CI parity", () => {
+  const baseline = published().manifest;
+  const candidate = clone(baseline);
+  candidate.cutover_locator = {
+    shadow_sha: "1111111111111111111111111111111111111111",
+    shadow_run_id: 123,
+    shadow_run_url: "https://github.com/HardcoreMonk/purecvisor-desktop-node-public/actions/runs/123",
+    parity_status: "dual-run-pass"
+  };
+  for (const row of [...candidate.entries, ...candidate.contracts]) {
+    row.parity_status = "cutover";
+    row.ci_parity = { status: "pass", evidence: evidencePath };
+  }
+
+  assert.equal(validateMigrationManifest({ ...input(candidate), requireCutover: true }).summary.contracts_total, 627);
+
+  const invalidSha = clone(candidate);
+  invalidSha.cutover_locator.shadow_sha = "ABC";
+  assert.throws(() => validateMigrationManifest(input(invalidSha)), invalid("cutover_locator=invalid"));
+
+  const premature = clone(baseline);
+  premature.cutover_locator = candidate.cutover_locator;
+  assert.throws(() => validateMigrationManifest(input(premature)), invalid("cutover_locator=state"));
+});
+
 test("generated schema is byte-equivalent to the strict published schema", () => {
   const expected = `${JSON.stringify(buildMigrationManifestSchema(), null, 2)}\n`;
   assert.equal(expected, fs.readFileSync(schemaPath, "utf8"));

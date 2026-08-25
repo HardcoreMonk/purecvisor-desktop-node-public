@@ -414,6 +414,14 @@ export function buildMigrationManifest({ repoRoot, previousManifest = null } = {
       files: { ...EXPECTED.files },
       contracts: { ...EXPECTED.contracts }
     },
+    ...(previousManifest && Object.hasOwn(previousManifest, "cutover_locator") ? {
+      cutover_locator: {
+        shadow_sha: previousManifest.cutover_locator?.shadow_sha,
+        shadow_run_id: previousManifest.cutover_locator?.shadow_run_id,
+        shadow_run_url: previousManifest.cutover_locator?.shadow_run_url,
+        parity_status: previousManifest.cutover_locator?.parity_status
+      }
+    } : {}),
     entries,
     contracts
   };
@@ -458,6 +466,7 @@ export function buildMigrationManifestSchema() {
       contract: { const: "pcv-development-verification-migration-manifest-v2" },
       schema_version: { const: 2 },
       inventory: { $ref: "#/$defs/inventory" },
+      cutover_locator: { $ref: "#/$defs/cutoverLocator" },
       entries: { type: "array", minItems: 62, maxItems: 62, items: { $ref: "#/$defs/entry" } },
       contracts: { type: "array", minItems: 627, maxItems: 627, items: { $ref: "#/$defs/contract" } }
     },
@@ -474,6 +483,17 @@ export function buildMigrationManifestSchema() {
         }
       },
       parity,
+      cutoverLocator: {
+        type: "object",
+        additionalProperties: false,
+        required: ["shadow_sha", "shadow_run_id", "shadow_run_url", "parity_status"],
+        properties: {
+          shadow_sha: { type: "string", pattern: "^[0-9a-f]{40}$" },
+          shadow_run_id: { type: "integer", minimum: 1 },
+          shadow_run_url: { type: "string", pattern: "^https://github\\.com/[^/]+/[^/]+/actions/runs/[1-9][0-9]*$" },
+          parity_status: { const: "dual-run-pass" }
+        }
+      },
       entry: {
         type: "object",
         additionalProperties: false,

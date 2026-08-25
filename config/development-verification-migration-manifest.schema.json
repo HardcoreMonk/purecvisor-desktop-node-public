@@ -20,6 +20,9 @@
     "inventory": {
       "$ref": "#/$defs/inventory"
     },
+    "cutover_locator": {
+      "$ref": "#/$defs/cutoverLocator"
+    },
     "entries": {
       "type": "array",
       "minItems": 62,
@@ -122,6 +125,33 @@
             "string",
             "null"
           ]
+        }
+      }
+    },
+    "cutoverLocator": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "shadow_sha",
+        "shadow_run_id",
+        "shadow_run_url",
+        "parity_status"
+      ],
+      "properties": {
+        "shadow_sha": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "shadow_run_id": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "shadow_run_url": {
+          "type": "string",
+          "pattern": "^https://github\\.com/[^/]+/[^/]+/actions/runs/[1-9][0-9]*$"
+        },
+        "parity_status": {
+          "const": "dual-run-pass"
         }
       }
     },

@@ -222,11 +222,19 @@ public sealed class RequiredCiPolicyTests
             row["ci_parity"]!["status"] = "pass";
             row["ci_parity"]!["evidence"] = "shadow-run:1";
         }
+        root["cutover_locator"] = new JsonObject
+        {
+            ["shadow_sha"] = "1111111111111111111111111111111111111111",
+            ["shadow_run_id"] = 123,
+            ["shadow_run_url"] = "https://github.com/HardcoreMonk/purecvisor-desktop-node-public/actions/runs/123",
+            ["parity_status"] = "dual-run-pass"
+        };
 
         var result = RequiredCiMigrationLedger.Validate(root.ToJsonString(), RequiredCiMode.Active);
 
         Assert.Equal(627, result.CiPassCount);
         Assert.Equal(0, result.CiPendingCount);
+        Assert.Equal("1111111111111111111111111111111111111111", result.ShadowSha);
 
         root["contracts"]![0]!["ci_parity"]!["evidence"] = null;
         var exception = Assert.Throws<VerificationException>(() =>

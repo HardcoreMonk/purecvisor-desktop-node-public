@@ -65,6 +65,36 @@ public sealed class MigrationManifestV2Tests
             metadata.Select(item => $"{item.LegacyPath}\0{item.LegacyOrdinal}").Distinct(StringComparer.Ordinal).Count());
     }
 
+    [Fact]
+    public void CutoverLocatorRequiresAllRowsAtCiPassAndExactShadowIdentity()
+    {
+        var repository = RepositoryContractContext.Find();
+        var root = JsonNode.Parse(
+            repository.ReadUtf8Text("config/development-verification-migration-manifest.json"))!.AsObject();
+        root["cutover_locator"] = new JsonObject
+        {
+            ["shadow_sha"] = "1111111111111111111111111111111111111111",
+            ["shadow_run_id"] = 123,
+            ["shadow_run_url"] = "https://github.com/HardcoreMonk/purecvisor-desktop-node-public/actions/runs/123",
+            ["parity_status"] = "dual-run-pass",
+        };
+        const string evidence = "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md";
+        foreach (var row in root["entries"]!.AsArray().Concat(root["contracts"]!.AsArray()))
+        {
+            row!["parity_status"] = "cutover";
+            row["ci_parity"]!["status"] = "pass";
+            row["ci_parity"]!["evidence"] = evidence;
+        }
+
+        var summary = MigrationManifestV2.ValidateJson(root.ToJsonString(), repository);
+        Assert.Equal(627, summary.ContractsTotal);
+
+        root["cutover_locator"]!["shadow_sha"] = "invalid";
+        var error = Assert.Throws<InvalidDataException>(() =>
+            MigrationManifestV2.ValidateJson(root.ToJsonString(), repository));
+        Assert.Contains("cutover-locator=invalid", error.Message, StringComparison.Ordinal);
+    }
+
     private static void Mutate(JsonObject root, string mutation)
     {
         var contracts = root["contracts"]!.AsArray();

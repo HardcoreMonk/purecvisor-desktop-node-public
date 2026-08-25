@@ -14,6 +14,8 @@ const EXPECTED_INVENTORY = Object.freeze({
   contracts: Object.freeze({ total: 627, packaging: 528, installer: 49, web: 50 })
 });
 const ROOT_KEYS = ["contract", "schema_version", "inventory", "entries", "contracts"];
+const CUTOVER_ROOT_KEYS = [...ROOT_KEYS, "cutover_locator"];
+const CUTOVER_LOCATOR_KEYS = ["shadow_sha", "shadow_run_id", "shadow_run_url", "parity_status"];
 const ENTRY_KEYS = ["legacy_path", "domain", "legacy_contract_count", "parity_status", "local_parity", "ci_parity"];
 const CONTRACT_KEYS = ["legacy_path", "legacy_ordinal", "legacy_name", "domain", "replacement_owner", "replacement_contract_id", "parity_status", "local_parity", "ci_parity"];
 const PARITY_KEYS = ["status", "evidence"];
@@ -79,6 +81,19 @@ function validateState(row) {
   }
 }
 
+function validateCutoverLocator(manifest) {
+  if (!Object.hasOwn(manifest, "cutover_locator")) return null;
+  const locator = manifest.cutover_locator;
+  if (!keys(locator, CUTOVER_LOCATOR_KEYS) || !/^[0-9a-f]{40}$/u.test(locator.shadow_sha) ||
+      !Number.isSafeInteger(locator.shadow_run_id) || locator.shadow_run_id < 1 ||
+      typeof locator.shadow_run_url !== "string" ||
+      !/^https:\/\/github\.com\/[^/]+\/[^/]+\/actions\/runs\/[1-9][0-9]*$/u.test(locator.shadow_run_url) ||
+      locator.parity_status !== "dual-run-pass") {
+    throw fail("cutover_locator=invalid");
+  }
+  return locator;
+}
+
 function validateEntryState(entry, children) {
   const mappedChildren = children.filter((row) => row.replacement_contract_id !== null);
   if (mappedChildren.length !== 0 && mappedChildren.length !== children.length) throw fail("entry=partial-mapping");
@@ -113,10 +128,12 @@ export function validateMigrationManifest({
 } = {}) {
   const root = rootOf(repoRoot);
   if (!isDeepStrictEqual(schema, buildMigrationManifestSchema())) throw fail("schema=invalid");
-  if (!keys(manifest, ROOT_KEYS) || manifest.contract !== "pcv-development-verification-migration-manifest-v2" || manifest.schema_version !== 2 ||
+  const expectedRootKeys = Object.hasOwn(manifest ?? {}, "cutover_locator") ? CUTOVER_ROOT_KEYS : ROOT_KEYS;
+  if (!keys(manifest, expectedRootKeys) || manifest.contract !== "pcv-development-verification-migration-manifest-v2" || manifest.schema_version !== 2 ||
       !isDeepStrictEqual(manifest.inventory, EXPECTED_INVENTORY) || !Array.isArray(manifest.entries) || !Array.isArray(manifest.contracts)) {
     throw fail("manifest=shape");
   }
+  const cutoverLocator = validateCutoverLocator(manifest);
   if (manifest.entries.length !== 62) throw fail("entries=count");
   if (manifest.contracts.length < 627) throw fail("contracts=missing");
   if (manifest.contracts.length !== 627) throw fail("contracts=count");
@@ -196,7 +213,10 @@ export function validateMigrationManifest({
   requireLocalPass("installer", requireInstallerLocalPass);
   requireLocalPass("packaging", requirePackagingLocalPass);
   if (requireAllMapped && manifest.contracts.some((row) => row.replacement_contract_id === null)) throw fail("contracts=unmapped");
-  if (requireCutover && manifest.contracts.some((row) => row.parity_status !== "cutover")) throw fail("contracts=cutover-required");
+  const allCutover = manifest.contracts.every((row) => row.parity_status === "cutover") &&
+    manifest.entries.every((row) => row.parity_status === "cutover");
+  if (cutoverLocator !== null && !allCutover) throw fail("cutover_locator=state");
+  if (requireCutover && (cutoverLocator === null || !allCutover)) throw fail("contracts=cutover-required");
 
   const count = (domain, predicate) => manifest.contracts.filter((row) => row.domain === domain && predicate(row)).length;
   return {
