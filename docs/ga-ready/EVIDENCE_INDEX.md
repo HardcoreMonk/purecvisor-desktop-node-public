@@ -1,5 +1,18 @@
 # Desktop Node 증거 인덱스
 
+## 2026-08-25 Installer verification Wave C local parity
+
+- `docs/ga-ready/evidence/pester-free-installer-wave-c-2026-08-25.md`는 clean input
+  `0ab1bda71f3398aed302d53e7d6715987ce87b19`에서 Installer legacy/reference와 C# replacement가
+  각각 `49/49` PASS하고 failed/skipped/not-run `0`임을 기록한다. Strict v2 ledger는 62 files /
+  627 contracts, Web mapped/local-pass 50, Installer mapped/local-pass 49, Packaging unmapped 528,
+  missing/duplicate/order drift `0`이다.
+- 새 replacement의 PowerShell/Pester/MSI/service/VM/shell 실행은 `0`이며 host mutation도 수행하지
+  않았다. `installer-contracts=mapped`만 승격했고 catalog activation은 계속
+  `plan-only-foundation`, Delivery/Evidence는 `wave-d-pending`, 모든 CI parity는 `pending`이다.
+- Required CI의 Pester/non-admin PowerShell zero, cutover, public trusted signing과 external stable
+  publication은 아직 주장하지 않는다. Operational current와 actual-VM blocker도 변경하지 않는다.
+
 ## 2026-08-25 public authority bootstrap local source gate
 
 - `docs/ga-ready/evidence/public-authority-bootstrap-2026-08-25.md`는 sanitized committed tree의

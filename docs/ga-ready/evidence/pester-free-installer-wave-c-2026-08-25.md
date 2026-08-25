@@ -2,13 +2,14 @@
 
 ## Current verdict
 
-This document is the Wave C evidence skeleton. It does not yet claim Installer local parity or CI
-parity. Evidence-capture command and result fields remain `not-run` until the corresponding
-command has completed against the final fixed clean input. Required CI and branch-protection
-cutover remain unchanged.
+Installer Wave C local parity is PASS against the fixed clean code input below. All six legacy
+Installer files and 49 contracts have one C# replacement owner and one strict-v2 manifest row;
+replacement and one-time Pester 5.7.1 reference runs both passed `49/49` with failed, skipped, and
+not-run counts of `0`. Required CI parity, branch-protection cutover, and Packaging Wave D remain
+pending and are not claimed by this evidence.
 
-evidence_input_head=not-run
-input_dirty_state=not-run
+evidence_input_head=0ab1bda71f3398aed302d53e7d6715987ce87b19
+input_dirty_state=clean
 
 ## Fixed migration inventory
 
@@ -43,12 +44,56 @@ inventory_contracts_web=50
 
 | Owner | Command | Result |
 | --- | --- | --- |
-| Ledger generator/verifier | `npm run check:verification-migration-manifest --prefix web` | not-run |
-| Ledger Node tests | `node --test web/node-tests/verification-migration-manifest.test.mjs` | not-run |
-| Ledger .NET tests | `dotnet test src/DesktopNode.Delivery.Tests/DesktopNode.Delivery.Tests.csproj --filter FullyQualifiedName~MigrationManifestV2Tests --nologo` | not-run |
-| Installer replacement suite | `dotnet test src/DesktopNode.Delivery.Tests/DesktopNode.Delivery.Tests.csproj -c Release --filter Category=Installer --no-restore --nologo` | not-run |
-| Installer legacy reference | Pester 5.7.1 over the six fixed Installer files | not-run |
-| Full solution | `dotnet test src/DesktopNode.sln -c Release --no-restore --nologo` | not-run |
+| Ledger generator/verifier | `npm run check:verification-migration-manifest --prefix web` | PASS, files 62, contracts 627, missing/duplicate/order drift 0 |
+| Ledger Node tests | `node --test web/node-tests/verification-migration-manifest.test.mjs` | PASS, 10/10, skipped 0 |
+| Ledger .NET tests | `dotnet test src/DesktopNode.Delivery.Tests/DesktopNode.Delivery.Tests.csproj --filter FullyQualifiedName~MigrationManifestV2Tests --nologo` | PASS, 12/12, skipped 0 |
+| Installer replacement suite | `dotnet test src/DesktopNode.Delivery.Tests/DesktopNode.Delivery.Tests.csproj -c Release --filter Category=Installer --no-restore --nologo` | PASS, 49/49, skipped 0 |
+| Delivery assembly | `dotnet test src/DesktopNode.Delivery.Tests/DesktopNode.Delivery.Tests.csproj -c Release --no-restore --nologo` | PASS, 96/96, skipped 0 |
+| Installer legacy reference | Pester 5.7.1 over the six fixed Installer files | PASS, 49/49, failed/skipped/not-run 0, 13143 ms |
+| Full solution | `dotnet test src/DesktopNode.sln -c Release --no-restore --nologo` | PASS, 1547/1547, skipped 0 |
+| Web baseline and parity | `npm test --prefix web`; `npm run verify:parity --prefix web`; `npm run test:web-contracts --prefix web` | PASS; Web contracts 50/50, skipped 0 |
+| Public source safety | `npm run test:public-source-safety --prefix web`; `npm run verify:public-source-safety --prefix web` | PASS, 20/20; finding count 0 |
+
+## Completion verification
+
+The replacement summary digest is over the exact UTF-8 compact JSON shown below. The legacy
+digest is over the corresponding compact JSON emitted by the one-time Pester 5.7.1 reference
+runner. Duration is evidence metadata and does not participate in any product-performance claim.
+
+replacement_summary={"runner":"dotnet-test/xunit","total":49,"executed":49,"passed":49,"failed":0,"skipped":0,"duration_ms":1215.0,"result":"Completed"}
+replacement_summary_sha256=1313465ec313aa7aae3d664ef7995cf70451bdcfdc4d0efe6dfa70ff6dccf7dd
+legacy_summary={"pester_version":"5.7.1","total":49,"passed":49,"failed":0,"skipped":0,"not_run":0,"duration_ms":13143.0,"result":"Passed"}
+legacy_summary_sha256=00a5c2cdcb21f54c0292f8db0b711e8f9bb15a48b14f16ad32d843f5d3a67eb2
+
+manifest_files_total=62
+manifest_contracts_total=627
+manifest_web_mapped=50
+manifest_web_local_pass=50
+manifest_web_ci_pending=50
+manifest_installer_mapped=49
+manifest_installer_local_pass=49
+manifest_installer_ci_pending=49
+manifest_packaging_unmapped=528
+manifest_missing=0
+manifest_duplicate=0
+manifest_order_drift=0
+
+The fixed diff from the sanitized public seed through the evidence input contains 39 paths. Review
+found no missing or duplicate Installer mapping, behavioral omission, P0/P1 defect, required
+workflow edit, or product `ProjectReference`. Risk-token matches were enforcement blocklists,
+negative tests, source locators, or non-executed lifecycle plan data. New replacement executable
+invocation of PowerShell, Pester, MSI/service/VM mutation tools, or a shell is `0`.
+
+fixed_diff_base=c76a831be168a6b5aa122a91df3588a0c5e67f0d
+fixed_diff_head=0ab1bda71f3398aed302d53e7d6715987ce87b19
+fixed_diff_path_count=39
+fixed_diff_p0_count=0
+fixed_diff_p1_count=0
+installer_behavioral_omission_count=0
+required_workflow_changed=false
+new_replacement_executable_invocation_count=0
+public_source_safety_finding_count=0
+public_source_safety_report_sha256=603f64030f501eeb60d58859f377cd7ee6668f2ce1bb73ec1b95c4906d9eeebd
 
 ### InternalTrust fixed-file run
 
@@ -177,7 +222,7 @@ wrapper_legacy_not_run=0
 
 ## Claim boundary
 
-installer_local_parity=false
+installer_local_parity=true
 installer_ci_parity=false
 required_ci_pester_zero=false
 required_ci_nonadmin_powershell_zero=false

@@ -43,6 +43,31 @@ same-SHA shadow and Wave E cutover complete.
 아래 dated section의 수치는 각 source-state snapshot이다. 현재 operational tuple은 위 생성 블록과
 `docs/ga-ready/current-evidence.json`을 우선한다.
 
+## 2026-08-25 Installer verification Wave C local parity
+
+Wave C는 Installer legacy Pester 6개 파일의 49개 계약을 동일 ID와 순서의 C# custom facts로
+교체했다. Clean input `0ab1bda71f3398aed302d53e7d6715987ce87b19`에서 replacement와 일회성
+Pester 5.7.1 reference가 각각 `49/49`, failed/skipped/not-run `0`으로 PASS했다. 단일 증빙은
+`docs/ga-ready/evidence/pester-free-installer-wave-c-2026-08-25.md`다.
+
+Strict v2 migration ledger는 62 files / 627 contracts를 소유한다. 현재 Web 50과 Installer 49는
+`mapped` / local `pass` / CI `pending`이고 Packaging 528은 `unmapped` / local·CI `pending`이다.
+`installer-contracts.migration_state=mapped`만 승격하며 `delivery-contracts`와 `evidence-check`는
+`wave-d-pending`, catalog activation은 `plan-only-foundation`으로 유지한다.
+
+```text
+dotnet test src/DesktopNode.Delivery.Tests/DesktopNode.Delivery.Tests.csproj -c Release --filter Category=Installer --no-restore --nologo
+npm run check:verification-migration-manifest --prefix web
+node --test web/node-tests/verification-migration-manifest.test.mjs
+```
+
+Replacement는 PowerShell, Pester, MSI/service/VM mutation 도구 또는 shell을 실행하지 않는다.
+Pester 5.7.1 전체 49건 실행은 로컬 parity를 위한 마지막 일회성 reference oracle이며 Required CI
+경로가 아니다. Required workflow는 변경하지 않았으므로 `required_ci_pester_zero=false`,
+`required_ci_nonadmin_powershell_zero=false`, `cutover_completed=false`를 유지한다. 이 evidence는
+host mutation, package build, actual-VM, public trusted signing 또는 external stable publication의
+근거가 아니다.
+
 ## 2026-08-24 Web verification Wave B local parity
 
 Wave B는 기존 Web Pester 50개 계약과 같은 순서·이름의 Node `node:test` projection 50개를
