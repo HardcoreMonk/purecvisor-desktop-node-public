@@ -2,7 +2,7 @@
   "$schema": "./development-verification-suites.schema.json",
   "schema_version": 1,
   "contract": "pcv-development-verification-suite-catalog-v1",
-  "activation_state": "shadow-ready",
+  "activation_state": "active",
   "max_parallelism": 4,
   "overall_timeout_seconds": 1200,
   "allowed_executables": [
@@ -19,7 +19,7 @@
     {
       "id": "dotnet",
       "owner": "csharp",
-      "migration_state": "native-existing",
+      "migration_state": "cutover",
       "timeout_seconds": 900,
       "executor": {
         "kind": "process",
@@ -38,7 +38,7 @@
     {
       "id": "web-typecheck",
       "owner": "node",
-      "migration_state": "native-existing",
+      "migration_state": "cutover",
       "timeout_seconds": 600,
       "executor": {
         "kind": "process",
@@ -54,7 +54,7 @@
     {
       "id": "web-parity",
       "owner": "node",
-      "migration_state": "mapped",
+      "migration_state": "cutover",
       "timeout_seconds": 600,
       "executor": {
         "kind": "process",
@@ -70,7 +70,7 @@
     {
       "id": "delivery-contracts",
       "owner": "csharp",
-      "migration_state": "mapped",
+      "migration_state": "cutover",
       "timeout_seconds": 900,
       "executor": {
         "kind": "process",
@@ -91,7 +91,7 @@
     {
       "id": "installer-contracts",
       "owner": "csharp",
-      "migration_state": "mapped",
+      "migration_state": "cutover",
       "timeout_seconds": 900,
       "executor": {
         "kind": "process",
@@ -112,7 +112,7 @@
     {
       "id": "evidence-check",
       "owner": "csharp",
-      "migration_state": "mapped",
+      "migration_state": "cutover",
       "timeout_seconds": 300,
       "executor": {
         "kind": "managed",
@@ -122,7 +122,7 @@
     {
       "id": "policy-boundaries",
       "owner": "csharp",
-      "migration_state": "mapped",
+      "migration_state": "cutover",
       "timeout_seconds": 300,
       "executor": {
         "kind": "managed",

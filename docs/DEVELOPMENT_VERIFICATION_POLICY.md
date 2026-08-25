@@ -18,6 +18,32 @@
 - Claims: `public_trusted_signing=false`; `external_stable_publication=false`.
 <!-- END GENERATED CURRENT EVIDENCE -->
 
+## 2026-08-25 Required CI same-SHA shadow PASS and cutover commit
+
+Authoritative shadow commit `f8208f076cb9db69022b4dc060e65f13d23fae8c`의 pull-request
+Development Gates run
+`https://github.com/HardcoreMonk/purecvisor-desktop-node-public/actions/runs/32898937784`
+attempt 1에서 기존 네 job과 replacement 네 shard가 같은 SHA로 PASS했다. Legacy Pester는
+`627/627`, replacement는 Web `50/50`, Installer `49/49`, Delivery `528/528`, .NET
+`2210/2210`이며 failed/skipped/not-run은 모두 `0`이다. Provider wall-clock은
+`186000 ms`로 `214000 ms` 한도 안이다. 여덟 artifact는 API로 다시 내려받아 provider
+SHA-256과 일치함을 확인했다. 단일 증빙은
+`docs/ga-ready/evidence/pester-free-required-ci-cutover-2026-08-25.md`다.
+
+이 direct-child cutover commit에서 catalog는 `active`, 일곱 suite는 모두 `cutover`, ledger는
+62 files / 627 contracts 전체 `cutover / local pass / CI pass`로 전환된다. Required workflow의
+실행 job은 `dotnet`, `web`, `delivery`, `installer-policy` 네 개뿐이며 정적 executable
+node 기준 Pester, 비관리자 PowerShell, host/service/MSI/VM mutation invocation은 각각 `0`이다.
+Windows 실행 step은 `cmd`, Ubuntu 실행 step은 기본 Bash를 사용한다.
+
+새 네 job의 cutover-SHA CI, branch-protection context 교체, PR merge와 remote-main CI는 아직
+남아 있으므로 `cutover_completed=false`이며 최종 Required CI zero 전환 완료를 아직 주장하지
+않는다. Legacy Pester는 non-required historical parity/rollback source로 보존하되 active
+workflow oracle로 사용하지 않고,
+`.github/workflows/public-boundary.yml`은 non-required residue다. Operational current
+`0.42.74-admin-smoke`, saved-lifecycle actual-VM blocker, public trusted signing과 external
+stable binary publication 상태는 변경하지 않는다.
+
 ## 2026-08-25 public source safety gate
 
 Before a parentless source root is seeded or any repository visibility changes, run both repository-owned
@@ -37,8 +63,8 @@ digest; matched values are never emitted.
 
 Official pinned Gitleaks is an independent required oracle and must report finding count `0`. Neither scanner
 may be bypassed with an ignore file, fingerprint allowlist, exit suppression, or claim downgrade. These gates
-are public-root bootstrap policy; Required CI Pester/non-admin PowerShell zero remains pending until the
-same-SHA shadow and Wave E cutover complete.
+are public-root bootstrap policy. 이 bootstrap checkpoint 당시 Required CI 전환은 pending이었고,
+현재 cutover 진행 상태는 바로 위 절과 cutover evidence를 우선한다.
 
 아래 dated section의 수치는 각 source-state snapshot이다. 현재 operational tuple은 위 생성 블록과
 `docs/ga-ready/current-evidence.json`을 우선한다.

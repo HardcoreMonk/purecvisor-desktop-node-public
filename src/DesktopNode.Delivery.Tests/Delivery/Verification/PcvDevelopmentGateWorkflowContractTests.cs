@@ -13,25 +13,39 @@ public sealed class PcvDevelopmentGateWorkflowContractTests
         "exists and covers the active non-mutating development gates")]
     public void Contract001()
     {
-        DevelopmentPolicyContractVerifier.Verify("gate-workflow", 1);
         var workflow = RepositoryContractContext.Find().ReadUtf8Text(
             ".github/workflows/development-gates.yml");
-        string[] shadowTokens =
+        string[] activeTokens =
         [
-            "Run legacy dotnet",
-            "Run legacy web",
-            "Run legacy packaging Pester",
-            "Run legacy installer and Web Pester",
-            "Run replacement dotnet",
-            "Run replacement web",
-            "Run replacement delivery",
-            "Run replacement installer-policy",
-            "name: legacy-packaging",
-            "name: replacement-delivery",
+            "name: dotnet",
+            "name: web",
+            "name: delivery",
+            "name: installer-policy",
+            "Run dotnet shard",
+            "Run web shard",
+            "Run delivery shard",
+            "Run installer and policy shard",
+            "--shard dotnet",
+            "--shard web",
+            "--shard delivery",
+            "--shard installer-policy",
         ];
-        foreach (var token in shadowTokens)
+        foreach (var token in activeTokens)
         {
             Assert.Contains(token, workflow, StringComparison.Ordinal);
+        }
+
+        string[] forbiddenExecutableTokens =
+        [
+            "Invoke-Pester",
+            "Install-Module",
+            "shell: pwsh",
+            "shell: powershell",
+            "Run legacy",
+        ];
+        foreach (var token in forbiddenExecutableTokens)
+        {
+            Assert.DoesNotContain(token, workflow, StringComparison.OrdinalIgnoreCase);
         }
     }
 }
