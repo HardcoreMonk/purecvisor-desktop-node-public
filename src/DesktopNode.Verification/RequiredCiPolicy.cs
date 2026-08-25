@@ -75,10 +75,9 @@ internal static partial class RequiredCiPolicy
                 .Select((node, stepIndex) => AsMapping(node, $"required-ci-job:{jobId}=step-{stepIndex}"))
                 .ToArray();
 
-            ValidateActionsAndArtifacts(jobId, shard, stepMaps, mode);
-            ValidateStepNames(jobId, shard, stepMaps, mode);
-
             var jobShard = ExtractShard(jobId, stepMaps);
+            ValidateActionsAndArtifacts(jobId, shard, stepMaps, mode);
+            ValidateStepNames(jobId, shard, jobShard, stepMaps, mode);
             shards.Add(jobShard);
             foreach (var step in stepMaps)
             {
@@ -358,15 +357,25 @@ internal static partial class RequiredCiPolicy
 
     private static void ValidateStepNames(
         string jobId,
-        string shard,
+        string expectedShard,
+        string actualShard,
         IReadOnlyList<YamlMappingNode> steps,
         RequiredCiMode mode)
     {
         var names = steps.Select(step => OptionalScalar(step, "name")).Where(name => name is not null).ToArray();
         var replacement = mode == RequiredCiMode.Shadow
-            ? $"Run replacement {shard}"
-            : $"Run {jobId} shard";
-        if (names.Count(name => string.Equals(name, replacement, StringComparison.Ordinal)) != 1)
+            ? $"Run replacement {expectedShard}"
+            : jobId == "installer-policy"
+                ? "Run installer and policy shard"
+                : $"Run {jobId} shard";
+        var replacementSteps = steps.Where(step =>
+        {
+            var run = OptionalScalar(step, "run");
+            return run is not null && ShardRegex().Matches(run).Any(match =>
+                string.Equals(match.Groups[1].Value, actualShard, StringComparison.Ordinal));
+        }).ToArray();
+        if (replacementSteps.Length != 1 ||
+            !string.Equals(OptionalScalar(replacementSteps[0], "name"), replacement, StringComparison.Ordinal))
         {
             throw Invalid($"required-ci-job:{jobId}=replacement-step");
         }

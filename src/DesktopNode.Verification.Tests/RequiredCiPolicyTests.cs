@@ -269,6 +269,33 @@ public sealed class RequiredCiPolicyTests
         AssertRejected(yaml, Catalog("active"), "required-ci-active=legacy-step");
     }
 
+    [Fact]
+    public void ActiveInstallerPolicyRejectsTheGeneratedLegacyStepLabel()
+    {
+        var yaml = ActiveWorkflow().Replace(
+            "Run installer and policy shard",
+            "Run installer-policy shard",
+            StringComparison.Ordinal);
+
+        AssertRejected(yaml, Catalog("active"), "required-ci-job:installer-policy=replacement-step");
+    }
+
+    [Fact]
+    public void ActiveInstallerPolicyRejectsAnExpectedNameDecoy()
+    {
+        var decoy = """
+              - name: Run installer and policy shard
+                shell: cmd
+                run: echo decoy
+        """;
+        var yaml = ActiveWorkflow().Replace(
+            "      - name: Run installer and policy shard",
+            decoy + "\n      - name: Run installer-policy shard",
+            StringComparison.Ordinal);
+
+        AssertRejected(yaml, Catalog("active"), "required-ci-job:installer-policy=replacement-step");
+    }
+
     private static VerificationCatalog Catalog(string activation)
     {
         var canonical = VerificationCatalogFixture.LoadCanonical();
@@ -384,6 +411,9 @@ public sealed class RequiredCiPolicyTests
     {
         var node = setupNode ? $"      - uses: {SetupNode}\n" : string.Empty;
         var shell = runner == "windows-latest" ? "        shell: cmd\n" : string.Empty;
+        var stepName = jobId == "installer-policy"
+            ? "Run installer and policy shard"
+            : $"Run {jobId} shard";
         return $"""
               {jobId}:
                 name: {jobId}
@@ -391,7 +421,7 @@ public sealed class RequiredCiPolicyTests
                 steps:
                   - uses: {Checkout}
                   - uses: {SetupDotNet}
-            {node}      - name: Run {jobId} shard
+            {node}      - name: {stepName}
             {shell}
                     run: dotnet run --project src/DesktopNode.Verification -- verify --shard {jobId}
             {ActiveArtifactStep(jobId)}
