@@ -159,13 +159,12 @@ public sealed class LegacyPesterContractParserTests
 
         Assert.Equal(JsonValueKind.Object, json.RootElement.ValueKind);
         Assert.Equal("Project", project.Root?.Name.LocalName);
-        var callableNames = typeof(RepositoryContractContext)
-            .GetMethods(System.Reflection.BindingFlags.Instance |
-                        System.Reflection.BindingFlags.Static |
-                        System.Reflection.BindingFlags.Public |
-                        System.Reflection.BindingFlags.NonPublic)
-            .Where(method => method.DeclaringType == typeof(RepositoryContractContext))
-            .Select(method => method.Name)
+        var contextSource = repository.ReadUtf8Text(
+            "src/DesktopNode.Delivery.Tests/Infrastructure/RepositoryContractContext.cs");
+        var callableNames = System.Text.RegularExpressions.Regex.Matches(
+                contextSource,
+                "(?m)^\\s*(?:internal|private)\\s+(?:static\\s+)?[^=;]+?\\s+(?<name>[A-Za-z][A-Za-z0-9]*)\\(")
+            .Select(match => match.Groups["name"].Value)
             .ToArray();
         Assert.DoesNotContain(callableNames, name =>
             name.Contains("Write", StringComparison.OrdinalIgnoreCase) ||
