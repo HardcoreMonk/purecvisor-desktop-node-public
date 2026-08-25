@@ -24,6 +24,7 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 0
       - uses: actions/setup-dotnet@d4c94342e560b34958eacfc5d055d21461ed1c5d # v5.0.0
         with:
@@ -40,7 +41,7 @@ jobs:
         env:
           PCV_TRX_ROOT: ${{ runner.temp }}\pcv-legacy-dotnet-${{ github.run_id }}
           PCV_LEGACY_OUTPUT: artifacts\shadow\dotnet\legacy\summary.json
-          PCV_HEAD_SHA: ${{ github.sha }}
+          PCV_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: |
           dotnet test src/DesktopNode.sln -c Release --no-restore --no-build --logger trx --results-directory "%PCV_TRX_ROOT%" --nologo
           set "PCV_LEGACY_EXIT=%ERRORLEVEL%"
@@ -52,7 +53,7 @@ jobs:
         env:
           PCV_REPLACEMENT_ROOT: artifacts\shadow\dotnet\replacement
           PCV_REPLACEMENT_SHARD: dotnet
-          PCV_HEAD_SHA: ${{ github.sha }}
+          PCV_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
           PCV_TEST_RESULT_COUNT: "0"
         run: node -e "const fs=require('fs'),p=require('path');const m=JSON.parse(fs.readFileSync('config/development-verification-migration-manifest.json','utf8')),rows=m.contracts;if(!/^[0-9a-f]{40}$/u.test(process.env.PCV_HEAD_SHA)||m.inventory.contracts.total!==627||rows.some(r=>r.parity_status!=='mapped'||r.local_parity.status!=='pass'||r.ci_parity.status!=='pending'))throw new Error('PCV_SHADOW_MANIFEST_INVALID');const out={schema_version:1,contract:'pcv-required-ci-shadow-replacement-manifest-summary-v1',head_sha:process.env.PCV_HEAD_SHA,shard:process.env.PCV_REPLACEMENT_SHARD,contracts_total:rows.length,mapped:rows.length,local_pass:rows.length,ci_pending:rows.length,domain_contract_counts:m.inventory.contracts,test_result_count:Number(process.env.PCV_TEST_RESULT_COUNT),host_mutation_performed:false};fs.mkdirSync(process.env.PCV_REPLACEMENT_ROOT,{recursive:true});fs.writeFileSync(p.join(process.env.PCV_REPLACEMENT_ROOT,'manifest-summary.json'),JSON.stringify(out)+'\n');"
       - name: Run replacement dotnet
@@ -79,6 +80,7 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 0
       - uses: actions/setup-dotnet@d4c94342e560b34958eacfc5d055d21461ed1c5d # v5.0.0
         with:
@@ -95,7 +97,7 @@ jobs:
       - name: Run legacy web
         env:
           PCV_LEGACY_OUTPUT: artifacts/shadow/web/legacy/summary.json
-          PCV_HEAD_SHA: ${{ github.sha }}
+          PCV_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: |
           started=$(node -p "Date.now()")
           set +e
@@ -111,7 +113,7 @@ jobs:
         env:
           PCV_REPLACEMENT_ROOT: artifacts/shadow/web/replacement
           PCV_REPLACEMENT_SHARD: web
-          PCV_HEAD_SHA: ${{ github.sha }}
+          PCV_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
           PCV_TEST_RESULT_COUNT: "50"
         run: node -e "const fs=require('fs'),p=require('path');const m=JSON.parse(fs.readFileSync('config/development-verification-migration-manifest.json','utf8')),rows=m.contracts;if(!/^[0-9a-f]{40}$/u.test(process.env.PCV_HEAD_SHA)||m.inventory.contracts.total!==627||rows.some(r=>r.parity_status!=='mapped'||r.local_parity.status!=='pass'||r.ci_parity.status!=='pending'))throw new Error('PCV_SHADOW_MANIFEST_INVALID');const out={schema_version:1,contract:'pcv-required-ci-shadow-replacement-manifest-summary-v1',head_sha:process.env.PCV_HEAD_SHA,shard:process.env.PCV_REPLACEMENT_SHARD,contracts_total:rows.length,mapped:rows.length,local_pass:rows.length,ci_pending:rows.length,domain_contract_counts:m.inventory.contracts,test_result_count:Number(process.env.PCV_TEST_RESULT_COUNT),host_mutation_performed:false};fs.mkdirSync(process.env.PCV_REPLACEMENT_ROOT,{recursive:true});fs.writeFileSync(p.join(process.env.PCV_REPLACEMENT_ROOT,'manifest-summary.json'),JSON.stringify(out)+'\n');"
       - name: Run replacement web
@@ -137,6 +139,7 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 0
       - uses: actions/setup-dotnet@d4c94342e560b34958eacfc5d055d21461ed1c5d # v5.0.0
         with:
@@ -150,14 +153,16 @@ jobs:
         run: dotnet restore src\DesktopNode.Verification\DesktopNode.Verification.csproj && dotnet restore src\DesktopNode.Delivery.Tests\DesktopNode.Delivery.Tests.csproj && dotnet build src\DesktopNode.Verification\DesktopNode.Verification.csproj -c Release --no-restore && dotnet build src\DesktopNode.Delivery.Tests\DesktopNode.Delivery.Tests.csproj -c Release --no-restore
       - name: Run legacy packaging Pester
         shell: pwsh
+        env:
+          PCV_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: |
           Install-Module Pester -RequiredVersion 5.7.1 -Scope CurrentUser -Force -SkipPublisherCheck
           $fixturePresent = Test-Path -LiteralPath 'artifacts/admin-smoke-package-20260716-04265/host-publish/DesktopNode.Host.exe' -PathType Leaf
           $result = Invoke-Pester -Path 'packaging/windows-desktop-node/tests' -Output Detailed -PassThru
           $durationMs = [int64][Math]::Round($result.Duration.TotalMilliseconds)
-          $canonical = [string]::Join('|', @($env:GITHUB_SHA, $result.TotalCount, $result.PassedCount, $result.FailedCount, $result.SkippedCount, $result.NotRunCount, $durationMs))
+          $canonical = [string]::Join('|', @($env:PCV_HEAD_SHA, $result.TotalCount, $result.PassedCount, $result.FailedCount, $result.SkippedCount, $result.NotRunCount, $durationMs))
           $digest = [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData([Text.Encoding]::UTF8.GetBytes($canonical))).ToLowerInvariant()
-          $summary = [ordered]@{ schema_version = 1; contract = 'pcv-required-ci-shadow-legacy-summary-v1'; head_sha = $env:GITHUB_SHA; label = 'packaging'; source_kind = 'pester-result'; total = $result.TotalCount; passed = $result.PassedCount; failed = $result.FailedCount; skipped = $result.SkippedCount; not_run = $result.NotRunCount; duration_ms = $durationMs; result_sha256 = $digest; frozen_binary_execution_count = $(if ($fixturePresent) { 2 } else { 0 }); immutable_evidence_fallback_count = $(if ($fixturePresent) { 0 } else { 2 }); host_mutation_performed = $false }
+          $summary = [ordered]@{ schema_version = 1; contract = 'pcv-required-ci-shadow-legacy-summary-v1'; head_sha = $env:PCV_HEAD_SHA; label = 'packaging'; source_kind = 'pester-result'; total = $result.TotalCount; passed = $result.PassedCount; failed = $result.FailedCount; skipped = $result.SkippedCount; not_run = $result.NotRunCount; duration_ms = $durationMs; result_sha256 = $digest; frozen_binary_execution_count = $(if ($fixturePresent) { 2 } else { 0 }); immutable_evidence_fallback_count = $(if ($fixturePresent) { 0 } else { 2 }); host_mutation_performed = $false }
           $output = Join-Path (Get-Location) 'artifacts/shadow/delivery/legacy/summary.json'
           [IO.Directory]::CreateDirectory([IO.Path]::GetDirectoryName($output)) | Out-Null
           [IO.File]::WriteAllText($output, (($summary | ConvertTo-Json -Compress) + [Environment]::NewLine), [Text.UTF8Encoding]::new($false))
@@ -167,7 +172,7 @@ jobs:
         env:
           PCV_REPLACEMENT_ROOT: artifacts\shadow\delivery\replacement
           PCV_REPLACEMENT_SHARD: delivery
-          PCV_HEAD_SHA: ${{ github.sha }}
+          PCV_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
           PCV_TEST_RESULT_COUNT: "528"
         run: node -e "const fs=require('fs'),p=require('path');const m=JSON.parse(fs.readFileSync('config/development-verification-migration-manifest.json','utf8')),rows=m.contracts;if(!/^[0-9a-f]{40}$/u.test(process.env.PCV_HEAD_SHA)||m.inventory.contracts.total!==627||rows.some(r=>r.parity_status!=='mapped'||r.local_parity.status!=='pass'||r.ci_parity.status!=='pending'))throw new Error('PCV_SHADOW_MANIFEST_INVALID');const out={schema_version:1,contract:'pcv-required-ci-shadow-replacement-manifest-summary-v1',head_sha:process.env.PCV_HEAD_SHA,shard:process.env.PCV_REPLACEMENT_SHARD,contracts_total:rows.length,mapped:rows.length,local_pass:rows.length,ci_pending:rows.length,domain_contract_counts:m.inventory.contracts,test_result_count:Number(process.env.PCV_TEST_RESULT_COUNT),host_mutation_performed:false};fs.mkdirSync(process.env.PCV_REPLACEMENT_ROOT,{recursive:true});fs.writeFileSync(p.join(process.env.PCV_REPLACEMENT_ROOT,'manifest-summary.json'),JSON.stringify(out)+'\n');"
       - name: Run replacement delivery
@@ -194,6 +199,7 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 0
       - uses: actions/setup-dotnet@d4c94342e560b34958eacfc5d055d21461ed1c5d # v5.0.0
         with:
@@ -205,15 +211,20 @@ jobs:
       - name: Restore and build verification projects
         shell: cmd
         run: dotnet restore src\DesktopNode.Verification\DesktopNode.Verification.csproj && dotnet restore src\DesktopNode.Delivery.Tests\DesktopNode.Delivery.Tests.csproj && dotnet build src\DesktopNode.Verification\DesktopNode.Verification.csproj -c Release --no-restore && dotnet build src\DesktopNode.Delivery.Tests\DesktopNode.Delivery.Tests.csproj -c Release --no-restore
+      - name: Install Web dependencies for shadow parity
+        shell: cmd
+        run: npm ci --prefix web
       - name: Run legacy installer and Web Pester
         shell: pwsh
+        env:
+          PCV_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: |
           Install-Module Pester -RequiredVersion 5.7.1 -Scope CurrentUser -Force -SkipPublisherCheck
           $result = Invoke-Pester -Path @('packaging/windows-desktop-node/installer/tests', 'web/tests') -Output Detailed -PassThru
           $durationMs = [int64][Math]::Round($result.Duration.TotalMilliseconds)
-          $canonical = [string]::Join('|', @($env:GITHUB_SHA, $result.TotalCount, $result.PassedCount, $result.FailedCount, $result.SkippedCount, $result.NotRunCount, $durationMs))
+          $canonical = [string]::Join('|', @($env:PCV_HEAD_SHA, $result.TotalCount, $result.PassedCount, $result.FailedCount, $result.SkippedCount, $result.NotRunCount, $durationMs))
           $digest = [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData([Text.Encoding]::UTF8.GetBytes($canonical))).ToLowerInvariant()
-          $summary = [ordered]@{ schema_version = 1; contract = 'pcv-required-ci-shadow-legacy-summary-v1'; head_sha = $env:GITHUB_SHA; label = 'installer-web'; source_kind = 'pester-result'; total = $result.TotalCount; passed = $result.PassedCount; failed = $result.FailedCount; skipped = $result.SkippedCount; not_run = $result.NotRunCount; duration_ms = $durationMs; result_sha256 = $digest; host_mutation_performed = $false }
+          $summary = [ordered]@{ schema_version = 1; contract = 'pcv-required-ci-shadow-legacy-summary-v1'; head_sha = $env:PCV_HEAD_SHA; label = 'installer-web'; source_kind = 'pester-result'; total = $result.TotalCount; passed = $result.PassedCount; failed = $result.FailedCount; skipped = $result.SkippedCount; not_run = $result.NotRunCount; duration_ms = $durationMs; result_sha256 = $digest; host_mutation_performed = $false }
           $output = Join-Path (Get-Location) 'artifacts/shadow/installer-policy/legacy/summary.json'
           [IO.Directory]::CreateDirectory([IO.Path]::GetDirectoryName($output)) | Out-Null
           [IO.File]::WriteAllText($output, (($summary | ConvertTo-Json -Compress) + [Environment]::NewLine), [Text.UTF8Encoding]::new($false))
@@ -223,7 +234,7 @@ jobs:
         env:
           PCV_REPLACEMENT_ROOT: artifacts\shadow\installer-policy\replacement
           PCV_REPLACEMENT_SHARD: installer-policy
-          PCV_HEAD_SHA: ${{ github.sha }}
+          PCV_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
           PCV_TEST_RESULT_COUNT: "99"
         run: node -e "const fs=require('fs'),p=require('path');const m=JSON.parse(fs.readFileSync('config/development-verification-migration-manifest.json','utf8')),rows=m.contracts;if(!/^[0-9a-f]{40}$/u.test(process.env.PCV_HEAD_SHA)||m.inventory.contracts.total!==627||rows.some(r=>r.parity_status!=='mapped'||r.local_parity.status!=='pass'||r.ci_parity.status!=='pending'))throw new Error('PCV_SHADOW_MANIFEST_INVALID');const out={schema_version:1,contract:'pcv-required-ci-shadow-replacement-manifest-summary-v1',head_sha:process.env.PCV_HEAD_SHA,shard:process.env.PCV_REPLACEMENT_SHARD,contracts_total:rows.length,mapped:rows.length,local_pass:rows.length,ci_pending:rows.length,domain_contract_counts:m.inventory.contracts,test_result_count:Number(process.env.PCV_TEST_RESULT_COUNT),host_mutation_performed:false};fs.mkdirSync(process.env.PCV_REPLACEMENT_ROOT,{recursive:true});fs.writeFileSync(p.join(process.env.PCV_REPLACEMENT_ROOT,'manifest-summary.json'),JSON.stringify(out)+'\n');"
       - name: Run replacement installer-policy
