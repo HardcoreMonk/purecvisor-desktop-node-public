@@ -54,6 +54,7 @@ public sealed class VerificationProjectContractTests
 
         Assert.Equal(1, CountOccurrences(solution, "DesktopNode.Verification\\DesktopNode.Verification.csproj"));
         Assert.Equal(1, CountOccurrences(solution, "DesktopNode.Verification.Tests\\DesktopNode.Verification.Tests.csproj"));
+        Assert.Equal(1, CountOccurrences(solution, "DesktopNode.Delivery.Tests\\DesktopNode.Delivery.Tests.csproj"));
 
         await ConsoleErrorLock.WaitAsync();
         var originalError = Console.Error;
