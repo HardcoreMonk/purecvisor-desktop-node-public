@@ -2,9 +2,9 @@
 
 ## Current verdict
 
-Packaging Wave D is in progress. D1 through D7 local parity are PASS. The managed replacements
-executed all `398/398` mapped Packaging contracts without skips. The one-time Pester 5.7.1
-references also passed D1 `90/90`, D2 `42/42`, D3 `61/61`, D4 `58/58`, D5 `51/51`, D6 `44/44`, and D7 `52/52` without skips. D8-D10, aggregate Packaging local
+Packaging Wave D is in progress. D1 through D8 local parity are PASS. The managed replacements
+executed all `443/443` mapped Packaging contracts without skips. The one-time Pester 5.7.1
+references also passed D1 `90/90`, D2 `42/42`, D3 `61/61`, D4 `58/58`, D5 `51/51`, D6 `44/44`, D7 `52/52`, and D8 `45/45` without skips. D9-D10, aggregate Packaging local
 parity, Required CI parity, branch-protection cutover, and managed current-evidence catalog
 activation remain pending and are not claimed by this checkpoint.
 
@@ -16,6 +16,7 @@ d4_input_head=03316a7f8db38dfa325d69a16f8607c167b1ff11
 d5_input_head=373a07f360a6d1f78b307dc06692a634e3f1f523
 d6_input_head=8e3bac7b4a54d7e62cf95ad708f53ca1f7a4156f
 d7_input_head=fc16b3f4e7105ddcbc713fc20016cb633cbe856b
+d8_input_head=ba43fa4e894901e0bc3afec173d5ff389ad45308
 input_dirty_state=clean
 
 ## Fixed ten-batch inventory
@@ -29,10 +30,10 @@ input_dirty_state=clean
 | D5 | development verification policy | 8 | 51 | 51/51 pass | 51/51 pass | mapped / local pass / CI pending |
 | D6 | orchestration and timeout boundaries | 5 | 44 | 44/44 pass | 44/44 pass | mapped / local pass / CI pending |
 | D7 | package/public-distribution preflight | 8 | 52 | 52/52 pass | 52/52 pass | mapped / local pass / CI pending |
-| D8 | manual-admin/public-ops readiness | 8 | 45 | not-run | not-run | unmapped / local pending / CI pending |
+| D8 | manual-admin/public-ops readiness | 8 | 45 | 45/45 pass | 45/45 pass | mapped / local pass / CI pending |
 | D9 | installed-smoke descriptors | 8 | 31 | not-run | not-run | unmapped / local pending / CI pending |
 | D10 | reconciliation/lifecycle policy | 8 | 54 | not-run | not-run | unmapped / local pending / CI pending |
-| **Total** |  | **55** | **528** | **398 pass / 130 not-run** | **398 pass / 130 not-run** | **398 mapped local pass / 130 unmapped / CI pending** |
+| **Total** |  | **55** | **528** | **443 pass / 85 not-run** | **443 pass / 85 not-run** | **443 mapped local pass / 85 unmapped / CI pending** |
 
 batch_d1_files=1
 batch_d1_contracts=90
@@ -516,6 +517,76 @@ ledger_after_d7_ci_pending=528
 ledger_after_d7_missing=0
 ledger_after_d7_duplicate=0
 ledger_after_d7_order_drift=0
+
+## D8 manual-admin and public-operations readiness
+
+Eight legacy files own 45 baseline reservation, campaign descriptor/currency, rebaseline,
+public-operations follow-up/readiness, public-signed update/rollback, and Credential Manager
+transition contracts. Their managed replacement binds nine source/current-evidence files, all
+eight legacy files, 274 assertion sites, 989 source literals, and exact names/order by SHA-256.
+The common batch verifier and D8 semantic layer are read-only; no reservation, descriptor,
+credential, service, package, publication, or host state is written or contacted.
+
+The first focused managed run exposed a wrong assumed name for current-currency fields. The
+verifier was corrected to the exact line-anchored `current_full_admin_host_mutation_*` contract
+owned by the legacy test and canonical current-evidence record; the legacy test itself and the
+currency document were not weakened or changed.
+
+| Check | Result |
+| --- | --- |
+| Replacement legacy contracts | PASS, 45/45, failed 0, skipped 0 |
+| Deterministic readiness fixtures | PASS, 5/5 |
+| Fixed semantic diff | PASS, files 8, contracts 45, differences 0 |
+| Pester 5.7.1 reference | PASS, 45/45, failed 0, skipped 0, not-run 0 |
+| Delivery assembly | PASS, 588/588, failed 0, skipped 0 |
+| Release solution build | PASS, warnings 0, errors 0 |
+| Node strict-v2 ledger | PASS, files 62, contracts 627, missing/duplicate/order drift 0 |
+| Public source safety | PASS, 20/20, finding count 0 |
+
+d8_legacy_files=8
+d8_legacy_contracts=45
+d8_contract_spec=config/pcv-manual-admin-readiness-contract-spec-v1.json
+d8_contract_spec_sha256=2bf42d86a4304e7293a16e29604afcdc581e21e8b9c2801d9d887a6496905847
+d8_source_file_count=9
+d8_legacy_should_site_count=274
+d8_required_literal_count=989
+d8_replacement_summary={"runner":"dotnet-test/xunit","total":45,"executed":45,"passed":45,"failed":0,"skipped":0,"duration_ms":450.0,"result":"Completed"}
+d8_replacement_summary_sha256=de6f656d3df3b20a55ec561ff8d7c6a448e2c22ac5fcc0d43ba66659db990b73
+d8_legacy_summary={"pester_version":"5.7.1","total":45,"passed":45,"failed":0,"skipped":0,"not_run":0,"duration_ms":40931.935,"result":"Passed"}
+d8_legacy_summary_sha256=7fc59534645bda8b53e265d4d424330866c3c930e57a5ad4974f1d8a74ec92de
+d8_semantic_diff_files=8
+d8_semantic_diff_contracts=45
+d8_semantic_diff_difference_count=0
+d8_negative_stale_descriptor=pass
+d8_negative_mismatched_package_pair=pass
+d8_negative_missing_blocker=pass
+d8_negative_secret_valued_field=pass
+d8_negative_false_external_publication=pass
+d8_release_build_warnings=0
+d8_release_build_errors=0
+d8_public_source_safety_tests=20
+d8_public_source_safety_finding_count=0
+d8_public_source_safety_report_sha256=603f64030f501eeb60d58859f377cd7ee6668f2ce1bb73ec1b95c4906d9eeebd
+d8_replacement_child_process_count=0
+d8_replacement_write_api_count=0
+d8_host_mutation_performed=false
+
+## Ledger state after D8
+
+| Domain | Files | Contracts | Mapping | Local parity | CI parity |
+| --- | ---: | ---: | --- | --- | --- |
+| Web | 1 | 50 | mapped 50 | pass 50 | pending 50 |
+| Installer | 6 | 49 | mapped 49 | pass 49 | pending 49 |
+| Packaging | 55 | 528 | mapped 443 / unmapped 85 | pass 443 / pending 85 | pending 528 |
+| Total | 62 | 627 | mapped 542 / unmapped 85 | pass 542 / pending 85 | pending 627 |
+
+ledger_after_d8_packaging_mapped=443
+ledger_after_d8_packaging_local_pass=443
+ledger_after_d8_packaging_unmapped=85
+ledger_after_d8_ci_pending=528
+ledger_after_d8_missing=0
+ledger_after_d8_duplicate=0
+ledger_after_d8_order_drift=0
 
 ## Shared fixture boundary
 
