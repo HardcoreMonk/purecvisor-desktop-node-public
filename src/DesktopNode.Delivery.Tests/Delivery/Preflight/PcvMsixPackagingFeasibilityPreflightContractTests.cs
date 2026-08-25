@@ -53,4 +53,3 @@ public sealed class PcvMsixPackagingFeasibilityPreflightContractTests
     public void Contract006() =>
         PreflightContractVerifier.Verify("msix-packaging-feasibility-preflight", 6);
 }
-

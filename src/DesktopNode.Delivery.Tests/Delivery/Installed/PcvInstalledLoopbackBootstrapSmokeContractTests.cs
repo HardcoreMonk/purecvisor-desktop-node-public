@@ -13,4 +13,3 @@ public sealed class PcvInstalledLoopbackBootstrapSmokeContractTests
     public void Contract001() =>
         InstalledContractVerifier.Verify("installed-loopback-bootstrap-smoke", 1);
 }
-

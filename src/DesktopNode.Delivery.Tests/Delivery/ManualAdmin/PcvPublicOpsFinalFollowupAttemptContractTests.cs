@@ -29,4 +29,3 @@ public sealed class PcvPublicOpsFinalFollowupAttemptContractTests
     public void Contract003() =>
         ManualAdminContractVerifier.Verify("public-ops-final-followup-attempt", 3);
 }
-

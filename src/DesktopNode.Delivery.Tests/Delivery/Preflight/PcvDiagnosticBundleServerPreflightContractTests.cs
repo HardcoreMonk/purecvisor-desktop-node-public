@@ -53,4 +53,3 @@ public sealed class PcvDiagnosticBundleServerPreflightContractTests
     public void Contract006() =>
         PreflightContractVerifier.Verify("diagnostic-bundle-server-preflight", 6);
 }
-

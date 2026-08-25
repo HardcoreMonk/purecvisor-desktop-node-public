@@ -53,4 +53,3 @@ public sealed class PcvPublicDistributionOperationsBundleContractTests
     public void Contract006() =>
         PreflightContractVerifier.Verify("public-distribution-operations-bundle", 6);
 }
-

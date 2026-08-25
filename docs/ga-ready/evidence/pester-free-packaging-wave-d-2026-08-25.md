@@ -2,12 +2,16 @@
 
 ## Current verdict
 
-Packaging Wave D D1 through D10 batch-local parity is PASS. The managed replacements executed
-all `528/528` mapped Packaging contracts without skips. The one-time Pester 5.7.1 references
-also passed D1 `90/90`, D2 `42/42`, D3 `61/61`, D4 `58/58`, D5 `51/51`, D6 `44/44`, D7
-`52/52`, D8 `45/45`, D9 `31/31`, and D10 `54/54` without skips. The aggregate Packaging
-full-directory run, Required CI parity, branch-protection cutover, and managed current-evidence
-catalog activation remain pending and are not claimed by this checkpoint.
+Packaging Wave D D1 through D10 local parity and the aggregate Packaging run are PASS. The
+managed replacements executed all `528/528` mapped Packaging contracts without skips. The
+one-time Pester 5.7.1 references also passed D1 `90/90`, D2 `42/42`, D3 `61/61`, D4 `58/58`,
+D5 `51/51`, D6 `44/44`, D7 `52/52`, D8 `45/45`, D9 `31/31`, and D10 `54/54` without skips.
+The final full-directory comparison passed both C# and Pester `528/528`, failed/skipped `0`.
+
+`delivery-contracts` and `evidence-check` are now `mapped`; the retired `wave-d-pending` state
+is rejected by schema and managed catalog tests. Catalog activation remains
+`plan-only-foundation`. Required CI same-SHA parity, branch-protection cutover, and managed
+execution activation remain pending and are not claimed by this checkpoint.
 
 wave_c_checkpoint_head=9bc382650059fe3ea759e27bcee69cce6823fe38
 evidence_input_head=b86eddd37d0ed5af44c8b33f426c0eef8024eb44
@@ -348,7 +352,9 @@ returned to zero, the helper test passed `19/19`, the focused architecture refer
 d5_legacy_files=8
 d5_legacy_contracts=51
 d5_contract_spec=config/pcv-development-policy-contract-spec-v1.json
-d5_contract_spec_sha256=a5df1c06b99077a6b8135b9bb5c9bc19caa3a765afa45b9ee5adb5815835b316
+d5_contract_spec_initial_sha256=a5df1c06b99077a6b8135b9bb5c9bc19caa3a765afa45b9ee5adb5815835b316
+d5_contract_spec_sha256=5ef297a3e63408b7d3b23d1c4cde6cde9d6686ccf11c4a37c75efa11f776ed06
+d5_contract_spec_aggregate_catalog_ratchet_refresh=true
 d5_source_file_count=17
 d5_legacy_should_site_count=356
 d5_required_literal_count=652
@@ -479,7 +485,9 @@ PowerShell, Pester, process, service, VM, network request, package build, or pub
 d7_legacy_files=8
 d7_legacy_contracts=52
 d7_contract_spec=config/pcv-preflight-contract-spec-v1.json
-d7_contract_spec_sha256=2f1423f294eae4f6bc4b360eb9270b563d44646298c955a807ae3c98a9a014ad
+d7_contract_spec_initial_sha256=2f1423f294eae4f6bc4b360eb9270b563d44646298c955a807ae3c98a9a014ad
+d7_contract_spec_sha256=448f5fae8c7a6fb2a7bf43c607335ec02eb57bedd6a6ebb9aab15e74d35ce07c
+d7_contract_spec_aggregate_format_refresh=true
 d7_source_file_count=8
 d7_legacy_should_site_count=256
 d7_required_literal_count=722
@@ -549,7 +557,9 @@ currency document were not weakened or changed.
 d8_legacy_files=8
 d8_legacy_contracts=45
 d8_contract_spec=config/pcv-manual-admin-readiness-contract-spec-v1.json
-d8_contract_spec_sha256=2bf42d86a4304e7293a16e29604afcdc581e21e8b9c2801d9d887a6496905847
+d8_contract_spec_initial_sha256=2bf42d86a4304e7293a16e29604afcdc581e21e8b9c2801d9d887a6496905847
+d8_contract_spec_sha256=c2a8e69aafd5e912392115dbf87ae6bb36524698aef2b857f98e75c5eac8c826
+d8_contract_spec_aggregate_format_refresh=true
 d8_source_file_count=9
 d8_legacy_should_site_count=274
 d8_required_literal_count=989
@@ -618,7 +628,9 @@ dry-run, redaction, cleanup, and no-fabricated-installed-PASS boundaries remain 
 d9_legacy_files=8
 d9_legacy_contracts=31
 d9_contract_spec=config/pcv-installed-smoke-contract-spec-v1.json
-d9_contract_spec_sha256=ec22e38bc062beef09b2ecc864345202220afa13fd0662f9835d84954e98436e
+d9_contract_spec_initial_sha256=ec22e38bc062beef09b2ecc864345202220afa13fd0662f9835d84954e98436e
+d9_contract_spec_sha256=6854268b054d6fec6ebd908e3603aa905c678090781a780cf5b1242ce601e81d
+d9_contract_spec_aggregate_format_refresh=true
 d9_source_file_count=10
 d9_legacy_should_site_count=243
 d9_required_literal_count=512
@@ -736,6 +748,64 @@ ledger_after_d10_missing=0
 ledger_after_d10_duplicate=0
 ledger_after_d10_order_drift=0
 
+## Wave D aggregate and catalog ratchet
+
+The aggregate replacement ran the fixed `Category=Delivery` filter over all 55 Packaging files.
+The final Pester reference used Pester 5.7.1 and the same public source tree. Two compatibility
+contracts initially reported `skipped` because their intentionally untracked frozen
+`0.42.65-admin-smoke` reader binary was absent from the sanitized public root. A read-only copy
+with the bootstrap-recorded SHA-256 was placed only under the ignored `artifacts/**` boundary;
+it was not staged or published. The focused compatibility reference then passed `5/5`, and the
+full reference passed `528/528` with no skips.
+
+| Check | Result |
+| --- | --- |
+| Aggregate C# replacement | PASS, 528/528, failed 0, skipped 0 |
+| Initial Pester reference without frozen fixture | PASS result, passed 526, failed 0, skipped 2 |
+| Frozen-reader compatibility reference | PASS, 5/5, failed 0, skipped 0 |
+| Final Pester reference | PASS, 528/528, failed 0, skipped 0, not-run 0 |
+| Delivery assembly | PASS, 684/684, failed 0, skipped 0 |
+| Full solution | PASS, 2,153/2,153 across 9 assemblies, failed/skipped 0 |
+| Web unit/parity/contracts | PASS, contract projection 50/50 |
+| Managed current-evidence boundary | PASS, 17/17, writes 0, child processes 0 |
+| Strict-v2 ledger | PASS, 62 files / 627 contracts, all mapped/local pass, CI pending |
+| Public source safety | PASS, finding count 0 |
+
+aggregate_replacement_summary={"runner":"dotnet-test/xunit","total":528,"executed":528,"passed":528,"failed":0,"skipped":0,"duration_ms":2722,"result":"Completed"}
+aggregate_replacement_summary_sha256=73bf70813f793663da236f8462a761ff33d511be08f2f41d14979fc263645554
+aggregate_pester_initial_summary={"pester_version":"5.7.1","total":528,"passed":526,"failed":0,"skipped":2,"not_run":0,"duration_ms":157881.945,"result":"Passed"}
+aggregate_pester_initial_summary_sha256=5b5a70cc65a3b1216549b960db4821815d56342601112588679c2bb9017be34e
+aggregate_pester_final_summary={"pester_version":"5.7.1","total":528,"passed":528,"failed":0,"skipped":0,"not_run":0,"duration_ms":192794.0,"result":"Passed"}
+aggregate_pester_final_summary_sha256=4378f2d02105985c32a1ed518d1b017adfe49fc8739124a52e088285a68a7cf9
+frozen_reader_fixture_relative_path=artifacts/admin-smoke-package-20260716-04265/host-publish/DesktopNode.Host.exe
+frozen_reader_fixture_sha256=95e219e779fce5c4fa8162aa31cd97e68370664ffd1aa465237dbdb769383c83
+frozen_reader_fixture_product_version=0.42.65-admin-smoke+4855947fe0199cedc978e8b40ffb45e96ced6876
+frozen_reader_fixture_tracked=false
+aggregate_delivery_total=684
+aggregate_solution_total=2153
+aggregate_solution_assemblies=9
+aggregate_web_contract_total=50
+aggregate_current_evidence_total=17
+aggregate_ledger_files=62
+aggregate_ledger_contracts=627
+aggregate_ledger_mapped=627
+aggregate_ledger_local_pass=627
+aggregate_ledger_ci_pending=627
+delivery_contracts_migration_state=mapped
+evidence_check_migration_state=mapped
+retired_wave_d_pending_state=rejected
+catalog_activation_state=plan-only-foundation
+required_workflow_changed=false
+aggregate_fixed_diff_changed_files=107
+aggregate_fixed_diff_check=pass
+aggregate_review_p0_count=0
+aggregate_review_p1_count=0
+aggregate_non_test_product_change_count=0
+aggregate_added_process_start_count=0
+aggregate_public_source_safety_finding_count=0
+aggregate_public_source_safety_report_sha256=603f64030f501eeb60d58859f377cd7ee6668f2ce1bb73ec1b95c4906d9eeebd
+aggregate_host_mutation_performed=false
+
 ## Shared fixture boundary
 
 The Wave D helpers are read-only parsers over repository files and contained disposable fixtures.
@@ -762,7 +832,7 @@ managed_current_evidence_catalog_activation=plan-only-foundation
 
 ## Claim boundary
 
-packaging_local_parity=false
+packaging_local_parity=true
 packaging_ci_parity=false
 required_ci_pester_zero=false
 required_ci_nonadmin_powershell_zero=false

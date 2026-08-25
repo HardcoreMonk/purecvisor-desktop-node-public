@@ -45,4 +45,3 @@ public sealed class PcvManualAdminCampaignDescriptorContractTests
     public void Contract005() =>
         ManualAdminContractVerifier.Verify("manual-admin-campaign-descriptor", 5);
 }
-

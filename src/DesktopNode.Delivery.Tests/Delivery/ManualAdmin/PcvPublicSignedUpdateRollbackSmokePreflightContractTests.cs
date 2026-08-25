@@ -61,4 +61,3 @@ public sealed class PcvPublicSignedUpdateRollbackSmokePreflightContractTests
     public void Contract007() =>
         ManualAdminContractVerifier.Verify("public-signed-update-rollback-smoke-preflight", 7);
 }
-

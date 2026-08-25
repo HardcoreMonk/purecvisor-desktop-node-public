@@ -45,4 +45,3 @@ public sealed class PcvPublicOpsGateExecutionReadinessContractTests
     public void Contract005() =>
         ManualAdminContractVerifier.Verify("public-ops-gate-execution-readiness", 5);
 }
-

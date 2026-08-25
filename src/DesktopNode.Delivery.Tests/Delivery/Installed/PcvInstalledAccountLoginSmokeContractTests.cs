@@ -13,4 +13,3 @@ public sealed class PcvInstalledAccountLoginSmokeContractTests
     public void Contract001() =>
         InstalledContractVerifier.Verify("installed-account-login-smoke", 1);
 }
-

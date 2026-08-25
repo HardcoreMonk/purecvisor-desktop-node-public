@@ -43,6 +43,27 @@ same-SHA shadow and Wave E cutover complete.
 아래 dated section의 수치는 각 source-state snapshot이다. 현재 operational tuple은 위 생성 블록과
 `docs/ga-ready/current-evidence.json`을 우선한다.
 
+## 2026-08-25 Packaging verification Wave D local parity
+
+Wave D는 Packaging legacy Pester 55개 파일의 528개 계약을 같은 ID와 순서의 C# custom facts로
+교체했다. D1~D10과 최종 aggregate에서 replacement와 일회성 Pester 5.7.1 reference가 각각
+`528/528`, failed/skipped/not-run `0`으로 PASS했다. 단일 증빙은
+`docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md`다.
+
+Strict v2 migration ledger의 62 files / 627 contracts는 Web 50, Installer 49, Packaging 528
+모두 `mapped` / local `pass` / CI `pending`이다. `delivery-contracts`와 `evidence-check`를
+`mapped`로 승격했고, `wave-d-pending`은 schema와 managed catalog에서 더 이상 허용하지 않는다.
+Catalog activation은 계속 `plan-only-foundation`이며 current-evidence 검증은 read-only,
+write/child-process `0`을 유지한다.
+
+최종 Pester reference에서 sanitized public root에 포함되지 않는 frozen 0.42.65 reader fixture로
+인한 조건부 2건은 bootstrap evidence에 고정된 SHA-256의 read-only binary를 ignored
+`artifacts/**` 경계에서만 사용해 실제 실행했다. 이 binary는 추적하거나 공개하지 않는다.
+Required workflow는 아직 legacy authority이므로 same-SHA dual-run, Pester/non-admin PowerShell
+zero, branch protection cutover는 Wave E 완료 전까지 주장하지 않는다. 이 local parity는 host
+mutation, package build, actual-VM, public trusted signing 또는 external stable publication의
+근거가 아니다.
+
 ## 2026-08-25 Installer verification Wave C local parity
 
 Wave C는 Installer legacy Pester 6개 파일의 49개 계약을 동일 ID와 순서의 C# custom facts로
@@ -50,7 +71,8 @@ Wave C는 Installer legacy Pester 6개 파일의 49개 계약을 동일 ID와 �
 Pester 5.7.1 reference가 각각 `49/49`, failed/skipped/not-run `0`으로 PASS했다. 단일 증빙은
 `docs/ga-ready/evidence/pester-free-installer-wave-c-2026-08-25.md`다.
 
-Strict v2 migration ledger는 62 files / 627 contracts를 소유한다. 현재 Web 50과 Installer 49는
+이 Wave C checkpoint 당시 strict v2 migration ledger는 62 files / 627 contracts를 소유했다.
+Web 50과 Installer 49는
 `mapped` / local `pass` / CI `pending`이고 Packaging 528은 `unmapped` / local·CI `pending`이다.
 `installer-contracts.migration_state=mapped`만 승격하며 `delivery-contracts`와 `evidence-check`는
 `wave-d-pending`, catalog activation은 `plan-only-foundation`으로 유지한다.

@@ -53,4 +53,3 @@ public sealed class PcvManualAdminDescriptorCurrencyContractTests
     public void Contract006() =>
         ManualAdminContractVerifier.Verify("manual-admin-descriptor-currency", 6);
 }
-

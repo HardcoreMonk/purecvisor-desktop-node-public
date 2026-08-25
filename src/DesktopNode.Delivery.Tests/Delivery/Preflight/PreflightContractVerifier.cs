@@ -13,7 +13,7 @@ internal sealed class PreflightContractVerifier
     internal const string SpecPath = "config/pcv-preflight-contract-spec-v1.json";
 
     private const string ExpectedSpecSha256 =
-        "2f1423f294eae4f6bc4b360eb9270b563d44646298c955a807ae3c98a9a014ad";
+        "448f5fae8c7a6fb2a7bf43c607335ec02eb57bedd6a6ebb9aab15e74d35ce07c";
 
     private static readonly string[] ExpectedKeys =
     [

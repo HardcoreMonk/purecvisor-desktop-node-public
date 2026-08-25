@@ -60,7 +60,7 @@ public sealed class ManagedSuiteRunnerTests
         new(
             "evidence-check",
             "csharp",
-            "wave-d-pending",
+            "mapped",
             "managed",
             null,
             Array.Empty<string>(),

@@ -42,11 +42,11 @@ public sealed class VerificationCatalogTests
                 ["test", "--prefix", "web"], null, 600),
             ("web-parity", "node", "wave-b-pending", "process", "npm",
                 ["run", "verify:parity", "--prefix", "web"], null, 600),
-            ("delivery-contracts", "csharp", "wave-d-pending", "process", "dotnet",
+            ("delivery-contracts", "csharp", "mapped", "process", "dotnet",
                 ["test", "src/DesktopNode.Delivery.Tests/DesktopNode.Delivery.Tests.csproj", "-c", "Release", "--filter", "Category=Delivery", "--nologo"], null, 900),
             ("installer-contracts", "csharp", "mapped", "process", "dotnet",
                 ["test", "src/DesktopNode.Delivery.Tests/DesktopNode.Delivery.Tests.csproj", "-c", "Release", "--filter", "Category=Installer", "--nologo"], null, 900),
-            ("evidence-check", "csharp", "wave-d-pending", "managed", null,
+            ("evidence-check", "csharp", "mapped", "managed", null,
                 [], "current-evidence-check", 300),
             ("policy-boundaries", "csharp", "wave-a-foundation", "managed", null,
                 [], "policy-boundaries", 300)
@@ -64,6 +64,18 @@ public sealed class VerificationCatalogTests
             Assert.Equal(expected.ManagedHandler, actual.ManagedHandler);
             Assert.Equal(expected.TimeoutSeconds, actual.TimeoutSeconds);
         }
+    }
+
+    [Fact]
+    public void CatalogRejectsRetiredWaveDPendingState()
+    {
+        using var mutated = VerificationCatalogFixture.LoadMutated(root =>
+            root["suites"]![3]!["migration_state"] = "wave-d-pending");
+
+        var exception = Assert.Throws<VerificationException>(() => mutated.Load());
+
+        Assert.Equal(VerificationErrorCodes.ConfigInvalid, exception.Code);
+        Assert.Equal("suite-definition:delivery-contracts=invalid", exception.Detail);
     }
 
     [Theory]

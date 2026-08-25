@@ -69,4 +69,3 @@ public sealed class PcvBurnBootstrapperPreflightContractTests
     public void Contract008() =>
         PreflightContractVerifier.Verify("burn-bootstrapper-preflight", 8);
 }
-

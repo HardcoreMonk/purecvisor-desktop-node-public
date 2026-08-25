@@ -13,4 +13,3 @@ public sealed class PcvInstalledNoVncSmokeContractTests
     public void Contract001() =>
         InstalledContractVerifier.Verify("installed-no-vnc-smoke", 1);
 }
-

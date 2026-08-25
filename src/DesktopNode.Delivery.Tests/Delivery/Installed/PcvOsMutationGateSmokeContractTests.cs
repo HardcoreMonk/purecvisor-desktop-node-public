@@ -53,4 +53,3 @@ public sealed class PcvOsMutationGateSmokeContractTests
     public void Contract006() =>
         InstalledContractVerifier.Verify("os-mutation-gate-smoke", 6);
 }
-

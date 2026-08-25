@@ -98,8 +98,7 @@
             "wave-a-foundation",
             "wave-b-pending",
             "wave-c-pending",
-            "mapped",
-            "wave-d-pending"
+            "mapped"
           ]
         },
         "timeout_seconds": {

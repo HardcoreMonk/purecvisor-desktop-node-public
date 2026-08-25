@@ -85,4 +85,3 @@ public sealed class PcvManualAdminRebaselineReadinessContractTests
     public void Contract010() =>
         ManualAdminContractVerifier.Verify("manual-admin-rebaseline-readiness", 10);
 }
-

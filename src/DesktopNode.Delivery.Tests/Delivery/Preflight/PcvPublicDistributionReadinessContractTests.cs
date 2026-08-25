@@ -53,4 +53,3 @@ public sealed class PcvPublicDistributionReadinessContractTests
     public void Contract006() =>
         PreflightContractVerifier.Verify("public-distribution-readiness", 6);
 }
-

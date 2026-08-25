@@ -53,4 +53,3 @@ public sealed class PcvServiceTokenRotationRevokePreflightContractTests
     public void Contract006() =>
         InstalledContractVerifier.Verify("service-token-rotation-revoke-preflight", 6);
 }
-

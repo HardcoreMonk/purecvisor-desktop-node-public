@@ -1,5 +1,20 @@
 # Desktop Node 증거 인덱스
 
+## 2026-08-25 Packaging verification Wave D local parity
+
+- `docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md`는 55개 Packaging legacy
+  파일의 528개 계약에 대해 C# replacement와 일회성 Pester 5.7.1 reference가 최종 aggregate
+  `528/528`, failed/skipped/not-run `0`으로 PASS했음을 기록한다. Delivery assembly `684/684`,
+  전체 solution 9 assemblies `2,153/2,153`, Web contract `50/50`도 PASS했다.
+- Strict v2 ledger의 62 files / 627 contracts는 모두 `mapped` / local `pass` / CI `pending`이다.
+  `delivery-contracts`와 `evidence-check`는 `mapped`, catalog activation은 계속
+  `plan-only-foundation`이며 managed current-evidence 검증은 write/child-process `0`이다.
+- Sanitized public root에서 제외한 frozen reader binary는 bootstrap-recorded SHA-256과 일치하는
+  read-only copy를 ignored `artifacts/**`에서만 reference에 사용했고 추적·공개하지 않았다.
+  Required CI same-SHA parity, Pester/non-admin PowerShell zero와 branch-protection cutover는 Wave E
+  전까지 주장하지 않는다. Host mutation, package candidate, public trusted signing 및 external
+  stable publication도 모두 이 evidence 범위 밖이다.
+
 ## 2026-08-25 Installer verification Wave C local parity
 
 - `docs/ga-ready/evidence/pester-free-installer-wave-c-2026-08-25.md`는 clean input

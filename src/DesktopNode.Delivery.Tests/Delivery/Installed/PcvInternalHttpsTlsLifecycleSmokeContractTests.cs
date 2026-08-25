@@ -13,4 +13,3 @@ public sealed class PcvInternalHttpsTlsLifecycleSmokeContractTests
     public void Contract001() =>
         InstalledContractVerifier.Verify("internal-https-tls-lifecycle-smoke", 1);
 }
-

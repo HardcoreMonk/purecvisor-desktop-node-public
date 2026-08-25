@@ -85,4 +85,3 @@ public sealed class PcvApiHostJobHardeningInstalledSmokeContractTests
     public void Contract010() =>
         InstalledContractVerifier.Verify("api-host-job-hardening-installed-smoke", 10);
 }
-

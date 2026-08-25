@@ -69,4 +69,3 @@ public sealed class PcvUpdaterCatalogPublicationPreflightContractTests
     public void Contract008() =>
         PreflightContractVerifier.Verify("updater-catalog-publication-preflight", 8);
 }
-

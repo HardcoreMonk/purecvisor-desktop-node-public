@@ -46,15 +46,15 @@
     },
     {
       "path": "config/development-verification-suites.json",
-      "sha256": "a23b81d97e14506da0aa96981b263207472d9ebdc030885bd5f2f565e6d35dc7"
+      "sha256": "ee36bd44d7b3123edd76e8957eb550b6b93da9f732bdcc4a93b836349c9bce71"
     },
     {
       "path": "config/development-verification-suites.schema.json",
-      "sha256": "350509c2522fea43b3b51034177e41cf66df58111314439e227117b4eebb2678"
+      "sha256": "04e6c5d4e70cbbbf053497543cc9ec97de9bd2342b34f2159de9ca9e6057aed5"
     },
     {
       "path": "src/DesktopNode.Verification/VerificationCatalog.cs",
-      "sha256": "25c6cee13fccc3ceb2903215a7cb2eedcfbff502ca59097746194ba3bbddc634"
+      "sha256": "72d1d887a681a6c31ca41c6749c9b0a72aa9e4b73f9ce5b5e39fddcb8d2a6751"
     },
     {
       "path": "packaging/windows-desktop-node/tools/Invoke-PcvDotNetQualityCapture.ps1",

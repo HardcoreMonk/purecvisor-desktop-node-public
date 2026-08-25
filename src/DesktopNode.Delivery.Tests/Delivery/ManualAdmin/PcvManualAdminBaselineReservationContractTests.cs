@@ -29,4 +29,3 @@ public sealed class PcvManualAdminBaselineReservationContractTests
     public void Contract003() =>
         ManualAdminContractVerifier.Verify("manual-admin-baseline-reservation", 3);
 }
-

@@ -53,4 +53,3 @@ public sealed class PcvBuiltinTlsCertificateLifecyclePreflightContractTests
     public void Contract006() =>
         PreflightContractVerifier.Verify("builtin-tls-certificate-lifecycle-preflight", 6);
 }
-

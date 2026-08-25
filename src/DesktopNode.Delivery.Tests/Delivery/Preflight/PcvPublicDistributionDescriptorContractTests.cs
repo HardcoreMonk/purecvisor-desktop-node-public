@@ -53,4 +53,3 @@ public sealed class PcvPublicDistributionDescriptorContractTests
     public void Contract006() =>
         PreflightContractVerifier.Verify("public-distribution-descriptor", 6);
 }
-

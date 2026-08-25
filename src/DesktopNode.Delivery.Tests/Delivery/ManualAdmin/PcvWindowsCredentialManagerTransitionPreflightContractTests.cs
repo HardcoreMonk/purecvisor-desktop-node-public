@@ -53,4 +53,3 @@ public sealed class PcvWindowsCredentialManagerTransitionPreflightContractTests
     public void Contract006() =>
         ManualAdminContractVerifier.Verify("windows-credential-manager-transition-preflight", 6);
 }
-

@@ -45,4 +45,3 @@ public sealed class PcvServicePlanP0CheckpointRestoreReconciliationContractTests
     public void Contract005() =>
         InstalledContractVerifier.Verify("service-plan-p0-checkpoint-restore-reconciliation", 5);
 }
-
