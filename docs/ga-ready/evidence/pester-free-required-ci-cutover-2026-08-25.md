@@ -2,18 +2,32 @@
 
 evidence_id: `pester-free-required-ci-cutover-2026-08-25`
 contract: `pcv-required-ci-pester-free-cutover-v1`
-result: `SHADOW_DUAL_RUN_PASS_CUTOVER_CI_PENDING`
-phase: `single-cutover-commit-pre-provider-switch`
-remote_main_sha: `c76a831be168a6b5aa122a91df3588a0c5e67f0d`
+result: `PASS_WITH_DISCLOSED_DEVIATION`
+phase: `post-merge-required-ci-cutover-closure`
+plan_deviation: `pre-change-etag-and-provider-before-response-hash-not-retained`
+pre_cutover_main_sha: `c76a831be168a6b5aa122a91df3588a0c5e67f0d`
 shadow_sha: `f8208f076cb9db69022b4dc060e65f13d23fae8c`
 shadow_run_id: `32898937784`
 shadow_run_url: `https://github.com/HardcoreMonk/purecvisor-desktop-node-public/actions/runs/32898937784`
 shadow_run_attempt: `1`
 shadow_ci_parity_pass: `true`
-cutover_ci_status: `pending`
-branch_protection_switch: `pending`
-cutover_completed: `false`
+cutover_sha: `68756f1f2f609951aaf54d76963b10f96409011b`
+cutover_run_id: `32900785756`
+cutover_run_url: `https://github.com/HardcoreMonk/purecvisor-desktop-node-public/actions/runs/32900785756`
+cutover_pr: `https://github.com/HardcoreMonk/purecvisor-desktop-node-public/pull/1`
+merge_sha: `d4a952b8e5ab11f7e3a9ae92b41c61b12828bfab`
+post_merge_main_sha: `d4a952b8e5ab11f7e3a9ae92b41c61b12828bfab`
+post_merge_run_id: `32901477892`
+post_merge_run_url: `https://github.com/HardcoreMonk/purecvisor-desktop-node-public/actions/runs/32901477892`
+cutover_ci_status: `pass`
+branch_protection_switch: `pass`
+ci_parity_pass: `true`
+required_ci_pester_zero: `true`
+required_ci_nonadmin_powershell_zero: `true`
+cutover_completed: `true`
 host_mutation_performed: `false`
+msi_or_service_mutation: `false`
+actual_vm_tested: `false`
 package_candidate_created: `false`
 public_trusted_signing: `false`
 external_stable_publication: `false`
@@ -25,11 +39,15 @@ replacement verification paths at the same Git SHA. Run `32898937784`, attempt `
 four jobs and produced eight artifacts. Each artifact ZIP was downloaded again through the provider
 API and its SHA-256 was equal to the provider digest.
 
-This direct-child cutover commit records that immutable predecessor, moves the ledger to `62/62`
-files and `627/627` contracts at `cutover / local pass / CI pass`, and activates the replacement
-four-job workflow. The new cutover-SHA jobs, provider protection switch, PR merge, and remote-main
-run are still pending. Therefore `cutover_completed=false`; this document does not yet make the
-final Required CI completion claim.
+Direct-child cutover commit `68756f1f2f609951aaf54d76963b10f96409011b` has exact parent
+`f8208f076cb9db69022b4dc060e65f13d23fae8c`. It moved the ledger to `62/62` files
+and `627/627` contracts at `cutover / local pass / CI pass` and activated the replacement
+four-job workflow. Exact-SHA CI passed, main protection was switched in one request, PR #1 was
+merged without force, and the exact merge SHA passed remote-main CI. Required CI cutover is
+therefore operationally complete. The protection transition used the permitted immediate
+compare-before/PATCH/readback route, but its pre-change ETag and original provider-before response
+hash were not retained; that evidence-capture deviation is disclosed below. This is not a
+repository-wide PowerShell deletion claim or literal full-compliance claim for every plan step.
 
 ## Immutable shadow run
 
@@ -104,6 +122,103 @@ as the active workflow oracle. Separate administrator/manual scripts also remain
 `.github/workflows/public-boundary.yml` remains a non-required residue workflow. This is not a
 repository-wide PowerShell deletion claim.
 
+## Exact cutover-SHA CI
+
+Development Gates run `32900785756`, attempt `1`, was a pull-request run bound to exact SHA
+`68756f1f2f609951aaf54d76963b10f96409011b`. It completed successfully in `120000 ms`; the
+provider job envelope was `116000 ms`, below the `214000 ms` ceiling.
+
+| Job | Job ID / URL | Started UTC | Completed UTC | Result |
+| --- | --- | --- | --- | --- |
+| `dotnet` | [`97973909141`](https://github.com/HardcoreMonk/purecvisor-desktop-node-public/actions/runs/32900785756/job/97973909141) | `2026-08-25T21:23:59Z` | `2026-08-25T21:25:54Z` | `success` |
+| `web` | [`97973909441`](https://github.com/HardcoreMonk/purecvisor-desktop-node-public/actions/runs/32900785756/job/97973909441) | `2026-08-25T21:23:58Z` | `2026-08-25T21:24:41Z` | `success` |
+| `delivery` | [`97973909359`](https://github.com/HardcoreMonk/purecvisor-desktop-node-public/actions/runs/32900785756/job/97973909359) | `2026-08-25T21:23:58Z` | `2026-08-25T21:24:43Z` | `success` |
+| `installer-policy` | [`97973909537`](https://github.com/HardcoreMonk/purecvisor-desktop-node-public/actions/runs/32900785756/job/97973909537) | `2026-08-25T21:24:02Z` | `2026-08-25T21:25:03Z` | `success` |
+
+| Artifact | Artifact ID / provider URL | Provider/API ZIP SHA-256 | Extracted summary SHA-256 |
+| --- | --- | --- | --- |
+| `development-gates-dotnet-32900785756` | [`9583021635`](https://api.github.com/repos/HardcoreMonk/purecvisor-desktop-node-public/actions/artifacts/9583021635) | `9ae3fa525e7c918df2c08225c4927163135c6e3e52b0a757a3c61c18eca122d9` | `6d32bcf46f5ef9dad16a3d7dc08a051d31eaf24abc32e88cad7f003dc9766412` |
+| `development-gates-web-32900785756` | [`9582983097`](https://api.github.com/repos/HardcoreMonk/purecvisor-desktop-node-public/actions/artifacts/9582983097) | `eba635a5f64ef0517917fb8d896c1318b35e128d770449a0e11e0066197b91ab` | `e8029b12046dc9909f817a576e305e7150afedf7b89879209d093447c189c2c5` |
+| `development-gates-delivery-32900785756` | [`9582983092`](https://api.github.com/repos/HardcoreMonk/purecvisor-desktop-node-public/actions/artifacts/9582983092) | `bca4cdc6f7d1d50d22e53964a4f1569c2f1121eda619edecb1948746be0f40af` | `05710270322d4c90dac702e9b70a54bf3554502f8ea80f0fd3c74ee88bae4007` |
+| `development-gates-installer-policy-32900785756` | [`9582994239`](https://api.github.com/repos/HardcoreMonk/purecvisor-desktop-node-public/actions/artifacts/9582994239) | `9330e8a971d1a47540d0a8b592c98c83dafbdeb1e4eed5220d308e419093ec8a` | `375ea58d71e97a874ee52d9ff88564706da7ef673c9a97a51603abbd19aed4de` |
+
+Every provider digest matched an independent API re-download. The v2 summaries were all
+`catalog_activation_state=active` and `ok=true`: .NET `2210/2210` in `51530 ms`, Web registry
+`50/50` with manifest `62 files / 627 contracts` in `20108 ms`, Delivery `528/528` in `4725 ms`,
+and Installer `49/49` in `3570 ms`. All seven suites reported `cutover/passed`; timeout, cancel,
+missing, duplicate, skipped, and not-run counts were `0`. Static workflow validation reported
+Pester, non-admin PowerShell, and host/service/MSI/VM mutation invocation `0`.
+
+## Branch-protection transition
+
+The immediate pre-mutation readback required `strict=true`, admin enforcement enabled,
+force-push/deletion disabled, and exact old checks `dotnet-tests`, `web-tests`,
+`packaging-pester`, and `installer-web-pester`, each bound to GitHub Actions app ID `15368`.
+One PATCH replaced only that check set with `dotnet`, `web`, `delivery`, and
+`installer-policy`, also bound to app ID `15368`.
+
+The newline-terminated canonical compact SHA-256 of the exact old required-status rollback payload is
+`7b2ae4962bea6779aaf4408e2cc7b0b8ddfa6f4a45a13cd4850d486e79197292`; the new payload is
+`a13b0626b38e46fec320608b07a5f9fec88d22219d8e0bfef06d91336399fd0d`. Immediate and final
+readbacks found exact new checks, `strict=true`, admin enforcement enabled, signatures and linear
+history disabled, `allow_force_pushes=false`, `allow_deletions=false`, `block_creations=false`,
+`lock_branch=false`, `required_conversation_resolution=false`, and `allow_fork_syncing=false`.
+The final newline-terminated full canonical response SHA-256 is
+`2b4315655acb12ddb67af778be6845ca4073f7e021acddaa487a988796bfb82b`; its provider ETag is
+`W/"0499d9c3474f350a0da954236fca03ee3e71604a13de1ec929c6cc015c4933bc"`.
+
+The pre-change ETag was not retained in the closure material, so no before-ETag value is invented
+here. The permitted compare-before/PATCH/readback path was used instead: the immediate
+before readback established the old contexts and safety fields above, and the one-request body was:
+
+```json
+{"strict":true,"checks":[{"context":"dotnet","app_id":15368},{"context":"web","app_id":15368},{"context":"delivery","app_id":15368},{"context":"installer-policy","app_id":15368}]}
+```
+
+The rollback body is fully reconstructable and has the old-payload digest stated above:
+
+```json
+{"strict":true,"checks":[{"context":"dotnet-tests","app_id":15368},{"context":"web-tests","app_id":15368},{"context":"packaging-pester","app_id":15368},{"context":"installer-web-pester","app_id":15368}]}
+```
+
+Replacing only the current response's contexts/checks with that captured old set while preserving
+all unchanged safety fields yields reconstructed pre-state full canonical SHA-256
+`290a93d2ce606c7bdfe12fddd53a57cb49b36e9fefadd0fcd08fd7a3c162f190`. This is explicitly a
+post-readback reconstruction, not a fabricated provider-before response hash.
+
+## Merge and remote-main CI
+
+PR #1 was marked ready only after exact-SHA checks passed and was merged at
+`2026-08-25T21:31:39Z` with normal, non-force merge commit
+`d4a952b8e5ab11f7e3a9ae92b41c61b12828bfab`. Its parents are exactly frozen pre-cutover main
+`c76a831be168a6b5aa122a91df3588a0c5e67f0d` and reviewed cutover
+`68756f1f2f609951aaf54d76963b10f96409011b`; GitHub reports a verified signature.
+
+Remote-main Development Gates run `32901477892`, attempt `1`, event `push`, is bound to that exact
+merge SHA and completed successfully in `204000 ms`; the job envelope was `200000 ms`, below the
+`214000 ms` ceiling.
+
+| Job | Job ID / URL | Started UTC | Completed UTC | Result |
+| --- | --- | --- | --- | --- |
+| `dotnet` | [`97976095792`](https://github.com/HardcoreMonk/purecvisor-desktop-node-public/actions/runs/32901477892/job/97976095792) | `2026-08-25T21:31:44Z` | `2026-08-25T21:33:54Z` | `success` |
+| `web` | [`97976095798`](https://github.com/HardcoreMonk/purecvisor-desktop-node-public/actions/runs/32901477892/job/97976095798) | `2026-08-25T21:31:44Z` | `2026-08-25T21:32:28Z` | `success` |
+| `delivery` | [`97976095779`](https://github.com/HardcoreMonk/purecvisor-desktop-node-public/actions/runs/32901477892/job/97976095779) | `2026-08-25T21:31:44Z` | `2026-08-25T21:35:04Z` | `success` |
+| `installer-policy` | [`97976095661`](https://github.com/HardcoreMonk/purecvisor-desktop-node-public/actions/runs/32901477892/job/97976095661) | `2026-08-25T21:31:45Z` | `2026-08-25T21:32:37Z` | `success` |
+
+| Artifact | Artifact ID / provider URL | Provider/API ZIP SHA-256 | Extracted summary SHA-256 |
+| --- | --- | --- | --- |
+| `development-gates-dotnet-32901477892` | [`9583287720`](https://api.github.com/repos/HardcoreMonk/purecvisor-desktop-node-public/actions/artifacts/9583287720) | `f8f0b47b64829a154e5ab4afb5324ce85292993112c89192599c8e93b4952b78` | `3280f89467445a6ff7baa30f62caa6ef97ad20da7ec7afa8a2c3d61b1d122c2f` |
+| `development-gates-web-32901477892` | [`9583242169`](https://api.github.com/repos/HardcoreMonk/purecvisor-desktop-node-public/actions/artifacts/9583242169) | `829fea5683ea4daa4e4ef40b9d4a9dfe28ca6d567cb2d0f4591948b6b4b50d63` | `fc4482a0f7639f1b565ec02b65e5303b7112c7c9be94f14808cfdf34c5e8f1c0` |
+| `development-gates-delivery-32901477892` | [`9583328387`](https://api.github.com/repos/HardcoreMonk/purecvisor-desktop-node-public/actions/artifacts/9583328387) | `cbd223202ecc852d52ee2ba841d81c059b997af8b947d85928bb550e2169f155` | `2f2d9797f2f3bd2c23072142ead3652739e78a5f53cba63c6a7ba54313dbc913` |
+| `development-gates-installer-policy-32901477892` | [`9583245735`](https://api.github.com/repos/HardcoreMonk/purecvisor-desktop-node-public/actions/artifacts/9583245735) | `7f7eaab6c1ee0e565f87719de795ae388c7fb3504c6919c633d966a0801e12f2` | `4bd3475090dcc16b35d5ed887a89c6e30a225ed94ac1c4d79029ba082518a6dd` |
+
+The remote-main v2 summaries again reported .NET `2210/2210` in `54566 ms`, Web registry
+`50/50` and manifest `62/627` in `19976 ms`, Delivery `528/528` in `5292 ms`, and Installer
+`49/49` in `4048 ms`. All seven suites were `cutover/passed`; timeout, cancel, missing, duplicate,
+skipped, and not-run counts were `0`. The four ZIP hashes above were independently recomputed from
+provider API downloads. Public Boundary run `32901477914` also passed, but it is deliberately not
+one of the four required contexts and still uses Pester/PowerShell.
+
 ## Frozen-reader public boundary
 
 The ignored 0.42.65 executable remains excluded from the public Git tree, archive, Actions inputs,
@@ -114,12 +229,25 @@ summaries must report `frozen_binary_execution_count=0` and
 actual-reader result remains `8/8 PASS` under the pinned SHA-256 recorded in
 `docs/ga-ready/evidence/csharp-architecture-wave2a-job-durability-completion-2026-08-02.md`.
 
-## Remaining gates
+## Completed gates, residue, and rollback
 
-- Run and independently validate the four replacement jobs on the exact cutover SHA.
-- Atomically replace only the four required branch-protection contexts and verify readback.
-- Complete fixed-diff review, merge the cutover PR without force, and validate remote-main CI.
-- Publish the documentation-only post-merge evidence update.
+- Exact cutover-SHA CI, the one-request protection transition, fixed-diff review, non-force PR
+  merge, and exact remote-main CI all passed.
+- The repository is PUBLIC, main protection requires exact new checks with strict/admin enforcement,
+  and cutover PR #1 is merged. The documentation-only closure PR and its final main run will be
+  recorded in the handoff instead of recursively editing this evidence.
+- The 62 legacy Pester source files remain historical parity/rollback material. Non-required
+  `.github/workflows/public-boundary.yml`, local/manual Pester instructions, and administrator
+  scripts remain residue. Required CI alone has Pester and non-admin PowerShell invocation `0`.
+- Post-merge rollback must use a new branch and normal PR: run
+  `git revert 68756f1f2f609951aaf54d76963b10f96409011b`, validate the restored shadow/current jobs, restore
+  the exact old four protection contexts from the payload identified above, verify readback, and
+  merge without force. Never reset or force-push `main`.
+
+The original private archive was independently re-read after cutover: it remains branch `main` at
+`7f3ce04afda0284556d57bb8ba66614f70e70cb0`, its GitHub repository remains PRIVATE, its pre-existing
+two modified and six untracked paths remain unstaged, and neither the shadow nor cutover public
+object is present in its object database.
 
 The operational version remains `0.42.74-admin-smoke`. The
 `pcv.vm.saved-lifecycle/actual_vm_tested/fail` feature-promotion blocker remains open. No package,

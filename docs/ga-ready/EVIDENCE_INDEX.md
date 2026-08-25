@@ -1,23 +1,29 @@
 # Desktop Node 증거 인덱스
 
-## 2026-08-25 Required CI same-SHA shadow PASS and cutover commit
+## 2026-08-25 Required CI Pester-free cutover closure PASS with disclosed evidence deviation
 
 - `docs/ga-ready/evidence/pester-free-required-ci-cutover-2026-08-25.md`는 shadow SHA
-  `f8208f076cb9db69022b4dc060e65f13d23fae8c`, Actions run `32898937784` attempt 1의
-  legacy/replacement 4-job PASS를 기록한다. Legacy Pester `627/627`, replacement Web
-  `50/50`, Installer `49/49`, Delivery `528/528`, .NET `2210/2210`이고
-  failed/skipped/not-run은 모두 `0`이다.
-- 여덟 artifact의 provider ID/digest를 API 재다운로드 SHA-256과 독립 대조했다. Job envelope
-  wall-clock은 `182000 ms`이며 frozen binary 실행 `0`, immutable evidence fallback `2`,
-  host mutation `false`다.
-- Direct-child cutover commit은 catalog `active`, suite `7/7 cutover`, ledger
-  `62/62 files`와 `627/627 contracts` CI PASS, Required workflow 네 replacement job과
-  executable Pester/비관리자 PowerShell/mutation invocation `0`을 고정한다.
-- Cutover-SHA CI, branch-protection 교체, PR merge, remote-main CI가 남아 있어
-  `cutover_completed=false`다. Legacy Pester historical parity/rollback source와 non-required
-  `.github/workflows/public-boundary.yml`은 residue/reference로 보존하며 operational
-  `0.42.74-admin-smoke`, actual-VM blocker, trusted signing/stable binary publication 상태는
-  변경하지 않는다.
+  `f8208f076cb9db69022b4dc060e65f13d23fae8c` / run `32898937784`, 그 direct child인 cutover
+  `68756f1f2f609951aaf54d76963b10f96409011b`, PR #1과 merge/main SHA
+  `d4a952b8e5ab11f7e3a9ae92b41c61b12828bfab`의 최종 closure를 소유한다.
+- Cutover run `32900785756`와 remote-main run `32901477892`는 정확히 `dotnet`, `web`,
+  `delivery`, `installer-policy` 네 job과 네 artifact를 PASS했다. Main 수치는 .NET
+  `2210/2210`, Web registry `50/50`, Delivery `528/528`, Installer `49/49`, ledger
+  `62 files / 627 contracts`; failed/skipped/not-run/timeout/cancel/missing/duplicate는 `0`이다.
+  Main workflow wall-clock은 `204000 ms`로 `214000 ms` ceiling 이하다.
+- Main protection은 strict/admin enforcement를 유지하고 required contexts를 old four에서
+  exact new four로 한 요청에 교체했다. Force-push/deletion은 계속 비활성이다. Exact old/new
+  required-status payload SHA-256은 각각
+  `7b2ae4962bea6779aaf4408e2cc7b0b8ddfa6f4a45a13cd4850d486e79197292`와
+  `a13b0626b38e46fec320608b07a5f9fec88d22219d8e0bfef06d91336399fd0d`다.
+- 전환 전 ETag와 원본 provider-before response hash는 closure material에 보존되지 않았다.
+  Compare-before/PATCH/readback, exact rollback JSON과 reconstructed pre-state hash는 남겼지만,
+  이 reconstruction을 원본 before 증거 또는 원계획 literal-compliance로 주장하지 않는다.
+- `cutover_completed=true`, Required CI executable Pester/비관리자 PowerShell/mutation
+  invocation은 `0`이다. Legacy Pester 62 files, local/manual instructions, 관리자 scripts와
+  non-required `.github/workflows/public-boundary.yml`은 residue/reference로 보존한다.
+  Operational `0.42.74-admin-smoke`, actual-VM blocker, trusted signing/stable binary publication
+  상태는 변경하지 않는다.
 
 ## 2026-08-25 Packaging verification Wave D local parity
 

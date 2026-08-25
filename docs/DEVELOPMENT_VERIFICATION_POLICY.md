@@ -18,7 +18,7 @@
 - Claims: `public_trusted_signing=false`; `external_stable_publication=false`.
 <!-- END GENERATED CURRENT EVIDENCE -->
 
-## 2026-08-25 Required CI same-SHA shadow PASS and cutover commit
+## 2026-08-25 Required CI Pester-free cutover closure PASS with disclosed evidence deviation
 
 Authoritative shadow commit `f8208f076cb9db69022b4dc060e65f13d23fae8c`의 pull-request
 Development Gates run
@@ -30,19 +30,31 @@ attempt 1에서 기존 네 job과 replacement 네 shard가 같은 SHA로 PASS했
 SHA-256과 일치함을 확인했다. 단일 증빙은
 `docs/ga-ready/evidence/pester-free-required-ci-cutover-2026-08-25.md`다.
 
-이 direct-child cutover commit에서 catalog는 `active`, 일곱 suite는 모두 `cutover`, ledger는
-62 files / 627 contracts 전체 `cutover / local pass / CI pass`로 전환된다. Required workflow의
-실행 job은 `dotnet`, `web`, `delivery`, `installer-policy` 네 개뿐이며 정적 executable
-node 기준 Pester, 비관리자 PowerShell, host/service/MSI/VM mutation invocation은 각각 `0`이다.
-Windows 실행 step은 `cmd`, Ubuntu 실행 step은 기본 Bash를 사용한다.
+Direct-child cutover `68756f1f2f609951aaf54d76963b10f96409011b`에서 catalog는 `active`,
+일곱 suite는 모두 `cutover`, ledger는 62 files / 627 contracts 전체
+`cutover / local pass / CI pass`로 전환됐다. Cutover run `32900785756`과 PR #1의 일반 merge
+commit `d4a952b8e5ab11f7e3a9ae92b41c61b12828bfab`에 대한 remote-main push run
+`32901477892`가 모두 PASS했다. Main 수치는 .NET `2210/2210`, Web `50/50`, Delivery
+`528/528`, Installer `49/49`이고 missing/duplicate/skipped/not-run/timeout/cancel은 `0`,
+workflow wall-clock은 `204000 ms`로 `214000 ms` ceiling 이하다.
 
-새 네 job의 cutover-SHA CI, branch-protection context 교체, PR merge와 remote-main CI는 아직
-남아 있으므로 `cutover_completed=false`이며 최종 Required CI zero 전환 완료를 아직 주장하지
-않는다. Legacy Pester는 non-required historical parity/rollback source로 보존하되 active
-workflow oracle로 사용하지 않고,
-`.github/workflows/public-boundary.yml`은 non-required residue다. Operational current
-`0.42.74-admin-smoke`, saved-lifecycle actual-VM blocker, public trusted signing과 external
-stable binary publication 상태는 변경하지 않는다.
+Required workflow의 실행 job은 정확히 `dotnet`, `web`, `delivery`, `installer-policy` 네
+개이며 main protection도 strict/admin enforcement와 force-push/deletion disabled를 유지한 채
+이 네 GitHub Actions context만 요구한다. 정적 executable node 기준 Pester, 비관리자
+PowerShell, host/service/MSI/VM mutation invocation은 각각 `0`이다. Windows 실행 step은
+`cmd`, Ubuntu 실행 step은 기본 Bash를 사용한다. 따라서 `cutover_completed=true`,
+`required_ci_pester_zero=true`, `required_ci_nonadmin_powershell_zero=true`다.
+
+보호 규칙 전환은 immediate compare-before/PATCH/readback으로 검증했고 exact rollback JSON과
+old/new payload hash를 보존했다. 다만 전환 전 ETag와 원본 provider-before response hash는
+closure material에 보존되지 않아 reconstructed pre-state hash로 대체 표기했다. 이는 rollback
+재현에는 충분하지만 해당 캡처 단계를 원계획 literal-compliance PASS로 주장하는 근거는 아니다.
+
+Legacy Pester 62 files는 non-required historical parity/rollback source로 보존하되 active
+workflow oracle로 사용하지 않는다. `.github/workflows/public-boundary.yml`, local/manual
+Pester instructions와 관리자 scripts도 residue이므로 repository-wide PowerShell zero를
+주장하지 않는다. Operational current `0.42.74-admin-smoke`, saved-lifecycle actual-VM blocker,
+public trusted signing과 external stable binary publication 상태는 변경하지 않는다.
 
 ## 2026-08-25 public source safety gate
 
