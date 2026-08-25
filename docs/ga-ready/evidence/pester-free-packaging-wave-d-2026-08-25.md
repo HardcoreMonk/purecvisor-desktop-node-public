@@ -2,15 +2,16 @@
 
 ## Current verdict
 
-Packaging Wave D is in progress. D1 and D2 local parity are PASS. The managed replacements
-executed all `132/132` mapped Packaging contracts without skips. The one-time Pester 5.7.1
-references also passed D1 `90/90` and D2 `42/42` without skips. D3-D10, aggregate Packaging local
+Packaging Wave D is in progress. D1 through D3 local parity are PASS. The managed replacements
+executed all `193/193` mapped Packaging contracts without skips. The one-time Pester 5.7.1
+references also passed D1 `90/90`, D2 `42/42`, and D3 `61/61` without skips. D4-D10, aggregate Packaging local
 parity, Required CI parity, branch-protection cutover, and managed current-evidence catalog
 activation remain pending and are not claimed by this checkpoint.
 
 wave_c_checkpoint_head=9bc382650059fe3ea759e27bcee69cce6823fe38
 evidence_input_head=b86eddd37d0ed5af44c8b33f426c0eef8024eb44
 d2_input_head=a38607b14ac1d2dd5904dc408d4d0cb757f1f936
+d3_input_head=dea5f6c9f11b51abab53bc321bcf5acbebff8d51
 input_dirty_state=clean
 
 ## Fixed ten-batch inventory
@@ -19,7 +20,7 @@ input_dirty_state=clean
 | --- | --- | ---: | ---: | --- | --- | --- |
 | D1 | canonical admin-smoke evidence | 1 | 90 | 90/90 pass | 90/90 pass | mapped / local pass / CI pending |
 | D2 | current/promotion/package evidence | 5 | 42 | 42/42 pass | 42/42 pass | mapped / local pass / CI pending |
-| D3 | product invocation | 1 | 61 | not-run | not-run | unmapped / local pending / CI pending |
+| D3 | product invocation | 1 | 61 | 61/61 pass | 61/61 pass | mapped / local pass / CI pending |
 | D4 | product descriptors | 3 | 58 | not-run | not-run | unmapped / local pending / CI pending |
 | D5 | development verification policy | 8 | 51 | not-run | not-run | unmapped / local pending / CI pending |
 | D6 | orchestration and timeout boundaries | 5 | 44 | not-run | not-run | unmapped / local pending / CI pending |
@@ -27,7 +28,7 @@ input_dirty_state=clean
 | D8 | manual-admin/public-ops readiness | 8 | 45 | not-run | not-run | unmapped / local pending / CI pending |
 | D9 | installed-smoke descriptors | 8 | 31 | not-run | not-run | unmapped / local pending / CI pending |
 | D10 | reconciliation/lifecycle policy | 8 | 54 | not-run | not-run | unmapped / local pending / CI pending |
-| **Total** |  | **55** | **528** | **132 pass / 396 not-run** | **132 pass / 396 not-run** | **132 mapped local pass / 396 unmapped / CI pending** |
+| **Total** |  | **55** | **528** | **193 pass / 335 not-run** | **193 pass / 335 not-run** | **193 mapped local pass / 335 unmapped / CI pending** |
 
 batch_d1_files=1
 batch_d1_contracts=90
@@ -183,6 +184,70 @@ ledger_after_d2_ci_pending=528
 ledger_after_d2_missing=0
 ledger_after_d2_duplicate=0
 ledger_after_d2_order_drift=0
+
+## D3 product invocation
+
+The single product-invocation fixture owns 61 contracts. Its managed replacement binds the exact
+legacy file, product entrypoint, module, contract names/order, 418 assertion sites, and 844
+source literals by SHA-256. It validates the ten-action surface, route presence, argument-array
+command boundary, pre-execution automatic-reboot guard, diagnostic redaction, and required
+dispatch/pending-commit tokens without invoking PowerShell, the product entrypoint, or a host
+mutation executable. Five deterministic negative fixtures reject argument injection, a missing
+route, a duplicate action, an unredacted bearer projection, and an executable mutation command.
+
+| Check | Result |
+| --- | --- |
+| Replacement legacy contracts | PASS, 61/61, failed 0, skipped 0 |
+| Deterministic negative tests | PASS, 5/5 |
+| Pester 5.7.1 reference | PASS, 61/61, failed 0, skipped 0, not-run 0 |
+| Delivery assembly | PASS, 312/312, failed 0, skipped 0 |
+| Release solution build | PASS, warnings 0, errors 0 |
+| Node strict-v2 ledger | PASS, files 62, contracts 627, missing/duplicate/order drift 0 |
+| Public source safety | PASS, 20/20, finding count 0 |
+
+d3_legacy_path=packaging/windows-desktop-node/tests/PcvDesktopNodeProduct.Invoke.Tests.ps1
+d3_replacement_owner=src/DesktopNode.Delivery.Tests/Delivery/Product/PcvDesktopNodeProductInvokeContractTests.cs
+d3_contract_spec=config/pcv-desktop-node-product-invoke-contract-spec-v1.json
+d3_contract_spec_sha256=9b4269d5820840f0f1b94795c7b2b97cca8bf0abfac2b15026fc5fc74e80b0f6
+d3_legacy_source_sha256=0fff10664f5e65b72eb1cc86b668717b4caaeac15b4612e0d94c524ffc777955
+d3_entrypoint_source_sha256=086d491283f170558899cbce5e640c17e774186ed83b86d39a791ce4a7f4c1d5
+d3_module_source_sha256=8c0bf982097881f56e60354f53961e54ea4d7a49e566a1e1eee861cd309403c3
+d3_legacy_should_site_count=418
+d3_required_literal_count=844
+d3_replacement_summary={"runner":"dotnet-test/xunit","total":61,"executed":61,"passed":61,"failed":0,"skipped":0,"duration_ms":1000.0,"result":"Completed"}
+d3_replacement_summary_sha256=cd7b67a61273ad8ee28acd41e9727041ca83652a3be78042dde261e2cdfc8f6a
+d3_legacy_summary={"pester_version":"5.7.1","total":61,"passed":61,"failed":0,"skipped":0,"not_run":0,"duration_ms":16943.779,"result":"Passed"}
+d3_legacy_summary_sha256=d2cde82b79f188d993e26af0031d26b16d4472d655ae1fa856c67a8b39671db6
+d3_negative_argument_injection=pass
+d3_negative_missing_route=pass
+d3_negative_duplicate_action=pass
+d3_negative_unredacted_bearer=pass
+d3_negative_executable_mutation_command=pass
+d3_release_build_warnings=0
+d3_release_build_errors=0
+d3_public_source_safety_tests=20
+d3_public_source_safety_finding_count=0
+d3_public_source_safety_report_sha256=603f64030f501eeb60d58859f377cd7ee6668f2ce1bb73ec1b95c4906d9eeebd
+d3_replacement_child_process_count=0
+d3_replacement_write_api_count=0
+d3_host_mutation_performed=false
+
+## Ledger state after D3
+
+| Domain | Files | Contracts | Mapping | Local parity | CI parity |
+| --- | ---: | ---: | --- | --- | --- |
+| Web | 1 | 50 | mapped 50 | pass 50 | pending 50 |
+| Installer | 6 | 49 | mapped 49 | pass 49 | pending 49 |
+| Packaging | 55 | 528 | mapped 193 / unmapped 335 | pass 193 / pending 335 | pending 528 |
+| Total | 62 | 627 | mapped 292 / unmapped 335 | pass 292 / pending 335 | pending 627 |
+
+ledger_after_d3_packaging_mapped=193
+ledger_after_d3_packaging_local_pass=193
+ledger_after_d3_packaging_unmapped=335
+ledger_after_d3_ci_pending=528
+ledger_after_d3_missing=0
+ledger_after_d3_duplicate=0
+ledger_after_d3_order_drift=0
 
 ## Shared fixture boundary
 
