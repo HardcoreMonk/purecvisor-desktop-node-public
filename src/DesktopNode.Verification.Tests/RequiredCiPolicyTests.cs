@@ -192,14 +192,25 @@ public sealed class RequiredCiPolicyTests
             "required-ci-catalog=activation");
 
     [Fact]
-    public void CanonicalWaveDLedgerIsValidForShadowPendingCi()
+    public void CanonicalLedgerCanProjectThePreCutoverShadowState()
     {
-        var json = File.ReadAllText(Path.Combine(
+        var root = JsonNode.Parse(File.ReadAllText(Path.Combine(
             VerificationCatalogFixture.RepositoryRoot,
             "config",
-            "development-verification-migration-manifest.json"));
+            "development-verification-migration-manifest.json")))!.AsObject();
+        root.Remove("cutover_locator");
+        foreach (var row in root["entries"]!.AsArray().Concat(root["contracts"]!.AsArray()))
+        {
+            if (row!["parity_status"]!.GetValue<string>() == "cutover")
+            {
+                row["parity_status"] = "mapped";
+            }
 
-        var result = RequiredCiMigrationLedger.Validate(json, RequiredCiMode.Shadow);
+            row["ci_parity"]!["status"] = "pending";
+            row["ci_parity"]!["evidence"] = null;
+        }
+
+        var result = RequiredCiMigrationLedger.Validate(root.ToJsonString(), RequiredCiMode.Shadow);
 
         Assert.Equal(62, result.FileCount);
         Assert.Equal(627, result.ContractCount);

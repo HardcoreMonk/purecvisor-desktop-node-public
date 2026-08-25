@@ -555,7 +555,7 @@ internal static class MigrationManifestV2
     {
         RequireObject(locator, CutoverLocatorKeys, "cutover-locator=shape");
         var sha = RequireString(locator, "shadow_sha", "cutover-locator=shape");
-        var runId = RequirePositiveInteger(locator, "shadow_run_id", "cutover-locator=shape");
+        var runId = RequirePositiveInt64(locator, "shadow_run_id", "cutover-locator=shape");
         var runUrl = RequireString(locator, "shadow_run_url", "cutover-locator=shape");
         var status = RequireString(locator, "parity_status", "cutover-locator=shape");
         if (!Regex.IsMatch(sha, "^[0-9a-f]{40}$", RegexOptions.CultureInvariant) ||
@@ -658,6 +658,19 @@ internal static class MigrationManifestV2
     {
         var value = RequireNonNegativeInteger(owner, name, detail);
         return value > 0 ? value : throw Invalid(detail);
+    }
+
+    private static long RequirePositiveInt64(JsonElement owner, string name, string detail)
+    {
+        if (!owner.TryGetProperty(name, out var property) ||
+            property.ValueKind != JsonValueKind.Number ||
+            !property.TryGetInt64(out var value) ||
+            value < 1)
+        {
+            throw Invalid(detail);
+        }
+
+        return value;
     }
 
     private static int RequireNonNegativeInteger(JsonElement owner, string name, string detail)

@@ -137,7 +137,7 @@ internal sealed class DevelopmentPolicyContractVerifier
                 "Run dotnet shard",
                 "Run web shard",
                 "Run delivery shard",
-                "Run installer-policy shard");
+                "Run installer and policy shard");
             if (Regex.IsMatch(workflow, "(?i)pwsh|powershell|Invoke-Pester") ||
                 Count(workflow, "RequiredVersion 5.7.1") != 0)
             {

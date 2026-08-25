@@ -74,8 +74,8 @@ public sealed class MigrationManifestV2Tests
         root["cutover_locator"] = new JsonObject
         {
             ["shadow_sha"] = "1111111111111111111111111111111111111111",
-            ["shadow_run_id"] = 123,
-            ["shadow_run_url"] = "https://github.com/HardcoreMonk/purecvisor-desktop-node-public/actions/runs/123",
+            ["shadow_run_id"] = 32894693623L,
+            ["shadow_run_url"] = "https://github.com/HardcoreMonk/purecvisor-desktop-node-public/actions/runs/32894693623",
             ["parity_status"] = "dual-run-pass",
         };
         const string evidence = "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md";

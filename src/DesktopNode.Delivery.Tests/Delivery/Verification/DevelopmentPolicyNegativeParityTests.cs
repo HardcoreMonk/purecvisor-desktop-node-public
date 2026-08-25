@@ -161,6 +161,6 @@ public sealed class DevelopmentPolicyNegativeParityTests
             runs-on: windows-latest
             timeout-minutes: 15
             steps:
-              - name: Run installer-policy shard
+              - name: Run installer and policy shard
         """;
 }
