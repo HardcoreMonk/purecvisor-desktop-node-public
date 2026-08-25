@@ -2,11 +2,12 @@
 
 ## Current verdict
 
-Packaging Wave D is in progress. D1 through D9 local parity are PASS. The managed replacements
-executed all `474/474` mapped Packaging contracts without skips. The one-time Pester 5.7.1
-references also passed D1 `90/90`, D2 `42/42`, D3 `61/61`, D4 `58/58`, D5 `51/51`, D6 `44/44`, D7 `52/52`, D8 `45/45`, and D9 `31/31` without skips. D10 and aggregate Packaging local
-parity, Required CI parity, branch-protection cutover, and managed current-evidence catalog
-activation remain pending and are not claimed by this checkpoint.
+Packaging Wave D D1 through D10 batch-local parity is PASS. The managed replacements executed
+all `528/528` mapped Packaging contracts without skips. The one-time Pester 5.7.1 references
+also passed D1 `90/90`, D2 `42/42`, D3 `61/61`, D4 `58/58`, D5 `51/51`, D6 `44/44`, D7
+`52/52`, D8 `45/45`, D9 `31/31`, and D10 `54/54` without skips. The aggregate Packaging
+full-directory run, Required CI parity, branch-protection cutover, and managed current-evidence
+catalog activation remain pending and are not claimed by this checkpoint.
 
 wave_c_checkpoint_head=9bc382650059fe3ea759e27bcee69cce6823fe38
 evidence_input_head=b86eddd37d0ed5af44c8b33f426c0eef8024eb44
@@ -18,6 +19,7 @@ d6_input_head=8e3bac7b4a54d7e62cf95ad708f53ca1f7a4156f
 d7_input_head=fc16b3f4e7105ddcbc713fc20016cb633cbe856b
 d8_input_head=ba43fa4e894901e0bc3afec173d5ff389ad45308
 d9_input_head=51e87412c3491a5337a9ea079c1c68de7746ebb2
+d10_input_head=b57fb461bdc50e670cb091a44c6f8e253205a748
 input_dirty_state=clean
 
 ## Fixed ten-batch inventory
@@ -33,8 +35,8 @@ input_dirty_state=clean
 | D7 | package/public-distribution preflight | 8 | 52 | 52/52 pass | 52/52 pass | mapped / local pass / CI pending |
 | D8 | manual-admin/public-ops readiness | 8 | 45 | 45/45 pass | 45/45 pass | mapped / local pass / CI pending |
 | D9 | installed-smoke descriptors | 8 | 31 | 31/31 pass | 31/31 pass | mapped / local pass / CI pending |
-| D10 | reconciliation/lifecycle policy | 8 | 54 | not-run | not-run | unmapped / local pending / CI pending |
-| **Total** |  | **55** | **528** | **474 pass / 54 not-run** | **474 pass / 54 not-run** | **474 mapped local pass / 54 unmapped / CI pending** |
+| D10 | reconciliation/lifecycle policy | 8 | 54 | 54/54 pass | 54/54 pass | mapped / local pass / CI pending |
+| **Total** |  | **55** | **528** | **528/528 pass** | **528/528 pass** | **528 mapped local pass / CI pending** |
 
 batch_d1_files=1
 batch_d1_contracts=90
@@ -657,6 +659,82 @@ ledger_after_d9_ci_pending=528
 ledger_after_d9_missing=0
 ledger_after_d9_duplicate=0
 ledger_after_d9_order_drift=0
+
+## D10 reconciliation and lifecycle boundaries
+
+Eight legacy files own 54 post-reboot state-machine, Wave 2B/2C reconciliation, Event Log
+transition, and winget manifest compliance contracts. Their managed replacement binds ten
+module/entrypoint/fixture sources, all eight legacy files, 321 assertion sites, 1,084 source
+literals, and exact names/order by SHA-256. The managed tests read repository state only and do
+not register a scheduled task, reboot, invoke an installer, mutate Event Log, run winget, contact
+a VM provider, or start PowerShell/Pester.
+
+The semantic verifier additionally checks all 22 mutation operations exactly once, fail-closed
+reconciliation mappings, write-evidence/completion/cleanup order, native Event Log installed-smoke
+source boundaries, plan-only provider transition checks, and HTTPS/SHA-256/MSI/singleton winget
+fields. Six deterministic negative fixtures reject an illegal terminal transition, stale
+checkpoint, missing cleanup, reordered lifecycle, Event Log preflight mutation, and invalid
+winget installer field.
+
+| Check | Result |
+| --- | --- |
+| Replacement legacy contracts | PASS, 54/54, failed 0, skipped 0 |
+| Deterministic reconciliation fixtures | PASS, 6/6 |
+| Fixed semantic diff | PASS, files 8, contracts 54, differences 0 |
+| Pester 5.7.1 reference | PASS, 54/54, failed 0, skipped 0, not-run 0 |
+| Delivery category | PASS, 528/528, failed 0, skipped 0 |
+| Delivery assembly | PASS, 684/684, failed 0, skipped 0 |
+| Release solution build | PASS, warnings 0, errors 0 |
+| Node strict-v2 ledger | PASS, files 62, contracts 627, missing/duplicate/order drift 0 |
+| .NET strict-v2 ledger | PASS, 12/12 |
+| Public source safety | PASS, finding count 0 |
+
+d10_legacy_files=8
+d10_legacy_contracts=54
+d10_contract_spec=config/pcv-reconciliation-lifecycle-contract-spec-v1.json
+d10_contract_spec_sha256=2553899a52981600fdbccc30d00291a50c6f34e7c08b8a9bff2b075e90fb48d1
+d10_source_file_count=10
+d10_legacy_should_site_count=321
+d10_required_literal_count=1084
+d10_replacement_summary={"runner":"dotnet-test/xunit","total":54,"executed":54,"passed":54,"failed":0,"skipped":0,"duration_ms":1101,"result":"Completed"}
+d10_replacement_summary_sha256=90f56d1074757e20260c49f545aba52e283d74fcbf84a84319d53a6ff7ca6fb1
+d10_legacy_summary={"pester_version":"5.7.1","total":54,"passed":54,"failed":0,"skipped":0,"not_run":0,"duration_ms":30542,"result":"Passed"}
+d10_legacy_summary_sha256=81f65104d67755b9c538fe7e945021f80b76b8fc6dffb56cec9a7faf6ff2421a
+d10_semantic_diff_files=8
+d10_semantic_diff_contracts=54
+d10_semantic_diff_difference_count=0
+d10_negative_illegal_transition=pass
+d10_negative_stale_checkpoint=pass
+d10_negative_missing_cleanup=pass
+d10_negative_reordered_lifecycle=pass
+d10_negative_event_log_mutation=pass
+d10_negative_invalid_winget_field=pass
+d10_release_build_warnings=0
+d10_release_build_errors=0
+d10_public_source_safety_finding_count=0
+d10_public_source_safety_report_sha256=603f64030f501eeb60d58859f377cd7ee6668f2ce1bb73ec1b95c4906d9eeebd
+d10_replacement_child_process_count=0
+d10_replacement_write_api_count=0
+d10_host_mutation_performed=false
+
+## Ledger state after D10
+
+| Domain | Files | Contracts | Mapping | Local parity | CI parity |
+| --- | ---: | ---: | --- | --- | --- |
+| Web | 1 | 50 | mapped 50 | pass 50 | pending 50 |
+| Installer | 6 | 49 | mapped 49 | pass 49 | pending 49 |
+| Packaging | 55 | 528 | mapped 528 | pass 528 | pending 528 |
+| Total | 62 | 627 | mapped 627 | pass 627 | pending 627 |
+
+ledger_after_d10_packaging_mapped=528
+ledger_after_d10_packaging_local_pass=528
+ledger_after_d10_packaging_unmapped=0
+ledger_after_d10_total_mapped=627
+ledger_after_d10_total_local_pass=627
+ledger_after_d10_ci_pending=627
+ledger_after_d10_missing=0
+ledger_after_d10_duplicate=0
+ledger_after_d10_order_drift=0
 
 ## Shared fixture boundary
 
