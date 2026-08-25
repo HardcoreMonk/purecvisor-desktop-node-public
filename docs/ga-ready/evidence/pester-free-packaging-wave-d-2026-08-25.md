@@ -2,9 +2,9 @@
 
 ## Current verdict
 
-Packaging Wave D is in progress. D1 through D6 local parity are PASS. The managed replacements
-executed all `346/346` mapped Packaging contracts without skips. The one-time Pester 5.7.1
-references also passed D1 `90/90`, D2 `42/42`, D3 `61/61`, D4 `58/58`, D5 `51/51`, and D6 `44/44` without skips. D7-D10, aggregate Packaging local
+Packaging Wave D is in progress. D1 through D7 local parity are PASS. The managed replacements
+executed all `398/398` mapped Packaging contracts without skips. The one-time Pester 5.7.1
+references also passed D1 `90/90`, D2 `42/42`, D3 `61/61`, D4 `58/58`, D5 `51/51`, D6 `44/44`, and D7 `52/52` without skips. D8-D10, aggregate Packaging local
 parity, Required CI parity, branch-protection cutover, and managed current-evidence catalog
 activation remain pending and are not claimed by this checkpoint.
 
@@ -15,6 +15,7 @@ d3_input_head=dea5f6c9f11b51abab53bc321bcf5acbebff8d51
 d4_input_head=03316a7f8db38dfa325d69a16f8607c167b1ff11
 d5_input_head=373a07f360a6d1f78b307dc06692a634e3f1f523
 d6_input_head=8e3bac7b4a54d7e62cf95ad708f53ca1f7a4156f
+d7_input_head=fc16b3f4e7105ddcbc713fc20016cb633cbe856b
 input_dirty_state=clean
 
 ## Fixed ten-batch inventory
@@ -27,11 +28,11 @@ input_dirty_state=clean
 | D4 | product descriptors | 3 | 58 | 58/58 pass | 58/58 pass | mapped / local pass / CI pending |
 | D5 | development verification policy | 8 | 51 | 51/51 pass | 51/51 pass | mapped / local pass / CI pending |
 | D6 | orchestration and timeout boundaries | 5 | 44 | 44/44 pass | 44/44 pass | mapped / local pass / CI pending |
-| D7 | package/public-distribution preflight | 8 | 52 | not-run | not-run | unmapped / local pending / CI pending |
+| D7 | package/public-distribution preflight | 8 | 52 | 52/52 pass | 52/52 pass | mapped / local pass / CI pending |
 | D8 | manual-admin/public-ops readiness | 8 | 45 | not-run | not-run | unmapped / local pending / CI pending |
 | D9 | installed-smoke descriptors | 8 | 31 | not-run | not-run | unmapped / local pending / CI pending |
 | D10 | reconciliation/lifecycle policy | 8 | 54 | not-run | not-run | unmapped / local pending / CI pending |
-| **Total** |  | **55** | **528** | **346 pass / 182 not-run** | **346 pass / 182 not-run** | **346 mapped local pass / 182 unmapped / CI pending** |
+| **Total** |  | **55** | **528** | **398 pass / 130 not-run** | **398 pass / 130 not-run** | **398 mapped local pass / 130 unmapped / CI pending** |
 
 batch_d1_files=1
 batch_d1_contracts=90
@@ -446,6 +447,75 @@ ledger_after_d6_ci_pending=528
 ledger_after_d6_missing=0
 ledger_after_d6_duplicate=0
 ledger_after_d6_order_drift=0
+
+## D7 package and public-distribution preflight boundaries
+
+Eight legacy files own 52 built-in TLS, Burn, diagnostic bundle server, MSIX feasibility,
+public-distribution descriptor/bundle/readiness, and updater catalog publication preflight
+contracts. Their managed replacement binds all eight direct source scripts and all eight legacy
+files, 256 assertion sites, 722 source literals, and exact names/order by SHA-256. It preserves
+plan-only, `not-run`, `not-built`, `not-published`, `not-submitted`, and explicit blocker states;
+the public repository transition does not promote signing or external publication claims.
+
+The legacy operations-bundle reference wrote only its Pester `TestDrive` descriptors and invoked
+the non-mutating component preflights. The managed replacement is read-only and starts no
+PowerShell, Pester, process, service, VM, network request, package build, or publication command.
+
+| Check | Result |
+| --- | --- |
+| Replacement legacy contracts | PASS, 52/52, failed 0, skipped 0 |
+| Deterministic preflight fixtures | PASS, 5/5 |
+| Fixed semantic diff | PASS, files 8, contracts 52, differences 0 |
+| Pester 5.7.1 reference | PASS, 52/52, failed 0, skipped 0, not-run 0 |
+| Delivery assembly | PASS, 538/538, failed 0, skipped 0 |
+| Release solution build | PASS, warnings 0, errors 0 |
+| Node strict-v2 ledger | PASS, files 62, contracts 627, missing/duplicate/order drift 0 |
+| Public source safety | PASS, 20/20, finding count 0 |
+
+d7_legacy_files=8
+d7_legacy_contracts=52
+d7_contract_spec=config/pcv-preflight-contract-spec-v1.json
+d7_contract_spec_sha256=2f1423f294eae4f6bc4b360eb9270b563d44646298c955a807ae3c98a9a014ad
+d7_source_file_count=8
+d7_legacy_should_site_count=256
+d7_required_literal_count=722
+d7_replacement_summary={"runner":"dotnet-test/xunit","total":52,"executed":52,"passed":52,"failed":0,"skipped":0,"duration_ms":152.0,"result":"Completed"}
+d7_replacement_summary_sha256=8672c0e9da264226ca60fc1729a39216c0cdac947048b833ead5a20b592a55c3
+d7_legacy_summary={"pester_version":"5.7.1","total":52,"passed":52,"failed":0,"skipped":0,"not_run":0,"duration_ms":33642.717,"result":"Passed"}
+d7_legacy_summary_sha256=127dd7c256faa04595e569f4bb1223cccdcae1d5044dae84dc19f5f30fa488cb
+d7_semantic_diff_files=8
+d7_semantic_diff_contracts=52
+d7_semantic_diff_difference_count=0
+d7_negative_missing_blocker=pass
+d7_negative_published_state=pass
+d7_negative_unsafe_credential_field=pass
+d7_negative_wrong_package_channel=pass
+d7_negative_executable_mutation=pass
+d7_release_build_warnings=0
+d7_release_build_errors=0
+d7_public_source_safety_tests=20
+d7_public_source_safety_finding_count=0
+d7_public_source_safety_report_sha256=603f64030f501eeb60d58859f377cd7ee6668f2ce1bb73ec1b95c4906d9eeebd
+d7_replacement_child_process_count=0
+d7_replacement_write_api_count=0
+d7_host_mutation_performed=false
+
+## Ledger state after D7
+
+| Domain | Files | Contracts | Mapping | Local parity | CI parity |
+| --- | ---: | ---: | --- | --- | --- |
+| Web | 1 | 50 | mapped 50 | pass 50 | pending 50 |
+| Installer | 6 | 49 | mapped 49 | pass 49 | pending 49 |
+| Packaging | 55 | 528 | mapped 398 / unmapped 130 | pass 398 / pending 130 | pending 528 |
+| Total | 62 | 627 | mapped 497 / unmapped 130 | pass 497 / pending 130 | pending 627 |
+
+ledger_after_d7_packaging_mapped=398
+ledger_after_d7_packaging_local_pass=398
+ledger_after_d7_packaging_unmapped=130
+ledger_after_d7_ci_pending=528
+ledger_after_d7_missing=0
+ledger_after_d7_duplicate=0
+ledger_after_d7_order_drift=0
 
 ## Shared fixture boundary
 
