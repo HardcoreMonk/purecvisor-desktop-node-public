@@ -284,7 +284,20 @@ internal static class MigrationManifestV2
 
             var category = GetCategory(type);
             var domain = category == "Installer" ? "installer" : "packaging";
-            var owner = $"src/DesktopNode.Delivery.Tests/{category}/{type.Name}.cs";
+            const string namespacePrefix = "DesktopNode.Delivery.Tests.";
+            if (type.Namespace is null ||
+                !type.Namespace.StartsWith(namespacePrefix, StringComparison.Ordinal))
+            {
+                throw Invalid("replacement=owner-namespace");
+            }
+
+            var ownerDirectory = type.Namespace[namespacePrefix.Length..].Replace('.', '/');
+            if (ownerDirectory.Split('/').Any(segment => segment is "" or "." or ".."))
+            {
+                throw Invalid("replacement=owner-namespace");
+            }
+
+            var owner = $"src/DesktopNode.Delivery.Tests/{ownerDirectory}/{type.Name}.cs";
             var ownerSource = repository.ReadUtf8Text(owner);
             foreach (var attribute in attributes)
             {
