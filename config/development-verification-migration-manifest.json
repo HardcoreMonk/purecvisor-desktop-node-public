@@ -90,10 +90,10 @@
       "legacy_path": "packaging/windows-desktop-node/tests/PcvBatchSupervisor.Tests.ps1",
       "domain": "packaging",
       "legacy_contract_count": 28,
-      "parity_status": "unmapped",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -146,10 +146,10 @@
       "legacy_path": "packaging/windows-desktop-node/tests/PcvCiTriggerContract.Tests.ps1",
       "domain": "packaging",
       "legacy_contract_count": 2,
-      "parity_status": "unmapped",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -160,10 +160,10 @@
       "legacy_path": "packaging/windows-desktop-node/tests/PcvConfigJobStoreMigrationApplySmoke.Tests.ps1",
       "domain": "packaging",
       "legacy_contract_count": 5,
-      "parity_status": "unmapped",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -594,10 +594,10 @@
       "legacy_path": "packaging/windows-desktop-node/tests/PcvRunnerArtifactRootContract.Tests.ps1",
       "domain": "packaging",
       "legacy_contract_count": 3,
-      "parity_status": "unmapped",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -650,10 +650,10 @@
       "legacy_path": "packaging/windows-desktop-node/tests/PcvTimeoutRateLimitHardeningPreflight.Tests.ps1",
       "domain": "packaging",
       "legacy_contract_count": 6,
-      "parity_status": "unmapped",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -2948,12 +2948,12 @@
       "legacy_ordinal": 1,
       "legacy_name": "builds a non-mutating packaging regression manifest",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Orchestration/PcvBatchSupervisorContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.batch-supervisor.001",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -2965,12 +2965,12 @@
       "legacy_ordinal": 2,
       "legacy_name": "writes dry-run artifacts without executing commands",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Orchestration/PcvBatchSupervisorContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.batch-supervisor.002",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -2982,12 +2982,12 @@
       "legacy_ordinal": 3,
       "legacy_name": "keeps a completed real-run summary intact across a later dry-run of the same artifact root",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Orchestration/PcvBatchSupervisorContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.batch-supervisor.003",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -2999,12 +2999,12 @@
       "legacy_ordinal": 4,
       "legacy_name": "rejects host mutation steps without explicit allowance",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Orchestration/PcvBatchSupervisorContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.batch-supervisor.004",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -3016,12 +3016,12 @@
       "legacy_ordinal": 5,
       "legacy_name": "rejects automatic reboot capable commands even when host mutation is allowed",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Orchestration/PcvBatchSupervisorContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.batch-supervisor.005",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -3033,12 +3033,12 @@
       "legacy_ordinal": 6,
       "legacy_name": "times out a hanging process and records heartbeat plus failed summary",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Orchestration/PcvBatchSupervisorContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.batch-supervisor.006",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -3050,12 +3050,12 @@
       "legacy_ordinal": 7,
       "legacy_name": "records GPU adapter and process counter snapshots while a step runs",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Orchestration/PcvBatchSupervisorContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.batch-supervisor.007",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -3067,12 +3067,12 @@
       "legacy_ordinal": 8,
       "legacy_name": "resumes by skipping successful matching command fingerprints",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Orchestration/PcvBatchSupervisorContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.batch-supervisor.008",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -3084,12 +3084,12 @@
       "legacy_ordinal": 9,
       "legacy_name": "redacts tokens and known paths from arguments and captured output",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Orchestration/PcvBatchSupervisorContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.batch-supervisor.009",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -3101,12 +3101,12 @@
       "legacy_ordinal": 10,
       "legacy_name": "runs the CLI entrypoint from a manifest file",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Orchestration/PcvBatchSupervisorContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.batch-supervisor.010",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -3118,12 +3118,12 @@
       "legacy_ordinal": 11,
       "legacy_name": "records a real process-start failure without waiting",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Orchestration/PcvBatchSupervisorContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.batch-supervisor.011",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -3135,12 +3135,12 @@
       "legacy_ordinal": 12,
       "legacy_name": "builds WebRegression profile without host mutation commands",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Orchestration/PcvBatchSupervisorContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.batch-supervisor.012",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -3152,12 +3152,12 @@
       "legacy_ordinal": 13,
       "legacy_name": "requires the public boundary guard in packaging regression manifests",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Orchestration/PcvBatchSupervisorContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.batch-supervisor.013",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -3169,12 +3169,12 @@
       "legacy_ordinal": 14,
       "legacy_name": "saves a generated manifest file",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Orchestration/PcvBatchSupervisorContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.batch-supervisor.014",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -3186,12 +3186,12 @@
       "legacy_ordinal": 15,
       "legacy_name": "builds ServiceMsiHyperVAdminSmoke as one guarded admin mutation step",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Orchestration/PcvBatchSupervisorContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.batch-supervisor.015",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -3203,12 +3203,12 @@
       "legacy_ordinal": 16,
       "legacy_name": "passes explicit batch evidence root into ServiceMsiHyperVAdminSmoke route runner",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Orchestration/PcvBatchSupervisorContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.batch-supervisor.016",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -3220,12 +3220,12 @@
       "legacy_ordinal": 17,
       "legacy_name": "builds OsMutationGate as one guarded admin mutation step",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Orchestration/PcvBatchSupervisorContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.batch-supervisor.017",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -3237,12 +3237,12 @@
       "legacy_ordinal": 18,
       "legacy_name": "builds ManualAdminCampaignDescriptor as one non-mutating descriptor step",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Orchestration/PcvBatchSupervisorContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.batch-supervisor.018",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -3254,12 +3254,12 @@
       "legacy_ordinal": 19,
       "legacy_name": "writes the next manual-admin descriptor batch manifest without host mutation steps",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Orchestration/PcvBatchSupervisorContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.batch-supervisor.019",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -3271,12 +3271,12 @@
       "legacy_ordinal": 20,
       "legacy_name": "builds FullAdminHostMutationGate as ordered route parity then OS gate steps",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Orchestration/PcvBatchSupervisorContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.batch-supervisor.020",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -3288,12 +3288,12 @@
       "legacy_ordinal": 21,
       "legacy_name": "rejects all admin profiles without explicit host mutation allowance",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Orchestration/PcvBatchSupervisorContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.batch-supervisor.021",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -3305,12 +3305,12 @@
       "legacy_ordinal": 22,
       "legacy_name": "rejects all admin profiles from a non-elevated shell even with host mutation allowance",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Orchestration/PcvBatchSupervisorContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.batch-supervisor.022",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -3322,12 +3322,12 @@
       "legacy_ordinal": 23,
       "legacy_name": "dry-runs an admin profile with explicit approval without creating step results",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Orchestration/PcvBatchSupervisorContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.batch-supervisor.023",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -3339,12 +3339,12 @@
       "legacy_ordinal": 24,
       "legacy_name": "keeps generated admin profile arguments free of reboot and scheduled-task commands",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Orchestration/PcvBatchSupervisorContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.batch-supervisor.024",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -3356,12 +3356,12 @@
       "legacy_ordinal": 25,
       "legacy_name": "retries a failed step when retry_count is configured and preserves each attempt",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Orchestration/PcvBatchSupervisorContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.batch-supervisor.025",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -3373,12 +3373,12 @@
       "legacy_ordinal": 26,
       "legacy_name": "fails after retry_count is exhausted and points resume at the failed step",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Orchestration/PcvBatchSupervisorContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.batch-supervisor.026",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -3390,12 +3390,12 @@
       "legacy_ordinal": 27,
       "legacy_name": "sets retry_count defaults for host-mutating admin profile steps",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Orchestration/PcvBatchSupervisorContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.batch-supervisor.027",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -3407,12 +3407,12 @@
       "legacy_ordinal": 28,
       "legacy_name": "requires profile options for admin profiles",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Orchestration/PcvBatchSupervisorContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.batch-supervisor.028",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -3832,12 +3832,12 @@
       "legacy_ordinal": 1,
       "legacy_name": "runs Development Gates for pull requests, main pushes, and manual dispatch only",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Orchestration/PcvCiTriggerContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.ci-trigger-contract.001",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -3849,12 +3849,12 @@
       "legacy_ordinal": 2,
       "legacy_name": "runs Public Boundary Contract for pull requests, main pushes, and manual dispatch only",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Orchestration/PcvCiTriggerContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.ci-trigger-contract.002",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -3866,12 +3866,12 @@
       "legacy_ordinal": 1,
       "legacy_name": "creates summary.json in plan-only mode",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Orchestration/PcvConfigJobStoreMigrationApplySmokeContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.config-job-store-migration-apply-smoke.001",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -3883,12 +3883,12 @@
       "legacy_ordinal": 2,
       "legacy_name": "records the exact installed migration apply step names in plan-only mode",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Orchestration/PcvConfigJobStoreMigrationApplySmokeContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.config-job-store-migration-apply-smoke.002",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -3900,12 +3900,12 @@
       "legacy_ordinal": 3,
       "legacy_name": "records supported migration plan identities in the command plan",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Orchestration/PcvConfigJobStoreMigrationApplySmokeContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.config-job-store-migration-apply-smoke.003",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -3917,12 +3917,12 @@
       "legacy_ordinal": 4,
       "legacy_name": "states that plan-only did not perform host mutation",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Orchestration/PcvConfigJobStoreMigrationApplySmokeContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.config-job-store-migration-apply-smoke.004",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -3934,12 +3934,12 @@
       "legacy_ordinal": 5,
       "legacy_name": "does not contain reboot, scheduler, firewall, trust-store, or Hyper-V mutation command text",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Orchestration/PcvConfigJobStoreMigrationApplySmokeContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.config-job-store-migration-apply-smoke.005",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -8694,12 +8694,12 @@
       "legacy_ordinal": 1,
       "legacy_name": "finds the runners that take an -ArtifactRoot parameter",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Orchestration/PcvRunnerArtifactRootContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.runner-artifact-root-contract.001",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -8711,12 +8711,12 @@
       "legacy_ordinal": 2,
       "legacy_name": "guards every relative artifact-root join with a rooted-path branch",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Orchestration/PcvRunnerArtifactRootContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.runner-artifact-root-contract.002",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -8728,12 +8728,12 @@
       "legacy_ordinal": 3,
       "legacy_name": "separates a relative-only runner from a guarded one instead of passing vacuously",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Orchestration/PcvRunnerArtifactRootContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.runner-artifact-root-contract.003",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -8966,12 +8966,12 @@
       "legacy_ordinal": 1,
       "legacy_name": "creates a non-mutating timeout and rate-limit hardening summary",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Orchestration/PcvTimeoutRateLimitHardeningPreflightContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.timeout-rate-limit-hardening-preflight.001",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -8983,12 +8983,12 @@
       "legacy_ordinal": 2,
       "legacy_name": "records the exact timeout and rate-limit preflight check names",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Orchestration/PcvTimeoutRateLimitHardeningPreflightContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.timeout-rate-limit-hardening-preflight.002",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -9000,12 +9000,12 @@
       "legacy_ordinal": 3,
       "legacy_name": "writes a timeout and rate-limit hardening plan preview without applying middleware or load tests",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Orchestration/PcvTimeoutRateLimitHardeningPreflightContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.timeout-rate-limit-hardening-preflight.003",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -9017,12 +9017,12 @@
       "legacy_ordinal": 4,
       "legacy_name": "requires plan-only mode",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Orchestration/PcvTimeoutRateLimitHardeningPreflightContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.timeout-rate-limit-hardening-preflight.004",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -9034,12 +9034,12 @@
       "legacy_ordinal": 5,
       "legacy_name": "rejects routes outside the Local API namespace",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Orchestration/PcvTimeoutRateLimitHardeningPreflightContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.timeout-rate-limit-hardening-preflight.005",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -9051,12 +9051,12 @@
       "legacy_ordinal": 6,
       "legacy_name": "does not contain host mutation, service command, HTTP execution, or load generation text",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Orchestration/PcvTimeoutRateLimitHardeningPreflightContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.timeout-rate-limit-hardening-preflight.006",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",

@@ -2,9 +2,9 @@
 
 ## Current verdict
 
-Packaging Wave D is in progress. D1 through D5 local parity are PASS. The managed replacements
-executed all `302/302` mapped Packaging contracts without skips. The one-time Pester 5.7.1
-references also passed D1 `90/90`, D2 `42/42`, D3 `61/61`, D4 `58/58`, and D5 `51/51` without skips. D6-D10, aggregate Packaging local
+Packaging Wave D is in progress. D1 through D6 local parity are PASS. The managed replacements
+executed all `346/346` mapped Packaging contracts without skips. The one-time Pester 5.7.1
+references also passed D1 `90/90`, D2 `42/42`, D3 `61/61`, D4 `58/58`, D5 `51/51`, and D6 `44/44` without skips. D7-D10, aggregate Packaging local
 parity, Required CI parity, branch-protection cutover, and managed current-evidence catalog
 activation remain pending and are not claimed by this checkpoint.
 
@@ -14,6 +14,7 @@ d2_input_head=a38607b14ac1d2dd5904dc408d4d0cb757f1f936
 d3_input_head=dea5f6c9f11b51abab53bc321bcf5acbebff8d51
 d4_input_head=03316a7f8db38dfa325d69a16f8607c167b1ff11
 d5_input_head=373a07f360a6d1f78b307dc06692a634e3f1f523
+d6_input_head=8e3bac7b4a54d7e62cf95ad708f53ca1f7a4156f
 input_dirty_state=clean
 
 ## Fixed ten-batch inventory
@@ -25,12 +26,12 @@ input_dirty_state=clean
 | D3 | product invocation | 1 | 61 | 61/61 pass | 61/61 pass | mapped / local pass / CI pending |
 | D4 | product descriptors | 3 | 58 | 58/58 pass | 58/58 pass | mapped / local pass / CI pending |
 | D5 | development verification policy | 8 | 51 | 51/51 pass | 51/51 pass | mapped / local pass / CI pending |
-| D6 | orchestration and timeout boundaries | 5 | 44 | not-run | not-run | unmapped / local pending / CI pending |
+| D6 | orchestration and timeout boundaries | 5 | 44 | 44/44 pass | 44/44 pass | mapped / local pass / CI pending |
 | D7 | package/public-distribution preflight | 8 | 52 | not-run | not-run | unmapped / local pending / CI pending |
 | D8 | manual-admin/public-ops readiness | 8 | 45 | not-run | not-run | unmapped / local pending / CI pending |
 | D9 | installed-smoke descriptors | 8 | 31 | not-run | not-run | unmapped / local pending / CI pending |
 | D10 | reconciliation/lifecycle policy | 8 | 54 | not-run | not-run | unmapped / local pending / CI pending |
-| **Total** |  | **55** | **528** | **302 pass / 226 not-run** | **302 pass / 226 not-run** | **302 mapped local pass / 226 unmapped / CI pending** |
+| **Total** |  | **55** | **528** | **346 pass / 182 not-run** | **346 pass / 182 not-run** | **346 mapped local pass / 182 unmapped / CI pending** |
 
 batch_d1_files=1
 batch_d1_contracts=90
@@ -383,6 +384,68 @@ ledger_after_d5_ci_pending=528
 ledger_after_d5_missing=0
 ledger_after_d5_duplicate=0
 ledger_after_d5_order_drift=0
+
+## D6 orchestration and timeout boundaries
+
+Five legacy files own 44 BatchSupervisor, CI trigger, migration plan-only, ArtifactRoot, and
+timeout/rate-limit preflight contracts. Their managed replacement binds 40 source files, all 36
+current `-ArtifactRoot` runners, all five legacy files, 262 assertion sites, 607 source literals,
+and exact names/order by SHA-256. It verifies batch state/retry/resume/reboot guards, one terminal
+row, both workflow triggers, ten migration steps, rooted artifact resolution, and plan-only
+timeout/rate-limit policy without starting a batch, process, service, VM, or network request.
+
+| Check | Result |
+| --- | --- |
+| Replacement legacy contracts | PASS, 44/44, failed 0, skipped 0 |
+| Deterministic orchestration fixtures | PASS, 5/5 |
+| Pester 5.7.1 reference | PASS, 44/44, failed 0, skipped 0, not-run 0 |
+| Delivery assembly | PASS, 481/481, failed 0, skipped 0 |
+| Release solution build | PASS, warnings 0, errors 0 |
+| Node strict-v2 ledger | PASS, files 62, contracts 627, missing/duplicate/order drift 0 |
+| Public source safety | PASS, 20/20, finding count 0 |
+
+d6_legacy_files=5
+d6_legacy_contracts=44
+d6_contract_spec=config/pcv-orchestration-contract-spec-v1.json
+d6_contract_spec_sha256=a9dc4702728706ec8bdab6327b74a28c6ba98f9f764d3063428125a385c86c1e
+d6_source_file_count=40
+d6_artifact_root_runner_count=36
+d6_legacy_should_site_count=262
+d6_required_literal_count=607
+d6_replacement_summary={"runner":"dotnet-test/xunit","total":44,"executed":44,"passed":44,"failed":0,"skipped":0,"duration_ms":146.0,"result":"Completed"}
+d6_replacement_summary_sha256=9632364a3c8e7f3f76c7007ad29ed86076ea9cbf28e6c6baa2030acc59b2eaaa
+d6_legacy_summary={"pester_version":"5.7.1","total":44,"passed":44,"failed":0,"skipped":0,"not_run":0,"duration_ms":38321.128,"result":"Passed"}
+d6_legacy_summary_sha256=e6febe9db2cf03e3c942ae26675fd52431cac38372f9de497a7e7e479390074b
+d6_negative_double_terminal=pass
+d6_negative_timeout_overflow=pass
+d6_negative_artifact_escape=pass
+d6_negative_duplicate_ci_trigger=pass
+d6_negative_mutation_enabled_plan=pass
+d6_release_build_warnings=0
+d6_release_build_errors=0
+d6_public_source_safety_tests=20
+d6_public_source_safety_finding_count=0
+d6_public_source_safety_report_sha256=603f64030f501eeb60d58859f377cd7ee6668f2ce1bb73ec1b95c4906d9eeebd
+d6_replacement_child_process_count=0
+d6_replacement_write_api_count=0
+d6_host_mutation_performed=false
+
+## Ledger state after D6
+
+| Domain | Files | Contracts | Mapping | Local parity | CI parity |
+| --- | ---: | ---: | --- | --- | --- |
+| Web | 1 | 50 | mapped 50 | pass 50 | pending 50 |
+| Installer | 6 | 49 | mapped 49 | pass 49 | pending 49 |
+| Packaging | 55 | 528 | mapped 346 / unmapped 182 | pass 346 / pending 182 | pending 528 |
+| Total | 62 | 627 | mapped 445 / unmapped 182 | pass 445 / pending 182 | pending 627 |
+
+ledger_after_d6_packaging_mapped=346
+ledger_after_d6_packaging_local_pass=346
+ledger_after_d6_packaging_unmapped=182
+ledger_after_d6_ci_pending=528
+ledger_after_d6_missing=0
+ledger_after_d6_duplicate=0
+ledger_after_d6_order_drift=0
 
 ## Shared fixture boundary
 

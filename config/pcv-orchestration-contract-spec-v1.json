@@ -1,0 +1,1123 @@
+{
+  "contract": "pcv-orchestration-contract-spec-v1",
+  "legacy_contract_count": 44,
+  "legacy_should_site_count": 262,
+  "required_literal_count": 607,
+  "artifact_root_runner_count": 36,
+  "source_files": [
+    {
+      "path": "packaging/windows-desktop-node/tools/PcvBatchSupervisor.psm1",
+      "sha256": "fc51937c156b706bcec6d066e77c10b2c1954df131682af3f7f4f6d33f1c5800"
+    },
+    {
+      "path": "packaging/windows-desktop-node/tools/Invoke-PcvBatchSupervisor.ps1",
+      "sha256": "85d3e48e9a7f1e867ae9dae90415d439227dcde2e3a2babd0e85b1bdb17c4678"
+    },
+    {
+      "path": ".github/workflows/development-gates.yml",
+      "sha256": "2e13836df28d209debe6255b43714e48372a547fff6405e76823e70cb4306647"
+    },
+    {
+      "path": ".github/workflows/public-boundary.yml",
+      "sha256": "3f6a6e3cfe450542ef61b3ff5ef4a4a8c412c0e9e72411fc8babb9b1da806519"
+    },
+    {
+      "path": "packaging/windows-desktop-node/tools/Invoke-PcvConfigJobStoreMigrationApplySmoke.ps1",
+      "sha256": "71b676a0011aa270c8b4de15fb49670c56a7646f35f6b84531232a8965b4eb55"
+    },
+    {
+      "path": "packaging/windows-desktop-node/tools/New-PcvTimeoutRateLimitHardeningPreflight.ps1",
+      "sha256": "64fe500bcb632a00f6853126f0b19ef7bf5b93f84e5a0252f65933a2a3de7ed4"
+    },
+    {
+      "path": "packaging/windows-desktop-node/tools/Invoke-PcvApiHostJobHardeningInstalledSmoke.ps1",
+      "sha256": "49d672be7218ee56f1d7da04ab7ce12d9aa813bcf21127bbab9da8d6263125c8"
+    },
+    {
+      "path": "packaging/windows-desktop-node/tools/Invoke-PcvCredentialManagerDefaultTransitionSmoke.ps1",
+      "sha256": "ac219d65de2c2ce87e640d781f9f1ef1641b4cc33a0159ed61c6001444dfaf68"
+    },
+    {
+      "path": "packaging/windows-desktop-node/tools/Invoke-PcvDevelopmentVerification.ps1",
+      "sha256": "a361842187cc02043e9b7f16510875695c9591e59843f777cc11388a0e19afec"
+    },
+    {
+      "path": "packaging/windows-desktop-node/tools/Invoke-PcvDotNetQualityCapture.ps1",
+      "sha256": "6754c09108a2b1bd514cfb9f88c453df336c6b220051a7c58455bfde623c8ec6"
+    },
+    {
+      "path": "packaging/windows-desktop-node/tools/Invoke-PcvFunctionalCorrectnessCarryForwardSmoke.ps1",
+      "sha256": "b0ac6cf563df637a9df42dfd8ab7f575bd7d8abc07329edcdcf3f84e90cf06ae"
+    },
+    {
+      "path": "packaging/windows-desktop-node/tools/Invoke-PcvInstalledAccountLoginSmoke.ps1",
+      "sha256": "6eb155706009d7a951f545211e3efb90175479f2b0f7ec1a026257dabc1de2d7"
+    },
+    {
+      "path": "packaging/windows-desktop-node/tools/Invoke-PcvInstalledCliQosGuestSmoke.ps1",
+      "sha256": "4c3c8e58424ec1e620c002f061469010b03e86467c192def50c50f5de3b3ba78"
+    },
+    {
+      "path": "packaging/windows-desktop-node/tools/Invoke-PcvInstalledLoopbackBootstrapSmoke.ps1",
+      "sha256": "8c4089a6d2e2bd141181befed73ce1f973c4300805d7cbd46f1a08318c16a121"
+    },
+    {
+      "path": "packaging/windows-desktop-node/tools/Invoke-PcvInternalCleanHostInstallUpdateRollbackSmoke.ps1",
+      "sha256": "2aa61067d1b240b59cd1dde27e8fbe987f38c5bffdb0b073172bec2b0d5baa0f"
+    },
+    {
+      "path": "packaging/windows-desktop-node/tools/Invoke-PcvInternalHttpsTlsLifecycleSmoke.ps1",
+      "sha256": "e92a1fca85fa12ab4c05fe5d71ac8b9df76a93f6fca4afaf5c19265e261e3b51"
+    },
+    {
+      "path": "packaging/windows-desktop-node/tools/Invoke-PcvJobStore04265ReaderCompatibility.ps1",
+      "sha256": "2938b8d75c8b016938deba0231eee22cb0d6511e876f1680ddae3017e20e8124"
+    },
+    {
+      "path": "packaging/windows-desktop-node/tools/Invoke-PcvRouteParityMutationSmoke.ps1",
+      "sha256": "d9cd3a7c7aff49b57d3a0a89e9f5e59c243565b45baa8b20dbadd7cc463c4df7"
+    },
+    {
+      "path": "packaging/windows-desktop-node/tools/Invoke-PcvTargetBackedNoVncInstalledStreamingSmoke.ps1",
+      "sha256": "6a111e5e984db9a97306068747c998ea628273fc0517e5c5b961d936fa8fb0cf"
+    },
+    {
+      "path": "packaging/windows-desktop-node/tools/Invoke-PcvWindowsEventLogDefaultTransitionSmoke.ps1",
+      "sha256": "a876b71c65f5741f6901fff0b1722926ec9c4a8a2948ad26bd36442f6b2badf2"
+    },
+    {
+      "path": "packaging/windows-desktop-node/tools/New-PcvBuiltinTlsCertificateLifecyclePreflight.ps1",
+      "sha256": "2971367a1e67c370dd60ba39d3b8517e1ed824f3ebfba62aa64b1feab5b38fbe"
+    },
+    {
+      "path": "packaging/windows-desktop-node/tools/New-PcvBurnBootstrapperPreflight.ps1",
+      "sha256": "0946da3b3f0ad793356e8bd4ec904231c4c8d4718b58a043b80ae4d63f67a36b"
+    },
+    {
+      "path": "packaging/windows-desktop-node/tools/New-PcvDiagnosticBundleServerPreflight.ps1",
+      "sha256": "c84ff42a3938ddc2b175a53d4806711a2c609cbbe0b178d76d786922e2632182"
+    },
+    {
+      "path": "packaging/windows-desktop-node/tools/New-PcvInternalCleanHostInstallUpdateRollbackReadiness.ps1",
+      "sha256": "9c512902f1e9563b0ec5c3b3b6d4494fd2b11f011be48d604af7b34338d1aba1"
+    },
+    {
+      "path": "packaging/windows-desktop-node/tools/New-PcvManualAdminBaselineReservation.ps1",
+      "sha256": "09d867c92551399e1addd95ed0db34cc2336a39d41c7c0e7ea492f7a46f20bfe"
+    },
+    {
+      "path": "packaging/windows-desktop-node/tools/New-PcvManualAdminCampaignDescriptor.ps1",
+      "sha256": "1eef634715cc394cfc0442b6dc0e60703084f2d2518539869acf191f34f0a753"
+    },
+    {
+      "path": "packaging/windows-desktop-node/tools/New-PcvManualAdminCampaignDescriptorBatchManifest.ps1",
+      "sha256": "17d5f7f02748a15845a0970f18d159c2f836d7deee4160413e3bf5891a05bb7e"
+    },
+    {
+      "path": "packaging/windows-desktop-node/tools/New-PcvManualAdminRebaselineReadiness.ps1",
+      "sha256": "4dee81b5f78a729929f5375cacce60448bf7efe46a19fc37f2bb50d872b399ce"
+    },
+    {
+      "path": "packaging/windows-desktop-node/tools/New-PcvMsixPackagingFeasibilityPreflight.ps1",
+      "sha256": "97002ad46eb5d85cd567a6f1e007f10c24d4997279025427230cdaf8ad71ab90"
+    },
+    {
+      "path": "packaging/windows-desktop-node/tools/New-PcvPublicDistributionDescriptor.ps1",
+      "sha256": "6c389427a70f9f57fae17004e8af8107bf01e6f52b62184de6b25abbadbc62b2"
+    },
+    {
+      "path": "packaging/windows-desktop-node/tools/New-PcvPublicDistributionOperationsBundle.ps1",
+      "sha256": "98e5276e60ac3bed2811c6b386d9f760c8e0b9a929bdd9642e304bf5c649f5dc"
+    },
+    {
+      "path": "packaging/windows-desktop-node/tools/New-PcvPublicDistributionReadiness.ps1",
+      "sha256": "161d4b5b444f07d41f971fd6c0159bfbdb475803bd575563e578112c617b1548"
+    },
+    {
+      "path": "packaging/windows-desktop-node/tools/New-PcvPublicOpsFinalFollowupAttempt.ps1",
+      "sha256": "5924a642cf267a3fb4fa806774adb0b43527ac4732622523f7ab56ac5d1b8ec9"
+    },
+    {
+      "path": "packaging/windows-desktop-node/tools/New-PcvPublicOpsGateExecutionReadiness.ps1",
+      "sha256": "dcf90580cf7d4fb4123f987b98bb9fb6f289104c1a5251bcfca8aecf1f93451a"
+    },
+    {
+      "path": "packaging/windows-desktop-node/tools/New-PcvPublicSignedUpdateRollbackSmokePreflight.ps1",
+      "sha256": "9dd5dbebd7e166e4f24b8a53b2939406793c9920f0f9a9c486240ab408714d60"
+    },
+    {
+      "path": "packaging/windows-desktop-node/tools/New-PcvServiceTokenRotationRevokePreflight.ps1",
+      "sha256": "7ecba40a6c91cfb57e9da5ebd0294c7fc18964239a46676f40f0a6fd17d42038"
+    },
+    {
+      "path": "packaging/windows-desktop-node/tools/New-PcvUpdaterCatalogPublicationPreflight.ps1",
+      "sha256": "dd3c7fa814938aa15395e9c0c9e77f9b22253f17c490156dd2911bb4abbca18c"
+    },
+    {
+      "path": "packaging/windows-desktop-node/tools/New-PcvWindowsCredentialManagerTransitionPreflight.ps1",
+      "sha256": "9d9916d348b6dcf2522568ca6467667f9137bc819cfbbd044a88049420dabbef"
+    },
+    {
+      "path": "packaging/windows-desktop-node/tools/New-PcvWindowsEventLogProviderTransitionPreflight.ps1",
+      "sha256": "cba5b995bea790a45185c5f82b8f4c9d318684950e9381719718dfa8b18dd096"
+    },
+    {
+      "path": "packaging/windows-desktop-node/tools/New-PcvWingetManifestCompliancePreflight.ps1",
+      "sha256": "31a5fbffc8f48512cc92a660bb429f351531cb93c5c9a049b55679fcb8b977be"
+    }
+  ],
+  "legacy_files": [
+    {
+      "key": "batch-supervisor",
+      "path": "packaging/windows-desktop-node/tests/PcvBatchSupervisor.Tests.ps1",
+      "sha256": "27e9e96a77c5eb1af326d76998f9db1d23f8be7b894fa4a88ef5f57d27dd2b59",
+      "contract_count": 28,
+      "should_site_count": 184
+    },
+    {
+      "key": "ci-trigger",
+      "path": "packaging/windows-desktop-node/tests/PcvCiTriggerContract.Tests.ps1",
+      "sha256": "b2e3d4a5791cbecaf4eb1a90687337b960c02f5fa66226fac257ec62b00ab4b4",
+      "contract_count": 2,
+      "should_site_count": 12
+    },
+    {
+      "key": "job-store-migration",
+      "path": "packaging/windows-desktop-node/tests/PcvConfigJobStoreMigrationApplySmoke.Tests.ps1",
+      "sha256": "a16447c63f7fa241a80c23cd1f2787af50e199ed0367e4e7d620d5faab43a2f0",
+      "contract_count": 5,
+      "should_site_count": 20
+    },
+    {
+      "key": "artifact-root",
+      "path": "packaging/windows-desktop-node/tests/PcvRunnerArtifactRootContract.Tests.ps1",
+      "sha256": "f26a5478368aa6e32a889581f6c95dd7a6c14448e57ed916cbc5b566ed9d5704",
+      "contract_count": 3,
+      "should_site_count": 5
+    },
+    {
+      "key": "timeout-rate-limit",
+      "path": "packaging/windows-desktop-node/tests/PcvTimeoutRateLimitHardeningPreflight.Tests.ps1",
+      "sha256": "b6943aa4fefc842e1563e0e120db417b8efff7421bd7ea9aa57508ca3c26b571",
+      "contract_count": 6,
+      "should_site_count": 41
+    }
+  ],
+  "contracts": [
+    {
+      "key": "batch-supervisor",
+      "ordinal": 1,
+      "name": "builds a non-mutating packaging regression manifest",
+      "required_literals": [
+        "batch_id",
+        "ConvertTo-Json",
+        "Count",
+        "ForEach-Object",
+        "gpu_snapshot_interval_seconds",
+        "id",
+        "Join-Path",
+        "mutates_host",
+        "New-PcvBatchSupervisorManifest",
+        "PackagingRegression",
+        "public-boundary-ci-required",
+        "requires_admin",
+        "schema_version",
+        "steps",
+        "Where-Object"
+      ]
+    },
+    {
+      "key": "batch-supervisor",
+      "ordinal": 2,
+      "name": "writes dry-run artifacts without executing commands",
+      "required_literals": [
+        "-Command",
+        "-NoProfile",
+        "batch-manifest.resolved.dry-run.json",
+        "batch-manifest.resolved.json",
+        "current-step.json",
+        "dry_run",
+        "dry-run",
+        "Invoke-PcvBatchSupervisor",
+        "Join-Path",
+        "New-PcvBatchSupervisorManifest",
+        "New-PcvBatchSupervisorStep",
+        "ok",
+        "pwsh",
+        "step-results",
+        "summary.dry-run.json",
+        "summary.json",
+        "Test-Path"
+      ]
+    },
+    {
+      "key": "batch-supervisor",
+      "ordinal": 3,
+      "name": "keeps a completed real-run summary intact across a later dry-run of the same artifact root",
+      "required_literals": [
+        "-Command",
+        "-NoProfile",
+        "batch_id",
+        "completed",
+        "ConvertFrom-Json",
+        "ConvertTo-Json",
+        "Directory",
+        "dry_run",
+        "Get-Content",
+        "Invoke-PcvBatchSupervisor",
+        "Join-Path",
+        "New-Item",
+        "New-PcvBatchSupervisorManifest",
+        "New-PcvBatchSupervisorStep",
+        "ok",
+        "Out-Null",
+        "pwsh",
+        "schema_version",
+        "Set-Content",
+        "status",
+        "summary.dry-run.json",
+        "summary.json",
+        "Test-Path",
+        "UTF8"
+      ]
+    },
+    {
+      "key": "batch-supervisor",
+      "ordinal": 4,
+      "name": "rejects host mutation steps without explicit allowance",
+      "required_literals": [
+        "/i",
+        "Invoke-PcvBatchSupervisor",
+        "Join-Path",
+        "msi-install",
+        "msiexec.exe",
+        "New-PcvBatchSupervisorManifest",
+        "New-PcvBatchSupervisorStep",
+        "step-results",
+        "Test-Path"
+      ]
+    },
+    {
+      "key": "batch-supervisor",
+      "ordinal": 5,
+      "name": "rejects automatic reboot capable commands even when host mutation is allowed",
+      "required_literals": [
+        "-Command",
+        "-NoProfile",
+        "Invoke-PcvBatchSupervisor",
+        "Join-Path",
+        "New-PcvBatchSupervisorManifest",
+        "New-PcvBatchSupervisorStep",
+        "pwsh",
+        "reboot",
+        "Restart-Computer"
+      ]
+    },
+    {
+      "key": "batch-supervisor",
+      "ordinal": 6,
+      "name": "times out a hanging process and records heartbeat plus failed summary",
+      "required_literals": [
+        "-Command",
+        "-NoProfile",
+        "ConvertFrom-Json",
+        "exit_code",
+        "failed",
+        "failed_step_id",
+        "Get-Content",
+        "heartbeat.jsonl",
+        "Invoke-PcvBatchSupervisor",
+        "Join-Path",
+        "New-PcvBatchSupervisorManifest",
+        "New-PcvBatchSupervisorStep",
+        "ok",
+        "pwsh",
+        "StartInfo",
+        "status",
+        "timed_out",
+        "timeout"
+      ]
+    },
+    {
+      "key": "batch-supervisor",
+      "ordinal": 7,
+      "name": "records GPU adapter and process counter snapshots while a step runs",
+      "required_literals": [
+        "-Command",
+        "-NoProfile",
+        "adapter_memory",
+        "batch_id",
+        "collected",
+        "ConvertFrom-Json",
+        "Count",
+        "ForEach-Object",
+        "Get-Content",
+        "gpu_snapshot_count",
+        "gpu_snapshot_path",
+        "gpu-snapshots",
+        "gpu-snapshots.jsonl",
+        "HasExited",
+        "interval_seconds",
+        "Invoke-PcvBatchSupervisor",
+        "Join-Path",
+        "Name",
+        "New-PcvBatchSupervisorManifest",
+        "New-PcvBatchSupervisorStep",
+        "ok",
+        "process_memory",
+        "Properties",
+        "PSObject",
+        "pwsh",
+        "schema_version",
+        "StartInfo",
+        "status",
+        "step_id",
+        "Test-Path"
+      ]
+    },
+    {
+      "key": "batch-supervisor",
+      "ordinal": 8,
+      "name": "resumes by skipping successful matching command fingerprints",
+      "required_literals": [
+        "-Command",
+        "-NoProfile",
+        "HasExited",
+        "Invoke-PcvBatchSupervisor",
+        "Join-Path",
+        "New-PcvBatchSupervisorManifest",
+        "New-PcvBatchSupervisorStep",
+        "ok",
+        "pwsh",
+        "resume",
+        "skipped_steps",
+        "StartInfo",
+        "written"
+      ]
+    },
+    {
+      "key": "batch-supervisor",
+      "ordinal": 9,
+      "name": "redacts tokens and known paths from arguments and captured output",
+      "required_literals": [
+        "-Command",
+        "-NoProfile",
+        "[REPO_ROOT]",
+        "C:\\ProgramData\\PureCVisor\\desktop-node",
+        "ConvertTo-PcvBatchRedactedText",
+        "Get-Content",
+        "HasExited",
+        "Invoke-PcvBatchSupervisor",
+        "Join-Path",
+        "New-PcvBatchSupervisorManifest",
+        "New-PcvBatchSupervisorStep",
+        "ok",
+        "pwsh",
+        "redaction",
+        "StartInfo"
+      ]
+    },
+    {
+      "key": "batch-supervisor",
+      "ordinal": 10,
+      "name": "runs the CLI entrypoint from a manifest file",
+      "required_literals": [
+        "-Command",
+        "-NoProfile",
+        "batch_id",
+        "Bypass",
+        "ConvertFrom-Json",
+        "ConvertTo-Json",
+        "echo",
+        "Join-Path",
+        "manifest.json",
+        "New-PcvBatchSupervisorManifest",
+        "New-PcvBatchSupervisorStep",
+        "ok",
+        "pwsh",
+        "Set-Content",
+        "summary.json",
+        "Test-Path",
+        "UTF8"
+      ]
+    },
+    {
+      "key": "batch-supervisor",
+      "ordinal": 11,
+      "name": "records a real process-start failure without waiting",
+      "required_literals": [
+        "-1",
+        "exit_code",
+        "Invoke-PcvBatchSupervisor",
+        "Join-Path",
+        "New-PcvBatchSupervisorManifest",
+        "New-PcvBatchSupervisorStep",
+        "ok",
+        "results",
+        "start_failure",
+        "timed_out"
+      ]
+    },
+    {
+      "key": "batch-supervisor",
+      "ordinal": 12,
+      "name": "builds WebRegression profile without host mutation commands",
+      "required_literals": [
+        "ConvertTo-Json",
+        "Count",
+        "file_name",
+        "ForEach-Object",
+        "id",
+        "IsOSPlatform",
+        "Join-Path",
+        "New-PcvBatchSupervisorManifest",
+        "npm",
+        "npm.cmd",
+        "Split-Path",
+        "steps",
+        "web-npm-test",
+        "web-pester",
+        "web-verify-parity",
+        "WebRegression",
+        "Where-Object",
+        "Windows"
+      ]
+    },
+    {
+      "key": "batch-supervisor",
+      "ordinal": 13,
+      "name": "requires the public boundary guard in packaging regression manifests",
+      "required_literals": [
+        "arguments",
+        "id",
+        "Join-Path",
+        "mutates_host",
+        "New-PcvBatchSupervisorManifest",
+        "packaging/windows-desktop-node/tests/PcvAdminSmokeEvidenceDocs.Tests.ps1",
+        "PackagingRegression",
+        "public-boundary-ci-required",
+        "requires_admin",
+        "Select-Object",
+        "steps",
+        "Where-Object"
+      ]
+    },
+    {
+      "key": "batch-supervisor",
+      "ordinal": 14,
+      "name": "saves a generated manifest file",
+      "required_literals": [
+        "batch_id",
+        "ConvertFrom-Json",
+        "Get-Content",
+        "Join-Path",
+        "manifest.json",
+        "New-PcvBatchSupervisorManifest",
+        "ok",
+        "PackagingRegression",
+        "path",
+        "Save-PcvBatchSupervisorManifest",
+        "Test-Path"
+      ]
+    },
+    {
+      "key": "batch-supervisor",
+      "ordinal": 15,
+      "name": "builds ServiceMsiHyperVAdminSmoke as one guarded admin mutation step",
+      "required_literals": [
+        "-ArtifactRoot",
+        "-IsoPath",
+        "-Version",
+        "arguments",
+        "Count",
+        "D:\\Downloads\\Rocky-10.1-x86_64-minimal.iso",
+        "GetFullPath",
+        "id",
+        "iso_path",
+        "Join-Path",
+        "mutates_host",
+        "New-PcvBatchSupervisorManifest",
+        "packaging/windows-desktop-node/tools/Invoke-PcvRouteParityMutationSmoke.ps1",
+        "requires_admin",
+        "routeparity_artifact_root",
+        "service-msi-hyperv-admin-smoke",
+        "ServiceMsiHyperVAdminSmoke",
+        "steps",
+        "timeout_seconds",
+        "version"
+      ]
+    },
+    {
+      "key": "batch-supervisor",
+      "ordinal": 16,
+      "name": "passes explicit batch evidence root into ServiceMsiHyperVAdminSmoke route runner",
+      "required_literals": [
+        "-BatchEvidenceRoot",
+        "arguments",
+        "batch_evidence_root",
+        "batch-runs",
+        "ConvertTo-Json",
+        "D:\\Downloads\\Rocky-10.1-x86_64-minimal.iso",
+        "GetFullPath",
+        "iso_path",
+        "Join-Path",
+        "New-PcvBatchSupervisorManifest",
+        "routeparity_artifact_root",
+        "ServiceMsiHyperVAdminSmoke",
+        "steps",
+        "version"
+      ]
+    },
+    {
+      "key": "batch-supervisor",
+      "ordinal": 17,
+      "name": "builds OsMutationGate as one guarded admin mutation step",
+      "required_literals": [
+        "-ArtifactRoot",
+        "-LanPrefix",
+        "-RouteParityArtifactRoot",
+        "-Version",
+        "arguments",
+        "Count",
+        "GetFullPath",
+        "id",
+        "Join-Path",
+        "lan_prefix",
+        "mutates_host",
+        "New-PcvBatchSupervisorManifest",
+        "os_gate_artifact_root",
+        "os-mutation-gate",
+        "OsMutationGate",
+        "packaging/windows-desktop-node/tools/Invoke-PcvOsMutationGateSmoke.ps1",
+        "requires_admin",
+        "routeparity_artifact_root",
+        "steps",
+        "timeout_seconds",
+        "version"
+      ]
+    },
+    {
+      "key": "batch-supervisor",
+      "ordinal": 18,
+      "name": "builds ManualAdminCampaignDescriptor as one non-mutating descriptor step",
+      "required_literals": [
+        "-BaselineVersion",
+        "-DescriptorBatchId",
+        "-PlanOnly",
+        "-TargetVersion",
+        "0.42.5-admin-smoke",
+        "0.42.6-admin-smoke",
+        "arguments",
+        "artifacts/msix-package-lifecycle-smoke-20260512-0425-0426/summary.json",
+        "baseline_version",
+        "burn_lifecycle_summary_path",
+        "burn-bootstrapper-lifecycle-r2/burn-lifecycle-summary.json",
+        "campaign_artifact_root",
+        "clean_host_summary_path",
+        "clean-host/summary.json",
+        "ConvertTo-Json",
+        "Count",
+        "descriptor_artifact_root",
+        "GetFullPath",
+        "id",
+        "installed_runtime_ops_summary_path",
+        "installed-runtime-ops-summary/summary.json",
+        "Join-Path",
+        "lifecycle/product-update-rollback/rollback-0426-to-0425-summary.json",
+        "lifecycle/product-update-rollback/update-0425-to-0426-summary.json",
+        "manual-admin-campaign",
+        "manual-admin-campaign-descriptor",
+        "manual-admin-rebaseline-readiness-r2/summary.json",
+        "ManualAdminCampaignDescriptor",
+        "msix_lifecycle_summary_path",
+        "mutates_host",
+        "New-PcvBatchSupervisorManifest",
+        "packaging/windows-desktop-node/tools/New-PcvManualAdminCampaignDescriptor.ps1",
+        "product_rollback_summary_path",
+        "product_update_summary_path",
+        "readiness_summary_path",
+        "requires_admin",
+        "steps",
+        "target_version",
+        "timeout_seconds"
+      ]
+    },
+    {
+      "key": "batch-supervisor",
+      "ordinal": 19,
+      "name": "writes the next manual-admin descriptor batch manifest without host mutation steps",
+      "required_literals": [
+        "-DescriptorBatchId",
+        "-PlanOnly",
+        "0.42.5-admin-smoke",
+        "0.42.6-admin-smoke",
+        "arguments",
+        "batch_id",
+        "ConvertFrom-Json",
+        "ConvertTo-Json",
+        "Count",
+        "dry_run",
+        "Get-Content",
+        "host_mutation_performed",
+        "id",
+        "Invoke-PcvBatchSupervisor",
+        "Join-Path",
+        "manifest.json",
+        "manual-admin-campaign-20260512-0425-0426",
+        "manual-admin-campaign-descriptor",
+        "manual-admin-campaign-descriptor-20260512-0425-0426",
+        "ManualAdminCampaignDescriptor",
+        "mutates_host",
+        "ok",
+        "packaging/windows-desktop-node/tools/New-PcvManualAdminCampaignDescriptor.ps1",
+        "profile",
+        "requires_admin",
+        "step-results",
+        "steps",
+        "Test-Path",
+        "total_steps"
+      ]
+    },
+    {
+      "key": "batch-supervisor",
+      "ordinal": 20,
+      "name": "builds FullAdminHostMutationGate as ordered route parity then OS gate steps",
+      "required_literals": [
+        "-BatchEvidenceRoot",
+        "arguments",
+        "batch_evidence_root",
+        "batch-runs",
+        "Count",
+        "D:\\Downloads\\Rocky-10.1-x86_64-minimal.iso",
+        "ForEach-Object",
+        "FullAdminHostMutationGate",
+        "GetFullPath",
+        "id",
+        "iso_path",
+        "Join-Path",
+        "lan_prefix",
+        "mutates_host",
+        "New-PcvBatchSupervisorManifest",
+        "os_gate_artifact_root",
+        "os-mutation-gate",
+        "requires_admin",
+        "routeparity_artifact_root",
+        "service-msi-hyperv-admin-smoke",
+        "steps",
+        "version",
+        "Where-Object"
+      ]
+    },
+    {
+      "key": "batch-supervisor",
+      "ordinal": 21,
+      "name": "rejects all admin profiles without explicit host mutation allowance",
+      "required_literals": [
+        "D:\\Downloads\\Rocky-10.1-x86_64-minimal.iso",
+        "FullAdminHostMutationGate",
+        "Invoke-PcvBatchSupervisor",
+        "iso_path",
+        "Join-Path",
+        "lan_prefix",
+        "New-PcvBatchSupervisorManifest",
+        "os_gate_artifact_root",
+        "OsMutationGate",
+        "routeparity_artifact_root",
+        "ServiceMsiHyperVAdminSmoke",
+        "version"
+      ]
+    },
+    {
+      "key": "batch-supervisor",
+      "ordinal": 22,
+      "name": "rejects all admin profiles from a non-elevated shell even with host mutation allowance",
+      "required_literals": [
+        "D:\\Downloads\\Rocky-10.1-x86_64-minimal.iso",
+        "FullAdminHostMutationGate",
+        "Invoke-PcvBatchSupervisor",
+        "iso_path",
+        "Join-Path",
+        "lan_prefix",
+        "New-PcvBatchSupervisorManifest",
+        "os_gate_artifact_root",
+        "OsMutationGate",
+        "routeparity_artifact_root",
+        "ServiceMsiHyperVAdminSmoke",
+        "version"
+      ]
+    },
+    {
+      "key": "batch-supervisor",
+      "ordinal": 23,
+      "name": "dry-runs an admin profile with explicit approval without creating step results",
+      "required_literals": [
+        "dry_run",
+        "Invoke-PcvBatchSupervisor",
+        "Join-Path",
+        "lan_prefix",
+        "New-PcvBatchSupervisorManifest",
+        "ok",
+        "os_gate_artifact_root",
+        "OsMutationGate",
+        "routeparity_artifact_root",
+        "step-results",
+        "summary.dry-run.json",
+        "summary.json",
+        "Test-Path",
+        "total_steps",
+        "version"
+      ]
+    },
+    {
+      "key": "batch-supervisor",
+      "ordinal": 24,
+      "name": "keeps generated admin profile arguments free of reboot and scheduled-task commands",
+      "required_literals": [
+        "ConvertTo-Json",
+        "D:\\Downloads\\Rocky-10.1-x86_64-minimal.iso",
+        "FullAdminHostMutationGate",
+        "iso_path",
+        "Join-Path",
+        "lan_prefix",
+        "New-PcvBatchSupervisorManifest",
+        "os_gate_artifact_root",
+        "routeparity_artifact_root",
+        "steps",
+        "version"
+      ]
+    },
+    {
+      "key": "batch-supervisor",
+      "ordinal": 25,
+      "name": "retries a failed step when retry_count is configured and preserves each attempt",
+      "required_literals": [
+        "-Command",
+        "-NoProfile",
+        "attempt_count",
+        "attempts",
+        "Count",
+        "exit_code",
+        "final_attempt",
+        "Get-Content",
+        "HasExited",
+        "heartbeat.jsonl",
+        "Invoke-PcvBatchSupervisor",
+        "Join-Path",
+        "New-PcvBatchSupervisorManifest",
+        "New-PcvBatchSupervisorStep",
+        "ok",
+        "pwsh",
+        "Replace",
+        "results",
+        "retry_count",
+        "StartInfo",
+        "Test-Path"
+      ]
+    },
+    {
+      "key": "batch-supervisor",
+      "ordinal": 26,
+      "name": "fails after retry_count is exhausted and points resume at the failed step",
+      "required_literals": [
+        "-Command",
+        "-NoProfile",
+        "attempt_count",
+        "ConvertFrom-Json",
+        "current-step.json",
+        "exit_code",
+        "failed",
+        "failed_step_id",
+        "Get-Content",
+        "HasExited",
+        "Invoke-PcvBatchSupervisor",
+        "Join-Path",
+        "New-PcvBatchSupervisorManifest",
+        "New-PcvBatchSupervisorStep",
+        "next_resume_step_id",
+        "ok",
+        "pwsh",
+        "results",
+        "retry_count",
+        "StartInfo",
+        "status",
+        "Test-Path"
+      ]
+    },
+    {
+      "key": "batch-supervisor",
+      "ordinal": 27,
+      "name": "sets retry_count defaults for host-mutating admin profile steps",
+      "required_literals": [
+        "D:\\Downloads\\Rocky-10.1-x86_64-minimal.iso",
+        "FullAdminHostMutationGate",
+        "id",
+        "iso_path",
+        "Join-Path",
+        "lan_prefix",
+        "New-PcvBatchSupervisorManifest",
+        "os_gate_artifact_root",
+        "os_gate_retry_count",
+        "os-mutation-gate",
+        "retry_count",
+        "routeparity_artifact_root",
+        "Select-Object",
+        "service_msi_hyperv_retry_count",
+        "service-msi-hyperv-admin-smoke",
+        "steps",
+        "version",
+        "Where-Object"
+      ]
+    },
+    {
+      "key": "batch-supervisor",
+      "ordinal": 28,
+      "name": "requires profile options for admin profiles",
+      "required_literals": [
+        "Join-Path",
+        "New-PcvBatchSupervisorManifest",
+        "OsMutationGate",
+        "version"
+      ]
+    },
+    {
+      "key": "ci-trigger",
+      "ordinal": 1,
+      "name": "runs Development Gates for pull requests, main pushes, and manual dispatch only",
+      "required_literals": [
+        "Get-Content",
+        "Join-Path"
+      ]
+    },
+    {
+      "key": "ci-trigger",
+      "ordinal": 2,
+      "name": "runs Public Boundary Contract for pull requests, main pushes, and manual dispatch only",
+      "required_literals": [
+        "Get-Content",
+        "Join-Path"
+      ]
+    },
+    {
+      "key": "job-store-migration",
+      "ordinal": 1,
+      "name": "creates summary.json in plan-only mode",
+      "required_literals": [
+        "actual_execution",
+        "Join-Path",
+        "not-run",
+        "ok",
+        "plan_only",
+        "summary.json",
+        "Test-Path"
+      ]
+    },
+    {
+      "key": "job-store-migration",
+      "ordinal": 2,
+      "name": "records the exact installed migration apply step names in plan-only mode",
+      "required_literals": [
+        "build-current-admin-smoke-msi",
+        "config-migration-apply-installed",
+        "final-state",
+        "ForEach-Object",
+        "install-current-msi",
+        "job-store-migration-apply-installed",
+        "Join-Path",
+        "name",
+        "post-migration-api-read",
+        "preflight",
+        "seed-installed-job-store-v1",
+        "start-installed-service-after-migration",
+        "steps",
+        "stop-installed-service-for-migration"
+      ]
+    },
+    {
+      "key": "job-store-migration",
+      "ordinal": 3,
+      "name": "records supported migration plan identities in the command plan",
+      "required_literals": [
+        "--migration-plan-id",
+        "--migration-plan-version",
+        "arguments",
+        "command_plan",
+        "config_migration",
+        "job_store_migration",
+        "job-store-v1-to-v2",
+        "Join-Path",
+        "product-config-v1-to-v2"
+      ]
+    },
+    {
+      "key": "job-store-migration",
+      "ordinal": 4,
+      "name": "states that plan-only did not perform host mutation",
+      "required_literals": [
+        "excluded",
+        "external_stable_publication",
+        "host_mutation_performed",
+        "Join-Path",
+        "mutates_host",
+        "not-claimed",
+        "public_trusted_signing"
+      ]
+    },
+    {
+      "key": "job-store-migration",
+      "ordinal": 5,
+      "name": "does not contain reboot, scheduler, firewall, trust-store, or Hyper-V mutation command text",
+      "required_literals": [
+        "Get-Content",
+        "Test-Path"
+      ]
+    },
+    {
+      "key": "artifact-root",
+      "ordinal": 1,
+      "name": "finds the runners that take an -ArtifactRoot parameter",
+      "required_literals": [
+        "Count"
+      ]
+    },
+    {
+      "key": "artifact-root",
+      "ordinal": 2,
+      "name": "guards every relative artifact-root join with a rooted-path branch",
+      "required_literals": [
+        "FullName",
+        "Get-Content",
+        "Name"
+      ]
+    },
+    {
+      "key": "artifact-root",
+      "ordinal": 3,
+      "name": "separates a relative-only runner from a guarded one instead of passing vacuously",
+      "required_literals": [
+        "IsPathRooted"
+      ]
+    },
+    {
+      "key": "timeout-rate-limit",
+      "ordinal": 1,
+      "name": "creates a non-mutating timeout and rate-limit hardening summary",
+      "required_literals": [
+        "actual_execution",
+        "blocked-by-no-mutation-preflight",
+        "external_stable_publication",
+        "host_mutation_performed",
+        "Join-Path",
+        "load_test_status",
+        "not-applied",
+        "not-claimed",
+        "not-run",
+        "ok",
+        "plan_only",
+        "public_trusted_signing",
+        "request_limit_policy",
+        "retry_semantics_status",
+        "route_timeout_policy",
+        "scope",
+        "server_config_mutation",
+        "summary.json",
+        "Test-Path",
+        "timeout_rate_limit_hardening",
+        "timeout-rate-limit-hardening-preflight",
+        "ui_api_error_contract_status"
+      ]
+    },
+    {
+      "key": "timeout-rate-limit",
+      "ordinal": 2,
+      "name": "records the exact timeout and rate-limit preflight check names",
+      "required_literals": [
+        "api-route-prefix-recorded",
+        "ForEach-Object",
+        "hardening_checks",
+        "host-mutation-not-executed",
+        "Join-Path",
+        "load-test-not-executed",
+        "middleware-not-enabled",
+        "name",
+        "request-limit-policy-recorded",
+        "retry-semantics-recorded",
+        "server-config-not-mutated",
+        "service-name-present",
+        "timeout-policy-recorded",
+        "ui-api-error-contract-recorded"
+      ]
+    },
+    {
+      "key": "timeout-rate-limit",
+      "ordinal": 3,
+      "name": "writes a timeout and rate-limit hardening plan preview without applying middleware or load tests",
+      "required_literals": [
+        "/api/v1/",
+        "api_route_prefix",
+        "burst_limit",
+        "configure-request-rate-limit-middleware",
+        "configure-route-timeout-middleware",
+        "ConvertFrom-Json",
+        "emit-retry-after-contract",
+        "error_contract",
+        "Get-Content",
+        "hardening_plan_path",
+        "Join-Path",
+        "load_test_status",
+        "map-timeout-rate-limit-errors",
+        "middleware_status",
+        "not-enabled",
+        "not-mutated",
+        "not-run",
+        "planned_operations",
+        "problem-details-json",
+        "PureCVisorDesktopNode",
+        "record-operational-metrics",
+        "request_limit_per_minute",
+        "retry_after_seconds",
+        "route_timeout_seconds",
+        "run-rate-limit-load-test",
+        "schema_version",
+        "scope",
+        "server_config_status",
+        "service_name",
+        "Test-Path",
+        "timeout-rate-limit-hardening-preflight",
+        "verify-ui-api-error-contract"
+      ]
+    },
+    {
+      "key": "timeout-rate-limit",
+      "ordinal": 4,
+      "name": "requires plan-only mode",
+      "required_literals": [
+        "Bypass",
+        "Join-Path",
+        "Out-Null",
+        "PureCVisorDesktopNode",
+        "pwsh"
+      ]
+    },
+    {
+      "key": "timeout-rate-limit",
+      "ordinal": 5,
+      "name": "rejects routes outside the Local API namespace",
+      "required_literals": [
+        "Bypass",
+        "Join-Path",
+        "Out-Null",
+        "PureCVisorDesktopNode",
+        "pwsh"
+      ]
+    },
+    {
+      "key": "timeout-rate-limit",
+      "ordinal": 6,
+      "name": "does not contain host mutation, service command, HTTP execution, or load generation text",
+      "required_literals": [
+        "Get-Content",
+        "Test-Path"
+      ]
+    }
+  ]
+}
