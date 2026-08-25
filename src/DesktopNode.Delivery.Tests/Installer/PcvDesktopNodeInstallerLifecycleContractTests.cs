@@ -126,9 +126,16 @@ public sealed class PcvDesktopNodeInstallerLifecycleContractTests : IDisposable
 
     public void Dispose()
     {
-        if (Directory.Exists(temporaryRoot))
+        var baseRoot = Path.GetFullPath(Path.Combine(Path.GetTempPath(), "pcv-delivery-tests"));
+        var target = Path.GetFullPath(temporaryRoot);
+        if (!target.StartsWith(baseRoot + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
         {
-            Directory.Delete(temporaryRoot, recursive: true);
+            throw new InvalidOperationException("PCV_DELIVERY_TEMP_PATH_INVALID|lifecycle");
+        }
+
+        if (Directory.Exists(target))
+        {
+            Directory.Delete(target, recursive: true);
         }
     }
 

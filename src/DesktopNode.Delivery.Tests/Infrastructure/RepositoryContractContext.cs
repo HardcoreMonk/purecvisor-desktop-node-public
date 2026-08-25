@@ -11,6 +11,8 @@ internal sealed class RepositoryContractContext
     private readonly string rootPath;
     private readonly StringComparison pathComparison;
 
+    internal string RootPath => rootPath;
+
     private RepositoryContractContext(string rootPath)
     {
         this.rootPath = Path.GetFullPath(rootPath)

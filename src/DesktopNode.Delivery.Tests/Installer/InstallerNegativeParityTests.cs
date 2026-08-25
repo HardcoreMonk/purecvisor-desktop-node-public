@@ -7,6 +7,10 @@ public sealed class InstallerNegativeParityTests
 {
     private const string LifecycleModulePath =
         "packaging/windows-desktop-node/installer/PcvDesktopNodeMsiLifecycle.psm1";
+    private const string BuildScriptPath = "packaging/windows-desktop-node/installer/build.ps1";
+    private const string BuildModulePath =
+        "packaging/windows-desktop-node/installer/PcvDesktopNodeInstaller.Build.psm1";
+    private const string ProductWxsPath = "packaging/windows-desktop-node/installer/Product.wxs";
 
     [Fact]
     public void InternalTrustVerifierRejectsChangedTrustModel()
@@ -58,5 +62,52 @@ public sealed class InstallerNegativeParityTests
         Assert.Equal(
             "PCV_INSTALLER_MSI_LIFECYCLE_SOURCE_INVALID|classification:repair-3010",
             error.Message);
+    }
+
+    [Fact]
+    public void PlanVerifierRejectsMissingRequiredPlanProperty()
+    {
+        var repository = RepositoryContractContext.Find();
+        var module = repository.ReadUtf8Text(BuildModulePath);
+        var mutated = module.Replace(
+            "product_name = 'PureCVisor Desktop Node'",
+            "product_title = 'PureCVisor Desktop Node'",
+            StringComparison.Ordinal);
+        Assert.NotEqual(module, mutated);
+
+        var error = Assert.Throws<InvalidDataException>(() => InstallerBuildSourcePolicy.Validate(
+            repository.ReadUtf8Text(BuildScriptPath),
+            mutated,
+            repository.ReadUtf8Text(ProductWxsPath)));
+        Assert.Equal("PCV_INSTALLER_BUILD_SOURCE_INVALID|plan-product-name", error.Message);
+    }
+
+    [Fact]
+    public void PlanVerifierRejectsWixArgumentOrderingDrift()
+    {
+        var repository = RepositoryContractContext.Find();
+        var module = repository.ReadUtf8Text(BuildModulePath);
+        var mutated = module.Replace(
+            "$wixArgs = @(",
+            "$wixArgs = $wixSourcePaths + @(",
+            StringComparison.Ordinal);
+        Assert.NotEqual(module, mutated);
+
+        var error = Assert.Throws<InvalidDataException>(() => InstallerBuildSourcePolicy.Validate(
+            repository.ReadUtf8Text(BuildScriptPath),
+            mutated,
+            repository.ReadUtf8Text(ProductWxsPath)));
+        Assert.Equal("PCV_INSTALLER_BUILD_SOURCE_INVALID|wix-argument-order", error.Message);
+    }
+
+    [Fact]
+    public void PlanVerifierRejectsEscapingPayloadRoot()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "pcv-delivery-tests", "containment-root");
+        var escaping = Path.Combine(root, "..", "escape", "payload");
+
+        var error = Assert.Throws<InvalidDataException>(() =>
+            InstallerBuildContractHarness.EnsurePayloadRootContained(root, escaping));
+        Assert.Equal("PCV_INSTALLER_PLAN_INVALID|payload-root", error.Message);
     }
 }

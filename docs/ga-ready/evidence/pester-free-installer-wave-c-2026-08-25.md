@@ -34,7 +34,7 @@ inventory_contracts_web=50
 | --- | ---: | --- | --- | --- | --- |
 | `PcvDesktopNodeInstaller.InternalTrust.Tests.ps1` | 4 | `PcvDesktopNodeInstallerInternalTrustContractTests.cs` | 4/4, failed 0, skipped 0, 47 ms | 4/4, failed 0, skipped 0, not-run 0, Pester 2428 ms | mapped / local pass / CI pending |
 | `PcvDesktopNodeInstaller.Lifecycle.Tests.ps1` | 5 | `PcvDesktopNodeInstallerLifecycleContractTests.cs` | 5/5, failed 0, skipped 0, 49 ms | 5/5, failed 0, skipped 0, not-run 0, Pester 1100 ms | mapped / local pass / CI pending |
-| `PcvDesktopNodeInstaller.Plan.Tests.ps1` | 21 | `PcvDesktopNodeInstallerPlanContractTests.cs` | not-run | not-run | pending |
+| `PcvDesktopNodeInstaller.Plan.Tests.ps1` | 21 | `PcvDesktopNodeInstallerPlanContractTests.cs` | 21/21, failed 0, skipped 0, 687 ms | 21/21, failed 0, skipped 0, not-run 0, Pester 5734 ms | mapped / local pass / CI pending |
 | `PcvDesktopNodeInstaller.Signing.Tests.ps1` | 6 | `PcvDesktopNodeInstallerSigningContractTests.cs` | not-run | not-run | pending |
 | `PcvDesktopNodeInstaller.WixSource.Tests.ps1` | 10 | `PcvDesktopNodeInstallerWixSourceContractTests.cs` | not-run | not-run | pending |
 | `PcvDesktopNodeInstaller.Wrapper.Tests.ps1` | 3 | `PcvDesktopNodeInstallerWrapperContractTests.cs` | not-run | not-run | pending |
@@ -87,6 +87,28 @@ lifecycle_legacy_total=5
 lifecycle_legacy_failed=0
 lifecycle_legacy_skipped=0
 lifecycle_legacy_not_run=0
+
+### Plan fixed-file run
+
+The replacement fixture executed 21 contracts with exit `0`. A focused run including the three
+required-property, WiX-ordering, and escaping-payload-root negative fixtures executed `24/24`.
+The Pester 5.7.1 reference run executed only
+`packaging/windows-desktop-node/installer/tests/PcvDesktopNodeInstaller.Plan.Tests.ps1`
+and reported total `21`, passed `21`, failed `0`, skipped `0`, not run `0`, duration `5734 ms`, and
+exit `0`. Both paths wrote only disposable fixture outputs; no MSI installation, service mutation,
+administrator elevation, or VM operation occurred.
+
+plan_replacement_result=pass
+plan_replacement_total=21
+plan_replacement_failed=0
+plan_replacement_skipped=0
+plan_negative_total=3
+plan_negative_failed=0
+plan_legacy_result=pass
+plan_legacy_total=21
+plan_legacy_failed=0
+plan_legacy_skipped=0
+plan_legacy_not_run=0
 
 ## Claim boundary
 
