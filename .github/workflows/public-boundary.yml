@@ -1,0 +1,45 @@
+name: Public Boundary Contract
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  public-boundary-ci-required:
+    name: public-boundary-ci-required
+    runs-on: ubuntu-latest
+    env:
+      PUBLIC_BOUNDARY_CI_CONTRACT: public-boundary-ci-required
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6.0.2
+
+      - name: Install Pester
+        shell: pwsh
+        run: |
+          $pester = Get-Module -ListAvailable -Name Pester |
+            Where-Object { $_.Version -ge [version]'5.0.0' } |
+            Sort-Object Version -Descending |
+            Select-Object -First 1
+          if ($null -eq $pester) {
+            Install-Module Pester -Scope CurrentUser -Force -SkipPublisherCheck
+          }
+
+      - name: Run public boundary evidence guard
+        shell: pwsh
+        run: >
+          Invoke-Pester
+          -Path 'packaging/windows-desktop-node/tests/PcvAdminSmokeEvidenceDocs.Tests.ps1'
+          -Output Detailed
+
+      - name: Verify packaging regression required step
+        shell: pwsh
+        run: >
+          Invoke-Pester
+          -Path 'packaging/windows-desktop-node/tests/PcvBatchSupervisor.Tests.ps1'
+          -FullName '*public boundary guard*'
+          -Output Detailed

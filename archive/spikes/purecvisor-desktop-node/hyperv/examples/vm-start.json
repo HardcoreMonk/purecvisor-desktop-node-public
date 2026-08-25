@@ -1,0 +1,6 @@
+{
+  "operation": "vm.start",
+  "params": {
+    "name": "ubuntu-lab-01"
+  }
+}

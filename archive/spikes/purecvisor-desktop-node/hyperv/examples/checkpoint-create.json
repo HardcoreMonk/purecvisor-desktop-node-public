@@ -1,0 +1,7 @@
+{
+  "operation": "checkpoint.create",
+  "params": {
+    "vm_name": "ubuntu-lab-01",
+    "checkpoint_name": "before-upgrade"
+  }
+}

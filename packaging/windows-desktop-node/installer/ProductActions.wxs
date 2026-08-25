@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Fragment>
+    <Property Id="REMOVE_DATA" Secure="yes" />
+    <Property Id="BATCH_EVIDENCE_ROOT" Secure="yes" />
+
+    <SetProperty
+      Id="DESKTOP_NODE_DATA_ROOT"
+      Value="[CommonAppDataFolder]PureCVisor\desktop-node"
+      Before="CostFinalize"
+      Sequence="execute" />
+
+    <SetProperty
+      Id="BATCH_EVIDENCE_ROOT_SWITCH"
+      Value="--batch-evidence-root &quot;[BATCH_EVIDENCE_ROOT]&quot;"
+      Before="CostFinalize"
+      Sequence="execute"
+      Condition="BATCH_EVIDENCE_ROOT&lt;&gt;&quot;&quot;" />
+
+    <SetProperty
+      Id="ConfigureInstalledData"
+      Value="Action=ConfigureInstalled;ProductRoot=[INSTALLFOLDER];DataRoot=[DESKTOP_NODE_DATA_ROOT];ServiceExe=[INSTALLFOLDER]DesktopNode.Host.exe;LogPath=[DESKTOP_NODE_DATA_ROOT]\install.jsonl"
+      Before="ConfigureInstalled"
+      Sequence="execute"
+      Condition="NOT Installed" />
+
+    <CustomAction
+      Id="ConfigureInstalled"
+      Directory="INSTALLFOLDER"
+      Execute="deferred"
+      Impersonate="no"
+      Return="check"
+      ExeCommand="&quot;[INSTALLFOLDER]DesktopNode.Host.exe&quot; service-action configure-installed --product-root &quot;[INSTALLFOLDER].&quot; --data-root &quot;[DESKTOP_NODE_DATA_ROOT]&quot; --service-exe &quot;[INSTALLFOLDER]DesktopNode.Host.exe&quot; [BATCH_EVIDENCE_ROOT_SWITCH]" />
+
+    <SetProperty
+      Id="RepairInstalledData"
+      Value="Action=RepairInstalled;ProductRoot=[INSTALLFOLDER];DataRoot=[DESKTOP_NODE_DATA_ROOT];ServiceExe=[INSTALLFOLDER]DesktopNode.Host.exe;LogPath=[DESKTOP_NODE_DATA_ROOT]\install.jsonl"
+      Before="RepairInstalled"
+      Sequence="execute"
+      Condition="Installed AND NOT REMOVE~=&quot;ALL&quot;" />
+
+    <CustomAction
+      Id="RepairInstalled"
+      Directory="INSTALLFOLDER"
+      Execute="deferred"
+      Impersonate="no"
+      Return="check"
+      ExeCommand="&quot;[INSTALLFOLDER]DesktopNode.Host.exe&quot; service-action repair-installed --product-root &quot;[INSTALLFOLDER].&quot; --data-root &quot;[DESKTOP_NODE_DATA_ROOT]&quot; --service-exe &quot;[INSTALLFOLDER]DesktopNode.Host.exe&quot; [BATCH_EVIDENCE_ROOT_SWITCH]" />
+
+    <SetProperty
+      Id="EventLogDefaultTransitionData"
+      Value="Action=EventLogDefaultTransition;ProductRoot=[INSTALLFOLDER];DataRoot=[DESKTOP_NODE_DATA_ROOT];ServiceExe=[INSTALLFOLDER]DesktopNode.Host.exe;LogPath=[DESKTOP_NODE_DATA_ROOT]\install.jsonl"
+      Before="EventLogDefaultTransition"
+      Sequence="execute"
+      Condition="NOT Installed" />
+
+    <CustomAction
+      Id="EventLogDefaultTransition"
+      Directory="INSTALLFOLDER"
+      Execute="deferred"
+      Impersonate="no"
+      Return="check"
+      ExeCommand="&quot;[INSTALLFOLDER]DesktopNode.Host.exe&quot; service-action eventlog-default-transition --product-root &quot;[INSTALLFOLDER].&quot; --data-root &quot;[DESKTOP_NODE_DATA_ROOT]&quot; --service-exe &quot;[INSTALLFOLDER]DesktopNode.Host.exe&quot; --eventlog-default-transition-timeout-seconds 60" />
+
+    <SetProperty
+      Id="EventLogDefaultTransitionRepairData"
+      Value="Action=EventLogDefaultTransitionRepair;ProductRoot=[INSTALLFOLDER];DataRoot=[DESKTOP_NODE_DATA_ROOT];ServiceExe=[INSTALLFOLDER]DesktopNode.Host.exe;LogPath=[DESKTOP_NODE_DATA_ROOT]\install.jsonl"
+      Before="EventLogDefaultTransitionRepair"
+      Sequence="execute"
+      Condition="Installed AND NOT REMOVE~=&quot;ALL&quot;" />
+
+    <CustomAction
+      Id="EventLogDefaultTransitionRepair"
+      Directory="INSTALLFOLDER"
+      Execute="deferred"
+      Impersonate="no"
+      Return="check"
+      ExeCommand="&quot;[INSTALLFOLDER]DesktopNode.Host.exe&quot; service-action eventlog-default-transition --product-root &quot;[INSTALLFOLDER].&quot; --data-root &quot;[DESKTOP_NODE_DATA_ROOT]&quot; --service-exe &quot;[INSTALLFOLDER]DesktopNode.Host.exe&quot; --eventlog-default-transition-timeout-seconds 60" />
+
+    <SetProperty
+      Id="CredentialManagerDefaultTransitionData"
+      Value="Action=CredentialManagerDefaultTransition;ProductRoot=[INSTALLFOLDER];DataRoot=[DESKTOP_NODE_DATA_ROOT];ServiceExe=[INSTALLFOLDER]DesktopNode.Host.exe;LogPath=[DESKTOP_NODE_DATA_ROOT]\install.jsonl"
+      Before="CredentialManagerDefaultTransition"
+      Sequence="execute"
+      Condition="NOT Installed" />
+
+    <CustomAction
+      Id="CredentialManagerDefaultTransition"
+      Directory="INSTALLFOLDER"
+      Execute="deferred"
+      Impersonate="no"
+      Return="check"
+      ExeCommand="&quot;[INSTALLFOLDER]DesktopNode.Host.exe&quot; service-action credential-manager-default-transition --product-root &quot;[INSTALLFOLDER].&quot; --data-root &quot;[DESKTOP_NODE_DATA_ROOT]&quot; --service-exe &quot;[INSTALLFOLDER]DesktopNode.Host.exe&quot;" />
+
+    <SetProperty
+      Id="RemoveInstalledData"
+      Value="Action=RemoveInstalled;ProductRoot=[INSTALLFOLDER];DataRoot=[DESKTOP_NODE_DATA_ROOT];ServiceExe=[INSTALLFOLDER]DesktopNode.Host.exe;RemoveData=[REMOVE_DATA];LogPath=[DESKTOP_NODE_DATA_ROOT]\install.jsonl"
+      Before="RemoveInstalled"
+      Sequence="execute"
+      Condition="REMOVE~=&quot;ALL&quot;" />
+
+    <SetProperty
+      Id="REMOVE_DATA_SWITCH"
+      Value="--remove-data"
+      Before="RemoveInstalled"
+      Sequence="execute"
+      Condition="REMOVE_DATA=&quot;1&quot;" />
+
+    <CustomAction
+      Id="RemoveInstalled"
+      Directory="INSTALLFOLDER"
+      Execute="deferred"
+      Impersonate="no"
+      Return="check"
+      ExeCommand="&quot;[INSTALLFOLDER]DesktopNode.Host.exe&quot; service-action remove-installed --product-root &quot;[INSTALLFOLDER].&quot; --data-root &quot;[DESKTOP_NODE_DATA_ROOT]&quot; --service-exe &quot;[INSTALLFOLDER]DesktopNode.Host.exe&quot; [REMOVE_DATA_SWITCH]" />
+
+    <SetProperty
+      Id="DataRootRemoveData"
+      Value="Action=DataRootRemove;ProductRoot=[INSTALLFOLDER];DataRoot=[DESKTOP_NODE_DATA_ROOT];ServiceExe=[INSTALLFOLDER]DesktopNode.Host.exe;RemoveData=[REMOVE_DATA];LogPath=[DESKTOP_NODE_DATA_ROOT]\install.jsonl"
+      Before="DataRootRemove"
+      Sequence="execute"
+      Condition="REMOVE~=&quot;ALL&quot; AND REMOVE_DATA=&quot;1&quot;" />
+
+    <CustomAction
+      Id="DataRootRemove"
+      Directory="INSTALLFOLDER"
+      Execute="deferred"
+      Impersonate="no"
+      Return="check"
+      ExeCommand="&quot;[INSTALLFOLDER]DesktopNode.Host.exe&quot; service-action data-root-remove --product-root &quot;[INSTALLFOLDER].&quot; --data-root &quot;[DESKTOP_NODE_DATA_ROOT]&quot; --service-exe &quot;[INSTALLFOLDER]DesktopNode.Host.exe&quot; --remove-data" />
+
+    <InstallExecuteSequence>
+      <Custom Action="ConfigureInstalled" After="InstallFiles" Condition="NOT Installed" />
+      <Custom Action="EventLogDefaultTransition" After="ConfigureInstalled" Condition="NOT Installed" />
+      <Custom Action="CredentialManagerDefaultTransition" After="EventLogDefaultTransition" Condition="NOT Installed" />
+      <Custom Action="EventLogDefaultTransitionRepair" After="CredentialManagerDefaultTransition" Condition="Installed AND NOT REMOVE~=&quot;ALL&quot;" />
+      <Custom Action="RepairInstalled" After="EventLogDefaultTransitionRepair" Condition="Installed AND NOT REMOVE~=&quot;ALL&quot;" />
+      <Custom Action="RemoveInstalled" Before="RemoveFiles" Condition="REMOVE~=&quot;ALL&quot;" />
+      <Custom Action="DataRootRemove" After="RemoveInstalled" Condition="REMOVE~=&quot;ALL&quot; AND REMOVE_DATA=&quot;1&quot;" />
+    </InstallExecuteSequence>
+  </Fragment>
+</Wix>

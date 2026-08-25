@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "contract": "pcv-agent-execution-circuit-breaker-v1",
+  "default_checkpoint_count": 1,
+  "elapsed_minutes_limit": 30,
+  "tool_batch_limit": 18,
+  "review_pass_limit": 1,
+  "narrow_rereview_pass_limit": 2,
+  "same_failure_limit": 3,
+  "progress_warning_percent": 70
+}

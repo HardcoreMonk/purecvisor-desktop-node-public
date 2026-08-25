@@ -1,0 +1,63 @@
+{
+  "generatedBy": "src/generate-parity-manifest.ts",
+  "regeneratedBy": "scripts/regenerate-static-parity.mjs",
+  "phase": "phase25",
+  "servedAsset": "app.js",
+  "replacesServedAsset": true,
+  "indexScriptSrc": "/app.js",
+  "typeScriptEntry": "src/app.ts",
+  "servedTypeScriptEntry": "src/served-app.ts",
+  "userVisibleFixtureEntry": "src/user-visible-fixtures.ts",
+  "userVisibleFixtureNames": [
+    "emptyInventory",
+    "runningVmAndJob",
+    "unsupportedHost"
+  ],
+  "scaffold": {
+    "decisionCandidate": "static-asset-parity-scaffold-first",
+    "runtimeReplacement": "default",
+    "servedAsset": "app.js",
+    "servedTypeScriptEntry": "src/served-app.ts"
+  },
+  "localApiRoutes": {
+    "opsSummary": "/api/v1/ops/summary",
+    "runtimePolicy": "/api/v1/runtime/policy",
+    "hostStatus": "/api/v1/host/status",
+    "networkInventory": "/api/v1/network/inventory",
+    "vmList": "/api/v1/vms",
+    "vmDetail": "/api/v1/vms/{vm_id}",
+    "vmBlkio": "/api/v1/vms/{vm_id}/blkio",
+    "vmBandwidth": "/api/v1/vms/{vm_id}/bandwidth",
+    "vmGuestAgentStatus": "/api/v1/vms/{vm_id}/guest-agent/status",
+    "vmGuestAgentPing": "/api/v1/vms/{vm_id}/guest-agent/ping",
+    "vmAction": "/api/v1/vms/{vm_id}/{action}",
+    "vmCheckpoints": "/api/v1/vms/{vm_id}/checkpoints",
+    "checkpointDetail": "/api/v1/vms/{vm_id}/checkpoints/{checkpoint_id}",
+    "checkpointAction": "/api/v1/vms/{vm_id}/checkpoints/{checkpoint_id}/{action}",
+    "jobList": "/api/v1/jobs",
+    "jobsPage": "/api/v1/jobs?limit={limit}&offset={offset}",
+    "jobDetail": "/api/v1/jobs/{job_id}",
+    "jobAction": "/api/v1/jobs/{job_id}/{action}",
+    "authLogin": "/api/v1/auth/login",
+    "authRefresh": "/api/v1/auth/refresh",
+    "authLogout": "/api/v1/auth/logout",
+    "authSession": "/api/v1/auth/session",
+    "authRbac": "/api/v1/auth/rbac",
+    "consoleCapabilities": "/api/v1/console/capabilities",
+    "vmConsole": "/api/v1/vms/{vm_id}/console"
+  },
+  "regeneration": {
+    "source": "src/app.ts",
+    "output": "generated/parity/static-asset-parity.manifest.json",
+    "writeCommand": "npm run generate:parity",
+    "checkCommand": "npm run verify:parity",
+    "replacesServedAsset": true
+  },
+  "browserFixture": {
+    "script": "scripts/verify-browser-fixture.mjs",
+    "command": "npm run browser:fixture",
+    "mode": "node-vm-minimal-dom",
+    "mutating": false,
+    "replacesServedAsset": true
+  }
+}

@@ -1,0 +1,665 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PureCVisor Desktop Node - Frontend Completion Samples</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0a0f1a;
+      --bg2: #0f1525;
+      --bg3: #141c2e;
+      --panel: rgba(15, 21, 37, .82);
+      --panel-solid: #111827;
+      --border: rgba(255, 255, 255, .09);
+      --border-strong: rgba(125, 211, 252, .32);
+      --fg: #e0f0ff;
+      --fg2: #94a3b8;
+      --muted: #64748b;
+      --accent: #22d3ee;
+      --green: #34d399;
+      --yellow: #fbbf24;
+      --red: #f43f5e;
+      --violet: #a78bfa;
+      --shadow: 0 18px 50px rgba(0, 0, 0, .34);
+      --mono: "Cascadia Mono", "Consolas", monospace;
+      font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--fg);
+      overflow-x: hidden;
+    }
+
+    .shell {
+      display: grid;
+      grid-template-columns: 236px minmax(0, 1fr);
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      padding: 18px 14px;
+      background: var(--bg2);
+      border-right: 1px solid var(--border);
+    }
+
+    .brand {
+      display: grid;
+      gap: 4px;
+      padding: 6px 8px 18px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .brand strong {
+      font-size: 15px;
+    }
+
+    .brand span,
+    .eyebrow,
+    .muted {
+      color: var(--fg2);
+    }
+
+    .nav {
+      display: grid;
+      gap: 6px;
+      margin-top: 18px;
+    }
+
+    .nav a {
+      color: var(--fg2);
+      text-decoration: none;
+      padding: 10px 11px;
+      border: 1px solid transparent;
+      border-radius: 8px;
+    }
+
+    .nav a.active {
+      color: var(--fg);
+      background: rgba(34, 211, 238, .08);
+      border-color: var(--border-strong);
+    }
+
+    .content {
+      min-width: 0;
+      padding: 18px;
+      overflow-x: hidden;
+    }
+
+    .topbar {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 16px;
+      align-items: center;
+      margin-bottom: 18px;
+      padding: 14px 16px;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin: 0;
+    }
+
+    h1 {
+      font-size: 20px;
+      font-weight: 650;
+    }
+
+    h2 {
+      font-size: 17px;
+      font-weight: 650;
+    }
+
+    h3 {
+      font-size: 14px;
+      font-weight: 650;
+    }
+
+    strong,
+    td,
+    th,
+    .badge,
+    .mono {
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+
+    .status-line {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      min-height: 26px;
+      padding: 0 9px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, .04);
+      color: var(--fg2);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .ok {
+      color: var(--green);
+      border-color: rgba(52, 211, 153, .34);
+      background: rgba(52, 211, 153, .09);
+    }
+
+    .warn {
+      color: var(--yellow);
+      border-color: rgba(251, 191, 36, .34);
+      background: rgba(251, 191, 36, .09);
+    }
+
+    .error {
+      color: var(--red);
+      border-color: rgba(244, 63, 94, .36);
+      background: rgba(244, 63, 94, .09);
+    }
+
+    .info {
+      color: var(--accent);
+      border-color: rgba(34, 211, 238, .34);
+      background: rgba(34, 211, 238, .08);
+    }
+
+    .screen {
+      margin-bottom: 20px;
+      padding: 16px;
+      min-width: 0;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+
+    .screen-head {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+
+    .grid-4,
+    .grid-3,
+    .grid-2 {
+      display: grid;
+      gap: 12px;
+    }
+
+    .grid-4 {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .grid-3 {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .grid-2 {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .tile,
+    .panel,
+    .row-panel {
+      min-width: 0;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: rgba(20, 28, 46, .72);
+    }
+
+    .tile {
+      min-height: 96px;
+      padding: 13px;
+      display: grid;
+      align-content: space-between;
+      gap: 10px;
+    }
+
+    .tile strong {
+      font-size: 24px;
+    }
+
+    .tile span,
+    .panel span,
+    .row-panel span {
+      color: var(--fg2);
+      font-size: 12px;
+    }
+
+    .panel {
+      padding: 13px;
+    }
+
+    .panel-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: auto;
+      font-size: 13px;
+    }
+
+    th,
+    td {
+      padding: 10px 8px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      color: var(--fg2);
+      font-weight: 600;
+      font-size: 12px;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .mono {
+      font-family: var(--mono);
+      font-size: 12px;
+    }
+
+    .action-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: flex-start;
+    }
+
+    .btn {
+      min-height: 32px;
+      padding: 0 10px;
+      border-radius: 7px;
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, .05);
+      color: var(--fg);
+      font: inherit;
+      font-size: 12px;
+    }
+
+    .btn.primary {
+      color: #07111f;
+      background: var(--accent);
+      border-color: var(--accent);
+      font-weight: 700;
+    }
+
+    .btn.danger {
+      color: var(--red);
+      border-color: rgba(244, 63, 94, .38);
+    }
+
+    .timeline {
+      display: grid;
+      gap: 8px;
+    }
+
+    .event {
+      display: grid;
+      grid-template-columns: 100px minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: center;
+      padding: 9px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .event:last-child {
+      border-bottom: 0;
+    }
+
+    .bars {
+      display: grid;
+      gap: 9px;
+    }
+
+    .bar {
+      height: 9px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, .08);
+    }
+
+    .bar > span {
+      display: block;
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--green));
+    }
+
+    .kv {
+      display: grid;
+      grid-template-columns: minmax(92px, 140px) minmax(0, 1fr);
+      gap: 10px;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .kv:last-child {
+      border-bottom: 0;
+    }
+
+    .recovery-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .row-panel {
+      padding: 12px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 12px;
+      align-items: center;
+    }
+
+    @media (max-width: 1180px) {
+      .grid-4 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .grid-3 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 820px) {
+      .shell {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        position: static;
+        height: auto;
+      }
+
+      .nav {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .topbar,
+      .screen-head,
+      .row-panel,
+      .event {
+        grid-template-columns: 1fr;
+      }
+
+      .grid-4,
+      .grid-3,
+      .grid-2 {
+        grid-template-columns: 1fr;
+      }
+
+      .status-line {
+        justify-content: flex-start;
+      }
+
+      table {
+        min-width: 720px;
+      }
+
+      .table-scroll {
+        max-width: 100%;
+        min-width: 0;
+        overflow-x: auto;
+      }
+
+      .content {
+        padding: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <strong>PureCVisor Desktop Node</strong>
+        <span>Frontend Completion Samples</span>
+      </div>
+      <nav class="nav" aria-label="Mockup sections">
+        <a class="active" href="#ops-cockpit">Ops Cockpit</a>
+        <a href="#vm-workbench">VM Workbench</a>
+        <a href="#network-evidence">Network Evidence</a>
+        <a href="#recovery-desk">Recovery Desk</a>
+      </nav>
+    </aside>
+
+    <main class="content">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">installed listener / internal service boundary</p>
+          <h1>Frontend Completion Samples</h1>
+        </div>
+        <div class="status-line">
+          <span class="badge ok">Service Running</span>
+          <span class="badge info">Loopback 200</span>
+          <span class="badge warn">AllowUnsignedDev</span>
+          <span class="badge">No token value rendered</span>
+        </div>
+      </header>
+
+      <section id="ops-cockpit" class="screen">
+        <div class="screen-head">
+          <div>
+            <p class="eyebrow">screen 01</p>
+            <h2>Ops Cockpit</h2>
+          </div>
+          <div class="status-line">
+            <span class="badge ok">Ready</span>
+            <span class="badge">request_id=req-summary-sample</span>
+          </div>
+        </div>
+
+        <div class="grid-4">
+          <div class="tile"><span>Host readiness</span><strong>Ready</strong><span>Hyper-V, VMMS, admin context aligned</span></div>
+          <div class="tile"><span>VMs total/running</span><strong>3 / 1</strong><span>checkpoint warnings: 1</span></div>
+          <div class="tile"><span>Jobs active/failed</span><strong>2 / 1</strong><span>1 retryable failure</span></div>
+          <div class="tile"><span>API hardening</span><strong>429 / 504</strong><span>problem details surfaced</span></div>
+        </div>
+
+        <div class="grid-2" style="margin-top: 12px;">
+          <div class="panel">
+            <div class="panel-head">
+              <h3>Priority Signals</h3>
+              <span class="badge warn">2 active</span>
+            </div>
+            <div class="timeline">
+              <div class="event"><span class="mono">rate.limit</span><strong>PCV_RATE_LIMIT_EXCEEDED</strong><span class="badge warn">retry_after_seconds=7</span></div>
+              <div class="event"><span class="mono">route.timeout</span><strong>PCV_ROUTE_TIMEOUT</strong><span class="badge warn">route_timeout_seconds=30</span></div>
+              <div class="event"><span class="mono">batch</span><strong>Latest full admin gate passed</strong><span class="badge ok">0.39.1</span></div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head">
+              <h3>Capacity Snapshot</h3>
+              <span class="badge info">read-only</span>
+            </div>
+            <div class="bars">
+              <div><span>CPU pressure</span><div class="bar"><span style="width: 42%;"></span></div></div>
+              <div><span>Memory pressure</span><div class="bar"><span style="width: 58%;"></span></div></div>
+              <div><span>Job queue pressure</span><div class="bar"><span style="width: 28%;"></span></div></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="vm-workbench" class="screen">
+        <div class="screen-head">
+          <div>
+            <p class="eyebrow">screen 02</p>
+            <h2>VM Workbench</h2>
+          </div>
+          <div class="action-row">
+            <button class="btn primary" type="button">Queue Create</button>
+            <button class="btn" type="button">Refresh</button>
+          </div>
+        </div>
+
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>State</th>
+                <th>Generation</th>
+                <th>Checkpoint</th>
+                <th>Last job</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>pcv-admin-smoke-0391</strong><br><span class="mono">vm-7b1d</span></td>
+                <td><span class="badge ok">Running</span></td>
+                <td>2</td>
+                <td>clean-baseline</td>
+                <td><span class="mono">job-vm-start-0815</span></td>
+                <td><div class="action-row"><button class="btn" type="button">Restart</button><button class="btn danger" type="button">Power off</button></div></td>
+              </tr>
+              <tr>
+                <td><strong>pcv-web-fixture</strong><br><span class="mono">vm-a83c</span></td>
+                <td><span class="badge">Off</span></td>
+                <td>2</td>
+                <td>frontend-review</td>
+                <td><span class="mono">job-checkpoint-create</span></td>
+                <td><div class="action-row"><button class="btn" type="button">Start</button><button class="btn danger" type="button">Delete</button></div></td>
+              </tr>
+              <tr>
+                <td><strong>foreign-lab-vm</strong><br><span class="mono">vm-unmanaged</span></td>
+                <td><span class="badge warn">Guarded</span></td>
+                <td>2</td>
+                <td>-</td>
+                <td><span class="mono">PCV_VM_NOT_MANAGED_BY_PURECVISOR</span></td>
+                <td><span class="badge warn">managed marker required</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="network-evidence" class="screen">
+        <div class="screen-head">
+          <div>
+            <p class="eyebrow">screen 03</p>
+            <h2>Network Evidence</h2>
+          </div>
+          <div class="status-line">
+            <span class="badge info">network.inventory</span>
+            <span class="badge ok">read-only</span>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="panel">
+            <div class="panel-head">
+              <h3>Switch Inventory</h3>
+              <span class="badge">2 switches</span>
+            </div>
+            <div class="table-scroll">
+              <table>
+                <thead><tr><th>Switch</th><th>Type</th><th>Default</th><th>Management OS</th><th>Adapter</th></tr></thead>
+                <tbody>
+                  <tr><td><strong>Default Switch</strong></td><td>Internal</td><td><span class="badge ok">default</span></td><td>enabled</td><td>Hyper-V Virtual Ethernet</td></tr>
+                  <tr><td><strong>lab-external</strong></td><td>External</td><td>-</td><td>disabled</td><td>Intel Ethernet</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head">
+              <h3>Gate Evidence</h3>
+              <span class="badge ok">completed</span>
+            </div>
+            <div class="kv"><span>Batch</span><strong>full-admin-host-mutation-gate-20260509-010131-0391</strong></div>
+            <div class="kv"><span>Route/MSI/Hyper-V</span><strong>PASS</strong></div>
+            <div class="kv"><span>OS mutation</span><strong>PASS</strong></div>
+            <div class="kv"><span>Public signing</span><strong>Public signing: excluded</strong></div>
+            <div class="kv"><span>Publication</span><strong>External publication: not-claimed</strong></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="recovery-desk" class="screen">
+        <div class="screen-head">
+          <div>
+            <p class="eyebrow">screen 04</p>
+            <h2>Recovery Desk</h2>
+          </div>
+          <div class="status-line">
+            <span class="badge warn">operator attention</span>
+            <span class="badge">token redacted</span>
+          </div>
+        </div>
+
+        <div class="grid-3">
+          <div class="panel">
+            <div class="panel-head">
+              <h3>Problem Details</h3>
+              <span class="badge warn">HTTP 429</span>
+            </div>
+            <div class="kv"><span>Code</span><strong>PCV_RATE_LIMIT_EXCEEDED</strong></div>
+            <div class="kv"><span>Title</span><strong>Too Many Requests</strong></div>
+            <div class="kv"><span>Retry</span><strong>retry_after_seconds=7</strong></div>
+            <div class="kv"><span>Request</span><strong class="mono">req-problem-details-fixture</strong></div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head">
+              <h3>Timeout Details</h3>
+              <span class="badge warn">HTTP 504</span>
+            </div>
+            <div class="kv"><span>Code</span><strong>PCV_ROUTE_TIMEOUT</strong></div>
+            <div class="kv"><span>Title</span><strong>Gateway Timeout</strong></div>
+            <div class="kv"><span>Deadline</span><strong>route_timeout_seconds=30</strong></div>
+            <div class="kv"><span>Operation</span><strong>route.timeout</strong></div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head">
+              <h3>Diagnostics</h3>
+              <span class="badge info">operator handoff</span>
+            </div>
+            <div class="recovery-list">
+              <div class="row-panel"><strong>Diagnostic bundle</strong><span>CollectDiagnostics handoff</span></div>
+              <div class="row-panel"><strong>Token Rotation</strong><span>browser token clear only</span></div>
+              <div class="row-panel"><strong>Mutation boundary</strong><span>no host mutation from sample</span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

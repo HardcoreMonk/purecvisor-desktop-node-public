@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DesktopNode.Contracts\DesktopNode.Contracts.csproj" />
+    <ProjectReference Include="..\DesktopNode.HyperV\DesktopNode.HyperV.csproj" />
+    <ProjectReference Include="..\DesktopNode.Runtime\DesktopNode.Runtime.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="DesktopNode.Api.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="..\..\docs\ga-ready\current-evidence.json">
+      <Link>evidence\current-evidence.json</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
+
+</Project>

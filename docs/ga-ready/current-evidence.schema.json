@@ -1,0 +1,135 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://purecvisor.invalid/schemas/current-evidence.schema.json",
+  "title": "PureCVisor Desktop Node current operational evidence",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "contract", "current", "feature_qualification", "manual_admin", "claims"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "contract": { "const": "pcv-current-evidence-v1" },
+    "current": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "version",
+        "operator_surfaces",
+        "tui_present",
+        "package_evidence",
+        "fullgate_batch",
+        "fullgate_evidence",
+        "functional_evidence",
+        "installed_evidence",
+        "clean_msi_sha256",
+        "operational_msi_sha256",
+        "payload_sha256",
+        "provenance_commit"
+      ],
+      "properties": {
+        "version": { "type": "string", "pattern": "^0\\.\\d+\\.\\d+-admin-smoke$" },
+        "operator_surfaces": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "uniqueItems": true,
+          "prefixItems": [
+            { "const": "web" },
+            { "const": "cli" }
+          ],
+          "items": false
+        },
+        "tui_present": { "const": false },
+        "package_evidence": { "$ref": "#/$defs/markdownPath" },
+        "fullgate_batch": { "type": "string", "minLength": 1 },
+        "fullgate_evidence": { "$ref": "#/$defs/markdownPath" },
+        "functional_evidence": { "$ref": "#/$defs/markdownPath" },
+        "installed_evidence": { "$ref": "#/$defs/markdownPath" },
+        "clean_msi_sha256": { "$ref": "#/$defs/sha256" },
+        "operational_msi_sha256": { "$ref": "#/$defs/sha256" },
+        "payload_sha256": { "$ref": "#/$defs/sha256" },
+        "provenance_commit": { "type": "string", "pattern": "^[0-9a-f]{40}$" }
+      }
+    },
+    "feature_qualification": { "$ref": "#/$defs/featureQualification" },
+    "manual_admin": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "latest_closed_baseline",
+        "latest_closed_target",
+        "latest_closed_descriptor"
+      ],
+      "dependentRequired": {
+        "blocked_baseline": ["blocked_target", "blocked_reason"],
+        "blocked_target": ["blocked_baseline", "blocked_reason"],
+        "blocked_reason": ["blocked_baseline", "blocked_target"]
+      },
+      "properties": {
+        "latest_closed_baseline": { "type": "string", "minLength": 1 },
+        "latest_closed_target": { "type": "string", "minLength": 1 },
+        "latest_closed_descriptor": { "type": "string", "minLength": 1 },
+        "blocked_baseline": { "type": "string", "minLength": 1 },
+        "blocked_target": { "type": "string", "minLength": 1 },
+        "blocked_reason": { "type": "string", "minLength": 1 }
+      }
+    },
+    "claims": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["public_trusted_signing", "external_stable_publication"],
+      "properties": {
+        "public_trusted_signing": { "const": false },
+        "external_stable_publication": { "const": false }
+      }
+    }
+  },
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "markdownPath": {
+      "type": "string",
+      "pattern": "^docs/ga-ready/evidence/.+\\.md$"
+    },
+    "featureQualification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema_version", "contract", "promotion_eligible", "blockers"],
+      "properties": {
+        "schema_version": { "const": 1 },
+        "contract": { "const": "pcv-feature-promotion-decision-v1" },
+        "promotion_eligible": { "type": "boolean" },
+        "blockers": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/featureQualificationBlocker" }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": { "promotion_eligible": { "const": true } },
+            "required": ["promotion_eligible"]
+          },
+          "then": { "properties": { "blockers": { "maxItems": 0 } } },
+          "else": { "properties": { "blockers": { "minItems": 1 } } }
+        }
+      ]
+    },
+    "featureQualificationBlocker": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["feature_id", "stage", "verdict"],
+      "properties": {
+        "feature_id": { "type": "string", "pattern": "^pcv\\.[a-z0-9._-]+$" },
+        "stage": {
+          "enum": [
+            "code_tested",
+            "packaged",
+            "installed_tested",
+            "actual_vm_tested",
+            "manual_admin_tested"
+          ]
+        },
+        "verdict": { "enum": ["fail", "blocked", "missing"] }
+      }
+    }
+  }
+}

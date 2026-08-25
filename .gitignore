@@ -1,0 +1,14 @@
+.worktrees/
+.superpowers/
+artifacts/
+*.log
+*.tmp
+*.bak
+*.zip
+*.msi
+*.wixpdb
+bin/
+obj/
+node_modules/
+testResults.xml
+.claude/settings.local.json

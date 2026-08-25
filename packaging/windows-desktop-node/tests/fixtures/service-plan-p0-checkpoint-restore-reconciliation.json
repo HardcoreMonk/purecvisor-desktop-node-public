@@ -1,0 +1,83 @@
+{
+  "schema_version": "pcv-checkpoint-restore-reconciliation/v1",
+  "decision_id": "service-plan-p0-checkpoint-restore-reconciliation-v1",
+  "decision_date": "2026-08-14",
+  "wave": "P0-2",
+  "operation": "checkpoint.restore",
+  "status": "code_complete",
+  "implementation_change": true,
+  "product_behavior_changed": true,
+  "host_mutation_performed": false,
+  "hyperv_mutation_performed": false,
+  "actual_vm_validation_performed": false,
+  "package_candidate_created": false,
+  "promotion_not_triggered": true,
+  "current_operational_anchor": "0.42.73-admin-smoke",
+  "baseline_capture": {
+    "source": "checkpoint.list",
+    "read_only": true,
+    "schema": "pcv-checkpoint-restore-reconciliation/v1",
+    "capture_statuses": ["captured", "unavailable"],
+    "captured_precondition": "requested name+vm_name row count is 1, exactly one is_current=true row, and that current name is not the requested name",
+    "already_current": "capture_status=unavailable; capture_error_code=PCV_CHECKPOINT_ALREADY_CURRENT",
+    "missing_requested": "capture_status=unavailable; capture_error_code=PCV_CHECKPOINT_NOT_FOUND",
+    "ambiguous_requested": "capture_status=unavailable; capture_error_code=PCV_CHECKPOINT_IDENTITY_AMBIGUOUS",
+    "current_unreadable": "capture_status=unavailable; capture_error_code=PCV_CHECKPOINT_CURRENT_UNAVAILABLE",
+    "list_failed": "capture_status=unavailable; capture_error_code=provider code or PCV_CHECKPOINT_LIST_FAILED"
+  },
+  "route": {
+    "method": "POST",
+    "template": "/api/v1/jobs/{jobId}/reconcile",
+    "operation_name": "ReconcileJob",
+    "required_permission": "operate",
+    "mutation_stance": "ProductOperation"
+  },
+  "reconcile_classifications": [
+    "postcondition-confirmed",
+    "not-applied",
+    "current-unavailable",
+    "ambiguous-duplicate-checkpoint-names",
+    "baseline-unavailable",
+    "readback-unavailable"
+  ],
+  "success_requires": {
+    "requested_row_count": 1,
+    "is_current": true,
+    "presence_only": false
+  },
+  "confirmed_terminal_mapping": {
+    "job_status": "succeeded",
+    "result_action": "reconciled",
+    "provider_mutation_called": false,
+    "provider_operations": ["checkpoint.list"],
+    "observation_event": "job-reconciled"
+  },
+  "required_manual_mapping": {
+    "http_status": 409,
+    "error_code": "PCV_JOB_RECONCILIATION_REQUIRED",
+    "job_status_unchanged": "failed",
+    "retryable": false,
+    "observation_event": "job-reconciliation-required"
+  },
+  "operator_surface_parity": {
+    "web_action": "Reconcile restore",
+    "cli_command": "job reconcile <job_id>",
+    "cli_route": "/api/v1/jobs/{jobId}/reconcile",
+    "rbac_permission": "operate"
+  },
+  "excluded_operations": [
+    "checkpoint.delete"
+  ],
+  "verification_scope": {
+    "focused_api_tests": "PASS",
+    "focused_runtime_tests": "PASS",
+    "web_typescript_and_served_asset": "NOT_THIS_TASK",
+    "cli_contract_tests": "PASS_CARRY_FORWARD",
+    "actual_vm_smoke": "NOT_RUN_BY_DESIGN",
+    "package_build": "NOT_RUN_BY_DESIGN"
+  },
+  "public_boundary": {
+    "public_trusted_signing": false,
+    "external_stable_publication": false
+  }
+}

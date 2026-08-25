@@ -1,0 +1,12 @@
+{
+  "operation": "vm.create",
+  "params": {
+    "name": "ubuntu-lab-01",
+    "iso_path": "D:\\iso\\ubuntu-24.04-live-server-amd64.iso",
+    "cpu": 2,
+    "memory_mb": 4096,
+    "disk_gb": 40,
+    "vm_root": "D:\\PureCVisor\\VMs",
+    "generation": 2
+  }
+}

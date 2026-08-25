@@ -1,0 +1,480 @@
+{
+  "schema_version": 1,
+  "evidence_id": "archive-spikes-inventory-postmove-2026-05-05",
+  "created_at": "2026-05-05T01:12:00+09:00",
+  "source_root": "spikes/purecvisor-desktop-node",
+  "archive_target_root": "archive/spikes/purecvisor-desktop-node",
+  "source_exists_after_move": false,
+  "archive_exists_after_move": true,
+  "archived_file_count": 46,
+  "premove_inventory_path": "docs/ga-ready/evidence/archive-spikes-inventory-2026-05-04.json",
+  "premove_inventory_missing_count": 0,
+  "premove_hash_mismatch_count": 8,
+  "premove_hash_match_status": "partial-after-path-reference-update",
+  "file_move_execution": "pass",
+  "archive_write_execution": "pass",
+  "postmove_reference_update_execution": "pass",
+  "public_trusted_signing": "excluded",
+  "files": [
+    {
+      "archive_path": "archive/spikes/purecvisor-desktop-node/api/examples/host-status.http.txt",
+      "original_source_path": "spikes/purecvisor-desktop-node/api/examples/host-status.http.txt",
+      "length": 70,
+      "sha256": "201bde6f48951d77a4b21c81ac6a285c51797f401ff6a038a91240f65f02033d",
+      "premove_length": 70,
+      "premove_sha256": "201bde6f48951d77a4b21c81ac6a285c51797f401ff6a038a91240f65f02033d",
+      "premove_inventory_match": true,
+      "premove_hash_match": true
+    },
+    {
+      "archive_path": "archive/spikes/purecvisor-desktop-node/api/examples/vm-create.http.txt",
+      "original_source_path": "spikes/purecvisor-desktop-node/api/examples/vm-create.http.txt",
+      "length": 291,
+      "sha256": "f9d7bc1da9f8d818435728beacdef35592ede5a943745023ac95b4f0d9c4f84f",
+      "premove_length": 291,
+      "premove_sha256": "f9d7bc1da9f8d818435728beacdef35592ede5a943745023ac95b4f0d9c4f84f",
+      "premove_inventory_match": true,
+      "premove_hash_match": true
+    },
+    {
+      "archive_path": "archive/spikes/purecvisor-desktop-node/api/examples/vm-detail.http.txt",
+      "original_source_path": "spikes/purecvisor-desktop-node/api/examples/vm-detail.http.txt",
+      "length": 72,
+      "sha256": "c661b6ee4cbc84a487e9ca9fd2b6645c0a21a3390bd04591cd2b032e759eab49",
+      "premove_length": 72,
+      "premove_sha256": "c661b6ee4cbc84a487e9ca9fd2b6645c0a21a3390bd04591cd2b032e759eab49",
+      "premove_inventory_match": true,
+      "premove_hash_match": true
+    },
+    {
+      "archive_path": "archive/spikes/purecvisor-desktop-node/api/examples/vm-list.http.txt",
+      "original_source_path": "spikes/purecvisor-desktop-node/api/examples/vm-list.http.txt",
+      "length": 62,
+      "sha256": "c49c8090950b53e068c5a5b5a72db33c15f56c70ed0039c44bac86423c509063",
+      "premove_length": 62,
+      "premove_sha256": "c49c8090950b53e068c5a5b5a72db33c15f56c70ed0039c44bac86423c509063",
+      "premove_inventory_match": true,
+      "premove_hash_match": true
+    },
+    {
+      "archive_path": "archive/spikes/purecvisor-desktop-node/api/examples/vm-start.http.txt",
+      "original_source_path": "spikes/purecvisor-desktop-node/api/examples/vm-start.http.txt",
+      "length": 79,
+      "sha256": "40b8c76d4d14b993ee98b8e1c2eb30e5c004c84641986db3d0e4c5abafeb9510",
+      "premove_length": 79,
+      "premove_sha256": "40b8c76d4d14b993ee98b8e1c2eb30e5c004c84641986db3d0e4c5abafeb9510",
+      "premove_inventory_match": true,
+      "premove_hash_match": true
+    },
+    {
+      "archive_path": "archive/spikes/purecvisor-desktop-node/api/Invoke-PcvDesktopApi.ps1",
+      "original_source_path": "spikes/purecvisor-desktop-node/api/Invoke-PcvDesktopApi.ps1",
+      "length": 1447,
+      "sha256": "faeeac4689cfa380313daaa16e1991d8be7b07e0a3acb23fc42e2f93f783d94d",
+      "premove_length": 1447,
+      "premove_sha256": "faeeac4689cfa380313daaa16e1991d8be7b07e0a3acb23fc42e2f93f783d94d",
+      "premove_inventory_match": true,
+      "premove_hash_match": true
+    },
+    {
+      "archive_path": "archive/spikes/purecvisor-desktop-node/api/PcvDesktopApi.psm1",
+      "original_source_path": "spikes/purecvisor-desktop-node/api/PcvDesktopApi.psm1",
+      "length": 71616,
+      "sha256": "8c766394d4e67805ce923d1a5bdfd0e11e6cbd71eb10ace5351f7a9fb9d8f4e8",
+      "premove_length": 71616,
+      "premove_sha256": "8c766394d4e67805ce923d1a5bdfd0e11e6cbd71eb10ace5351f7a9fb9d8f4e8",
+      "premove_inventory_match": true,
+      "premove_hash_match": true
+    },
+    {
+      "archive_path": "archive/spikes/purecvisor-desktop-node/api/README.md",
+      "original_source_path": "spikes/purecvisor-desktop-node/api/README.md",
+      "length": 37713,
+      "sha256": "3b6ba5d64b1409f827d9d8a9729496e175bb0e2f6a0e500d742288a9a2e904fb",
+      "premove_length": 37482,
+      "premove_sha256": "046ddb4a36270b2c679b7cd220ad6b61ec3b10df7fec891dd134474949e3446b",
+      "premove_inventory_match": true,
+      "premove_hash_match": false
+    },
+    {
+      "archive_path": "archive/spikes/purecvisor-desktop-node/api/tests/PcvDesktopApi.Auth.Tests.ps1",
+      "original_source_path": "spikes/purecvisor-desktop-node/api/tests/PcvDesktopApi.Auth.Tests.ps1",
+      "length": 12481,
+      "sha256": "c81b47ba791d7a0bcd9cb1e0885a59ac3eae0f59345925a70920e9a6cc853f9f",
+      "premove_length": 12481,
+      "premove_sha256": "c81b47ba791d7a0bcd9cb1e0885a59ac3eae0f59345925a70920e9a6cc853f9f",
+      "premove_inventory_match": true,
+      "premove_hash_match": true
+    },
+    {
+      "archive_path": "archive/spikes/purecvisor-desktop-node/api/tests/PcvDesktopApi.Contract.Tests.ps1",
+      "original_source_path": "spikes/purecvisor-desktop-node/api/tests/PcvDesktopApi.Contract.Tests.ps1",
+      "length": 17219,
+      "sha256": "5f6a05d143e3b97e66e22f1530bfe3d7747c74bc31256220d35d176656e1711b",
+      "premove_length": 17219,
+      "premove_sha256": "5f6a05d143e3b97e66e22f1530bfe3d7747c74bc31256220d35d176656e1711b",
+      "premove_inventory_match": true,
+      "premove_hash_match": true
+    },
+    {
+      "archive_path": "archive/spikes/purecvisor-desktop-node/api/tests/PcvDesktopApi.Helper.Tests.ps1",
+      "original_source_path": "spikes/purecvisor-desktop-node/api/tests/PcvDesktopApi.Helper.Tests.ps1",
+      "length": 2467,
+      "sha256": "778b820244ecba27f8bff39bd07eee61e49d5c79caaad0c947d0dc4051a2565d",
+      "premove_length": 2467,
+      "premove_sha256": "778b820244ecba27f8bff39bd07eee61e49d5c79caaad0c947d0dc4051a2565d",
+      "premove_inventory_match": true,
+      "premove_hash_match": true
+    },
+    {
+      "archive_path": "archive/spikes/purecvisor-desktop-node/api/tests/PcvDesktopApi.Job.Tests.ps1",
+      "original_source_path": "spikes/purecvisor-desktop-node/api/tests/PcvDesktopApi.Job.Tests.ps1",
+      "length": 14710,
+      "sha256": "e3d0249967fc26118b805ef57078260ed23ccbef0a00e225dbc6e398b36ed0ad",
+      "premove_length": 14710,
+      "premove_sha256": "e3d0249967fc26118b805ef57078260ed23ccbef0a00e225dbc6e398b36ed0ad",
+      "premove_inventory_match": true,
+      "premove_hash_match": true
+    },
+    {
+      "archive_path": "archive/spikes/purecvisor-desktop-node/api/tests/PcvDesktopApi.JobControl.Tests.ps1",
+      "original_source_path": "spikes/purecvisor-desktop-node/api/tests/PcvDesktopApi.JobControl.Tests.ps1",
+      "length": 12387,
+      "sha256": "3b6d9e0a0fc84f0bf5a952de2c0d94fcf4320aa4d95da339e00b2530dc6a0a70",
+      "premove_length": 12387,
+      "premove_sha256": "3b6d9e0a0fc84f0bf5a952de2c0d94fcf4320aa4d95da339e00b2530dc6a0a70",
+      "premove_inventory_match": true,
+      "premove_hash_match": true
+    },
+    {
+      "archive_path": "archive/spikes/purecvisor-desktop-node/api/tests/PcvDesktopApi.Lan.Tests.ps1",
+      "original_source_path": "spikes/purecvisor-desktop-node/api/tests/PcvDesktopApi.Lan.Tests.ps1",
+      "length": 4782,
+      "sha256": "610f9ba846a080ebaaac600d205bbeddf1f2cdfad5a5ad587e6a9748e015ce86",
+      "premove_length": 4782,
+      "premove_sha256": "610f9ba846a080ebaaac600d205bbeddf1f2cdfad5a5ad587e6a9748e015ce86",
+      "premove_inventory_match": true,
+      "premove_hash_match": true
+    },
+    {
+      "archive_path": "archive/spikes/purecvisor-desktop-node/api/tests/PcvDesktopApi.Persistence.Tests.ps1",
+      "original_source_path": "spikes/purecvisor-desktop-node/api/tests/PcvDesktopApi.Persistence.Tests.ps1",
+      "length": 9278,
+      "sha256": "c849468c64471401f7ca4276d0c420898fb4f809b6af5c47554197678ee42916",
+      "premove_length": 9278,
+      "premove_sha256": "c849468c64471401f7ca4276d0c420898fb4f809b6af5c47554197678ee42916",
+      "premove_inventory_match": true,
+      "premove_hash_match": true
+    },
+    {
+      "archive_path": "archive/spikes/purecvisor-desktop-node/api/tests/PcvDesktopApi.Static.Tests.ps1",
+      "original_source_path": "spikes/purecvisor-desktop-node/api/tests/PcvDesktopApi.Static.Tests.ps1",
+      "length": 7362,
+      "sha256": "16034eb2d8946d44015785cdb640314edc39a2bb253f56b734f9029fb963b286",
+      "premove_length": 7362,
+      "premove_sha256": "16034eb2d8946d44015785cdb640314edc39a2bb253f56b734f9029fb963b286",
+      "premove_inventory_match": true,
+      "premove_hash_match": true
+    },
+    {
+      "archive_path": "archive/spikes/purecvisor-desktop-node/api/tests/PcvDesktopApi.Worker.Tests.ps1",
+      "original_source_path": "spikes/purecvisor-desktop-node/api/tests/PcvDesktopApi.Worker.Tests.ps1",
+      "length": 8593,
+      "sha256": "725e7b6b9fa6b21139c39d598b2148377c841d9f45b805776623c564ab658417",
+      "premove_length": 8593,
+      "premove_sha256": "725e7b6b9fa6b21139c39d598b2148377c841d9f45b805776623c564ab658417",
+      "premove_inventory_match": true,
+      "premove_hash_match": true
+    },
+    {
+      "archive_path": "archive/spikes/purecvisor-desktop-node/api/tests/PcvDesktopApi.WorkerPool.Tests.ps1",
+      "original_source_path": "spikes/purecvisor-desktop-node/api/tests/PcvDesktopApi.WorkerPool.Tests.ps1",
+      "length": 7932,
+      "sha256": "58847db28bd4eac6a44ebc012ea2800138b6b83ed2246bfb0c636a560b8193cb",
+      "premove_length": 7932,
+      "premove_sha256": "58847db28bd4eac6a44ebc012ea2800138b6b83ed2246bfb0c636a560b8193cb",
+      "premove_inventory_match": true,
+      "premove_hash_match": true
+    },
+    {
+      "archive_path": "archive/spikes/purecvisor-desktop-node/cli/Invoke-PcvDesktopCli.ps1",
+      "original_source_path": "spikes/purecvisor-desktop-node/cli/Invoke-PcvDesktopCli.ps1",
+      "length": 569,
+      "sha256": "c990a45183ac5d9ca7a0552c852a4a88410b0b2bd733497d93eaf139320c5361",
+      "premove_length": 569,
+      "premove_sha256": "c990a45183ac5d9ca7a0552c852a4a88410b0b2bd733497d93eaf139320c5361",
+      "premove_inventory_match": true,
+      "premove_hash_match": true
+    },
+    {
+      "archive_path": "archive/spikes/purecvisor-desktop-node/cli/PcvDesktopCli.psm1",
+      "original_source_path": "spikes/purecvisor-desktop-node/cli/PcvDesktopCli.psm1",
+      "length": 19957,
+      "sha256": "dd4964cd32cf4903b7c42bbc7722d240032197338c314495a77333f6793329ee",
+      "premove_length": 19957,
+      "premove_sha256": "dd4964cd32cf4903b7c42bbc7722d240032197338c314495a77333f6793329ee",
+      "premove_inventory_match": true,
+      "premove_hash_match": true
+    },
+    {
+      "archive_path": "archive/spikes/purecvisor-desktop-node/cli/README.md",
+      "original_source_path": "spikes/purecvisor-desktop-node/cli/README.md",
+      "length": 5591,
+      "sha256": "312c706752caddfe1c6eaf302f3558e3270ef843a3a2329791b117e7a3a76df9",
+      "premove_length": 5439,
+      "premove_sha256": "95713eb625290bd795f866d62d48a3b995a5549f8503aacd2f3b9ea275405ea8",
+      "premove_inventory_match": true,
+      "premove_hash_match": false
+    },
+    {
+      "archive_path": "archive/spikes/purecvisor-desktop-node/cli/tests/PcvDesktopCli.Contract.Tests.ps1",
+      "original_source_path": "spikes/purecvisor-desktop-node/cli/tests/PcvDesktopCli.Contract.Tests.ps1",
+      "length": 11464,
+      "sha256": "bc96d1fd02065ac99a6530c684c185d1ab5e6a4f56f87ad7b7983414a813db03",
+      "premove_length": 11464,
+      "premove_sha256": "bc96d1fd02065ac99a6530c684c185d1ab5e6a4f56f87ad7b7983414a813db03",
+      "premove_inventory_match": true,
+      "premove_hash_match": true
+    },
+    {
+      "archive_path": "archive/spikes/purecvisor-desktop-node/hyperv/examples/checkpoint-create.json",
+      "original_source_path": "spikes/purecvisor-desktop-node/hyperv/examples/checkpoint-create.json",
+      "length": 137,
+      "sha256": "7a8fcb332881d57dbac597d9b5606cb7746e43be43301fd52064e9e78a1bcee9",
+      "premove_length": 137,
+      "premove_sha256": "7a8fcb332881d57dbac597d9b5606cb7746e43be43301fd52064e9e78a1bcee9",
+      "premove_inventory_match": true,
+      "premove_hash_match": true
+    },
+    {
+      "archive_path": "archive/spikes/purecvisor-desktop-node/hyperv/examples/host-status.json",
+      "original_source_path": "spikes/purecvisor-desktop-node/hyperv/examples/host-status.json",
+      "length": 53,
+      "sha256": "2c837221fd07d489e6b7ef996d6442a59cf922efd902d46663b42fa83be86494",
+      "premove_length": 53,
+      "premove_sha256": "2c837221fd07d489e6b7ef996d6442a59cf922efd902d46663b42fa83be86494",
+      "premove_inventory_match": true,
+      "premove_hash_match": true
+    },
+    {
+      "archive_path": "archive/spikes/purecvisor-desktop-node/hyperv/examples/vm-create.json",
+      "original_source_path": "spikes/purecvisor-desktop-node/hyperv/examples/vm-create.json",
+      "length": 268,
+      "sha256": "9f03b066b69c01924a4d1e3b95c2ba99f40ed9f4b5210bf0cd534d7401a2f702",
+      "premove_length": 268,
+      "premove_sha256": "9f03b066b69c01924a4d1e3b95c2ba99f40ed9f4b5210bf0cd534d7401a2f702",
+      "premove_inventory_match": true,
+      "premove_hash_match": true
+    },
+    {
+      "archive_path": "archive/spikes/purecvisor-desktop-node/hyperv/examples/vm-list.json",
+      "original_source_path": "spikes/purecvisor-desktop-node/hyperv/examples/vm-list.json",
+      "length": 49,
+      "sha256": "6809384bad7f5476b77be1d03c9eed2ae50987b364dd1afec72af8ae2d83c2af",
+      "premove_length": 49,
+      "premove_sha256": "6809384bad7f5476b77be1d03c9eed2ae50987b364dd1afec72af8ae2d83c2af",
+      "premove_inventory_match": true,
+      "premove_hash_match": true
+    },
+    {
+      "archive_path": "archive/spikes/purecvisor-desktop-node/hyperv/examples/vm-start.json",
+      "original_source_path": "spikes/purecvisor-desktop-node/hyperv/examples/vm-start.json",
+      "length": 83,
+      "sha256": "ef5cb33dd80aa0cdac13066e5c92c40041914455012d6664e524419a6f6d39ff",
+      "premove_length": 83,
+      "premove_sha256": "ef5cb33dd80aa0cdac13066e5c92c40041914455012d6664e524419a6f6d39ff",
+      "premove_inventory_match": true,
+      "premove_hash_match": true
+    },
+    {
+      "archive_path": "archive/spikes/purecvisor-desktop-node/hyperv/Invoke-PcvHyperV.ps1",
+      "original_source_path": "spikes/purecvisor-desktop-node/hyperv/Invoke-PcvHyperV.ps1",
+      "length": 2131,
+      "sha256": "3d898444dfd55686b40873f8ce578b2b843c8db0561a87d923e780503f6fa72e",
+      "premove_length": 2131,
+      "premove_sha256": "3d898444dfd55686b40873f8ce578b2b843c8db0561a87d923e780503f6fa72e",
+      "premove_inventory_match": true,
+      "premove_hash_match": true
+    },
+    {
+      "archive_path": "archive/spikes/purecvisor-desktop-node/hyperv/PcvHyperV.psm1",
+      "original_source_path": "spikes/purecvisor-desktop-node/hyperv/PcvHyperV.psm1",
+      "length": 32321,
+      "sha256": "c6ad0b908cde34a4732313a4ca9356c9b662b268c95af5674bd478f0efd62f90",
+      "premove_length": 32321,
+      "premove_sha256": "c6ad0b908cde34a4732313a4ca9356c9b662b268c95af5674bd478f0efd62f90",
+      "premove_inventory_match": true,
+      "premove_hash_match": true
+    },
+    {
+      "archive_path": "archive/spikes/purecvisor-desktop-node/hyperv/PcvHyperVEvidence.psm1",
+      "original_source_path": "spikes/purecvisor-desktop-node/hyperv/PcvHyperVEvidence.psm1",
+      "length": 10086,
+      "sha256": "1d3755fd922bdc1dbc5824adefa1a4431695120920c3564d4670bba375135e76",
+      "premove_length": 10086,
+      "premove_sha256": "1d3755fd922bdc1dbc5824adefa1a4431695120920c3564d4670bba375135e76",
+      "premove_inventory_match": true,
+      "premove_hash_match": true
+    },
+    {
+      "archive_path": "archive/spikes/purecvisor-desktop-node/hyperv/README.md",
+      "original_source_path": "spikes/purecvisor-desktop-node/hyperv/README.md",
+      "length": 6740,
+      "sha256": "546fc0ff71371d77f42e290104dc54b3f78bfdc16e80cdcda98ddf70a279568c",
+      "premove_length": 6676,
+      "premove_sha256": "0eaa1a362d717cac5ae15de4f0f9349d0760d906e61204428df9486f62a2c4bf",
+      "premove_inventory_match": true,
+      "premove_hash_match": false
+    },
+    {
+      "archive_path": "archive/spikes/purecvisor-desktop-node/hyperv/tests/PcvHyperV.Contract.Tests.ps1",
+      "original_source_path": "spikes/purecvisor-desktop-node/hyperv/tests/PcvHyperV.Contract.Tests.ps1",
+      "length": 2361,
+      "sha256": "23c45d27a93773d74b680df3b4d051e079a9fea9fc8c41a92ad9cd17bc474468",
+      "premove_length": 2361,
+      "premove_sha256": "23c45d27a93773d74b680df3b4d051e079a9fea9fc8c41a92ad9cd17bc474468",
+      "premove_inventory_match": true,
+      "premove_hash_match": true
+    },
+    {
+      "archive_path": "archive/spikes/purecvisor-desktop-node/hyperv/tests/PcvHyperV.Evidence.Tests.ps1",
+      "original_source_path": "spikes/purecvisor-desktop-node/hyperv/tests/PcvHyperV.Evidence.Tests.ps1",
+      "length": 5270,
+      "sha256": "8f446f1598830359a6d0f0e349b88de108118ded992284464b4e0be471babcf8",
+      "premove_length": 5270,
+      "premove_sha256": "8f446f1598830359a6d0f0e349b88de108118ded992284464b4e0be471babcf8",
+      "premove_inventory_match": true,
+      "premove_hash_match": true
+    },
+    {
+      "archive_path": "archive/spikes/purecvisor-desktop-node/hyperv/tests/PcvHyperV.HostStatus.Tests.ps1",
+      "original_source_path": "spikes/purecvisor-desktop-node/hyperv/tests/PcvHyperV.HostStatus.Tests.ps1",
+      "length": 4388,
+      "sha256": "f55fb7c4a6a64ba0f10333fa09c820329bc4288911f8366caeff163fa4ba49a3",
+      "premove_length": 4388,
+      "premove_sha256": "f55fb7c4a6a64ba0f10333fa09c820329bc4288911f8366caeff163fa4ba49a3",
+      "premove_inventory_match": true,
+      "premove_hash_match": true
+    },
+    {
+      "archive_path": "archive/spikes/purecvisor-desktop-node/hyperv/tests/PcvHyperV.Integration.Tests.ps1",
+      "original_source_path": "spikes/purecvisor-desktop-node/hyperv/tests/PcvHyperV.Integration.Tests.ps1",
+      "length": 6190,
+      "sha256": "395899bf9db95430ccccc4062ead2f730677ae4dbfca7f8fb7944c0ec80130cf",
+      "premove_length": 6190,
+      "premove_sha256": "395899bf9db95430ccccc4062ead2f730677ae4dbfca7f8fb7944c0ec80130cf",
+      "premove_inventory_match": true,
+      "premove_hash_match": true
+    },
+    {
+      "archive_path": "archive/spikes/purecvisor-desktop-node/hyperv/tests/PcvHyperV.Inventory.Tests.ps1",
+      "original_source_path": "spikes/purecvisor-desktop-node/hyperv/tests/PcvHyperV.Inventory.Tests.ps1",
+      "length": 6028,
+      "sha256": "8f065e75d0b37af810c6e5bad5f7eaf8b6a97adf8d5e8ea358ddbb9af09b1172",
+      "premove_length": 6028,
+      "premove_sha256": "8f065e75d0b37af810c6e5bad5f7eaf8b6a97adf8d5e8ea358ddbb9af09b1172",
+      "premove_inventory_match": true,
+      "premove_hash_match": true
+    },
+    {
+      "archive_path": "archive/spikes/purecvisor-desktop-node/hyperv/tests/PcvHyperV.LifecycleCheckpoint.Tests.ps1",
+      "original_source_path": "spikes/purecvisor-desktop-node/hyperv/tests/PcvHyperV.LifecycleCheckpoint.Tests.ps1",
+      "length": 13918,
+      "sha256": "54b86dc43f6c945da8365c9920f3994156585c41c991ba83f4de9e904c3eb56c",
+      "premove_length": 13918,
+      "premove_sha256": "54b86dc43f6c945da8365c9920f3994156585c41c991ba83f4de9e904c3eb56c",
+      "premove_inventory_match": true,
+      "premove_hash_match": true
+    },
+    {
+      "archive_path": "archive/spikes/purecvisor-desktop-node/hyperv/tests/PcvHyperV.NetworkInventory.Tests.ps1",
+      "original_source_path": "spikes/purecvisor-desktop-node/hyperv/tests/PcvHyperV.NetworkInventory.Tests.ps1",
+      "length": 4582,
+      "sha256": "61b098428c7f65f6f4a1699c6f60d2a91ce266a29ebed748f83b0433601c7d18",
+      "premove_length": 4582,
+      "premove_sha256": "61b098428c7f65f6f4a1699c6f60d2a91ce266a29ebed748f83b0433601c7d18",
+      "premove_inventory_match": true,
+      "premove_hash_match": true
+    },
+    {
+      "archive_path": "archive/spikes/purecvisor-desktop-node/hyperv/tests/PcvHyperV.Provisioning.Tests.ps1",
+      "original_source_path": "spikes/purecvisor-desktop-node/hyperv/tests/PcvHyperV.Provisioning.Tests.ps1",
+      "length": 12331,
+      "sha256": "f384f7cc88fab664cc16791a2ef992a0e90cc0f4d65fb0e0e5bf55b0e5f6362b",
+      "premove_length": 12331,
+      "premove_sha256": "f384f7cc88fab664cc16791a2ef992a0e90cc0f4d65fb0e0e5bf55b0e5f6362b",
+      "premove_inventory_match": true,
+      "premove_hash_match": true
+    },
+    {
+      "archive_path": "archive/spikes/purecvisor-desktop-node/README.md",
+      "original_source_path": "spikes/purecvisor-desktop-node/README.md",
+      "length": 16123,
+      "sha256": "ccf584fff0621b65837ca1ac077019701e677b9e116ccb9b520bd89f19d49f4f",
+      "premove_length": 16068,
+      "premove_sha256": "1a20833858c7375d07a944117c63868f858804f06c8f420d8094bd71e4e11528",
+      "premove_inventory_match": true,
+      "premove_hash_match": false
+    },
+    {
+      "archive_path": "archive/spikes/purecvisor-desktop-node/service/Invoke-PcvDesktopService.ps1",
+      "original_source_path": "spikes/purecvisor-desktop-node/service/Invoke-PcvDesktopService.ps1",
+      "length": 6492,
+      "sha256": "f4b7f21ee5ae304fcd28c14ef15b1c644562d304c719d0dd5321ccd3a6edc9fa",
+      "premove_length": 6492,
+      "premove_sha256": "f4b7f21ee5ae304fcd28c14ef15b1c644562d304c719d0dd5321ccd3a6edc9fa",
+      "premove_inventory_match": true,
+      "premove_hash_match": true
+    },
+    {
+      "archive_path": "archive/spikes/purecvisor-desktop-node/service/PcvDesktopService.psm1",
+      "original_source_path": "spikes/purecvisor-desktop-node/service/PcvDesktopService.psm1",
+      "length": 33801,
+      "sha256": "c6005f86265cc480c367956446011fe3c1a5f025018b03905e84ecdcfaaaaf23",
+      "premove_length": 33801,
+      "premove_sha256": "c6005f86265cc480c367956446011fe3c1a5f025018b03905e84ecdcfaaaaf23",
+      "premove_inventory_match": true,
+      "premove_hash_match": true
+    },
+    {
+      "archive_path": "archive/spikes/purecvisor-desktop-node/service/README.md",
+      "original_source_path": "spikes/purecvisor-desktop-node/service/README.md",
+      "length": 12505,
+      "sha256": "3391700505d66cf6e1cb1697daf94ac06376281b6a6b9722a99e099606646d53",
+      "premove_length": 12290,
+      "premove_sha256": "161a41f4f5704526993c58833bc45dd3427dbd0d5aef3b52166346022079a1a2",
+      "premove_inventory_match": true,
+      "premove_hash_match": false
+    },
+    {
+      "archive_path": "archive/spikes/purecvisor-desktop-node/service/tests/PcvDesktopService.Contract.Tests.ps1",
+      "original_source_path": "spikes/purecvisor-desktop-node/service/tests/PcvDesktopService.Contract.Tests.ps1",
+      "length": 20026,
+      "sha256": "0b29dfe4695b522dc91a3b62b629c3fd4f78eb0913caffbed58de4c4a94dcd06",
+      "premove_length": 19918,
+      "premove_sha256": "1699b0576168100679b76e922707ba36924534fdce09c8a5587475d3bc9bcfa1",
+      "premove_inventory_match": true,
+      "premove_hash_match": false
+    },
+    {
+      "archive_path": "archive/spikes/purecvisor-desktop-node/tests/PcvDesktopNode.Boundary.Tests.ps1",
+      "original_source_path": "spikes/purecvisor-desktop-node/tests/PcvDesktopNode.Boundary.Tests.ps1",
+      "length": 156747,
+      "sha256": "4b43889933a5ee33e76c609c48df3d9b5b63a0f61b36d40c5b1191ffe355e824",
+      "premove_length": 155089,
+      "premove_sha256": "e9f252cdd7c541c9292acfcf95649e6c196c1b356831d0b112c633ceca17c3cb",
+      "premove_inventory_match": true,
+      "premove_hash_match": false
+    },
+    {
+      "archive_path": "archive/spikes/purecvisor-desktop-node/tests/PcvDesktopNode.DocumentationSync.Tests.ps1",
+      "original_source_path": "spikes/purecvisor-desktop-node/tests/PcvDesktopNode.DocumentationSync.Tests.ps1",
+      "length": 7988,
+      "sha256": "d3b8c33a3be32fa2abdd7bc82e60ab400be9769e1de02e21f9dac24d7deafa93",
+      "premove_length": 7875,
+      "premove_sha256": "3949ee46eb2bbce8a1f40168e01b482356593c976393e3b34d6d63c3323ebc86",
+      "premove_inventory_match": true,
+      "premove_hash_match": false
+    }
+  ]
+}

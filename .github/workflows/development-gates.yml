@@ -1,0 +1,90 @@
+name: Development Gates
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: development-gates-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  dotnet-tests:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v6.0.2
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+      - uses: actions/cache@v5
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('src/**/*.csproj') }}
+      - run: dotnet restore src/DesktopNode.sln
+      - run: dotnet test src/DesktopNode.sln -c Release --no-restore
+
+  web-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6.0.2
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci --prefix web
+      - run: npm test --prefix web
+      - run: npm run verify:parity --prefix web
+
+  packaging-pester:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v6.0.2
+      - name: Validate canonical current evidence
+        shell: pwsh
+        run: |
+          & './packaging/windows-desktop-node/tools/Update-PcvCurrentEvidenceDocs.ps1' -Check
+      - name: Install exact Pester
+        shell: pwsh
+        run: Install-Module Pester -RequiredVersion 5.7.1 -Scope CurrentUser -Force -SkipPublisherCheck
+      - name: Validate Full lane orchestration contract
+        shell: pwsh
+        run: |
+          $artifactRoot = 'artifacts/development-verification-full-plan'
+          & './packaging/windows-desktop-node/tools/Invoke-PcvDevelopmentVerification.ps1' `
+            -Lane Full `
+            -ChangeTier M `
+            -ChangedPath '.github/workflows/development-gates.yml' `
+            -ArtifactRoot $artifactRoot `
+            -PlanOnly | Out-Null
+          $summary = Get-Content -Raw -LiteralPath (Join-Path $artifactRoot 'summary.json') | ConvertFrom-Json
+          if (-not $summary.ok -or $summary.effective_lane -ne 'Full') { exit 1 }
+          if (@($summary.results | Where-Object status -eq 'planned').Count -ne 7) { exit 1 }
+      - name: Run packaging Pester
+        shell: pwsh
+        run: |
+          $result = Invoke-Pester -Path 'packaging/windows-desktop-node/tests' -Output Detailed -PassThru
+          if ($result.FailedCount -gt 0) { exit 1 }
+
+  installer-web-pester:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v6.0.2
+      - name: Install exact Pester
+        shell: pwsh
+        run: Install-Module Pester -RequiredVersion 5.7.1 -Scope CurrentUser -Force -SkipPublisherCheck
+      - name: Run installer and Web Pester
+        shell: pwsh
+        run: |
+          $result = Invoke-Pester -Path @('packaging/windows-desktop-node/installer/tests', 'web/tests') -Output Detailed -PassThru
+          if ($result.FailedCount -gt 0) { exit 1 }

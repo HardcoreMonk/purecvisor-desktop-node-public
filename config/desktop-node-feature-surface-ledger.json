@@ -1,0 +1,1661 @@
+{
+  "$schema": "desktop-node-feature-surface-ledger.schema.json",
+  "schema_version": 1,
+  "contract": "pcv-feature-surface-ledger-v1",
+  "target_surfaces": [
+    "api",
+    "cli",
+    "web"
+  ],
+  "features": [
+    {
+      "feature_id": "pcv.runtime.policy",
+      "title": "Runtime policy",
+      "routes": [
+        {
+          "operation_id": "runtime.policy",
+          "method": "GET",
+          "route_template": "/api/v1/runtime/policy",
+          "required_permission": null,
+          "present_surfaces": [
+            "api",
+            "cli",
+            "web"
+          ],
+          "excluded_surfaces": [],
+          "surface_bindings": {
+            "web": {
+              "coverage_id": "runtime.policy"
+            },
+            "cli": {
+              "command": [
+                "runtime",
+                "policy"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "feature_id": "pcv.host.status",
+      "title": "Host status",
+      "routes": [
+        {
+          "operation_id": "host.status",
+          "method": "GET",
+          "route_template": "/api/v1/host/status",
+          "required_permission": "read",
+          "present_surfaces": [
+            "api",
+            "cli",
+            "web"
+          ],
+          "excluded_surfaces": [],
+          "surface_bindings": {
+            "web": {
+              "coverage_id": "host.status"
+            },
+            "cli": {
+              "command": [
+                "host",
+                "status"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "feature_id": "pcv.vm.inventory",
+      "title": "VM inventory",
+      "routes": [
+        {
+          "operation_id": "vm.list",
+          "method": "GET",
+          "route_template": "/api/v1/vms",
+          "required_permission": "read",
+          "present_surfaces": [
+            "api",
+            "cli",
+            "web"
+          ],
+          "excluded_surfaces": [],
+          "surface_bindings": {
+            "web": {
+              "coverage_id": "vm.list"
+            },
+            "cli": {
+              "command": [
+                "vm",
+                "list"
+              ]
+            }
+          }
+        },
+        {
+          "operation_id": "vm.detail",
+          "method": "GET",
+          "route_template": "/api/v1/vms/{vmId}",
+          "required_permission": "read",
+          "present_surfaces": [
+            "api",
+            "cli",
+            "web"
+          ],
+          "excluded_surfaces": [],
+          "surface_bindings": {
+            "web": {
+              "coverage_id": "vm.detail"
+            },
+            "cli": {
+              "command": [
+                "vm",
+                "get",
+                "vm-01"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "feature_id": "pcv.job.lifecycle",
+      "title": "Job lifecycle",
+      "routes": [
+        {
+          "operation_id": "job.list",
+          "method": "GET",
+          "route_template": "/api/v1/jobs",
+          "required_permission": "read",
+          "present_surfaces": [
+            "api",
+            "cli",
+            "web"
+          ],
+          "excluded_surfaces": [],
+          "surface_bindings": {
+            "web": {
+              "coverage_id": "job.list"
+            },
+            "cli": {
+              "command": [
+                "job",
+                "list"
+              ]
+            }
+          }
+        },
+        {
+          "operation_id": "job.detail",
+          "method": "GET",
+          "route_template": "/api/v1/jobs/{jobId}",
+          "required_permission": "read",
+          "present_surfaces": [
+            "api",
+            "cli",
+            "web"
+          ],
+          "excluded_surfaces": [],
+          "surface_bindings": {
+            "web": {
+              "coverage_id": "job.detail"
+            },
+            "cli": {
+              "command": [
+                "job",
+                "get",
+                "job-01"
+              ]
+            }
+          }
+        },
+        {
+          "operation_id": "job.cancel",
+          "method": "POST",
+          "route_template": "/api/v1/jobs/{jobId}/cancel",
+          "required_permission": "operate",
+          "present_surfaces": [
+            "api",
+            "cli",
+            "web"
+          ],
+          "excluded_surfaces": [],
+          "surface_bindings": {
+            "web": {
+              "coverage_id": "job.cancel"
+            },
+            "cli": {
+              "command": [
+                "job",
+                "cancel",
+                "job-01"
+              ]
+            }
+          }
+        },
+        {
+          "operation_id": "job.retry",
+          "method": "POST",
+          "route_template": "/api/v1/jobs/{jobId}/retry",
+          "required_permission": "operate",
+          "present_surfaces": [
+            "api",
+            "cli",
+            "web"
+          ],
+          "excluded_surfaces": [],
+          "surface_bindings": {
+            "web": {
+              "coverage_id": "job.retry"
+            },
+            "cli": {
+              "command": [
+                "job",
+                "retry",
+                "job-01"
+              ]
+            }
+          }
+        },
+        {
+          "operation_id": "job.reconcile",
+          "method": "POST",
+          "route_template": "/api/v1/jobs/{jobId}/reconcile",
+          "required_permission": "operate",
+          "present_surfaces": [
+            "api",
+            "cli",
+            "web"
+          ],
+          "excluded_surfaces": [],
+          "surface_bindings": {
+            "web": {
+              "coverage_id": "job.reconcile"
+            },
+            "cli": {
+              "command": [
+                "job",
+                "reconcile",
+                "job-01"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "feature_id": "pcv.ops.summary",
+      "title": "Operations summary",
+      "routes": [
+        {
+          "operation_id": "ops.summary",
+          "method": "GET",
+          "route_template": "/api/v1/ops/summary",
+          "required_permission": "read",
+          "present_surfaces": [
+            "api",
+            "cli",
+            "web"
+          ],
+          "excluded_surfaces": [],
+          "surface_bindings": {
+            "web": {
+              "coverage_id": "ops.summary"
+            },
+            "cli": {
+              "command": [
+                "ops",
+                "summary"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "feature_id": "pcv.diagnostics.bundle",
+      "title": "Diagnostic bundles",
+      "routes": [
+        {
+          "operation_id": "diagnostic.bundle.list",
+          "method": "GET",
+          "route_template": "/api/v1/diagnostics/bundles",
+          "required_permission": "diagnostics.read",
+          "present_surfaces": [
+            "api",
+            "cli",
+            "web"
+          ],
+          "excluded_surfaces": [],
+          "surface_bindings": {
+            "web": {
+              "coverage_id": "diagnostic.bundle.list"
+            },
+            "cli": {
+              "command": [
+                "diagnostics",
+                "bundle",
+                "list"
+              ]
+            }
+          }
+        },
+        {
+          "operation_id": "diagnostic.bundle.create",
+          "method": "POST",
+          "route_template": "/api/v1/diagnostics/bundles",
+          "required_permission": "diagnostics.create",
+          "present_surfaces": [
+            "api",
+            "cli",
+            "web"
+          ],
+          "excluded_surfaces": [],
+          "surface_bindings": {
+            "web": {
+              "coverage_id": "diagnostic.bundle.create"
+            },
+            "cli": {
+              "command": [
+                "diagnostics",
+                "bundle",
+                "create"
+              ]
+            }
+          }
+        },
+        {
+          "operation_id": "diagnostic.bundle.download",
+          "method": "GET",
+          "route_template": "/api/v1/diagnostics/bundles/{bundleId}/download",
+          "required_permission": "diagnostics.read",
+          "present_surfaces": [
+            "api",
+            "cli",
+            "web"
+          ],
+          "excluded_surfaces": [],
+          "surface_bindings": {
+            "web": {
+              "coverage_id": "diagnostic.bundle.download"
+            },
+            "cli": {
+              "command": [
+                "diagnostics",
+                "bundle",
+                "download",
+                "bundle-01",
+                "--output",
+                "D:\\evidence\\bundle.json"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "feature_id": "pcv.account.session",
+      "title": "Account and RBAC session",
+      "routes": [
+        {
+          "operation_id": "auth.login",
+          "method": "POST",
+          "route_template": "/api/v1/auth/login",
+          "required_permission": null,
+          "present_surfaces": [
+            "api",
+            "web"
+          ],
+          "excluded_surfaces": [
+            {
+              "surface": "cli",
+              "reason": "Account and JWT session lifecycle is Web/API-only; PCVCLI uses protected bearer-token resolution."
+            }
+          ],
+          "surface_bindings": {
+            "web": {
+              "coverage_id": "auth.login"
+            }
+          }
+        },
+        {
+          "operation_id": "auth.loopback-session",
+          "method": "POST",
+          "route_template": "/api/v1/auth/loopback-session",
+          "required_permission": null,
+          "present_surfaces": [
+            "api",
+            "web"
+          ],
+          "excluded_surfaces": [
+            {
+              "surface": "cli",
+              "reason": "Account and JWT session lifecycle is Web/API-only; PCVCLI uses protected bearer-token resolution."
+            }
+          ],
+          "surface_bindings": {
+            "web": {
+              "coverage_id": "auth.loopback-session"
+            }
+          }
+        },
+        {
+          "operation_id": "auth.refresh",
+          "method": "POST",
+          "route_template": "/api/v1/auth/refresh",
+          "required_permission": null,
+          "present_surfaces": [
+            "api",
+            "web"
+          ],
+          "excluded_surfaces": [
+            {
+              "surface": "cli",
+              "reason": "Account and JWT session lifecycle is Web/API-only; PCVCLI uses protected bearer-token resolution."
+            }
+          ],
+          "surface_bindings": {
+            "web": {
+              "coverage_id": "auth.refresh"
+            }
+          }
+        },
+        {
+          "operation_id": "auth.logout",
+          "method": "POST",
+          "route_template": "/api/v1/auth/logout",
+          "required_permission": null,
+          "present_surfaces": [
+            "api",
+            "web"
+          ],
+          "excluded_surfaces": [
+            {
+              "surface": "cli",
+              "reason": "Account and JWT session lifecycle is Web/API-only; PCVCLI uses protected bearer-token resolution."
+            }
+          ],
+          "surface_bindings": {
+            "web": {
+              "coverage_id": "auth.logout"
+            }
+          }
+        },
+        {
+          "operation_id": "auth.session",
+          "method": "GET",
+          "route_template": "/api/v1/auth/session",
+          "required_permission": "read",
+          "present_surfaces": [
+            "api",
+            "web"
+          ],
+          "excluded_surfaces": [
+            {
+              "surface": "cli",
+              "reason": "Account and JWT session lifecycle is Web/API-only; PCVCLI uses protected bearer-token resolution."
+            }
+          ],
+          "surface_bindings": {
+            "web": {
+              "coverage_id": "auth.session"
+            }
+          }
+        },
+        {
+          "operation_id": "auth.rbac",
+          "method": "GET",
+          "route_template": "/api/v1/auth/rbac",
+          "required_permission": "read",
+          "present_surfaces": [
+            "api",
+            "web"
+          ],
+          "excluded_surfaces": [
+            {
+              "surface": "cli",
+              "reason": "Account and JWT session lifecycle is Web/API-only; PCVCLI uses protected bearer-token resolution."
+            }
+          ],
+          "surface_bindings": {
+            "web": {
+              "coverage_id": "auth.rbac"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "feature_id": "pcv.console.capabilities",
+      "title": "Console capability discovery",
+      "routes": [
+        {
+          "operation_id": "console.capabilities",
+          "method": "GET",
+          "route_template": "/api/v1/console/capabilities",
+          "required_permission": "read",
+          "present_surfaces": [
+            "api",
+            "web"
+          ],
+          "excluded_surfaces": [
+            {
+              "surface": "cli",
+              "reason": "Global console capability discovery is API/Web-only; PCVCLI exposes VM-specific console handoff."
+            }
+          ],
+          "surface_bindings": {
+            "web": {
+              "coverage_id": "console.capabilities"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "feature_id": "pcv.network.inventory",
+      "title": "Network inventory",
+      "routes": [
+        {
+          "operation_id": "network.inventory",
+          "method": "GET",
+          "route_template": "/api/v1/network/inventory",
+          "required_permission": "read",
+          "present_surfaces": [
+            "api",
+            "cli",
+            "web"
+          ],
+          "excluded_surfaces": [],
+          "surface_bindings": {
+            "web": {
+              "coverage_id": "network.inventory"
+            },
+            "cli": {
+              "command": [
+                "network",
+                "list"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "feature_id": "pcv.vm.delete",
+      "title": "VM delete lifecycle",
+      "routes": [
+        {
+          "operation_id": "vm.delete-status",
+          "method": "GET",
+          "route_template": "/api/v1/vms/{vmId}/delete-status",
+          "required_permission": "read",
+          "present_surfaces": [
+            "api",
+            "cli",
+            "web"
+          ],
+          "excluded_surfaces": [],
+          "surface_bindings": {
+            "web": {
+              "coverage_id": "vm.delete-status"
+            },
+            "cli": {
+              "command": [
+                "vm",
+                "delete-status",
+                "vm-01"
+              ]
+            }
+          }
+        },
+        {
+          "operation_id": "vm.delete",
+          "method": "DELETE",
+          "route_template": "/api/v1/vms/{vmId}",
+          "required_permission": "operate",
+          "present_surfaces": [
+            "api",
+            "cli",
+            "web"
+          ],
+          "excluded_surfaces": [],
+          "surface_bindings": {
+            "web": {
+              "coverage_id": "vm.delete"
+            },
+            "cli": {
+              "command": [
+                "vm",
+                "delete",
+                "vm-01",
+                "--yes"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "feature_id": "pcv.vm.console-handoff",
+      "title": "VM console handoff",
+      "routes": [
+        {
+          "operation_id": "console.session",
+          "method": "GET",
+          "route_template": "/api/v1/vms/{vmId}/console",
+          "required_permission": "console.view",
+          "present_surfaces": [
+            "api",
+            "cli",
+            "web"
+          ],
+          "excluded_surfaces": [],
+          "surface_bindings": {
+            "web": {
+              "coverage_id": "console.session"
+            },
+            "cli": {
+              "command": [
+                "vm",
+                "console",
+                "vm-01"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "feature_id": "pcv.vm.telemetry",
+      "title": "VM telemetry",
+      "routes": [
+        {
+          "operation_id": "vm.memory-stats",
+          "method": "GET",
+          "route_template": "/api/v1/vms/{vmId}/memory-stats",
+          "required_permission": "read",
+          "present_surfaces": [
+            "api",
+            "cli"
+          ],
+          "excluded_surfaces": [
+            {
+              "surface": "web",
+              "reason": "Web Console uses inventory and ops-summary projections instead of raw per-VM telemetry endpoints."
+            }
+          ],
+          "surface_bindings": {
+            "cli": {
+              "command": [
+                "vm",
+                "memory-stats",
+                "vm-01"
+              ]
+            }
+          }
+        },
+        {
+          "operation_id": "vm.cpu-stats",
+          "method": "GET",
+          "route_template": "/api/v1/vms/{vmId}/cpu-stats",
+          "required_permission": "read",
+          "present_surfaces": [
+            "api",
+            "cli"
+          ],
+          "excluded_surfaces": [
+            {
+              "surface": "web",
+              "reason": "Web Console uses inventory and ops-summary projections instead of raw per-VM telemetry endpoints."
+            }
+          ],
+          "surface_bindings": {
+            "cli": {
+              "command": [
+                "vm",
+                "cpu-stats",
+                "vm-01"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "feature_id": "pcv.vm.qos",
+      "title": "VM QoS",
+      "routes": [
+        {
+          "operation_id": "vm.blkio-get",
+          "method": "GET",
+          "route_template": "/api/v1/vms/{vmId}/blkio",
+          "required_permission": "read",
+          "present_surfaces": [
+            "api",
+            "cli",
+            "web"
+          ],
+          "excluded_surfaces": [],
+          "surface_bindings": {
+            "web": {
+              "coverage_id": "vm.blkio-get"
+            },
+            "cli": {
+              "command": [
+                "vm",
+                "blkio-get",
+                "vm-01"
+              ]
+            }
+          }
+        },
+        {
+          "operation_id": "vm.bandwidth",
+          "method": "GET",
+          "route_template": "/api/v1/vms/{vmId}/bandwidth",
+          "required_permission": "read",
+          "present_surfaces": [
+            "api",
+            "cli",
+            "web"
+          ],
+          "excluded_surfaces": [],
+          "surface_bindings": {
+            "web": {
+              "coverage_id": "vm.bandwidth"
+            },
+            "cli": {
+              "command": [
+                "vm",
+                "bandwidth",
+                "vm-01"
+              ]
+            }
+          }
+        },
+        {
+          "operation_id": "vm.qos.storage.preview",
+          "method": "POST",
+          "route_template": "/api/v1/vms/{vmId}/qos/storage/preview",
+          "required_permission": "operate",
+          "present_surfaces": [
+            "api",
+            "cli",
+            "web"
+          ],
+          "excluded_surfaces": [],
+          "surface_bindings": {
+            "web": {
+              "coverage_id": "vm.qos.storage.preview"
+            },
+            "cli": {
+              "command": [
+                "vm",
+                "blkio-set",
+                "vm-01",
+                "--disk",
+                "disk0",
+                "--maximum-iops",
+                "1200",
+                "--dry-run"
+              ]
+            }
+          }
+        },
+        {
+          "operation_id": "vm.qos.network.preview",
+          "method": "POST",
+          "route_template": "/api/v1/vms/{vmId}/qos/network/preview",
+          "required_permission": "operate",
+          "present_surfaces": [
+            "api",
+            "cli",
+            "web"
+          ],
+          "excluded_surfaces": [],
+          "surface_bindings": {
+            "web": {
+              "coverage_id": "vm.qos.network.preview"
+            },
+            "cli": {
+              "command": [
+                "vm",
+                "bandwidth-set",
+                "vm-01",
+                "--adapter",
+                "adapter0",
+                "--maximum-kbps",
+                "2048",
+                "--dry-run"
+              ]
+            }
+          }
+        },
+        {
+          "operation_id": "vm.qos.storage.set",
+          "method": "POST",
+          "route_template": "/api/v1/vms/{vmId}/qos/storage",
+          "required_permission": "operate",
+          "present_surfaces": [
+            "api",
+            "cli",
+            "web"
+          ],
+          "excluded_surfaces": [],
+          "surface_bindings": {
+            "web": {
+              "coverage_id": "vm.qos.storage.set"
+            },
+            "cli": {
+              "command": [
+                "vm",
+                "blkio-set",
+                "vm-01",
+                "--disk",
+                "disk0",
+                "--maximum-iops",
+                "1200",
+                "--yes"
+              ]
+            }
+          }
+        },
+        {
+          "operation_id": "vm.qos.network.set",
+          "method": "POST",
+          "route_template": "/api/v1/vms/{vmId}/qos/network",
+          "required_permission": "operate",
+          "present_surfaces": [
+            "api",
+            "cli",
+            "web"
+          ],
+          "excluded_surfaces": [],
+          "surface_bindings": {
+            "web": {
+              "coverage_id": "vm.qos.network.set"
+            },
+            "cli": {
+              "command": [
+                "vm",
+                "bandwidth-set",
+                "vm-01",
+                "--adapter",
+                "adapter0",
+                "--maximum-kbps",
+                "2048",
+                "--yes"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "feature_id": "pcv.vm.guest-service-readback",
+      "title": "Guest service readback",
+      "routes": [
+        {
+          "operation_id": "vm.guest-agent-status",
+          "method": "GET",
+          "route_template": "/api/v1/vms/{vmId}/guest-agent/status",
+          "required_permission": "read",
+          "present_surfaces": [
+            "api",
+            "cli",
+            "web"
+          ],
+          "excluded_surfaces": [],
+          "surface_bindings": {
+            "web": {
+              "coverage_id": "vm.guest-agent-status"
+            },
+            "cli": {
+              "command": [
+                "vm",
+                "guest-agent-status",
+                "vm-01"
+              ]
+            }
+          }
+        },
+        {
+          "operation_id": "vm.guest-ping",
+          "method": "GET",
+          "route_template": "/api/v1/vms/{vmId}/guest-agent/ping",
+          "required_permission": "read",
+          "present_surfaces": [
+            "api",
+            "cli",
+            "web"
+          ],
+          "excluded_surfaces": [],
+          "surface_bindings": {
+            "web": {
+              "coverage_id": "vm.guest-ping"
+            },
+            "cli": {
+              "command": [
+                "vm",
+                "guest-ping",
+                "vm-01"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "feature_id": "pcv.vm.guest-execution",
+      "title": "Guest execution",
+      "routes": [
+        {
+          "operation_id": "vm.guest.exec.preview",
+          "method": "POST",
+          "route_template": "/api/v1/vms/{vmId}/guest/exec/preview",
+          "required_permission": "guest.exec",
+          "present_surfaces": [
+            "api",
+            "cli"
+          ],
+          "excluded_surfaces": [
+            {
+              "surface": "web",
+              "reason": "Web Console exposes explicit direct control; this preview route remains API/CLI-only."
+            }
+          ],
+          "surface_bindings": {
+            "cli": {
+              "command": [
+                "vm",
+                "guest-exec",
+                "vm-01",
+                "--dry-run",
+                "--credential-ref",
+                "wincred:PureCVisor/guest/admin",
+                "--",
+                "hostname"
+              ]
+            }
+          }
+        },
+        {
+          "operation_id": "vm.guest.exec",
+          "method": "POST",
+          "route_template": "/api/v1/vms/{vmId}/guest/exec",
+          "required_permission": "guest.exec",
+          "present_surfaces": [
+            "api",
+            "cli",
+            "web"
+          ],
+          "excluded_surfaces": [],
+          "surface_bindings": {
+            "web": {
+              "coverage_id": "vm.guest.exec"
+            },
+            "cli": {
+              "command": [
+                "vm",
+                "guest-exec",
+                "vm-01",
+                "--credential-ref",
+                "wincred:PureCVisor/guest/admin",
+                "--",
+                "hostname"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "feature_id": "pcv.vm.guest-channel",
+      "title": "Guest channel configuration",
+      "routes": [
+        {
+          "operation_id": "vm.guest.channel.preview",
+          "method": "POST",
+          "route_template": "/api/v1/vms/{vmId}/guest/channel/preview",
+          "required_permission": "guest.channel.configure",
+          "present_surfaces": [
+            "api",
+            "cli"
+          ],
+          "excluded_surfaces": [
+            {
+              "surface": "web",
+              "reason": "Web Console exposes explicit direct control; this preview route remains API/CLI-only."
+            }
+          ],
+          "surface_bindings": {
+            "cli": {
+              "command": [
+                "vm",
+                "guest-agent-ensure-channel",
+                "vm-01",
+                "--dry-run"
+              ]
+            }
+          }
+        },
+        {
+          "operation_id": "vm.guest.channel.verify",
+          "method": "POST",
+          "route_template": "/api/v1/vms/{vmId}/guest/channel/verify",
+          "required_permission": "guest.channel.configure",
+          "present_surfaces": [
+            "api",
+            "cli",
+            "web"
+          ],
+          "excluded_surfaces": [],
+          "surface_bindings": {
+            "web": {
+              "coverage_id": "vm.guest.channel.verify"
+            },
+            "cli": {
+              "command": [
+                "vm",
+                "guest-agent-ensure-channel",
+                "vm-01",
+                "--verify",
+                "--credential-ref",
+                "wincred:PureCVisor/guest/admin"
+              ]
+            }
+          }
+        },
+        {
+          "operation_id": "vm.guest.channel.ensure",
+          "method": "POST",
+          "route_template": "/api/v1/vms/{vmId}/guest/channel",
+          "required_permission": "guest.channel.configure",
+          "present_surfaces": [
+            "api",
+            "cli",
+            "web"
+          ],
+          "excluded_surfaces": [],
+          "surface_bindings": {
+            "web": {
+              "coverage_id": "vm.guest.channel.ensure"
+            },
+            "cli": {
+              "command": [
+                "vm",
+                "guest-agent-ensure-channel",
+                "vm-01",
+                "--repair",
+                "--yes"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "feature_id": "pcv.checkpoint.lifecycle",
+      "title": "Checkpoint lifecycle",
+      "routes": [
+        {
+          "operation_id": "checkpoint.list",
+          "method": "GET",
+          "route_template": "/api/v1/vms/{vmId}/checkpoints",
+          "required_permission": "read",
+          "present_surfaces": [
+            "api",
+            "cli",
+            "web"
+          ],
+          "excluded_surfaces": [],
+          "surface_bindings": {
+            "web": {
+              "coverage_id": "checkpoint.list"
+            },
+            "cli": {
+              "command": [
+                "vm",
+                "checkpoint",
+                "list",
+                "vm-01"
+              ]
+            }
+          }
+        },
+        {
+          "operation_id": "checkpoint.create",
+          "method": "POST",
+          "route_template": "/api/v1/vms/{vmId}/checkpoints",
+          "required_permission": "operate",
+          "present_surfaces": [
+            "api",
+            "cli",
+            "web"
+          ],
+          "excluded_surfaces": [],
+          "surface_bindings": {
+            "web": {
+              "coverage_id": "checkpoint.create"
+            },
+            "cli": {
+              "command": [
+                "vm",
+                "checkpoint",
+                "create",
+                "vm-01",
+                "--name",
+                "before-upgrade"
+              ]
+            }
+          }
+        },
+        {
+          "operation_id": "checkpoint.delete",
+          "method": "DELETE",
+          "route_template": "/api/v1/vms/{vmId}/checkpoints/{checkpointId}",
+          "required_permission": "operate",
+          "present_surfaces": [
+            "api",
+            "cli",
+            "web"
+          ],
+          "excluded_surfaces": [],
+          "surface_bindings": {
+            "web": {
+              "coverage_id": "checkpoint.delete"
+            },
+            "cli": {
+              "command": [
+                "vm",
+                "checkpoint",
+                "delete",
+                "vm-01",
+                "before-upgrade"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "feature_id": "pcv.vm.create",
+      "title": "VM creation",
+      "routes": [
+        {
+          "operation_id": "vm.create",
+          "method": "POST",
+          "route_template": "/api/v1/vms",
+          "required_permission": "operate",
+          "present_surfaces": [
+            "api",
+            "cli",
+            "web"
+          ],
+          "excluded_surfaces": [],
+          "surface_bindings": {
+            "web": {
+              "coverage_id": "vm.create"
+            },
+            "cli": {
+              "command": [
+                "vm",
+                "create",
+                "vm-01",
+                "--vcpu",
+                "2",
+                "--memory_mb",
+                "4096",
+                "--disk_size_gb",
+                "40",
+                "--iso_path",
+                "D:\\isos\\windows.iso"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "feature_id": "pcv.checkpoint.restore",
+      "title": "Checkpoint restore",
+      "routes": [
+        {
+          "operation_id": "checkpoint.restore",
+          "method": "POST",
+          "route_template": "/api/v1/vms/{vmId}/checkpoints/{checkpointId}/restore",
+          "required_permission": "operate",
+          "present_surfaces": [
+            "api",
+            "cli",
+            "web"
+          ],
+          "excluded_surfaces": [],
+          "surface_bindings": {
+            "web": {
+              "coverage_id": "checkpoint.restore"
+            },
+            "cli": {
+              "command": [
+                "vm",
+                "checkpoint",
+                "restore",
+                "vm-01",
+                "before-upgrade"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "feature_id": "pcv.vm.power-lifecycle",
+      "title": "VM power lifecycle",
+      "routes": [
+        {
+          "operation_id": "vm.start",
+          "method": "POST",
+          "route_template": "/api/v1/vms/{vmId}/start",
+          "required_permission": "operate",
+          "present_surfaces": [
+            "api",
+            "cli",
+            "web"
+          ],
+          "excluded_surfaces": [],
+          "surface_bindings": {
+            "web": {
+              "coverage_id": "vm.lifecycle"
+            },
+            "cli": {
+              "command": [
+                "vm",
+                "start",
+                "vm-01"
+              ]
+            }
+          }
+        },
+        {
+          "operation_id": "vm.shutdown",
+          "method": "POST",
+          "route_template": "/api/v1/vms/{vmId}/shutdown",
+          "required_permission": "operate",
+          "present_surfaces": [
+            "api",
+            "cli",
+            "web"
+          ],
+          "excluded_surfaces": [],
+          "surface_bindings": {
+            "web": {
+              "coverage_id": "vm.lifecycle"
+            },
+            "cli": {
+              "command": [
+                "vm",
+                "guest-shutdown",
+                "vm-01"
+              ]
+            }
+          }
+        },
+        {
+          "operation_id": "vm.poweroff",
+          "method": "POST",
+          "route_template": "/api/v1/vms/{vmId}/poweroff",
+          "required_permission": "operate",
+          "present_surfaces": [
+            "api",
+            "cli",
+            "web"
+          ],
+          "excluded_surfaces": [],
+          "surface_bindings": {
+            "web": {
+              "coverage_id": "vm.lifecycle"
+            },
+            "cli": {
+              "command": [
+                "vm",
+                "stop",
+                "vm-01"
+              ]
+            }
+          }
+        },
+        {
+          "operation_id": "vm.restart",
+          "method": "POST",
+          "route_template": "/api/v1/vms/{vmId}/restart",
+          "required_permission": "operate",
+          "present_surfaces": [
+            "api",
+            "cli",
+            "web"
+          ],
+          "excluded_surfaces": [],
+          "surface_bindings": {
+            "web": {
+              "coverage_id": "vm.lifecycle"
+            },
+            "cli": {
+              "command": [
+                "vm",
+                "restart",
+                "vm-01"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "feature_id": "pcv.vm.pause-lifecycle",
+      "title": "VM pause lifecycle",
+      "routes": [
+        {
+          "operation_id": "vm.pause",
+          "method": "POST",
+          "route_template": "/api/v1/vms/{vmId}/pause",
+          "required_permission": "operate",
+          "present_surfaces": [
+            "api",
+            "cli"
+          ],
+          "excluded_surfaces": [
+            {
+              "surface": "web",
+              "reason": "Web Console intentionally omits transient pause/resume controls; this route remains API/CLI-only."
+            }
+          ],
+          "surface_bindings": {
+            "cli": {
+              "command": [
+                "vm",
+                "pause",
+                "vm-01"
+              ]
+            }
+          }
+        },
+        {
+          "operation_id": "vm.resume",
+          "method": "POST",
+          "route_template": "/api/v1/vms/{vmId}/resume",
+          "required_permission": "operate",
+          "present_surfaces": [
+            "api",
+            "cli"
+          ],
+          "excluded_surfaces": [
+            {
+              "surface": "web",
+              "reason": "Web Console intentionally omits transient pause/resume controls; this route remains API/CLI-only."
+            }
+          ],
+          "surface_bindings": {
+            "cli": {
+              "command": [
+                "vm",
+                "resume",
+                "vm-01"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "feature_id": "pcv.vm.saved-lifecycle",
+      "title": "VM saved lifecycle",
+      "routes": [
+        {
+          "operation_id": "vm.save",
+          "method": "POST",
+          "route_template": "/api/v1/vms/{vmId}/save",
+          "required_permission": "operate",
+          "present_surfaces": [
+            "api",
+            "cli",
+            "web"
+          ],
+          "excluded_surfaces": [],
+          "surface_bindings": {
+            "web": {
+              "coverage_id": "vm.save"
+            },
+            "cli": {
+              "command": [
+                "vm",
+                "save",
+                "vm-01"
+              ]
+            }
+          }
+        },
+        {
+          "operation_id": "vm.resume-saved",
+          "method": "POST",
+          "route_template": "/api/v1/vms/{vmId}/resume-saved",
+          "required_permission": "operate",
+          "present_surfaces": [
+            "api",
+            "cli",
+            "web"
+          ],
+          "excluded_surfaces": [],
+          "surface_bindings": {
+            "web": {
+              "coverage_id": "vm.resume-saved"
+            },
+            "cli": {
+              "command": [
+                "vm",
+                "resume-saved",
+                "vm-01"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "feature_id": "pcv.vm.rename",
+      "title": "VM rename",
+      "routes": [
+        {
+          "operation_id": "vm.rename",
+          "method": "POST",
+          "route_template": "/api/v1/vms/{vmId}/rename",
+          "required_permission": "operate",
+          "present_surfaces": [
+            "api",
+            "cli"
+          ],
+          "excluded_surfaces": [
+            {
+              "surface": "web",
+              "reason": "Web Console does not expose rename in the current operator flow; this route remains API/CLI-only."
+            }
+          ],
+          "surface_bindings": {
+            "cli": {
+              "command": [
+                "vm",
+                "rename",
+                "vm-01",
+                "vm-02"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "feature_id": "pcv.vm.managed-import",
+      "title": "Managed VM import",
+      "routes": [
+        {
+          "operation_id": "vm.manage",
+          "method": "POST",
+          "route_template": "/api/v1/vms/{vmId}/manage",
+          "required_permission": "operate",
+          "present_surfaces": [
+            "api",
+            "cli",
+            "web"
+          ],
+          "excluded_surfaces": [],
+          "surface_bindings": {
+            "web": {
+              "coverage_id": "vm.manage"
+            },
+            "cli": {
+              "command": [
+                "vm",
+                "manage",
+                "vm-01",
+                "--yes"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "feature_id": "pcv.vm.media-eject",
+      "title": "VM media eject",
+      "routes": [
+        {
+          "operation_id": "vm.eject",
+          "method": "POST",
+          "route_template": "/api/v1/vms/{vmId}/eject",
+          "required_permission": "operate",
+          "present_surfaces": [
+            "api",
+            "cli",
+            "web"
+          ],
+          "excluded_surfaces": [],
+          "surface_bindings": {
+            "web": {
+              "coverage_id": "vm.media"
+            },
+            "cli": {
+              "command": [
+                "vm",
+                "eject",
+                "vm-01"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "feature_id": "pcv.vm.media-attach",
+      "title": "VM media attach",
+      "routes": [
+        {
+          "operation_id": "vm.attach",
+          "method": "POST",
+          "route_template": "/api/v1/vms/{vmId}/attach",
+          "required_permission": "operate",
+          "present_surfaces": [
+            "api",
+            "cli",
+            "web"
+          ],
+          "excluded_surfaces": [],
+          "surface_bindings": {
+            "web": {
+              "coverage_id": "vm.media.attach"
+            },
+            "cli": {
+              "command": [
+                "vm",
+                "attach",
+                "vm-01",
+                "--iso",
+                "D:\\isos\\windows.iso"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "feature_id": "pcv.vm.resource-limits",
+      "title": "VM resource limits",
+      "routes": [
+        {
+          "operation_id": "vm.limit",
+          "method": "POST",
+          "route_template": "/api/v1/vms/{vmId}/limit",
+          "required_permission": "operate",
+          "present_surfaces": [
+            "api",
+            "cli"
+          ],
+          "excluded_surfaces": [
+            {
+              "surface": "web",
+              "reason": "Web Console exposes explicit QoS controls instead of the combined limit command; this route remains API/CLI-only."
+            }
+          ],
+          "surface_bindings": {
+            "cli": {
+              "command": [
+                "vm",
+                "limit",
+                "vm-01",
+                "--cpu",
+                "4",
+                "--memory-mb",
+                "4096"
+              ]
+            }
+          }
+        },
+        {
+          "operation_id": "vm.set-memory",
+          "method": "POST",
+          "route_template": "/api/v1/vms/{vmId}/set-memory",
+          "required_permission": "operate",
+          "present_surfaces": [
+            "api",
+            "cli",
+            "web"
+          ],
+          "excluded_surfaces": [],
+          "surface_bindings": {
+            "web": {
+              "coverage_id": "vm.resource-mutation"
+            },
+            "cli": {
+              "command": [
+                "vm",
+                "set-memory",
+                "vm-01",
+                "4096"
+              ]
+            }
+          }
+        },
+        {
+          "operation_id": "vm.set-vcpu",
+          "method": "POST",
+          "route_template": "/api/v1/vms/{vmId}/set-vcpu",
+          "required_permission": "operate",
+          "present_surfaces": [
+            "api",
+            "cli",
+            "web"
+          ],
+          "excluded_surfaces": [],
+          "surface_bindings": {
+            "web": {
+              "coverage_id": "vm.resource-mutation"
+            },
+            "cli": {
+              "command": [
+                "vm",
+                "set-vcpu",
+                "vm-01",
+                "4"
+              ]
+            }
+          }
+        },
+        {
+          "operation_id": "vm.disk-resize",
+          "method": "POST",
+          "route_template": "/api/v1/vms/{vmId}/disk-resize",
+          "required_permission": "operate",
+          "present_surfaces": [
+            "api",
+            "cli",
+            "web"
+          ],
+          "excluded_surfaces": [],
+          "surface_bindings": {
+            "web": {
+              "coverage_id": "vm.resource-mutation"
+            },
+            "cli": {
+              "command": [
+                "vm",
+                "disk-resize",
+                "vm-01",
+                "80"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

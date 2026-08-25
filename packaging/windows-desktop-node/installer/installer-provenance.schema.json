@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://purecvisor.local/schemas/desktop-node-installer-provenance.schema.json",
+  "title": "PureCVisor Desktop Node Installer Provenance",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "product",
+    "git_commit",
+    "build_utc",
+    "wix",
+    "msi",
+    "payload",
+    "service_host",
+    "cli",
+    "signing_mode",
+    "signing_trust_model",
+    "host"
+  ],
+  "properties": {
+    "schema_version": { "type": "string", "const": "1" },
+    "product": {
+      "type": "object",
+      "required": ["name", "version", "release_channel", "msi_product_version"],
+      "properties": {
+        "name": { "type": "string" },
+        "version": { "type": "string" },
+        "release_channel": { "type": "string", "enum": ["dev", "admin-smoke", "rc", "stable"] },
+        "msi_product_version": { "type": "string" }
+      }
+    },
+    "git_commit": { "type": "string" },
+    "build_utc": { "type": "string" },
+    "wix": {
+      "type": "object",
+      "required": ["version", "source_files"],
+      "properties": {
+        "version": { "type": "string" },
+        "source_files": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "msi": {
+      "type": "object",
+      "required": ["path", "sha256", "signed"],
+      "properties": {
+        "path": { "type": "string" },
+        "sha256": { "type": "string" },
+        "signed": { "type": "boolean" }
+      }
+    },
+    "payload": {
+      "type": "object",
+      "required": ["root", "file_count", "aggregate_sha256", "product_wrapper_sha256"],
+      "properties": {
+        "root": { "type": "string" },
+        "file_count": { "type": "integer" },
+        "aggregate_sha256": { "type": "string" },
+        "product_wrapper_sha256": { "type": "string" }
+      }
+    },
+    "service_host": {
+      "type": "object",
+      "required": ["source_path", "source", "sha256", "service_mode", "signature_status"],
+      "properties": {
+        "source_path": { "type": "string" },
+        "source": { "type": "string", "enum": ["explicit-path", "dotnet-publish"] },
+        "sha256": { "type": "string" },
+        "service_mode": { "type": "string", "const": "dotnet-windows-service" },
+        "signature_status": { "type": "string" }
+      }
+    },
+    "cli": {
+      "type": "object",
+      "required": ["source_path", "source", "sha256", "mode", "signature_status"],
+      "properties": {
+        "source_path": { "type": "string" },
+        "source": { "type": "string", "enum": ["explicit-path", "dotnet-publish"] },
+        "sha256": { "type": "string" },
+        "mode": { "type": "string", "const": "dotnet-local-api-client" },
+        "signature_status": { "type": "string" }
+      }
+    },
+    "signing_mode": { "type": "string", "enum": ["RequireSigned", "AllowUnsignedDev"] },
+    "signing_trust_model": {
+      "type": "string",
+      "enum": ["Unspecified", "LocalTest", "InternalEnterprise", "PublicTrusted"]
+    },
+    "host": {
+      "type": "object",
+      "required": ["os", "powershell"],
+      "properties": {
+        "os": { "type": "string" },
+        "powershell": { "type": "string" }
+      }
+    }
+  }
+}

@@ -1,0 +1,1055 @@
+{
+  "contract": "pcv-development-verification-migration-manifest-v1",
+  "schema_version": 1,
+  "inventory": {
+    "total": 62,
+    "packaging": 55,
+    "installer": 6,
+    "web": 1
+  },
+  "entries": [
+    {
+      "legacy_path": "packaging/windows-desktop-node/tests/Pcv04273PromotionEvidence.Tests.ps1",
+      "domain": "packaging",
+      "legacy_contract_count": 7,
+      "replacement_owner": null,
+      "replacement_contract_ids": [],
+      "parity_status": "unmapped",
+      "local_parity": {
+        "status": "pending",
+        "evidence": null
+      },
+      "ci_parity": {
+        "status": "pending",
+        "evidence": null
+      }
+    },
+    {
+      "legacy_path": "packaging/windows-desktop-node/tests/Pcv04274PackageEvidence.Tests.ps1",
+      "domain": "packaging",
+      "legacy_contract_count": 11,
+      "replacement_owner": null,
+      "replacement_contract_ids": [],
+      "parity_status": "unmapped",
+      "local_parity": {
+        "status": "pending",
+        "evidence": null
+      },
+      "ci_parity": {
+        "status": "pending",
+        "evidence": null
+      }
+    },
+    {
+      "legacy_path": "packaging/windows-desktop-node/tests/PcvAdminSmokeEvidenceDocs.Tests.ps1",
+      "domain": "packaging",
+      "legacy_contract_count": 90,
+      "replacement_owner": null,
+      "replacement_contract_ids": [],
+      "parity_status": "unmapped",
+      "local_parity": {
+        "status": "pending",
+        "evidence": null
+      },
+      "ci_parity": {
+        "status": "pending",
+        "evidence": null
+      }
+    },
+    {
+      "legacy_path": "packaging/windows-desktop-node/tests/PcvAgentExecutionCircuitBreaker.Tests.ps1",
+      "domain": "packaging",
+      "legacy_contract_count": 3,
+      "replacement_owner": null,
+      "replacement_contract_ids": [],
+      "parity_status": "unmapped",
+      "local_parity": {
+        "status": "pending",
+        "evidence": null
+      },
+      "ci_parity": {
+        "status": "pending",
+        "evidence": null
+      }
+    },
+    {
+      "legacy_path": "packaging/windows-desktop-node/tests/PcvApiHostJobHardeningInstalledSmoke.Tests.ps1",
+      "domain": "packaging",
+      "legacy_contract_count": 10,
+      "replacement_owner": null,
+      "replacement_contract_ids": [],
+      "parity_status": "unmapped",
+      "local_parity": {
+        "status": "pending",
+        "evidence": null
+      },
+      "ci_parity": {
+        "status": "pending",
+        "evidence": null
+      }
+    },
+    {
+      "legacy_path": "packaging/windows-desktop-node/tests/PcvBatchSupervisor.Tests.ps1",
+      "domain": "packaging",
+      "legacy_contract_count": 28,
+      "replacement_owner": null,
+      "replacement_contract_ids": [],
+      "parity_status": "unmapped",
+      "local_parity": {
+        "status": "pending",
+        "evidence": null
+      },
+      "ci_parity": {
+        "status": "pending",
+        "evidence": null
+      }
+    },
+    {
+      "legacy_path": "packaging/windows-desktop-node/tests/PcvBuiltinTlsCertificateLifecyclePreflight.Tests.ps1",
+      "domain": "packaging",
+      "legacy_contract_count": 6,
+      "replacement_owner": null,
+      "replacement_contract_ids": [],
+      "parity_status": "unmapped",
+      "local_parity": {
+        "status": "pending",
+        "evidence": null
+      },
+      "ci_parity": {
+        "status": "pending",
+        "evidence": null
+      }
+    },
+    {
+      "legacy_path": "packaging/windows-desktop-node/tests/PcvBurnBootstrapperPreflight.Tests.ps1",
+      "domain": "packaging",
+      "legacy_contract_count": 8,
+      "replacement_owner": null,
+      "replacement_contract_ids": [],
+      "parity_status": "unmapped",
+      "local_parity": {
+        "status": "pending",
+        "evidence": null
+      },
+      "ci_parity": {
+        "status": "pending",
+        "evidence": null
+      }
+    },
+    {
+      "legacy_path": "packaging/windows-desktop-node/tests/PcvCiTriggerContract.Tests.ps1",
+      "domain": "packaging",
+      "legacy_contract_count": 2,
+      "replacement_owner": null,
+      "replacement_contract_ids": [],
+      "parity_status": "unmapped",
+      "local_parity": {
+        "status": "pending",
+        "evidence": null
+      },
+      "ci_parity": {
+        "status": "pending",
+        "evidence": null
+      }
+    },
+    {
+      "legacy_path": "packaging/windows-desktop-node/tests/PcvConfigJobStoreMigrationApplySmoke.Tests.ps1",
+      "domain": "packaging",
+      "legacy_contract_count": 5,
+      "replacement_owner": null,
+      "replacement_contract_ids": [],
+      "parity_status": "unmapped",
+      "local_parity": {
+        "status": "pending",
+        "evidence": null
+      },
+      "ci_parity": {
+        "status": "pending",
+        "evidence": null
+      }
+    },
+    {
+      "legacy_path": "packaging/windows-desktop-node/tests/PcvCSharpArchitectureGapRegistry.Tests.ps1",
+      "domain": "packaging",
+      "legacy_contract_count": 10,
+      "replacement_owner": null,
+      "replacement_contract_ids": [],
+      "parity_status": "unmapped",
+      "local_parity": {
+        "status": "pending",
+        "evidence": null
+      },
+      "ci_parity": {
+        "status": "pending",
+        "evidence": null
+      }
+    },
+    {
+      "legacy_path": "packaging/windows-desktop-node/tests/PcvCurrentEvidenceGeneration.Tests.ps1",
+      "domain": "packaging",
+      "legacy_contract_count": 12,
+      "replacement_owner": null,
+      "replacement_contract_ids": [],
+      "parity_status": "unmapped",
+      "local_parity": {
+        "status": "pending",
+        "evidence": null
+      },
+      "ci_parity": {
+        "status": "pending",
+        "evidence": null
+      }
+    },
+    {
+      "legacy_path": "packaging/windows-desktop-node/tests/PcvDesktopNodeProduct.Diagnostics.Tests.ps1",
+      "domain": "packaging",
+      "legacy_contract_count": 16,
+      "replacement_owner": null,
+      "replacement_contract_ids": [],
+      "parity_status": "unmapped",
+      "local_parity": {
+        "status": "pending",
+        "evidence": null
+      },
+      "ci_parity": {
+        "status": "pending",
+        "evidence": null
+      }
+    },
+    {
+      "legacy_path": "packaging/windows-desktop-node/tests/PcvDesktopNodeProduct.Invoke.Tests.ps1",
+      "domain": "packaging",
+      "legacy_contract_count": 61,
+      "replacement_owner": null,
+      "replacement_contract_ids": [],
+      "parity_status": "unmapped",
+      "local_parity": {
+        "status": "pending",
+        "evidence": null
+      },
+      "ci_parity": {
+        "status": "pending",
+        "evidence": null
+      }
+    },
+    {
+      "legacy_path": "packaging/windows-desktop-node/tests/PcvDesktopNodeProduct.Manifest.Tests.ps1",
+      "domain": "packaging",
+      "legacy_contract_count": 16,
+      "replacement_owner": null,
+      "replacement_contract_ids": [],
+      "parity_status": "unmapped",
+      "local_parity": {
+        "status": "pending",
+        "evidence": null
+      },
+      "ci_parity": {
+        "status": "pending",
+        "evidence": null
+      }
+    },
+    {
+      "legacy_path": "packaging/windows-desktop-node/tests/PcvDesktopNodeProduct.Plan.Tests.ps1",
+      "domain": "packaging",
+      "legacy_contract_count": 26,
+      "replacement_owner": null,
+      "replacement_contract_ids": [],
+      "parity_status": "unmapped",
+      "local_parity": {
+        "status": "pending",
+        "evidence": null
+      },
+      "ci_parity": {
+        "status": "pending",
+        "evidence": null
+      }
+    },
+    {
+      "legacy_path": "packaging/windows-desktop-node/tests/PcvDevelopmentGateWorkflow.Tests.ps1",
+      "domain": "packaging",
+      "legacy_contract_count": 1,
+      "replacement_owner": null,
+      "replacement_contract_ids": [],
+      "parity_status": "unmapped",
+      "local_parity": {
+        "status": "pending",
+        "evidence": null
+      },
+      "ci_parity": {
+        "status": "pending",
+        "evidence": null
+      }
+    },
+    {
+      "legacy_path": "packaging/windows-desktop-node/tests/PcvDevelopmentVerification.Tests.ps1",
+      "domain": "packaging",
+      "legacy_contract_count": 9,
+      "replacement_owner": null,
+      "replacement_contract_ids": [],
+      "parity_status": "unmapped",
+      "local_parity": {
+        "status": "pending",
+        "evidence": null
+      },
+      "ci_parity": {
+        "status": "pending",
+        "evidence": null
+      }
+    },
+    {
+      "legacy_path": "packaging/windows-desktop-node/tests/PcvDevelopmentVerificationExecution.Tests.ps1",
+      "domain": "packaging",
+      "legacy_contract_count": 3,
+      "replacement_owner": null,
+      "replacement_contract_ids": [],
+      "parity_status": "unmapped",
+      "local_parity": {
+        "status": "pending",
+        "evidence": null
+      },
+      "ci_parity": {
+        "status": "pending",
+        "evidence": null
+      }
+    },
+    {
+      "legacy_path": "packaging/windows-desktop-node/tests/PcvDiagnosticBundleServerPreflight.Tests.ps1",
+      "domain": "packaging",
+      "legacy_contract_count": 6,
+      "replacement_owner": null,
+      "replacement_contract_ids": [],
+      "parity_status": "unmapped",
+      "local_parity": {
+        "status": "pending",
+        "evidence": null
+      },
+      "ci_parity": {
+        "status": "pending",
+        "evidence": null
+      }
+    },
+    {
+      "legacy_path": "packaging/windows-desktop-node/tests/PcvDotNetQualityTools.Tests.ps1",
+      "domain": "packaging",
+      "legacy_contract_count": 20,
+      "replacement_owner": null,
+      "replacement_contract_ids": [],
+      "parity_status": "unmapped",
+      "local_parity": {
+        "status": "pending",
+        "evidence": null
+      },
+      "ci_parity": {
+        "status": "pending",
+        "evidence": null
+      }
+    },
+    {
+      "legacy_path": "packaging/windows-desktop-node/tests/PcvFeatureEvidencePromotion.Tests.ps1",
+      "domain": "packaging",
+      "legacy_contract_count": 7,
+      "replacement_owner": null,
+      "replacement_contract_ids": [],
+      "parity_status": "unmapped",
+      "local_parity": {
+        "status": "pending",
+        "evidence": null
+      },
+      "ci_parity": {
+        "status": "pending",
+        "evidence": null
+      }
+    },
+    {
+      "legacy_path": "packaging/windows-desktop-node/tests/PcvInstalledAccountLoginSmoke.Tests.ps1",
+      "domain": "packaging",
+      "legacy_contract_count": 1,
+      "replacement_owner": null,
+      "replacement_contract_ids": [],
+      "parity_status": "unmapped",
+      "local_parity": {
+        "status": "pending",
+        "evidence": null
+      },
+      "ci_parity": {
+        "status": "pending",
+        "evidence": null
+      }
+    },
+    {
+      "legacy_path": "packaging/windows-desktop-node/tests/PcvInstalledLoopbackBootstrapSmoke.Tests.ps1",
+      "domain": "packaging",
+      "legacy_contract_count": 1,
+      "replacement_owner": null,
+      "replacement_contract_ids": [],
+      "parity_status": "unmapped",
+      "local_parity": {
+        "status": "pending",
+        "evidence": null
+      },
+      "ci_parity": {
+        "status": "pending",
+        "evidence": null
+      }
+    },
+    {
+      "legacy_path": "packaging/windows-desktop-node/tests/PcvInstalledNoVncSmoke.Tests.ps1",
+      "domain": "packaging",
+      "legacy_contract_count": 1,
+      "replacement_owner": null,
+      "replacement_contract_ids": [],
+      "parity_status": "unmapped",
+      "local_parity": {
+        "status": "pending",
+        "evidence": null
+      },
+      "ci_parity": {
+        "status": "pending",
+        "evidence": null
+      }
+    },
+    {
+      "legacy_path": "packaging/windows-desktop-node/tests/PcvInternalHttpsTlsLifecycleSmoke.Tests.ps1",
+      "domain": "packaging",
+      "legacy_contract_count": 1,
+      "replacement_owner": null,
+      "replacement_contract_ids": [],
+      "parity_status": "unmapped",
+      "local_parity": {
+        "status": "pending",
+        "evidence": null
+      },
+      "ci_parity": {
+        "status": "pending",
+        "evidence": null
+      }
+    },
+    {
+      "legacy_path": "packaging/windows-desktop-node/tests/PcvJobStore04265ReaderCompatibility.Tests.ps1",
+      "domain": "packaging",
+      "legacy_contract_count": 5,
+      "replacement_owner": null,
+      "replacement_contract_ids": [],
+      "parity_status": "unmapped",
+      "local_parity": {
+        "status": "pending",
+        "evidence": null
+      },
+      "ci_parity": {
+        "status": "pending",
+        "evidence": null
+      }
+    },
+    {
+      "legacy_path": "packaging/windows-desktop-node/tests/PcvManualAdminBaselineReservation.Tests.ps1",
+      "domain": "packaging",
+      "legacy_contract_count": 3,
+      "replacement_owner": null,
+      "replacement_contract_ids": [],
+      "parity_status": "unmapped",
+      "local_parity": {
+        "status": "pending",
+        "evidence": null
+      },
+      "ci_parity": {
+        "status": "pending",
+        "evidence": null
+      }
+    },
+    {
+      "legacy_path": "packaging/windows-desktop-node/tests/PcvManualAdminCampaignDescriptor.Tests.ps1",
+      "domain": "packaging",
+      "legacy_contract_count": 5,
+      "replacement_owner": null,
+      "replacement_contract_ids": [],
+      "parity_status": "unmapped",
+      "local_parity": {
+        "status": "pending",
+        "evidence": null
+      },
+      "ci_parity": {
+        "status": "pending",
+        "evidence": null
+      }
+    },
+    {
+      "legacy_path": "packaging/windows-desktop-node/tests/PcvManualAdminDescriptorCurrency.Tests.ps1",
+      "domain": "packaging",
+      "legacy_contract_count": 6,
+      "replacement_owner": null,
+      "replacement_contract_ids": [],
+      "parity_status": "unmapped",
+      "local_parity": {
+        "status": "pending",
+        "evidence": null
+      },
+      "ci_parity": {
+        "status": "pending",
+        "evidence": null
+      }
+    },
+    {
+      "legacy_path": "packaging/windows-desktop-node/tests/PcvManualAdminRebaselineReadiness.Tests.ps1",
+      "domain": "packaging",
+      "legacy_contract_count": 10,
+      "replacement_owner": null,
+      "replacement_contract_ids": [],
+      "parity_status": "unmapped",
+      "local_parity": {
+        "status": "pending",
+        "evidence": null
+      },
+      "ci_parity": {
+        "status": "pending",
+        "evidence": null
+      }
+    },
+    {
+      "legacy_path": "packaging/windows-desktop-node/tests/PcvModuleSizeRatchet.Tests.ps1",
+      "domain": "packaging",
+      "legacy_contract_count": 3,
+      "replacement_owner": null,
+      "replacement_contract_ids": [],
+      "parity_status": "unmapped",
+      "local_parity": {
+        "status": "pending",
+        "evidence": null
+      },
+      "ci_parity": {
+        "status": "pending",
+        "evidence": null
+      }
+    },
+    {
+      "legacy_path": "packaging/windows-desktop-node/tests/PcvMsixPackagingFeasibilityPreflight.Tests.ps1",
+      "domain": "packaging",
+      "legacy_contract_count": 6,
+      "replacement_owner": null,
+      "replacement_contract_ids": [],
+      "parity_status": "unmapped",
+      "local_parity": {
+        "status": "pending",
+        "evidence": null
+      },
+      "ci_parity": {
+        "status": "pending",
+        "evidence": null
+      }
+    },
+    {
+      "legacy_path": "packaging/windows-desktop-node/tests/PcvOsMutationGateSmoke.Tests.ps1",
+      "domain": "packaging",
+      "legacy_contract_count": 6,
+      "replacement_owner": null,
+      "replacement_contract_ids": [],
+      "parity_status": "unmapped",
+      "local_parity": {
+        "status": "pending",
+        "evidence": null
+      },
+      "ci_parity": {
+        "status": "pending",
+        "evidence": null
+      }
+    },
+    {
+      "legacy_path": "packaging/windows-desktop-node/tests/PcvPostRebootVerification.Tests.ps1",
+      "domain": "packaging",
+      "legacy_contract_count": 21,
+      "replacement_owner": null,
+      "replacement_contract_ids": [],
+      "parity_status": "unmapped",
+      "local_parity": {
+        "status": "pending",
+        "evidence": null
+      },
+      "ci_parity": {
+        "status": "pending",
+        "evidence": null
+      }
+    },
+    {
+      "legacy_path": "packaging/windows-desktop-node/tests/PcvPublicDistributionDescriptor.Tests.ps1",
+      "domain": "packaging",
+      "legacy_contract_count": 6,
+      "replacement_owner": null,
+      "replacement_contract_ids": [],
+      "parity_status": "unmapped",
+      "local_parity": {
+        "status": "pending",
+        "evidence": null
+      },
+      "ci_parity": {
+        "status": "pending",
+        "evidence": null
+      }
+    },
+    {
+      "legacy_path": "packaging/windows-desktop-node/tests/PcvPublicDistributionOperationsBundle.Tests.ps1",
+      "domain": "packaging",
+      "legacy_contract_count": 6,
+      "replacement_owner": null,
+      "replacement_contract_ids": [],
+      "parity_status": "unmapped",
+      "local_parity": {
+        "status": "pending",
+        "evidence": null
+      },
+      "ci_parity": {
+        "status": "pending",
+        "evidence": null
+      }
+    },
+    {
+      "legacy_path": "packaging/windows-desktop-node/tests/PcvPublicDistributionReadiness.Tests.ps1",
+      "domain": "packaging",
+      "legacy_contract_count": 6,
+      "replacement_owner": null,
+      "replacement_contract_ids": [],
+      "parity_status": "unmapped",
+      "local_parity": {
+        "status": "pending",
+        "evidence": null
+      },
+      "ci_parity": {
+        "status": "pending",
+        "evidence": null
+      }
+    },
+    {
+      "legacy_path": "packaging/windows-desktop-node/tests/PcvPublicOpsFinalFollowupAttempt.Tests.ps1",
+      "domain": "packaging",
+      "legacy_contract_count": 3,
+      "replacement_owner": null,
+      "replacement_contract_ids": [],
+      "parity_status": "unmapped",
+      "local_parity": {
+        "status": "pending",
+        "evidence": null
+      },
+      "ci_parity": {
+        "status": "pending",
+        "evidence": null
+      }
+    },
+    {
+      "legacy_path": "packaging/windows-desktop-node/tests/PcvPublicOpsGateExecutionReadiness.Tests.ps1",
+      "domain": "packaging",
+      "legacy_contract_count": 5,
+      "replacement_owner": null,
+      "replacement_contract_ids": [],
+      "parity_status": "unmapped",
+      "local_parity": {
+        "status": "pending",
+        "evidence": null
+      },
+      "ci_parity": {
+        "status": "pending",
+        "evidence": null
+      }
+    },
+    {
+      "legacy_path": "packaging/windows-desktop-node/tests/PcvPublicSignedUpdateRollbackSmokePreflight.Tests.ps1",
+      "domain": "packaging",
+      "legacy_contract_count": 7,
+      "replacement_owner": null,
+      "replacement_contract_ids": [],
+      "parity_status": "unmapped",
+      "local_parity": {
+        "status": "pending",
+        "evidence": null
+      },
+      "ci_parity": {
+        "status": "pending",
+        "evidence": null
+      }
+    },
+    {
+      "legacy_path": "packaging/windows-desktop-node/tests/PcvRunnerArtifactRootContract.Tests.ps1",
+      "domain": "packaging",
+      "legacy_contract_count": 3,
+      "replacement_owner": null,
+      "replacement_contract_ids": [],
+      "parity_status": "unmapped",
+      "local_parity": {
+        "status": "pending",
+        "evidence": null
+      },
+      "ci_parity": {
+        "status": "pending",
+        "evidence": null
+      }
+    },
+    {
+      "legacy_path": "packaging/windows-desktop-node/tests/PcvServicePlanP0CheckpointRestoreReconciliation.Tests.ps1",
+      "domain": "packaging",
+      "legacy_contract_count": 5,
+      "replacement_owner": null,
+      "replacement_contract_ids": [],
+      "parity_status": "unmapped",
+      "local_parity": {
+        "status": "pending",
+        "evidence": null
+      },
+      "ci_parity": {
+        "status": "pending",
+        "evidence": null
+      }
+    },
+    {
+      "legacy_path": "packaging/windows-desktop-node/tests/PcvServiceTokenRotationRevokePreflight.Tests.ps1",
+      "domain": "packaging",
+      "legacy_contract_count": 6,
+      "replacement_owner": null,
+      "replacement_contract_ids": [],
+      "parity_status": "unmapped",
+      "local_parity": {
+        "status": "pending",
+        "evidence": null
+      },
+      "ci_parity": {
+        "status": "pending",
+        "evidence": null
+      }
+    },
+    {
+      "legacy_path": "packaging/windows-desktop-node/tests/PcvStrictCollection.Tests.ps1",
+      "domain": "packaging",
+      "legacy_contract_count": 2,
+      "replacement_owner": null,
+      "replacement_contract_ids": [],
+      "parity_status": "unmapped",
+      "local_parity": {
+        "status": "pending",
+        "evidence": null
+      },
+      "ci_parity": {
+        "status": "pending",
+        "evidence": null
+      }
+    },
+    {
+      "legacy_path": "packaging/windows-desktop-node/tests/PcvTimeoutRateLimitHardeningPreflight.Tests.ps1",
+      "domain": "packaging",
+      "legacy_contract_count": 6,
+      "replacement_owner": null,
+      "replacement_contract_ids": [],
+      "parity_status": "unmapped",
+      "local_parity": {
+        "status": "pending",
+        "evidence": null
+      },
+      "ci_parity": {
+        "status": "pending",
+        "evidence": null
+      }
+    },
+    {
+      "legacy_path": "packaging/windows-desktop-node/tests/PcvUpdaterCatalogPublicationPreflight.Tests.ps1",
+      "domain": "packaging",
+      "legacy_contract_count": 8,
+      "replacement_owner": null,
+      "replacement_contract_ids": [],
+      "parity_status": "unmapped",
+      "local_parity": {
+        "status": "pending",
+        "evidence": null
+      },
+      "ci_parity": {
+        "status": "pending",
+        "evidence": null
+      }
+    },
+    {
+      "legacy_path": "packaging/windows-desktop-node/tests/PcvWave2BReconciliationDecision.Tests.ps1",
+      "domain": "packaging",
+      "legacy_contract_count": 6,
+      "replacement_owner": null,
+      "replacement_contract_ids": [],
+      "parity_status": "unmapped",
+      "local_parity": {
+        "status": "pending",
+        "evidence": null
+      },
+      "ci_parity": {
+        "status": "pending",
+        "evidence": null
+      }
+    },
+    {
+      "legacy_path": "packaging/windows-desktop-node/tests/PcvWave2CCheckpointCreateReconciliation.Tests.ps1",
+      "domain": "packaging",
+      "legacy_contract_count": 4,
+      "replacement_owner": null,
+      "replacement_contract_ids": [],
+      "parity_status": "unmapped",
+      "local_parity": {
+        "status": "pending",
+        "evidence": null
+      },
+      "ci_parity": {
+        "status": "pending",
+        "evidence": null
+      }
+    },
+    {
+      "legacy_path": "packaging/windows-desktop-node/tests/PcvWave2CVmDeleteReconciliation.Tests.ps1",
+      "domain": "packaging",
+      "legacy_contract_count": 4,
+      "replacement_owner": null,
+      "replacement_contract_ids": [],
+      "parity_status": "unmapped",
+      "local_parity": {
+        "status": "pending",
+        "evidence": null
+      },
+      "ci_parity": {
+        "status": "pending",
+        "evidence": null
+      }
+    },
+    {
+      "legacy_path": "packaging/windows-desktop-node/tests/PcvWave2CVmRenameReconciliation.Tests.ps1",
+      "domain": "packaging",
+      "legacy_contract_count": 4,
+      "replacement_owner": null,
+      "replacement_contract_ids": [],
+      "parity_status": "unmapped",
+      "local_parity": {
+        "status": "pending",
+        "evidence": null
+      },
+      "ci_parity": {
+        "status": "pending",
+        "evidence": null
+      }
+    },
+    {
+      "legacy_path": "packaging/windows-desktop-node/tests/PcvWindowsCredentialManagerTransitionPreflight.Tests.ps1",
+      "domain": "packaging",
+      "legacy_contract_count": 6,
+      "replacement_owner": null,
+      "replacement_contract_ids": [],
+      "parity_status": "unmapped",
+      "local_parity": {
+        "status": "pending",
+        "evidence": null
+      },
+      "ci_parity": {
+        "status": "pending",
+        "evidence": null
+      }
+    },
+    {
+      "legacy_path": "packaging/windows-desktop-node/tests/PcvWindowsEventLogDefaultTransitionSmoke.Tests.ps1",
+      "domain": "packaging",
+      "legacy_contract_count": 2,
+      "replacement_owner": null,
+      "replacement_contract_ids": [],
+      "parity_status": "unmapped",
+      "local_parity": {
+        "status": "pending",
+        "evidence": null
+      },
+      "ci_parity": {
+        "status": "pending",
+        "evidence": null
+      }
+    },
+    {
+      "legacy_path": "packaging/windows-desktop-node/tests/PcvWindowsEventLogProviderTransitionPreflight.Tests.ps1",
+      "domain": "packaging",
+      "legacy_contract_count": 6,
+      "replacement_owner": null,
+      "replacement_contract_ids": [],
+      "parity_status": "unmapped",
+      "local_parity": {
+        "status": "pending",
+        "evidence": null
+      },
+      "ci_parity": {
+        "status": "pending",
+        "evidence": null
+      }
+    },
+    {
+      "legacy_path": "packaging/windows-desktop-node/tests/PcvWingetManifestCompliancePreflight.Tests.ps1",
+      "domain": "packaging",
+      "legacy_contract_count": 7,
+      "replacement_owner": null,
+      "replacement_contract_ids": [],
+      "parity_status": "unmapped",
+      "local_parity": {
+        "status": "pending",
+        "evidence": null
+      },
+      "ci_parity": {
+        "status": "pending",
+        "evidence": null
+      }
+    },
+    {
+      "legacy_path": "packaging/windows-desktop-node/installer/tests/PcvDesktopNodeInstaller.InternalTrust.Tests.ps1",
+      "domain": "installer",
+      "legacy_contract_count": 4,
+      "replacement_owner": null,
+      "replacement_contract_ids": [],
+      "parity_status": "unmapped",
+      "local_parity": {
+        "status": "pending",
+        "evidence": null
+      },
+      "ci_parity": {
+        "status": "pending",
+        "evidence": null
+      }
+    },
+    {
+      "legacy_path": "packaging/windows-desktop-node/installer/tests/PcvDesktopNodeInstaller.Lifecycle.Tests.ps1",
+      "domain": "installer",
+      "legacy_contract_count": 5,
+      "replacement_owner": null,
+      "replacement_contract_ids": [],
+      "parity_status": "unmapped",
+      "local_parity": {
+        "status": "pending",
+        "evidence": null
+      },
+      "ci_parity": {
+        "status": "pending",
+        "evidence": null
+      }
+    },
+    {
+      "legacy_path": "packaging/windows-desktop-node/installer/tests/PcvDesktopNodeInstaller.Plan.Tests.ps1",
+      "domain": "installer",
+      "legacy_contract_count": 21,
+      "replacement_owner": null,
+      "replacement_contract_ids": [],
+      "parity_status": "unmapped",
+      "local_parity": {
+        "status": "pending",
+        "evidence": null
+      },
+      "ci_parity": {
+        "status": "pending",
+        "evidence": null
+      }
+    },
+    {
+      "legacy_path": "packaging/windows-desktop-node/installer/tests/PcvDesktopNodeInstaller.Signing.Tests.ps1",
+      "domain": "installer",
+      "legacy_contract_count": 6,
+      "replacement_owner": null,
+      "replacement_contract_ids": [],
+      "parity_status": "unmapped",
+      "local_parity": {
+        "status": "pending",
+        "evidence": null
+      },
+      "ci_parity": {
+        "status": "pending",
+        "evidence": null
+      }
+    },
+    {
+      "legacy_path": "packaging/windows-desktop-node/installer/tests/PcvDesktopNodeInstaller.WixSource.Tests.ps1",
+      "domain": "installer",
+      "legacy_contract_count": 10,
+      "replacement_owner": null,
+      "replacement_contract_ids": [],
+      "parity_status": "unmapped",
+      "local_parity": {
+        "status": "pending",
+        "evidence": null
+      },
+      "ci_parity": {
+        "status": "pending",
+        "evidence": null
+      }
+    },
+    {
+      "legacy_path": "packaging/windows-desktop-node/installer/tests/PcvDesktopNodeInstaller.Wrapper.Tests.ps1",
+      "domain": "installer",
+      "legacy_contract_count": 3,
+      "replacement_owner": null,
+      "replacement_contract_ids": [],
+      "parity_status": "unmapped",
+      "local_parity": {
+        "status": "pending",
+        "evidence": null
+      },
+      "ci_parity": {
+        "status": "pending",
+        "evidence": null
+      }
+    },
+    {
+      "legacy_path": "web/tests/PcvDesktopWeb.Static.Tests.ps1",
+      "domain": "web",
+      "legacy_contract_count": 50,
+      "replacement_owner": "web/node-tests/web-static-contracts.test.mjs",
+      "replacement_contract_ids": [
+        "web.static.feature-surface-ledger",
+        "web.static.root-assets",
+        "web.static.inline-favicon",
+        "web.static.single-edge-isolation",
+        "web.static.design-boundary",
+        "web.static.supanova-tokens",
+        "web.static.visual-shell",
+        "web.static.workbench-frame",
+        "web.static.frontend-mockups",
+        "web.static.frontend-batches",
+        "web.static.phase2h-endpoints",
+        "web.static.local-api-registry",
+        "web.static.qos-guest-readback",
+        "web.static.qos-guest-control",
+        "web.static.guest-exec-cancel",
+        "web.static.search-event-table",
+        "web.static.served-source-parts",
+        "web.static.optional-bearer",
+        "web.static.account-rbac-console",
+        "web.static.listener-api-base",
+        "web.static.vm-create-payload",
+        "web.static.vm-lifecycle-routes",
+        "web.static.vm-detail-mount",
+        "web.static.vm-lifecycle-actions",
+        "web.static.checkpoint-actions",
+        "web.static.browser-job-history",
+        "web.static.job-orchestration",
+        "web.static.shell-controls",
+        "web.static.activity-troubleshooting",
+        "web.static.ops-cockpit",
+        "web.static.evidence-dashboard",
+        "web.static.evidence-degradation",
+        "web.static.diagnostic-bundle",
+        "web.static.operator-terms",
+        "web.static.frontend-edge-cases",
+        "web.static.token-rotation",
+        "web.static.beta-followup",
+        "web.static.monitoring",
+        "web.static.network-inventory",
+        "web.static.workflow-polish",
+        "web.static.javascript-syntax",
+        "web.static.served-typescript-output",
+        "web.static.typescript-scaffold",
+        "web.static.typescript-contract-mirror",
+        "web.static.parity-manifest",
+        "web.static.user-visible-fixtures",
+        "web.static.verifier-wiring",
+        "web.static.generated-parity-alignment",
+        "web.static.secret-mutation-guard",
+        "web.static.no-fabricated-values"
+      ],
+      "parity_status": "mapped",
+      "local_parity": {
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-web-verification-wave-b-2026-08-24.md"
+      },
+      "ci_parity": {
+        "status": "pending",
+        "evidence": null
+      }
+    }
+  ]
+}

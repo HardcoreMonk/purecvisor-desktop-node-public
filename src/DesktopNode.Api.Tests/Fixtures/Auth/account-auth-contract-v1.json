@@ -1,0 +1,259 @@
+{
+  "error_envelopes": {
+    "disabled_login": {
+      "status_code": 409,
+      "body": {
+        "data": null,
+        "error": {
+          "code": "PCV_ACCOUNT_AUTH_NOT_CONFIGURED",
+          "message": "Account auth is not configured.",
+          "detail": "Configure account file and JWT signing key before using account login.",
+          "retryable": false
+        },
+        "ok": false,
+        "operation": "auth.login",
+        "request_id": "req-disabled-login"
+      }
+    },
+    "missing_login_body": {
+      "status_code": 400,
+      "body": {
+        "data": null,
+        "error": {
+          "code": "PCV_REQUEST_BODY_MISSING",
+          "message": "The request body is required.",
+          "detail": "Pass a JSON object body for this endpoint.",
+          "retryable": false
+        },
+        "ok": false,
+        "operation": "auth.login",
+        "request_id": "req-missing-login"
+      }
+    },
+    "missing_session_bearer": {
+      "status_code": 401,
+      "body": {
+        "data": null,
+        "error": {
+          "code": "PCV_AUTH_REQUIRED",
+          "message": "Authorization bearer token is required.",
+          "detail": "Login with account credentials or provide a valid service bearer token.",
+          "retryable": false
+        },
+        "ok": false,
+        "operation": "auth.session",
+        "request_id": "req-missing-session"
+      }
+    },
+    "viewer_mutation_forbidden": {
+      "status_code": 403,
+      "body": {
+        "data": null,
+        "error": {
+          "code": "PCV_RBAC_FORBIDDEN",
+          "message": "The current account role is not allowed to use this route.",
+          "detail": "Required permission: operate. Current role: viewer.",
+          "retryable": false
+        },
+        "ok": false,
+        "operation": "api.rbac",
+        "request_id": "req-viewer-mutation"
+      }
+    },
+    "guest_execution_forbidden": {
+      "status_code": 403,
+      "body": {
+        "data": null,
+        "error": {
+          "code": "PCV_GUEST_EXEC_PERMISSION_DENIED",
+          "message": "The current account role is not allowed to use guest execution routes.",
+          "detail": "Required guest execution permission: guest.exec. Current role: operator.",
+          "retryable": false,
+          "recommended_action": "Grant the explicit ADR-0009 guest execution capability before opening this route."
+        },
+        "ok": false,
+        "operation": "vm.guest.exec.preview",
+        "request_id": "req-guest-forbidden"
+      }
+    },
+    "revoked_refresh": {
+      "status_code": 401,
+      "body": {
+        "data": null,
+        "error": {
+          "code": "PCV_REFRESH_TOKEN_REVOKED",
+          "message": "Refresh token was revoked.",
+          "detail": "Login again to create a new refresh session.",
+          "retryable": false
+        },
+        "ok": false,
+        "operation": "auth.refresh",
+        "request_id": "req-revoked-refresh"
+      }
+    },
+    "uppercase_auth_route": {
+      "status_code": 404,
+      "body": {
+        "data": null,
+        "error": {
+          "code": "PCV_ROUTE_NOT_FOUND",
+          "message": "No auth route matches '/API/V1/AUTH/LOGIN'.",
+          "detail": "The requested auth route is not part of the Desktop Node API contract.",
+          "retryable": false
+        },
+        "ok": false,
+        "operation": "api.route",
+        "request_id": "req-uppercase-auth"
+      }
+    },
+    "access_expired": {
+      "status_code": 401,
+      "body": {
+        "data": null,
+        "error": {
+          "code": "PCV_JWT_EXPIRED",
+          "message": "JWT token expired.",
+          "detail": "Login or refresh the session before retrying.",
+          "retryable": false
+        },
+        "ok": false,
+        "operation": "auth.session",
+        "request_id": "req-access-expired"
+      }
+    },
+    "refresh_expired": {
+      "status_code": 401,
+      "body": {
+        "data": null,
+        "error": {
+          "code": "PCV_JWT_EXPIRED",
+          "message": "JWT token expired.",
+          "detail": "Login or refresh the session before retrying.",
+          "retryable": false
+        },
+        "ok": false,
+        "operation": "auth.refresh",
+        "request_id": "req-refresh-expired"
+      }
+    },
+    "invalid_access": {
+      "status_code": 401,
+      "body": {
+        "data": null,
+        "error": {
+          "code": "PCV_JWT_INVALID",
+          "message": "JWT token is invalid.",
+          "detail": "Token signature was rejected.",
+          "retryable": false
+        },
+        "ok": false,
+        "operation": "auth.session",
+        "request_id": "req-invalid-access"
+      }
+    }
+  },
+  "token_projection": {
+    "status_code": 200,
+    "operation": "auth.login",
+    "request_id": "req-token-projection",
+    "token_type": "Bearer",
+    "access_token_segments": 3,
+    "refresh_token_segments": 3,
+    "expires_in": 900,
+    "refresh_expires_in": 28800,
+    "access_expires_at": "2026-08-02T00:15:00.0000000+00:00",
+    "refresh_expires_at": "2026-08-02T08:00:00.0000000+00:00",
+    "session": {
+      "display_name": "admin user",
+      "permissions": [
+        "*",
+        "read",
+        "operate",
+        "job.control",
+        "diagnostics.read",
+        "diagnostics.create",
+        "console.view",
+        "account.manage"
+      ],
+      "role": "admin",
+      "subject": "admin-id",
+      "username": "admin"
+    }
+  },
+  "session_response": {
+    "data": {
+      "display_name": "admin user",
+      "permissions": [
+        "*",
+        "read",
+        "operate",
+        "job.control",
+        "diagnostics.read",
+        "diagnostics.create",
+        "console.view",
+        "account.manage"
+      ],
+      "role": "admin",
+      "subject": "admin-id",
+      "username": "admin"
+    },
+    "error": null,
+    "ok": true,
+    "operation": "auth.session",
+    "request_id": "req-session-projection"
+  },
+  "rbac_response": {
+    "data": {
+      "roles": [
+        {
+          "description": "Read-only host, VM, job, network, runtime, and evidence state.",
+          "permissions": ["read"],
+          "role": "viewer"
+        },
+        {
+          "description": "Read state, queue operator actions, collect diagnostics, and open console handoff.",
+          "permissions": ["read", "operate", "job.control", "diagnostics.read", "diagnostics.create", "console.view"],
+          "role": "operator"
+        },
+        {
+          "description": "Full local account/RBAC administrator role.",
+          "permissions": ["*", "read", "operate", "job.control", "diagnostics.read", "diagnostics.create", "console.view", "account.manage"],
+          "role": "admin"
+        }
+      ],
+      "route_policy": {
+        "account.manage": "admin",
+        "console.view": "operator",
+        "diagnostics.create": "operator",
+        "operate": "operator",
+        "read": "viewer"
+      }
+    },
+    "error": null,
+    "ok": true,
+    "operation": "auth.rbac",
+    "request_id": "req-rbac-projection"
+  },
+  "logout_responses": {
+    "blank": {
+      "data": {
+        "browser_session": "clear-client-token-state",
+        "refresh_token_revoked": false
+      },
+      "error": null,
+      "ok": true,
+      "operation": "auth.logout",
+      "request_id": "req-blank-logout"
+    },
+    "invalid": {
+      "data": {
+        "browser_session": "clear-client-token-state",
+        "refresh_token_revoked": true
+      },
+      "error": null,
+      "ok": true,
+      "operation": "auth.logout",
+      "request_id": "req-invalid-logout"
+    }
+  }
+}

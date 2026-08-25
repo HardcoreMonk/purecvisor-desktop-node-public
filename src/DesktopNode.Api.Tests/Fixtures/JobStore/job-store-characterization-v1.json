@@ -1,0 +1,319 @@
+{
+  "fixture_schema_version": 1,
+  "load_and_fifo": {
+    "store": {
+      "version": 1,
+      "saved_at": "2026-07-01T00:00:00.0000000Z",
+      "jobs": [
+        {
+          "job_id": "job-alpha",
+          "operation": "vm.start",
+          "status": "queued",
+          "params": {
+            "name": "alpha"
+          },
+          "result": null,
+          "error": null,
+          "retry_of": null,
+          "request_id": "request-alpha",
+          "correlation_id": "correlation-alpha",
+          "attempt": 1,
+          "canceled_at": null,
+          "created_at": "2026-07-01T00:00:00.0000000Z",
+          "updated_at": "2026-07-01T00:03:00.0000000Z"
+        },
+        {
+          "job_id": "job-beta",
+          "operation": "vm.shutdown",
+          "status": "queued",
+          "params": {
+            "name": "beta"
+          },
+          "result": null,
+          "error": null,
+          "retry_of": null,
+          "request_id": "request-beta",
+          "correlation_id": "correlation-beta",
+          "attempt": 2,
+          "canceled_at": null,
+          "created_at": "2026-07-01T00:00:00.0000000Z",
+          "updated_at": "2026-07-01T00:02:00.0000000Z"
+        },
+        {
+          "job_id": "job-gamma",
+          "operation": "vm.restart",
+          "status": "queued",
+          "params": {
+            "name": "gamma"
+          },
+          "result": null,
+          "error": null,
+          "retry_of": "job-gamma-original",
+          "request_id": "request-gamma",
+          "correlation_id": "correlation-gamma",
+          "attempt": 3,
+          "canceled_at": null,
+          "created_at": "2026-07-01T00:00:00.0000000Z",
+          "updated_at": "2026-07-01T00:01:00.0000000Z"
+        }
+      ],
+      "queue": [
+        "job-gamma",
+        "job-alpha",
+        "job-beta"
+      ]
+    },
+    "expected_load_projection": {
+      "count": 3,
+      "jobs": [
+        {
+          "attempt": 1,
+          "canceled_at": null,
+          "correlation_id": "correlation-alpha",
+          "created_at": "2026-07-01T00:00:00.0000000Z",
+          "error": null,
+          "job_id": "job-alpha",
+          "operation": "vm.start",
+          "params": {
+            "name": "alpha"
+          },
+          "request_id": "request-alpha",
+          "result": null,
+          "retry_of": null,
+          "status": "queued",
+          "updated_at": "2026-07-01T00:03:00.0000000Z"
+        },
+        {
+          "attempt": 2,
+          "canceled_at": null,
+          "correlation_id": "correlation-beta",
+          "created_at": "2026-07-01T00:00:00.0000000Z",
+          "error": null,
+          "job_id": "job-beta",
+          "operation": "vm.shutdown",
+          "params": {
+            "name": "beta"
+          },
+          "request_id": "request-beta",
+          "result": null,
+          "retry_of": null,
+          "status": "queued",
+          "updated_at": "2026-07-01T00:02:00.0000000Z"
+        },
+        {
+          "attempt": 3,
+          "canceled_at": null,
+          "correlation_id": "correlation-gamma",
+          "created_at": "2026-07-01T00:00:00.0000000Z",
+          "error": null,
+          "job_id": "job-gamma",
+          "operation": "vm.restart",
+          "params": {
+            "name": "gamma"
+          },
+          "request_id": "request-gamma",
+          "result": null,
+          "retry_of": "job-gamma-original",
+          "status": "queued",
+          "updated_at": "2026-07-01T00:01:00.0000000Z"
+        }
+      ]
+    },
+    "expected_dispatch": [
+      {
+        "job_id": "job-gamma",
+        "operation": "vm.restart",
+        "name": "gamma"
+      },
+      {
+        "job_id": "job-alpha",
+        "operation": "vm.start",
+        "name": "alpha"
+      },
+      {
+        "job_id": "job-beta",
+        "operation": "vm.shutdown",
+        "name": "beta"
+      }
+    ]
+  },
+  "running_recovery": {
+    "store": {
+      "version": 1,
+      "saved_at": "2026-07-02T00:00:00.0000000Z",
+      "jobs": [
+        {
+          "job_id": "job-running",
+          "operation": "vm.start",
+          "status": "running",
+          "params": {
+            "name": "interrupted"
+          },
+          "result": null,
+          "error": null,
+          "retry_of": null,
+          "request_id": "request-running",
+          "correlation_id": "correlation-running",
+          "attempt": 2,
+          "canceled_at": null,
+          "created_at": "2026-07-02T00:00:00.0000000Z",
+          "updated_at": "2026-07-02T00:01:00.0000000Z"
+        },
+        {
+          "job_id": "job-after-recovery",
+          "operation": "vm.shutdown",
+          "status": "queued",
+          "params": {
+            "name": "after-recovery"
+          },
+          "result": null,
+          "error": null,
+          "retry_of": null,
+          "request_id": "request-after-recovery",
+          "correlation_id": "correlation-after-recovery",
+          "attempt": 1,
+          "canceled_at": null,
+          "created_at": "2026-07-02T00:02:00.0000000Z",
+          "updated_at": "2026-07-02T00:02:00.0000000Z"
+        }
+      ],
+      "queue": [
+        "job-running",
+        "job-after-recovery"
+      ]
+    },
+    "expected_rewrite_projection": {
+      "version": 1,
+      "root_fields": [
+        "jobs",
+        "queue",
+        "saved_at",
+        "version"
+      ],
+      "job_fields": [
+        "attempt",
+        "canceled_at",
+        "correlation_id",
+        "created_at",
+        "error",
+        "job_id",
+        "operation",
+        "params",
+        "request_id",
+        "result",
+        "retry_of",
+        "status",
+        "updated_at"
+      ],
+      "job_count": 2,
+      "queue": [
+        "job-after-recovery"
+      ],
+      "saved_at_is_timestamp": true,
+      "recovered_job": {
+        "job_id": "job-running",
+        "operation": "vm.start",
+        "status": "failed",
+        "error": {
+          "fields": [
+            "code",
+            "detail",
+            "message",
+            "recommended_action",
+            "retryable"
+          ],
+          "code": "PCV_JOB_INTERRUPTED",
+          "retryable": false
+        },
+        "result_is_null": true,
+        "created_at": "2026-07-02T00:00:00.0000000Z",
+        "updated_at_changed": true
+      },
+      "dispatch": [
+        {
+          "job_id": "job-after-recovery",
+          "operation": "vm.shutdown",
+          "name": "after-recovery"
+        }
+      ]
+    }
+  },
+  "retention": {
+    "store_version": 2,
+    "base_time": "2026-07-03T00:00:00.0000000Z",
+    "terminal_job_count": 503,
+    "terminal_statuses": [
+      "succeeded",
+      "failed",
+      "canceled"
+    ],
+    "active_job": {
+      "job_id": "active-retained",
+      "operation": "vm.restart",
+      "status": "queued",
+      "params": {
+        "name": "active"
+      },
+      "result": null,
+      "error": null,
+      "retry_of": null,
+      "request_id": "request-active",
+      "correlation_id": "correlation-active",
+      "attempt": 1,
+      "canceled_at": null,
+      "created_at": "2026-07-04T00:00:00.0000000Z",
+      "updated_at": "2026-07-04T00:00:00.0000000Z"
+    },
+    "expected_writer_projection": {
+      "version": 2,
+      "root_fields": [
+        "jobs",
+        "queue",
+        "saved_at",
+        "version"
+      ],
+      "job_fields": [
+        "attempt",
+        "canceled_at",
+        "correlation_id",
+        "created_at",
+        "error",
+        "job_id",
+        "operation",
+        "params",
+        "request_id",
+        "result",
+        "retry_of",
+        "status",
+        "updated_at"
+      ],
+      "job_count": 501,
+      "terminal_job_count": 500,
+      "active_job_count": 1,
+      "queue": [
+        "active-retained"
+      ],
+      "saved_at_is_timestamp": true,
+      "oldest_retained_terminal_id": "terminal-003",
+      "newest_retained_terminal_id": "terminal-502",
+      "pruned_terminal_ids": [
+        "terminal-000",
+        "terminal-001",
+        "terminal-002"
+      ],
+      "active_job": {
+        "job_id": "active-retained",
+        "operation": "vm.restart",
+        "status": "queued",
+        "correlation_id": "correlation-active"
+      },
+      "api": {
+        "count": 501,
+        "returned": 200,
+        "max_terminal_jobs": 500,
+        "pruned_terminal_jobs": 3,
+        "active_jobs_preserved": true
+      }
+    }
+  }
+}

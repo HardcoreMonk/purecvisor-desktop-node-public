@@ -1,0 +1,26 @@
+{
+  "name": "purecvisor-desktop-node-web",
+  "version": "0.23.8-phase25",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build:served": "node scripts/build-served-asset.mjs --write",
+    "check:served": "node scripts/build-served-asset.mjs --check",
+    "check:feature-surfaces": "node scripts/verify-feature-surface-parity.mjs",
+    "check:web-contract-registry": "node scripts/verify-web-contract-registry.mjs",
+    "check:verification-migration-manifest": "node scripts/verify-verification-migration-manifest.mjs --require-web-local-pass",
+    "test": "npm run check:feature-surfaces && tsc --noEmit -p tsconfig.json && npm run check:served && npm run check:frontend-batches",
+    "test:public-source-safety": "node --test --test-reporter=spec node-tests/public-source-safety.test.mjs",
+    "test:web-contracts": "npm run check:web-contract-registry && npm run check:verification-migration-manifest && node --test --test-reporter=spec node-tests/web-static-contracts.test.mjs",
+    "generate:parity": "node scripts/regenerate-static-parity.mjs --write",
+    "verify:parity": "npm run check:served && node scripts/regenerate-static-parity.mjs --check && node scripts/verify-static-parity.mjs && npm run browser:fixture",
+    "verify:public-source-safety": "node scripts/verify-public-source-safety.mjs --require-boundaries",
+    "verify:web-contract-negative-parity": "node scripts/verify-web-contract-negative-parity.mjs",
+    "browser:fixture": "node scripts/verify-browser-fixture.mjs",
+    "capture:installed-listener": "node scripts/capture-installed-listener-qa.mjs",
+    "check:frontend-batches": "node scripts/validate-frontend-completion-batches.mjs"
+  },
+  "devDependencies": {
+    "typescript": "5.9.3"
+  }
+}

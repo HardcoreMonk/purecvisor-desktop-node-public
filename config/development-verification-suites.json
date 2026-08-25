@@ -1,0 +1,155 @@
+{
+  "$schema": "./development-verification-suites.schema.json",
+  "schema_version": 1,
+  "contract": "pcv-development-verification-suite-catalog-v1",
+  "activation_state": "plan-only-foundation",
+  "max_parallelism": 4,
+  "overall_timeout_seconds": 1200,
+  "allowed_executables": [
+    "dotnet",
+    "dotnet.exe",
+    "node",
+    "node.exe",
+    "npm",
+    "npm.cmd",
+    "git",
+    "git.exe"
+  ],
+  "suites": [
+    {
+      "id": "dotnet",
+      "owner": "csharp",
+      "migration_state": "native-existing",
+      "timeout_seconds": 900,
+      "executor": {
+        "kind": "process",
+        "file_name": "dotnet",
+        "arguments": [
+          "test",
+          "src/DesktopNode.sln",
+          "-c",
+          "Release",
+          "--nologo"
+        ]
+      }
+    },
+    {
+      "id": "web-typecheck",
+      "owner": "node",
+      "migration_state": "native-existing",
+      "timeout_seconds": 600,
+      "executor": {
+        "kind": "process",
+        "file_name": "npm",
+        "arguments": [
+          "test",
+          "--prefix",
+          "web"
+        ]
+      }
+    },
+    {
+      "id": "web-parity",
+      "owner": "node",
+      "migration_state": "wave-b-pending",
+      "timeout_seconds": 600,
+      "executor": {
+        "kind": "process",
+        "file_name": "npm",
+        "arguments": [
+          "run",
+          "verify:parity",
+          "--prefix",
+          "web"
+        ]
+      }
+    },
+    {
+      "id": "delivery-contracts",
+      "owner": "csharp",
+      "migration_state": "wave-d-pending",
+      "timeout_seconds": 900,
+      "executor": {
+        "kind": "process",
+        "file_name": "dotnet",
+        "arguments": [
+          "test",
+          "src/DesktopNode.Delivery.Tests/DesktopNode.Delivery.Tests.csproj",
+          "-c",
+          "Release",
+          "--filter",
+          "Category=Delivery",
+          "--nologo"
+        ]
+      }
+    },
+    {
+      "id": "installer-contracts",
+      "owner": "csharp",
+      "migration_state": "wave-c-pending",
+      "timeout_seconds": 900,
+      "executor": {
+        "kind": "process",
+        "file_name": "dotnet",
+        "arguments": [
+          "test",
+          "src/DesktopNode.Delivery.Tests/DesktopNode.Delivery.Tests.csproj",
+          "-c",
+          "Release",
+          "--filter",
+          "Category=Installer",
+          "--nologo"
+        ]
+      }
+    },
+    {
+      "id": "evidence-check",
+      "owner": "csharp",
+      "migration_state": "wave-d-pending",
+      "timeout_seconds": 300,
+      "executor": {
+        "kind": "managed",
+        "managed_handler": "current-evidence-check"
+      }
+    },
+    {
+      "id": "policy-boundaries",
+      "owner": "csharp",
+      "migration_state": "wave-a-foundation",
+      "timeout_seconds": 300,
+      "executor": {
+        "kind": "managed",
+        "managed_handler": "policy-boundaries"
+      }
+    }
+  ],
+  "shards": [
+    {
+      "id": "dotnet",
+      "suite_ids": [
+        "dotnet"
+      ]
+    },
+    {
+      "id": "web",
+      "suite_ids": [
+        "web-typecheck",
+        "web-parity"
+      ]
+    },
+    {
+      "id": "delivery",
+      "suite_ids": [
+        "delivery-contracts",
+        "evidence-check"
+      ]
+    },
+    {
+      "id": "installer-policy",
+      "suite_ids": [
+        "installer-contracts",
+        "policy-boundaries"
+      ]
+    }
+  ]
+}

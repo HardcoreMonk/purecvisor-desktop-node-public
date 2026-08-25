@@ -1,0 +1,676 @@
+{
+  "schema_version": "pcv-dotnet-test-migrations/v1",
+  "document_schema_version": 1,
+  "manifest_id": "csharp-architecture-test-migration-v1",
+  "audit_base_commit": "2e98ff4f2df250c36700e86ace0db46ef0aca420",
+  "quality_baseline_path": "packaging/windows-desktop-node/tests/fixtures/csharp-architecture-quality-baseline.json",
+  "quality_baseline_source_snapshot_field": "source_snapshot",
+  "generated_on": "2026-08-02",
+  "gap_registry_path": "docs/superpowers/plans/2026-08-02-purecvisor-desktop-node-csharp-architecture-gap-registry.md",
+  "host_mutation_performed": false,
+  "public_trusted_signing": false,
+  "external_stable_publication": false,
+  "required_fault_gap_ids": [
+    "W0-FI-01",
+    "W0-FI-02",
+    "W0-FI-03",
+    "W0-FI-04",
+    "W0-FI-05",
+    "W0-FI-06"
+  ],
+  "fault_scenarios": [
+    {
+      "gap_id": "W0-FI-01",
+      "title": "job create save failure leaves a memory or queue ghost",
+      "current_status": "safe-create-commit-protocol-with-physical-restart-guard-under-single-product-runtime-owner",
+      "reproduction_condition": "Inject pre-replace, post-replace, unreadable-primary, and pending-guard failures into the physical JSON writer, then compare the typed commit outcome, same-process memory and queue, authoritative primary, pending marker, restart load block, worker dispatch, and API response.",
+      "current_trace": [
+        "src/DesktopNode.Runtime/DesktopNodeJobRuntime.cs CreateUnsafe builds candidate jobs and queue, writes that candidate, and only then replaces the live references",
+        "src/DesktopNode.Runtime/JsonFileDesktopNodeJobStore.cs flushes a unique same-directory temp and pending-commit identity before replace, reconciles candidate or previous primary, and retains an unresolved guard for restart blocking",
+        "src/DesktopNode.Runtime/DesktopNodeJobRuntimeContracts.cs carries committed, not committed, and indeterminate outcomes while src/DesktopNode.Api/DesktopNodeApiRequestProcessor.cs maps failed create commits to redacted HTTP 503 and blocks later job routes"
+      ],
+      "existing_evidence": [
+        "DesktopNode.Runtime.Tests.JobRuntimeDurabilityTests.CreateSaveFailureDoesNotPublishMemoryOrQueueGhost proves attempted candidate write adds no ghost and preserves empty or previously acknowledged same-process, disk, and restart state",
+        "DesktopNode.Runtime.Tests.JsonFileDesktopNodeJobStoreTests covers unique temp and flush order, not-committed preservation, committed exact-primary reconciliation, unresolved marker restart blocking, orphan-temp non-promotion, and the 0.42.65-compatible v1/v2 shape contract; an actual frozen binary reader remains separate",
+        "DesktopNode.Api.Tests.ApiJobStoreFailureCharacterizationTests.CreateSaveFailureDoesNotReturn202OrInvokeNativeMutation proves HTTP 503 structured redaction, job list zero, worker false, and native invoke zero",
+        "DesktopNode.Api.Tests.ApiJobStoreFailureCharacterizationTests.IndeterminateCreateCommitReturns503AndBlocksJobRoutesAndWorker proves redacted indeterminate diagnostics, later job-route block, worker false, and native invoke zero"
+      ],
+      "api_integration_companion_test_ids": [
+        "DesktopNode.Api.Tests.ApiJobStoreFailureCharacterizationTests.CreateSaveFailureDoesNotReturn202OrInvokeNativeMutation",
+        "DesktopNode.Api.Tests.ApiJobStoreFailureCharacterizationTests.IndeterminateCreateCommitReturns503AndBlocksJobRoutesAndWorker"
+      ],
+      "expected_safe_result": "Under the product's single SCM runtime owner, only a committed physical outcome may publish memory, queue, or HTTP success. Not-committed preserves the previous primary; indeterminate retains a startup-readable guard and blocks same-process plus restart dispatch until candidate or previous SHA and length reconcile. No stale temp or backup is promoted. Lifetime path leasing or compare-and-swap remains required before multiple runtime owners can share one path safely.",
+      "owner_wave": "Wave 2A",
+      "red": {
+        "owner_project": "DesktopNode.Runtime.Tests",
+        "test_ids": [
+          "DesktopNode.Runtime.Tests.JobRuntimeDurabilityTests.CreateSaveFailureDoesNotPublishMemoryOrQueueGhost"
+        ],
+        "fails_on_baseline_because": "CreateJob mutates jobs and queue before SaveJobStore throws."
+      },
+      "green": {
+        "implementation_boundary": "stage next state, require a typed committed result, and publish memory and HTTP success only after unique-temp and pending-guard flush plus exact-primary reconciliation",
+        "required_assertions": [
+          "response_success_count=0",
+          "memory_job_count=0",
+          "queue_count=0",
+          "worker_invoke_count=0",
+          "restart_ghost_count=0",
+          "indeterminate_restart_dispatch_count=0",
+          "orphan_temp_promotion_count=0"
+        ]
+      },
+      "temporary_characterization": {
+        "status": "replaced-safe-create-commit-protocol",
+        "test_id": "DesktopNode.Runtime.Tests.DesktopNodeJobRuntimeTests.CreateSaveFailurePreservesCurrentPublishBeforeCommitOrder",
+        "replacement_wave": "Wave 2A",
+        "replacement_test_id": "DesktopNode.Runtime.Tests.JobRuntimeDurabilityTests.CreateSaveFailureDoesNotPublishMemoryOrQueueGhost",
+        "removal_condition": "Completed: the Runtime unsafe characterization was replaced 1:1 after commit-before-publish, physical outcome reconciliation, same-process and restart dispatch blocking, and retained API integration companions passed."
+      }
+    },
+    {
+      "gap_id": "W0-FI-02",
+      "title": "start cancel or complete save failure diverges memory and disk meaning",
+      "current_status": "safe-persist-before-publish-with-terminal-uncertainty-block",
+      "reproduction_condition": "Use DesktopNodeJobRuntime with a recording store to inject a save failure separately at start, queued cancel, running cancel, and terminal completion, then compare memory, durable file, restart state, and provider signal; retain API tests for native dispatch and linked cancellation integration.",
+      "current_trace": [
+        "src/DesktopNode.Runtime/DesktopNodeJobRuntime.cs calculates start, cancel, and complete candidate state and publishes it only after a committed store result",
+        "running cancel commits and publishes PCV_JOB_CANCEL_REQUESTED before signaling the provider outside stateSync; a repeated request does not save or signal again",
+        "terminal persistence failure keeps the confirmed running live state, blocks later mutation and dispatch, and never replays the uncertain provider side effect"
+      ],
+      "existing_evidence": [
+        "DesktopNode.Runtime.Tests.JobRuntimeDurabilityTests.StartSaveFailureKeepsRecoverableMeaning and TransitionSaveFailureKeepsRecoverableMeaning compare live, durable, restart, queue, and provider traces",
+        "DesktopNode.Runtime.Tests.JobRuntimeDurabilityTests.RunningCancelPersistsRequestBeforeProviderSignalOutsideStateLock proves durable commit, live publish, then out-of-lock provider signal",
+        "DesktopNode.Api.Tests.ApiHardeningRequestProcessorTests.BackgroundWorkerPreservesQueuedJobWhenStartSaveFailsAndReturnsStructuredError and DesktopNode.Api.Tests.ApiJobStoreFailureCharacterizationTests.RunningCancelPersistsBeforeSignalAndUsesLinkedToken retain native-dispatch and linked-token integration coverage"
+      ],
+      "api_integration_companion_test_ids": [
+        "DesktopNode.Api.Tests.ApiHardeningRequestProcessorTests.BackgroundWorkerPreservesQueuedJobWhenStartSaveFailsAndReturnsStructuredError",
+        "DesktopNode.Api.Tests.ApiJobStoreFailureCharacterizationTests.RunningCancelPersistsBeforeSignalAndUsesLinkedToken",
+        "DesktopNode.Api.Tests.ApiRuntimePolicyRequestProcessorTests.RunningGuestExecutionJobCancelRequestsProviderCancellationAndFinishesCanceled"
+      ],
+      "expected_safe_result": "Every transition has one durable commit protocol; a save failure leaves an explicit recoverable disk, memory, restart, and provider-signal meaning and never silently replays an uncertain side effect.",
+      "owner_wave": "Wave 2A",
+      "red": {
+        "owner_project": "DesktopNode.Runtime.Tests",
+        "test_ids": [
+          "DesktopNode.Runtime.Tests.JobRuntimeDurabilityTests.StartSaveFailureKeepsRecoverableMeaning",
+          "DesktopNode.Runtime.Tests.JobRuntimeDurabilityTests.TransitionSaveFailureKeepsRecoverableMeaning",
+          "DesktopNode.Runtime.Tests.JobRuntimeDurabilityTests.RunningCancelPersistsRequestBeforeProviderSignalOutsideStateLock"
+        ],
+        "fails_on_baseline_because": "start, cancel, and complete mutate memory before the corresponding durable save and running cancel signals the provider before save."
+      },
+      "green": {
+        "implementation_boundary": "single-writer transition commit with explicit recovery record and cancellation signal outside the state lock",
+        "required_assertions": [
+          "start_failure_native_invoke_count=0",
+          "cancel_request_persisted_before_signal=true",
+          "terminal_save_failure_auto_retry_count=0",
+          "restart_state_has_structured_recovery_action=true"
+        ]
+      },
+      "temporary_characterization": {
+        "status": "replaced-safe-transition-commit-protocol",
+        "test_id": "DesktopNode.Runtime.Tests.JobRuntimeDurabilityTests.StartSaveFailureKeepsRecoverableMeaning",
+        "additional_test_ids": [
+          "DesktopNode.Runtime.Tests.JobRuntimeDurabilityTests.TransitionSaveFailureKeepsRecoverableMeaning",
+          "DesktopNode.Runtime.Tests.JobRuntimeDurabilityTests.RunningCancelPersistsRequestBeforeProviderSignalOutsideStateLock"
+        ],
+        "replacement_wave": "Wave 2A",
+        "replacement_test_id": "DesktopNode.Runtime.Tests.JobRuntimeDurabilityTests.StartSaveFailureKeepsRecoverableMeaning",
+        "removal_condition": "Completed: unsafe Runtime characterizations were removed after exact safe invariants added durable file, restart, provider-order, and no-replay assertions; API companions remain."
+      }
+    },
+    {
+      "gap_id": "W0-FI-03",
+      "title": "GET timeout permits late work to commit or overlap the next request",
+      "current_status": "unsafe-static-trace-partial-cancellation-test",
+      "reproduction_condition": "Use a read adapter that ignores cancellation, force the first GET to return 504, start a second GET before releasing the first adapter, and record maximum concurrency, late commits, and tracked task completion.",
+      "current_trace": [
+        "src/DesktopNode.Api/DesktopNodeApiRequestProcessor.cs:194-226 returns 504 after cancel without awaiting the route task",
+        "src/DesktopNode.Api/DesktopNodeApiRequestProcessor.cs:171-191 releases the outer serialization lock when the timed-out Handle returns"
+      ],
+      "existing_evidence": [
+        "DesktopNode.Api.Tests.ApiHardeningRequestProcessorTests.RouteTimeoutReturnsProblemDetailsWhenNativeRouteExceedsDeadline verifies 504",
+        "DesktopNode.Api.Tests.ApiHardeningRequestProcessorTests.RouteTimeoutPassesCancellationToNativeAdapter verifies cooperative token delivery",
+        "DesktopNode.Api.Tests.ApiRuntimePolicyRequestProcessorTests.ProcessorSerializesConcurrentHandleCalls verifies serialization only when no request times out"
+      ],
+      "expected_safe_result": "A timed-out request cannot commit application state or overlap the next request under the serialized policy, and its task completion or fault remains supervised.",
+      "owner_wave": "Wave 5A",
+      "red": {
+        "owner_project": "DesktopNode.Api.Tests",
+        "test_ids": [
+          "DesktopNode.Api.Tests.ApiAsyncLifetimeTests.TimeoutIgnoringCancellationCannotCommitOrOverlapNextRequest"
+        ],
+        "fails_on_baseline_because": "the timed-out Task.Run continues after the Handle lock is released"
+      },
+      "green": {
+        "implementation_boundary": "end-to-end async lifetime, explicit serialization gate, post-timeout commit guard, and tracked child completion",
+        "required_assertions": [
+          "late_commit_count=0",
+          "max_processor_concurrency=1",
+          "unobserved_child_fault_count=0",
+          "tracked_request_count_after_drain=0"
+        ]
+      },
+      "temporary_characterization": {
+        "status": "planned-not-added",
+        "test_id": "DesktopNode.Api.Tests.ApiHardeningRequestProcessorTests.TimeoutIgnoringCancellationCurrentOverlapTrace",
+        "replacement_wave": "Wave 5A",
+        "replacement_test_id": "DesktopNode.Api.Tests.ApiAsyncLifetimeTests.TimeoutIgnoringCancellationCannotCommitOrOverlapNextRequest",
+        "removal_condition": "Remove after sync-over-async Task.Run plus Wait is gone and the replacement test proves zero late commit and serialized overlap."
+      }
+    },
+    {
+      "gap_id": "W0-FI-04",
+      "title": "malformed or non-object job store crashes startup without a structured state",
+      "current_status": "safe-typed-semantic-block-without-rewrite",
+      "reproduction_condition": "Construct DesktopNodeJobRuntime with malformed JSON, invalid UTF-8, each valid non-object root, and invalid job/queue semantics; then observe the typed blocked state, no rewrite, and zero dispatch.",
+      "current_trace": [
+        "src/DesktopNode.Runtime/DesktopNodeJobStoreSnapshotValidator.cs classifies Valid, UnsupportedFuture, and Corrupt before Runtime projects any state",
+        "src/DesktopNode.Runtime/DesktopNodeJobRuntime.cs publishes no jobs or queue for corrupt input and returns redacted PCV_JOB_STORE_CORRUPT without quarantine or rewrite"
+      ],
+      "existing_evidence": [
+        "DesktopNode.Runtime.Tests.DesktopNodeJobRuntimeTests.MalformedOrNonObjectRootStartsInStructuredBlockedState covers malformed plus six non-object roots without rewrite or dispatch",
+        "DesktopNode.Runtime.Tests.JsonJobStoreSemanticIntegrityTests covers typed root/schema/job/queue/state integrity classification for v1/v2 and unsupported future input",
+        "DesktopNode.Api.Tests.ApiRuntimePolicyRequestProcessorTests.JobStoreUnsupportedFutureVersionReturnsBlockedDiagnosticsWithoutQuarantine remains a valid-object future-schema integration companion"
+      ],
+      "api_integration_companion_test_ids": [
+        "DesktopNode.Api.Tests.ApiRuntimePolicyRequestProcessorTests.JobStoreUnsupportedFutureVersionReturnsBlockedDiagnosticsWithoutQuarantine"
+      ],
+      "expected_safe_result": "Startup remains alive with a structured blocked or quarantined result, no mutation or silent overwrite occurs, and operator recovery guidance is redacted and explicit.",
+      "owner_wave": "Wave 2A",
+      "red": {
+        "owner_project": "DesktopNode.Runtime.Tests",
+        "test_ids": [
+          "DesktopNode.Runtime.Tests.JsonJobStoreTests.MalformedOrNonObjectRootStartsInStructuredBlockedState"
+        ],
+        "fails_on_baseline_because": "valid non-object roots reach JsonElement.TryGetProperty and can throw InvalidOperationException from construction"
+      },
+      "green": {
+        "implementation_boundary": "typed load result with root-kind and semantic validation before reading properties",
+        "required_assertions": [
+          "service_start_unstructured_exception_count=0",
+          "worker_invoke_count=0",
+          "silent_overwrite_count=0",
+          "structured_operator_action_present=true"
+        ]
+      },
+      "temporary_characterization": {
+        "status": "replaced-safe-typed-load-result",
+        "test_id": "DesktopNode.Runtime.Tests.DesktopNodeJobRuntimeTests.MalformedOrNonObjectRootStartsInStructuredBlockedState",
+        "case_count": 7,
+        "replacement_wave": "Wave 2A",
+        "replacement_test_id": "DesktopNode.Runtime.Tests.DesktopNodeJobRuntimeTests.MalformedOrNonObjectRootStartsInStructuredBlockedState",
+        "removal_condition": "Completed: malformed plus all six non-object roots now produce a structured no-mutation result and the old unstructured theory is absent."
+      }
+    },
+    {
+      "gap_id": "W0-FI-05",
+      "title": "shutdown does not track HTTP request and noVNC bridge child tasks",
+      "current_status": "unsafe-static-trace-happy-path-only",
+      "reproduction_condition": "Open a blocked HTTP body read and a bidirectional noVNC bridge, stop or dispose the host, then observe admission close, both copy directions, task registry, socket handles, and the drain deadline.",
+      "current_trace": [
+        "src/DesktopNode.Host/DesktopNodeHostApplication.cs:54-60 stores only listener and worker loop tasks",
+        "src/DesktopNode.Host/DesktopNodeHostApplication.cs:154-173 starts accepted requests as untracked fire-and-forget tasks",
+        "src/DesktopNode.Host/DesktopNodeHostApplication.cs:399-415 awaits only Task.WhenAny for noVNC and does not cancel or await the peer direction",
+        "src/DesktopNode.Host/DesktopNodeHostApplication.cs:130-151 waits only loopTasks during dispose"
+      ],
+      "existing_evidence": [
+        "DesktopNode.Host.Tests.DesktopNodeHostApplicationTests.NoVncBridgeProxiesWebSocketFramesToLoopbackTcpTarget covers frame proxy happy path only"
+      ],
+      "expected_safe_result": "Shutdown closes admission, tracks and drains every HTTP and noVNC task, cancels and observes both bridge directions, and finishes with zero tracked tasks and socket leaks within policy.",
+      "owner_wave": "Wave 5A",
+      "red": {
+        "owner_project": "DesktopNode.Host.Tests",
+        "test_ids": [
+          "DesktopNode.Host.Tests.DesktopNodeHostShutdownTests.StopTracksAndDrainsBlockedHttpRequest",
+          "DesktopNode.Host.Tests.DesktopNodeHostShutdownTests.StopCancelsAndAwaitsBothNoVncDirections"
+        ],
+        "fails_on_baseline_because": "accepted request tasks are discarded and noVNC observes only the first copy task to finish"
+      },
+      "green": {
+        "implementation_boundary": "bounded admission and one application-lifetime request or noVNC task registry with ordered cancellation and drain",
+        "required_assertions": [
+          "tracked_http_task_count_after_stop=0",
+          "tracked_novnc_task_count_after_stop=0",
+          "unobserved_bridge_fault_count=0",
+          "socket_handle_leak_count=0",
+          "drain_elapsed_seconds_lte=10"
+        ]
+      },
+      "temporary_characterization": {
+        "status": "existing-happy-path-not-temporary",
+        "test_id": "DesktopNode.Host.Tests.DesktopNodeHostApplicationTests.NoVncBridgeProxiesWebSocketFramesToLoopbackTcpTarget",
+        "replacement_wave": "Wave 5A",
+        "replacement_test_id": "DesktopNode.Host.Tests.DesktopNodeHostShutdownTests.StopCancelsAndAwaitsBothNoVncDirections",
+        "removal_condition": "Do not remove the frame parity test; close only the shutdown gap after the two new drain tests pass."
+      }
+    },
+    {
+      "gap_id": "W0-FI-06",
+      "title": "listener or worker fault is not visible to Windows Service health",
+      "current_status": "unsafe-static-trace-normal-start-only",
+      "reproduction_condition": "Inject an unexpected listener accept-loop failure and a non-cancellation worker failure, then observe the Windows Service ExecuteTask, current health, event reason, and final running state.",
+      "current_trace": [
+        "src/DesktopNode.Host/DesktopNodeHostApplication.cs:154-170 turns every HttpListenerException into a normal listener-loop return",
+        "src/DesktopNode.Api/DesktopNodeApiRequestProcessor.cs:2190-2238 catches unexpected worker exceptions and continues the outer idle loop",
+        "src/DesktopNode.Host/DesktopNodeWindowsService.cs:9-20 waits an infinite delay instead of child task completion",
+        "src/DesktopNode.Host/DesktopNodeHostApplication.cs:130-151 swallows AggregateException while disposing"
+      ],
+      "existing_evidence": [
+        "DesktopNode.Host.Tests.DesktopNodeHostApplicationTests.HostStartsBackgroundWorkerForQueuedJobs covers only normal startup and processing"
+      ],
+      "expected_safe_result": "Unexpected listener or worker completion fails service health within a bounded time, never leaves Running-but-dead, records a redacted structured reason, and drains remaining work.",
+      "owner_wave": "Wave 5A",
+      "red": {
+        "owner_project": "DesktopNode.Host.Tests",
+        "test_ids": [
+          "DesktopNode.Host.Tests.DesktopNodeWindowsServiceSupervisionTests.ListenerFaultFailsServiceHealth",
+          "DesktopNode.Host.Tests.DesktopNodeWindowsServiceSupervisionTests.WorkerFaultFailsServiceHealth"
+        ],
+        "fails_on_baseline_because": "the service waits an unrelated infinite delay and neither listener nor worker fault is supervised as terminal health"
+      },
+      "green": {
+        "implementation_boundary": "one application lifetime supervisor awaits listener and worker completion and propagates unexpected exit to Windows Service health",
+        "required_assertions": [
+          "service_running_but_dead_count=0",
+          "fault_propagation_within_policy=true",
+          "structured_health_reason_present=true",
+          "remaining_work_drained_or_reconciled=true"
+        ]
+      },
+      "temporary_characterization": {
+        "status": "registry-only-no-unsafe-test",
+        "test_id": null,
+        "replacement_wave": "Wave 5A",
+        "replacement_test_id": "DesktopNode.Host.Tests.DesktopNodeWindowsServiceSupervisionTests.ListenerFaultFailsServiceHealth|WorkerFaultFailsServiceHealth",
+        "removal_condition": "Close after both injected fault tests and installed current-card non-running or unhealthy evidence pass."
+      }
+    }
+  ],
+  "migrations": [
+    {
+      "migration_id": "TM-HYPERV-DOMAIN-001",
+      "status": "completed",
+      "old_test_id": "DesktopNode.Api.Tests.HyperVDomainContractTests.*",
+      "replacement_test_id": "DesktopNode.HyperV.Tests.HyperVDomainContractTests.*",
+      "old_source_path": "src/DesktopNode.Api.Tests/HyperVDomainContractTests.cs",
+      "replacement_source_path": "src/DesktopNode.HyperV.Tests/HyperVDomainContractTests.cs",
+      "owner": "DesktopNode.HyperV.Tests",
+      "coverage_boundary": "Hyper-V domain, dispatch, WMI provider catalog and provider-set contract",
+      "reason": "API to Hyper-V test ownership correction",
+      "case_count_before": 35,
+      "case_count_after": 39,
+      "removal_condition": "Completed: replacement project independently discovers 39 cases and the total test count does not decrease. 2026-08-20 SERVICE_PLAN P0 added attach/save/manage catalog cases."
+    },
+    {
+      "migration_id": "TM-HYPERV-DIRECT-NATIVE-002A",
+      "status": "completed",
+      "old_test_id": "DesktopNode.Api.Tests.ApiRuntimePolicyRequestProcessorTests.Native*",
+      "replacement_test_id": "DesktopNode.HyperV.Tests.DesktopNodeHyperVNativeAdapterTests.Native*",
+      "old_source_path": "src/DesktopNode.Api.Tests/ApiRuntimePolicyRequestProcessorTests.cs",
+      "replacement_source_path": "src/DesktopNode.HyperV.Tests/DesktopNodeHyperVNativeAdapterTests.cs",
+      "owner": "DesktopNode.HyperV.Tests",
+      "coverage_boundary": "direct native adapter mapping, provider failure, constant and projection behavior",
+      "reason": "Direct Hyper-V adapter implementation tests must be owned by the Hyper-V project; API route and JSON adapter tests remain in API tests.",
+      "observed_method_count": 42,
+      "observed_case_count": 58,
+      "case_count_before": 49,
+      "case_count_after": 58,
+      "removal_condition": "Every moved Native* old test ID derives exactly one discovered Native* replacement, direct Hyper-V tests run independently, and the total case count does not decrease."
+    },
+    {
+      "migration_id": "TM-HYPERV-DIRECT-WMI-002B",
+      "status": "completed",
+      "old_test_id": "DesktopNode.Api.Tests.ApiRuntimePolicyRequestProcessorTests.Wmi*",
+      "replacement_test_id": "DesktopNode.HyperV.Tests.DesktopNodeHyperVWmiProviderTests.Wmi*",
+      "old_source_path": "src/DesktopNode.Api.Tests/ApiRuntimePolicyRequestProcessorTests.cs",
+      "replacement_source_path": "src/DesktopNode.HyperV.Tests/DesktopNodeHyperVWmiProviderTests.cs",
+      "owner": "DesktopNode.HyperV.Tests",
+      "coverage_boundary": "direct WMI query, provider failure, constant and projection behavior",
+      "reason": "Direct Hyper-V WMI provider implementation tests must be owned by the Hyper-V project; API route and JSON adapter tests remain in API tests.",
+      "observed_method_count": 25,
+      "observed_case_count": 33,
+      "case_count_before": 30,
+      "case_count_after": 33,
+      "removal_condition": "Every moved Wmi* old test ID derives exactly one discovered Wmi* replacement, direct Hyper-V tests run independently, and the total case count does not decrease."
+    },
+    {
+      "migration_id": "TM-JOB-CREATE-SAVE-010",
+      "status": "completed",
+      "old_test_id": "DesktopNode.Runtime.Tests.DesktopNodeJobRuntimeTests.CreateSaveFailurePreservesCurrentPublishBeforeCommitOrder",
+      "replacement_test_id": "DesktopNode.Runtime.Tests.JobRuntimeDurabilityTests.CreateSaveFailureDoesNotPublishMemoryOrQueueGhost",
+      "old_source_path": "src/DesktopNode.Runtime.Tests/DesktopNodeJobRuntimeTests.cs",
+      "replacement_source_path": "src/DesktopNode.Runtime.Tests/JobRuntimeDurabilityTests.cs",
+      "owner": "DesktopNode.Runtime.Tests",
+      "coverage_boundary": "job create typed physical commit before memory and queue publication, including restart-readable indeterminate guard",
+      "reason": "Replace the Runtime owner's current unsafe publish-before-commit characterization with the safe durability invariant while retaining physical-writer and API integration coverage.",
+      "removal_condition": "Completed: one live replacement Fact proves pre-ack state preservation while additive physical-writer tests prove outcome reconciliation and restart dispatch blocking; API companions remain.",
+      "case_count_before": 1,
+      "case_count_after": 1
+    },
+    {
+      "migration_id": "TM-API-JOB-CREATE-SAVE-013",
+      "status": "completed",
+      "old_test_id": "DesktopNode.Api.Tests.ApiJobStoreFailureCharacterizationTests.CreateSaveFailureCurrentlyPublishesBeforeDurableCommit",
+      "replacement_test_id": "DesktopNode.Api.Tests.ApiJobStoreFailureCharacterizationTests.CreateSaveFailureDoesNotReturn202OrInvokeNativeMutation",
+      "old_source_path": "src/DesktopNode.Api.Tests/ApiJobStoreFailureCharacterizationTests.cs",
+      "replacement_source_path": "src/DesktopNode.Api.Tests/ApiJobStoreFailureCharacterizationTests.cs",
+      "owner": "DesktopNode.Api.Tests",
+      "coverage_boundary": "queued mutation route reports pre-acknowledgement enqueue failure without HTTP 202, memory ghost, worker dispatch, or native invocation",
+      "reason": "Replace the API unsafe integration companion with the safe structured failure and zero-dispatch companion.",
+      "removal_condition": "Completed: one live API replacement preserves route integration coverage and proves structured HTTP 503 plus worker and native invoke zero.",
+      "case_count_before": 1,
+      "case_count_after": 1
+    },
+    {
+      "migration_id": "TM-JOB-START-SAVE-003",
+      "status": "completed",
+      "old_test_id": "DesktopNode.Runtime.Tests.DesktopNodeJobRuntimeTests.StartSaveFailureMarksOnlyMemoryFailedAndDoesNotRegisterCancellation",
+      "replacement_test_id": "DesktopNode.Runtime.Tests.JobRuntimeDurabilityTests.StartSaveFailureKeepsRecoverableMeaning",
+      "old_source_path": "src/DesktopNode.Runtime.Tests/DesktopNodeJobRuntimeTests.cs",
+      "replacement_source_path": "src/DesktopNode.Runtime.Tests/JobRuntimeDurabilityTests.cs",
+      "owner": "DesktopNode.Runtime.Tests",
+      "coverage_boundary": "job start durable transition, native invoke zero, disk and restart recovery meaning",
+      "reason": "Replace the Runtime owner's current unsafe start-save characterization with one exact safe durability Fact; the API worker test remains an integration companion.",
+      "removal_condition": "Completed: one live replacement Fact retains native-invoke-zero meaning and adds disk plus restart assertions for the start-save failure.",
+      "case_count_before": 1,
+      "case_count_after": 1
+    },
+    {
+      "migration_id": "TM-JOB-RUNNING-CANCEL-011",
+      "status": "completed",
+      "old_test_id": "DesktopNode.Runtime.Tests.DesktopNodeJobRuntimeTests.RunningCancelSignalsBeforeSavingCurrentCancellationRequest",
+      "replacement_test_id": "DesktopNode.Runtime.Tests.JobRuntimeDurabilityTests.RunningCancelPersistsRequestBeforeProviderSignalOutsideStateLock",
+      "old_source_path": "src/DesktopNode.Runtime.Tests/DesktopNodeJobRuntimeTests.cs",
+      "replacement_source_path": "src/DesktopNode.Runtime.Tests/JobRuntimeDurabilityTests.cs",
+      "owner": "DesktopNode.Runtime.Tests",
+      "coverage_boundary": "running cancellation durable request, provider signal order, and state-lock ownership",
+      "reason": "Replace the Runtime owner's unsafe signal-before-save characterization with the safe cancellation ordering invariant while retaining linked-token API coverage.",
+      "removal_condition": "Completed: one live replacement Fact proves durable cancel-request commit before provider signal outside the state lock; API linked-token companions remain.",
+      "case_count_before": 1,
+      "case_count_after": 1
+    },
+    {
+      "migration_id": "TM-JOB-NONOBJECT-012",
+      "status": "completed",
+      "old_test_id": "DesktopNode.Runtime.Tests.DesktopNodeJobRuntimeTests.ValidNonObjectRootPreservesCurrentUnstructuredStartupFailure*",
+      "replacement_test_id": "DesktopNode.Runtime.Tests.DesktopNodeJobRuntimeTests.MalformedOrNonObjectRootStartsInStructuredBlockedState*",
+      "old_source_path": "src/DesktopNode.Runtime.Tests/DesktopNodeJobRuntimeTests.cs",
+      "replacement_source_path": "src/DesktopNode.Runtime.Tests/DesktopNodeJobRuntimeTests.cs",
+      "owner": "DesktopNode.Runtime.Tests",
+      "coverage_boundary": "malformed and valid non-object job-store roots produce structured no-mutation startup state",
+      "reason": "Replace the six-case Runtime unsafe non-object-root theory with the safe typed-load-result theory.",
+      "observed_case_count": 7,
+      "removal_condition": "Completed: every old theory case maps to the live safe replacement, malformed and non-object inputs stay structured, and total test count increased.",
+      "case_count_before": 6,
+      "case_count_after": 7
+    },
+    {
+      "migration_id": "TM-BATCH-REFLECTION-PATH-004",
+      "status": "planned",
+      "old_test_id": "DesktopNode.Api.Tests.ApiRuntimePolicyRequestProcessorTests.BatchEvidenceReadGuardRejectsReparsePointSegments",
+      "replacement_test_id": "DesktopNode.Api.Tests.BatchEvidencePathPolicyTests.ReparsePointSegmentIsRejected",
+      "old_source_path": "src/DesktopNode.Api.Tests/ApiRuntimePolicyRequestProcessorTests.cs",
+      "replacement_source_path": "src/DesktopNode.Api.Tests/BatchEvidencePathPolicyTests.cs",
+      "owner": "DesktopNode.Api.Tests",
+      "coverage_boundary": "configured-root containment and reparse-point rejection",
+      "reason": "Wave 0 removed private reflection in place through the internal path-policy and recording file-access seam; Wave 7 may move the direct test to a named owner.",
+      "removal_condition": "Move the direct in-place test to BatchEvidencePathPolicyTests while keeping zero BindingFlags.NonPublic access."
+    },
+    {
+      "migration_id": "TM-BATCH-REFLECTION-SORT-005",
+      "status": "planned",
+      "old_test_id": "DesktopNode.Api.Tests.ApiRuntimePolicyRequestProcessorTests.BatchEvidenceSortTimePlacesUnreadableSummaryLast",
+      "replacement_test_id": "DesktopNode.Api.Tests.BatchEvidenceSummaryReaderTests.UnreadableSummarySortsLast",
+      "old_source_path": "src/DesktopNode.Api.Tests/ApiRuntimePolicyRequestProcessorTests.cs",
+      "replacement_source_path": "src/DesktopNode.Api.Tests/BatchEvidenceSummaryReaderTests.cs",
+      "owner": "DesktopNode.Api.Tests",
+      "coverage_boundary": "unreadable evidence ordering through recording filesystem metadata",
+      "reason": "Wave 0 removed private reflection in place through direct reader behavior and recording metadata; Wave 7 may move the direct test to its named owner.",
+      "removal_condition": "Move the direct in-place recording test to BatchEvidenceSummaryReaderTests while keeping zero BindingFlags.NonPublic access."
+    },
+    {
+      "migration_id": "TM-BATCH-CWD-006",
+      "status": "completed",
+      "old_test_id": "DesktopNode.Api.Tests.ApiRuntimePolicyRequestProcessorTests.OpsSummaryDoesNotReadRelativeChildEvidenceWhenChildRootsAreAbsent",
+      "replacement_test_id": "DesktopNode.Api.Tests.BatchEvidenceSummaryReaderTests.RelativeChildEvidenceIsIgnoredWithoutConfiguredChildRoot",
+      "old_source_path": "src/DesktopNode.Api.Tests/ApiRuntimePolicyRequestProcessorTests.cs",
+      "replacement_source_path": "src/DesktopNode.Api.Tests/BatchEvidenceSummaryReaderTests.cs",
+      "owner": "DesktopNode.Api.Tests",
+      "coverage_boundary": "relative child evidence cannot escape configured roots while the temporary process-global CWD probe is explicitly serialized",
+      "reason": "Isolate the remaining process-global current-directory probe in an explicitly serialized owner test until Wave 7.",
+      "removal_condition": "Wave 7 separates configured child-root/path resolution from process CWD and removes the serialized CWD scope.",
+      "case_count_before": 1,
+      "case_count_after": 1
+    },
+    {
+      "migration_id": "TM-SOURCE-OPS-007",
+      "status": "completed",
+      "old_test_id": "DesktopNode.Api.Tests.ApiRuntimePolicyRequestProcessorTests.OpsSummarySnapshotAssemblyStaysOutsideRequestProcessor",
+      "replacement_test_id": "DesktopNode.Api.Tests.ApiArchitectureOwnershipTests.OpsSummaryProjectionUsesDedicatedOwner",
+      "old_source_path": "src/DesktopNode.Api.Tests/ApiRuntimePolicyRequestProcessorTests.cs",
+      "replacement_source_path": "src/DesktopNode.Api.Tests/ApiArchitectureOwnershipTests.cs",
+      "owner": "DesktopNode.Api.Tests",
+      "coverage_boundary": "compiled processor to callback-free ops-summary query owner ownership",
+      "reason": "Wave 1D replaced production source text inspection with compiled metadata and IL ownership checks.",
+      "removal_condition": "The compiled dependency guard proves the same owner boundary and the source-text assertion is deleted."
+    },
+    {
+      "migration_id": "TM-SOURCE-ACL-008",
+      "status": "planned",
+      "old_test_id": "DesktopNode.Host.Tests.DesktopNodeHostServiceActionTests.ProtectedTokenBootstrapDoesNotInvokeExternalAclExecutable",
+      "replacement_test_id": "DesktopNode.Host.Tests.DesktopNodeTokenBootstrapTests.ProtectedTokenBootstrapUsesNativeAclBoundaryOnly",
+      "old_source_path": "src/DesktopNode.Host.Tests/DesktopNodeHostServiceActionTests.cs",
+      "replacement_source_path": "src/DesktopNode.Host.Tests/DesktopNodeTokenBootstrapTests.cs",
+      "owner": "DesktopNode.Host.Tests",
+      "coverage_boundary": "recorded native ACL calls and external process invocation count zero",
+      "reason": "Replace a string search for icacls.exe with direct behavior at the ACL/process boundary.",
+      "removal_condition": "The recording boundary proves external invocation zero and the source-text assertion is deleted."
+    },
+    {
+      "migration_id": "TM-SOURCE-SCM-009",
+      "status": "planned",
+      "old_test_id": "DesktopNode.Host.Tests.DesktopNodeWindowsServiceControllerTests.DeleteClosesServiceHandleBeforeWaitingForMissing",
+      "replacement_test_id": "DesktopNode.Host.Tests.DesktopNodeWindowsServiceControllerTests.DeleteDisposesNativeHandleBeforePollingForMissing",
+      "old_source_path": "src/DesktopNode.Host.Tests/DesktopNodeWindowsServiceControllerTests.cs",
+      "replacement_source_path": "src/DesktopNode.Host.Tests/DesktopNodeWindowsServiceControllerTests.cs",
+      "owner": "DesktopNode.Host.Tests",
+      "coverage_boundary": "native service handle dispose then missing-state poll call order",
+      "reason": "Replace controller source regex with an injected native service API call trace.",
+      "removal_condition": "The call-trace test proves dispose-before-poll and the source regex assertion is deleted."
+    }
+  ],
+  "inventory": {
+    "private_reflection": {
+      "current_occurrence_count": 0,
+      "entries": []
+    },
+    "cwd_mutation": {
+      "current_test_count": 1,
+      "current_occurrence_count": 2,
+      "entries": [
+        {
+          "test_id": "DesktopNode.Api.Tests.BatchEvidenceSummaryReaderTests.RelativeChildEvidenceIsIgnoredWithoutConfiguredChildRoot",
+          "source_path": "src/DesktopNode.Api.Tests/BatchEvidenceSummaryReaderTests.cs",
+          "api": "Directory.SetCurrentDirectory",
+          "occurrence_count": 2,
+          "named_non_parallel_collection": true,
+          "collection_name": "Batch evidence CWD isolation",
+          "owner_wave": "Wave 0",
+          "fallback_removal_wave": "Wave 7",
+          "migration_id": "TM-BATCH-CWD-006"
+        }
+      ]
+    },
+    "production_source_text_checks": {
+      "current_test_count": 2,
+      "entries": [
+        {
+          "test_id": "DesktopNode.Host.Tests.DesktopNodeHostServiceActionTests.ProtectedTokenBootstrapDoesNotInvokeExternalAclExecutable",
+          "source_path": "src/DesktopNode.Host.Tests/DesktopNodeHostServiceActionTests.cs",
+          "inspected_product_paths": [
+            "src/DesktopNode.Host/DesktopNodeHostServiceAction.cs"
+          ],
+          "migration_id": "TM-SOURCE-ACL-008"
+        },
+        {
+          "test_id": "DesktopNode.Host.Tests.DesktopNodeWindowsServiceControllerTests.DeleteClosesServiceHandleBeforeWaitingForMissing",
+          "source_path": "src/DesktopNode.Host.Tests/DesktopNodeWindowsServiceControllerTests.cs",
+          "inspected_product_paths": [
+            "src/DesktopNode.Host/DesktopNodeWindowsServiceController.cs"
+          ],
+          "migration_id": "TM-SOURCE-SCM-009"
+        }
+      ]
+    },
+    "test_ownership_candidates": [
+      {
+        "status": "completed",
+        "current_owner": "DesktopNode.HyperV.Tests",
+        "test_id_pattern": "DesktopNode.HyperV.Tests.HyperVDomainContractTests.*",
+        "observed_case_count": 39,
+        "coverage_boundary": "Hyper-V domain, dispatch and WMI provider contracts",
+        "migration_id": "TM-HYPERV-DOMAIN-001"
+      },
+      {
+        "status": "completed",
+        "current_owner": "DesktopNode.HyperV.Tests",
+        "target_owner": "DesktopNode.HyperV.Tests",
+        "source_paths": [
+          "src/DesktopNode.HyperV.Tests/DesktopNodeHyperVNativeAdapterTests.cs",
+          "src/DesktopNode.HyperV.Tests/DesktopNodeHyperVWmiProviderTests.cs"
+        ],
+        "test_id_patterns": [
+          "DesktopNode.HyperV.Tests.DesktopNodeHyperVNativeAdapterTests.Native*",
+          "DesktopNode.HyperV.Tests.DesktopNodeHyperVWmiProviderTests.Wmi*"
+        ],
+        "observed_method_count": 67,
+        "observed_case_count": 91,
+        "coverage_boundary": "direct Hyper-V adapter and WMI provider behavior",
+        "migration_ids": [
+          "TM-HYPERV-DIRECT-NATIVE-002A",
+          "TM-HYPERV-DIRECT-WMI-002B"
+        ]
+      },
+      {
+        "status": "completed-additive-runtime-owner",
+        "owner_wave": "Wave 1A",
+        "current_owner": "DesktopNode.Runtime.Tests",
+        "integration_companion_owner": "DesktopNode.Api.Tests",
+        "runtime_owner_sources": [
+          {
+            "source_path": "src/DesktopNode.Runtime.Tests/DesktopNodeJobRuntimeTests.cs",
+            "test_id_pattern": "DesktopNode.Runtime.Tests.DesktopNodeJobRuntimeTests.*",
+            "observed_method_count": 16,
+            "observed_case_count": 22
+          },
+          {
+            "source_path": "src/DesktopNode.Runtime.Tests/JobRuntimeDurabilityTests.cs",
+            "test_id_pattern": "DesktopNode.Runtime.Tests.JobRuntimeDurabilityTests.*",
+            "observed_method_count": 9,
+            "observed_case_count": 9
+          },
+          {
+            "source_path": "src/DesktopNode.Runtime.Tests/JsonFileDesktopNodeJobStoreTests.cs",
+            "test_id_pattern": "DesktopNode.Runtime.Tests.JsonFileDesktopNodeJobStoreTests.*",
+            "observed_method_count": 28,
+            "observed_case_count": 36
+          },
+          {
+            "source_path": "src/DesktopNode.Runtime.Tests/JsonJobStoreSemanticIntegrityTests.cs",
+            "test_id_pattern": "DesktopNode.Runtime.Tests.JsonJobStoreSemanticIntegrityTests.*",
+            "observed_method_count": 4,
+            "observed_case_count": 12
+          }
+        ],
+        "observed_method_count": 57,
+        "observed_case_count": 79,
+        "ownership_guard_test_ids": [
+          "DesktopNode.Api.Tests.ApiArchitectureOwnershipTests.RequestProcessorDelegatesConcreteJobStateToRuntimeOwner",
+          "DesktopNode.Api.Tests.ApiArchitectureOwnershipTests.ApiAssemblyDoesNotDefineRetiredJobStoreOrClockSeams",
+          "DesktopNode.Runtime.Tests.RuntimeArchitectureOwnershipTests.JobRuntimeOwnsConcreteStateContainers",
+          "DesktopNode.Runtime.Tests.RuntimeArchitectureOwnershipTests.RuntimeAssemblyReferencesOnlyApprovedProductContracts"
+        ],
+        "ownership_guard_case_count": 4,
+        "retained_api_companions": [
+          {
+            "source_path": "src/DesktopNode.Api.Tests/ApiJobStoreFailureCharacterizationTests.cs",
+            "observed_case_count": 11,
+            "test_ids": [
+              "DesktopNode.Api.Tests.ApiJobStoreFailureCharacterizationTests.IndeterminateCreateCommitReturns503AndBlocksJobRoutesAndWorker",
+              "DesktopNode.Api.Tests.ApiJobStoreFailureCharacterizationTests.CreateSaveFailureDoesNotReturn202OrInvokeNativeMutation",
+              "DesktopNode.Api.Tests.ApiJobStoreFailureCharacterizationTests.JobClockAndStoreSnapshotsPreserveCurrentCreateStartCompleteOrder",
+              "DesktopNode.Api.Tests.ApiJobStoreFailureCharacterizationTests.RunningCancelPersistsBeforeSignalAndUsesLinkedToken",
+              "DesktopNode.Api.Tests.ApiJobStoreFailureCharacterizationTests.QueuedCancelSaveFailureReturnsStructured503AndPreservesQueuedJob",
+              "DesktopNode.Api.Tests.ApiJobStoreFailureCharacterizationTests.CompletionSaveFailureReturnsStructuredWorkerErrorWithoutProviderReplay",
+              "DesktopNode.Api.Tests.ApiJobStoreFailureCharacterizationTests.WorkerLoopSurvivesTransientStartCommitErrorAndInvokesProviderOnce",
+              "DesktopNode.Api.Tests.ApiJobStoreFailureCharacterizationTests.WorkerLoopStaysAliveWithoutProviderReplayAfterCompletionCommitError",
+              "DesktopNode.Api.Tests.ApiJobStoreFailureCharacterizationTests.ProviderResultFinalizationKeepsRunningCancellationAttachedUntilSerializedComplete",
+              "DesktopNode.Api.Tests.ApiJobStoreFailureCharacterizationTests.WorkerOwnerCancellationReachesLinkedJobToken",
+              "DesktopNode.Api.Tests.ApiJobStoreFailureCharacterizationTests.DurableEnqueueSurvivesDroppedResponseAndIsDiscoverableByRequestCorrelation"
+            ]
+          },
+          {
+            "source_path": "src/DesktopNode.Api.Tests/ApiJobStoreGoldenCharacterizationTests.cs",
+            "observed_case_count": 4,
+            "test_ids": [
+              "DesktopNode.Api.Tests.ApiJobStoreGoldenCharacterizationTests.V1AndV2GoldenLoadProduceEquivalentJobProjection",
+              "DesktopNode.Api.Tests.ApiJobStoreGoldenCharacterizationTests.PersistedRunningRecoveryMatchesGoldenRewriteAndExcludesRecoveredJobFromQueue",
+              "DesktopNode.Api.Tests.ApiJobStoreGoldenCharacterizationTests.PersistedQueueDispatchesGoldenJobsInStoredFifoOrder",
+              "DesktopNode.Api.Tests.ApiJobStoreGoldenCharacterizationTests.TerminalRetentionWriterMatchesGoldenShapeAndPreservesActiveJob"
+            ]
+          },
+          {
+            "source_path": "src/DesktopNode.Api.Tests/ApiHardeningRequestProcessorTests.cs",
+            "observed_case_count": 1,
+            "test_ids": [
+              "DesktopNode.Api.Tests.ApiHardeningRequestProcessorTests.BackgroundWorkerPreservesQueuedJobWhenStartSaveFailsAndReturnsStructuredError"
+            ]
+          },
+          {
+            "source_path": "src/DesktopNode.Api.Tests/ApiRuntimePolicyRequestProcessorTests.cs",
+            "observed_case_count": 7,
+            "test_ids": [
+              "DesktopNode.Api.Tests.ApiRuntimePolicyRequestProcessorTests.ProcessWorkerPoolProcessesAtMostOneQueuedJobPerCall",
+              "DesktopNode.Api.Tests.ApiRuntimePolicyRequestProcessorTests.JobRetentionPrunesOldTerminalJobsButPreservesActiveJobs",
+              "DesktopNode.Api.Tests.ApiRuntimePolicyRequestProcessorTests.JobRetentionPrunesPersistedOldTerminalJobsOnLoad",
+              "DesktopNode.Api.Tests.ApiRuntimePolicyRequestProcessorTests.JobStoreMarksPersistedRunningJobsInterrupted",
+              "DesktopNode.Api.Tests.ApiRuntimePolicyRequestProcessorTests.JobStoreSaveUsesAtomicTempReplaceAndCleansStaleTemp",
+              "DesktopNode.Api.Tests.ApiRuntimePolicyRequestProcessorTests.JobStoreUnsupportedFutureVersionReturnsBlockedDiagnosticsWithoutQuarantine",
+              "DesktopNode.Api.Tests.ApiRuntimePolicyRequestProcessorTests.JobStoreVersion2MigrationStoreLoadsWithoutBlockedDiagnostics"
+            ]
+          }
+        ],
+        "observed_api_companion_case_count": 23,
+        "coverage_boundary": "Runtime owns direct job state, queue, store, retention, and recovery behavior; API retains route, status, JSON, native-dispatch, and linked-cancellation integration companions.",
+        "future_hardening_migration_ids": [
+          "TM-JOB-CREATE-SAVE-010",
+          "TM-JOB-START-SAVE-003",
+          "TM-JOB-RUNNING-CANCEL-011",
+          "TM-JOB-NONOBJECT-012"
+        ]
+      },
+      {
+        "status": "planned",
+        "current_owner": "DesktopNode.Api.Tests.ApiRuntimePolicyRequestProcessorTests",
+        "target_owner": "DesktopNode.Api.Tests.BatchEvidenceSummaryReaderTests",
+        "test_id_pattern": "BatchEvidence*|OpsSummary*Evidence*",
+        "coverage_boundary": "batch evidence filesystem containment, ordering and projection",
+        "migration_ids": [
+          "TM-BATCH-REFLECTION-PATH-004",
+          "TM-BATCH-REFLECTION-SORT-005",
+          "TM-BATCH-CWD-006"
+        ]
+      },
+      {
+        "status": "correct-owner-new-coverage-required",
+        "current_owner": "DesktopNode.Host.Tests",
+        "target_owner": "DesktopNode.Host.Tests",
+        "test_id_pattern": "DesktopNodeHostShutdownTests.*|DesktopNodeWindowsServiceSupervisionTests.*",
+        "coverage_boundary": "HTTP/noVNC child lifetime, listener/worker supervision and Windows Service health",
+        "owner_wave": "Wave 5A"
+      }
+    ]
+  }
+}

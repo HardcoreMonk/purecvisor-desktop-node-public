@@ -1,0 +1,2 @@
+POST http://127.0.0.1:7777/api/v1/vms/demo-vm/start
+Accept: application/json

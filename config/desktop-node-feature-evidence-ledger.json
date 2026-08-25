@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "contract": "pcv-feature-evidence-ledger-v1",
+  "features": [
+    {
+      "feature_id": "pcv.checkpoint.restore",
+      "surfaces": ["api", "cli", "web"],
+      "operations": ["checkpoint.restore"],
+      "required_stages": [
+        "code_tested",
+        "packaged",
+        "installed_tested",
+        "actual_vm_tested",
+        "manual_admin_tested"
+      ],
+      "candidate_required": true,
+      "current": {
+        "version": "0.42.74-admin-smoke",
+        "verdict": "pass",
+        "evidence": "docs/ga-ready/evidence/service-plan-p0-actual-vm-2026-08-20-04274.md"
+      }
+    },
+    {
+      "feature_id": "pcv.vm.managed-import",
+      "surfaces": ["api", "cli", "web"],
+      "operations": ["vm.manage"],
+      "required_stages": [
+        "code_tested",
+        "packaged",
+        "installed_tested",
+        "actual_vm_tested",
+        "manual_admin_tested"
+      ],
+      "candidate_required": true,
+      "current": {
+        "version": "0.42.74-admin-smoke",
+        "verdict": "pass",
+        "evidence": "docs/ga-ready/evidence/service-plan-p0-actual-vm-2026-08-20-04274.md"
+      }
+    },
+    {
+      "feature_id": "pcv.vm.media-attach",
+      "surfaces": ["api", "cli", "web"],
+      "operations": ["vm.attach"],
+      "required_stages": [
+        "code_tested",
+        "packaged",
+        "installed_tested",
+        "actual_vm_tested",
+        "manual_admin_tested"
+      ],
+      "candidate_required": true,
+      "current": {
+        "version": "0.42.74-admin-smoke",
+        "verdict": "pass",
+        "evidence": "docs/ga-ready/evidence/service-plan-p0-actual-vm-2026-08-20-04274.md"
+      }
+    },
+    {
+      "feature_id": "pcv.vm.saved-lifecycle",
+      "surfaces": ["api", "cli", "web"],
+      "operations": ["vm.save", "vm.resume-saved"],
+      "required_stages": [
+        "code_tested",
+        "packaged",
+        "installed_tested",
+        "actual_vm_tested",
+        "manual_admin_tested"
+      ],
+      "candidate_required": true,
+      "current": {
+        "version": "0.42.74-admin-smoke",
+        "verdict": "fail",
+        "evidence": "docs/ga-ready/evidence/service-plan-p0-actual-vm-2026-08-20-04274.md"
+      }
+    }
+  ]
+}

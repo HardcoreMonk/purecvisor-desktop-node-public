@@ -1,0 +1,175 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://purecvisor.local/schemas/desktop-node-feature-surface-ledger.schema.json",
+  "title": "PureCVisor Desktop Node feature surface ledger",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "$schema",
+    "schema_version",
+    "contract",
+    "target_surfaces",
+    "features"
+  ],
+  "properties": {
+    "$schema": {
+      "const": "desktop-node-feature-surface-ledger.schema.json"
+    },
+    "schema_version": {
+      "const": 1
+    },
+    "contract": {
+      "const": "pcv-feature-surface-ledger-v1"
+    },
+    "target_surfaces": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "api",
+          "cli",
+          "web"
+        ]
+      }
+    },
+    "features": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "feature_id",
+          "title",
+          "routes"
+        ],
+        "properties": {
+          "feature_id": {
+            "type": "string",
+            "pattern": "^pcv\\.[a-z0-9._-]+$"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "routes": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "operation_id",
+                "method",
+                "route_template",
+                "required_permission",
+                "present_surfaces",
+                "excluded_surfaces"
+              ],
+              "properties": {
+                "operation_id": {
+                  "type": "string",
+                  "pattern": "^[a-z0-9.-]+$"
+                },
+                "method": {
+                  "enum": [
+                    "GET",
+                    "POST",
+                    "DELETE"
+                  ]
+                },
+                "route_template": {
+                  "type": "string",
+                  "pattern": "^/api/v1/"
+                },
+                "required_permission": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "present_surfaces": {
+                  "type": "array",
+                  "minItems": 1,
+                  "uniqueItems": true,
+                  "contains": {
+                    "const": "api"
+                  },
+                  "items": {
+                    "enum": [
+                      "api",
+                      "cli",
+                      "web"
+                    ]
+                  }
+                },
+                "excluded_surfaces": {
+                  "type": "array",
+                  "uniqueItems": true,
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "surface",
+                      "reason"
+                    ],
+                    "properties": {
+                      "surface": {
+                        "enum": [
+                          "cli",
+                          "web"
+                        ]
+                      },
+                      "reason": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    }
+                  }
+                },
+                "surface_bindings": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "web": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "coverage_id"
+                      ],
+                      "properties": {
+                        "coverage_id": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      }
+                    },
+                    "cli": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "command"
+                      ],
+                      "properties": {
+                        "command": {
+                          "type": "array",
+                          "minItems": 2,
+                          "items": {
+                            "type": "string",
+                            "minLength": 1
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

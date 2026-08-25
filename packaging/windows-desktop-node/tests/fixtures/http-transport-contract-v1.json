@@ -1,0 +1,439 @@
+{
+  "schema_version": 1,
+  "contract_key": "http-transport-contract-v1",
+  "transport": "System.Net.HttpListener",
+  "authoritative_route_manifest": {
+    "source": "src/DesktopNode.Api/ApiHandlerAdapterContract.cs",
+    "factory": "DesktopNode.Api.ApiHandlerAdapterContract.CreateDefault",
+    "runtime_registry_source": "DesktopNodeApiRuntimeRoutes",
+    "route_count": 60,
+    "host_integration_scope": "representative-transport-cases-not-route-catalog-duplication",
+    "representative_route_keys": [
+      "GET /api/v1/runtime/policy",
+      "POST /api/v1/auth/login",
+      "GET /api/v1/auth/session",
+      "GET /api/v1/console/capabilities",
+      "POST /api/v1/vms/{vmId}/start",
+      "DELETE /api/v1/vms/{vmId}"
+    ]
+  },
+  "request_precedence": [
+    "web-port-api-rejection",
+    "loopback-static-get-bypass",
+    "web-port-non-static-rejection",
+    "api-options-before-novnc-and-general-auth",
+    "novnc-specific-auth",
+    "general-service-token-auth",
+    "static-get-after-general-auth",
+    "bounded-body-read",
+    "api-route-dispatch"
+  ],
+  "response_headers": {
+    "contract_headers": [
+      "Content-Type",
+      "Content-Length",
+      "Access-Control-Allow-Origin",
+      "Access-Control-Allow-Methods",
+      "Access-Control-Allow-Headers",
+      "Access-Control-Max-Age",
+      "Vary",
+      "Retry-After",
+      "X-PCV-Diagnostic-Bundle-Id"
+    ],
+    "transport_owned_non_contract_allowlist": [
+      "Connection",
+      "Date",
+      "Keep-Alive",
+      "Server",
+      "Transfer-Encoding",
+      "Upgrade",
+      "Sec-WebSocket-Accept"
+    ]
+  },
+  "path_projection": {
+    "raw_target_source": "HTTP/1.1 request-target",
+    "absolute_path_source": "HttpListenerRequest.Url.AbsolutePath",
+    "normalized_path_rule": "TrimEnd('/') with empty mapped to '/'",
+    "query_forwarding": "discarded-before-DesktopNodeApiRequestProcessor"
+  },
+  "raw_target_cases": [
+    {
+      "id": "canonical-origin-form",
+      "method": "GET",
+      "raw_target": "/api/v1/runtime/policy",
+      "raw_target_kind": "origin-form",
+      "absolute_path": "/api/v1/runtime/policy",
+      "normalized_path": "/api/v1/runtime/policy",
+      "request_id": "transport-canonical",
+      "expected_status": 200,
+      "expected_content_type": "application/json",
+      "expected_json_operation": "runtime.policy"
+    },
+    {
+      "id": "absolute-form",
+      "method": "GET",
+      "raw_target": "{{api_origin}}/api/v1/runtime/policy?probe=absolute",
+      "raw_target_kind": "absolute-form",
+      "absolute_path": "/api/v1/runtime/policy",
+      "normalized_path": "/api/v1/runtime/policy",
+      "request_id": "transport-absolute-form",
+      "expected_status": 200,
+      "expected_content_type": "application/json",
+      "expected_json_operation": "runtime.policy"
+    },
+    {
+      "id": "query-discarded-before-api-processor",
+      "method": "GET",
+      "raw_target": "/api/v1/runtime/policy?probe=1&second=two",
+      "raw_target_kind": "origin-form",
+      "absolute_path": "/api/v1/runtime/policy",
+      "normalized_path": "/api/v1/runtime/policy",
+      "request_id": "transport-query",
+      "expected_status": 200,
+      "expected_content_type": "application/json",
+      "expected_json_operation": "runtime.policy"
+    },
+    {
+      "id": "pagination-query-not-forwarded",
+      "method": "GET",
+      "raw_target": "/api/v1/jobs?limit=0&offset=invalid",
+      "raw_target_kind": "origin-form",
+      "absolute_path": "/api/v1/jobs",
+      "normalized_path": "/api/v1/jobs",
+      "request_id": "transport-pagination-query",
+      "expected_status": 200,
+      "expected_content_type": "application/json",
+      "expected_json_operation": "job.list"
+    },
+    {
+      "id": "trailing-slashes-trimmed",
+      "method": "GET",
+      "raw_target": "/api/v1/runtime/policy///",
+      "raw_target_kind": "origin-form",
+      "absolute_path": "/api/v1/runtime/policy///",
+      "normalized_path": "/api/v1/runtime/policy",
+      "request_id": "transport-trailing",
+      "expected_status": 200,
+      "expected_content_type": "application/json",
+      "expected_json_operation": "runtime.policy"
+    },
+    {
+      "id": "path-case-preserved",
+      "method": "GET",
+      "raw_target": "/API/V1/RUNTIME/POLICY",
+      "raw_target_kind": "origin-form",
+      "absolute_path": "/API/V1/RUNTIME/POLICY",
+      "normalized_path": "/API/V1/RUNTIME/POLICY",
+      "request_id": "transport-case",
+      "expected_status": 404,
+      "expected_content_type": "application/json",
+      "expected_error_code": "PCV_ROUTE_NOT_FOUND"
+    },
+    {
+      "id": "unreserved-percent-decoded-by-uri",
+      "method": "GET",
+      "raw_target": "/api/v1/%72untime/policy",
+      "raw_target_kind": "origin-form",
+      "absolute_path": "/api/v1/runtime/policy",
+      "normalized_path": "/api/v1/runtime/policy",
+      "request_id": "transport-percent-unreserved",
+      "expected_status": 200,
+      "expected_content_type": "application/json",
+      "expected_json_operation": "runtime.policy"
+    },
+    {
+      "id": "encoded-slash-preserved",
+      "method": "GET",
+      "raw_target": "/api/v1/runtime%2Fpolicy",
+      "raw_target_kind": "origin-form",
+      "absolute_path": "/api/v1/runtime%2Fpolicy",
+      "normalized_path": "/api/v1/runtime%2Fpolicy",
+      "request_id": "transport-percent-slash",
+      "expected_status": 404,
+      "expected_content_type": "application/json",
+      "expected_error_code": "PCV_ROUTE_NOT_FOUND"
+    },
+    {
+      "id": "unknown-route-exact-body",
+      "method": "GET",
+      "raw_target": "/api/v1/transport-missing?ignored=yes",
+      "raw_target_kind": "origin-form",
+      "absolute_path": "/api/v1/transport-missing",
+      "normalized_path": "/api/v1/transport-missing",
+      "request_id": "transport-unknown",
+      "expected_status": 404,
+      "expected_content_type": "application/json",
+      "expected_error_code": "PCV_ROUTE_NOT_FOUND",
+      "expected_body_exact": "{\"data\":null,\"error\":{\"code\":\"PCV_ROUTE_NOT_FOUND\",\"message\":\"No route matches \\u0027/api/v1/transport-missing\\u0027.\",\"detail\":\"The requested route is not part of the Desktop Node API contract.\",\"retryable\":false},\"ok\":false,\"operation\":\"api.route\",\"request_id\":\"transport-unknown\"}"
+    },
+    {
+      "id": "route-specific-method-not-allowed-exact-body",
+      "method": "POST",
+      "raw_target": "/api/v1/runtime/policy",
+      "raw_target_kind": "origin-form",
+      "absolute_path": "/api/v1/runtime/policy",
+      "normalized_path": "/api/v1/runtime/policy",
+      "request_id": "transport-post-policy",
+      "expected_status": 405,
+      "expected_content_type": "application/json",
+      "expected_error_code": "PCV_API_METHOD_NOT_ALLOWED",
+      "expected_body_exact": "{\"error\":{\"code\":\"PCV_API_METHOD_NOT_ALLOWED\",\"message\":\"Method is not allowed for this route.\"},\"ok\":false,\"request_id\":\"transport-post-policy\"}"
+    },
+    {
+      "id": "unsupported-method-exact-body",
+      "method": "PATCH",
+      "raw_target": "/api/v1/runtime/policy",
+      "raw_target_kind": "origin-form",
+      "absolute_path": "/api/v1/runtime/policy",
+      "normalized_path": "/api/v1/runtime/policy",
+      "request_id": "transport-patch-policy",
+      "expected_status": 405,
+      "expected_content_type": "application/json",
+      "expected_error_code": "PCV_METHOD_NOT_ALLOWED",
+      "expected_body_exact": "{\"data\":null,\"error\":{\"code\":\"PCV_METHOD_NOT_ALLOWED\",\"message\":\"HTTP method \\u0027PATCH\\u0027 is not allowed for this endpoint.\",\"detail\":\"Supported methods are GET, POST, and DELETE for VM/checkpoint delete jobs.\",\"retryable\":false},\"ok\":false,\"operation\":\"api.route\",\"request_id\":\"transport-patch-policy\"}"
+    }
+  ],
+  "static_cases": [
+    {
+      "id": "web-root-get-only",
+      "listener": "web",
+      "method": "GET",
+      "raw_target": "/?cache=ignored",
+      "expected_status": 200,
+      "expected_content_type": "text/html",
+      "expected_body_exact": "<html>transport fixture</html>"
+    },
+    {
+      "id": "pcv-config-case-and-query",
+      "listener": "web",
+      "method": "GET",
+      "raw_target": "/PCV-CONFIG.JS?cache=1",
+      "expected_status": 200,
+      "expected_content_type": "application/javascript",
+      "expected_body_exact": "window.PCV_DESKTOP_NODE_CONFIG = Object.freeze({\"apiBaseUrl\":\"{{api_origin}}\"});\n"
+    },
+    {
+      "id": "missing-static-exact-body",
+      "listener": "web",
+      "method": "GET",
+      "raw_target": "/missing.css?cache=1",
+      "expected_status": 404,
+      "expected_content_type": "application/json",
+      "expected_body_exact": "{\"ok\":false,\"error\":{\"code\":\"PCV_STATIC_FILE_NOT_FOUND\"}}"
+    },
+    {
+      "id": "static-is-get-only",
+      "listener": "web",
+      "method": "POST",
+      "raw_target": "/",
+      "expected_status": 404,
+      "expected_content_type": "application/json",
+      "expected_body_exact": "{\"ok\":false,\"error\":{\"code\":\"PCV_WEB_ROUTE_NOT_FOUND\",\"message\":\"The Web Console listener only serves static assets.\"}}"
+    },
+    {
+      "id": "api-route-rejected-on-web-port",
+      "listener": "web",
+      "method": "GET",
+      "raw_target": "/api/v1/runtime/policy",
+      "expected_status": 404,
+      "expected_content_type": "application/json",
+      "expected_body_exact": "{\"ok\":false,\"error\":{\"code\":\"PCV_API_ROUTE_ON_WEB_PORT\",\"message\":\"API routes are served by the Local API listener, not the Web Console listener.\"}}"
+    }
+  ],
+  "cors": {
+    "method": "OPTIONS",
+    "raw_target": "/api/v1/runtime/policy",
+    "request_origin": "{{web_origin}}",
+    "requested_method": "GET",
+    "requested_headers": "X-Fixture-Header, Authorization",
+    "expected_status": 204,
+    "expected_content_type": "text/plain",
+    "expected_body_exact": "",
+    "expected_headers": {
+      "Access-Control-Allow-Origin": "{{web_origin}}",
+      "Access-Control-Allow-Methods": "GET, POST, DELETE, OPTIONS",
+      "Access-Control-Allow-Headers": "X-Fixture-Header, Authorization",
+      "Access-Control-Max-Age": "600",
+      "Vary": "Origin"
+    },
+    "bypasses_service_token": true
+  },
+  "host_service_token_cases": [
+    {
+      "id": "missing-service-bearer",
+      "authorization": null,
+      "request_id": "transport-service-missing",
+      "expected_status": 401,
+      "expected_content_type": "application/json",
+      "expected_error_code": "PCV_AUTH_REQUIRED",
+      "expected_body_exact": "{\"ok\":false,\"operation\":\"api.auth\",\"error\":{\"code\":\"PCV_AUTH_REQUIRED\",\"message\":\"Authorization bearer token is required.\",\"retryable\":false}}"
+    },
+    {
+      "id": "wrong-service-bearer",
+      "authorization": "Bearer wrong-service-token",
+      "request_id": "transport-service-wrong",
+      "expected_status": 403,
+      "expected_content_type": "application/json",
+      "expected_error_code": "PCV_AUTH_FORBIDDEN",
+      "expected_body_exact": "{\"ok\":false,\"operation\":\"api.auth\",\"error\":{\"code\":\"PCV_AUTH_FORBIDDEN\",\"message\":\"Authorization bearer token was rejected.\",\"retryable\":false}}"
+    },
+    {
+      "id": "correct-service-bearer",
+      "authorization": "Bearer {{service_token}}",
+      "request_id": "transport-service-correct",
+      "expected_status": 200,
+      "expected_content_type": "application/json",
+      "expected_json_operation": "runtime.policy"
+    }
+  ],
+  "account_ready_cases": [
+    {
+      "id": "runtime-policy-bootstrap-missing-bearer",
+      "method": "GET",
+      "raw_target": "/api/v1/runtime/policy",
+      "authorization": null,
+      "body": null,
+      "request_id": "transport-account-policy-missing",
+      "expected_status": 200,
+      "expected_content_type": "application/json",
+      "expected_json_operation": "runtime.policy"
+    },
+    {
+      "id": "runtime-policy-bootstrap-wrong-service-bearer",
+      "method": "GET",
+      "raw_target": "/api/v1/runtime/policy",
+      "authorization": "Bearer wrong-service-token",
+      "body": null,
+      "request_id": "transport-account-policy-wrong",
+      "expected_status": 200,
+      "expected_content_type": "application/json",
+      "expected_json_operation": "runtime.policy"
+    },
+    {
+      "id": "login-bootstrap-missing-service-bearer",
+      "method": "POST",
+      "raw_target": "/api/v1/auth/login",
+      "authorization": null,
+      "body": "{\"username\":\"operator\",\"password\":\"operator-password\"}",
+      "request_id": "transport-account-login",
+      "expected_status": 200,
+      "expected_content_type": "application/json",
+      "expected_json_operation": "auth.login",
+      "captures_access_token": true
+    },
+    {
+      "id": "session-missing-account-bearer",
+      "method": "GET",
+      "raw_target": "/api/v1/auth/session",
+      "authorization": null,
+      "body": null,
+      "request_id": "transport-account-session-missing",
+      "expected_status": 401,
+      "expected_content_type": "application/json",
+      "expected_error_code": "PCV_AUTH_REQUIRED",
+      "expected_body_exact": "{\"data\":null,\"error\":{\"code\":\"PCV_AUTH_REQUIRED\",\"message\":\"Authorization bearer token is required.\",\"detail\":\"Login with account credentials or provide a valid service bearer token.\",\"retryable\":false},\"ok\":false,\"operation\":\"auth.session\",\"request_id\":\"transport-account-session-missing\"}"
+    },
+    {
+      "id": "session-account-bearer",
+      "method": "GET",
+      "raw_target": "/api/v1/auth/session",
+      "authorization": "Bearer {{account_access_token}}",
+      "body": null,
+      "request_id": "transport-account-session-valid",
+      "expected_status": 200,
+      "expected_content_type": "application/json",
+      "expected_json_operation": "auth.session"
+    }
+  ],
+  "body_cap": {
+    "max_request_body_bytes": 1024,
+    "oversized_body_bytes_minimum": 1025,
+    "too_large_body_template": "{\"code\":\"PCV_REQUEST_BODY_TOO_LARGE\",\"detail\":\"The listener rejected the request before reading the full body. Configured limit is 1024 bytes.\",\"max_request_body_bytes\":1024,\"message\":\"The API request body is larger than the configured listener limit.\",\"operation\":\"request.body\",\"recommended_action\":\"Send a smaller JSON body or restart the service with a larger --max-request-body-bytes value within the supported range.\",\"request_id\":\"{{request_id}}\",\"retryable\":false,\"status\":413,\"title\":\"Payload Too Large\",\"type\":\"about:blank\"}",
+    "cases": [
+      {
+        "id": "general-auth-before-known-length-cap",
+        "account_ready": false,
+        "raw_target": "/api/v1/vms",
+        "body_transfer": "known-length",
+        "authorization": null,
+        "request_id": "transport-cap-auth-first",
+        "expected_status": 401,
+        "expected_content_type": "application/json",
+        "expected_error_code": "PCV_AUTH_REQUIRED"
+      },
+      {
+        "id": "known-length-cap-after-service-auth",
+        "account_ready": false,
+        "body_transfer": "known-length",
+        "authorization": "Bearer {{service_token}}",
+        "request_id": "transport-cap-known",
+        "expected_status": 413,
+        "expected_content_type": "application/problem+json",
+        "expected_error_code": "PCV_REQUEST_BODY_TOO_LARGE"
+      },
+      {
+        "id": "unknown-length-bounded-read-after-service-auth",
+        "account_ready": false,
+        "body_transfer": "unknown-length",
+        "authorization": "Bearer {{service_token}}",
+        "request_id": "transport-cap-unknown",
+        "expected_status": 413,
+        "expected_content_type": "application/problem+json",
+        "expected_error_code": "PCV_REQUEST_BODY_TOO_LARGE"
+      },
+      {
+        "id": "account-bootstrap-before-known-length-cap",
+        "account_ready": true,
+        "body_transfer": "known-length",
+        "authorization": null,
+        "request_id": "transport-cap-account-bootstrap",
+        "expected_status": 413,
+        "expected_content_type": "application/problem+json",
+        "expected_error_code": "PCV_REQUEST_BODY_TOO_LARGE"
+      }
+    ]
+  },
+  "rate_limit": {
+    "request_limit_per_minute": 1,
+    "request_burst_limit": 0,
+    "retry_after_seconds": 7,
+    "request_id": "transport-rate-limit",
+    "expected_status": 429,
+    "expected_content_type": "application/problem+json",
+    "expected_retry_after": "7",
+    "expected_body_exact": "{\"code\":\"PCV_RATE_LIMIT_EXCEEDED\",\"detail\":\"The Local API request limit was exceeded for the current client identity.\",\"instance\":\"transport-rate-limit\",\"message\":\"The Local API request limit was exceeded for the current client identity.\",\"operation\":\"rate.limit\",\"recommended_action\":\"Wait for the Retry-After interval, then retry with a lower request rate.\",\"request_id\":\"transport-rate-limit\",\"retry_after_seconds\":7,\"retryable\":true,\"status\":429,\"title\":\"Too Many Requests\",\"type\":\"about:blank\"}"
+  },
+  "novnc": {
+    "websocket_path": "/api/v1/console/novnc/lab%20vm",
+    "decoded_vm_id": "lab vm",
+    "disabled": {
+      "expected_status": 404,
+      "expected_content_type": "application/json",
+      "expected_body_exact": "{\"ok\":false,\"operation\":\"console.novnc.bridge\",\"error\":{\"code\":\"PCV_NOVNC_BRIDGE_NOT_CONFIGURED\",\"message\":\"noVNC bridge is not configured for this listener.\",\"retryable\":false}}"
+    },
+    "configured_auth_cases": [
+      {
+        "id": "missing-novnc-bearer",
+        "authorization": null,
+        "expected_status": 401,
+        "expected_content_type": "application/json",
+        "expected_body_exact": "{\"ok\":false,\"operation\":\"api.auth\",\"error\":{\"code\":\"PCV_AUTH_REQUIRED\",\"message\":\"Authorization bearer token is required.\",\"retryable\":false}}"
+      },
+      {
+        "id": "wrong-novnc-bearer",
+        "authorization": "Bearer wrong-service-token",
+        "expected_status": 403,
+        "expected_content_type": "application/json",
+        "expected_body_exact": "{\"ok\":false,\"operation\":\"api.auth\",\"error\":{\"code\":\"PCV_AUTH_FORBIDDEN\",\"message\":\"Authorization bearer token was rejected.\",\"retryable\":false}}"
+      }
+    ],
+    "success": {
+      "authorization": "Bearer {{service_token}}",
+      "handshake_status": 101,
+      "payload_ascii": "RFB-FIXTURE",
+      "message_type": "binary",
+      "close_status": 1000,
+      "close_description": "bridge closed"
+    }
+  }
+}

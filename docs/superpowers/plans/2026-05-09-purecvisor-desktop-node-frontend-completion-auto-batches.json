@@ -1,0 +1,354 @@
+{
+  "schema_version": 1,
+  "plan_id": "purecvisor-desktop-node-frontend-completion-auto-batches-2026-05-09",
+  "scope": "windows-desktop-node-web-console-frontend-completion",
+  "execution_mode": "staged-agentic-batches",
+  "batch_count": 5,
+  "work_item_count": 25,
+  "host_mutation_performed": false,
+  "host_mutation_required": false,
+  "backend_runtime_required": "installed-local-api-read-and-job-contract-only",
+  "linux_runtime_excluded": true,
+  "single_ui_clone_required": true,
+  "global_boundaries": [
+    "Do not add Linux, KVM, libvirt, LXC, ZFS, OVS, OVN, or purecvisorsd runtime code.",
+    "Do not add username-password login, token refresh, websocket event flow, or external CDN assets.",
+    "Do not render authorization token values or protected token file contents.",
+    "Do not run MSI, service, Hyper-V, firewall, trust-store, LAN, Event Log, update, rollback, or reboot mutation from frontend batches.",
+    "Keep public trusted signing and external stable publication as excluded or not-claimed unless separate evidence exists."
+  ],
+  "final_verification_commands": [
+    "Invoke-Pester -Path web/tests/PcvDesktopWeb.Static.Tests.ps1 -Output Detailed",
+    "npm test --prefix web",
+    "npm run verify:parity --prefix web",
+    "node --check web/app.js",
+    "git diff --check"
+  ],
+  "batches": [
+    {
+      "batch_id": "frontend-completion-batch-01-shell-and-session",
+      "title": "Single UI shell contract and operator session controls",
+      "item_range": [1, 5],
+      "objective": "Lock the purecvisor-single visual/workbench contract into Desktop Node without importing non-Windows runtime routes.",
+      "write_scope": [
+        "web/DESIGN.md",
+        "web/index.html",
+        "web/styles.css",
+        "web/src/served-app.ts",
+        "web/src/served/state.ts",
+        "web/src/served/routes.ts",
+        "web/tests/PcvDesktopWeb.Static.Tests.ps1",
+        "web/scripts/verify-browser-fixture.mjs"
+      ],
+      "verification_commands": [
+        "Invoke-Pester -Path web/tests/PcvDesktopWeb.Static.Tests.ps1 -Output Detailed",
+        "npm run check:served --prefix web",
+        "node --check web/app.js"
+      ],
+      "work_items": [
+        {
+          "id": 1,
+          "title": "Create the purecvisor-single to Desktop Node UI mapping table",
+          "automatable": true,
+          "target_files": ["web/DESIGN.md", "docs/superpowers/plans/2026-05-09-purecvisor-desktop-node-frontend-completion-auto-batches.md"],
+          "acceptance": ["Mapping covers shell, menu, rail, asset explorer, tabbar, dashboard, status bar, and excludes Linux runtime surfaces."],
+          "verification": ["Pester static guard confirms design contract mentions Windows Desktop Node and does not import Single Edge runtime routes."]
+        },
+        {
+          "id": 2,
+          "title": "Reorder Web Console routes under the Single UI shell",
+          "automatable": true,
+          "target_files": ["web/index.html", "web/src/served/routes.ts", "web/src/served-app.ts", "web/app.js"],
+          "acceptance": ["Dashboard, VM Workbench, Network, Jobs, Activity, Evidence, Troubleshooting, and Monitoring are reachable from the shell and preserve Desktop Node route names."],
+          "verification": ["Browser fixture activates each data-view-link without route mismatch."]
+        },
+        {
+          "id": 3,
+          "title": "Complete the left asset explorer for Windows VM assets",
+          "automatable": true,
+          "target_files": ["web/index.html", "web/styles.css", "web/src/served-app.ts", "web/src/served/state.ts", "web/app.js"],
+          "acceptance": ["VM asset rows support search, status, selected state, and empty state; container tab remains disabled or absent."],
+          "verification": ["Static guard matches vm-asset-list, vm-filter, asset-status, and no container runtime route strings."]
+        },
+        {
+          "id": 4,
+          "title": "Wire the top menu bar commands",
+          "automatable": true,
+          "target_files": ["web/index.html", "web/src/served-app.ts", "web/src/served/state.ts", "web/app.js"],
+          "acceptance": ["Refresh, open dashboard, open VM workbench, open network, open evidence, open troubleshooting, and clear browser state commands call existing frontend handlers."],
+          "verification": ["Browser fixture clicks menu command markers and observes active view or refresh state."]
+        },
+        {
+          "id": 5,
+          "title": "Bind operator session, organization, language, and Live viewer UI",
+          "automatable": true,
+          "target_files": ["web/index.html", "web/styles.css", "web/src/served-app.ts", "web/app.js"],
+          "acceptance": ["Session label, organization selector, Korean language indicator, Live viewer state, token state, and logout boundary render as Desktop Node local console state."],
+          "verification": ["Pester guard confirms shell controls exist and no password-login or token-refresh route is introduced."]
+        }
+      ]
+    },
+    {
+      "batch_id": "frontend-completion-batch-02-vm-workbench",
+      "title": "Dashboard, VM detail, lifecycle, and checkpoint workbench",
+      "item_range": [6, 10],
+      "objective": "Finish the VM operator loop from summary to lifecycle jobs while keeping mutations behind installed Local API calls only.",
+      "write_scope": [
+        "web/index.html",
+        "web/styles.css",
+        "web/src/served-app.ts",
+        "web/src/served/api-client.ts",
+        "web/src/served/errors.ts",
+        "web/src/served/state.ts",
+        "web/src/served/types.ts",
+        "web/tests/PcvDesktopWeb.Static.Tests.ps1",
+        "web/scripts/verify-browser-fixture.mjs"
+      ],
+      "verification_commands": [
+        "Invoke-Pester -Path web/tests/PcvDesktopWeb.Static.Tests.ps1 -Output Detailed",
+        "npm test --prefix web",
+        "npm run browser:fixture --prefix web"
+      ],
+      "work_items": [
+        {
+          "id": 6,
+          "title": "Bind dashboard summary cards to real API state",
+          "automatable": true,
+          "target_files": ["web/src/served-app.ts", "web/src/served/api-client.ts", "web/src/served/types.ts", "web/app.js"],
+          "acceptance": ["Host readiness, service status, VM count, active jobs, recent warnings, and batch evidence status derive from loaded API payloads or explicit degraded state."],
+          "verification": ["Browser fixture covers available, degraded, and API failure dashboard states."]
+        },
+        {
+          "id": 7,
+          "title": "Finish VM list filtering, sorting, search, and selection",
+          "automatable": true,
+          "target_files": ["web/index.html", "web/src/served-app.ts", "web/src/served/state.ts", "web/styles.css", "web/app.js"],
+          "acceptance": ["VM list supports text filter, state filter, stable sort, selected row sync with asset explorer, and clear empty result copy."],
+          "verification": ["Browser fixture filters VM rows and verifies selected VM detail remains coherent."]
+        },
+        {
+          "id": 8,
+          "title": "Expand VM detail for status, CPU, memory, storage, network, and checkpoints",
+          "automatable": true,
+          "target_files": ["web/src/served-app.ts", "web/src/served/types.ts", "web/styles.css", "web/app.js"],
+          "acceptance": ["VM detail panel renders state, generation, CPU, memory, storage, network switch, console availability, managed marker, and checkpoint count."],
+          "verification": ["Static and browser fixture checks cover populated, missing, and native structured failure states."]
+        },
+        {
+          "id": 9,
+          "title": "Complete VM lifecycle action UX",
+          "automatable": true,
+          "target_files": ["web/src/served-app.ts", "web/src/served/api-client.ts", "web/src/served/errors.ts", "web/styles.css", "web/app.js"],
+          "acceptance": ["Create, start, shutdown, poweroff, restart, and delete actions show confirmation where destructive, scoped pending state, job tracking, disabled state, and structured failure recovery."],
+          "verification": ["Browser fixture validates pending buttons, PCV_VM_DELETE_RUNNING_BLOCKED, PCV_VM_NOT_MANAGED_BY_PURECVISOR, and tracked job insertion."]
+        },
+        {
+          "id": 10,
+          "title": "Complete checkpoint create, restore, and delete UX",
+          "automatable": true,
+          "target_files": ["web/src/served-app.ts", "web/src/served/api-client.ts", "web/src/served/errors.ts", "web/styles.css", "web/app.js"],
+          "acceptance": ["Checkpoint actions use existing API registry, scoped checkpoint pending state, confirmation for restore/delete, job tracking, and clear failure rows."],
+          "verification": ["Browser fixture covers checkpoint list loaded, create queued, restore queued, delete queued, and failure problem details rendering."]
+        }
+      ]
+    },
+    {
+      "batch_id": "frontend-completion-batch-03-activity-network-troubleshooting",
+      "title": "Activity, network inventory, diagnostic bundle, and token handoff",
+      "item_range": [11, 15],
+      "objective": "Finish operational read and recovery surfaces without browser-side host mutation.",
+      "write_scope": [
+        "web/index.html",
+        "web/styles.css",
+        "web/src/served-app.ts",
+        "web/src/served/api-client.ts",
+        "web/src/served/errors.ts",
+        "web/src/served/state.ts",
+        "web/src/served/types.ts",
+        "web/tests/PcvDesktopWeb.Static.Tests.ps1",
+        "web/scripts/verify-browser-fixture.mjs"
+      ],
+      "verification_commands": [
+        "Invoke-Pester -Path web/tests/PcvDesktopWeb.Static.Tests.ps1 -Output Detailed",
+        "npm test --prefix web",
+        "npm run verify:parity --prefix web"
+      ],
+      "work_items": [
+        {
+          "id": 11,
+          "title": "Finish job queue and activity pagination",
+          "automatable": true,
+          "target_files": ["web/src/served-app.ts", "web/src/served/api-client.ts", "web/src/served/state.ts", "web/app.js"],
+          "acceptance": ["Jobs support first page, next page, retention summary, retry, cancel, stale polling guard, and no duplicate tracked rows."],
+          "verification": ["Browser fixture covers next_offset, cancel, retry, and stale refresh suppression."]
+        },
+        {
+          "id": 12,
+          "title": "Unify pending action, optimistic state, disabled state, and recovery",
+          "automatable": true,
+          "target_files": ["web/src/served-app.ts", "web/src/served/state.ts", "web/src/served/errors.ts", "web/styles.css", "web/app.js"],
+          "acceptance": ["All VM, checkpoint, job, refresh, and diagnostic actions use stable pending keys and recover on success, failure, abort, and stale response."],
+          "verification": ["Browser fixture asserts no button remains disabled after rejected API calls."]
+        },
+        {
+          "id": 13,
+          "title": "Rebuild network inventory in Single UI style",
+          "automatable": true,
+          "target_files": ["web/index.html", "web/styles.css", "web/src/served-app.ts", "web/src/served/types.ts", "web/app.js"],
+          "acceptance": ["Network inventory displays switch type, default flag, management OS flag, external adapter description, source, and read-only boundary."],
+          "verification": ["Pester guard confirms network inventory route and no switch, IP, firewall, or network mutation command strings."]
+        },
+        {
+          "id": 14,
+          "title": "Complete diagnostic bundle create and download UI",
+          "automatable": true,
+          "target_files": ["web/src/served-app.ts", "web/src/served/api-client.ts", "web/src/served/types.ts", "web/src/served/errors.ts", "web/app.js"],
+          "acceptance": ["Diagnostic bundle panel calls POST create and authenticated GET download through API client, shows bundle id, redaction boundary, retention status, and error contract."],
+          "verification": ["Browser fixture covers create 201, download 200, authorization-required failure, and redacted token boundary."]
+        },
+        {
+          "id": 15,
+          "title": "Finish token rotation and browser token clear UX",
+          "automatable": true,
+          "target_files": ["web/index.html", "web/src/served-app.ts", "web/src/served/state.ts", "web/styles.css", "web/app.js"],
+          "acceptance": ["Panel distinguishes browser token clear from service protected-token mutation, renders storage path boundary, and updates connection state after clear."],
+          "verification": ["Pester guard confirms no service token mutation command text and no authorization credential literal."]
+        }
+      ]
+    },
+    {
+      "batch_id": "frontend-completion-batch-04-error-service-evidence-tests",
+      "title": "Error contracts, service health, evidence dashboard, fixtures, and service-layer tests",
+      "item_range": [16, 20],
+      "objective": "Make frontend service logic robust against backend problem details, partial failures, and evidence degradation.",
+      "write_scope": [
+        "web/index.html",
+        "web/styles.css",
+        "web/src/served-app.ts",
+        "web/src/served/api-client.ts",
+        "web/src/served/errors.ts",
+        "web/src/served/routes.ts",
+        "web/src/served/state.ts",
+        "web/src/served/types.ts",
+        "web/src/user-visible-fixtures.ts",
+        "web/tests/PcvDesktopWeb.Static.Tests.ps1",
+        "web/scripts/verify-browser-fixture.mjs"
+      ],
+      "verification_commands": [
+        "Invoke-Pester -Path web/tests/PcvDesktopWeb.Static.Tests.ps1 -Output Detailed",
+        "npm test --prefix web",
+        "npm run browser:fixture --prefix web"
+      ],
+      "work_items": [
+        {
+          "id": 16,
+          "title": "Integrate timeout, rate-limit, and problem-details error display",
+          "automatable": true,
+          "target_files": ["web/src/served/errors.ts", "web/src/served-app.ts", "web/styles.css", "web/app.js"],
+          "acceptance": ["PCV_RATE_LIMIT_EXCEEDED, PCV_ROUTE_TIMEOUT, Retry-After, request_id, route_timeout_seconds, and nested details render as readable operator rows."],
+          "verification": ["Browser fixture covers 429 and 504 problem-details JSON without displaying [object Object]."]
+        },
+        {
+          "id": 17,
+          "title": "Finish service health, listener, and runtime policy status panels",
+          "automatable": true,
+          "target_files": ["web/src/served-app.ts", "web/src/served/types.ts", "web/styles.css", "web/app.js"],
+          "acceptance": ["Panels show service running, Local API listener scope, runtime policy, token policy, LAN exposure, timeout, rate limit, and request burst settings."],
+          "verification": ["Browser fixture covers runtime policy available, missing, and degraded states."]
+        },
+        {
+          "id": 18,
+          "title": "Complete batch evidence dashboard",
+          "automatable": true,
+          "target_files": ["web/src/served-app.ts", "web/src/served/types.ts", "web/src/user-visible-fixtures.ts", "web/styles.css", "web/app.js"],
+          "acceptance": ["Evidence view displays latest batch id, route/MSI/Hyper-V status, OS mutation status, GPU snapshots, artifact paths, pass/fail/degraded/missing states, and public-boundary labels."],
+          "verification": ["Browser fixture covers available, missing, unavailable, degraded, malformed, and sanitized evidence states."]
+        },
+        {
+          "id": 19,
+          "title": "Normalize mock fixture and installed listener API switch behavior",
+          "automatable": true,
+          "target_files": ["web/src/user-visible-fixtures.ts", "web/scripts/verify-browser-fixture.mjs", "web/src/served/api-client.ts", "web/app.js"],
+          "acceptance": ["Fixture mode and installed listener mode share route registry, token handling, error normalization, and no direct mutation command strings."],
+          "verification": ["npm run verify:parity --prefix web passes and fixture route coverage matches DESKTOP_NODE_API_ROUTES."]
+        },
+        {
+          "id": 20,
+          "title": "Add frontend service layer tests for API client, refresh lifecycle, and error mapping",
+          "automatable": true,
+          "target_files": ["web/tests/PcvDesktopWeb.Static.Tests.ps1", "web/scripts/verify-browser-fixture.mjs", "web/src/served/*.ts"],
+          "acceptance": ["Tests cover route registry, abort/stale refresh, partial refresh degradation, error detail formatting, rate-limit, timeout, and redaction boundary."],
+          "verification": ["Invoke-Pester and npm test both fail before missing behavior and pass after implementation."]
+        }
+      ]
+    },
+    {
+      "batch_id": "frontend-completion-batch-05-parity-visual-a11y-evidence",
+      "title": "Browser parity, visual polish, responsive/a11y pass, and final evidence",
+      "item_range": [21, 25],
+      "objective": "Close the frontend completion loop with browser fixture coverage, CSS polish, responsive behavior, accessibility, and evidence publication.",
+      "write_scope": [
+        "web/index.html",
+        "web/styles.css",
+        "web/src/served-app.ts",
+        "web/scripts/verify-browser-fixture.mjs",
+        "web/scripts/verify-static-parity.mjs",
+        "web/generated/parity/static-asset-parity.manifest.json",
+        "web/mockups/frontend-completion-samples.html",
+        "web/tests/PcvDesktopWeb.Static.Tests.ps1",
+        "docs/ga-ready/evidence/web-console-frontend-completion-2026-05-09.md",
+        "docs/ga-ready/evidence/ga-ready-evidence-ledger-2026-05-04.md",
+        "docs/DEVELOPER_INDEX.md"
+      ],
+      "verification_commands": [
+        "Invoke-Pester -Path web/tests/PcvDesktopWeb.Static.Tests.ps1 -Output Detailed",
+        "npm test --prefix web",
+        "npm run verify:parity --prefix web",
+        "node --check web/app.js",
+        "git diff --check"
+      ],
+      "work_items": [
+        {
+          "id": 21,
+          "title": "Broaden browser fixture and parity tests",
+          "automatable": true,
+          "target_files": ["web/scripts/verify-browser-fixture.mjs", "web/scripts/verify-static-parity.mjs", "web/generated/parity/static-asset-parity.manifest.json"],
+          "acceptance": ["Browser fixture covers all active views, shell commands, VM action pending states, network, evidence, diagnostics, token, rate-limit, and timeout states."],
+          "verification": ["npm run verify:parity --prefix web passes with expanded fixture assertions."]
+        },
+        {
+          "id": 22,
+          "title": "Complete CSS and visual polish",
+          "automatable": true,
+          "target_files": ["web/styles.css", "web/mockups/frontend-completion-samples.html"],
+          "acceptance": ["Spacing, typography, dark surfaces, teal accent, scrollbars, focus, hover, disabled, loading, destructive, warning, success, and table states match the Single UI clone contract."],
+          "verification": ["Pester static guard confirms tokens, component classes, and no one-hue or decorative hero imports."]
+        },
+        {
+          "id": 23,
+          "title": "Finish responsive layout for ultrawide, desktop, tablet, and narrow viewports",
+          "automatable": true,
+          "target_files": ["web/styles.css", "web/scripts/verify-browser-fixture.mjs", "web/mockups/frontend-completion-samples.html"],
+          "acceptance": ["No incoherent overlap at 344px, 480px, 768px, 1024px, 1440px, and ultrawide; tables scroll or collapse predictably; button text fits."],
+          "verification": ["Browser fixture viewport checks and static CSS guard confirm responsive breakpoints."]
+        },
+        {
+          "id": 24,
+          "title": "Complete accessibility pass",
+          "automatable": true,
+          "target_files": ["web/index.html", "web/styles.css", "web/src/served-app.ts", "web/app.js"],
+          "acceptance": ["Interactive controls have labels or aria-labels, focus ring remains visible, active view uses aria-current, dialogs preserve keyboard affordances, and status updates expose text equivalents."],
+          "verification": ["Pester guard scans required aria labels and browser fixture checks keyboard navigation for primary view links/actions."]
+        },
+        {
+          "id": 25,
+          "title": "Publish final static asset, parity, smoke, and evidence closure",
+          "automatable": true,
+          "target_files": ["web/app.js", "web/generated/parity/static-asset-parity.manifest.json", "docs/ga-ready/evidence/web-console-frontend-completion-2026-05-09.md", "docs/ga-ready/evidence/ga-ready-evidence-ledger-2026-05-04.md", "docs/DEVELOPER_INDEX.md"],
+          "acceptance": ["Final docs list implementation scope, excluded host mutation, verification commands, screenshot or fixture paths, and public-boundary non-claims."],
+          "verification": ["All final_verification_commands pass and evidence document states frontend-only, no host mutation, no public trusted signing, no external stable publication."]
+        }
+      ]
+    }
+  ]
+}

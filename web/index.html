@@ -1,0 +1,380 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PureCVisor Desktop Node</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230f172a'/%3E%3Cpath d='M8 10h16v4H8zM8 18h16v4H8z' fill='%23f8fafc'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div id="app-root" class="shell supanova-console single-clone-shell" data-ui-port="single-edge-visual-shell">
+    <nav class="menu-bar" aria-label="Application menu">
+      <button type="button" data-menu-command="dashboard">파일</button>
+      <button type="button" data-menu-command="refresh">편집</button>
+      <button type="button" data-menu-command="vms">보기</button>
+      <button type="button" data-menu-command="network">이동</button>
+      <button type="button" data-menu-command="open-create-vm">실행</button>
+      <button type="button" data-menu-command="activity">관제</button>
+      <button type="button" data-menu-command="troubleshooting">계정</button>
+      <button type="button" data-menu-command="evidence">도움말</button>
+    </nav>
+
+    <header class="topbar glass-topbar workspace-header">
+      <div class="console-brand">
+        <span class="brand-mark" aria-hidden="true">PCV</span>
+        <div>
+          <p class="eyebrow">운영 콘솔</p>
+          <h1>PureCVisor Desktop Node</h1>
+          <p class="brand-subtitle">단일 Windows 호스트 상태를 한 화면에서 관리합니다.</p>
+        </div>
+      </div>
+      <div class="header-actions" aria-label="Primary console actions">
+        <button type="button" data-menu-command="evidence">스냅샷</button>
+        <button type="button" data-menu-command="troubleshooting">설정</button>
+      </div>
+      <form id="connection-form" class="connection-form control-strip">
+        <label class="session-control">
+          Theme
+          <select id="theme-select" aria-label="theme preview">
+            <option value="supanova">SUPANOVA (Teal)</option>
+            <option value="contrast">SUPANOVA Contrast</option>
+          </select>
+        </label>
+        <label class="session-control">
+          Lang
+          <select id="language-select" aria-label="language preview">
+            <option value="ko">한국어</option>
+            <option value="en">English</option>
+          </select>
+        </label>
+        <label class="session-control global-search-control">
+          Search
+          <input id="global-search-input" type="search" autocomplete="off" placeholder="views, assets, jobs">
+        </label>
+        <button id="open-command-palette" type="button" data-command-palette="open">Command</button>
+        <span id="live-viewer-state" class="live-viewer-state" aria-label="Live viewer state">
+          <span aria-hidden="true"></span>Live viewer
+        </span>
+        <label>
+          API
+          <input id="api-base-url" name="apiBaseUrl" type="url" autocomplete="off">
+        </label>
+        <label>
+          Token
+          <input id="api-token" name="apiToken" type="password" autocomplete="off" aria-label="optional API token">
+        </label>
+        <button type="submit">Save</button>
+        <button id="clear-token" type="button">Clear</button>
+        <button id="refresh-all" type="button">Refresh</button>
+        <button id="logout-boundary" type="button" data-menu-command="clear-browser-state">로그아웃</button>
+      </form>
+      <div id="connection-state" class="connection-state state-idle">Idle</div>
+    </header>
+
+    <aside class="activity-rail" aria-label="Console rail">
+      <button type="button" aria-label="Assets" data-view-link="vms">▣</button>
+      <button type="button" aria-label="Evidence" data-view-link="evidence">◇</button>
+      <button type="button" aria-label="Network" data-view-link="network">◎</button>
+      <button type="button" aria-label="Search" data-view-link="activity">⌕</button>
+      <span class="rail-spacer"></span>
+      <button type="button" aria-label="Notifications" data-view-link="activity">!</button>
+      <button type="button" aria-label="Settings" data-view-link="troubleshooting">*</button>
+    </aside>
+
+    <aside class="sidebar nav-rail asset-explorer">
+      <div class="asset-tabs" role="tablist" aria-label="Desktop Node asset scope">
+        <button class="asset-tab active" type="button" role="tab" aria-selected="true">VM 자산</button>
+        <button class="asset-tab" type="button" role="tab">네트워크</button>
+        <button class="asset-tab" type="button" role="tab">운영</button>
+      </div>
+      <div class="asset-panel-title">
+        <strong>VM 자산</strong>
+        <span id="asset-count">—</span>
+      </div>
+      <label class="asset-search">
+        <span class="sr-only">이름으로 찾기</span>
+        <input id="asset-search-input" type="search" placeholder="이름으로 찾기" autocomplete="off">
+      </label>
+      <div class="asset-columns" aria-hidden="true">
+        <span></span>
+        <span></span>
+        <span></span>
+        <span>이름</span>
+        <span>CPU</span>
+        <span>MEM</span>
+        <span>상태</span>
+      </div>
+      <div id="vm-asset-list" class="asset-list" aria-label="Pinned desktop node assets">
+        <p class="muted">VM 자산을 불러오는 중…</p>
+      </div>
+      <nav class="workspace-links" aria-label="Desktop Node views">
+        <a href="#dashboard" data-view-link="dashboard">Dashboard</a>
+        <a href="#vms" data-view-link="vms">Virtual Machines</a>
+        <a href="#network" data-view-link="network">Network</a>
+        <a href="#jobs" data-view-link="jobs">Jobs</a>
+        <a href="#activity" data-view-link="activity">Activity</a>
+        <a href="#evidence" data-view-link="evidence">Evidence</a>
+        <a href="#troubleshooting" data-view-link="troubleshooting">Troubleshooting</a>
+      </nav>
+      <div id="asset-status" class="asset-status"></div>
+    </aside>
+
+    <div id="workspace-tabbar" class="workspace-tabbar" role="tablist" aria-label="Open views">
+      <span class="workspace-tab active" role="tab" aria-selected="true">Dashboard <button type="button" aria-label="Close dashboard tab">x</button></span>
+    </div>
+
+    <main class="main">
+      <section id="alert-region" class="alert-region" aria-live="polite"></section>
+      <section id="dashboard" class="section app-view" data-view="dashboard">
+        <div id="view-dashboard">
+        <div class="dashboard-hero">
+          <section class="hero-panel">
+            <p class="eyebrow">Desktop Node</p>
+            <h2>운영 대시보드</h2>
+            <p>호스트 상태, VM 자산, 작업 경고를 한 화면에서 확인합니다.</p>
+            <div class="hero-chips">
+              <span>활성 워크로드 <strong id="hero-workload">—</strong></span>
+              <span>호스트 상태 <strong id="hero-host-mode">—</strong></span>
+              <span>최근 경고 <strong id="hero-alerts">—</strong></span>
+            </div>
+          </section>
+          <aside class="operator-memo">
+            <p class="eyebrow">운영 메모</p>
+            <dl>
+              <div><dt>현재 역할</dt><dd>단독 운영</dd></div>
+              <div><dt>웹소켓</dt><dd>미사용</dd></div>
+              <div><dt>운영 우선순위</dt><dd>자원 추이 점검</dd></div>
+            </dl>
+          </aside>
+        </div>
+        <div class="dashboard-pills" aria-label="Displayed dashboard items">
+          <span>운영 요약</span>
+          <span>빠른 작업</span>
+          <span>자원 추이</span>
+          <span>최근 경고</span>
+          <span>워크로드 표</span>
+        </div>
+        <div class="quick-action-grid" aria-label="Quick actions">
+          <a href="#vms" data-shell-action="open-create-vm"><span class="qa-icon">▣</span><span>새 VM</span></a>
+          <a href="#jobs" data-view-link="jobs"><span class="qa-icon">☷</span><span>작업 큐</span></a>
+          <a href="#network" data-view-link="network"><span class="qa-icon">◎</span><span>네트워크</span></a>
+          <a href="#activity" data-view-link="activity"><span class="qa-icon">⌁</span><span>운영 개요</span></a>
+          <a href="#dashboard" data-view-link="dashboard"><span class="qa-icon">▤</span><span>호스트 상태</span></a>
+          <a href="#troubleshooting" data-view-link="troubleshooting"><span class="qa-icon">▥</span><span>서비스 가이드</span></a>
+        </div>
+        <div class="section-header">
+          <div>
+            <p class="eyebrow">Dashboard</p>
+            <h2>Ops Cockpit</h2>
+          </div>
+          <button id="open-create-vm" type="button">Create VM</button>
+        </div>
+        <div id="ops-summary-panel" class="ops-summary-panel"></div>
+        <div id="priority-panel" class="priority-panel"></div>
+        <div id="dashboard-activity-panel" class="dashboard-activity-panel"></div>
+        <div id="metric-grid" class="metric-grid"></div>
+        <div id="host-details" class="details-grid"></div>
+        <section id="monitoring" class="monitoring-section">
+          <div class="section-header">
+            <div>
+              <p class="eyebrow">Signals</p>
+              <h2>Monitoring</h2>
+            </div>
+          </div>
+          <div id="monitoring-panel" class="monitoring-panel"></div>
+        </section>
+        </div>
+      </section>
+
+      <section id="vms" class="section app-view" data-view="vms">
+        <div id="view-vms">
+        <div class="section-header">
+          <div>
+            <p class="eyebrow">Inventory</p>
+            <h2>VM Workbench</h2>
+          </div>
+          <label class="filter-control">
+            Filter
+            <input id="vm-filter" type="search" autocomplete="off" placeholder="Name, state, note">
+          </label>
+          <label class="filter-control">
+            State
+            <select id="vm-state-filter" aria-label="VM state filter">
+              <option value="all">All</option>
+              <option value="running">Running</option>
+              <option value="off">Off</option>
+              <option value="failed">Failed</option>
+            </select>
+          </label>
+          <label class="filter-control">
+            Sort
+            <select id="vm-sort" aria-label="VM sort">
+              <option value="name">Name</option>
+              <option value="state">State</option>
+              <option value="updated">Updated</option>
+            </select>
+          </label>
+        </div>
+        <div id="vm-workbench-context" class="vm-workbench-context"></div>
+        <div class="vm-workspace">
+          <div id="vm-table" class="table-wrap"></div>
+          <aside id="vm-detail-panel" class="vm-detail-panel" aria-live="polite">
+            <div class="section-header">
+              <div>
+                <p class="eyebrow">Selected VM</p>
+                <h2 id="vm-detail-title">No VM selected</h2>
+              </div>
+              <button id="close-vm-detail" type="button">Close</button>
+            </div>
+            <div id="vm-detail-content">
+              <p class="muted">Select a VM row to inspect lifecycle controls and inventory details.</p>
+            </div>
+          </aside>
+        </div>
+        </div>
+      </section>
+
+      <section id="network" class="section app-view" data-view="network">
+        <div id="view-network">
+        <div class="section-header">
+          <div>
+            <p class="eyebrow">Inventory</p>
+            <h2>Network Inventory</h2>
+          </div>
+          <label class="filter-control">
+            Filter
+            <input id="network-filter" type="search" autocomplete="off" placeholder="Switch, type, adapter">
+          </label>
+        </div>
+        <div id="network-inventory-panel" class="network-inventory-panel"></div>
+        </div>
+      </section>
+
+      <section id="jobs" class="section app-view" data-view="jobs">
+        <div class="section-header">
+          <div>
+            <p class="eyebrow">Session</p>
+            <h2>Tracked Jobs</h2>
+          </div>
+          <label class="filter-control">
+            Filter
+            <input id="job-filter" type="search" autocomplete="off" placeholder="Job id, operation, error">
+          </label>
+          <label class="filter-control">
+            Status
+            <select id="job-status-filter" aria-label="Job status filter">
+              <option value="all">All</option>
+              <option value="queued">Queued</option>
+              <option value="running">Running</option>
+              <option value="failed">Failed</option>
+              <option value="succeeded">Succeeded</option>
+              <option value="canceled">Canceled</option>
+            </select>
+          </label>
+          <label class="filter-control">
+            Sort
+            <select id="job-sort" aria-label="Job sort">
+              <option value="updated:desc">Updated</option>
+              <option value="status:asc">Status</option>
+              <option value="operation:asc">Operation</option>
+              <option value="source:asc">Source</option>
+            </select>
+          </label>
+          <button id="clear-job-history" type="button">Clear history</button>
+        </div>
+        <div id="jobs-panel" class="jobs-panel"></div>
+      </section>
+
+      <section id="activity" class="section app-view" data-view="activity">
+        <div class="section-header">
+          <div>
+            <p class="eyebrow">Operations</p>
+            <h2>Operator Activity</h2>
+          </div>
+        </div>
+        <div id="event-center-panel" class="event-center-panel"></div>
+        <div id="activity-panel" class="activity-panel"></div>
+      </section>
+
+      <section id="evidence" class="section app-view" data-view="evidence">
+        <div id="view-evidence">
+        <div class="section-header">
+          <div>
+            <p class="eyebrow">Batch Evidence</p>
+            <h2>Supervisor Evidence</h2>
+          </div>
+        </div>
+        <div id="evidence-panel" class="evidence-panel"></div>
+        </div>
+      </section>
+
+      <section id="troubleshooting" class="section app-view" data-view="troubleshooting">
+        <div id="view-troubleshooting">
+        <div class="section-header">
+          <div>
+            <p class="eyebrow">Support</p>
+            <h2>Incident Command</h2>
+          </div>
+        </div>
+        <div id="incident-panel" class="incident-panel"></div>
+        <div id="account-session-panel" class="account-session-panel">
+          <form id="account-login-form" class="account-login-form" autocomplete="off">
+            <label>Username<input id="account-username" name="username" type="text" autocomplete="username"></label>
+            <label>Password<input id="account-password" name="password" type="password" autocomplete="current-password"></label>
+            <button type="submit">Login</button>
+          </form>
+        </div>
+        <div id="account-console-panel" class="account-console-panel"></div>
+        <div id="token-rotation-panel" class="token-rotation-panel"></div>
+        <div id="diagnostics-panel" class="diagnostics-panel"></div>
+        <div id="beta-followup-panel" class="beta-followup-panel"></div>
+        <div id="troubleshooting-panel" class="troubleshooting-panel"></div>
+        </div>
+      </section>
+    </main>
+    <footer class="status-bar">
+      <span id="status-connection">Not connected</span>
+      <span id="status-host">—</span>
+      <span id="status-updated">Updated —</span>
+      <span class="status-live" id="status-vm-count">VM: —</span>
+      <span id="status-view">dashboard</span>
+    </footer>
+  </div>
+
+  <div id="command-palette" class="command-palette" hidden role="dialog" aria-modal="false" aria-label="Command palette">
+    <div class="command-palette-panel">
+      <label>
+        <span class="sr-only">Command search</span>
+        <input id="command-palette-input" type="search" autocomplete="off" placeholder="Search views, assets, jobs, diagnostics">
+      </label>
+      <div id="command-palette-results" class="command-palette-results"></div>
+    </div>
+  </div>
+
+  <dialog id="create-vm-dialog">
+    <form id="create-vm-form" method="dialog" class="create-form">
+      <div class="section-header">
+        <div>
+          <p class="eyebrow">Provisioning</p>
+          <h2>Create VM</h2>
+        </div>
+        <button id="close-create-vm" type="button">Close</button>
+      </div>
+      <label>Name<input name="name" required value="internal-lab-01"></label>
+      <label>ISO path<input name="iso_path" required value="D:\iso\installer.iso"></label>
+      <label>VM root<input name="vm_root" required value="D:\PureCVisor\VMs"></label>
+      <div class="form-grid">
+        <label>CPU<input name="cpu" type="number" min="1" value="2"></label>
+        <label>Memory MB<input name="memory_mb" type="number" min="512" value="4096"></label>
+        <label>Disk GB<input name="disk_gb" type="number" min="1" value="40"></label>
+        <label>Generation<input name="generation" type="number" min="1" max="2" value="2"></label>
+      </div>
+      <button type="submit">Queue Create Job</button>
+    </form>
+  </dialog>
+
+  <script src="/pcv-config.js"></script>
+  <script src="/app.js" defer></script>
+</body>
+</html>

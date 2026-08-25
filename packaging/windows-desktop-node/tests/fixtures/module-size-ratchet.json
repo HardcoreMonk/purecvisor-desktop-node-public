@@ -1,0 +1,87 @@
+{
+  "contract": "pcv-module-size-ratchet-v1",
+  "purpose": "2026-07-13과 2026-08-05 감사가 연속으로 대형 모듈 순증을 기록했다. 분리 권고만으로는 순증을 막지 못했으므로 상한을 기계로 강제한다.",
+  "rule": "각 모듈의 라인 수는 max_lines 이하여야 한다. 모듈이 slack_lines 이상 줄면 max_lines를 실제 값으로 낮춰야 한다. 라쳇은 한 방향으로만 움직인다.",
+  "slack_lines": 50,
+  "modules": [
+    {
+      "path": "src/DesktopNode.Host/DesktopNodeHostServiceAction.cs",
+      "max_lines": 563,
+      "owner": "DTO records, CreatePlan, ExecuteAsync dispatch to Ops owners",
+      "decomposition_plan": "docs/superpowers/plans/2026-08-06-purecvisor-desktop-node-host-service-action-decomposition.md",
+      "note": "2026-08-09 pure static partial split of remaining shared surface. Predecessor ceiling after Ops move was 1174. evidence: docs/ga-ready/evidence/host-service-action-partial-decomposition-2026-08-09.md"
+    },
+    {
+      "path": "src/DesktopNode.Api/DesktopNodeApiRequestProcessor.cs",
+      "max_lines": 449,
+      "owner": "public API surface, request entry, HandleCore dispatch to route owners",
+      "decomposition_plan": "docs/superpowers/plans/2026-08-06-purecvisor-desktop-node-api-request-processor-decomposition.md"
+    },
+    {
+      "path": "src/DesktopNode.Api/DesktopNodeApiJobReconciliationHandler.cs",
+      "max_lines": 1139,
+      "owner": "job reconciliation routes and durable baseline capture",
+      "note": "2026-08-06 분해가 만들어 낸 모듈이다. 2026-08-20 SERVICE_PLAN P0-2 checkpoint.restore reconcile가 durable baseline capture를 늘려 1139줄이 됐다."
+    },
+    {
+      "path": "src/DesktopNode.Api/DesktopNodeApiVmMutationRouteHandler.cs",
+      "max_lines": 846,
+      "owner": "queued VM mutation routes and QoS validation",
+      "note": "2026-08-06 분해가 만들어 낸 모듈이다. 2026-08-20 SERVICE_PLAN P0 attach/save/resume-saved/manage queued routes가 846줄로 늘렸다."
+    },
+    {
+      "path": "src/DesktopNode.HyperV/DesktopNodeHyperVNativeAdapter.cs",
+      "max_lines": 540,
+      "owner": "provider domain orchestration core: construction, dispatch table, TryInvoke entry",
+      "note": "2026-08-09 pure partial split. Predecessor single-file ceiling was 2038. evidence: docs/ga-ready/evidence/hyperv-native-adapter-partial-decomposition-2026-08-09.md"
+    },
+    {
+      "path": "src/DesktopNode.HyperV/DesktopNodeHyperVNativeAdapter.Reads.cs",
+      "max_lines": 570,
+      "owner": "network inventory, host status, vm list/detail, checkpoint list, stats, qos/guest readbacks",
+      "note": "2026-08-09 pure partial split from DesktopNodeHyperVNativeAdapter.cs. Registered at creation so the large module is not renamed away from the ratchet."
+    },
+    {
+      "path": "src/DesktopNode.HyperV/DesktopNodeHyperVNativeAdapter.Mutations.cs",
+      "max_lines": 832,
+      "owner": "checkpoint mutation, power state, create/delete/rename, media, resource/qos mutation",
+      "note": "2026-08-09 pure partial split from DesktopNodeHyperVNativeAdapter.cs. Registered at creation so the large module is not renamed away from the ratchet."
+    },
+    {
+      "path": "web/src/served-app.ts",
+      "max_lines": 420,
+      "owner": "Web Console event binding and initialization",
+      "note": "2026-08-08 분해로 4005줄에서 413줄이 됐다. UI layer는 src/served/*.ts 18개 part로 옮겼고 가장 큰 것이 mutate.ts 422줄이라 신규 등록 대상(500줄 초과)은 없다. evidence: docs/ga-ready/evidence/served-app-decomposition-2026-08-08.md"
+    },
+    {
+      "path": "src/DesktopNode.Runtime/DesktopNodeJobRuntime.cs",
+      "max_lines": 116,
+      "owner": "job runtime core: fields, ctor, Create/Get/Snapshot",
+      "note": "2026-08-09 pure partial split of former 1466-line single file. evidence: docs/ga-ready/evidence/job-runtime-partial-decomposition-2026-08-09.md"
+    },
+    {
+      "path": "src/DesktopNode.Runtime/DesktopNodeJobRuntime.Persistence.cs",
+      "max_lines": 645,
+      "owner": "job store snapshot write/load, retention, recovery",
+      "note": "2026-08-09 pure partial split from DesktopNodeJobRuntime.cs. Registered at creation so the large module is not renamed away from the ratchet."
+    },
+    {
+      "path": "src/DesktopNode.Api/BatchEvidenceSummaryReader.cs",
+      "max_lines": 112,
+      "owner": "batch evidence summary core: ctor and Read entry",
+      "note": "2026-08-09 pure partial split of former 1350-line file. evidence: docs/ga-ready/evidence/batch-evidence-host-app-test-fixture-decomposition-2026-08-09.md"
+    },
+    {
+      "path": "src/DesktopNode.Api/BatchEvidenceSummaryReader.Pathing.cs",
+      "max_lines": 697,
+      "owner": "batch evidence path enumeration, child artifact resolve, redaction",
+      "note": "2026-08-09 pure partial split. Registered at creation (500+ lines)."
+    },
+    {
+      "path": "src/DesktopNode.Host/DesktopNodeHostApplication.cs",
+      "max_lines": 201,
+      "owner": "HTTP host core: listener start, dispose, bindings",
+      "note": "2026-08-09 pure partial split of former 859-line file. evidence: docs/ga-ready/evidence/batch-evidence-host-app-test-fixture-decomposition-2026-08-09.md"
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "contract": "pcv-feature-evidence-observation-v1",
+  "candidate_version": "0.42.74-admin-smoke",
+  "features": [
+    {
+      "feature_id": "pcv.checkpoint.restore",
+      "stages": [
+        { "name": "code_tested", "verdict": "pass" },
+        { "name": "packaged", "verdict": "pass" },
+        { "name": "installed_tested", "verdict": "pass" },
+        { "name": "actual_vm_tested", "verdict": "pass" },
+        { "name": "manual_admin_tested", "verdict": "pass" }
+      ]
+    },
+    {
+      "feature_id": "pcv.vm.managed-import",
+      "stages": [
+        { "name": "code_tested", "verdict": "pass" },
+        { "name": "packaged", "verdict": "pass" },
+        { "name": "installed_tested", "verdict": "pass" },
+        { "name": "actual_vm_tested", "verdict": "pass" },
+        { "name": "manual_admin_tested", "verdict": "pass" }
+      ]
+    },
+    {
+      "feature_id": "pcv.vm.media-attach",
+      "stages": [
+        { "name": "code_tested", "verdict": "pass" },
+        { "name": "packaged", "verdict": "pass" },
+        { "name": "installed_tested", "verdict": "pass" },
+        { "name": "actual_vm_tested", "verdict": "pass" },
+        { "name": "manual_admin_tested", "verdict": "pass" }
+      ]
+    },
+    {
+      "feature_id": "pcv.vm.saved-lifecycle",
+      "stages": [
+        { "name": "code_tested", "verdict": "pass" },
+        { "name": "packaged", "verdict": "pass" },
+        { "name": "installed_tested", "verdict": "pass" },
+        { "name": "actual_vm_tested", "verdict": "fail" },
+        { "name": "manual_admin_tested", "verdict": "pass" }
+      ]
+    }
+  ]
+}

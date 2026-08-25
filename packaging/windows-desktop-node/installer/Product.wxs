@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Package
+    Name="PureCVisor Desktop Node"
+    Manufacturer="PureCVisor"
+    Version="$(var.MsiProductVersion)"
+    UpgradeCode="{D85593B0-1A5A-4A96-B28B-AB3FE4B96E43}"
+    Scope="perMachine">
+
+    <MajorUpgrade DowngradeErrorMessage="A newer PureCVisor Desktop Node version is already installed." />
+    <MediaTemplate EmbedCab="yes" />
+
+    <StandardDirectory Id="ProgramFiles64Folder">
+      <Directory Id="PURECVISORFOLDER" Name="PureCVisor">
+        <Directory Id="INSTALLFOLDER" Name="DesktopNode">
+          <Directory Id="DesktopNodeWebFolder" Name="web" />
+        </Directory>
+      </Directory>
+    </StandardDirectory>
+
+    <Feature Id="MainFeature" Title="PureCVisor Desktop Node" Level="1">
+      <ComponentGroupRef Id="DesktopNodePayloadComponents" />
+      <ComponentGroupRef Id="DesktopNodeProductWrapperComponents" />
+      <ComponentGroupRef Id="DesktopNodeRuntimeComponents" />
+    </Feature>
+
+    <CustomActionRef Id="ConfigureInstalled" />
+    <CustomActionRef Id="RepairInstalled" />
+    <CustomActionRef Id="EventLogDefaultTransition" />
+    <CustomActionRef Id="EventLogDefaultTransitionRepair" />
+    <CustomActionRef Id="CredentialManagerDefaultTransition" />
+    <CustomActionRef Id="RemoveInstalled" />
+    <CustomActionRef Id="DataRootRemove" />
+  </Package>
+
+  <Fragment>
+    <ComponentGroup Id="DesktopNodePayloadComponents">
+      <Component Id="DesktopNodeManifestComponent" Directory="INSTALLFOLDER" Guid="{C6C8C802-844D-4DF2-9E1A-F9983E74DE6A}">
+        <File Id="DesktopNodeManifest" Source="$(var.PayloadRoot)\product-manifest.json" KeyPath="yes" />
+      </Component>
+      <Component Id="DesktopNodeServiceHostComponent" Directory="INSTALLFOLDER" Guid="{96B0EE9D-3515-4C4E-B29C-2A8754AFA09C}">
+        <File Id="DesktopNodeServiceHost" Source="$(var.PayloadRoot)\DesktopNode.Host.exe" KeyPath="yes" />
+        <RemoveFile Id="RemoveLegacyWinSwRootExe" Name="PureCVisorDesktopNode.exe" On="install" />
+        <RemoveFile Id="RemoveLegacyWinSwRootXml" Name="PureCVisorDesktopNode.xml" On="install" />
+      </Component>
+      <Component Id="DesktopNodeCliComponent" Directory="INSTALLFOLDER" Guid="{5598D11D-C003-4114-8C9D-FD60B02A9299}">
+        <File Id="DesktopNodeCli" Source="$(var.PayloadRoot)\pcvcli.exe" KeyPath="yes" />
+        <Environment Id="DesktopNodeMachinePath" Name="PATH" Value="[INSTALLFOLDER]" Part="last" Action="set" System="yes" Permanent="no" />
+      </Component>
+    </ComponentGroup>
+
+    <ComponentGroup Id="DesktopNodeProductWrapperComponents">
+      <Component Id="DesktopNodeProductEntryPointComponent" Directory="INSTALLFOLDER" Guid="{9D5F782B-09FB-4F9E-AFE5-B6D9D6E69C67}">
+        <File Id="DesktopNodeProductEntryPoint" Source="$(var.PayloadRoot)\Invoke-PcvDesktopNodeProduct.ps1" KeyPath="yes" />
+      </Component>
+      <Component Id="DesktopNodeProductModuleComponent" Directory="INSTALLFOLDER" Guid="{E935B139-28C5-4E40-9245-C136E0F0DA67}">
+        <File Id="DesktopNodeProductModule" Source="$(var.PayloadRoot)\PcvDesktopNodeProduct.psm1" KeyPath="yes" />
+      </Component>
+    </ComponentGroup>
+
+    <ComponentGroup Id="DesktopNodeRuntimeComponents">
+      <Component Id="DesktopNodeWebAppComponent" Directory="DesktopNodeWebFolder" Guid="{029604ED-0D34-405E-B8B9-BC4805A70C3D}">
+        <File Id="DesktopNodeWebApp" Source="$(var.PayloadRoot)\web\app.js" KeyPath="yes" />
+      </Component>
+      <Component Id="DesktopNodeWebIndexComponent" Directory="DesktopNodeWebFolder" Guid="{EDB654D2-A877-490A-8469-3B60A7FFFB0C}">
+        <File Id="DesktopNodeWebIndex" Source="$(var.PayloadRoot)\web\index.html" KeyPath="yes" />
+      </Component>
+      <Component Id="DesktopNodeWebStylesComponent" Directory="DesktopNodeWebFolder" Guid="{7036935D-46A7-453E-95D7-7904F0C1E845}">
+        <File Id="DesktopNodeWebStyles" Source="$(var.PayloadRoot)\web\styles.css" KeyPath="yes" />
+      </Component>
+    </ComponentGroup>
+  </Fragment>
+</Wix>

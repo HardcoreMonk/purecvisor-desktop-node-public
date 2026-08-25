@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://purecvisor.local/schemas/manual-admin-baseline-reservation.schema.json",
+  "title": "PureCVisor manual-admin baseline reservation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "contract",
+    "reservation_id",
+    "campaign_id",
+    "baseline_version",
+    "target_version",
+    "host_fingerprint_sha256",
+    "reservation_kind",
+    "resource_reference",
+    "installed_version_at_reservation",
+    "created_at",
+    "expires_at",
+    "status"
+  ],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "contract": { "const": "pcv-manual-admin-baseline-reservation-v1" },
+    "reservation_id": { "type": "string", "format": "uuid" },
+    "campaign_id": { "type": "string", "minLength": 1 },
+    "baseline_version": {
+      "type": "string",
+      "pattern": "^0\\.[0-9]+\\.[0-9]+-admin-smoke$"
+    },
+    "target_version": {
+      "type": "string",
+      "pattern": "^0\\.[0-9]+\\.[0-9]+-admin-smoke$"
+    },
+    "host_fingerprint_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "reservation_kind": {
+      "enum": ["dedicated-host", "hyperv-checkpoint"]
+    },
+    "resource_reference": { "type": "string", "minLength": 1 },
+    "installed_version_at_reservation": {
+      "type": "string",
+      "pattern": "^0\\.[0-9]+\\.[0-9]+-admin-smoke$"
+    },
+    "created_at": { "type": "string", "format": "date-time" },
+    "expires_at": { "type": "string", "format": "date-time" },
+    "status": { "enum": ["reserved", "consumed", "released"] }
+  }
+}

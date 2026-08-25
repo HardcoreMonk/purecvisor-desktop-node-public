@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "contract": "pcv-current-evidence-v1",
+  "current": {
+    "version": "0.42.74-admin-smoke",
+    "operator_surfaces": ["web", "cli"],
+    "tui_present": false,
+    "package_evidence": "docs/ga-ready/evidence/admin-smoke-package-2026-08-20-04274.md",
+    "fullgate_batch": "full-admin-host-mutation-gate-20260820-04274",
+    "fullgate_evidence": "docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-08-20-04274-hostmutation.md",
+    "functional_evidence": "docs/ga-ready/evidence/functional-correctness-actual-host-validation-2026-08-20-04274.md",
+    "installed_evidence": "docs/ga-ready/evidence/installed-operator-surface-current-card-2026-08-20-04274.md",
+    "clean_msi_sha256": "f4d0fcb75bc463676b831a4f871c402636039a7f1bbaf3780b24d10eceae1b8e",
+    "operational_msi_sha256": "2bc46c986a629695462f6b424bb3ca963162fd59fbf6359fbcb73b38ea09b787",
+    "payload_sha256": "c7984216f1625f2570e2da8cc0428f1a9a4ef9ecf8fe049d8ccfa6d3100df71d",
+    "provenance_commit": "adc04673b569ef9b587371fdb23bc11ceb14e2e2"
+  },
+  "feature_qualification": {
+    "schema_version": 1,
+    "contract": "pcv-feature-promotion-decision-v1",
+    "promotion_eligible": false,
+    "blockers": [
+      {
+        "feature_id": "pcv.vm.saved-lifecycle",
+        "stage": "actual_vm_tested",
+        "verdict": "fail"
+      }
+    ]
+  },
+  "manual_admin": {
+    "latest_closed_baseline": "0.42.73-admin-smoke",
+    "latest_closed_target": "0.42.74-admin-smoke",
+    "latest_closed_descriptor": "manual-admin-campaign-descriptor-20260820-04273-04274-closed"
+  },
+  "claims": {
+    "public_trusted_signing": false,
+    "external_stable_publication": false
+  }
+}
