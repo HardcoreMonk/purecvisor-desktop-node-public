@@ -964,6 +964,12 @@ internal static class D2EvidenceContractVerifier
             "packaging/windows-desktop-node/tools/Invoke-PcvJobStore04265ReaderCompatibility.ps1";
         const string writer =
             "packaging/windows-desktop-node/tools/fixtures/PcvJobStoreFixtureWriter/Program.cs";
+        const string completionEvidence =
+            "docs/ga-ready/evidence/csharp-architecture-wave2a-job-durability-completion-2026-08-02.md";
+        const string waveDEvidence =
+            "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md";
+        const string publicAuthorityEvidence =
+            "docs/ga-ready/evidence/public-authority-bootstrap-2026-08-25.md";
         var source = Text(runner);
         var writerSource = Text(writer);
         switch (ordinal)
@@ -1011,6 +1017,17 @@ internal static class D2EvidenceContractVerifier
                     "host_mutation_performed",
                 ]);
                 RequireAll(writerSource, ["schema_version", "queue", "jobs"]);
+                RequireAll(Text(completionEvidence), [
+                    "| Frozen 0.42.65 runner contract | PASS, 5/5 |",
+                ]);
+                RequireAll(Text(waveDEvidence), [
+                    "frozen_reader_fixture_sha256=95e219e779fce5c4fa8162aa31cd97e68370664ffd1aa465237dbdb769383c83",
+                    "frozen_reader_fixture_product_version=0.42.65-admin-smoke+4855947fe0199cedc978e8b40ffb45e96ced6876",
+                    "frozen_reader_fixture_tracked=false",
+                ]);
+                RequireMatches(publicAuthorityEvidence, [
+                    @"The fixture is excluded from `git archive`, the parentless source root, provider seed, release, and package\.",
+                ]);
                 break;
             case 4:
                 var hashIndex = source.IndexOf(
@@ -1036,6 +1053,20 @@ internal static class D2EvidenceContractVerifier
                     "PCV_JOB_STORE_SAVE_FAILED",
                     "127.0.0.1",
                     "/api/v1/jobs",
+                ]);
+                RequireAll(Text(completionEvidence), [
+                    "| Frozen 0.42.65 actual reader | PASS, 8/8, v1/v2 terminal+FIFO queue initial/restored |",
+                ]);
+                RequireMatches(completionEvidence, [
+                    @"Native operation requests were 0; service/admin/Hyper-V/host\s+mutation flags were false\.",
+                ]);
+                RequireAll(Text(waveDEvidence), [
+                    "| Frozen-reader compatibility reference | PASS, 5/5, failed 0, skipped 0 |",
+                    "frozen_reader_fixture_sha256=95e219e779fce5c4fa8162aa31cd97e68370664ffd1aa465237dbdb769383c83",
+                    "frozen_reader_fixture_tracked=false",
+                ]);
+                RequireMatches(publicAuthorityEvidence, [
+                    @"The fixture is excluded from `git archive`, the parentless source root, provider seed, release, and package\.",
                 ]);
                 break;
             default:

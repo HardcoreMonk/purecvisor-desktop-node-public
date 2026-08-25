@@ -25,7 +25,7 @@ public sealed class PcvJobStore04265ReaderCompatibilityContractTests
         "pcv.delivery.job-store04265-reader-compatibility.003",
         "packaging/windows-desktop-node/tests/PcvJobStore04265ReaderCompatibility.Tests.ps1",
         3,
-        "dry-runs current-writer terminal and FIFO queue schemas plus backup restore without a listener")]
+        "dry-runs current-writer schemas with the frozen host or verifies immutable public exclusion evidence")]
     public void Contract003() =>
         D2EvidenceContractVerifier.Verify("job-store04265-reader-compatibility", 3);
 
@@ -41,7 +41,7 @@ public sealed class PcvJobStore04265ReaderCompatibilityContractTests
         "pcv.delivery.job-store04265-reader-compatibility.005",
         "packaging/windows-desktop-node/tests/PcvJobStore04265ReaderCompatibility.Tests.ps1",
         5,
-        "reads current-writer v1/v2 terminal and FIFO queue stores before and after restore without changing bytes")]
+        "reads current-writer stores with the frozen host or verifies immutable compatibility evidence")]
     public void Contract005() =>
         D2EvidenceContractVerifier.Verify("job-store04265-reader-compatibility", 5);
 

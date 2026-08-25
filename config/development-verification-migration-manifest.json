@@ -7060,7 +7060,7 @@
     {
       "legacy_path": "packaging/windows-desktop-node/tests/PcvJobStore04265ReaderCompatibility.Tests.ps1",
       "legacy_ordinal": 3,
-      "legacy_name": "dry-runs current-writer terminal and FIFO queue schemas plus backup restore without a listener",
+      "legacy_name": "dry-runs current-writer schemas with the frozen host or verifies immutable public exclusion evidence",
       "domain": "packaging",
       "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Evidence/PcvJobStore04265ReaderCompatibilityContractTests.cs",
       "replacement_contract_id": "pcv.delivery.job-store04265-reader-compatibility.003",
@@ -7094,7 +7094,7 @@
     {
       "legacy_path": "packaging/windows-desktop-node/tests/PcvJobStore04265ReaderCompatibility.Tests.ps1",
       "legacy_ordinal": 5,
-      "legacy_name": "reads current-writer v1/v2 terminal and FIFO queue stores before and after restore without changing bytes",
+      "legacy_name": "reads current-writer stores with the frozen host or verifies immutable compatibility evidence",
       "domain": "packaging",
       "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Evidence/PcvJobStore04265ReaderCompatibilityContractTests.cs",
       "replacement_contract_id": "pcv.delivery.job-store04265-reader-compatibility.005",
