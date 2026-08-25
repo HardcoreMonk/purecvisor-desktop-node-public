@@ -2,6 +2,7 @@ using System.Xml.Linq;
 
 namespace DesktopNode.Delivery.Tests;
 
+[Trait("Category", "VerificationInfrastructure")]
 public sealed class DeliveryProjectContractTests
 {
     [Fact]
