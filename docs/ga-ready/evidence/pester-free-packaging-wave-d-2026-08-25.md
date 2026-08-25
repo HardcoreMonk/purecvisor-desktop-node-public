@@ -2,9 +2,9 @@
 
 ## Current verdict
 
-Packaging Wave D is in progress. D1 through D3 local parity are PASS. The managed replacements
-executed all `193/193` mapped Packaging contracts without skips. The one-time Pester 5.7.1
-references also passed D1 `90/90`, D2 `42/42`, and D3 `61/61` without skips. D4-D10, aggregate Packaging local
+Packaging Wave D is in progress. D1 through D4 local parity are PASS. The managed replacements
+executed all `251/251` mapped Packaging contracts without skips. The one-time Pester 5.7.1
+references also passed D1 `90/90`, D2 `42/42`, D3 `61/61`, and D4 `58/58` without skips. D5-D10, aggregate Packaging local
 parity, Required CI parity, branch-protection cutover, and managed current-evidence catalog
 activation remain pending and are not claimed by this checkpoint.
 
@@ -12,6 +12,7 @@ wave_c_checkpoint_head=9bc382650059fe3ea759e27bcee69cce6823fe38
 evidence_input_head=b86eddd37d0ed5af44c8b33f426c0eef8024eb44
 d2_input_head=a38607b14ac1d2dd5904dc408d4d0cb757f1f936
 d3_input_head=dea5f6c9f11b51abab53bc321bcf5acbebff8d51
+d4_input_head=03316a7f8db38dfa325d69a16f8607c167b1ff11
 input_dirty_state=clean
 
 ## Fixed ten-batch inventory
@@ -21,14 +22,14 @@ input_dirty_state=clean
 | D1 | canonical admin-smoke evidence | 1 | 90 | 90/90 pass | 90/90 pass | mapped / local pass / CI pending |
 | D2 | current/promotion/package evidence | 5 | 42 | 42/42 pass | 42/42 pass | mapped / local pass / CI pending |
 | D3 | product invocation | 1 | 61 | 61/61 pass | 61/61 pass | mapped / local pass / CI pending |
-| D4 | product descriptors | 3 | 58 | not-run | not-run | unmapped / local pending / CI pending |
+| D4 | product descriptors | 3 | 58 | 58/58 pass | 58/58 pass | mapped / local pass / CI pending |
 | D5 | development verification policy | 8 | 51 | not-run | not-run | unmapped / local pending / CI pending |
 | D6 | orchestration and timeout boundaries | 5 | 44 | not-run | not-run | unmapped / local pending / CI pending |
 | D7 | package/public-distribution preflight | 8 | 52 | not-run | not-run | unmapped / local pending / CI pending |
 | D8 | manual-admin/public-ops readiness | 8 | 45 | not-run | not-run | unmapped / local pending / CI pending |
 | D9 | installed-smoke descriptors | 8 | 31 | not-run | not-run | unmapped / local pending / CI pending |
 | D10 | reconciliation/lifecycle policy | 8 | 54 | not-run | not-run | unmapped / local pending / CI pending |
-| **Total** |  | **55** | **528** | **193 pass / 335 not-run** | **193 pass / 335 not-run** | **193 mapped local pass / 335 unmapped / CI pending** |
+| **Total** |  | **55** | **528** | **251 pass / 277 not-run** | **251 pass / 277 not-run** | **251 mapped local pass / 277 unmapped / CI pending** |
 
 batch_d1_files=1
 batch_d1_contracts=90
@@ -248,6 +249,67 @@ ledger_after_d3_ci_pending=528
 ledger_after_d3_missing=0
 ledger_after_d3_duplicate=0
 ledger_after_d3_order_drift=0
+
+## D4 product descriptors
+
+Three legacy files own 58 diagnostics, product-manifest, and product-plan contracts. Their managed
+replacement binds the exact legacy files, product module, names/order, 521 assertion sites, and
+1,195 source literals by SHA-256. Structural checks fix the diagnostics policy and 17-source order,
+Event Log service-action boundary, Web-only asset and four-file runtime payload cardinality,
+schema-v2 manifest order, ten-action plan/defaults, owned paths, and no-auto-reboot/update-source
+policy without invoking the product module or any host mutation executable.
+
+| Check | Result |
+| --- | --- |
+| Replacement legacy contracts | PASS, 58/58, failed 0, skipped 0 |
+| Deterministic structure fixtures | PASS, 6/6 |
+| Pester 5.7.1 reference | PASS, 58/58, failed 0, skipped 0, not-run 0 |
+| Delivery assembly | PASS, 376/376, failed 0, skipped 0 |
+| Release solution build | PASS, warnings 0, errors 0 |
+| Node strict-v2 ledger | PASS, files 62, contracts 627, missing/duplicate/order drift 0 |
+| Public source safety | PASS, 20/20, finding count 0 |
+
+d4_legacy_files=3
+d4_legacy_contracts=58
+d4_contract_spec=config/pcv-desktop-node-product-descriptor-contract-spec-v1.json
+d4_contract_spec_sha256=04abecd51ece223175bc0324d949b61f976fb31b5cf33327103f6b1beeee19da
+d4_module_source_sha256=8c0bf982097881f56e60354f53961e54ea4d7a49e566a1e1eee861cd309403c3
+d4_legacy_should_site_count=521
+d4_required_literal_count=1195
+d4_replacement_summary={"runner":"dotnet-test/xunit","total":58,"executed":58,"passed":58,"failed":0,"skipped":0,"duration_ms":420.0,"result":"Completed"}
+d4_replacement_summary_sha256=9c000af6a87d318a88ffb84cb05114cb67ca749a9e2e0b40e76ae5b1b31b578b
+d4_legacy_summary={"pester_version":"5.7.1","total":58,"passed":58,"failed":0,"skipped":0,"not_run":0,"duration_ms":13977.631,"result":"Passed"}
+d4_legacy_summary_sha256=2c1bf6e3d6af32fa04480f8f1d912f88236da420101a3e55c507d1ce892e9b4f
+d4_negative_missing_manifest_entry=pass
+d4_negative_duplicate_manifest_entry=pass
+d4_negative_invalid_plan_path=pass
+d4_negative_diagnostics_sensitive_key=pass
+d4_negative_diagnostics_bearer_leakage=pass
+d4_release_build_warnings=0
+d4_release_build_errors=0
+d4_public_source_safety_tests=20
+d4_public_source_safety_finding_count=0
+d4_public_source_safety_report_sha256=603f64030f501eeb60d58859f377cd7ee6668f2ce1bb73ec1b95c4906d9eeebd
+d4_replacement_child_process_count=0
+d4_replacement_write_api_count=0
+d4_host_mutation_performed=false
+
+## Ledger state after D4
+
+| Domain | Files | Contracts | Mapping | Local parity | CI parity |
+| --- | ---: | ---: | --- | --- | --- |
+| Web | 1 | 50 | mapped 50 | pass 50 | pending 50 |
+| Installer | 6 | 49 | mapped 49 | pass 49 | pending 49 |
+| Packaging | 55 | 528 | mapped 251 / unmapped 277 | pass 251 / pending 277 | pending 528 |
+| Total | 62 | 627 | mapped 350 / unmapped 277 | pass 350 / pending 277 | pending 627 |
+
+ledger_after_d4_packaging_mapped=251
+ledger_after_d4_packaging_local_pass=251
+ledger_after_d4_packaging_unmapped=277
+ledger_after_d4_ci_pending=528
+ledger_after_d4_missing=0
+ledger_after_d4_duplicate=0
+ledger_after_d4_order_drift=0
 
 ## Shared fixture boundary
 
