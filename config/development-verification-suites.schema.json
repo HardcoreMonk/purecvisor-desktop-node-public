@@ -25,7 +25,11 @@
       "const": "pcv-development-verification-suite-catalog-v1"
     },
     "activation_state": {
-      "const": "plan-only-foundation"
+      "enum": [
+        "plan-only-foundation",
+        "shadow-ready",
+        "active"
+      ]
     },
     "max_parallelism": {
       "const": 4
@@ -98,7 +102,8 @@
             "wave-a-foundation",
             "wave-b-pending",
             "wave-c-pending",
-            "wave-d-pending"
+            "mapped",
+            "cutover"
           ]
         },
         "timeout_seconds": {

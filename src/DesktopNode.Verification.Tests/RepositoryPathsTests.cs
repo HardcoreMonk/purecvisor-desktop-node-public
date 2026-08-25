@@ -181,6 +181,25 @@ public sealed class RepositoryPathsTests
     }
 
     [Fact]
+    public void AcceptsRepositoryArtifactsWhenHostedCheckoutIsInsideUserProfile()
+    {
+        using var tree = TemporaryRepository.Create(repositoryInsideUserProfile: true);
+        var candidate = Path.Combine(tree.Root, "artifacts", "shadow", "web");
+
+        Assert.Equal(
+            candidate,
+            ArtifactRootPolicy.ResolveAndValidate(
+                tree.Root,
+                "artifacts/shadow/web",
+                Path.Combine(tree.Parent, "runner-temp"),
+                tree.UserProfile));
+        AssertArtifactRootInvalid(
+            tree,
+            Path.Combine(tree.UserProfile, "outside-repository"),
+            Path.Combine(tree.Parent, "runner-temp"));
+    }
+
+    [Fact]
     public void RejectsSiblingPrefixesOfAllowedParents()
     {
         using var tree = TemporaryRepository.Create();
@@ -248,11 +267,12 @@ public sealed class RepositoryPathsTests
         internal string Root { get; }
         internal string UserProfile { get; }
 
-        internal static TemporaryRepository Create()
+        internal static TemporaryRepository Create(bool repositoryInsideUserProfile = false)
         {
             var ownedParent = Path.GetFullPath(Path.Combine(Path.GetTempPath(), OwnedPrefix + Guid.NewGuid().ToString("N")));
-            var root = Directory.CreateDirectory(Path.Combine(ownedParent, "repository")).FullName;
             var userProfile = Directory.CreateDirectory(Path.Combine(ownedParent, "user-profile")).FullName;
+            var rootParent = repositoryInsideUserProfile ? userProfile : ownedParent;
+            var root = Directory.CreateDirectory(Path.Combine(rootParent, "repository")).FullName;
             Directory.CreateDirectory(Path.Combine(root, "src"));
             Directory.CreateDirectory(Path.Combine(root, "config"));
             File.WriteAllText(Path.Combine(root, "src", "DesktopNode.sln"), string.Empty);

@@ -10,7 +10,7 @@ public sealed class VerificationCatalogTests
         var catalog = VerificationCatalogFixture.LoadCanonical();
 
         Assert.Equal("pcv-development-verification-suite-catalog-v1", catalog.Contract);
-        Assert.Equal("plan-only-foundation", catalog.ActivationState);
+        Assert.Contains(catalog.ActivationState, new[] { "plan-only-foundation", "shadow-ready", "active" });
         Assert.Equal(4, catalog.MaxParallelism);
         Assert.Equal([
             "dotnet", "web-typecheck", "web-parity", "delivery-contracts",
@@ -33,22 +33,36 @@ public sealed class VerificationCatalogTests
             Assert.Equal(expectedShards[index].SuiteIds, catalog.Shards[index].SuiteIds);
         }
 
-        (string Id, string Owner, string MigrationState, string Kind, string? FileName,
+        var expectedMigrationStates = catalog.ActivationState switch
+        {
+            "plan-only-foundation" => new[]
+            {
+                "native-existing", "native-existing", "wave-b-pending", "mapped", "mapped", "mapped", "wave-a-foundation"
+            },
+            "shadow-ready" => new[]
+            {
+                "native-existing", "native-existing", "mapped", "mapped", "mapped", "mapped", "mapped"
+            },
+            "active" => Enumerable.Repeat("cutover", 7).ToArray(),
+            _ => throw new InvalidOperationException("Unexpected canonical activation state.")
+        };
+
+        (string Id, string Owner, string Kind, string? FileName,
             string[] Arguments, string? ManagedHandler, int TimeoutSeconds)[] expectedSuites =
         [
-            ("dotnet", "csharp", "native-existing", "process", "dotnet",
-                ["test", "src/DesktopNode.sln", "-c", "Release", "--nologo"], null, 900),
-            ("web-typecheck", "node", "native-existing", "process", "npm",
-                ["test", "--prefix", "web"], null, 600),
-            ("web-parity", "node", "wave-b-pending", "process", "npm",
-                ["run", "verify:parity", "--prefix", "web"], null, 600),
-            ("delivery-contracts", "csharp", "wave-d-pending", "process", "dotnet",
-                ["test", "src/DesktopNode.Delivery.Tests/DesktopNode.Delivery.Tests.csproj", "-c", "Release", "--filter", "Category=Delivery", "--nologo"], null, 900),
-            ("installer-contracts", "csharp", "wave-c-pending", "process", "dotnet",
-                ["test", "src/DesktopNode.Delivery.Tests/DesktopNode.Delivery.Tests.csproj", "-c", "Release", "--filter", "Category=Installer", "--nologo"], null, 900),
-            ("evidence-check", "csharp", "wave-d-pending", "managed", null,
+            ("dotnet", "csharp", "process", "dotnet",
+                ["test", "src/DesktopNode.sln", "-c", "Release", "--no-build", "--no-restore", "--nologo"], null, 900),
+            ("web-typecheck", "node", "process", "npm",
+                ["run", "test:required", "--prefix", "web"], null, 600),
+            ("web-parity", "node", "process", "npm",
+                ["run", "check:verification-migration-manifest", "--prefix", "web"], null, 600),
+            ("delivery-contracts", "csharp", "process", "dotnet",
+                ["test", "src/DesktopNode.Delivery.Tests/DesktopNode.Delivery.Tests.csproj", "-c", "Release", "--no-build", "--no-restore", "--filter", "Category=Delivery", "--nologo"], null, 900),
+            ("installer-contracts", "csharp", "process", "dotnet",
+                ["test", "src/DesktopNode.Delivery.Tests/DesktopNode.Delivery.Tests.csproj", "-c", "Release", "--no-build", "--no-restore", "--filter", "Category=Installer", "--nologo"], null, 900),
+            ("evidence-check", "csharp", "managed", null,
                 [], "current-evidence-check", 300),
-            ("policy-boundaries", "csharp", "wave-a-foundation", "managed", null,
+            ("policy-boundaries", "csharp", "managed", null,
                 [], "policy-boundaries", 300)
         ];
         for (var index = 0; index < expectedSuites.Length; index++)
@@ -57,13 +71,45 @@ public sealed class VerificationCatalogTests
             var actual = catalog.Suites[index];
             Assert.Equal(expected.Id, actual.Id);
             Assert.Equal(expected.Owner, actual.Owner);
-            Assert.Equal(expected.MigrationState, actual.MigrationState);
+            Assert.Equal(expectedMigrationStates[index], actual.MigrationState);
             Assert.Equal(expected.Kind, actual.ExecutorKind);
             Assert.Equal(expected.FileName, actual.FileName);
             Assert.Equal(expected.Arguments, actual.Arguments);
             Assert.Equal(expected.ManagedHandler, actual.ManagedHandler);
             Assert.Equal(expected.TimeoutSeconds, actual.TimeoutSeconds);
         }
+    }
+
+    [Theory]
+    [InlineData("shadow-ready")]
+    [InlineData("active")]
+    public void CatalogAcceptsSupportedExecutionActivationState(string activationState)
+    {
+        using var mutated = VerificationCatalogFixture.LoadMutated(root =>
+            root["activation_state"] = activationState);
+
+        Assert.Equal(activationState, mutated.Load().ActivationState);
+    }
+
+    [Fact]
+    public void CatalogAcceptsCutoverMigrationState()
+    {
+        using var mutated = VerificationCatalogFixture.LoadMutated(root =>
+            root["suites"]![0]!["migration_state"] = "cutover");
+
+        Assert.Equal("cutover", mutated.Load().Suites[0].MigrationState);
+    }
+
+    [Fact]
+    public void CatalogRejectsRetiredWaveDPendingState()
+    {
+        using var mutated = VerificationCatalogFixture.LoadMutated(root =>
+            root["suites"]![3]!["migration_state"] = "wave-d-pending");
+
+        var exception = Assert.Throws<VerificationException>(() => mutated.Load());
+
+        Assert.Equal(VerificationErrorCodes.ConfigInvalid, exception.Code);
+        Assert.Equal("suite-definition:delivery-contracts=invalid", exception.Detail);
     }
 
     [Theory]
@@ -226,7 +272,7 @@ public sealed class VerificationCatalogTests
     [Theory]
     [InlineData("schema_version", 2)]
     [InlineData("contract", "wrong-contract")]
-    [InlineData("activation_state", "active")]
+    [InlineData("activation_state", "unknown")]
     [InlineData("max_parallelism", 3)]
     [InlineData("overall_timeout_seconds", 0)]
     public void CatalogRejectsInvalidHeader(string propertyName, object value)

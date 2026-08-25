@@ -107,6 +107,7 @@ internal sealed class VerificationApplication(
 
             cancellationToken.ThrowIfCancellationRequested();
             if (!request.PlanOnly &&
+                !string.Equals(catalog.ActivationState, "shadow-ready", StringComparison.Ordinal) &&
                 !string.Equals(catalog.ActivationState, "active", StringComparison.Ordinal))
             {
                 throw new VerificationException(

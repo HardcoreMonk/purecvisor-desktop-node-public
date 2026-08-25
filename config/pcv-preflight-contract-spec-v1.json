@@ -1,0 +1,1186 @@
+{
+  "contract": "pcv-preflight-contract-spec-v1",
+  "legacy_contract_count": 52,
+  "legacy_should_site_count": 256,
+  "required_literal_count": 722,
+  "source_files": [
+    {
+      "path": "packaging/windows-desktop-node/tools/New-PcvBuiltinTlsCertificateLifecyclePreflight.ps1",
+      "sha256": "2971367a1e67c370dd60ba39d3b8517e1ed824f3ebfba62aa64b1feab5b38fbe"
+    },
+    {
+      "path": "packaging/windows-desktop-node/tools/New-PcvBurnBootstrapperPreflight.ps1",
+      "sha256": "0946da3b3f0ad793356e8bd4ec904231c4c8d4718b58a043b80ae4d63f67a36b"
+    },
+    {
+      "path": "packaging/windows-desktop-node/tools/New-PcvDiagnosticBundleServerPreflight.ps1",
+      "sha256": "c84ff42a3938ddc2b175a53d4806711a2c609cbbe0b178d76d786922e2632182"
+    },
+    {
+      "path": "packaging/windows-desktop-node/tools/New-PcvMsixPackagingFeasibilityPreflight.ps1",
+      "sha256": "97002ad46eb5d85cd567a6f1e007f10c24d4997279025427230cdaf8ad71ab90"
+    },
+    {
+      "path": "packaging/windows-desktop-node/tools/New-PcvPublicDistributionDescriptor.ps1",
+      "sha256": "6c389427a70f9f57fae17004e8af8107bf01e6f52b62184de6b25abbadbc62b2"
+    },
+    {
+      "path": "packaging/windows-desktop-node/tools/New-PcvPublicDistributionOperationsBundle.ps1",
+      "sha256": "98e5276e60ac3bed2811c6b386d9f760c8e0b9a929bdd9642e304bf5c649f5dc"
+    },
+    {
+      "path": "packaging/windows-desktop-node/tools/New-PcvPublicDistributionReadiness.ps1",
+      "sha256": "161d4b5b444f07d41f971fd6c0159bfbdb475803bd575563e578112c617b1548"
+    },
+    {
+      "path": "packaging/windows-desktop-node/tools/New-PcvUpdaterCatalogPublicationPreflight.ps1",
+      "sha256": "dd3c7fa814938aa15395e9c0c9e77f9b22253f17c490156dd2911bb4abbca18c"
+    }
+  ],
+  "legacy_files": [
+    {
+      "key": "builtin-tls-certificate-lifecycle-preflight",
+      "path": "packaging/windows-desktop-node/tests/PcvBuiltinTlsCertificateLifecyclePreflight.Tests.ps1",
+      "sha256": "7d3c899b457b0c8cbbf962eea93356360de0f36dab182b0d308ef62c906359c8",
+      "contract_count": 6,
+      "should_site_count": 36
+    },
+    {
+      "key": "burn-bootstrapper-preflight",
+      "path": "packaging/windows-desktop-node/tests/PcvBurnBootstrapperPreflight.Tests.ps1",
+      "sha256": "05c36a29490740053feec27846aedc894485271781d87eadaedc11cbb472d430",
+      "contract_count": 8,
+      "should_site_count": 32
+    },
+    {
+      "key": "diagnostic-bundle-server-preflight",
+      "path": "packaging/windows-desktop-node/tests/PcvDiagnosticBundleServerPreflight.Tests.ps1",
+      "sha256": "80b3fccc61f0a38a8efa8c22d64ae99a53ecb0b0d4c2e4b0d1654f9f6a00e500",
+      "contract_count": 6,
+      "should_site_count": 40
+    },
+    {
+      "key": "msix-packaging-feasibility-preflight",
+      "path": "packaging/windows-desktop-node/tests/PcvMsixPackagingFeasibilityPreflight.Tests.ps1",
+      "sha256": "3fb8f8cd5de4d1abfc7ee01e703b720e01f1c9d1b19a257d589a2e5a49978c63",
+      "contract_count": 6,
+      "should_site_count": 28
+    },
+    {
+      "key": "public-distribution-descriptor",
+      "path": "packaging/windows-desktop-node/tests/PcvPublicDistributionDescriptor.Tests.ps1",
+      "sha256": "6fe8fe49c2ec2c77f93c15fa429f77e7b59a519c9ba8d439470db21feaae228a",
+      "contract_count": 6,
+      "should_site_count": 19
+    },
+    {
+      "key": "public-distribution-operations-bundle",
+      "path": "packaging/windows-desktop-node/tests/PcvPublicDistributionOperationsBundle.Tests.ps1",
+      "sha256": "9f78bee9167a4ddb6c30c4d31b2fd281cdcf568a4d7c9cdc85d77fd6331f4ba3",
+      "contract_count": 6,
+      "should_site_count": 37
+    },
+    {
+      "key": "public-distribution-readiness",
+      "path": "packaging/windows-desktop-node/tests/PcvPublicDistributionReadiness.Tests.ps1",
+      "sha256": "ddf07d404c0b7439edb7c9a26f4e7eb73b3dc54ac130e84d019152528550cae2",
+      "contract_count": 6,
+      "should_site_count": 30
+    },
+    {
+      "key": "updater-catalog-publication-preflight",
+      "path": "packaging/windows-desktop-node/tests/PcvUpdaterCatalogPublicationPreflight.Tests.ps1",
+      "sha256": "489af670570ec491c0a4bc3c35c59baa82d2169309df6be2fd76ae488e1fbcc5",
+      "contract_count": 8,
+      "should_site_count": 34
+    }
+  ],
+  "contracts": [
+    {
+      "key": "builtin-tls-certificate-lifecycle-preflight",
+      "ordinal": 1,
+      "name": "creates a non-mutating built-in TLS certificate lifecycle summary",
+      "required_literals": [
+        "actual_execution",
+        "artifactRoot",
+        "ArtifactRoot",
+        "blocked-by-no-mutation-preflight",
+        "builtin-tls-certificate-lifecycle-preflight",
+        "external_stable_publication",
+        "host_mutation_performed",
+        "Join-Path",
+        "lan_binding_mutation",
+        "LiteralPath",
+        "not-claimed",
+        "not-run",
+        "plan_only",
+        "private_key_material_created",
+        "public_trusted_signing",
+        "scope",
+        "summary",
+        "summary.json",
+        "tls_certificate_lifecycle",
+        "tls_certificate_mutation",
+        "trust_store_mutation"
+      ]
+    },
+    {
+      "key": "builtin-tls-certificate-lifecycle-preflight",
+      "ordinal": 2,
+      "name": "records the exact built-in TLS lifecycle check names",
+      "required_literals": [
+        "ArtifactRoot",
+        "certificate-import-not-executed",
+        "certificate-subject-present",
+        "current-tls-mode-recorded",
+        "host-mutation-not-executed",
+        "https-bind-prefix-recorded",
+        "Join-Path",
+        "lan-binding-not-executed",
+        "lifecycle_checks",
+        "name",
+        "private-key-not-created",
+        "service-name-present",
+        "summary",
+        "target-tls-mode-recorded",
+        "trust-store-mutation-not-executed"
+      ]
+    },
+    {
+      "key": "builtin-tls-certificate-lifecycle-preflight",
+      "ordinal": 3,
+      "name": "writes a lifecycle plan preview without creating certificate material",
+      "required_literals": [
+        "artifactRoot",
+        "ArtifactRoot",
+        "bind-https-listener",
+        "built-in-service-certificate",
+        "builtin-tls-certificate-lifecycle-preflight",
+        "certificate_import_status",
+        "certificate_subject",
+        "current_tls_mode",
+        "external-terminator-or-none",
+        "generate-service-certificate",
+        "https_bind_prefix",
+        "inspect-current-tls-policy",
+        "install-trust-anchor-if-approved",
+        "Join-Path",
+        "lifecycle_plan_path",
+        "LiteralPath",
+        "not-run",
+        "plan",
+        "plan-certificate-private-key-storage",
+        "planned_operations",
+        "private_key_material_created",
+        "remove-certificate-and-binding",
+        "rotate-certificate",
+        "schema_version",
+        "scope",
+        "service_name",
+        "summary",
+        "target_tls_mode"
+      ]
+    },
+    {
+      "key": "builtin-tls-certificate-lifecycle-preflight",
+      "ordinal": 4,
+      "name": "requires plan-only mode",
+      "required_literals": [
+        "ArtifactRoot",
+        "CertificateSubject",
+        "HttpsBindPrefix",
+        "Join-Path",
+        "Not",
+        "null",
+        "Out-Null",
+        "ServiceName"
+      ]
+    },
+    {
+      "key": "builtin-tls-certificate-lifecycle-preflight",
+      "ordinal": 5,
+      "name": "rejects a non-HTTPS bind prefix",
+      "required_literals": [
+        "ArtifactRoot",
+        "CertificateSubject",
+        "HttpsBindPrefix",
+        "Join-Path",
+        "Not",
+        "null",
+        "Out-Null",
+        "PlanOnly",
+        "ServiceName"
+      ]
+    },
+    {
+      "key": "builtin-tls-certificate-lifecycle-preflight",
+      "ordinal": 6,
+      "name": "does not contain host mutation, certificate creation, trust-store, or TLS binding command text",
+      "required_literals": [
+        "Cert",
+        "exe",
+        "http",
+        "LiteralPath",
+        "Not"
+      ]
+    },
+    {
+      "key": "burn-bootstrapper-preflight",
+      "ordinal": 1,
+      "name": "creates a non-mutating Burn bootstrapper preflight summary",
+      "required_literals": [
+        "actual_execution",
+        "artifactRoot",
+        "ArtifactRoot",
+        "burn_bootstrapper",
+        "burn-bootstrapper-preflight",
+        "external_stable_publication",
+        "host_mutation_performed",
+        "Join-Path",
+        "LiteralPath",
+        "not-built",
+        "not-claimed",
+        "not-run",
+        "plan_only",
+        "public_trusted_signing",
+        "scope",
+        "summary",
+        "summary.json",
+        "Test-Path"
+      ]
+    },
+    {
+      "key": "burn-bootstrapper-preflight",
+      "ordinal": 2,
+      "name": "records the exact Burn preflight check names",
+      "required_literals": [
+        "ArtifactRoot",
+        "bundle-build-not-executed",
+        "bundle-upgrade-code-valid",
+        "burn_checks",
+        "Join-Path",
+        "msi-sha256-present",
+        "msi-url-https",
+        "name",
+        "public-claim-not-made",
+        "publication-descriptor-schema-v1",
+        "summary",
+        "wix-burn-authoring-preview-written"
+      ]
+    },
+    {
+      "key": "burn-bootstrapper-preflight",
+      "ordinal": 3,
+      "name": "writes a WiX Burn authoring preview without building a bundle",
+      "required_literals": [
+        "<Bundle",
+        "<MsiPackage",
+        "<Wix",
+        "artifactRoot",
+        "ArtifactRoot",
+        "Bundle",
+        "bundle_authoring_preview_path",
+        "command_plan",
+        "Compressed",
+        "Desktop",
+        "DownloadUrl",
+        "Get-Content",
+        "Join-Path",
+        "LiteralPath",
+        "msi",
+        "MsiPackage",
+        "Name",
+        "Node",
+        "not-built",
+        "not-run",
+        "preview",
+        "PureCVisor",
+        "PureCVisor Desktop Node",
+        "Raw",
+        "summary",
+        "Test-Path",
+        "Version",
+        "Wix"
+      ]
+    },
+    {
+      "key": "burn-bootstrapper-preflight",
+      "ordinal": 4,
+      "name": "plans the Burn build with the canonical WiX 5 bootstrapper extension id",
+      "required_literals": [
+        "ArtifactRoot",
+        "BootstrapperApplications",
+        "command_plan",
+        "ext",
+        "Join-Path",
+        "Not",
+        "only",
+        "payload",
+        "summary",
+        "the",
+        "The",
+        "wixext",
+        "WixToolset",
+        "WixToolset.BootstrapperApplications.wixext"
+      ]
+    },
+    {
+      "key": "burn-bootstrapper-preflight",
+      "ordinal": 5,
+      "name": "records MSI chain hash binding and lifecycle evidence still required",
+      "required_literals": [
+        "ArtifactRoot",
+        "chain",
+        "Join-Path",
+        "preview-only",
+        "required-before-pass",
+        "summary"
+      ]
+    },
+    {
+      "key": "burn-bootstrapper-preflight",
+      "ordinal": 6,
+      "name": "requires plan-only mode",
+      "required_literals": [
+        "ArtifactRoot",
+        "File",
+        "Join-Path",
+        "MsiUrl",
+        "Not",
+        "null",
+        "Out-Null",
+        "Path",
+        "publication",
+        "PublicationDescriptorPath"
+      ]
+    },
+    {
+      "key": "burn-bootstrapper-preflight",
+      "ordinal": 7,
+      "name": "rejects non-HTTPS MSI URLs for public bootstrapper preview",
+      "required_literals": [
+        "ArtifactRoot",
+        "File",
+        "Join-Path",
+        "MsiUrl",
+        "Not",
+        "null",
+        "Out-Null",
+        "Path",
+        "PlanOnly",
+        "publication",
+        "PublicationDescriptorPath"
+      ]
+    },
+    {
+      "key": "burn-bootstrapper-preflight",
+      "ordinal": 8,
+      "name": "does not contain host mutation or publication submission command text",
+      "required_literals": [
+        "exe",
+        "Get-Content",
+        "LiteralPath",
+        "Not",
+        "Raw",
+        "Test-Path"
+      ]
+    },
+    {
+      "key": "diagnostic-bundle-server-preflight",
+      "ordinal": 1,
+      "name": "creates a non-mutating diagnostic bundle server-side summary",
+      "required_literals": [
+        "actual_execution",
+        "artifactRoot",
+        "ArtifactRoot",
+        "blocked-by-no-mutation-preflight",
+        "diagnostic_bundle_api_action",
+        "diagnostic_bundle_archive_created",
+        "diagnostic_bundle_authz_status",
+        "diagnostic_bundle_download_served",
+        "diagnostic_bundle_redaction_status",
+        "diagnostic_bundle_retention_status",
+        "diagnostic_bundle_server_generation",
+        "diagnostic-bundle-server-preflight",
+        "external_stable_publication",
+        "host_mutation_performed",
+        "Join-Path",
+        "LiteralPath",
+        "not-claimed",
+        "not-run",
+        "plan_only",
+        "public_trusted_signing",
+        "scope",
+        "summary",
+        "summary.json",
+        "wrapper_collect_diagnostics_execution"
+      ]
+    },
+    {
+      "key": "diagnostic-bundle-server-preflight",
+      "ordinal": 2,
+      "name": "records the exact diagnostic bundle server preflight check names",
+      "required_literals": [
+        "api-route-recorded",
+        "archive-creation-not-executed",
+        "ArtifactRoot",
+        "authz-policy-recorded",
+        "diagnostic_checks",
+        "diagnostics-root-recorded",
+        "download-route-recorded",
+        "download-serving-not-executed",
+        "host-mutation-not-executed",
+        "Join-Path",
+        "name",
+        "redaction-not-executed",
+        "retention-not-executed",
+        "service-name-present",
+        "summary",
+        "wrapper-execution-not-delegated"
+      ]
+    },
+    {
+      "key": "diagnostic-bundle-server-preflight",
+      "ordinal": 3,
+      "name": "writes a server-side diagnostic bundle plan preview without archive or download execution",
+      "required_literals": [
+        "/api/v1/diagnostics/bundles",
+        "/api/v1/diagnostics/bundles/{bundle_id}/download",
+        "api_route",
+        "api/v1/diagnostics/bundles",
+        "apply-bundle-retention-policy",
+        "archive_status",
+        "artifactRoot",
+        "ArtifactRoot",
+        "authz_policy",
+        "bearer-token-required",
+        "bundle_id",
+        "Contain",
+        "diagnostic_plan_path",
+        "diagnostic-bundle-server-preflight",
+        "diagnostics",
+        "diagnostics_root",
+        "download",
+        "download_route_template",
+        "download_status",
+        "Join-Path",
+        "LiteralPath",
+        "not-run",
+        "plan",
+        "planned_operations",
+        "record-bundle-audit-metadata",
+        "redaction_policy",
+        "request-diagnostic-bundle-generation",
+        "retention_status",
+        "schema_version",
+        "scope",
+        "serve-diagnostic-bundle-download",
+        "service_name",
+        "summary",
+        "token-and-host-path-redaction-required",
+        "validate-bearer-authorization",
+        "write-server-side-bundle-archive"
+      ]
+    },
+    {
+      "key": "diagnostic-bundle-server-preflight",
+      "ordinal": 4,
+      "name": "requires plan-only mode",
+      "required_literals": [
+        "ArtifactRoot",
+        "diagnostics",
+        "DiagnosticsRoot",
+        "Join-Path",
+        "Not",
+        "Out-Null",
+        "ServiceName"
+      ]
+    },
+    {
+      "key": "diagnostic-bundle-server-preflight",
+      "ordinal": 5,
+      "name": "rejects routes outside the Local API namespace",
+      "required_literals": [
+        "ApiRoute",
+        "ArtifactRoot",
+        "diagnostics",
+        "DiagnosticsRoot",
+        "Join-Path",
+        "Not",
+        "Out-Null",
+        "PlanOnly",
+        "ServiceName"
+      ]
+    },
+    {
+      "key": "diagnostic-bundle-server-preflight",
+      "ordinal": 6,
+      "name": "does not contain host mutation, archive creation, wrapper execution, or service command text",
+      "required_literals": [
+        "exe",
+        "LiteralPath",
+        "Not",
+        "System"
+      ]
+    },
+    {
+      "key": "msix-packaging-feasibility-preflight",
+      "ordinal": 1,
+      "name": "creates a non-mutating MSIX feasibility summary",
+      "required_literals": [
+        "actual_execution",
+        "artifactRoot",
+        "ArtifactRoot",
+        "external_stable_publication",
+        "feasibility-blocked-by-service-packaging-design",
+        "host_mutation_performed",
+        "Join-Path",
+        "LiteralPath",
+        "msix",
+        "msix-packaging-feasibility",
+        "msix-packaging-feasibility-preflight",
+        "not-claimed",
+        "not-run",
+        "plan_only",
+        "public_trusted_signing",
+        "scope",
+        "summary",
+        "summary.json",
+        "Test-Path"
+      ]
+    },
+    {
+      "key": "msix-packaging-feasibility-preflight",
+      "ordinal": 2,
+      "name": "records the exact MSIX feasibility check names",
+      "required_literals": [
+        "ArtifactRoot",
+        "capability-boundary-required",
+        "install-update-remove-evidence-required",
+        "Join-Path",
+        "msix_checks",
+        "msix-build-not-executed",
+        "name",
+        "package-identity-preview-written",
+        "public-claim-not-made",
+        "publication-descriptor-schema-v1",
+        "service-packaging-design-required",
+        "summary"
+      ]
+    },
+    {
+      "key": "msix-packaging-feasibility-preflight",
+      "ordinal": 3,
+      "name": "writes an MSIX package manifest preview without building a package",
+      "required_literals": [
+        "<Identity",
+        "<Package",
+        "artifactRoot",
+        "ArtifactRoot",
+        "CN=PureCVisor",
+        "command_plan",
+        "Desktop",
+        "DisplayName",
+        "Get-Content",
+        "Identity",
+        "IgnorableNamespaces",
+        "IgnorableNamespaces=\"uap rescap\"",
+        "Join-Path",
+        "LiteralPath",
+        "Name",
+        "Node",
+        "not-built",
+        "not-run",
+        "Package",
+        "package_manifest_preview_path",
+        "preview",
+        "Publisher",
+        "PureCVisor",
+        "PureCVisor.DesktopNode",
+        "Raw",
+        "rescap",
+        "summary",
+        "Test-Path",
+        "uap",
+        "uap rescap",
+        "Version"
+      ]
+    },
+    {
+      "key": "msix-packaging-feasibility-preflight",
+      "ordinal": 4,
+      "name": "records service packaging blockers before any MSIX pass claim",
+      "required_literals": [
+        "appxmanifest-capability-boundary",
+        "ArtifactRoot",
+        "blocked-by-service-packaging-design",
+        "feasibility",
+        "install-update-remove-evidence",
+        "Join-Path",
+        "not-run",
+        "public-signing-decision",
+        "service-install-start-stop-design",
+        "summary"
+      ]
+    },
+    {
+      "key": "msix-packaging-feasibility-preflight",
+      "ordinal": 5,
+      "name": "requires plan-only mode",
+      "required_literals": [
+        "ArtifactRoot",
+        "Join-Path",
+        "Not",
+        "null",
+        "Out-Null",
+        "Path",
+        "publication",
+        "PublicationDescriptorPath"
+      ]
+    },
+    {
+      "key": "msix-packaging-feasibility-preflight",
+      "ordinal": 6,
+      "name": "does not contain host mutation or MSIX build command text",
+      "required_literals": [
+        "exe",
+        "Get-Content",
+        "LiteralPath",
+        "Not",
+        "Raw",
+        "Test-Path"
+      ]
+    },
+    {
+      "key": "public-distribution-descriptor",
+      "ordinal": 1,
+      "name": "creates a no-mutation dry-run summary",
+      "required_literals": [
+        "actual_execution",
+        "artifactRoot",
+        "ArtifactRoot",
+        "Join-Path",
+        "LiteralPath",
+        "not-run",
+        "plan_only",
+        "public-distribution-operations-expansion-candidate",
+        "scope",
+        "summary",
+        "summary.json",
+        "version"
+      ]
+    },
+    {
+      "key": "public-distribution-descriptor",
+      "ordinal": 2,
+      "name": "records the exact public distribution and operations gate names",
+      "required_literals": [
+        "ArtifactRoot",
+        "burn-bootstrapper-plan",
+        "credential-manager-transition-plan",
+        "diagnostics-server-action-plan",
+        "eventlog-provider-default-plan",
+        "gates",
+        "Join-Path",
+        "msix-feasibility-plan",
+        "name",
+        "public-signed-update-rollback-smoke-plan",
+        "public-signing-preflight",
+        "summary",
+        "timeout-rate-limit-hardening-plan",
+        "tls-certificate-lifecycle-plan",
+        "token-rotation-mutation-plan",
+        "updater-catalog-publication-plan",
+        "winget-manifest-plan"
+      ]
+    },
+    {
+      "key": "public-distribution-descriptor",
+      "ordinal": 3,
+      "name": "keeps public release claims explicitly unclaimed",
+      "required_literals": [
+        "ArtifactRoot",
+        "external_stable_publication",
+        "host_mutation_performed",
+        "Join-Path",
+        "mutates_host",
+        "not-claimed",
+        "public_release",
+        "public_trusted_signing",
+        "summary"
+      ]
+    },
+    {
+      "key": "public-distribution-descriptor",
+      "ordinal": 4,
+      "name": "records required inputs before any public publication claim",
+      "required_literals": [
+        "ArtifactRoot",
+        "command_plan",
+        "installer_sha256",
+        "installer_url",
+        "Join-Path",
+        "public_trusted_signing_provider",
+        "publication_target",
+        "release_approval",
+        "summary"
+      ]
+    },
+    {
+      "key": "public-distribution-descriptor",
+      "ordinal": 5,
+      "name": "records operations expansion gates separately from publication gates",
+      "required_literals": [
+        "ArtifactRoot",
+        "built-in-tls-certificate-lifecycle",
+        "command_plan",
+        "eventlog-provider-default",
+        "Join-Path",
+        "summary",
+        "windows-credential-manager-transition"
+      ]
+    },
+    {
+      "key": "public-distribution-descriptor",
+      "ordinal": 6,
+      "name": "does not contain host mutation or publication command text",
+      "required_literals": [
+        "exe",
+        "LiteralPath",
+        "Not",
+        "winget"
+      ]
+    },
+    {
+      "key": "public-distribution-operations-bundle",
+      "ordinal": 1,
+      "name": "executes and collects the non-mutating public distribution operations preflight bundle",
+      "required_literals": [
+        "actual_execution",
+        "artifactRoot",
+        "ArtifactRoot",
+        "code-level-nonmutating-bundle-pass",
+        "execution_bundle_path",
+        "external_stable_publication",
+        "follow_up_work_items_path",
+        "host_mutation_performed",
+        "Join-Path",
+        "LiteralPath",
+        "local-preflight-bundle-executed",
+        "mutates_host",
+        "not-claimed",
+        "public_distribution_ops_execution_bundle",
+        "public_trusted_signing",
+        "public-distribution-ops-execution-bundle",
+        "scope",
+        "summary",
+        "summary.json",
+        "Test-Path"
+      ]
+    },
+    {
+      "key": "public-distribution-operations-bundle",
+      "ordinal": 2,
+      "name": "records all requested distribution and operations component steps",
+      "required_literals": [
+        "ArtifactRoot",
+        "builtin-tls-certificate-lifecycle-preflight",
+        "burn-bootstrapper-preflight",
+        "component_steps",
+        "diagnostic-bundle-server-preflight",
+        "external_stable_publication",
+        "foreach",
+        "host_mutation_performed",
+        "Join-Path",
+        "LiteralPath",
+        "msix-packaging-feasibility-preflight",
+        "name",
+        "not-claimed",
+        "public_trusted_signing",
+        "public-distribution-descriptor",
+        "public-distribution-readiness",
+        "public-signed-update-rollback-smoke-preflight",
+        "service-token-rotation-revoke-preflight",
+        "step",
+        "summary",
+        "summary_path",
+        "Test-Path",
+        "timeout-rate-limit-hardening-preflight",
+        "updater-catalog-publication-preflight",
+        "windows-credential-manager-transition-preflight",
+        "windows-event-log-provider-transition-preflight",
+        "winget-manifest-compliance-preflight"
+      ]
+    },
+    {
+      "key": "public-distribution-operations-bundle",
+      "ordinal": 3,
+      "name": "preserves the requested legacy follow-up branches without deletion",
+      "required_literals": [
+        "ArtifactRoot",
+        "branch_preservation",
+        "Join-Path",
+        "preserved",
+        "summary"
+      ]
+    },
+    {
+      "key": "public-distribution-operations-bundle",
+      "ordinal": 4,
+      "name": "keeps real public release, credential, event log, TLS, token, and clean-host mutation blocked",
+      "required_literals": [
+        "ArtifactRoot",
+        "blocked-by-no-mutation-preflight",
+        "blocked-by-public-signing-and-publication",
+        "blocked-until-public-signing-and-publication",
+        "command_plan",
+        "component_statuses",
+        "Join-Path",
+        "not-published",
+        "not-run",
+        "not-submitted",
+        "summary"
+      ]
+    },
+    {
+      "key": "public-distribution-operations-bundle",
+      "ordinal": 5,
+      "name": "requires an explicit local descriptor write opt-in",
+      "required_literals": [
+        "ArtifactRoot",
+        "InstallerUrl",
+        "Join-Path",
+        "MsiSha256",
+        "Not",
+        "null",
+        "Out-Null",
+        "PublicCatalogUri",
+        "UpdatePackageSha256",
+        "UpdatePackageUrl",
+        "Version"
+      ]
+    },
+    {
+      "key": "public-distribution-operations-bundle",
+      "ordinal": 6,
+      "name": "does not contain host mutation, external submission, or public publication command text",
+      "required_literals": [
+        "exe",
+        "Get-Content",
+        "http",
+        "LiteralPath",
+        "Not",
+        "Raw",
+        "submit",
+        "Test-Path",
+        "winget"
+      ]
+    },
+    {
+      "key": "public-distribution-readiness",
+      "ordinal": 1,
+      "name": "creates a non-mutating public distribution readiness summary",
+      "required_literals": [
+        "actual_execution",
+        "artifactRoot",
+        "ArtifactRoot",
+        "external_stable_publication",
+        "host_mutation_performed",
+        "Join-Path",
+        "LiteralPath",
+        "not-claimed",
+        "not-run",
+        "plan_only",
+        "public_trusted_signing",
+        "public-distribution-readiness",
+        "public-distribution-readiness-preflight",
+        "scope",
+        "summary",
+        "summary.json",
+        "Test-Path"
+      ]
+    },
+    {
+      "key": "public-distribution-readiness",
+      "ordinal": 2,
+      "name": "records the exact readiness gate names",
+      "required_literals": [
+        "ArtifactRoot",
+        "gates",
+        "Join-Path",
+        "msix-service-packaging-feasibility",
+        "name",
+        "public-publication-blocker",
+        "public-signing-inputs",
+        "summary",
+        "winget-manifest-preview",
+        "winget-submission-plan",
+        "winget-validation-command"
+      ]
+    },
+    {
+      "key": "public-distribution-readiness",
+      "ordinal": 3,
+      "name": "writes a winget singleton manifest preview with required package fields",
+      "required_literals": [
+        "artifactRoot",
+        "ArtifactRoot",
+        "Desktop",
+        "DesktopNode",
+        "en-US",
+        "Get-Content",
+        "https://aka",
+        "InstallerSha256",
+        "InstallerSha256:",
+        "InstallerType",
+        "InstallerType: msi",
+        "InstallerUrl",
+        "Join-Path",
+        "json",
+        "License",
+        "LiteralPath",
+        "Local",
+        "management",
+        "manifest",
+        "ManifestType",
+        "ManifestType: singleton",
+        "ManifestVersion",
+        "ms/winget-manifest",
+        "msi",
+        "Node",
+        "PackageIdentifier",
+        "PackageLocale",
+        "PackageName",
+        "PackageVersion",
+        "Proprietary",
+        "Publisher",
+        "PureCVisor",
+        "Raw",
+        "schema",
+        "service",
+        "ShortDescription",
+        "singleton",
+        "summary",
+        "Test-Path",
+        "Windows",
+        "winget_manifest_preview_path",
+        "yaml-language-server"
+      ]
+    },
+    {
+      "key": "public-distribution-readiness",
+      "ordinal": 4,
+      "name": "keeps winget validation and submission as explicit manual follow-up",
+      "required_literals": [
+        "ArtifactRoot",
+        "command_plan",
+        "https://github.com/microsoft/winget-pkgs",
+        "Join-Path",
+        "manifest-preview-folder",
+        "not-submitted",
+        "summary",
+        "validate",
+        "winget",
+        "winget validate <manifest-preview-folder>"
+      ]
+    },
+    {
+      "key": "public-distribution-readiness",
+      "ordinal": 5,
+      "name": "requires plan-only mode",
+      "required_literals": [
+        "ArtifactRoot",
+        "InstallerSha256",
+        "InstallerUrl",
+        "Join-Path",
+        "Not",
+        "null",
+        "Out-Null",
+        "Path",
+        "publication",
+        "PublicationDescriptorPath"
+      ]
+    },
+    {
+      "key": "public-distribution-readiness",
+      "ordinal": 6,
+      "name": "does not contain host mutation or publication submission command text",
+      "required_literals": [
+        "exe",
+        "Get-Content",
+        "git",
+        "LiteralPath",
+        "Not",
+        "Raw",
+        "submit",
+        "Test-Path",
+        "winget"
+      ]
+    },
+    {
+      "key": "updater-catalog-publication-preflight",
+      "ordinal": 1,
+      "name": "creates a non-mutating updater catalog publication summary",
+      "required_literals": [
+        "actual_execution",
+        "artifactRoot",
+        "ArtifactRoot",
+        "catalog_publication",
+        "channel",
+        "external_stable_publication",
+        "host_mutation_performed",
+        "Join-Path",
+        "LiteralPath",
+        "not-claimed",
+        "not-published",
+        "not-run",
+        "plan_only",
+        "public_catalog_uri",
+        "public_trusted_signing",
+        "scope",
+        "stable",
+        "summary",
+        "summary.json",
+        "Test-Path",
+        "updater-catalog-publication-preflight"
+      ]
+    },
+    {
+      "key": "updater-catalog-publication-preflight",
+      "ordinal": 2,
+      "name": "records the exact publication preflight check names",
+      "required_literals": [
+        "ArtifactRoot",
+        "catalog-schema-v1",
+        "catalog-uri-https",
+        "Join-Path",
+        "name",
+        "package-sha256-present",
+        "package-uri-https",
+        "public-claim-not-made",
+        "publication_checks",
+        "publication-not-executed",
+        "selected-channel-present",
+        "summary"
+      ]
+    },
+    {
+      "key": "updater-catalog-publication-preflight",
+      "ordinal": 3,
+      "name": "writes a publication preview catalog for the selected channel",
+      "required_literals": [
+        "artifactRoot",
+        "ArtifactRoot",
+        "channels",
+        "ConvertFrom-Json",
+        "Desktop",
+        "Get-Content",
+        "Join-Path",
+        "LiteralPath",
+        "name",
+        "Node",
+        "not-claimed",
+        "not-published",
+        "package_uri",
+        "preview",
+        "preview_catalog_path",
+        "product",
+        "publication",
+        "PureCVisor",
+        "Raw",
+        "schema_version",
+        "sha256",
+        "stable",
+        "summary",
+        "Test-Path",
+        "version"
+      ]
+    },
+    {
+      "key": "updater-catalog-publication-preflight",
+      "ordinal": 4,
+      "name": "records the dry-run update command plan",
+      "required_literals": [
+        "ArtifactRoot",
+        "command_plan",
+        "Join-Path",
+        "Not",
+        "not-run",
+        "stable",
+        "summary"
+      ]
+    },
+    {
+      "key": "updater-catalog-publication-preflight",
+      "ordinal": 5,
+      "name": "requires plan-only mode",
+      "required_literals": [
+        "ArtifactRoot",
+        "catalog",
+        "CatalogPath",
+        "Channel",
+        "File",
+        "Join-Path",
+        "Not",
+        "null",
+        "Out-Null",
+        "Path",
+        "PublicCatalogUri",
+        "stable"
+      ]
+    },
+    {
+      "key": "updater-catalog-publication-preflight",
+      "ordinal": 6,
+      "name": "rejects a non-HTTPS public catalog URI",
+      "required_literals": [
+        "ArtifactRoot",
+        "catalog",
+        "CatalogPath",
+        "Channel",
+        "File",
+        "Join-Path",
+        "Not",
+        "null",
+        "Out-Null",
+        "Path",
+        "PlanOnly",
+        "PublicCatalogUri",
+        "stable"
+      ]
+    },
+    {
+      "key": "updater-catalog-publication-preflight",
+      "ordinal": 7,
+      "name": "rejects a non-HTTPS package URI for publication preview",
+      "required_literals": [
+        "ArtifactRoot",
+        "catalog",
+        "CatalogPath",
+        "Channel",
+        "File",
+        "Join-Path",
+        "Not",
+        "null",
+        "Out-Null",
+        "Path",
+        "PlanOnly",
+        "PublicCatalogUri",
+        "stable"
+      ]
+    },
+    {
+      "key": "updater-catalog-publication-preflight",
+      "ordinal": 8,
+      "name": "does not contain host mutation or publication submission command text",
+      "required_literals": [
+        "exe",
+        "Get-Content",
+        "LiteralPath",
+        "Not",
+        "Raw",
+        "Test-Path"
+      ]
+    }
+  ]
+}

@@ -31,8 +31,6 @@ internal sealed class VerificationCatalogLoader(IVerificationFileSystem fileSyst
     private const string ExpectedSchemaId = "pcv-development-verification-suite-catalog-schema-v1";
     private const string ExpectedSchemaReference = "./development-verification-suites.schema.json";
     private const string ExpectedContract = "pcv-development-verification-suite-catalog-v1";
-    private const string ExpectedActivationState = "plan-only-foundation";
-
     private static readonly string[] ExpectedExecutables =
         ["dotnet", "dotnet.exe", "node", "node.exe", "npm", "npm.cmd", "git", "git.exe"];
 
@@ -41,8 +39,9 @@ internal sealed class VerificationCatalogLoader(IVerificationFileSystem fileSyst
 
     private static readonly string[] ExpectedShardIds = ["dotnet", "web", "delivery", "installer-policy"];
     private static readonly string[] AllowedOwners = ["csharp", "node"];
+    private static readonly string[] AllowedActivationStates = ["plan-only-foundation", "shadow-ready", "active"];
     private static readonly string[] AllowedMigrationStates =
-        ["native-existing", "wave-a-foundation", "wave-b-pending", "wave-c-pending", "wave-d-pending"];
+        ["native-existing", "wave-a-foundation", "wave-b-pending", "wave-c-pending", "mapped", "cutover"];
     private static readonly string[] AllowedManagedHandlers = ["current-evidence-check", "policy-boundaries"];
     private static readonly string[] PowerShellTokens = ["pwsh", "powershell", "Invoke-Pester"];
     private static readonly string[] ForbiddenCommandTokens =
@@ -193,7 +192,7 @@ internal sealed class VerificationCatalogLoader(IVerificationFileSystem fileSyst
         if (!string.Equals(dto.Schema, ExpectedSchemaReference, StringComparison.Ordinal) ||
             dto.SchemaVersion != 1 ||
             !string.Equals(dto.Contract, ExpectedContract, StringComparison.Ordinal) ||
-            !string.Equals(dto.ActivationState, ExpectedActivationState, StringComparison.Ordinal) ||
+            !AllowedActivationStates.Contains(dto.ActivationState, StringComparer.Ordinal) ||
             dto.MaxParallelism != 4 ||
             dto.OverallTimeoutSeconds is null or < 1 or > 3600)
         {

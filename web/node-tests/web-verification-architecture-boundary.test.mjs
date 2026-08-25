@@ -12,6 +12,9 @@ const suiteCatalog = JSON.parse(fs.readFileSync(path.join(repoRoot, "config/deve
 const migrationManifest = JSON.parse(fs.readFileSync(path.join(repoRoot, "config/development-verification-migration-manifest.json"), "utf8"));
 
 const EVIDENCE_RELATIVE_PATH = "docs/ga-ready/evidence/pester-free-web-verification-wave-b-2026-08-24.md";
+const INSTALLER_EVIDENCE_RELATIVE_PATH = "docs/ga-ready/evidence/pester-free-installer-wave-c-2026-08-25.md";
+const PACKAGING_EVIDENCE_RELATIVE_PATH = "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md";
+const CUTOVER_EVIDENCE_RELATIVE_PATH = "docs/ga-ready/evidence/pester-free-required-ci-cutover-2026-08-25.md";
 const EVIDENCE_INPUT_HEAD = "20ba3b80c211cc6a29bc9ecaf7e9195911678f14";
 const EXPECTED_MAPPING_BYTES = 5077;
 const EXPECTED_MAPPING_HASH = "91c00cdf3ed8cd6a39ebb27131c629d1b54561f362f8099b2716c21a6c7a4d95";
@@ -34,10 +37,13 @@ const EXACT_EVIDENCE_LINES = [
 
 const EXPECTED_TEST_SCRIPT = "npm run check:feature-surfaces && tsc --noEmit -p tsconfig.json && npm run check:served && npm run check:frontend-batches";
 const EXPECTED_PARITY_SCRIPT = "npm run check:served && node scripts/regenerate-static-parity.mjs --check && node scripts/verify-static-parity.mjs && npm run browser:fixture";
+const EXPECTED_REQUIRED_SCRIPT = "npm test && npm run test:web-contracts && npm run verify:parity";
+const EXPECTED_WEB_CONTRACTS_SCRIPT = "npm run check:web-contract-registry && npm run check:verification-migration-manifest && node --test --test-reporter=spec node-tests/web-contract-harness.test.mjs node-tests/web-static-contracts.test.mjs node-tests/web-static-contracts-negative.test.mjs node-tests/verification-migration-manifest.test.mjs node-tests/web-contract-negative-parity.test.mjs node-tests/web-verification-architecture-boundary.test.mjs";
 const EXPECTED_SEPARATE_SCRIPTS = {
   "check:web-contract-registry": "node scripts/verify-web-contract-registry.mjs",
-  "check:verification-migration-manifest": "node scripts/verify-verification-migration-manifest.mjs --require-web-local-pass",
-  "test:web-contracts": "npm run check:web-contract-registry && npm run check:verification-migration-manifest && node --test --test-reporter=spec node-tests/web-static-contracts.test.mjs",
+  "check:verification-migration-manifest": "node scripts/regenerate-verification-migration-manifest.mjs --check && node scripts/verify-verification-migration-manifest.mjs --require-web-local-pass",
+  "generate:verification-migration-manifest": "node scripts/regenerate-verification-migration-manifest.mjs --write",
+  "test:web-contracts": EXPECTED_WEB_CONTRACTS_SCRIPT,
   "verify:web-contract-negative-parity": "node scripts/verify-web-contract-negative-parity.mjs"
 };
 
@@ -57,46 +63,76 @@ function assertExactMachineAssignments(lines, expectedLines) {
   }
 }
 
-test("keeps the default Web test and parity commands unchanged", () => {
+test("composes the shell-free required Web command without transitional Pester parity", () => {
   assert.equal(packageJson.scripts.test, EXPECTED_TEST_SCRIPT);
   assert.equal(packageJson.scripts["verify:parity"], EXPECTED_PARITY_SCRIPT);
+  assert.equal(packageJson.scripts["test:required"], EXPECTED_REQUIRED_SCRIPT);
+  assert.equal(packageJson.scripts["test:required"].includes("verify:web-contract-negative-parity"), false);
 });
 
-test("keeps the verification suite catalog at the Wave B planning boundary", () => {
-  const webParity = suiteCatalog.suites.find((suite) => suite.id === "web-parity");
-  assert.equal(suiteCatalog.activation_state, "plan-only-foundation");
-  assert.equal(webParity?.migration_state, "wave-b-pending");
+test("keeps every catalog activation at its exact migration-state boundary", () => {
+  const expectedByActivation = {
+    "plan-only-foundation": [
+      "native-existing", "native-existing", "wave-b-pending", "mapped", "mapped", "mapped", "wave-a-foundation"
+    ],
+    "shadow-ready": [
+      "native-existing", "native-existing", "mapped", "mapped", "mapped", "mapped", "mapped"
+    ],
+    active: Array(7).fill("cutover")
+  };
+  assert.deepEqual(
+    suiteCatalog.suites.map((suite) => suite.migration_state),
+    expectedByActivation[suiteCatalog.activation_state]
+  );
 });
 
-test("exposes Web contract verification only through separate commands", () => {
+test("pins every Web contract command while retaining transitional parity for shadow only", () => {
   const actual = Object.fromEntries(
     Object.keys(EXPECTED_SEPARATE_SCRIPTS).map((name) => [name, packageJson.scripts[name]])
   );
   assert.deepEqual(actual, EXPECTED_SEPARATE_SCRIPTS);
 });
 
-test("promotes only the Web migration row to local parity", () => {
+test("records all Web, Installer, and Packaging rows at coherent local and CI parity", () => {
+  const cutover = Object.hasOwn(migrationManifest, "cutover_locator");
+  const expectedStatus = cutover ? "cutover" : "mapped";
+  const expectedCi = cutover
+    ? { status: "pass", evidence: CUTOVER_EVIDENCE_RELATIVE_PATH }
+    : { status: "pending", evidence: null };
   const webEntries = migrationManifest.entries.filter((entry) => entry.domain === "web");
   assert.equal(webEntries.length, 1);
 
   const [webEntry] = webEntries;
-  assert.equal(webEntry.parity_status, "mapped");
+  assert.equal(webEntry.parity_status, expectedStatus);
   assert.deepEqual(webEntry.local_parity, {
     status: "pass",
     evidence: EVIDENCE_RELATIVE_PATH
   });
-  assert.deepEqual(webEntry.ci_parity, {
-    status: "pending",
-    evidence: null
-  });
+  assert.deepEqual(webEntry.ci_parity, expectedCi);
 
-  const nonWebEntries = migrationManifest.entries.filter((entry) => entry.domain !== "web");
-  assert.equal(nonWebEntries.length, 61);
-  for (const entry of nonWebEntries) {
-    assert.equal(entry.parity_status, "unmapped", entry.legacy_path);
-    assert.deepEqual(entry.local_parity, { status: "pending", evidence: null }, entry.legacy_path);
-    assert.deepEqual(entry.ci_parity, { status: "pending", evidence: null }, entry.legacy_path);
+  const installerEntries = migrationManifest.entries.filter((entry) => entry.domain === "installer");
+  assert.equal(installerEntries.length, 6);
+  for (const entry of installerEntries) {
+    assert.equal(entry.parity_status, expectedStatus, entry.legacy_path);
+    assert.deepEqual(entry.local_parity, {
+      status: "pass",
+      evidence: INSTALLER_EVIDENCE_RELATIVE_PATH
+    }, entry.legacy_path);
+    assert.deepEqual(entry.ci_parity, expectedCi, entry.legacy_path);
   }
+
+  const packagingEntries = migrationManifest.entries.filter((entry) => entry.domain === "packaging");
+  assert.equal(packagingEntries.length, 55);
+  for (const entry of packagingEntries) {
+    assert.equal(entry.parity_status, expectedStatus, entry.legacy_path);
+    assert.deepEqual(entry.local_parity, {
+      status: "pass",
+      evidence: PACKAGING_EVIDENCE_RELATIVE_PATH
+    }, entry.legacy_path);
+    assert.deepEqual(entry.ci_parity, expectedCi, entry.legacy_path);
+  }
+
+  assert.equal(migrationManifest.entries.length, 62);
 });
 
 test("records the clean evidence input and exact non-cutover claims once", () => {

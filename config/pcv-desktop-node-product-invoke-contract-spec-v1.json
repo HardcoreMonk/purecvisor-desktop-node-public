@@ -1,0 +1,1224 @@
+{
+  "contract": "pcv-desktop-node-product-invoke-contract-spec-v1",
+  "legacy_path": "packaging/windows-desktop-node/tests/PcvDesktopNodeProduct.Invoke.Tests.ps1",
+  "legacy_sha256": "0fff10664f5e65b72eb1cc86b668717b4caaeac15b4612e0d94c524ffc777955",
+  "entrypoint_path": "packaging/windows-desktop-node/Invoke-PcvDesktopNodeProduct.ps1",
+  "entrypoint_sha256": "086d491283f170558899cbce5e640c17e774186ed83b86d39a791ce4a7f4c1d5",
+  "module_path": "packaging/windows-desktop-node/PcvDesktopNodeProduct.psm1",
+  "module_sha256": "8c0bf982097881f56e60354f53961e54ea4d7a49e566a1e1eee861cd309403c3",
+  "legacy_contract_count": 61,
+  "legacy_should_site_count": 418,
+  "required_literal_count": 844,
+  "contracts": [
+    {
+      "ordinal": 1,
+      "name": "outputs a plan for the Plan action",
+      "required_literals": [
+        "action",
+        "api_token_source",
+        "api_token_storage",
+        "auth",
+        "C:\\Program Files\\PureCVisor\\DesktopNode",
+        "dpapi-local-machine",
+        "Plan",
+        "product_root",
+        "protected_file"
+      ]
+    },
+    {
+      "ordinal": 2,
+      "name": "keeps the product entrypoint on the .NET Windows service host plan",
+      "required_literals": [
+        "binary_path",
+        "config",
+        "default_owner",
+        "dotnet-windows-service",
+        "dotnet-windows-service-host",
+        "host",
+        "mode",
+        "Name",
+        "Properties",
+        "PSObject",
+        "service",
+        "winsw"
+      ]
+    },
+    {
+      "ordinal": 3,
+      "name": "defaults SourceRoot to the installed MSI payload root when no repo layout exists",
+      "required_literals": [
+        "binary_path",
+        "config",
+        "dotnet-windows-service",
+        "executable_path",
+        "host",
+        "mode",
+        "service",
+        "source_root"
+      ]
+    },
+    {
+      "ordinal": 4,
+      "name": "runs product native process commands under Windows PowerShell",
+      "required_literals": [
+        "exit_code",
+        "results",
+        "stdout",
+        "Trim"
+      ]
+    },
+    {
+      "ordinal": 5,
+      "name": "handles localized access denied retry text under Windows PowerShell",
+      "required_literals": [
+        "attempt_count",
+        "PCV_PRODUCT_REMOVE_FAILED"
+      ]
+    },
+    {
+      "ordinal": 6,
+      "name": "outputs a dry-run result for Install with WhatIf",
+      "required_literals": [
+        "action",
+        "dry_run",
+        "execution_skipped",
+        "Install"
+      ]
+    },
+    {
+      "ordinal": 7,
+      "name": "invokes native process commands without ProcessStartInfo ArgumentList",
+      "required_literals": [
+        "-Commands",
+        "Invoke-PcvProductProcessCommand",
+        "results",
+        "stdout"
+      ]
+    },
+    {
+      "ordinal": 8,
+      "name": "blocks automatic reboot capable commands before process execution",
+      "required_literals": [
+        "-Commands",
+        "-InvokeProcess",
+        "code",
+        "detail",
+        "error",
+        "Invoke-PcvProductProcessCommand",
+        "PCV_PRODUCT_AUTO_REBOOT_FORBIDDEN",
+        "Restart-Computer"
+      ]
+    },
+    {
+      "ordinal": 9,
+      "name": "rejects Update when installed product manifest is missing",
+      "required_literals": [
+        "-DataRoot",
+        "-Plan",
+        "-ProductRoot",
+        "-SourceRoot",
+        "action",
+        "code",
+        "error",
+        "Invoke-PcvDesktopNodeProductAction",
+        "New-PcvDesktopNodeProductPlan",
+        "PCV_PRODUCT_MANIFEST_MISSING",
+        "Update"
+      ]
+    },
+    {
+      "ordinal": 10,
+      "name": "fails closed when the pending-commit marker cannot be inspected",
+      "required_literals": [
+        "-Path",
+        "code",
+        "error",
+        "inspection-failed",
+        "PCV_PRODUCT_JOB_STORE_PENDING_COMMIT_UNRESOLVED",
+        "pending_commit_present",
+        "status",
+        "Test-PcvDesktopNodeJobStorePendingCommitGuard"
+      ]
+    },
+    {
+      "ordinal": 11,
+      "name": "blocks Update before product-root backup when a pending commit exists after service stop",
+      "required_literals": [
+        "-DataRoot",
+        "-InvokeProcess",
+        "-Plan",
+        "-ProductRoot",
+        "-SourceRoot",
+        "-Version",
+        "backup-product-root",
+        "code",
+        "error",
+        "executed",
+        "health",
+        "Invoke-PcvDesktopNodeProductAction",
+        "job_store_pending_commit",
+        "job-store.pending-commit.guard-before-backup",
+        "New-PcvDesktopNodeProductPlan",
+        "paths",
+        "PCV_PRODUCT_JOB_STORE_PENDING_COMMIT_UNRESOLVED",
+        "present",
+        "result",
+        "service.start",
+        "service.stop.wait",
+        "status",
+        "step"
+      ]
+    },
+    {
+      "ordinal": 12,
+      "name": "blocks service start when config migration validation fails during Update",
+      "required_literals": [
+        "-DataRoot",
+        "-InvokeProcess",
+        "-Plan",
+        "-ProductRoot",
+        "-SourceRoot",
+        "-Version",
+        "code",
+        "error",
+        "executed",
+        "Invoke-PcvDesktopNodeProductAction",
+        "New-PcvDesktopNodeProductPlan",
+        "PCV_PRODUCT_CONFIG_MIGRATION_BLOCKED",
+        "service.start",
+        "step"
+      ]
+    },
+    {
+      "ordinal": 13,
+      "name": "orchestrates Update with manifest validation, migration dry-run, service start, and health check",
+      "required_literals": [
+        "-DataRoot",
+        "-InvokeProcess",
+        "-Plan",
+        "-ProductRoot",
+        "-SourceRoot",
+        "-Version",
+        "action",
+        "executed",
+        "from_version",
+        "health",
+        "host_mutation_performed",
+        "Invoke-PcvDesktopNodeProductAction",
+        "New-PcvDesktopNodeProductPlan",
+        "path",
+        "paths",
+        "rollback_attempted",
+        "schema_version",
+        "service_mutation_started",
+        "stage",
+        "status",
+        "step",
+        "succeeded",
+        "to_version",
+        "transaction_journal",
+        "update",
+        "Update",
+        "update_transaction_journal"
+      ]
+    },
+    {
+      "ordinal": 14,
+      "name": "resolves a verified file URI update package before mutating Update",
+      "required_literals": [
+        "-DataRoot",
+        "-DownloadRoot",
+        "-ExpectedSha256",
+        "-InvokeProcess",
+        "-Path",
+        "-Plan",
+        "-ProductRoot",
+        "-SourceRoot",
+        "-SourceUri",
+        "-Version",
+        "actual_sha256",
+        "executed",
+        "Get-PcvFileSha256",
+        "Invoke-PcvDesktopNodeProductAction",
+        "New-PcvDesktopNodeProductPlan",
+        "result",
+        "service.stop",
+        "source_root",
+        "step",
+        "update",
+        "update_source"
+      ]
+    },
+    {
+      "ordinal": 15,
+      "name": "blocks Update before mutation when the payload is missing the installed CLI",
+      "required_literals": [
+        "-DataRoot",
+        "-InvokeProcess",
+        "-Plan",
+        "-ProductRoot",
+        "-SourceRoot",
+        "-Version",
+        "code",
+        "Count",
+        "detail",
+        "error",
+        "executed",
+        "Invoke-PcvDesktopNodeProductAction",
+        "New-PcvDesktopNodeProductPlan",
+        "PCV_PRODUCT_UPDATE_PAYLOAD_FILE_MISSING",
+        "step",
+        "update-payload-preflight"
+      ]
+    },
+    {
+      "ordinal": 16,
+      "name": "resolves a full updater catalog channel before mutating Update",
+      "required_literals": [
+        "-DataRoot",
+        "-DownloadRoot",
+        "-InvokeProcess",
+        "-Path",
+        "-Plan",
+        "-ProductRoot",
+        "-SourceRoot",
+        "-UpdateCatalogUri",
+        "-UpdateChannel",
+        "-Version",
+        "channel",
+        "executed",
+        "expected_sha256",
+        "external_stable_publication",
+        "Get-PcvFileSha256",
+        "Invoke-PcvDesktopNodeProductAction",
+        "New-PcvDesktopNodeProductPlan",
+        "not-claimed",
+        "publication",
+        "result",
+        "service.stop",
+        "step",
+        "to_version",
+        "update",
+        "update_catalog",
+        "version"
+      ]
+    },
+    {
+      "ordinal": 17,
+      "name": "blocks missing full updater catalog channels before service stop",
+      "required_literals": [
+        "-DataRoot",
+        "-DownloadRoot",
+        "-InvokeProcess",
+        "-Plan",
+        "-ProductRoot",
+        "-SourceRoot",
+        "-UpdateCatalogUri",
+        "-UpdateChannel",
+        "code",
+        "error",
+        "executed",
+        "Invoke-PcvDesktopNodeProductAction",
+        "New-PcvDesktopNodeProductPlan",
+        "PCV_PRODUCT_UPDATE_CATALOG_CHANNEL_NOT_FOUND",
+        "service.stop",
+        "step",
+        "update-catalog-preflight"
+      ]
+    },
+    {
+      "ordinal": 18,
+      "name": "blocks unsupported full updater catalog schemas before service stop",
+      "required_literals": [
+        "-DataRoot",
+        "-DownloadRoot",
+        "-InvokeProcess",
+        "-Plan",
+        "-ProductRoot",
+        "-SourceRoot",
+        "-UpdateCatalogUri",
+        "-UpdateChannel",
+        "code",
+        "error",
+        "executed",
+        "Invoke-PcvDesktopNodeProductAction",
+        "New-PcvDesktopNodeProductPlan",
+        "PCV_PRODUCT_UPDATE_CATALOG_SCHEMA_UNSUPPORTED",
+        "service.stop",
+        "step",
+        "update-catalog-preflight"
+      ]
+    },
+    {
+      "ordinal": 19,
+      "name": "blocks untrusted HTTP update package sources before service stop",
+      "required_literals": [
+        "-DataRoot",
+        "-DownloadRoot",
+        "-ExpectedSha256",
+        "-InvokeProcess",
+        "-Plan",
+        "-ProductRoot",
+        "-SourceRoot",
+        "-SourceUri",
+        "-Version",
+        "code",
+        "error",
+        "executed",
+        "Invoke-PcvDesktopNodeProductAction",
+        "New-PcvDesktopNodeProductPlan",
+        "PCV_PRODUCT_UPDATE_SOURCE_URI_UNTRUSTED",
+        "service.stop",
+        "step",
+        "update-source-preflight"
+      ]
+    },
+    {
+      "ordinal": 20,
+      "name": "blocks update package download roots inside the active product root before service stop",
+      "required_literals": [
+        "-DataRoot",
+        "-DownloadRoot",
+        "-ExpectedSha256",
+        "-InvokeProcess",
+        "-Path",
+        "-Plan",
+        "-ProductRoot",
+        "-SourceRoot",
+        "-SourceUri",
+        "-Version",
+        "code",
+        "error",
+        "executed",
+        "Get-PcvFileSha256",
+        "Invoke-PcvDesktopNodeProductAction",
+        "New-PcvDesktopNodeProductPlan",
+        "PCV_PRODUCT_UPDATE_DOWNLOAD_ROOT_ACTIVE_ROOT",
+        "service.stop",
+        "step",
+        "update-source-preflight"
+      ]
+    },
+    {
+      "ordinal": 21,
+      "name": "restores previous product root when Update copy fails after backup",
+      "required_literals": [
+        "-DataRoot",
+        "-InvokeProcess",
+        "-Plan",
+        "-ProductRoot",
+        "-SourceRoot",
+        "-Version",
+        "code",
+        "copy",
+        "error",
+        "failed-rolled-back",
+        "IndexOf",
+        "Invoke-PcvDesktopNodeProductAction",
+        "New-PcvDesktopNodeProductPlan",
+        "paths",
+        "PCV_PRODUCT_COPY_FAILED",
+        "restored",
+        "rollback_attempted",
+        "rollback_result",
+        "stage",
+        "status",
+        "transaction_journal",
+        "update",
+        "update_transaction_journal"
+      ]
+    },
+    {
+      "ordinal": 22,
+      "name": "restores previous product root when Update service start fails",
+      "required_literals": [
+        "-DataRoot",
+        "-InvokeProcess",
+        "-Plan",
+        "-ProductRoot",
+        "-SourceRoot",
+        "-Version",
+        "code",
+        "error",
+        "failed-rolled-back",
+        "host_mutation_performed",
+        "IndexOf",
+        "Invoke-PcvDesktopNodeProductAction",
+        "New-PcvDesktopNodeProductPlan",
+        "path",
+        "paths",
+        "PCV_PRODUCT_UPDATE_START_FAILED",
+        "restored",
+        "rollback_attempted",
+        "rollback_result",
+        "service-start",
+        "stage",
+        "status",
+        "transaction_journal",
+        "update",
+        "update_transaction_journal"
+      ]
+    },
+    {
+      "ordinal": 23,
+      "name": "restores previous product root when Update health check fails",
+      "required_literals": [
+        "-DataRoot",
+        "-InvokeProcess",
+        "-Plan",
+        "-ProductRoot",
+        "-SourceRoot",
+        "-Version",
+        "code",
+        "error",
+        "IndexOf",
+        "Invoke-PcvDesktopNodeProductAction",
+        "New-PcvDesktopNodeProductPlan",
+        "PCV_PRODUCT_UPDATE_HEALTH_CHECK_FAILED",
+        "rollback_attempted",
+        "update"
+      ]
+    },
+    {
+      "ordinal": 24,
+      "name": "rechecks pending commit after rollback stop wait when Update health fails",
+      "required_literals": [
+        "-DataRoot",
+        "-InvokeProcess",
+        "-Plan",
+        "-ProductRoot",
+        "-SourceRoot",
+        "-Version",
+        "code",
+        "error",
+        "executed",
+        "IndexOf",
+        "Invoke-PcvDesktopNodeProductAction",
+        "job_store_pending_commit",
+        "job-store.pending-commit.guard-before-automatic-rollback",
+        "job-store.pending-commit.guard-before-rollback-restore",
+        "New-PcvDesktopNodeProductPlan",
+        "paths",
+        "PCV_PRODUCT_JOB_STORE_PENDING_COMMIT_UNRESOLVED",
+        "present",
+        "restore",
+        "rollback_attempted",
+        "rollback_blocked",
+        "rollback.restore",
+        "status",
+        "step",
+        "update"
+      ]
+    },
+    {
+      "ordinal": 25,
+      "name": "orchestrates Install in meaningful order with full service command arguments",
+      "required_literals": [
+        "-DataRoot",
+        "-InvokeProcess",
+        "-Plan",
+        "-ProductRoot",
+        "-SourceRoot",
+        "-WinSwPath",
+        "action",
+        "command_line",
+        "Count",
+        "executed",
+        "Install",
+        "Invoke-PcvDesktopNodeProductAction",
+        "New-PcvDesktopNodeProductPlan"
+      ]
+    },
+    {
+      "ordinal": 26,
+      "name": "uses the protected token file bearer token during the default product health check",
+      "required_literals": [
+        "-DataRoot",
+        "-InvokeProcess",
+        "-Path",
+        "-Plan",
+        "-ProductRoot",
+        "-SourceRoot",
+        "-Token",
+        "-WinSwPath",
+        "auth",
+        "Authorization",
+        "bearer-protected-token-file",
+        "Invoke-PcvDesktopNodeProductAction",
+        "Invoke-WebRequest",
+        "New-PcvDesktopNodeProductPlan",
+        "New-PcvDesktopNodeProductProtectedTokenFile",
+        "PcvDesktopNodeProduct",
+        "result"
+      ]
+    },
+    {
+      "ordinal": 27,
+      "name": "migrates an existing legacy token into the protected token file during default Install token preparation",
+      "required_literals": [
+        "-DataRoot",
+        "-InvokeProcess",
+        "-Path",
+        "-Plan",
+        "-ProductRoot",
+        "-SourceRoot",
+        "-WinSwPath",
+        "dpapi-local-machine",
+        "Invoke-PcvDesktopNodeProductAction",
+        "legacy_token_file_retained",
+        "migrated_from_legacy_token_file",
+        "New-PcvDesktopNodeProductPlan",
+        "path",
+        "Read-PcvDesktopNodeProductProtectedTokenFile",
+        "result",
+        "storage",
+        "token"
+      ]
+    },
+    {
+      "ordinal": 28,
+      "name": "orchestrates Rollback with injectable product action dependencies",
+      "required_literals": [
+        "-DataRoot",
+        "-InvokeProcess",
+        "-Plan",
+        "-ProductRoot",
+        "-SourceRoot",
+        "action",
+        "Count",
+        "executed",
+        "Invoke-PcvDesktopNodeProductAction",
+        "New-PcvDesktopNodeProductPlan",
+        "Rollback"
+      ]
+    },
+    {
+      "ordinal": 29,
+      "name": "blocks Rollback restore and old service start while a pending commit exists",
+      "required_literals": [
+        "-DataRoot",
+        "-InvokeProcess",
+        "-Plan",
+        "-ProductRoot",
+        "-SourceRoot",
+        "code",
+        "error",
+        "executed",
+        "health",
+        "Invoke-PcvDesktopNodeProductAction",
+        "job_store_pending_commit",
+        "job-store.pending-commit.guard-before-restore",
+        "New-PcvDesktopNodeProductPlan",
+        "paths",
+        "PCV_PRODUCT_JOB_STORE_PENDING_COMMIT_UNRESOLVED",
+        "restore",
+        "service.start",
+        "service.stop.wait",
+        "step"
+      ]
+    },
+    {
+      "ordinal": 30,
+      "name": "continues Rollback after a nonzero stop command and still restores, starts, and checks health",
+      "required_literals": [
+        "-DataRoot",
+        "-InvokeProcess",
+        "-Plan",
+        "-ProductRoot",
+        "-SourceRoot",
+        "1062",
+        "exit_code",
+        "Invoke-PcvDesktopNodeProductAction",
+        "New-PcvDesktopNodeProductPlan",
+        "result",
+        "results",
+        "stderr"
+      ]
+    },
+    {
+      "ordinal": 31,
+      "name": "validates previous product manifest before restoring Rollback target",
+      "required_literals": [
+        "-DataRoot",
+        "-InvokeProcess",
+        "-Plan",
+        "-ProductRoot",
+        "-SourceRoot",
+        "action",
+        "failed_root",
+        "failed_root_preserved_for_diagnostics",
+        "Invoke-PcvDesktopNodeProductAction",
+        "New-PcvDesktopNodeProductPlan",
+        "previous_version",
+        "Rollback",
+        "rollback"
+      ]
+    },
+    {
+      "ordinal": 32,
+      "name": "restores the active product when previous promotion fails",
+      "required_literals": [
+        "-PreviousProductRoot",
+        "-ProductRoot",
+        "code",
+        "Count",
+        "current",
+        "error",
+        "PCV_PRODUCT_RESTORE_FAILED",
+        "previous",
+        "Restore-PcvDesktopNodePreviousProductRoot",
+        "Trim"
+      ]
+    },
+    {
+      "ordinal": 33,
+      "name": "preserves the previous backup when active backup promotion fails",
+      "required_literals": [
+        "-PreviousProductRoot",
+        "-ProductRoot",
+        "Backup-PcvDesktopNodeProductRoot",
+        "code",
+        "Count",
+        "current",
+        "error",
+        "PCV_PRODUCT_UPDATE_BACKUP_FAILED",
+        "Trim"
+      ]
+    },
+    {
+      "ordinal": 34,
+      "name": "requires explicit recovery when previous backup and staging both exist",
+      "required_literals": [
+        "-PreviousProductRoot",
+        "-ProductRoot",
+        "Backup-PcvDesktopNodeProductRoot",
+        "code",
+        "error",
+        "PCV_PRODUCT_UPDATE_BACKUP_RECOVERY_REQUIRED"
+      ]
+    },
+    {
+      "ordinal": 35,
+      "name": "prioritizes backup recovery conflicts when the active product root is missing",
+      "required_literals": [
+        "-PreviousProductRoot",
+        "-ProductRoot",
+        "Backup-PcvDesktopNodeProductRoot",
+        "code",
+        "error",
+        "PCV_PRODUCT_UPDATE_BACKUP_RECOVERY_REQUIRED"
+      ]
+    },
+    {
+      "ordinal": 36,
+      "name": "restores the previous product root during default Rollback",
+      "required_literals": [
+        "-DataRoot",
+        "-InvokeProcess",
+        "-Plan",
+        "-ProductRoot",
+        "-SourceRoot",
+        "failed_root",
+        "failed_root_preserved_for_diagnostics",
+        "Invoke-PcvDesktopNodeProductAction",
+        "New-PcvDesktopNodeProductPlan",
+        "paths",
+        "previous_product_root",
+        "restored",
+        "result"
+      ]
+    },
+    {
+      "ordinal": 37,
+      "name": "waits for SCM status to stop before restoring during Rollback",
+      "required_literals": [
+        "-DataRoot",
+        "-InvokeProcess",
+        "-Plan",
+        "-ProductRoot",
+        "-SourceRoot",
+        "attempt_count",
+        "Invoke-PcvDesktopNodeProductAction",
+        "New-PcvDesktopNodeProductPlan",
+        "result"
+      ]
+    },
+    {
+      "ordinal": 38,
+      "name": "fails Rollback before service start when the previous product root is missing",
+      "required_literals": [
+        "-DataRoot",
+        "-InvokeProcess",
+        "-Plan",
+        "-ProductRoot",
+        "-SourceRoot",
+        "code",
+        "Count",
+        "error",
+        "executed",
+        "Invoke-PcvDesktopNodeProductAction",
+        "New-PcvDesktopNodeProductPlan",
+        "PCV_PRODUCT_PREVIOUS_ROOT_MISSING",
+        "result",
+        "step"
+      ]
+    },
+    {
+      "ordinal": 39,
+      "name": "rejects rollback when previous manifest is missing or invalid",
+      "required_literals": [
+        "-DataRoot",
+        "-InvokeProcess",
+        "-Plan",
+        "-ProductRoot",
+        "-SourceRoot",
+        "code",
+        "Count",
+        "error",
+        "executed",
+        "Invoke-PcvDesktopNodeProductAction",
+        "New-PcvDesktopNodeProductPlan",
+        "PCV_PRODUCT_PREVIOUS_MANIFEST_INVALID",
+        "step"
+      ]
+    },
+    {
+      "ordinal": 40,
+      "name": "rejects Rollback restore dependencies that do not report restored true",
+      "required_literals": [
+        "-DataRoot",
+        "-InvokeProcess",
+        "-Plan",
+        "-ProductRoot",
+        "-SourceRoot",
+        "code",
+        "Count",
+        "error",
+        "executed",
+        "Invoke-PcvDesktopNodeProductAction",
+        "New-PcvDesktopNodeProductPlan",
+        "PCV_PRODUCT_RESTORE_NOT_PERFORMED",
+        "step"
+      ]
+    },
+    {
+      "ordinal": 41,
+      "name": "returns partial command diagnostics when the SCM create command fails",
+      "required_literals": [
+        "-DataRoot",
+        "-InvokeProcess",
+        "-Plan",
+        "-ProductRoot",
+        "-SourceRoot",
+        "-WinSwPath",
+        "arguments",
+        "code",
+        "Count",
+        "create",
+        "error",
+        "executed",
+        "exit_code",
+        "Invoke-PcvDesktopNodeProductAction",
+        "New-PcvDesktopNodeProductPlan",
+        "PCV_PRODUCT_COMMAND_FAILED",
+        "result",
+        "results",
+        "stderr",
+        "stdout",
+        "step"
+      ]
+    },
+    {
+      "ordinal": 42,
+      "name": "orchestrates Status with service query and manifest presence",
+      "required_literals": [
+        "-DataRoot",
+        "-InvokeProcess",
+        "-Plan",
+        "-ProductRoot",
+        "-SourceRoot",
+        "action",
+        "exists",
+        "Invoke-PcvDesktopNodeProductAction",
+        "New-PcvDesktopNodeProductPlan",
+        "result",
+        "Status"
+      ]
+    },
+    {
+      "ordinal": 43,
+      "name": "writes install log start and success events without command secrets",
+      "required_literals": [
+        "-DataRoot",
+        "-InvokeProcess",
+        "-Plan",
+        "-ProductRoot",
+        "-SourceRoot",
+        "Bearer ",
+        "data",
+        "event",
+        "executed_steps",
+        "install_log",
+        "Invoke-PcvDesktopNodeProductAction",
+        "New-PcvDesktopNodeProductPlan",
+        "paths",
+        "protected_token"
+      ]
+    },
+    {
+      "ordinal": 44,
+      "name": "writes install log failure events for RemoveInstalled RemoveData failures",
+      "required_literals": [
+        "-DataRoot",
+        "-InvokeProcess",
+        "-Plan",
+        "-ProductRoot",
+        "-RemovePath",
+        "-SourceRoot",
+        "data",
+        "error_code",
+        "error_detail",
+        "event",
+        "executed_steps",
+        "install_log",
+        "Invoke-PcvDesktopNodeProductAction",
+        "New-PcvDesktopNodeProductPlan",
+        "paths",
+        "PCV_PRODUCT_REMOVE_FAILED"
+      ]
+    },
+    {
+      "ordinal": 45,
+      "name": "reports Status even when the service query returns missing service",
+      "required_literals": [
+        "-DataRoot",
+        "-InvokeProcess",
+        "-Plan",
+        "-ProductRoot",
+        "-SourceRoot",
+        "1060",
+        "exists",
+        "exit_code",
+        "Invoke-PcvDesktopNodeProductAction",
+        "New-PcvDesktopNodeProductPlan",
+        "result",
+        "results"
+      ]
+    },
+    {
+      "ordinal": 46,
+      "name": "orchestrates Uninstall while preserving data by default",
+      "required_literals": [
+        "-DataRoot",
+        "-InvokeProcess",
+        "-Plan",
+        "-ProductRoot",
+        "-RemovePath",
+        "-SourceRoot",
+        "Count",
+        "Invoke-PcvDesktopNodeProductAction",
+        "New-PcvDesktopNodeProductPlan"
+      ]
+    },
+    {
+      "ordinal": 47,
+      "name": "blocks preserve-data Uninstall before service and product removal while a pending commit exists",
+      "required_literals": [
+        "-DataRoot",
+        "-InvokeProcess",
+        "-Plan",
+        "-ProductRoot",
+        "-RemovePath",
+        "-SourceRoot",
+        "code",
+        "Count",
+        "error",
+        "executed",
+        "Invoke-PcvDesktopNodeProductAction",
+        "job_store_pending_commit",
+        "job-store.pending-commit.guard-before-service-removal",
+        "New-PcvDesktopNodeProductPlan",
+        "paths",
+        "PCV_PRODUCT_JOB_STORE_PENDING_COMMIT_UNRESOLVED",
+        "remove",
+        "service.stop.wait",
+        "service.uninstall",
+        "step"
+      ]
+    },
+    {
+      "ordinal": 48,
+      "name": "retries product root removal when the service host lock delays deletion",
+      "required_literals": [
+        "-DataRoot",
+        "-InvokeProcess",
+        "-Plan",
+        "-ProductRoot",
+        "-RemovePath",
+        "-SourceRoot",
+        "attempt_count",
+        "Invoke-PcvDesktopNodeProductAction",
+        "New-PcvDesktopNodeProductPlan",
+        "PCV_PRODUCT_REMOVE_FAILED",
+        "result"
+      ]
+    },
+    {
+      "ordinal": 49,
+      "name": "waits for SCM status to stop before uninstalling and removing product files",
+      "required_literals": [
+        "-DataRoot",
+        "-InvokeProcess",
+        "-Plan",
+        "-ProductRoot",
+        "-RemovePath",
+        "-SourceRoot",
+        "attempt_count",
+        "Invoke-PcvDesktopNodeProductAction",
+        "New-PcvDesktopNodeProductPlan",
+        "result"
+      ]
+    },
+    {
+      "ordinal": 50,
+      "name": "orchestrates remove-data Uninstall with explicit data paths",
+      "required_literals": [
+        "-DataRoot",
+        "-InvokeProcess",
+        "-Plan",
+        "-ProductRoot",
+        "-RemovePath",
+        "-SourceRoot",
+        "Invoke-PcvDesktopNodeProductAction",
+        "New-PcvDesktopNodeProductPlan"
+      ]
+    },
+    {
+      "ordinal": 51,
+      "name": "repairs hardened token ACL before RemoveData deletes the token file",
+      "required_literals": [
+        "-DataRoot",
+        "-InvokeProcess",
+        "-Plan",
+        "-ProductRoot",
+        "-SourceRoot",
+        "acl_repair",
+        "arguments",
+        "Count",
+        "Invoke-PcvDesktopNodeProductAction",
+        "New-PcvDesktopNodeProductPlan"
+      ]
+    },
+    {
+      "ordinal": 52,
+      "name": "repairs hardened protected token ACL when localized access denied text is returned during MSI RemoveInstalled RemoveData",
+      "required_literals": [
+        "-DataRoot",
+        "-InvokeProcess",
+        "-Plan",
+        "-ProductRoot",
+        "-SourceRoot",
+        "-WinSwPath",
+        "acl_repair",
+        "arguments",
+        "Count",
+        "Invoke-PcvDesktopNodeProductAction",
+        "New-PcvDesktopNodeProductPlan"
+      ]
+    },
+    {
+      "ordinal": 53,
+      "name": "continues Uninstall removal when the service is already missing",
+      "required_literals": [
+        "-DataRoot",
+        "-InvokeProcess",
+        "-Plan",
+        "-ProductRoot",
+        "-RemovePath",
+        "-SourceRoot",
+        "exit_code",
+        "Invoke-PcvDesktopNodeProductAction",
+        "New-PcvDesktopNodeProductPlan",
+        "result",
+        "results"
+      ]
+    },
+    {
+      "ordinal": 54,
+      "name": "blocks Uninstall removal after an unexpected stop failure",
+      "required_literals": [
+        "-DataRoot",
+        "-InvokeProcess",
+        "-Plan",
+        "-ProductRoot",
+        "-RemovePath",
+        "-SourceRoot",
+        "code",
+        "Count",
+        "error",
+        "executed",
+        "Invoke-PcvDesktopNodeProductAction",
+        "New-PcvDesktopNodeProductPlan",
+        "PCV_PRODUCT_COMMAND_FAILED",
+        "step"
+      ]
+    },
+    {
+      "ordinal": 55,
+      "name": "configures an already installed MSI payload without copying assets",
+      "required_literals": [
+        "-DataRoot",
+        "-InvokeProcess",
+        "-Plan",
+        "-ProductRoot",
+        "-SourceRoot",
+        "-WinSwPath",
+        "action",
+        "binary_path",
+        "ConfigureInstalled",
+        "Count",
+        "executable_path",
+        "executed",
+        "Invoke-PcvDesktopNodeProductAction",
+        "New-PcvDesktopNodeProductPlan",
+        "path",
+        "result",
+        "Where"
+      ]
+    },
+    {
+      "ordinal": 56,
+      "name": "repairs service configuration without copying assets or deleting product root",
+      "required_literals": [
+        "-DataRoot",
+        "-InvokeProcess",
+        "-Plan",
+        "-ProductRoot",
+        "-RemovePath",
+        "-SourceRoot",
+        "-WinSwPath",
+        "action",
+        "binary_path",
+        "Count",
+        "executable_path",
+        "executed",
+        "Invoke-PcvDesktopNodeProductAction",
+        "New-PcvDesktopNodeProductPlan",
+        "path",
+        "RepairInstalled",
+        "result",
+        "Where"
+      ]
+    },
+    {
+      "ordinal": 57,
+      "name": "repairs MSI-installed service through native service-action so BatchEvidenceRoot updates PathName",
+      "required_literals": [
+        "-BatchEvidenceRoot",
+        "-DataRoot",
+        "-InvokeProcess",
+        "-Plan",
+        "-ProductRoot",
+        "-RemovePath",
+        "-SourceRoot",
+        "Contains",
+        "Count",
+        "file",
+        "Invoke-PcvDesktopNodeProductAction",
+        "native-service-action-controls-final-state",
+        "New-PcvDesktopNodeProductPlan",
+        "reason",
+        "result",
+        "skipped"
+      ]
+    },
+    {
+      "ordinal": 58,
+      "name": "removes MSI-installed service while preserving data by default",
+      "required_literals": [
+        "-DataRoot",
+        "-InvokeProcess",
+        "-Plan",
+        "-ProductRoot",
+        "-RemovePath",
+        "-SourceRoot",
+        "-WinSwPath",
+        "action",
+        "Count",
+        "executed",
+        "Invoke-PcvDesktopNodeProductAction",
+        "New-PcvDesktopNodeProductPlan",
+        "removed_paths",
+        "RemoveInstalled",
+        "Where"
+      ]
+    },
+    {
+      "ordinal": 59,
+      "name": "blocks preserve-data RemoveInstalled before service removal while a pending commit exists",
+      "required_literals": [
+        "-DataRoot",
+        "-InvokeProcess",
+        "-Plan",
+        "-ProductRoot",
+        "-RemovePath",
+        "-SourceRoot",
+        "-WinSwPath",
+        "action",
+        "code",
+        "Count",
+        "error",
+        "executed",
+        "Invoke-PcvDesktopNodeProductAction",
+        "job_store_pending_commit",
+        "job-store.pending-commit.guard-before-service-removal",
+        "New-PcvDesktopNodeProductPlan",
+        "paths",
+        "PCV_PRODUCT_JOB_STORE_PENDING_COMMIT_UNRESOLVED",
+        "remove",
+        "RemoveInstalled",
+        "service.stop.wait",
+        "service.uninstall",
+        "step"
+      ]
+    },
+    {
+      "ordinal": 60,
+      "name": "continues MSI RemoveInstalled when Restart Manager already has the SCM service stopping",
+      "required_literals": [
+        "-DataRoot",
+        "-InvokeProcess",
+        "-Plan",
+        "-ProductRoot",
+        "-RemovePath",
+        "-SourceRoot",
+        "-WinSwPath",
+        "action",
+        "attempt_count",
+        "exit_code",
+        "Invoke-PcvDesktopNodeProductAction",
+        "New-PcvDesktopNodeProductPlan",
+        "RemoveInstalled",
+        "result",
+        "results"
+      ]
+    },
+    {
+      "ordinal": 61,
+      "name": "removes only ProgramData paths for MSI RemoveInstalled -RemoveData",
+      "required_literals": [
+        "-DataRoot",
+        "-InvokeProcess",
+        "-Plan",
+        "-ProductRoot",
+        "-RemovePath",
+        "-SourceRoot",
+        "-WinSwPath",
+        "action",
+        "Invoke-PcvDesktopNodeProductAction",
+        "New-PcvDesktopNodeProductPlan",
+        "RemoveInstalled"
+      ]
+    }
+  ]
+}

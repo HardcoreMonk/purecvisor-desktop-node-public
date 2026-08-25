@@ -18,6 +18,32 @@
 - Claims: `public_trusted_signing=false`; `external_stable_publication=false`.
 <!-- END GENERATED CURRENT EVIDENCE -->
 
+## 2026-08-25 Required CI same-SHA shadow PASS and cutover commit
+
+Authoritative shadow commit `f8208f076cb9db69022b4dc060e65f13d23fae8c`의 pull-request
+Development Gates run
+`https://github.com/HardcoreMonk/purecvisor-desktop-node-public/actions/runs/32898937784`
+attempt 1에서 기존 네 job과 replacement 네 shard가 같은 SHA로 PASS했다. Legacy Pester는
+`627/627`, replacement는 Web `50/50`, Installer `49/49`, Delivery `528/528`, .NET
+`2210/2210`이며 failed/skipped/not-run은 모두 `0`이다. Provider wall-clock은
+`186000 ms`로 `214000 ms` 한도 안이다. 여덟 artifact는 API로 다시 내려받아 provider
+SHA-256과 일치함을 확인했다. 단일 증빙은
+`docs/ga-ready/evidence/pester-free-required-ci-cutover-2026-08-25.md`다.
+
+이 direct-child cutover commit에서 catalog는 `active`, 일곱 suite는 모두 `cutover`, ledger는
+62 files / 627 contracts 전체 `cutover / local pass / CI pass`로 전환된다. Required workflow의
+실행 job은 `dotnet`, `web`, `delivery`, `installer-policy` 네 개뿐이며 정적 executable
+node 기준 Pester, 비관리자 PowerShell, host/service/MSI/VM mutation invocation은 각각 `0`이다.
+Windows 실행 step은 `cmd`, Ubuntu 실행 step은 기본 Bash를 사용한다.
+
+새 네 job의 cutover-SHA CI, branch-protection context 교체, PR merge와 remote-main CI는 아직
+남아 있으므로 `cutover_completed=false`이며 최종 Required CI zero 전환 완료를 아직 주장하지
+않는다. Legacy Pester는 non-required historical parity/rollback source로 보존하되 active
+workflow oracle로 사용하지 않고,
+`.github/workflows/public-boundary.yml`은 non-required residue다. Operational current
+`0.42.74-admin-smoke`, saved-lifecycle actual-VM blocker, public trusted signing과 external
+stable binary publication 상태는 변경하지 않는다.
+
 ## 2026-08-25 public source safety gate
 
 Before a parentless source root is seeded or any repository visibility changes, run both repository-owned
@@ -37,11 +63,58 @@ digest; matched values are never emitted.
 
 Official pinned Gitleaks is an independent required oracle and must report finding count `0`. Neither scanner
 may be bypassed with an ignore file, fingerprint allowlist, exit suppression, or claim downgrade. These gates
-are public-root bootstrap policy; Required CI Pester/non-admin PowerShell zero remains pending until the
-same-SHA shadow and Wave E cutover complete.
+are public-root bootstrap policy. 이 bootstrap checkpoint 당시 Required CI 전환은 pending이었고,
+현재 cutover 진행 상태는 바로 위 절과 cutover evidence를 우선한다.
 
 아래 dated section의 수치는 각 source-state snapshot이다. 현재 operational tuple은 위 생성 블록과
 `docs/ga-ready/current-evidence.json`을 우선한다.
+
+## 2026-08-25 Packaging verification Wave D local parity
+
+Wave D는 Packaging legacy Pester 55개 파일의 528개 계약을 같은 ID와 순서의 C# custom facts로
+교체했다. D1~D10과 최종 aggregate에서 replacement와 일회성 Pester 5.7.1 reference가 각각
+`528/528`, failed/skipped/not-run `0`으로 PASS했다. 단일 증빙은
+`docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md`다.
+
+Strict v2 migration ledger의 62 files / 627 contracts는 Web 50, Installer 49, Packaging 528
+모두 `mapped` / local `pass` / CI `pending`이다. `delivery-contracts`와 `evidence-check`를
+`mapped`로 승격했고, `wave-d-pending`은 schema와 managed catalog에서 더 이상 허용하지 않는다.
+Catalog activation은 계속 `plan-only-foundation`이며 current-evidence 검증은 read-only,
+write/child-process `0`을 유지한다.
+
+최종 Pester reference에서 sanitized public root에 포함되지 않는 frozen 0.42.65 reader fixture로
+인한 조건부 2건은 bootstrap evidence에 고정된 SHA-256의 read-only binary를 ignored
+`artifacts/**` 경계에서만 사용해 실제 실행했다. 이 binary는 추적하거나 공개하지 않는다.
+Required workflow는 아직 legacy authority이므로 same-SHA dual-run, Pester/non-admin PowerShell
+zero, branch protection cutover는 Wave E 완료 전까지 주장하지 않는다. 이 local parity는 host
+mutation, package build, actual-VM, public trusted signing 또는 external stable publication의
+근거가 아니다.
+
+## 2026-08-25 Installer verification Wave C local parity
+
+Wave C는 Installer legacy Pester 6개 파일의 49개 계약을 동일 ID와 순서의 C# custom facts로
+교체했다. Clean input `0ab1bda71f3398aed302d53e7d6715987ce87b19`에서 replacement와 일회성
+Pester 5.7.1 reference가 각각 `49/49`, failed/skipped/not-run `0`으로 PASS했다. 단일 증빙은
+`docs/ga-ready/evidence/pester-free-installer-wave-c-2026-08-25.md`다.
+
+이 Wave C checkpoint 당시 strict v2 migration ledger는 62 files / 627 contracts를 소유했다.
+Web 50과 Installer 49는
+`mapped` / local `pass` / CI `pending`이고 Packaging 528은 `unmapped` / local·CI `pending`이다.
+`installer-contracts.migration_state=mapped`만 승격하며 `delivery-contracts`와 `evidence-check`는
+`wave-d-pending`, catalog activation은 `plan-only-foundation`으로 유지한다.
+
+```text
+dotnet test src/DesktopNode.Delivery.Tests/DesktopNode.Delivery.Tests.csproj -c Release --filter Category=Installer --no-restore --nologo
+npm run check:verification-migration-manifest --prefix web
+node --test web/node-tests/verification-migration-manifest.test.mjs
+```
+
+Replacement는 PowerShell, Pester, MSI/service/VM mutation 도구 또는 shell을 실행하지 않는다.
+Pester 5.7.1 전체 49건 실행은 로컬 parity를 위한 마지막 일회성 reference oracle이며 Required CI
+경로가 아니다. Required workflow는 변경하지 않았으므로 `required_ci_pester_zero=false`,
+`required_ci_nonadmin_powershell_zero=false`, `cutover_completed=false`를 유지한다. 이 evidence는
+host mutation, package build, actual-VM, public trusted signing 또는 external stable publication의
+근거가 아니다.
 
 ## 2026-08-24 Web verification Wave B local parity
 

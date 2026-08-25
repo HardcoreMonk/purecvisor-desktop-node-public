@@ -1,5 +1,52 @@
 # Desktop Node 증거 인덱스
 
+## 2026-08-25 Required CI same-SHA shadow PASS and cutover commit
+
+- `docs/ga-ready/evidence/pester-free-required-ci-cutover-2026-08-25.md`는 shadow SHA
+  `f8208f076cb9db69022b4dc060e65f13d23fae8c`, Actions run `32898937784` attempt 1의
+  legacy/replacement 4-job PASS를 기록한다. Legacy Pester `627/627`, replacement Web
+  `50/50`, Installer `49/49`, Delivery `528/528`, .NET `2210/2210`이고
+  failed/skipped/not-run은 모두 `0`이다.
+- 여덟 artifact의 provider ID/digest를 API 재다운로드 SHA-256과 독립 대조했다. Job envelope
+  wall-clock은 `182000 ms`이며 frozen binary 실행 `0`, immutable evidence fallback `2`,
+  host mutation `false`다.
+- Direct-child cutover commit은 catalog `active`, suite `7/7 cutover`, ledger
+  `62/62 files`와 `627/627 contracts` CI PASS, Required workflow 네 replacement job과
+  executable Pester/비관리자 PowerShell/mutation invocation `0`을 고정한다.
+- Cutover-SHA CI, branch-protection 교체, PR merge, remote-main CI가 남아 있어
+  `cutover_completed=false`다. Legacy Pester historical parity/rollback source와 non-required
+  `.github/workflows/public-boundary.yml`은 residue/reference로 보존하며 operational
+  `0.42.74-admin-smoke`, actual-VM blocker, trusted signing/stable binary publication 상태는
+  변경하지 않는다.
+
+## 2026-08-25 Packaging verification Wave D local parity
+
+- `docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md`는 55개 Packaging legacy
+  파일의 528개 계약에 대해 C# replacement와 일회성 Pester 5.7.1 reference가 최종 aggregate
+  `528/528`, failed/skipped/not-run `0`으로 PASS했음을 기록한다. Delivery assembly `684/684`,
+  전체 solution 9 assemblies `2,153/2,153`, Web contract `50/50`도 PASS했다.
+- Strict v2 ledger의 62 files / 627 contracts는 모두 `mapped` / local `pass` / CI `pending`이다.
+  `delivery-contracts`와 `evidence-check`는 `mapped`, catalog activation은 계속
+  `plan-only-foundation`이며 managed current-evidence 검증은 write/child-process `0`이다.
+- Sanitized public root에서 제외한 frozen reader binary는 bootstrap-recorded SHA-256과 일치하는
+  read-only copy를 ignored `artifacts/**`에서만 reference에 사용했고 추적·공개하지 않았다.
+  Required CI same-SHA parity, Pester/non-admin PowerShell zero와 branch-protection cutover는 Wave E
+  전까지 주장하지 않는다. Host mutation, package candidate, public trusted signing 및 external
+  stable publication도 모두 이 evidence 범위 밖이다.
+
+## 2026-08-25 Installer verification Wave C local parity
+
+- `docs/ga-ready/evidence/pester-free-installer-wave-c-2026-08-25.md`는 clean input
+  `0ab1bda71f3398aed302d53e7d6715987ce87b19`에서 Installer legacy/reference와 C# replacement가
+  각각 `49/49` PASS하고 failed/skipped/not-run `0`임을 기록한다. Strict v2 ledger는 62 files /
+  627 contracts, Web mapped/local-pass 50, Installer mapped/local-pass 49, Packaging unmapped 528,
+  missing/duplicate/order drift `0`이다.
+- 새 replacement의 PowerShell/Pester/MSI/service/VM/shell 실행은 `0`이며 host mutation도 수행하지
+  않았다. `installer-contracts=mapped`만 승격했고 catalog activation은 계속
+  `plan-only-foundation`, Delivery/Evidence는 `wave-d-pending`, 모든 CI parity는 `pending`이다.
+- Required CI의 Pester/non-admin PowerShell zero, cutover, public trusted signing과 external stable
+  publication은 아직 주장하지 않는다. Operational current와 actual-VM blocker도 변경하지 않는다.
+
 ## 2026-08-25 public authority bootstrap local source gate
 
 - `docs/ga-ready/evidence/public-authority-bootstrap-2026-08-25.md`는 sanitized committed tree의

@@ -93,7 +93,7 @@ function realDirectory(candidate, detail) {
 
 function lstatOrMissing(candidate, detail) {
   try {
-    return fs.lstatSync(candidate);
+    return fs.lstatSync(candidate, { bigint: true });
   } catch (error) {
     if (error?.code === "ENOENT") return undefined;
     throw unsafe(detail);
@@ -267,7 +267,7 @@ export function authorizeNegativeParityFixtureCandidate(root, tempRoot = realDir
   }
   let stat;
   try {
-    stat = fs.statSync(real);
+    stat = fs.statSync(real, { bigint: true });
   } catch {
     throw unsafe("fixture_root=identity-unavailable");
   }
@@ -281,8 +281,10 @@ export function authorizeNegativeParityFixtureCandidate(root, tempRoot = realDir
     realPath: real,
     lexicalDevice: lexical.dev,
     lexicalInode: lexical.ino,
+    lexicalBirthtimeNs: lexical.birthtimeNs,
     device: stat.dev,
-    inode: stat.ino
+    inode: stat.ino,
+    birthtimeNs: stat.birthtimeNs
   });
 }
 
@@ -304,14 +306,16 @@ function validateAuthorizedFixture(authorization, { allowMissing = false } = {})
   }
   let stat;
   try {
-    stat = fs.statSync(real);
+    stat = fs.statSync(real, { bigint: true });
   } catch {
     throw unsafe("fixture_root=identity-unavailable");
   }
   if (
     real !== authorization.realPath || !stat.isDirectory()
     || lexical.dev !== authorization.lexicalDevice || lexical.ino !== authorization.lexicalInode
+    || lexical.birthtimeNs !== authorization.lexicalBirthtimeNs
     || stat.dev !== authorization.device || stat.ino !== authorization.inode
+    || stat.birthtimeNs !== authorization.birthtimeNs
   ) throw unsafe("fixture_root=identity-changed");
   return true;
 }

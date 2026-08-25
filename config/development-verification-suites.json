@@ -2,7 +2,7 @@
   "$schema": "./development-verification-suites.schema.json",
   "schema_version": 1,
   "contract": "pcv-development-verification-suite-catalog-v1",
-  "activation_state": "plan-only-foundation",
+  "activation_state": "active",
   "max_parallelism": 4,
   "overall_timeout_seconds": 1200,
   "allowed_executables": [
@@ -19,7 +19,7 @@
     {
       "id": "dotnet",
       "owner": "csharp",
-      "migration_state": "native-existing",
+      "migration_state": "cutover",
       "timeout_seconds": 900,
       "executor": {
         "kind": "process",
@@ -29,6 +29,8 @@
           "src/DesktopNode.sln",
           "-c",
           "Release",
+          "--no-build",
+          "--no-restore",
           "--nologo"
         ]
       }
@@ -36,13 +38,14 @@
     {
       "id": "web-typecheck",
       "owner": "node",
-      "migration_state": "native-existing",
+      "migration_state": "cutover",
       "timeout_seconds": 600,
       "executor": {
         "kind": "process",
         "file_name": "npm",
         "arguments": [
-          "test",
+          "run",
+          "test:required",
           "--prefix",
           "web"
         ]
@@ -51,14 +54,14 @@
     {
       "id": "web-parity",
       "owner": "node",
-      "migration_state": "wave-b-pending",
+      "migration_state": "cutover",
       "timeout_seconds": 600,
       "executor": {
         "kind": "process",
         "file_name": "npm",
         "arguments": [
           "run",
-          "verify:parity",
+          "check:verification-migration-manifest",
           "--prefix",
           "web"
         ]
@@ -67,7 +70,7 @@
     {
       "id": "delivery-contracts",
       "owner": "csharp",
-      "migration_state": "wave-d-pending",
+      "migration_state": "cutover",
       "timeout_seconds": 900,
       "executor": {
         "kind": "process",
@@ -77,6 +80,8 @@
           "src/DesktopNode.Delivery.Tests/DesktopNode.Delivery.Tests.csproj",
           "-c",
           "Release",
+          "--no-build",
+          "--no-restore",
           "--filter",
           "Category=Delivery",
           "--nologo"
@@ -86,7 +91,7 @@
     {
       "id": "installer-contracts",
       "owner": "csharp",
-      "migration_state": "wave-c-pending",
+      "migration_state": "cutover",
       "timeout_seconds": 900,
       "executor": {
         "kind": "process",
@@ -96,6 +101,8 @@
           "src/DesktopNode.Delivery.Tests/DesktopNode.Delivery.Tests.csproj",
           "-c",
           "Release",
+          "--no-build",
+          "--no-restore",
           "--filter",
           "Category=Installer",
           "--nologo"
@@ -105,7 +112,7 @@
     {
       "id": "evidence-check",
       "owner": "csharp",
-      "migration_state": "wave-d-pending",
+      "migration_state": "cutover",
       "timeout_seconds": 300,
       "executor": {
         "kind": "managed",
@@ -115,7 +122,7 @@
     {
       "id": "policy-boundaries",
       "owner": "csharp",
-      "migration_state": "wave-a-foundation",
+      "migration_state": "cutover",
       "timeout_seconds": 300,
       "executor": {
         "kind": "managed",

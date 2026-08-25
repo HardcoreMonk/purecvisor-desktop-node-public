@@ -11,6 +11,9 @@ Describe 'Frozen 0.42.65 job-store reader compatibility runner' {
         $script:RunnerPath = Join-Path $script:RepoRoot 'packaging/windows-desktop-node/tools/Invoke-PcvJobStore04265ReaderCompatibility.ps1'
         $script:WriterProgramPath = Join-Path $script:RepoRoot 'packaging/windows-desktop-node/tools/fixtures/PcvJobStoreFixtureWriter/Program.cs'
         $script:FrozenHostPath = Join-Path $script:RepoRoot 'artifacts/admin-smoke-package-20260716-04265/host-publish/DesktopNode.Host.exe'
+        $script:CompletionEvidencePath = Join-Path $script:RepoRoot 'docs/ga-ready/evidence/csharp-architecture-wave2a-job-durability-completion-2026-08-02.md'
+        $script:WaveDEvidencePath = Join-Path $script:RepoRoot 'docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md'
+        $script:PublicAuthorityEvidencePath = Join-Path $script:RepoRoot 'docs/ga-ready/evidence/public-authority-bootstrap-2026-08-25.md'
     }
 
     It 'pins the frozen host by artifact path, SHA-256, and exact ProductVersion' {
@@ -36,8 +39,20 @@ Describe 'Frozen 0.42.65 job-store reader compatibility runner' {
         $content | Should -Not -Match 'msiexec|Start-Service|Stop-Service|Restart-Service|New-Service|Remove-Service|sc\.exe|Get-VM|New-VM|Set-VM|Remove-VM|Checkpoint-VM|Restore-VMSnapshot|New-NetFirewallRule|Remove-NetFirewallRule|netsh\s+http'
     }
 
-    It 'dry-runs current-writer terminal and FIFO queue schemas plus backup restore without a listener' `
-        -Skip:(-not $readerCompatibilityCanRunFrozenHost) {
+    It 'dry-runs current-writer schemas with the frozen host or verifies immutable public exclusion evidence' {
+        $completionEvidence = Get-Content -Raw -LiteralPath $script:CompletionEvidencePath
+        $waveDEvidence = Get-Content -Raw -LiteralPath $script:WaveDEvidencePath
+        $publicAuthorityEvidence = Get-Content -Raw -LiteralPath $script:PublicAuthorityEvidencePath
+
+        $completionEvidence | Should -Match ([regex]::Escape('| Frozen 0.42.65 runner contract | PASS, 5/5 |'))
+        $waveDEvidence | Should -Match 'frozen_reader_fixture_sha256=95e219e779fce5c4fa8162aa31cd97e68370664ffd1aa465237dbdb769383c83'
+        $waveDEvidence | Should -Match ([regex]::Escape('frozen_reader_fixture_product_version=0.42.65-admin-smoke+4855947fe0199cedc978e8b40ffb45e96ced6876'))
+        $waveDEvidence | Should -Match 'frozen_reader_fixture_tracked=false'
+        $publicAuthorityEvidence | Should -Match 'The fixture is excluded from `git archive`, the parentless source root, provider seed, release, and package\.'
+        if (-not $readerCompatibilityCanRunFrozenHost) {
+            return
+        }
+
         $artifactRoot = Join-Path $TestDrive 'reader-compatibility-dryrun'
 
         & pwsh -NoProfile -ExecutionPolicy Bypass -File $script:RunnerPath `
@@ -80,8 +95,21 @@ Describe 'Frozen 0.42.65 job-store reader compatibility runner' {
         $summary.host_mutation_performed | Should -BeFalse
     }
 
-    It 'reads current-writer v1/v2 terminal and FIFO queue stores before and after restore without changing bytes' `
-        -Skip:(-not $readerCompatibilityCanRunFrozenHost) {
+    It 'reads current-writer stores with the frozen host or verifies immutable compatibility evidence' {
+        $completionEvidence = Get-Content -Raw -LiteralPath $script:CompletionEvidencePath
+        $waveDEvidence = Get-Content -Raw -LiteralPath $script:WaveDEvidencePath
+        $publicAuthorityEvidence = Get-Content -Raw -LiteralPath $script:PublicAuthorityEvidencePath
+
+        $completionEvidence | Should -Match ([regex]::Escape('| Frozen 0.42.65 actual reader | PASS, 8/8, v1/v2 terminal+FIFO queue initial/restored |'))
+        $completionEvidence | Should -Match 'Native operation requests were 0; service/admin/Hyper-V/host\s+mutation flags were false\.'
+        $waveDEvidence | Should -Match ([regex]::Escape('| Frozen-reader compatibility reference | PASS, 5/5, failed 0, skipped 0 |'))
+        $waveDEvidence | Should -Match 'frozen_reader_fixture_sha256=95e219e779fce5c4fa8162aa31cd97e68370664ffd1aa465237dbdb769383c83'
+        $waveDEvidence | Should -Match 'frozen_reader_fixture_tracked=false'
+        $publicAuthorityEvidence | Should -Match 'The fixture is excluded from `git archive`, the parentless source root, provider seed, release, and package\.'
+        if (-not $readerCompatibilityCanRunFrozenHost) {
+            return
+        }
+
         $artifactRoot = Join-Path $TestDrive 'reader-compatibility-actual'
 
         & pwsh -NoProfile -ExecutionPolicy Bypass -File $script:RunnerPath `

@@ -1,0 +1,1145 @@
+{
+  "contract": "pcv-development-policy-contract-spec-v1",
+  "legacy_contract_count": 51,
+  "legacy_should_site_count": 371,
+  "required_literal_count": 652,
+  "source_files": [
+    {
+      "path": "config/agent-execution-circuit-breaker.json",
+      "sha256": "c5cc451132a3877565c71da081c65edbe942a08c4754e5b8af314e50bcd1052e"
+    },
+    {
+      "path": "docs/AGENT_EXECUTION_CIRCUIT_BREAKER.md",
+      "sha256": "7c301d479540b06bd0f1002c058d2d6aab0e50cf1af7e0917033b5cb58e89c24"
+    },
+    {
+      "path": "AGENTS.md",
+      "sha256": "fb6a3bb277be63778af1bcd7a9e7d6e3d21171284850bdd9573bf72565813f39"
+    },
+    {
+      "path": "packaging/windows-desktop-node/tests/fixtures/csharp-architecture-test-migration.json",
+      "sha256": "61c88576f09d43631079737a520490727a314760a4ef1a6b09fba347c6621b8d"
+    },
+    {
+      "path": "packaging/windows-desktop-node/tests/fixtures/csharp-architecture-quality-baseline.json",
+      "sha256": "d5652beb3354fc64a3040d640ee9fb233e2201593123a042aff97547d49355a1"
+    },
+    {
+      "path": "docs/superpowers/plans/2026-08-02-purecvisor-desktop-node-csharp-architecture-gap-registry.md",
+      "sha256": "400eeaac337424fe8d814ed4b89d80d9c6aca539f7e1fd736a2f011a86c5ffbc"
+    },
+    {
+      "path": ".github/workflows/development-gates.yml",
+      "sha256": "2e13836df28d209debe6255b43714e48372a547fff6405e76823e70cb4306647"
+    },
+    {
+      "path": "packaging/windows-desktop-node/tools/PcvDevelopmentVerification.psm1",
+      "sha256": "433811c2dd6949b4379a37cd8d40ef9455f21db7e9baf913fcd7d0d973ea242a"
+    },
+    {
+      "path": "packaging/windows-desktop-node/tools/PcvDevelopmentVerificationRunner.psm1",
+      "sha256": "c41c6b34c9c85e9b12e29f4faf6ae7aa02fa85a4637804d688ce444a5d7c9752"
+    },
+    {
+      "path": "packaging/windows-desktop-node/tools/Invoke-PcvDevelopmentVerification.ps1",
+      "sha256": "a361842187cc02043e9b7f16510875695c9591e59843f777cc11388a0e19afec"
+    },
+    {
+      "path": "config/development-verification-suites.json",
+      "sha256": "ee36bd44d7b3123edd76e8957eb550b6b93da9f732bdcc4a93b836349c9bce71"
+    },
+    {
+      "path": "config/development-verification-suites.schema.json",
+      "sha256": "04e6c5d4e70cbbbf053497543cc9ec97de9bd2342b34f2159de9ca9e6057aed5"
+    },
+    {
+      "path": "src/DesktopNode.Verification/VerificationCatalog.cs",
+      "sha256": "72d1d887a681a6c31ca41c6749c9b0a72aa9e4b73f9ce5b5e39fddcb8d2a6751"
+    },
+    {
+      "path": "packaging/windows-desktop-node/tools/Invoke-PcvDotNetQualityCapture.ps1",
+      "sha256": "6754c09108a2b1bd514cfb9f88c453df336c6b220051a7c58455bfde623c8ec6"
+    },
+    {
+      "path": "packaging/windows-desktop-node/tools/Test-PcvDotNetQualityRatchet.ps1",
+      "sha256": "0caaf527f4ce41a2272c2abce9e768910c8f6f87b378637022f2b1d4aaeefd79"
+    },
+    {
+      "path": "packaging/windows-desktop-node/tests/fixtures/module-size-ratchet.json",
+      "sha256": "390f447a92430768d15946dbd0bc0b0bfa34e4c373d25b759450286c1a9e6260"
+    },
+    {
+      "path": "packaging/windows-desktop-node/tools/PcvStrictCollection.psm1",
+      "sha256": "6bdb08e7c8801a39613611508c4fd6359e2733e50e70316237d5dc52c8185b2f"
+    }
+  ],
+  "legacy_files": [
+    {
+      "key": "agent-circuit-breaker",
+      "path": "packaging/windows-desktop-node/tests/PcvAgentExecutionCircuitBreaker.Tests.ps1",
+      "sha256": "bc842bded667084a73423e6bbbc00feae8ab5a67b8a6b6fa5ebe55c71bdacb58",
+      "contract_count": 3,
+      "should_site_count": 40
+    },
+    {
+      "key": "architecture-gap",
+      "path": "packaging/windows-desktop-node/tests/PcvCSharpArchitectureGapRegistry.Tests.ps1",
+      "sha256": "2a41b2ad1e4eb37807c1eb9d9fc4ea8e914567c130afded4001f138cfe109581",
+      "contract_count": 10,
+      "should_site_count": 168
+    },
+    {
+      "key": "gate-workflow",
+      "path": "packaging/windows-desktop-node/tests/PcvDevelopmentGateWorkflow.Tests.ps1",
+      "sha256": "46084abbb67a69229559825cb63c3b05e810b8f91950fedc1194bb41d12879da",
+      "contract_count": 1,
+      "should_site_count": 51
+    },
+    {
+      "key": "verification-policy",
+      "path": "packaging/windows-desktop-node/tests/PcvDevelopmentVerification.Tests.ps1",
+      "sha256": "132bb18a2c742b34f0375bebede137840c959c5db1e1752bae2f929c0a40bc43",
+      "contract_count": 9,
+      "should_site_count": 31
+    },
+    {
+      "key": "verification-execution",
+      "path": "packaging/windows-desktop-node/tests/PcvDevelopmentVerificationExecution.Tests.ps1",
+      "sha256": "695232d12e5d2546016878c35849e2af19a08b5cb4de7ac15f7d2ccbbeeb9fe4",
+      "contract_count": 3,
+      "should_site_count": 14
+    },
+    {
+      "key": "quality-tools",
+      "path": "packaging/windows-desktop-node/tests/PcvDotNetQualityTools.Tests.ps1",
+      "sha256": "6269dc6ad3b6355731fdcac22aafbb572d73d4cbaa28d68de7fd303ee505e4c1",
+      "contract_count": 20,
+      "should_site_count": 53
+    },
+    {
+      "key": "module-ratchet",
+      "path": "packaging/windows-desktop-node/tests/PcvModuleSizeRatchet.Tests.ps1",
+      "sha256": "7fa853a4c40c5f7d0ae1b91615371ea973408c0e3ba2680dcbe036910909f402",
+      "contract_count": 3,
+      "should_site_count": 9
+    },
+    {
+      "key": "strict-collection",
+      "path": "packaging/windows-desktop-node/tests/PcvStrictCollection.Tests.ps1",
+      "sha256": "def3868eaad5efbeca79245e539b329052bfa37b9fb61eb60c2806cb0448e261",
+      "contract_count": 2,
+      "should_site_count": 5
+    }
+  ],
+  "contracts": [
+    {
+      "key": "agent-circuit-breaker",
+      "ordinal": 1,
+      "name": "pins the bounded execution limits in a machine-readable contract",
+      "required_literals": [
+        "contract",
+        "ConvertFrom-Json",
+        "default_checkpoint_count",
+        "elapsed_minutes_limit",
+        "Get-Content",
+        "narrow_rereview_pass_limit",
+        "pcv-agent-execution-circuit-breaker-v1",
+        "progress_warning_percent",
+        "review_pass_limit",
+        "same_failure_limit",
+        "schema_version",
+        "tool_batch_limit"
+      ]
+    },
+    {
+      "key": "agent-circuit-breaker",
+      "ordinal": 2,
+      "name": "makes AGENTS load the normative policy without editing generated evidence",
+      "required_literals": [
+        "## 에이전트 실행 회로 차단기 (필수)",
+        "<!-- BEGIN GENERATED CURRENT EVIDENCE -->",
+        "<!-- END GENERATED CURRENT EVIDENCE -->",
+        "13번째",
+        "18회",
+        "21분",
+        "30분",
+        "기본 한도는 30분, 도구 작업 묶음 18회, 정규 리뷰 1회와 제한 재검토 2회다.",
+        "동일 원인 3회 실패",
+        "정규 리뷰 1회",
+        "제한 재검토 2회",
+        "config/agent-execution-circuit-breaker.json",
+        "Count",
+        "docs/AGENT_EXECUTION_CIRCUIT_BREAKER.md",
+        "Escape",
+        "Get-Content",
+        "IndexOf",
+        "Matches"
+      ]
+    },
+    {
+      "key": "agent-circuit-breaker",
+      "ordinal": 3,
+      "name": "requires stop-only behavior after budget exhaustion and forbids adjacent native expansion",
+      "required_literals": [
+        "별도 probe checkpoint",
+        "사용자의 명시적 승인",
+        "Add-Type",
+        "Get-Content",
+        "P/Invoke"
+      ]
+    },
+    {
+      "key": "architecture-gap",
+      "ordinal": 1,
+      "name": "publishes a parseable versioned manifest with non-mutating audit boundaries",
+      "required_literals": [
+        "^[0-9a-f]{64}$",
+        "2e98ff4f2df250c36700e86ace0db46ef0aca420",
+        "algorithm",
+        "audit_base_commit",
+        "csharp-architecture-test-migration-v1",
+        "document_schema_version",
+        "external_stable_publication",
+        "host_mutation_performed",
+        "manifest_id",
+        "packaging/windows-desktop-node/tests/fixtures/csharp-architecture-quality-baseline.json",
+        "pcv-dotnet-source-snapshot/v1",
+        "pcv-dotnet-test-migrations/v1",
+        "public_trusted_signing",
+        "quality_baseline_path",
+        "quality_baseline_source_snapshot_field",
+        "schema_version",
+        "sha256",
+        "source_snapshot"
+      ]
+    },
+    {
+      "key": "architecture-gap",
+      "ordinal": 2,
+      "name": "contains exactly the six mandatory fault scenarios and links each one from the registry",
+      "required_literals": [
+        "Escape",
+        "fault_scenarios",
+        "ForEach-Object",
+        "gap_id",
+        "required_fault_gap_ids"
+      ]
+    },
+    {
+      "key": "architecture-gap",
+      "ordinal": 3,
+      "name": "records reproduction trace expected safety owner RED GREEN and characterization closure for every fault",
+      "required_literals": [
+        "Count",
+        "current_status",
+        "current_trace",
+        "existing_evidence",
+        "expected_safe_result",
+        "fails_on_baseline_because",
+        "fault_scenarios",
+        "green",
+        "implementation_boundary",
+        "owner_project",
+        "owner_wave",
+        "red",
+        "removal_condition",
+        "replacement_test_id",
+        "replacement_wave",
+        "reproduction_condition",
+        "required_assertions",
+        "status",
+        "temporary_characterization",
+        "test_ids",
+        "title"
+      ]
+    },
+    {
+      "key": "architecture-gap",
+      "ordinal": 4,
+      "name": "keeps migration IDs unique and every migration maps old coverage to an owner and replacement",
+      "required_literals": [
+        "completed",
+        "Count",
+        "coverage_boundary",
+        "ForEach-Object",
+        "migration_id",
+        "migrations",
+        "old_test_id",
+        "owner",
+        "planned",
+        "reason",
+        "removal_condition",
+        "replacement_test_id",
+        "Sort-Object",
+        "status"
+      ]
+    },
+    {
+      "key": "architecture-gap",
+      "ordinal": 5,
+      "name": "records the completed Hyper-V domain ownership move without losing its 35 cases",
+      "required_literals": [
+        "case_count",
+        "case_count_after",
+        "case_count_before",
+        "completed",
+        "Count",
+        "DesktopNode.Api.Tests.HyperVDomainContractTests.*",
+        "DesktopNode.HyperV.Tests",
+        "DesktopNode.HyperV.Tests.HyperVDomainContractTests.*",
+        "Join-Path",
+        "migration_id",
+        "migrations",
+        "old_source_path",
+        "old_test_id",
+        "owner",
+        "replacement_source_path",
+        "replacement_test_id",
+        "status",
+        "TM-HYPERV-DOMAIN-001",
+        "Where-Object"
+      ]
+    },
+    {
+      "key": "architecture-gap",
+      "ordinal": 6,
+      "name": "matches the current private-reflection and process-global CWD occurrence inventory",
+      "required_literals": [
+        "*.cs",
+        "\\.",
+        "case_count_after",
+        "case_count_before",
+        "completed",
+        "Count",
+        "current_occurrence_count",
+        "cwd_mutation",
+        "DesktopNode.Api.Tests.BatchEvidenceSummaryReaderTests.RelativeChildEvidenceIsIgnoredWithoutConfiguredChildRoot",
+        "entries",
+        "Escape",
+        "FullName",
+        "Get-ChildItem",
+        "Get-Content",
+        "GetFullPath",
+        "inventory",
+        "Join-Path",
+        "migration_id",
+        "migrations",
+        "named_non_parallel_collection",
+        "occurrence_count",
+        "Path",
+        "private_reflection",
+        "Resolve-Path",
+        "source_path",
+        "src",
+        "src/DesktopNode.Api.Tests/BatchEvidenceSummaryReaderTests.cs",
+        "status",
+        "test_id",
+        "TM-BATCH-CWD-006",
+        "Wave 7",
+        "Where-Object"
+      ]
+    },
+    {
+      "key": "architecture-gap",
+      "ordinal": 7,
+      "name": "inventories source-text checks and remaining ownership candidates with migration links",
+      "required_literals": [
+        "case_count",
+        "completed",
+        "Count",
+        "current_test_count",
+        "DesktopNode.Api.Tests.ApiArchitectureOwnershipTests.OpsSummaryProjectionUsesDedicatedOwner",
+        "entries",
+        "ForEach-Object",
+        "inspected_product_paths",
+        "inventory",
+        "Join-Path",
+        "migration_id",
+        "migration_ids",
+        "migrations",
+        "Name",
+        "Native*",
+        "observed_case_count",
+        "old_source_path",
+        "production_source_text_checks",
+        "Properties",
+        "PSObject",
+        "replacement_source_path",
+        "replacement_test_id",
+        "source_path",
+        "status",
+        "test_ownership_candidates",
+        "TM-HYPERV-DIRECT-NATIVE-002A",
+        "TM-HYPERV-DIRECT-WMI-002B",
+        "TM-HYPERV-DOMAIN-001",
+        "TM-SOURCE-OPS-007",
+        "Where-Object",
+        "Wmi*"
+      ]
+    },
+    {
+      "key": "architecture-gap",
+      "ordinal": 8,
+      "name": "records the exact Runtime job owner inventory and active durability replacements",
+      "required_literals": [
+        "\\.",
+        "case_count",
+        "case_count_after",
+        "case_count_before",
+        "completed",
+        "completed-additive-runtime-owner",
+        "Count",
+        "current_owner",
+        "DesktopNode.Api.Tests",
+        "DesktopNode.Api.Tests.ApiJobStoreFailureCharacterizationTests.CreateSaveFailureCurrentlyPublishesBeforeDurableCommit",
+        "DesktopNode.Api.Tests.ApiJobStoreFailureCharacterizationTests.CreateSaveFailureDoesNotReturn202OrInvokeNativeMutation",
+        "DesktopNode.Runtime.Tests",
+        "DesktopNode.Runtime.Tests.DesktopNodeJobRuntimeTests.CreateSaveFailurePreservesCurrentPublishBeforeCommitOrder",
+        "DesktopNode.Runtime.Tests.DesktopNodeJobRuntimeTests.StartSaveFailureMarksOnlyMemoryFailedAndDoesNotRegisterCancellation",
+        "DesktopNode.Runtime.Tests.JobRuntimeDurabilityTests.CreateSaveFailureDoesNotPublishMemoryOrQueueGhost",
+        "DesktopNode.Runtime.Tests.JobRuntimeDurabilityTests.RunningCancelPersistsRequestBeforeProviderSignalOutsideStateLock",
+        "DesktopNode.Runtime.Tests.JobRuntimeDurabilityTests.StartSaveFailureKeepsRecoverableMeaning",
+        "ForEach-Object",
+        "future_hardening_migration_ids",
+        "integration_companion_owner",
+        "inventory",
+        "Join-Path",
+        "migration_id",
+        "migrations",
+        "Name",
+        "observed_api_companion_case_count",
+        "observed_case_count",
+        "observed_method_count",
+        "old_source_path",
+        "old_test_id",
+        "owner_wave",
+        "ownership_guard_case_count",
+        "ownership_guard_test_ids",
+        "Properties",
+        "PSObject",
+        "replacement_test_id",
+        "retained_api_companions",
+        "runtime_owner_sources",
+        "source_path",
+        "src/DesktopNode.Api.Tests/ApiArchitectureOwnershipTests.cs",
+        "src/DesktopNode.Runtime.Tests/DesktopNodeJobRuntimeTests.cs",
+        "status",
+        "test_id_pattern",
+        "test_ids",
+        "test_ownership_candidates",
+        "TM-API-JOB-CREATE-SAVE-013",
+        "TM-JOB-CREATE-SAVE-010",
+        "TM-JOB-NONOBJECT-012",
+        "TM-JOB-RUNNING-CANCEL-011",
+        "TM-JOB-START-SAVE-003",
+        "Wave 1A",
+        "Where-Object"
+      ]
+    },
+    {
+      "key": "architecture-gap",
+      "ordinal": 9,
+      "name": "links safe W0-FI-01 FI-02 and FI-04 to their live Runtime owners",
+      "required_literals": [
+        "additional_test_ids",
+        "case_count",
+        "CreateSaveFailureDoesNotPublishMemoryOrQueueGhost",
+        "CreateSaveFailurePreservesCurrentPublishBeforeCommitOrder",
+        "current_status",
+        "current_trace",
+        "DesktopNode.Runtime.Tests.DesktopNodeJobRuntimeTests.MalformedOrNonObjectRootStartsInStructuredBlockedState",
+        "DesktopNode.Runtime.Tests.JobRuntimeDurabilityTests.CreateSaveFailureDoesNotPublishMemoryOrQueueGhost",
+        "DesktopNode.Runtime.Tests.JobRuntimeDurabilityTests.RunningCancelPersistsRequestBeforeProviderSignalOutsideStateLock",
+        "DesktopNode.Runtime.Tests.JobRuntimeDurabilityTests.StartSaveFailureKeepsRecoverableMeaning",
+        "fault_scenarios",
+        "gap_id",
+        "Join-Path",
+        "MalformedOrNonObjectRootStartsInStructuredBlockedState",
+        "replaced-safe-create-commit-protocol",
+        "replaced-safe-transition-commit-protocol",
+        "replaced-safe-typed-load-result",
+        "replacement_test_id",
+        "RunningCancelPersistsRequestBeforeProviderSignalOutsideStateLock",
+        "RunningCancelSignalsBeforeSavingCurrentCancellationRequest",
+        "safe-create-commit-protocol-with-physical-restart-guard-under-single-product-runtime-owner",
+        "safe-persist-before-publish-with-terminal-uncertainty-block",
+        "safe-typed-semantic-block-without-rewrite",
+        "src/DesktopNode.Runtime.Tests/DesktopNodeJobRuntimeTests.cs",
+        "src/DesktopNode.Runtime.Tests/JobRuntimeDurabilityTests.cs",
+        "src/DesktopNode.Runtime.Tests/JsonFileDesktopNodeJobStoreTests.cs",
+        "src/DesktopNode.Runtime/DesktopNodeJobRuntime.cs",
+        "src/DesktopNode.Runtime/JsonFileDesktopNodeJobStore.cs",
+        "StartSaveFailureKeepsRecoverableMeaning",
+        "StartSaveFailureMarksOnlyMemoryFailedAndDoesNotRegisterCancellation",
+        "status",
+        "temporary_characterization",
+        "test_id",
+        "TransitionSaveFailureKeepsRecoverableMeaning",
+        "ValidNonObjectRootPreservesCurrentUnstructuredStartupFailure",
+        "W0-FI-01",
+        "W0-FI-02",
+        "W0-FI-04",
+        "Where-Object"
+      ]
+    },
+    {
+      "key": "architecture-gap",
+      "ordinal": 10,
+      "name": "detects reintroduced Native and Wmi tests from live source instead of a baseline snapshot",
+      "required_literals": [
+        "ApiRuntimePolicyRequestProcessorTests.cs",
+        "case_count",
+        "Join-Path",
+        "Native*",
+        "Set-Content",
+        "utf8",
+        "Where-Object",
+        "Wmi*"
+      ]
+    },
+    {
+      "key": "gate-workflow",
+      "ordinal": 1,
+      "name": "exists and covers the active non-mutating development gates",
+      "required_literals": [
+        "- name: Install exact Pester",
+        "- name: Validate canonical current evidence",
+        "-1",
+        "Count",
+        "Get-Content",
+        "IndexOf",
+        "Invoke-Pester -Path 'packaging/windows-desktop-node/tests",
+        "Matches",
+        "npm ci --prefix web",
+        "npm run verify:parity --prefix web",
+        "npm test --prefix web"
+      ]
+    },
+    {
+      "key": "verification-policy",
+      "ordinal": 1,
+      "name": "selects dotnet for a source-only tier S change",
+      "required_literals": [
+        "dotnet",
+        "effective_lane",
+        "Fast",
+        "Resolve-PcvDevelopmentVerificationSelection",
+        "suites"
+      ]
+    },
+    {
+      "key": "verification-policy",
+      "ordinal": 2,
+      "name": "selects npm and Web Pester for a Web change",
+      "required_literals": [
+        "Fast",
+        "Resolve-PcvDevelopmentVerificationSelection",
+        "suites",
+        "web-npm",
+        "web-pester"
+      ]
+    },
+    {
+      "key": "verification-policy",
+      "ordinal": 3,
+      "name": "selects the current evidence check for canonical evidence changes",
+      "required_literals": [
+        "change_tier",
+        "current-evidence-anchor",
+        "current-evidence-check",
+        "effective_lane",
+        "Fast",
+        "Release",
+        "Resolve-PcvDevelopmentVerificationSelection",
+        "suites",
+        "tier_reasons"
+      ]
+    },
+    {
+      "key": "verification-policy",
+      "ordinal": 4,
+      "name": "promotes an unknown path to Full",
+      "required_literals": [
+        "effective_lane",
+        "Fast",
+        "Full",
+        "promotion_reason",
+        "Resolve-PcvDevelopmentVerificationSelection",
+        "unknown-change-scope"
+      ]
+    },
+    {
+      "key": "verification-policy",
+      "ordinal": 5,
+      "name": "promotes tier M to Full and tier L to Release",
+      "required_literals": [
+        "effective_lane",
+        "Fast",
+        "Full",
+        "Release",
+        "Resolve-PcvDevelopmentVerificationSelection"
+      ]
+    },
+    {
+      "key": "verification-policy",
+      "ordinal": 6,
+      "name": "keeps an internal single-module source change at S",
+      "required_literals": [
+        "Count",
+        "effective_tier",
+        "reasons",
+        "requested_tier",
+        "Resolve-PcvDevelopmentChangeTier"
+      ]
+    },
+    {
+      "key": "verification-policy",
+      "ordinal": 7,
+      "name": "promotes API contract and general packaging changes to at least M",
+      "required_literals": [
+        "api-cli-web-contract",
+        "effective_tier",
+        "packaging-contract",
+        "reasons",
+        "Resolve-PcvDevelopmentChangeTier"
+      ]
+    },
+    {
+      "key": "verification-policy",
+      "ordinal": 8,
+      "name": "forces L for installer host mutation security current evidence public and signing boundaries",
+      "required_literals": [
+        "current-evidence-anchor",
+        "docs/PUBLIC_RELEASE_BOUNDARY.md",
+        "effective_tier",
+        "host-mutation-boundary",
+        "installer-lifecycle",
+        "packaging/windows-desktop-node/tools/New-PcvPublicSignedUpdateRollbackSmokePreflight.ps1",
+        "path",
+        "public-release-boundary",
+        "reason",
+        "reasons",
+        "Resolve-PcvDevelopmentChangeTier",
+        "security-policy-boundary",
+        "signing-publication-boundary"
+      ]
+    },
+    {
+      "key": "verification-policy",
+      "ordinal": 9,
+      "name": "uses the path-derived tier for lane promotion while unknown scope only forces Full",
+      "required_literals": [
+        "change_tier",
+        "effective_lane",
+        "effective_tier",
+        "Fast",
+        "Full",
+        "Release",
+        "Resolve-PcvDevelopmentChangeTier",
+        "Resolve-PcvDevelopmentVerificationSelection"
+      ]
+    },
+    {
+      "key": "verification-execution",
+      "ordinal": 1,
+      "name": "records selected, skipped and failed suites without hiding scope",
+      "required_literals": [
+        "Add",
+        "dotnet",
+        "duration_ms",
+        "exit_code",
+        "failed_suite",
+        "Fast",
+        "Invoke-PcvDevelopmentVerification",
+        "new",
+        "not-selected-by-scope",
+        "ok",
+        "results",
+        "status",
+        "stderr",
+        "stdout",
+        "suite",
+        "web-npm",
+        "web-pester",
+        "Where-Object"
+      ]
+    },
+    {
+      "key": "verification-execution",
+      "ordinal": 2,
+      "name": "plans selected suites without invoking the command runner",
+      "required_literals": [
+        "dotnet",
+        "Fast",
+        "Invoke-PcvDevelopmentVerification",
+        "ok",
+        "planned",
+        "results",
+        "status",
+        "suite",
+        "Where-Object"
+      ]
+    },
+    {
+      "key": "verification-execution",
+      "ordinal": 3,
+      "name": "defines only non-mutating development suite commands",
+      "required_literals": [
+        "arguments",
+        "ConvertTo-Json",
+        "current-evidence-check",
+        "dotnet",
+        "file_name",
+        "Get-PcvDevelopmentVerificationSuiteCatalog",
+        "git-diff-check",
+        "installer-pester",
+        "Keys",
+        "packaging-pester",
+        "pwsh",
+        "web-npm",
+        "web-pester"
+      ]
+    },
+    {
+      "key": "quality-tools",
+      "ordinal": 1,
+      "name": "collects each project into an isolated fixed result directory and records tool versions",
+      "required_literals": [
+        "--results-directory",
+        "--version",
+        "-p:PcvQualityCapture=true",
+        "6.0.4",
+        "Add",
+        "args",
+        "ArtifactRoot",
+        "Count",
+        "coverage_collector_version",
+        "coverage.cobertura.xml",
+        "cwd",
+        "dotnet_sdk_version",
+        "exit_code",
+        "file",
+        "GetFileNameWithoutExtension",
+        "IndexOf",
+        "Join-Path",
+        "new",
+        "ok",
+        "Passed",
+        "project_count",
+        "quality-capture-summary.json",
+        "Remove-Item",
+        "RepoRoot",
+        "SolutionPath",
+        "stderr",
+        "stdout",
+        "Test-Path"
+      ]
+    },
+    {
+      "key": "quality-tools",
+      "ordinal": 2,
+      "name": "rejects an artifact root outside the declared repository before running dotnet",
+      "required_literals": [
+        "Join-Path",
+        "RepoRoot",
+        "SolutionPath"
+      ]
+    },
+    {
+      "key": "quality-tools",
+      "ordinal": 3,
+      "name": "rejects a reparse-point results directory before recursive cleanup",
+      "required_literals": [
+        "--version",
+        "Add",
+        "args",
+        "ArtifactRoot",
+        "Count",
+        "cwd",
+        "Delete",
+        "Directory",
+        "exit_code",
+        "file",
+        "Join-Path",
+        "Leaf",
+        "new",
+        "New-Item",
+        "Out-Null",
+        "preserve",
+        "Remove-Item",
+        "RepoRoot",
+        "ResultsRoot",
+        "Set-Content",
+        "SolutionPath",
+        "stderr",
+        "stdout",
+        "Test-Path",
+        "utf8"
+      ]
+    },
+    {
+      "key": "quality-tools",
+      "ordinal": 4,
+      "name": "rejects duplicate test project names before running dotnet",
+      "required_literals": [
+        "ArtifactRoot",
+        "Join-Path",
+        "Remove-Item",
+        "RepoRoot",
+        "SolutionPath"
+      ]
+    },
+    {
+      "key": "quality-tools",
+      "ordinal": 5,
+      "name": "requires explicit WriteBaseline and records reproducible source provenance plus quality metrics",
+      "required_literals": [
+        "^[0-9a-f]{64}$",
+        "6.0.4",
+        "algorithm",
+        "audit_base_commit",
+        "BaselinePath",
+        "branch_coverage_percent",
+        "ConvertFrom-Json",
+        "coverage_collector_version",
+        "deleted_path_count",
+        "dotnet_sdk_version",
+        "executed",
+        "file_count",
+        "Get-Content",
+        "Join-Path",
+        "line_coverage_percent",
+        "pcv-dotnet-quality-baseline/v1",
+        "pcv-dotnet-source-snapshot/v1",
+        "projects",
+        "RepoRoot",
+        "ResultsRoot",
+        "schema_version",
+        "Set-Content",
+        "sha256",
+        "skipped",
+        "source_snapshot",
+        "test_ids",
+        "total",
+        "totals",
+        "unavailable",
+        "utf8"
+      ]
+    },
+    {
+      "key": "quality-tools",
+      "ordinal": 6,
+      "name": "rejects inputs and outputs outside the declared repository",
+      "required_literals": [
+        "Join-Path",
+        "RepoRoot",
+        "ResultsRoot"
+      ]
+    },
+    {
+      "key": "quality-tools",
+      "ordinal": 7,
+      "name": "rejects a reparse-point results input before reading external artifacts",
+      "required_literals": [
+        "BaselinePath",
+        "Delete",
+        "Directory",
+        "Join-Path",
+        "Leaf",
+        "New-Item",
+        "Out-Null",
+        "preserve",
+        "Remove-Item",
+        "RepoRoot",
+        "ResultsRoot",
+        "Set-Content",
+        "Test-Path",
+        "utf8"
+      ]
+    },
+    {
+      "key": "quality-tools",
+      "ordinal": 8,
+      "name": "rejects a reparse-point baseline parent before writing outside the repository",
+      "required_literals": [
+        "Delete",
+        "Directory",
+        "Join-Path",
+        "Leaf",
+        "New-Item",
+        "Out-Null",
+        "preserve",
+        "quality-baseline.json",
+        "RepoRoot",
+        "ResultsRoot",
+        "Set-Content",
+        "Test-Path",
+        "utf8"
+      ]
+    },
+    {
+      "key": "quality-tools",
+      "ordinal": 9,
+      "name": "rejects malformed TRX XML",
+      "required_literals": [
+        "BaselinePath",
+        "RepoRoot",
+        "ResultsRoot",
+        "Set-Content",
+        "utf8"
+      ]
+    },
+    {
+      "key": "quality-tools",
+      "ordinal": 10,
+      "name": "rejects malformed Cobertura XML",
+      "required_literals": [
+        "BaselinePath",
+        "RepoRoot",
+        "ResultsRoot",
+        "Set-Content",
+        "utf8"
+      ]
+    },
+    {
+      "key": "quality-tools",
+      "ordinal": 11,
+      "name": "rejects duplicate project artifacts",
+      "required_literals": [
+        "BaselinePath",
+        "Join-Path",
+        "RepoRoot",
+        "ResultsRoot"
+      ]
+    },
+    {
+      "key": "quality-tools",
+      "ordinal": 12,
+      "name": "accepts byte-identical Cobertura attachment copies while retaining one canonical result",
+      "required_literals": [
+        "BaselinePath",
+        "Directory",
+        "Join-Path",
+        "New-Item",
+        "Out-Null",
+        "RepoRoot",
+        "ResultsRoot",
+        "Split-Path",
+        "Test-Path"
+      ]
+    },
+    {
+      "key": "quality-tools",
+      "ordinal": 13,
+      "name": "fails when skipped tests increase",
+      "required_literals": [
+        "BaselinePath",
+        "RepoRoot",
+        "ResultsRoot"
+      ]
+    },
+    {
+      "key": "quality-tools",
+      "ordinal": 14,
+      "name": "fails on any line coverage decline beyond 0.0 percentage points",
+      "required_literals": [
+        "BaselinePath",
+        "RepoRoot",
+        "ResultsRoot"
+      ]
+    },
+    {
+      "key": "quality-tools",
+      "ordinal": 15,
+      "name": "fails on any branch coverage decline beyond 0.0 percentage points",
+      "required_literals": [
+        "BaselinePath",
+        "RepoRoot",
+        "ResultsRoot"
+      ]
+    },
+    {
+      "key": "quality-tools",
+      "ordinal": 16,
+      "name": "requires every removed test to have an owned migration to a current replacement",
+      "required_literals": [
+        "BaselinePath",
+        "completed",
+        "ConvertTo-Json",
+        "coverage_boundary",
+        "mapped_removed_test_count",
+        "migrations",
+        "ok",
+        "old_test_id",
+        "owner",
+        "pcv-dotnet-test-migrations/v1",
+        "replacement_test_id",
+        "RepoRoot",
+        "ResultsRoot",
+        "schema_version",
+        "Set-Content",
+        "status",
+        "utf8"
+      ]
+    },
+    {
+      "key": "quality-tools",
+      "ordinal": 17,
+      "name": "does not authorize a removed test with a planned migration",
+      "required_literals": [
+        "BaselinePath",
+        "ConvertTo-Json",
+        "coverage_boundary",
+        "migrations",
+        "old_test_id",
+        "owner",
+        "pcv-dotnet-test-migrations/v1",
+        "planned",
+        "replacement_test_id",
+        "RepoRoot",
+        "ResultsRoot",
+        "schema_version",
+        "Set-Content",
+        "status",
+        "utf8"
+      ]
+    },
+    {
+      "key": "quality-tools",
+      "ordinal": 18,
+      "name": "allows a one-to-one wildcard namespace move only when each suffix induces one current replacement",
+      "required_literals": [
+        "BaselinePath",
+        "completed",
+        "ConvertTo-Json",
+        "coverage_boundary",
+        "mapped_removed_test_count",
+        "migrations",
+        "ok",
+        "old_test_id",
+        "owner",
+        "pcv-dotnet-test-migrations/v1",
+        "replacement_test_id",
+        "RepoRoot",
+        "ResultsRoot",
+        "schema_version",
+        "Set-Content",
+        "status",
+        "utf8"
+      ]
+    },
+    {
+      "key": "quality-tools",
+      "ordinal": 19,
+      "name": "rejects any aggregate test count decrease even when the removed test is mapped",
+      "required_literals": [
+        "BaselinePath",
+        "completed",
+        "ConvertTo-Json",
+        "coverage_boundary",
+        "migrations",
+        "old_test_id",
+        "owner",
+        "pcv-dotnet-test-migrations/v1",
+        "replacement_test_id",
+        "RepoRoot",
+        "ResultsRoot",
+        "schema_version",
+        "Set-Content",
+        "status",
+        "utf8"
+      ]
+    },
+    {
+      "key": "quality-tools",
+      "ordinal": 20,
+      "name": "rejects migration entries whose replacement is absent",
+      "required_literals": [
+        "BaselinePath",
+        "completed",
+        "ConvertTo-Json",
+        "coverage_boundary",
+        "migrations",
+        "old_test_id",
+        "owner",
+        "pcv-dotnet-test-migrations/v1",
+        "replacement_test_id",
+        "RepoRoot",
+        "ResultsRoot",
+        "schema_version",
+        "Set-Content",
+        "status",
+        "utf8"
+      ]
+    },
+    {
+      "key": "module-ratchet",
+      "ordinal": 1,
+      "name": "declares a well-formed ratchet contract",
+      "required_literals": [
+        "contract",
+        "Count",
+        "max_lines",
+        "modules",
+        "owner",
+        "path",
+        "pcv-module-size-ratchet-v1",
+        "slack_lines"
+      ]
+    },
+    {
+      "key": "module-ratchet",
+      "ordinal": 2,
+      "name": "keeps every ratcheted module at or below its recorded ceiling",
+      "required_literals": [
+        "max_lines",
+        "modules",
+        "path"
+      ]
+    },
+    {
+      "key": "module-ratchet",
+      "ordinal": 3,
+      "name": "requires the ceiling to be tightened once a module actually shrinks",
+      "required_literals": [
+        "max_lines",
+        "modules",
+        "path",
+        "slack_lines"
+      ]
+    },
+    {
+      "key": "strict-collection",
+      "ordinal": 1,
+      "name": "reproduces the if-assignment unwrap that broke clean-host residue Count readback",
+      "required_literals": [
+        "Directory",
+        "FullName",
+        "Get-ChildItem",
+        "Join-Path",
+        "New-Item",
+        "NewGuid",
+        "only",
+        "Out-Null",
+        "Remove-Item",
+        "ToString"
+      ]
+    },
+    {
+      "key": "strict-collection",
+      "ordinal": 2,
+      "name": "returns Count 0/1/2 under StrictMode for missing, one-child, and two-child directories",
+      "required_literals": [
+        "Count",
+        "Directory",
+        "Get-PcvChildItemArray",
+        "Join-Path",
+        "New-Item",
+        "NewGuid",
+        "Out-Null",
+        "Remove-Item",
+        "ToString"
+      ]
+    }
+  ]
+}

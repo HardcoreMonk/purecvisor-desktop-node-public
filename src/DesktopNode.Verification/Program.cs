@@ -132,7 +132,7 @@ public static class Program
             var fileSystem = new PhysicalVerificationFileSystem();
             var application = new VerificationApplication(
                 new SystemProcessRunner(),
-                new UnavailableManagedSuiteRunner(),
+                new ManagedSuiteRunner(),
                 fileSystem,
                 new SystemVerificationClock(),
                 Directory.GetCurrentDirectory,

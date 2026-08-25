@@ -31,14 +31,27 @@ public sealed class VerificationArchitectureBoundaryTests
     }
 
     [Fact]
-    public void CatalogContainsNoDecodedPowerShellAndRemainsPlanOnlyFoundation()
+    public void CatalogContainsNoDecodedPowerShellAndHasCoherentActivationState()
     {
         var text = File.ReadAllText(Path.Combine(
             FindRepositoryRoot(), "config", "development-verification-suites.json"));
         using var document = JsonDocument.Parse(text);
 
-        _ = VerificationCatalogFixture.LoadCanonical();
-        Assert.Equal("plan-only-foundation", document.RootElement.GetProperty("activation_state").GetString());
+        var catalog = VerificationCatalogFixture.LoadCanonical();
+        var expectedStates = catalog.ActivationState switch
+        {
+            "plan-only-foundation" => new[]
+            {
+                "native-existing", "native-existing", "wave-b-pending", "mapped", "mapped", "mapped", "wave-a-foundation"
+            },
+            "shadow-ready" => new[]
+            {
+                "native-existing", "native-existing", "mapped", "mapped", "mapped", "mapped", "mapped"
+            },
+            "active" => Enumerable.Repeat("cutover", 7).ToArray(),
+            _ => throw new InvalidOperationException("Unexpected canonical activation state.")
+        };
+        Assert.Equal(expectedStates, catalog.Suites.Select(suite => suite.MigrationState));
         Assert.Empty(VerificationArchitectureBoundaryValidator.FindForbiddenCatalogStrings(
             document.RootElement,
             text));
@@ -199,6 +212,35 @@ public sealed class VerificationArchitectureBoundarySyntheticTests
         Assert.Contains(violations, violation => violation.StartsWith(
             "unsupported-unevaluated-build-graph:",
             StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void ExactYamlDotNetPackageIsTheOnlySupportedProductionDependency()
+    {
+        var project = XDocument.Parse("""
+            <Project Sdk="Microsoft.NET.Sdk">
+              <ItemGroup><PackageReference Include="YamlDotNet" Version="18.1.0" /></ItemGroup>
+            </Project>
+            """);
+
+        Assert.Empty(VerificationArchitectureBoundaryValidator.FindProjectDependencyViolations(project));
+    }
+
+    [Theory]
+    [InlineData("YamlDotNet", "18.0.0")]
+    [InlineData("YamlDotNet", "$(YamlVersion)")]
+    [InlineData("Contoso.Yaml", "18.1.0")]
+    public void AnyOtherProductionPackageDeclarationIsRejected(string package, string version)
+    {
+        var project = XDocument.Parse($"""
+            <Project Sdk="Microsoft.NET.Sdk">
+              <ItemGroup><PackageReference Include="{package}" Version="{version}" /></ItemGroup>
+            </Project>
+            """);
+
+        Assert.Contains(
+            VerificationArchitectureBoundaryValidator.FindProjectDependencyViolations(project),
+            violation => violation.StartsWith("unsupported-unevaluated-build-graph:", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -473,6 +515,16 @@ internal static class VerificationArchitectureBoundaryValidator
             NameEquals(element.Name, "Reference") ||
             NameEquals(element.Name, "Import")))
         {
+            if (NameEquals(dependency.Name, "PackageReference") &&
+                string.Equals(dependency.Attribute("Include")?.Value, "YamlDotNet", StringComparison.Ordinal) &&
+                string.Equals(dependency.Attribute("Version")?.Value, "18.1.0", StringComparison.Ordinal) &&
+                dependency.Attributes().Count() == 2 &&
+                !dependency.HasElements &&
+                string.IsNullOrWhiteSpace(dependency.Value))
+            {
+                continue;
+            }
+
             violations.Add(
                 $"unsupported-unevaluated-build-graph:{dependency.Name.LocalName}:" +
                 dependency.ToString(SaveOptions.DisableFormatting));
@@ -853,6 +905,16 @@ internal static class VerificationArchitectureBoundaryValidator
             if (IsUnqualifiedName(item.Name, "InternalsVisibleTo"))
             {
                 ValidateStaticInternalsVisibleToItem(item);
+                continue;
+            }
+
+            if (IsUnqualifiedName(item.Name, "PackageReference") &&
+                string.Equals(item.Attribute("Include")?.Value, "YamlDotNet", StringComparison.Ordinal) &&
+                string.Equals(item.Attribute("Version")?.Value, "18.1.0", StringComparison.Ordinal) &&
+                item.Attributes().Count() == 2 &&
+                !item.HasElements &&
+                string.IsNullOrWhiteSpace(item.Value))
+            {
                 continue;
             }
 

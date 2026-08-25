@@ -1,408 +1,271 @@
 import assert from "node:assert/strict";
-import { spawnSync } from "node:child_process";
 import fs from "node:fs";
-import os from "node:os";
 import path from "node:path";
-import test from "node:test";
 import { fileURLToPath } from "node:url";
+import test from "node:test";
 import {
-  DISCOVERY_ROOTS,
-  discoverLegacyPesterInventory,
-  validateMigrationManifest
-} from "../scripts/verify-verification-migration-manifest.mjs";
-import { WEB_CONTRACT_ERROR_CODES, WebContractError } from "../contracts/web-contract-harness.mjs";
-import { WEB_STATIC_CONTRACTS } from "../contracts/web-static-contracts.mjs";
+  buildMigrationManifest,
+  buildMigrationManifestSchema,
+  canonicalManifestJson,
+  discoverLegacyContractInventory,
+  discoverReplacementContractInventory,
+  parseLegacyPesterContracts
+} from "../scripts/regenerate-verification-migration-manifest.mjs";
+import { validateMigrationManifest } from "../scripts/verify-verification-migration-manifest.mjs";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const schemaPath = path.join(repoRoot, "config/development-verification-migration-manifest.schema.json");
 const manifestPath = path.join(repoRoot, "config/development-verification-migration-manifest.json");
+const schemaPath = path.join(repoRoot, "config/development-verification-migration-manifest.schema.json");
+const evidencePath = "docs/ga-ready/evidence/pester-free-web-verification-wave-b-2026-08-24.md";
+const cutoverEvidencePath = "docs/ga-ready/evidence/pester-free-required-ci-cutover-2026-08-25.md";
+const invalid = (detail) => (error) =>
+  error instanceof Error &&
+  error.message.includes("PCV_VERIFICATION_MIGRATION_MANIFEST_INVALID") &&
+  error.message.includes(detail);
 
-function schema() {
-  return JSON.parse(fs.readFileSync(schemaPath, "utf8"));
+function published() {
+  return {
+    manifest: JSON.parse(fs.readFileSync(manifestPath, "utf8")),
+    schema: JSON.parse(fs.readFileSync(schemaPath, "utf8"))
+  };
 }
 
-function validManifest() {
-  return JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+function clone(value) {
+  return structuredClone(value);
 }
 
-function input(manifest, options = {}) {
-  return { manifest, schema: schema(), repoRoot, requireWebLocalPass: false, ...options };
-}
-
-function webEntry(manifest) {
-  return manifest.entries.find((entry) => entry.domain === "web");
-}
-
-function invalid(error) {
-  return error instanceof WebContractError
-    && error.code === WEB_CONTRACT_ERROR_CODES.manifestInvalid
-    && !error.message.includes(repoRoot);
-}
-
-function invalidDetail(detail) {
-  return (error) => invalid(error)
-    && error.message === `${WEB_CONTRACT_ERROR_CODES.manifestInvalid}|${detail}`;
-}
-
-function copyContainedFixtureFile(root, relativePath) {
-  if (typeof relativePath !== "string"
-      || !relativePath
-      || relativePath.includes("\\")
-      || relativePath.startsWith("/")
-      || path.posix.normalize(relativePath) !== relativePath
-      || relativePath.split("/").includes("..")) {
-    throw new Error("fixture evidence path is unsafe");
+function preCutover(manifest = published().manifest) {
+  const candidate = clone(manifest);
+  delete candidate.cutover_locator;
+  for (const row of [...candidate.entries, ...candidate.contracts]) {
+    if (row.parity_status === "cutover") row.parity_status = "mapped";
+    row.ci_parity = { status: "pending", evidence: null };
   }
-
-  const repoRootReal = fs.realpathSync(repoRoot);
-  const fixtureRootReal = fs.realpathSync(root);
-  const segments = relativePath.split("/");
-  const source = path.resolve(repoRootReal, ...segments);
-  const target = path.resolve(fixtureRootReal, ...segments);
-  if (!source.startsWith(repoRootReal + path.sep)
-      || !target.startsWith(fixtureRootReal + path.sep)
-      || fs.lstatSync(source).isSymbolicLink()
-      || !fs.statSync(source).isFile()
-      || !fs.realpathSync(source).startsWith(repoRootReal + path.sep)) {
-    throw new Error("fixture evidence source is unsafe");
-  }
-
-  fs.mkdirSync(path.dirname(target), { recursive: true });
-  fs.copyFileSync(source, target);
+  return candidate;
 }
 
-function legacyRootsFixture() {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "pcv-manifest-roots-"));
-  try {
-    for (const definition of DISCOVERY_ROOTS) {
-      const source = path.join(repoRoot, ...definition.relativeRoot.split("/"));
-      const target = path.join(root, ...definition.relativeRoot.split("/"));
-      fs.mkdirSync(target, { recursive: true });
-      for (const file of fs.readdirSync(source)) {
-        if (file.endsWith(".Tests.ps1")) fs.copyFileSync(path.join(source, file), path.join(target, file));
-      }
-    }
-    copyContainedFixtureFile(root, webEntry(validManifest()).local_parity.evidence);
-    return root;
-  } catch (error) {
-    fs.rmSync(root, { recursive: true, force: true });
-    throw error;
-  }
+function input(manifest, schema = published().schema) {
+  return { manifest, schema, repoRoot, requireWebLocalPass: true };
 }
 
-function tempInput(root, manifest = validManifest()) {
-  return { manifest, schema: schema(), repoRoot: root, requireWebLocalPass: false };
+function firstMappedContract(manifest) {
+  return manifest.contracts.find((row) => row.replacement_contract_id !== null);
 }
 
-function webTestPath(root) {
-  return path.join(root, "web/tests/PcvDesktopWeb.Static.Tests.ps1");
-}
+test("published strict v2 ledger validates with exact 62-file and 627-contract inventory", () => {
+  const { manifest, schema } = published();
 
-test("accepts the canonical local-pass fixture", () => {
-  const result = validateMigrationManifest(input(validManifest()));
-  assert.deepEqual(result.summary, {
-    total: 62, packaging: 55, installer: 6, web: 1, missing: 0, duplicate: 0,
-    web_status: "mapped", web_local: "pass", web_ci: "pending"
+  const result = validateMigrationManifest(input(manifest, schema));
+
+  assert.deepEqual(manifest.inventory, {
+    files: { total: 62, packaging: 55, installer: 6, web: 1 },
+    contracts: { total: 627, packaging: 528, installer: 49, web: 50 }
   });
+  assert.equal(manifest.entries.length, 62);
+  assert.equal(manifest.contracts.length, 627);
+  assert.equal(result.summary.files_total, 62);
+  assert.equal(result.summary.contracts_total, 627);
+  assert.equal(result.summary.missing, 0);
+  assert.equal(result.summary.duplicate, 0);
+  assert.equal(result.summary.order_drift, 0);
 });
 
-test("accepts the unmodified canonical manifest in an isolated legacy-roots fixture", () => {
-  const root = legacyRootsFixture();
-  try {
-    assert.doesNotThrow(() => validateMigrationManifest(tempInput(root)));
-  } finally {
-    fs.rmSync(root, { recursive: true, force: true });
+test("generator discovers exact legacy and replacement inventories and is byte deterministic", () => {
+  const { manifest } = published();
+  const legacy = discoverLegacyContractInventory(repoRoot);
+  const replacements = discoverReplacementContractInventory(repoRoot);
+  const generated = buildMigrationManifest({ repoRoot, previousManifest: manifest });
+
+  assert.equal(legacy.entries.length, 62);
+  assert.equal(legacy.contracts.length, 627);
+  assert.equal(legacy.contracts.filter((row) => row.domain === "packaging").length, 528);
+  assert.equal(legacy.contracts.filter((row) => row.domain === "installer").length, 49);
+  assert.equal(legacy.contracts.filter((row) => row.domain === "web").length, 50);
+  assert.equal(new Set(replacements.map((row) => row.replacementContractId)).size, replacements.length);
+  assert.equal(canonicalManifestJson(generated), fs.readFileSync(manifestPath, "utf8"));
+});
+
+test("generator advances a newly discovered complete v2 file mapping from unmapped to mapped", () => {
+  const prior = preCutover();
+  const legacyPath = "packaging/windows-desktop-node/installer/tests/PcvDesktopNodeInstaller.InternalTrust.Tests.ps1";
+  const priorEntry = prior.entries.find((row) => row.legacy_path === legacyPath);
+  priorEntry.parity_status = "unmapped";
+  priorEntry.local_parity = { status: "pending", evidence: null };
+  priorEntry.ci_parity = { status: "pending", evidence: null };
+  for (const row of prior.contracts.filter((contract) => contract.legacy_path === legacyPath)) {
+    row.replacement_owner = null;
+    row.replacement_contract_id = null;
+    row.parity_status = "unmapped";
+    row.local_parity = { status: "pending", evidence: null };
+    row.ci_parity = { status: "pending", evidence: null };
   }
+
+  const generated = buildMigrationManifest({ repoRoot, previousManifest: prior });
+  const entry = generated.entries.find((row) => row.legacy_path === legacyPath);
+  const contracts = generated.contracts.filter((row) => row.legacy_path === legacyPath);
+
+  assert.equal(entry.parity_status, "mapped");
+  assert.deepEqual(entry.local_parity, { status: "pending", evidence: null });
+  assert.deepEqual(entry.ci_parity, { status: "pending", evidence: null });
+  assert.equal(contracts.length, 4);
+  assert.equal(contracts.every((row) => row.parity_status === "mapped"), true);
+  assert.equal(contracts.every((row) => row.local_parity.status === "pending"), true);
 });
 
-test("rejects top-level, entry, and nested additional properties", () => {
-  for (const mutate of [
-    (manifest) => { manifest.unexpected = true; },
-    (manifest) => { manifest.entries[0].unexpected = true; },
-    (manifest) => { manifest.entries[0].local_parity.unexpected = true; }
+test("literal parser ignores comments and here-strings and rejects dynamic or malformed names", () => {
+  const source = [
+    "# It 'ignored' { }",
+    "<# It 'also ignored' { } #>",
+    "$text = @'",
+    "It 'inside here string' { }",
+    "'@",
+    "Describe 'x' { It 'first' { }; It \"literal `$value\" { } }"
+  ].join("\n");
+  assert.deepEqual(parseLegacyPesterContracts(source), [
+    { legacyOrdinal: 1, legacyName: "first" },
+    { legacyOrdinal: 2, legacyName: "literal $value" }
+  ]);
+  for (const [candidate, detail] of [
+    ["It \"dynamic $value\" { }", "dynamic-name"],
+    ["It 'same' { }; It 'same' { }", "duplicate-name"],
+    ["It\n  'continued' { }", "multiline-declaration"],
+    ["It 'unterminated", "unmatched-quote"],
+    ["<# unterminated", "unmatched-comment"],
+    ["@'\nunterminated", "unmatched-here-string"]
   ]) {
-    const manifest = validManifest();
-    mutate(manifest);
-    assert.throws(() => validateMigrationManifest(input(manifest)), invalid);
+    assert.throws(() => parseLegacyPesterContracts(candidate), invalid(detail));
   }
 });
 
-test("rejects missing, duplicate, and wrong-count inventory paths", () => {
-  const missing = validManifest();
-  missing.entries.pop();
-  assert.throws(() => validateMigrationManifest(input(missing)), invalid);
-  const duplicate = validManifest();
-  duplicate.entries[1].legacy_path = duplicate.entries[0].legacy_path;
-  assert.throws(() => validateMigrationManifest(input(duplicate)), invalid);
-  const wrongCount = validManifest();
-  wrongCount.entries.at(-1).legacy_contract_count = 49;
-  assert.throws(() => validateMigrationManifest(input(wrongCount)), invalid);
-});
+test("entries and contracts are unique, canonical, ordered, and aggregate-coherent", () => {
+  const { manifest } = published();
+  const fileKeys = manifest.entries.map((row) => row.legacy_path);
+  const contractKeys = manifest.contracts.map((row) => `${row.legacy_path}\0${row.legacy_ordinal}`);
+  const replacementIds = manifest.contracts
+    .map((row) => row.replacement_contract_id)
+    .filter((value) => value !== null);
 
-test("rejects incorrect inventory constants and unknown enums", () => {
-  const constants = validManifest();
-  constants.inventory.total = 61;
-  assert.throws(() => validateMigrationManifest(input(constants)), invalid);
-  const enumValue = validManifest();
-  enumValue.entries[0].parity_status = "future";
-  assert.throws(() => validateMigrationManifest(input(enumValue)), invalid);
-});
-
-test("rejects Web contract ID omission, reordering, and duplication", () => {
-  for (const mutate of [
-    (entry) => { entry.replacement_contract_ids.pop(); },
-    (entry) => { [entry.replacement_contract_ids[0], entry.replacement_contract_ids[1]] = [entry.replacement_contract_ids[1], entry.replacement_contract_ids[0]]; },
-    (entry) => { entry.replacement_contract_ids[1] = entry.replacement_contract_ids[0]; }
-  ]) {
-    const manifest = validManifest();
-    mutate(webEntry(manifest));
-    assert.throws(() => validateMigrationManifest(input(manifest)), invalid);
-  }
-});
-
-test("rejects a mapped non-Web row and non-Web replacement data", () => {
-  const manifest = validManifest();
-  manifest.entries[0].parity_status = "mapped";
-  manifest.entries[0].replacement_owner = "web/node-tests/web-static-contracts.test.mjs";
-  manifest.entries[0].replacement_contract_ids = ["web.static.root-assets"];
-  assert.throws(() => validateMigrationManifest(input(manifest)), invalid);
-});
-
-test("rejects pass without evidence and pending status with evidence", () => {
-  const passed = validManifest();
-  webEntry(passed).local_parity = { status: "pass", evidence: null };
-  assert.throws(() => validateMigrationManifest(input(passed)), invalid);
-  const pending = validManifest();
-  webEntry(pending).local_parity = { status: "pending", evidence: "web/package.json" };
-  assert.throws(() => validateMigrationManifest(input(pending)), invalid);
-});
-
-test("rejects CI pass, Web dual-run-pass, and every cutover in Wave B", () => {
-  for (const mutate of [
-    (entry) => { entry.ci_parity = { status: "pass", evidence: "web/package.json" }; },
-    (entry) => { entry.parity_status = "dual-run-pass"; entry.local_parity = { status: "pass", evidence: "web/package.json" }; entry.ci_parity = { status: "pass", evidence: "web/package.json" }; },
-    (entry) => { entry.parity_status = "cutover"; }
-  ]) {
-    const manifest = validManifest();
-    mutate(webEntry(manifest));
-    assert.throws(() => validateMigrationManifest(input(manifest)), invalid);
-  }
-  const nonWebCutover = validManifest();
-  nonWebCutover.entries[0].parity_status = "cutover";
-  assert.throws(() => validateMigrationManifest(input(nonWebCutover)), invalid);
-});
-
-test("allows a contained existing Web local-pass evidence locator but require flag rejects pending or missing evidence", () => {
-  const passed = validManifest();
-  webEntry(passed).local_parity = { status: "pass", evidence: "web/package.json" };
-  assert.doesNotThrow(() => validateMigrationManifest(input(passed)));
-  assert.doesNotThrow(() => validateMigrationManifest(input(passed, { requireWebLocalPass: true })));
-  const pending = validManifest();
-  webEntry(pending).local_parity = { status: "pending", evidence: null };
-  assert.throws(() => validateMigrationManifest(input(pending, { requireWebLocalPass: true })), invalid);
-  const missing = validManifest();
-  webEntry(missing).local_parity = { status: "pass", evidence: "docs/ga-ready/evidence/missing.md" };
-  assert.throws(() => validateMigrationManifest(input(missing, { requireWebLocalPass: true })), invalid);
-  const directory = validManifest();
-  webEntry(directory).local_parity = { status: "pass", evidence: "docs" };
-  assert.throws(() => validateMigrationManifest(input(directory, { requireWebLocalPass: true })), invalid);
-});
-
-test("rejects a published schema weakened below the strict manifest contract", () => {
-  const weakened = schema();
-  delete weakened.$defs.parity.required;
-  assert.throws(() => validateMigrationManifest({ manifest: validManifest(), schema: weakened, repoRoot, requireWebLocalPass: false }), invalid);
-});
-
-test("rejects tampered legacy path, count, and replacement ID schema constraints", () => {
-  for (const mutate of [
-    (value) => { delete value.$defs.entry.properties.legacy_path.pattern; },
-    (value) => { delete value.$defs.entry.properties.legacy_contract_count.minimum; },
-    (value) => { delete value.$defs.entry.properties.replacement_contract_ids.items.pattern; }
-  ]) {
-    const weakened = schema();
-    mutate(weakened);
-    assert.throws(() => validateMigrationManifest({ manifest: validManifest(), schema: weakened, repoRoot, requireWebLocalPass: false }), invalid);
-  }
-});
-
-test("rejects extra published schema properties at every object level", () => {
-  for (const mutate of [
-    (value) => { value.properties.extra = {}; },
-    (value) => { value.$defs.inventory.properties.extra = {}; },
-    (value) => { value.$defs.parity.properties.extra = {}; },
-    (value) => { value.$defs.entry.properties.extra = {}; }
-  ]) {
-    const weakened = schema();
-    mutate(weakened);
-    assert.throws(() => validateMigrationManifest({ manifest: validManifest(), schema: weakened, repoRoot, requireWebLocalPass: false }), invalid);
-  }
-});
-
-test("rejects root schema semantic keywords outside the approved contract", () => {
-  const weakened = schema();
-  weakened.not = {};
-  assert.throws(() => validateMigrationManifest({ manifest: validManifest(), schema: weakened, repoRoot, requireWebLocalPass: false }), invalid);
-});
-
-test("rejects extra schema definitions outside the approved contract", () => {
-  const weakened = schema();
-  weakened.$defs.extra = {};
-  assert.throws(() => validateMigrationManifest({ manifest: validManifest(), schema: weakened, repoRoot, requireWebLocalPass: false }), invalid);
-});
-
-test("rejects nested schema semantic keywords outside the approved contract", () => {
-  const weakened = schema();
-  weakened.properties.contract.not = {};
-  weakened.properties.entries.maxContains = 0;
-  assert.throws(() => validateMigrationManifest({ manifest: validManifest(), schema: weakened, repoRoot, requireWebLocalPass: false }), invalid);
-});
-
-test("rejects same-count renamed and reordered Web legacy declarations", () => {
-  const first = WEB_STATIC_CONTRACTS[0].legacyName;
-  const second = WEB_STATIC_CONTRACTS[1].legacyName;
-  for (const rewrite of [
-    (source) => source.replace("It '" + first + "'", "It 'renamed but same count'"),
-    (source) => source.replace("It '" + first + "'", "It '__temporary__'").replace("It '" + second + "'", "It '" + first + "'").replace("It '__temporary__'", "It '" + second + "'")
-  ]) {
-    const root = legacyRootsFixture();
-    try {
-      fs.writeFileSync(webTestPath(root), rewrite(fs.readFileSync(webTestPath(root), "utf8")), "utf8");
-      assert.throws(() => validateMigrationManifest(tempInput(root)), invalidDetail("web=mapping"));
-    } finally {
-      fs.rmSync(root, { recursive: true, force: true });
-    }
-  }
-});
-
-test("projects ambiguous Web It parsing as a stable manifest error", () => {
-  const root = legacyRootsFixture();
-  try {
-    const first = WEB_STATIC_CONTRACTS[0].legacyName;
-    const source = fs.readFileSync(webTestPath(root), "utf8").replace("It '" + first + "'", "It \"" + first + " $value\"");
-    fs.writeFileSync(webTestPath(root), source, "utf8");
-    assert.throws(
-      () => validateMigrationManifest(tempInput(root)),
-      invalidDetail("web=legacy-parse")
+  assert.equal(new Set(fileKeys).size, 62);
+  assert.equal(new Set(contractKeys).size, 627);
+  assert.equal(new Set(replacementIds).size, replacementIds.length);
+  for (const entry of manifest.entries) {
+    assert.equal(
+      manifest.contracts.filter((row) => row.legacy_path === entry.legacy_path).length,
+      entry.legacy_contract_count
     );
-  } finally {
-    fs.rmSync(root, { recursive: true, force: true });
   }
 });
 
-test("rejects a discovery-matching manifest that drifts from the frozen Appendix B ledger", () => {
-  const root = legacyRootsFixture();
-  try {
-    const manifest = validManifest();
-    const original = manifest.entries[0];
-    const source = path.join(root, ...original.legacy_path.split("/"));
-    const replacement = "packaging/windows-desktop-node/tests/Replacement.Tests.ps1";
-    fs.renameSync(source, path.join(root, ...replacement.split("/")));
-    original.legacy_path = replacement;
-    assert.throws(() => validateMigrationManifest(tempInput(root, manifest)), invalidDetail("entries=canonical-ledger"));
-  } finally {
-    fs.rmSync(root, { recursive: true, force: true });
+test("Web remains exactly 50 local-pass contracts with coherent CI cutover state", () => {
+  const { manifest } = published();
+  const entry = manifest.entries.find((row) => row.domain === "web");
+  const contracts = manifest.contracts.filter((row) => row.domain === "web");
+  const cutover = Object.hasOwn(manifest, "cutover_locator");
+
+  assert.equal(entry.parity_status, cutover ? "cutover" : "mapped");
+  assert.deepEqual(entry.local_parity, { status: "pass", evidence: evidencePath });
+  assert.deepEqual(
+    entry.ci_parity,
+    cutover
+      ? { status: "pass", evidence: cutoverEvidencePath }
+      : { status: "pending", evidence: null });
+  assert.equal(contracts.length, 50);
+  assert.equal(contracts.every((row) => row.replacement_contract_id.startsWith("web.static.")), true);
+  assert.equal(contracts.every((row) => row.local_parity.status === "pass"), true);
+});
+
+test("rejects one missing contract, duplicate ordinal, duplicate ID, and reordered name", () => {
+  const baseline = preCutover();
+  const cases = [
+    ["contracts=missing", (value) => value.contracts.pop()],
+    ["contracts=duplicate-key", (value) => {
+      value.contracts[1].legacy_path = value.contracts[0].legacy_path;
+      value.contracts[1].legacy_ordinal = value.contracts[0].legacy_ordinal;
+    }],
+    ["contracts=duplicate-replacement", (value) => {
+      const mapped = value.contracts.filter((row) => row.replacement_contract_id !== null);
+      mapped[1].replacement_contract_id = mapped[0].replacement_contract_id;
+    }],
+    ["contracts=legacy-order", (value) => {
+      const rows = value.contracts.filter((row) => row.legacy_path === value.contracts[0].legacy_path);
+      [rows[0].legacy_name, rows[1].legacy_name] = [rows[1].legacy_name, rows[0].legacy_name];
+    }]
+  ];
+  for (const [detail, mutate] of cases) {
+    const candidate = clone(baseline);
+    mutate(candidate);
+    assert.throws(() => validateMigrationManifest(input(candidate)), invalid(detail));
   }
 });
 
-test("discovers case-insensitive Pester suffixes and rejects a direct extra file", () => {
-  const root = legacyRootsFixture();
-  try {
-    const extra = path.join(root, "packaging/windows-desktop-node/tests/Extra.tests.ps1");
-    fs.writeFileSync(extra, 'It "extra" { }', "utf8");
-    assert.equal(discoverLegacyPesterInventory(root).some((entry) => entry.legacy_path.endsWith("Extra.tests.ps1")), true);
-    assert.throws(() => validateMigrationManifest(tempInput(root)), invalidDetail("entries=inventory-mismatch"));
-  } finally {
-    fs.rmSync(root, { recursive: true, force: true });
+test("rejects wrong owner, mapping/state incoherence, pass without evidence, and unknown ID prefix", () => {
+  const baseline = preCutover();
+  const cases = [
+    ["replacement=owner", (value) => { firstMappedContract(value).replacement_owner = "wrong/owner"; }],
+    ["state=mapped-null", (value) => {
+      const row = firstMappedContract(value);
+      row.replacement_owner = null;
+      row.replacement_contract_id = null;
+    }],
+    ["state=unmapped-replacement", (value) => { firstMappedContract(value).parity_status = "unmapped"; }],
+    ["parity=evidence", (value) => { firstMappedContract(value).local_parity = { status: "pass", evidence: null }; }],
+    ["replacement=id", (value) => { firstMappedContract(value).replacement_contract_id = "unknown.prefix.contract"; }]
+  ];
+  for (const [detail, mutate] of cases) {
+    const candidate = clone(baseline);
+    mutate(candidate);
+    assert.throws(() => validateMigrationManifest(input(candidate)), invalid(detail));
   }
 });
 
-test("rejects NUL paths and normalizes every single backslash to forward slash", () => {
-  const nul = validManifest();
-  nul.entries[0].legacy_path += "\0";
-  assert.throws(() => validateMigrationManifest(input(nul)), invalid);
-  const roots = [{ domain: "packaging", relativeRoot: "packaging\\windows-desktop-node\\tests" }];
-  const rows = discoverLegacyPesterInventory(repoRoot, roots);
-  assert.equal(rows.every((row) => !row.legacy_path.includes("\\")), true);
-});
+test("rejects additional properties and every published schema weakening", () => {
+  const baseline = published();
+  const extra = clone(baseline.manifest);
+  extra.contracts[0].extra = true;
+  assert.throws(() => validateMigrationManifest(input(extra)), invalid("contract=shape"));
 
-test("CLI emits the exact canonical output and redacts unknown-argument failures", () => {
-  const run = (args) => spawnSync(process.execPath, ["web/scripts/verify-verification-migration-manifest.mjs", ...args], {
-    cwd: repoRoot, encoding: "utf8", shell: false, windowsHide: true, timeout: 30_000, stdio: ["ignore", "pipe", "pipe"]
-  });
-  const pass = run([]);
-  assert.equal(pass.status, 0);
-  assert.equal(pass.stdout, "Verification migration manifest PASS: total=62 packaging=55 installer=6 web=1 missing=0 duplicate=0 web_status=mapped web_local=pass web_ci=pending\n");
-  assert.equal(pass.stderr, "");
-  const invalidArgument = run(["--unknown"]);
-  assert.equal(invalidArgument.status, 1);
-  assert.equal(invalidArgument.stdout, "");
-  assert.match(invalidArgument.stderr, new RegExp(WEB_CONTRACT_ERROR_CODES.manifestInvalid));
-  assert.equal(invalidArgument.stderr.includes(repoRoot), false);
-});
-
-test("rejects escaping and absolute evidence locators", () => {
-  for (const locator of ["../outside.md", "C:/outside.md", "/outside.md"]) {
-    const manifest = validManifest();
-    webEntry(manifest).local_parity = { status: "pass", evidence: locator };
-    assert.throws(() => validateMigrationManifest(input(manifest)), invalid);
-  }
-});
-
-test("rejects malformed null, array, object, and scalar shapes", () => {
   for (const mutate of [
-    (manifest) => { manifest.inventory = null; },
-    (manifest) => { manifest.entries = {}; },
-    (manifest) => { manifest.entries[0].replacement_contract_ids = null; },
-    (manifest) => { manifest.entries[0].local_parity = []; },
-    (manifest) => { manifest.entries[0].legacy_contract_count = "7"; }
+    (value) => { value.additionalProperties = true; },
+    (value) => { value.required.pop(); },
+    (value) => { delete value.$defs.contract.additionalProperties; },
+    (value) => { value.$defs.contract.properties.replacement_contract_id.pattern = ".*"; },
+    (value) => { value.$defs.entry.properties.legacy_contract_count.minimum = -1; }
   ]) {
-    const manifest = validManifest();
-    mutate(manifest);
-    assert.throws(() => validateMigrationManifest(input(manifest)), invalid);
-  }
-});
-
-test("uses the deliberately broad line-start It count", () => {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "pcv-manifest-count-"));
-  try {
-    const tests = path.join(root, "packaging/windows-desktop-node/tests");
-    fs.mkdirSync(tests, { recursive: true });
-    fs.writeFileSync(path.join(tests, "Sample.Tests.ps1"), 'Describe "x" {\n  It\n    -Skip "continued" { }\n  It "second" { }\n}', "utf8");
-    const inventory = discoverLegacyPesterInventory(root, [{ domain: "packaging", relativeRoot: "packaging/windows-desktop-node/tests" }]);
-    assert.equal(inventory[0].legacy_contract_count, 2);
-  } finally {
-    fs.rmSync(root, { recursive: true, force: true });
-  }
-});
-
-test("sorts discovery paths by ordinal code unit order", () => {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "pcv-manifest-order-"));
-  try {
-    const tests = path.join(root, "packaging/windows-desktop-node/tests");
-    fs.mkdirSync(tests, { recursive: true });
-    for (const file of ["a.Tests.ps1", "Z.Tests.ps1"]) fs.writeFileSync(path.join(tests, file), 'It "x" { }', "utf8");
-    const paths = discoverLegacyPesterInventory(root, [{ domain: "packaging", relativeRoot: "packaging/windows-desktop-node/tests" }]).map((entry) => entry.legacy_path);
-    assert.deepEqual(paths, ["packaging/windows-desktop-node/tests/Z.Tests.ps1", "packaging/windows-desktop-node/tests/a.Tests.ps1"]);
-  } finally {
-    fs.rmSync(root, { recursive: true, force: true });
-  }
-});
-
-test("rejects symlinked direct discovery files and redacts their absolute target", () => {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "pcv-manifest-link-"));
-  const outside = path.join(os.tmpdir(), `pcv-manifest-outside-${Date.now()}.Tests.ps1`);
-  try {
-    const tests = path.join(root, "web/tests");
-    fs.mkdirSync(tests, { recursive: true });
-    fs.writeFileSync(outside, 'It "outside" { }', "utf8");
-    fs.symlinkSync(outside, path.join(tests, "Escape.Tests.ps1"), "file");
+    const schema = clone(baseline.schema);
+    mutate(schema);
     assert.throws(
-      () => discoverLegacyPesterInventory(root, [{ domain: "web", relativeRoot: "web/tests" }]),
-      (error) => invalid(error) && !error.message.includes(outside)
+      () => validateMigrationManifest(input(baseline.manifest, schema)),
+      invalid("schema=invalid")
     );
-  } finally {
-    fs.rmSync(root, { recursive: true, force: true });
-    fs.rmSync(outside, { force: true });
   }
+});
+
+test("accepts only an immutable cutover locator paired with all-cutover CI parity", () => {
+  const baseline = preCutover();
+  const candidate = clone(baseline);
+  candidate.cutover_locator = {
+    shadow_sha: "1111111111111111111111111111111111111111",
+    shadow_run_id: 123,
+    shadow_run_url: "https://github.com/HardcoreMonk/purecvisor-desktop-node-public/actions/runs/123",
+    parity_status: "dual-run-pass"
+  };
+  for (const row of [...candidate.entries, ...candidate.contracts]) {
+    row.parity_status = "cutover";
+    row.ci_parity = { status: "pass", evidence: evidencePath };
+  }
+
+  assert.equal(validateMigrationManifest({ ...input(candidate), requireCutover: true }).summary.contracts_total, 627);
+
+  const invalidSha = clone(candidate);
+  invalidSha.cutover_locator.shadow_sha = "ABC";
+  assert.throws(() => validateMigrationManifest(input(invalidSha)), invalid("cutover_locator=invalid"));
+
+  const premature = clone(baseline);
+  premature.cutover_locator = candidate.cutover_locator;
+  assert.throws(() => validateMigrationManifest(input(premature)), invalid("cutover_locator=state"));
+});
+
+test("generated schema is byte-equivalent to the strict published schema", () => {
+  const expected = `${JSON.stringify(buildMigrationManifestSchema(), null, 2)}\n`;
+  assert.equal(expected, fs.readFileSync(schemaPath, "utf8"));
 });
