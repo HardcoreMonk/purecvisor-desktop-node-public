@@ -20,10 +20,10 @@
       "legacy_path": "packaging/windows-desktop-node/tests/Pcv04273PromotionEvidence.Tests.ps1",
       "domain": "packaging",
       "legacy_contract_count": 7,
-      "parity_status": "unmapped",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -34,10 +34,10 @@
       "legacy_path": "packaging/windows-desktop-node/tests/Pcv04274PackageEvidence.Tests.ps1",
       "domain": "packaging",
       "legacy_contract_count": 11,
-      "parity_status": "unmapped",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -174,10 +174,10 @@
       "legacy_path": "packaging/windows-desktop-node/tests/PcvCurrentEvidenceGeneration.Tests.ps1",
       "domain": "packaging",
       "legacy_contract_count": 12,
-      "parity_status": "unmapped",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -314,10 +314,10 @@
       "legacy_path": "packaging/windows-desktop-node/tests/PcvFeatureEvidencePromotion.Tests.ps1",
       "domain": "packaging",
       "legacy_contract_count": 7,
-      "parity_status": "unmapped",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -384,10 +384,10 @@
       "legacy_path": "packaging/windows-desktop-node/tests/PcvJobStore04265ReaderCompatibility.Tests.ps1",
       "domain": "packaging",
       "legacy_contract_count": 5,
-      "parity_status": "unmapped",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -891,12 +891,12 @@
       "legacy_ordinal": 1,
       "legacy_name": "keeps the exact eight repository-owned promotion evidence documents at PASS with bounded nonclaims",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Evidence/Pcv04273PromotionEvidenceContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.04273-promotion-evidence.001",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -908,12 +908,12 @@
       "legacy_ordinal": 2,
       "legacy_name": "demotes the 0.42.73 tuple instead of deleting it",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Evidence/Pcv04273PromotionEvidenceContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.04273-promotion-evidence.002",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -925,12 +925,12 @@
       "legacy_ordinal": 3,
       "legacy_name": "binds the final token claim to the exact R4 runner and summary evidence",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Evidence/Pcv04273PromotionEvidenceContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.04273-promotion-evidence.003",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -942,12 +942,12 @@
       "legacy_ordinal": 4,
       "legacy_name": "keeps the 0.42.73 current-card as a historical promoted record with carried-forward token evidence",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Evidence/Pcv04273PromotionEvidenceContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.04273-promotion-evidence.004",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -959,12 +959,12 @@
       "legacy_ordinal": 5,
       "legacy_name": "contains no provisional promotion marker in the final promotion records",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Evidence/Pcv04273PromotionEvidenceContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.04273-promotion-evidence.005",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -976,12 +976,12 @@
       "legacy_ordinal": 6,
       "legacy_name": "records the 0.42.73 promotion main push without opening another package candidate",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Evidence/Pcv04273PromotionEvidenceContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.04273-promotion-evidence.006",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -993,12 +993,12 @@
       "legacy_ordinal": 7,
       "legacy_name": "keeps the 0.42.73 promotion chain discoverable from the evidence index",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Evidence/Pcv04273PromotionEvidenceContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.04273-promotion-evidence.007",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -1010,12 +1010,12 @@
       "legacy_ordinal": 1,
       "legacy_name": "pins the canonical current evidence record to the exact 0.42.74 tuple",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Evidence/Pcv04274PackageEvidenceContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.04274-package-evidence.001",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -1027,12 +1027,12 @@
       "legacy_ordinal": 2,
       "legacy_name": "records the clean 0.42.74 package as current",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Evidence/Pcv04274PackageEvidenceContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.04274-package-evidence.002",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -1044,12 +1044,12 @@
       "legacy_ordinal": 3,
       "legacy_name": "closes the 0.42.73 -> 0.42.74 pair as current and opens the next not-opened pair",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Evidence/Pcv04274PackageEvidenceContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.04274-package-evidence.003",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -1061,12 +1061,12 @@
       "legacy_ordinal": 4,
       "legacy_name": "indexes 0.42.74 as generated current and keeps the save defect visible",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Evidence/Pcv04274PackageEvidenceContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.04274-package-evidence.004",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -1078,12 +1078,12 @@
       "legacy_ordinal": 5,
       "legacy_name": "records the 0.42.74 fullgate PASS as current",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Evidence/Pcv04274PackageEvidenceContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.04274-package-evidence.005",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -1095,12 +1095,12 @@
       "legacy_ordinal": 6,
       "legacy_name": "promotes the 0.42.74 installed current-card with carried-forward token evidence",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Evidence/Pcv04274PackageEvidenceContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.04274-package-evidence.006",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -1112,12 +1112,12 @@
       "legacy_ordinal": 7,
       "legacy_name": "records the 0.42.74 functional actual-VM PASS as current",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Evidence/Pcv04274PackageEvidenceContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.04274-package-evidence.007",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -1129,12 +1129,12 @@
       "legacy_ordinal": 8,
       "legacy_name": "keeps the 0.42.74 P0 actual-VM save failure as an open defect after promotion",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Evidence/Pcv04274PackageEvidenceContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.04274-package-evidence.008",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -1146,12 +1146,12 @@
       "legacy_ordinal": 9,
       "legacy_name": "records the 0.42.73 -> 0.42.74 manual-admin pair PASS as current",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Evidence/Pcv04274PackageEvidenceContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.04274-package-evidence.009",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -1163,12 +1163,12 @@
       "legacy_ordinal": 10,
       "legacy_name": "links the closed package pair exactly from the manual-admin descriptor",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Evidence/Pcv04274PackageEvidenceContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.04274-package-evidence.010",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -1180,12 +1180,12 @@
       "legacy_ordinal": 11,
       "legacy_name": "links the exact promotion chain from the current ledger and evidence index",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Evidence/Pcv04274PackageEvidenceContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.04274-package-evidence.011",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -3951,12 +3951,12 @@
       "legacy_ordinal": 1,
       "legacy_name": "contains a well-formed CLI Web only anchor",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Evidence/PcvCurrentEvidenceGenerationContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.current-evidence-generation.001",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -3968,12 +3968,12 @@
       "legacy_ordinal": 2,
       "legacy_name": "requires a schema-valid blocked feature qualification for current 04274",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Evidence/PcvCurrentEvidenceGenerationContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.current-evidence-generation.002",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -3985,12 +3985,12 @@
       "legacy_ordinal": 3,
       "legacy_name": "rejects contradictory eligibility and blocker combinations in the schema",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Evidence/PcvCurrentEvidenceGenerationContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.current-evidence-generation.003",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -4002,12 +4002,12 @@
       "legacy_ordinal": 4,
       "legacy_name": "keeps schema and runtime validation in parity for invalid qualification values",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Evidence/PcvCurrentEvidenceGenerationContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.current-evidence-generation.004",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -4019,12 +4019,12 @@
       "legacy_ordinal": 5,
       "legacy_name": "renders the feature qualification independently of operational current",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Evidence/PcvCurrentEvidenceGenerationContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.current-evidence-generation.005",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -4036,12 +4036,12 @@
       "legacy_ordinal": 6,
       "legacy_name": "rejects a blocked candidate before writing any source or target file",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Evidence/PcvCurrentEvidenceGenerationContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.current-evidence-generation.006",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -4053,12 +4053,12 @@
       "legacy_ordinal": 7,
       "legacy_name": "rejects a case-only blocked candidate before write mode changes an isolated repository",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Evidence/PcvCurrentEvidenceGenerationContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.current-evidence-generation.007",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -4070,12 +4070,12 @@
       "legacy_ordinal": 8,
       "legacy_name": "rejects malformed SHA and missing evidence references",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Evidence/PcvCurrentEvidenceGenerationContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.current-evidence-generation.008",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -4087,12 +4087,12 @@
       "legacy_ordinal": 9,
       "legacy_name": "renders one bounded CLI Web current block",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Evidence/PcvCurrentEvidenceGenerationContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.current-evidence-generation.009",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -4104,12 +4104,12 @@
       "legacy_ordinal": 10,
       "legacy_name": "fails Check when a target block is stale without writing",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Evidence/PcvCurrentEvidenceGenerationContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.current-evidence-generation.010",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -4121,12 +4121,12 @@
       "legacy_ordinal": 11,
       "legacy_name": "keeps exactly one current block in every owned document",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Evidence/PcvCurrentEvidenceGenerationContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.current-evidence-generation.011",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -4138,12 +4138,12 @@
       "legacy_ordinal": 12,
       "legacy_name": "publishes the canonical record as the API current evidence asset",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Evidence/PcvCurrentEvidenceGenerationContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.current-evidence-generation.012",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -6841,12 +6841,12 @@
       "legacy_ordinal": 1,
       "legacy_name": "provides a schema-valid P0 feature ledger",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Evidence/PcvFeatureEvidencePromotionContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.feature-evidence-promotion.001",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -6858,12 +6858,12 @@
       "legacy_ordinal": 2,
       "legacy_name": "assigns stable ids surfaces stages and evidence to all four P0 features",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Evidence/PcvFeatureEvidencePromotionContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.feature-evidence-promotion.002",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -6875,12 +6875,12 @@
       "legacy_ordinal": 3,
       "legacy_name": "records the known 04274 Saved failure without downgrading the other P0 slices",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Evidence/PcvFeatureEvidencePromotionContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.feature-evidence-promotion.003",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -6892,12 +6892,12 @@
       "legacy_ordinal": 4,
       "legacy_name": "blocks the known 04274 Saved actual VM failure",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Evidence/PcvFeatureEvidencePromotionContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.feature-evidence-promotion.004",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -6909,12 +6909,12 @@
       "legacy_ordinal": 5,
       "legacy_name": "blocks every candidate feature missing manual admin evidence",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Evidence/PcvFeatureEvidencePromotionContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.feature-evidence-promotion.005",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -6926,12 +6926,12 @@
       "legacy_ordinal": 6,
       "legacy_name": "allows a candidate only when all required feature stages pass",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Evidence/PcvFeatureEvidencePromotionContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.feature-evidence-promotion.006",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -6943,12 +6943,12 @@
       "legacy_ordinal": 7,
       "legacy_name": "serializes the same blocker ordering and SHA-256 across three evaluations",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Evidence/PcvFeatureEvidencePromotionContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.feature-evidence-promotion.007",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -7028,12 +7028,12 @@
       "legacy_ordinal": 1,
       "legacy_name": "pins the frozen host by artifact path, SHA-256, and exact ProductVersion",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Evidence/PcvJobStore04265ReaderCompatibilityContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.job-store04265-reader-compatibility.001",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -7045,12 +7045,12 @@
       "legacy_ordinal": 2,
       "legacy_name": "keeps the runner isolated from service, installer, admin, and Hyper-V mutation commands",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Evidence/PcvJobStore04265ReaderCompatibilityContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.job-store04265-reader-compatibility.002",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -7062,12 +7062,12 @@
       "legacy_ordinal": 3,
       "legacy_name": "dry-runs current-writer terminal and FIFO queue schemas plus backup restore without a listener",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Evidence/PcvJobStore04265ReaderCompatibilityContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.job-store04265-reader-compatibility.003",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -7079,12 +7079,12 @@
       "legacy_ordinal": 4,
       "legacy_name": "rejects an unpinned host before launching a listener",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Evidence/PcvJobStore04265ReaderCompatibilityContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.job-store04265-reader-compatibility.004",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
@@ -7096,12 +7096,12 @@
       "legacy_ordinal": 5,
       "legacy_name": "reads current-writer v1/v2 terminal and FIFO queue stores before and after restore without changing bytes",
       "domain": "packaging",
-      "replacement_owner": null,
-      "replacement_contract_id": null,
-      "parity_status": "unmapped",
+      "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Evidence/PcvJobStore04265ReaderCompatibilityContractTests.cs",
+      "replacement_contract_id": "pcv.delivery.job-store04265-reader-compatibility.005",
+      "parity_status": "mapped",
       "local_parity": {
-        "status": "pending",
-        "evidence": null
+        "status": "pass",
+        "evidence": "docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md"
       },
       "ci_parity": {
         "status": "pending",
