@@ -426,31 +426,42 @@ Phase 25 후보는 .NET/TypeScript 전환을 단계적으로 검증했고, 후�
 
 ## 빠른 검증
 
-```powershell
-pwsh -NoProfile -Command "Invoke-Pester -Path 'packaging/windows-desktop-node/tests' -Output Detailed"
-pwsh -NoProfile -Command "Invoke-Pester -Path 'packaging/windows-desktop-node/installer/tests' -Output Detailed"
-pwsh -NoProfile -Command "Invoke-Pester -Path 'web/tests' -Output Detailed"
-dotnet test src/DesktopNode.sln
-npm test --prefix web
-npm run verify:parity --prefix web
-npm run browser:fixture --prefix web
-node --check web/app.js
+2026-08-25 cutover 이후 Required CI는 `dotnet`, `web`, `delivery`, `installer-policy` 네 shard다.
+Migration ledger의 62 files / 627 contracts가 모두 `cutover / local pass / CI pass`이며,
+Required CI의 Pester 및 비관리자 PowerShell process invocation은 각각 `0`이다.
+
+`installer-policy` shard는 cutover 경계 때문에 clean committed HEAD를 요구한다. 따라서 변경 중에는
+다음 pre-commit 검증을 실행한다.
+
+```text
+dotnet restore src/DesktopNode.sln
+dotnet build src/DesktopNode.sln -c Release --no-restore
+npm ci --prefix web
+npm run test:required --prefix web
 git diff --check
 ```
 
-Wave B Task 1~13 local completion checkpoint는 다음 비-required 검사를 제공한다.
+전체 solution test의 `policy-boundaries`는 활성 cutover 계약상 clean committed HEAD를 요구한다.
+변경 중에는 영향 범위의 focused test만 실행한다. Clean committed HEAD에서 전체 solution test는
+`dotnet` shard가, Installer 필터와 clean-worktree policy boundary는 `installer-policy` shard가 검증한다.
+
+커밋 후 `git status --short` 출력이 비어 있는 상태에서 Required CI exact four를 실행한다. `web`
+shard가 `npm run test:required`를 포함하므로 별도로 다시 실행하지 않는다.
 
 ```text
-npm run test:web-contracts --prefix web
-npm run verify:web-contract-negative-parity --prefix web
-node web/scripts/verify-verification-migration-manifest.mjs --require-web-local-pass
+git status --short
+dotnet run --project src/DesktopNode.Verification -c Release --no-build --no-restore -- verify --lane Full --change-tier M --changed-path .github/workflows/development-gates.yml --artifact-root artifacts/local-dotnet --shard dotnet
+dotnet run --project src/DesktopNode.Verification -c Release --no-build --no-restore -- verify --lane Full --change-tier M --changed-path web/package.json --artifact-root artifacts/local-web --shard web
+dotnet run --project src/DesktopNode.Verification -c Release --no-build --no-restore -- verify --lane Full --change-tier M --changed-path packaging/windows-desktop-node/tests/PcvAdminSmokeEvidenceDocs.Tests.ps1 --artifact-root artifacts/local-delivery --shard delivery
+dotnet run --project src/DesktopNode.Verification -c Release --no-build --no-restore -- verify --lane Full --change-tier M --changed-path packaging/windows-desktop-node/installer/tests/PcvDesktopNodeInstaller.Plan.Tests.ps1 --artifact-root artifacts/local-installer-policy --shard installer-policy
 ```
 
-Registry metadata/verifier와 positive projection은 각각 `50/50`, controlled negative parity는
-failed `1`/skipped `49`, migration manifest는 `62`행이며 Web만 `mapped`/local pass/CI pending이다.
-Task 13 full completion audit와 legacy Pester `50/50` 검증은 완료했지만 required CI dual-run과
-cutover는 pending이므로 기존 Web Pester를 제거하거나 대체하지 않는다.
+위 `.ps1` 값은 changed-path 데이터이며 PowerShell 실행이 아니다. Legacy Pester source와
+비필수 `public-boundary` workflow, manual/admin PowerShell 도구는 parity·rollback·운영 목적으로
+남아 있으므로 repository-wide PowerShell zero를 주장하지 않는다.
 
 Component/archive baseline 검증은 `docs/DEVELOPMENT_VERIFICATION_POLICY.md`의 verification ownership map에 따라 별도 실행한다. 기본 빠른 검증 command에는 active `spikes/**` Pester path를 넣지 않는다.
+
+전체 문서 진입점은 [문서 통합 인덱스](docs/DOCUMENTATION_INDEX.md)다.
 
 검증 기준의 단일 진실은 `docs/DEVELOPMENT_VERIFICATION_POLICY.md`다. 세부 사용법은 `docs/DEVELOPER_INDEX.md`에서 진입한다.

@@ -1,13 +1,26 @@
 # 후속 Queue 및 자동 Batch Job 분류
 
-## 2026-07-16 CLI/Web-only operator surface operational closure
+## 2026-08-25 current authority
+
+- Public `main` SHA `6e2bdb93ce308b632c929e2c17f5550ac3845401`의 Development Gates run
+  `32904006595`가 exact provider-required contexts `dotnet`, `web`, `delivery`,
+  `installer-policy`를 PASS했다. 이 네 job은 non-mutating `AUTO-REPO`다.
+- 별도 Public Boundary run `32904006619`, job `97983888524`
+  (`public-boundary-ci-required`)는 PASS했지만 `provider_required=false`인 Pester/PowerShell
+  residue다. Required CI와 같은 분류로 취급하지 않는다.
+- Operational authority는 `0.42.74-admin-smoke`, closed pair는
+  `0.42.73-admin-smoke -> 0.42.74-admin-smoke`다. Promotion은
+  `pcv.vm.saved-lifecycle/actual_vm_tested/fail` blocker 때문에 `false`이며 actual-host mutation
+  재실행은 계속 `MANUAL-ADMIN`이다.
+
+## 2026-07-16 CLI/Web-only operator surface historical snapshot
 
 - ADR-0011과
   `docs/ga-ready/evidence/tui-removal-cli-web-only-code-level-2026-07-14.md`의 source/docs
   검증은 non-mutating `AUTO-REPO`다.
 - 제거된 TUI installed smoke는 active queue에서 제외하며 dated execution 기록만 historical
   predecessor로 보존한다.
-- `0.42.65-admin-smoke` package/fullgate/actual-VM functional correctness/CLI-Web installed
+- 당시 `0.42.65-admin-smoke` package/fullgate/actual-VM functional correctness/CLI-Web installed
   current-card는 승인된 `MANUAL-ADMIN` 실행으로 PASS했다. Installed update/rollback
   compensation과 public release는 이 closure에 포함되지 않는다.
 
@@ -23,7 +36,7 @@ Historical `0.42.28-admin-smoke -> 0.42.29-admin-smoke` selector/package-chain p
 
 
 classification_date: 2026-05-10
-last_updated: 2026-05-19
+last_updated: 2026-08-26
 status: approved-for-document-based-progression
 approval_basis: user-approved-document-based-progression-2026-05-10
 host_mutation_performed_by_classification: false
@@ -33,14 +46,14 @@ public_release: not-claimed
 분류한다. 이 문서 자체는 새 실행 evidence가 아니며, evidence 소유권은 연결된
 evidence 파일과 artifact record에 남는다.
 
-최신 installed operational anchor는 `0.42.34-admin-smoke` Runtime/API current
+2026-05-19 historical snapshot 당시 installed operational anchor는 `0.42.34-admin-smoke` Runtime/API current
 evidence rollup이며, `full-admin-host-mutation-gate-2026-05-19-04234-hostmutation`,
 `installed-operator-surface-current-card-2026-05-19-04234`,
-`admin-smoke-package-2026-05-19-04234`가 최신 installed/package evidence다.
-최신 닫힌 MANUAL-ADMIN package-pair는
+`admin-smoke-package-2026-05-19-04234`가 당시 installed/package evidence였다.
+당시 닫힌 MANUAL-ADMIN package-pair는
 `manual-admin-campaign-2026-05-19-04232-04234`이며 descriptor
 `manual-admin-campaign-descriptor-20260519-04232-04234-closed`는
-`missing_count=0`, `not_pass_count=0`으로 PASS다. Public-boundary CI guard는
+`missing_count=0`, `not_pass_count=0`으로 PASS였다. 당시 Public-boundary CI guard는
 PR #156 post-merge run `26017721669`, job `76471545641`, head SHA
 `a4509c552c003ee0fc87b54b26529686e6dfeb84`에서 PASS했다. PR #155 post-merge evidence
 `docs/ga-ready/evidence/public-boundary-ci-main-push-2026-05-18-04231-pr155-postmerge-pass.md`,
@@ -121,7 +134,11 @@ verification을 자동으로 진행할 수 있다는 뜻이다. 그 자체로 un
 - `MANUAL-ADMIN`: installed/admin-smoke campaign.
 - `BLOCKED-EXTERNAL`: public trusted signing, timestamp, external publication, winget submission, public stable URL, public signed clean-host gate.
 
-## 현재 후속 Queue
+## Historical 후속 Queue snapshot
+
+아래 표의 `최신`, `현재`, `closed-current` 표기는 각 dated row가 작성된 당시 상태다. 현재
+Required CI, Public Boundary residue, operational version과 blocker는 문서 맨 위의 2026-08-25
+authority만 따른다.
 
 | 후속 영역 | 현재 상태 | 분류 | 자동화 결정 |
 |-----------|-----------|------|-------------|
@@ -169,7 +186,7 @@ verification을 자동으로 진행할 수 있다는 뜻이다. 그 자체로 un
 | Manual-admin operator/hardening follow-up | Operator Access, Internal Service Hardening, Lifecycle/Packaging current rebaseline PASS: `docs/ga-ready/evidence/manual-admin-operator-hardening-followup-2026-05-10-0415.md`, `docs/ga-ready/evidence/lifecycle-packaging-rebaseline-2026-05-10-0415-0416.md` | installed/mutating smoke는 `MANUAL-ADMIN`; `0.41.5` to `0.41.6` package-pair rebaseline은 closed | Account/JWT, noVNC service path, service token, Credential Manager, Event Log, TLS, service restart, installer mutation, update/rollback, clean-host mutation은 elevated operator opt-in 필요. |
 | Internal HTTPS/TLS, clean-host install/update/rollback, Credential Manager, Event Log, service token, Burn/MSIX, MSI update/rollback | internal-only PASS evidence 존재, public release evidence 아님 | installed/mutating smoke는 `MANUAL-ADMIN`; plan-only script는 `AUTO-PREFLIGHT` | unattended 실행 금지. explicit elevated operator opt-in을 사용하고 public trusted signing/external stable publication은 `not-claimed`로 보존한다. |
 
-## Manual Admin 상세 Matrix
+## Manual Admin 상세 Matrix historical snapshot
 
 이 follow-up들은 scripted 또는 batch-supervised로 묶을 수 있지만 unattended automatic
 job이 아니다.
@@ -325,7 +342,7 @@ summary capture, descriptor generation이 모두 PASS다. Target post-merge rebu
 mutation gate와 installed listener current-card smoke도 PASS했다. 실제
 install/update/rollback, clean-host, Burn, MSIX 재실행은 계속 `MANUAL-ADMIN`이다.
 
-| 항목 | 최신 evidence | `MANUAL-ADMIN` 유지 이유 | Batch stance |
+| 항목 | historical evidence snapshot | `MANUAL-ADMIN` 유지 이유 | Batch stance |
 |------|---------------|--------------------------|--------------|
 | Full admin gate | `docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-05-17-04229-hostmutation.md`; `0.42.29-admin-smoke`; artifacts `artifacts/batch-runs/full-admin-host-mutation-gate-20260517-04229`, `artifacts/routeparity-service-msi-hyperv-batch-profile-20260517-04229`, `artifacts/os-mutation-gates-batch-profile-20260517-04229`; installed listener `batch_evidence.status=available`, latest batch `full-admin-host-mutation-gate-20260517-04229`, current evidence `runtime-api-current-evidence-rollup-v1`; 이전 2026-05-17 04228/04227, 2026-05-16 04226/04225/04224/04223/04222/04221/04220, 2026-05-15 04218/04216, 2026-05-14 04215/04212 explicit/rerun, 2026-05-13 04212/04211/0429, 2026-05-12 0428/0427/0423 evidence는 historical predecessor. 보존 anchor: `full-admin-host-mutation-gate-2026-05-17-04228-hostmutation`, `full-admin-host-mutation-gate-2026-05-17-04227-hostmutation`, `full-admin-host-mutation-gate-2026-05-16-04226-hostmutation`, `full-admin-host-mutation-gate-2026-05-16-04225-hostmutation`, `full-admin-host-mutation-gate-2026-05-16-04224-hostmutation`, `full-admin-host-mutation-gate-2026-05-16-04223-hostmutation`, `full-admin-host-mutation-gate-2026-05-16-04222-hostmutation`, `full-admin-host-mutation-gate-2026-05-16-04221-hostmutation`, `full-admin-host-mutation-gate-2026-05-14-04212-explicit-hostmutation`, `full-admin-host-mutation-gate-2026-05-14-04212-rerun-hostmutation`, `full-admin-host-mutation-gate-2026-05-13-04212-hostmutation`, `full-admin-host-mutation-gate-2026-05-13-04211-hostmutation`, `full-admin-host-mutation-gate-2026-05-13-0429-hostmutation`, `full-admin-host-mutation-gate-2026-05-12-0428-hostmutation` | batch manifest step이 `requires_admin=true`, `mutates_host=true`이며 MSI payload apply, Hyper-V route parity, firewall/LAN/Event Log/internal trust-store gate, installed service state 검증을 수행한다. | elevated shell에서 `Invoke-PcvBatchSupervisor.ps1 -AllowHostMutation`으로만 실행. |
 | Manual-admin 0423→0424 campaign | `docs/ga-ready/evidence/manual-admin-campaign-2026-05-12-0423-0424.md`; `historical-partial-pass-clean-host-blocked`; target root `artifacts/admin-smoke-package-20260512-0424`; installed lifecycle root `artifacts/manadm-0424/lifecycle/product-update-rollback`; clean-host blocker root `artifacts/manadm-0424/clean-host-rerun` | full admin gate, operator access, internal service hardening, installed update/rollback이 모두 installed/admin mutation을 수행했다. dedicated clean-host는 Hyper-V VM과 guest MSI lifecycle을 mutation했고 blocker를 발견했다. | PASS bucket은 evidence로 보존하되 current package-pair claim으로 쓰지 않는다. |
@@ -356,7 +373,7 @@ install/update/rollback, clean-host, Burn, MSIX 재실행은 계속 `MANUAL-ADMI
 | `New-PcvManualAdminRebaselineReadiness.ps1` | `AUTO-PREFLIGHT` | local readiness descriptor only. installed-version mismatch와 current package input을 보고할 수 있지만 Credential Manager, Event Log, Burn/MSIX/MSI, update/rollback, clean-host, service restart, host mutation은 실행하지 않는다. |
 | `New-PcvManualAdminCampaignDescriptorBatchManifest.ps1` | `AUTO-PREFLIGHT` | `ManualAdminCampaignDescriptor` batch manifest를 생성하고 dry-run 검토할 수 있다. `requires_admin=false`, `mutates_host=false`이며 installed lifecycle을 실행하지 않는다. |
 | `New-PcvTimeoutRateLimitHardeningPreflight.ps1`, `New-PcvDiagnosticBundleServerPreflight.ps1`, TLS/service-token/Burn/MSIX preflight generator | `AUTO-PREFLIGHT` | 별도 installed admin-smoke runner를 명시적으로 호출하지 않는 한 plan-only. |
-| `Invoke-PcvInstalledTuiOperatorSmoke.ps1` | `AUTO-INSTALLED-READONLY` | 준비된 service에 대한 standalone installed read-only check일 때만 안전. |
+| `Invoke-PcvInstalledTuiOperatorSmoke.ps1` | `historical-only`, unscheduled | ADR-0011 이후 active queue에서 제거했다. Dated predecessor 재현 용도로만 보존한다. |
 | `Invoke-PcvInstalledAccountLoginSmoke.ps1`, `Invoke-PcvTargetBackedNoVncInstalledStreamingSmoke.ps1`, `Invoke-PcvInternalHttpsTlsLifecycleSmoke.ps1`, `Invoke-PcvInternalCleanHostInstallUpdateRollbackSmoke.ps1`, `Invoke-PcvCredentialManagerDefaultTransitionSmoke.ps1`, `Invoke-PcvWindowsEventLogDefaultTransitionSmoke.ps1`, MSI/update/rollback/Burn/MSIX lifecycle smoke | `MANUAL-ADMIN` | mutating 또는 environment-coupled evidence이므로 unattended schedule 금지. |
 | Public trusted signing, timestamp, external stable publication/catalog upload, winget submission, public signed clean-host smoke | `BLOCKED-EXTERNAL` | ADR-0006 internal private network distribution에 따라 범위 밖. |
 
@@ -368,7 +385,7 @@ install/update/rollback, clean-host, Burn, MSIX 재실행은 계속 `MANUAL-ADMI
 
 - `AUTO-REPO`: non-mutating repo regression 및 frontend fixture/parity verification.
 - `AUTO-PREFLIGHT`: public claim을 blocked 또는 out-of-scope로 유지하는 local descriptor/readiness scan.
-- `AUTO-INSTALLED-READONLY`: installed service state를 수정하지 않는 dedicated installed listener/TUI/load 조회.
+- `AUTO-INSTALLED-READONLY`: installed service state를 수정하지 않는 dedicated installed CLI/Web listener/load 조회.
 
 admin-smoke, installed mutation, clean-host, update/rollback, account/JWT restore,
 TLS binding, service token, Credential Manager, Event Log, firewall, LAN, trust-store,

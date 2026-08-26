@@ -1,18 +1,18 @@
 # PureCVisor Desktop Node 가이드
 
-## 2026-08-25 현재 진입점
+## 2026-08-26 현재 진입점
 
 - Operational current의 단일 진실은 `docs/ga-ready/current-evidence.json`과 문서 최상단에
   생성 블록이 있는 current-facing 문서다. 이 가이드는 version/hash를 복제하지 않는다.
 - 활성 운영자 표면은 Web Console과 PCVCLI다. TUI는 ADR-0011에 따라 제거됐으며 아래 2026-05
   TUI 서술은 historical snapshot으로만 읽는다.
-- 현재 Web 검증 후속은
-  `docs/superpowers/plans/2026-08-24-purecvisor-desktop-node-pester-free-web-verification-wave-b.md`의
-  Task 1~13 local-parity 구현과 full completion audit까지 완료했다. Legacy Pester와 Node
-  positive projection은 각각 `50/50`, migration manifest는 `62`행이고 Web 행만 `mapped`/local
-  pass/CI pending이다. 근거는
-  `docs/ga-ready/evidence/pester-free-web-verification-wave-b-2026-08-24.md`다. Required CI
-  dual-run, required CI의 Pester 및 non-admin PowerShell 제거와 cutover는 모두 pending이다.
+- Required CI cutover는 완료됐다. 현재 context는 정확히 `dotnet`, `web`, `delivery`,
+  `installer-policy` 네 개이고 migration ledger 62 files / 627 contracts 전체가
+  `cutover / local pass / CI pass`다. Required CI의 Pester 및 비관리자 PowerShell process
+  invocation은 각각 `0`이다. 단일 증빙은
+  `docs/ga-ready/evidence/pester-free-required-ci-cutover-2026-08-25.md`가 소유한다.
+- 비필수 `public-boundary` workflow, legacy Pester source와 manual/admin PowerShell은
+  residue로 남으므로 repository-wide PowerShell zero를 주장하지 않는다.
 
 ## 2026-05-29 historical snapshot
 
@@ -96,8 +96,8 @@ Historical `0.42.27-admin-smoke -> 0.42.28-admin-smoke` Operator Surface predece
 
 - Windows 10/11 Pro/Enterprise
 - Hyper-V 활성화 host
-- PowerShell 7
-- Pester 5
+- PowerShell 7: legacy parity 또는 manual/admin 운영 검증을 실행할 때만 필요
+- Pester 5: 비필수 legacy parity 검증을 실행할 때만 필요하며 Required CI에는 필요하지 않음
 - 정적 JavaScript syntax check용 Node.js
 - Web Console browser fixture parity 검증용 Node.js
 - .NET Windows Service Host와 MSI artifact build가 필요할 때 .NET SDK 10과 WiX CLI

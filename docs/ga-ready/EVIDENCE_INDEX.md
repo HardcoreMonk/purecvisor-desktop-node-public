@@ -1,29 +1,35 @@
 # Desktop Node 증거 인덱스
 
-## 2026-08-25 Required CI Pester-free cutover closure PASS with disclosed evidence deviation
+## 2026-08-25 Required CI final-main authority PASS and Public Boundary residue
 
 - `docs/ga-ready/evidence/pester-free-required-ci-cutover-2026-08-25.md`는 shadow SHA
-  `f8208f076cb9db69022b4dc060e65f13d23fae8c` / run `32898937784`, 그 direct child인 cutover
-  `68756f1f2f609951aaf54d76963b10f96409011b`, PR #1과 merge/main SHA
-  `d4a952b8e5ab11f7e3a9ae92b41c61b12828bfab`의 최종 closure를 소유한다.
-- Cutover run `32900785756`와 remote-main run `32901477892`는 정확히 `dotnet`, `web`,
-  `delivery`, `installer-policy` 네 job과 네 artifact를 PASS했다. Main 수치는 .NET
-  `2210/2210`, Web registry `50/50`, Delivery `528/528`, Installer `49/49`, ledger
-  `62 files / 627 contracts`; failed/skipped/not-run/timeout/cancel/missing/duplicate는 `0`이다.
-  Main workflow wall-clock은 `204000 ms`로 `214000 ms` ceiling 이하다.
-- Main protection은 strict/admin enforcement를 유지하고 required contexts를 old four에서
-  exact new four로 한 요청에 교체했다. Force-push/deletion은 계속 비활성이다. Exact old/new
-  required-status payload SHA-256은 각각
-  `7b2ae4962bea6779aaf4408e2cc7b0b8ddfa6f4a45a13cd4850d486e79197292`와
-  `a13b0626b38e46fec320608b07a5f9fec88d22219d8e0bfef06d91336399fd0d`다.
-- 전환 전 ETag와 원본 provider-before response hash는 closure material에 보존되지 않았다.
-  Compare-before/PATCH/readback, exact rollback JSON과 reconstructed pre-state hash는 남겼지만,
-  이 reconstruction을 원본 before 증거 또는 원계획 literal-compliance로 주장하지 않는다.
-- `cutover_completed=true`, Required CI executable Pester/비관리자 PowerShell/mutation
-  invocation은 `0`이다. Legacy Pester 62 files, local/manual instructions, 관리자 scripts와
-  non-required `.github/workflows/public-boundary.yml`은 residue/reference로 보존한다.
-  Operational `0.42.74-admin-smoke`, actual-VM blocker, trusted signing/stable binary publication
-  상태는 변경하지 않는다.
+  `f8208f076cb9db69022b4dc060e65f13d23fae8c` / run `32898937784`, direct-child cutover
+  `68756f1f2f609951aaf54d76963b10f96409011b`, PR #1 merge SHA
+  `d4a952b8e5ab11f7e3a9ae92b41c61b12828bfab`를 cutover predecessor로 보존하고, PR #2 merge 뒤
+  final `main` SHA `6e2bdb93ce308b632c929e2c17f5550ac3845401`를 현재 Required CI authority로 기록한다.
+- Final-main Development Gates run [`32904006595`](https://github.com/HardcoreMonk/purecvisor-desktop-node-public/actions/runs/32904006595),
+  attempt `1`은 정확히 `dotnet` job `97983889723`, `web` job `97983889620`, `delivery` job
+  `97983889739`, `installer-policy` job `97983889504`를 PASS했다. Workflow wall-clock은
+  `120000 ms`, job envelope는 `117000 ms`다.
+- 정확히 네 artifact는 .NET `9584155808`, Web `9584126782`, Delivery `9584125168`,
+  Installer Policy `9584129949`다. Contract v2 summary는 모두 `active`, `ok=true`, all suites
+  `cutover/passed`, timeout/cancel/failure/skip/not-run `0`이다. 실측은 .NET `2210/2210`
+  (`55913 ms`), Web registry `50/50` (`19352 ms`), Delivery `528/528` (`5092 ms`), Installer
+  `49/49` (`4082 ms`)다.
+- Public `main` protection은 `strict=true`, admin enforcement를 유지하고 GitHub Actions app ID
+  `15368`의 exact required contexts `dotnet`, `web`, `delivery`, `installer-policy`만 요구한다.
+  Force-push와 deletion은 비활성이다. Cutover 당시 old/new required-status payload SHA-256
+  `7b2ae4962bea6779aaf4408e2cc7b0b8ddfa6f4a45a13cd4850d486e79197292` /
+  `a13b0626b38e46fec320608b07a5f9fec88d22219d8e0bfef06d91336399fd0d`와 disclosed pre-change
+  ETag/provider-before hash 누락은 historical cutover evidence에 그대로 보존한다.
+- Required CI executable Pester, 비관리자 PowerShell, host/service/MSI/VM mutation invocation은
+  `0`이다. 별도 Public Boundary run [`32904006619`](https://github.com/HardcoreMonk/purecvisor-desktop-node-public/actions/runs/32904006619),
+  job `97983888524`는 Pester/PowerShell을 계속 사용하는 non-required residue이며
+  `provider_required=false`다. Repository-wide PowerShell/Pester zero로 확대 해석하지 않는다.
+- Operational authority는 `0.42.74-admin-smoke`, closed pair는
+  `0.42.73-admin-smoke -> 0.42.74-admin-smoke`다. Promotion은
+  `promotion_eligible=false`, blocker는 `pcv.vm.saved-lifecycle/actual_vm_tested/fail`이고 public
+  trusted signing/external stable publication은 계속 `false`다.
 
 ## 2026-08-25 Packaging verification Wave D local parity
 

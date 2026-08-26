@@ -2,6 +2,8 @@
 
 - Design-ID: `purecvisor-desktop-node-pester-free-required-ci-cutover-20260825-v1`
 - 상태: `approved`
+- 구현 상태: `completed-with-disclosed-deviation`
+- 완료 증빙: `docs/ga-ready/evidence/pester-free-required-ci-cutover-2026-08-25.md`
 - Section approval: `2026-08-25 user-approved`
 - Written-spec approval: `2026-08-25 user-approved`
 - 선행 설계:
@@ -11,7 +13,7 @@
   `docs/superpowers/plans/2026-08-24-purecvisor-desktop-node-pester-free-web-verification-wave-b.md`
 - Active authority delta:
   `docs/superpowers/specs/2026-08-25-purecvisor-desktop-node-public-authority-snapshot-delta-design.md`
-- 현재 Wave B HEAD: `[private-source-commit]`
+- 설계 당시 Wave B HEAD: `[private-source-commit]`
 - 제품/호스트 mutation: `false`
 - public trusted signing / external stable publication claim: `false / false`
 

@@ -18,6 +18,24 @@
 - Claims: `public_trusted_signing=false`; `external_stable_publication=false`.
 <!-- END GENERATED CURRENT EVIDENCE -->
 
+## 2026-08-25 public Required CI authority
+
+- Public repository final `main` authority is SHA
+  `6e2bdb93ce308b632c929e2c17f5550ac3845401`. Development Gates run
+  [`32904006595`](https://github.com/HardcoreMonk/purecvisor-desktop-node-public/actions/runs/32904006595)
+  passed exact provider-required contexts `dotnet`, `web`, `delivery`, `installer-policy`.
+- Branch protection uses `strict=true`, admin enforcement, and only those four GitHub Actions
+  contexts. Required CI executable Pester, non-admin PowerShell, and host mutation invocation are
+  `0`; details are in
+  `docs/ga-ready/evidence/pester-free-required-ci-cutover-2026-08-25.md`.
+- Public Boundary run
+  [`32904006619`](https://github.com/HardcoreMonk/purecvisor-desktop-node-public/actions/runs/32904006619),
+  job `97983888524` (`public-boundary-ci-required`) is a Pester/PowerShell non-required residue with
+  `provider_required=false`. It is not part of the exact four protected contexts.
+- This documentation/CI closure does not open a package candidate. Operational authority remains
+  `0.42.74-admin-smoke`, closed pair `0.42.73-admin-smoke -> 0.42.74-admin-smoke`, with
+  `promotion_eligible=false` and blocker `pcv.vm.saved-lifecycle/actual_vm_tested/fail`.
+
 ## 2026-08-21 `0.42.74` SERVICE_PLAN P0 current promotion
 
 - 최신 product payload package는 `0.42.74-admin-smoke`이며
@@ -42,9 +60,10 @@
   `docs/ga-ready/evidence/manual-admin-campaign-2026-08-20-04273-04274.md` /
   `manual-admin-campaign-descriptor-20260820-04273-04274-closed`로 PASS다.
 - operational current는 `0.42.74-admin-smoke`다. P0 `vm.save` FAIL는 승격이 고치지
-  않았다. public-boundary current는
+  않았다. 당시 P0 landing public-boundary predecessor는
   `docs/ga-ready/evidence/public-boundary-ci-main-push-2026-08-21-04274-p0-landing-pass.md`
-  다. token R4는 04272 carry-forward다. public trusted signing과 external stable
+  다. 현재 provider-required authority는 위 2026-08-25 exact-four Development Gates가 소유한다.
+  token R4는 04272 carry-forward다. public trusted signing과 external stable
   publication은 주장하지 않는다.
 
 ## 2026-07-14 0.42.62 -> 0.42.63 manual-admin follow-up BLOCKED
@@ -57,8 +76,9 @@
   Burn/MSIX runner 결과를 만들지 않았으며, 최신 closed package-pair는 계속
   `0.42.58-admin-smoke -> 0.42.59-admin-smoke` /
   `manual-admin-campaign-descriptor-20260529-04258-04259-closed`다.
-- 이 blocked follow-up은 historical package-pair 사실로 유지하며 현재 0.42.64
-  package/fullgate/CLI-Web installed anchor를 변경하지 않는다.
+- 이 blocked follow-up은 historical package-pair 사실로 유지하며 당시 0.42.64
+  package/fullgate/CLI-Web installed anchor를 변경하지 않았다. 현재 operational authority는
+  위 생성 블록의 `0.42.74-admin-smoke`다.
 
 ## 2026-07-14 0.42.63 CLI/Web-only package build Evidence
 
@@ -230,7 +250,7 @@
   `docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-05-27-04250-hostmutation.md`,
   `docs/ga-ready/evidence/installed-operator-surface-current-card-2026-05-27-04250.md`.
 
-## 2026-05-26 0.42.49 Guest Execution policy/API preview 최신 operational Evidence
+## 2026-05-26 0.42.49 Guest Execution policy/API preview historical predecessor Evidence
 
 - 최신 product payload package smoke는 `0.42.49-admin-smoke`이며
   `docs/ga-ready/evidence/admin-smoke-package-2026-05-26-04249.md`가 기록한다.
@@ -437,7 +457,7 @@
   mutation, clean-host, Burn, MSIX, manual-admin package-pair closure는 아직 실행하지 않았으며
   다음 gate 대상이다.
 
-## 2026-05-22 0.42.41 closure 최신 operational Evidence
+## 2026-05-22 0.42.41 closure historical predecessor Evidence
 
 - 최신 operational full admin host mutation anchor는 `0.42.41-admin-smoke` /
   `full-admin-host-mutation-gate-20260522-04241`이며
@@ -532,8 +552,9 @@
 
 
 이 문서는 GA-ready 제어 평면의 현재 결정, matrix, evidence 진입점을 묶는다.
-최신 운영 판단은 ADR과 matrix를 먼저 보고, 실행 증거는 `EVIDENCE_INDEX.md`와
-아래 최신 evidence 항목을 확인한다.
+최신 운영 판단은 문서 상단 생성 블록과 2026-08-25 Required CI authority를 먼저 보고,
+실행 증거는 `EVIDENCE_INDEX.md`와 `CURRENT_EVIDENCE_LEDGER.md`를 확인한다. 아래 dated
+aggregate 목록은 historical snapshot이다.
 
 ## 현재 결정
 
@@ -553,7 +574,10 @@
 - 증거 인덱스: `docs/ga-ready/EVIDENCE_INDEX.md`
 - Current evidence ledger: `docs/ga-ready/CURRENT_EVIDENCE_LEDGER.md`
 
-## 최신 Evidence
+## 최신 Evidence — historical aggregate snapshot
+
+이하 `최신` 또는 `current` 표기는 각 dated evidence가 작성된 당시 의미이며 현재 authority가
+아니다. 현재 operational/CI 권위는 문서 상단 두 블록이 소유한다.
 
 - 최신 full admin host mutation: `docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-05-26-04249-hostmutation.md`
   - version `0.42.49-admin-smoke`
@@ -859,7 +883,7 @@
 - Runtime/Core, Host Ops, Hyper-V provider boundary code-level follow-up: `docs/ga-ready/evidence/runtime-host-hyperv-domain-followup-code-level-2026-05-12.md`
 - Runtime/Core console/ops-summary, Hyper-V provider file split, historical docs follow-up: `docs/ga-ready/evidence/runtime-hyperv-operator-followup-code-level-2026-05-12.md`
 
-## 다음 Manual Admin 준비
+## Historical next Manual Admin preparation snapshot
 
 - 다음 campaign descriptor: `docs/ga-ready/MANUAL_ADMIN_NEXT_CAMPAIGN_DESCRIPTOR.md`
 - Current closed package-pair는 `0.42.25-admin-smoke -> 0.42.26-admin-smoke`이며
@@ -888,7 +912,7 @@
 - Batch Supervisor `ManualAdminCampaignDescriptor` profile은 descriptor generation을 non-mutating manifest step으로 실행한다.
 - 실제 host mutation은 elevated operator opt-in과 `Invoke-PcvBatchSupervisor.ps1 -AllowHostMutation`이 있을 때만 실행한다.
 
-## Dashboard/Wiki Current Card
+## Historical Dashboard/Wiki Current Card snapshot
 
 - dashboard/wiki current card 상태는 `installed-listener-batch-evidence-available`이다.
 - Web Console은 정적 문서가 아니라 `GET /api/v1/ops/summary`의 `batch_evidence.latest`를 current evidence card로 표시한다.
@@ -910,10 +934,25 @@
 - Product module: `packaging/windows-desktop-node/PcvDesktopNodeProduct.psm1`
 - Installer build: `packaging/windows-desktop-node/installer/build.ps1`
 
-## 검증
+## 현재 Required CI 검증
 
-```powershell
-pwsh -NoProfile -Command "Invoke-Pester -Path 'packaging/windows-desktop-node/tests' -Output Detailed"
-pwsh -NoProfile -Command "Invoke-Pester -Path 'packaging/windows-desktop-node/installer/tests' -Output Detailed"
+아래 exact-four shard는 clean committed HEAD에서만 실행한다. 먼저 `git status --short`가
+아무것도 출력하지 않는지 확인하고, `--no-build --no-restore` 실행 전에 다음 prerequisite를
+완료한다.
+
+```cmd
+git status --short
+dotnet restore src\DesktopNode.sln
+dotnet build src\DesktopNode.sln -c Release --no-restore
+npm ci --prefix web
+dotnet run --project src\DesktopNode.Verification -c Release --no-build --no-restore -- verify --lane Full --change-tier M --changed-path .github/workflows/development-gates.yml --artifact-root artifacts/development-gates-dotnet --shard dotnet
+dotnet run --project src\DesktopNode.Verification -c Release --no-build --no-restore -- verify --lane Full --change-tier M --changed-path web/package.json --artifact-root artifacts/development-gates-web --shard web
+dotnet run --project src\DesktopNode.Verification -c Release --no-build --no-restore -- verify --lane Full --change-tier M --changed-path packaging/windows-desktop-node/tests/PcvAdminSmokeEvidenceDocs.Tests.ps1 --artifact-root artifacts/development-gates-delivery --shard delivery
+dotnet run --project src\DesktopNode.Verification -c Release --no-build --no-restore -- verify --lane Full --change-tier M --changed-path packaging/windows-desktop-node/installer/tests/PcvDesktopNodeInstaller.Plan.Tests.ps1 --artifact-root artifacts/development-gates-installer-policy --shard installer-policy
 git diff --check
 ```
+
+Final-main run `32904006595`가 위 네 shard를 PASS했다. Pester/PowerShell 명령은
+local/manual compatibility 또는 non-required Public Boundary residue에만 남고 provider-required
+command가 아니다. `web` shard는 verification catalog를 통해 이미
+`npm run test:required --prefix web`를 실행하므로 이를 별도 Required 단계로 중복 실행하지 않는다.

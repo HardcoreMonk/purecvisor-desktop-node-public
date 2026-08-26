@@ -4,6 +4,14 @@
 
 운영자용 command 문서는 `docs/CLI_COMMAND_USAGE.md`에 둔다.
 
+현재 운영 제품은 `0.42.74-admin-smoke`다. Web Console과 PCVCLI가 active operator
+surface이고 TUI는 absent다. 최신 닫힌 manual-admin package-pair는
+`0.42.73-admin-smoke -> 0.42.74-admin-smoke`이며 feature qualification은
+`promotion_eligible=false`다. Required CI는 final `main`
+`6e2bdb93ce308b632c929e2c17f5550ac3845401`, run `32904006595`의 exact contexts
+`dotnet`, `web`, `delivery`, `installer-policy`가 소유한다. pwsh 기반 Public Boundary run
+`32904006619`는 non-required transition residue다.
+
 현재 first-class command group은 `host`, `runtime`, `ops`, `network`, `vm`, `job`, `diagnostics`다. Account/RBAC/JWT `login`/`refresh`/`logout` route는 의도적으로 Web Console 또는 Web API 직접 호출 경로가 소유한다.
 
 ## 사용
@@ -71,8 +79,9 @@ guest agent compatibility는 주장하지 않으며, 설치본 evidence는 후�
 `0.42.39-admin-smoke` package, full admin host mutation, manual-admin package-pair,
 installed Web/TUI/CLI current-card와
 `docs/ga-ready/evidence/installed-pcvcli-qos-guest-targeted-smoke-2026-05-21-04239.md`가
-소유한다. Web/TUI direct QoS control은 다음 Operator Surface product payload 변경까지
-열지 않는다.
+소유한다. 이 문단의 Web/TUI direct QoS control 미개방 설명은 `0.42.39-admin-smoke`
+당시 historical predecessor snapshot이다. 이후 ADR-0008 closure에서 Web direct QoS
+control이 열렸고, 현재 TUI는 ADR-0011에 따라 absent다.
 
 Post-04245 확장 planning에서 ADR-0008은 `vm blkio-set`과 `vm bandwidth-set`을
 Hyper-V QoS mutation으로 분리했다. 2026-05-26 slice에서 두 명령은

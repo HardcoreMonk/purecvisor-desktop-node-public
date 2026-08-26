@@ -362,7 +362,8 @@ evidence가 아니다.
 ## 핵심 원칙
 
 - 검증되지 않은 항목은 정상으로 간주하지 않는다.
-- 기본 검증은 PowerShell 7과 Pester 5 기준이다.
+- 기본 비관리자 검증은 C#/.NET `DesktopNode.Verification`과 Node required entrypoint 기준이다.
+  PowerShell 7과 Pester 5는 비필수 legacy parity 또는 manual/admin 검증에만 사용한다.
 - 실제 host mutation은 관리자 권한 opt-in gate로 분리한다.
 - Linux Single Edge 릴리스 게이트와 Desktop Node 내부 전용 제품 런타임 판단은 분리한다.
 
@@ -524,24 +525,44 @@ API/Host job hardening 설치본 evidence 변경은 `dotnet test src/DesktopNode
 
 ## 기본 검증 명령
 
-```powershell
-pwsh -NoProfile -Command "Invoke-Pester -Path 'packaging/windows-desktop-node/tests' -Output Detailed"
-pwsh -NoProfile -Command "Invoke-Pester -Path 'packaging/windows-desktop-node/installer/tests' -Output Detailed"
-pwsh -NoProfile -Command "Invoke-Pester -Path 'web/tests' -Output Detailed"
-dotnet test src/DesktopNode.sln
-npm test --prefix web
-npm run generate:parity --prefix web
-npm run verify:parity --prefix web
-npm run browser:fixture --prefix web
-node --check web/app.js
+`installer-policy` shard는 cutover 경계 때문에 clean committed HEAD를 요구한다. 따라서 변경 중에는
+다음 pre-commit 검증을 실행한다.
+
+```text
+dotnet restore src/DesktopNode.sln
+dotnet build src/DesktopNode.sln -c Release --no-restore
+npm ci --prefix web
+npm run test:required --prefix web
 git diff --check
 ```
 
-Component/archive baseline 검증은 기본 개발 loop에서 분리한다. PowerShell Local API, service helper, CLI, Hyper-V helper, legacy root boundary Pester는 component/archive baseline으로만 유지하며, 기본 검증 명령에는 active `spikes/**` Pester path를 넣지 않는다.
+전체 solution test의 `policy-boundaries`는 활성 cutover 계약상 clean committed HEAD를 요구한다.
+변경 중에는 영향 범위의 focused test만 실행한다. Clean committed HEAD에서 전체 solution test는
+`dotnet` shard가, Installer 필터와 clean-worktree policy boundary는 `installer-policy` shard가 검증한다.
+
+커밋 후 `git status --short` 출력이 비어 있는 상태에서 Required CI exact four를 실행한다. `web`
+shard가 `npm run test:required`를 포함하므로 별도로 다시 실행하지 않는다.
+
+```text
+git status --short
+dotnet run --project src/DesktopNode.Verification -c Release --no-build --no-restore -- verify --lane Full --change-tier M --changed-path .github/workflows/development-gates.yml --artifact-root artifacts/local-dotnet --shard dotnet
+dotnet run --project src/DesktopNode.Verification -c Release --no-build --no-restore -- verify --lane Full --change-tier M --changed-path web/package.json --artifact-root artifacts/local-web --shard web
+dotnet run --project src/DesktopNode.Verification -c Release --no-build --no-restore -- verify --lane Full --change-tier M --changed-path packaging/windows-desktop-node/tests/PcvAdminSmokeEvidenceDocs.Tests.ps1 --artifact-root artifacts/local-delivery --shard delivery
+dotnet run --project src/DesktopNode.Verification -c Release --no-build --no-restore -- verify --lane Full --change-tier M --changed-path packaging/windows-desktop-node/installer/tests/PcvDesktopNodeInstaller.Plan.Tests.ps1 --artifact-root artifacts/local-installer-policy --shard installer-policy
+```
+
+위 `.ps1` 값은 changed-path 데이터이며 PowerShell process 호출이 아니다. Component/archive baseline
+검증은 기본 개발 loop에서 분리한다. PowerShell Local API, service helper, CLI, Hyper-V helper와
+legacy root boundary Pester는 비필수 component/archive 또는 manual/admin baseline으로만 유지한다.
+
+### 비필수 legacy/manual/admin Pester 예시
 
 ```powershell
 pwsh -NoProfile -Command "Invoke-Pester -Path 'packaging/windows-desktop-node/tests' -Output Detailed"
 ```
+
+이 예시는 Required CI 명령이 아니다. `.github/workflows/public-boundary.yml`과 관리자 script도
+별도 residue이며 repository-wide PowerShell zero를 주장하지 않는다.
 
 ## 현재 evidence 요약
 

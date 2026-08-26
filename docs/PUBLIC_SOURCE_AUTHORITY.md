@@ -38,12 +38,16 @@ installer, trusted signature, stable update channel, winget submission, or exter
 
 ## Integration and verification boundary
 
-The empty-repository seed is the only direct `main` bootstrap. After main protection is installed, source
-changes land through protected pull requests. The current four legacy checks remain protected until same-SHA
-dual-run evidence passes and the approved Wave E cutover atomically replaces them with `dotnet`, `web`,
-`delivery`, and `installer-policy`.
+The empty-repository seed was the only direct `main` bootstrap. Main is protected and later source changes
+land through protected pull requests. PR #1 completed the Wave E cutover at merge
+`d4a952b8e5ab11f7e3a9ae92b41c61b12828bfab`; its exact remote-main Development Gates run
+`32901477892` passed. PR #2 completed the documentation closure at main
+`6e2bdb93ce308b632c929e2c17f5550ac3845401`; Development Gates run `32904006595` passed.
+The required contexts are exactly `dotnet`, `web`, `delivery`, and `installer-policy`.
 
 Legacy Pester files remain tracked as rollback/reference material. Approved public-safety comments and
 runtime construction of synthetic fixture material preserve their assertion names, counts, and behavior.
-Final Required CI—not every historical or optional workflow—targets Pester invocation `0` and non-admin
-PowerShell invocation `0`.
+The 62-file / 627-contract migration ledger is `cutover / local pass / CI pass`. Required CI, not every
+historical or optional workflow, has Pester invocation `0` and non-admin PowerShell process invocation `0`.
+The non-required Public Boundary Contract also passed at main run `32904006619`, but that workflow and
+legacy/manual/admin PowerShell remain residue. This is not a repository-wide PowerShell deletion claim.

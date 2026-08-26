@@ -2,9 +2,21 @@
 
 ```text
 PUBLIC_BOUNDARY_CI_CONTRACT
-status: required
-classification: public-boundary-ci-required
-required_verification: packaging-pester-public-boundary-guard
+status: active-non-required-residue
+classification: public-boundary-ci-non-required-residue
+provider_required: false
+residue_workflow: .github/workflows/public-boundary.yml
+residue_job_name: public-boundary-ci-required
+residue_execution: pester-and-powershell
+required_ci_authority_workflow: .github/workflows/development-gates.yml
+required_ci_provider_required: true
+required_ci_contexts: dotnet,web,delivery,installer-policy
+required_ci_final_main_sha: 6e2bdb93ce308b632c929e2c17f5550ac3845401
+required_ci_final_main_run_id: 32904006595
+required_ci_evidence: docs/ga-ready/evidence/pester-free-required-ci-cutover-2026-08-25.md
+public_boundary_residue_run_id: 32904006619
+public_boundary_residue_job_id: 97983888524
+public_boundary_residue_head_sha: 6e2bdb93ce308b632c929e2c17f5550ac3845401
 ADR-0005: closed-not-adopted
 ADR-0006: internal-private-network-only
 public_trusted_signing: not-claimed
@@ -12,23 +24,32 @@ external_stable_publication: not-claimed
 winget_public_submission: out-of-scope
 public_stable_installer_url: out-of-scope
 public_clean_host_signed_install_update_rollback_smoke: out-of-scope
-current_evidence: docs/ga-ready/evidence/public-boundary-ci-main-push-2026-05-29-04259-docs-maintenance-postpush-pass.md
-source_version_anchor: 0.42.59-admin-smoke
-postmerge_package_anchor: 0.42.59-admin-smoke-fullgate-manual-admin-closed
-latest_main_push_run_id: 26636072420
-latest_main_push_job_id: 78496568595
-latest_main_push_head_sha: 5a2f91762a6c2a8ab6b84d334fa6cb420474671f
-latest_main_push_pr: none-post-04259-public-boundary-docs-maintenance-main-push
-next_product_payload_package_candidate: 0.42.60-admin-smoke
+current_operational_version_anchor: 0.42.74-admin-smoke
+current_operational_package_pair: 0.42.73-admin-smoke -> 0.42.74-admin-smoke
+current_promotion_eligible: false
+current_promotion_blocker: pcv.vm.saved-lifecycle/actual_vm_tested/fail
 additional_package_candidate_opened: false
-package_candidate_decision: unchanged-existing-04260-current-card-payload-candidate
-recursive_evidence_policy: docs-maintenance-postpush-does-not-open-additional-package-candidate
-installed_account_novnc_rerun_decision: not-run-no-account-novnc-payload-change-after-04258
-actual_vm_guest_execution_qos_smoke_decision: not-run-no-guest-execution-or-qos-provider-payload-change-after-04259
-previous_main_push_evidence: docs/ga-ready/evidence/public-boundary-ci-main-push-2026-05-29-04259-admin-smoke-closure-postpush-pass.md
-previous_main_push_run_id: 26629340294
-previous_main_push_job_id: 78473968530
-previous_main_push_head_sha: b1733c1d9777d2c0828897ae2751af33a270b2fe
+package_candidate_decision: docs-only-required-ci-closure-retains-0.42.74-admin-smoke
+historical_04259_current_evidence: docs/ga-ready/evidence/public-boundary-ci-main-push-2026-05-29-04259-docs-maintenance-postpush-pass.md
+historical_04259_source_version_anchor: 0.42.59-admin-smoke
+historical_04259_postmerge_package_anchor: 0.42.59-admin-smoke-fullgate-manual-admin-closed
+historical_04259_main_push_run_id: 26636072420
+historical_04259_main_push_job_id: 78496568595
+historical_04259_main_push_head_sha: 5a2f91762a6c2a8ab6b84d334fa6cb420474671f
+historical_04259_main_push_pr: none-post-04259-public-boundary-docs-maintenance-main-push
+historical_04259_next_product_payload_package_candidate: 0.42.60-admin-smoke
+historical_04259_recursive_evidence_policy: docs-maintenance-postpush-does-not-open-additional-package-candidate
+historical_04259_installed_account_novnc_rerun_decision: not-run-no-account-novnc-payload-change-after-04258
+historical_04259_actual_vm_guest_execution_qos_smoke_decision: not-run-no-guest-execution-or-qos-provider-payload-change-after-04259
+historical_04259_compatibility_alias_semantics: historical-predecessor-not-current-required-ci-authority
+historical_04259_required_verification: packaging-pester-public-boundary-guard
+historical_04259_latest_main_push_run_id: 26636072420
+historical_04259_latest_main_push_job_id: 78496568595
+historical_04259_latest_main_push_pr: none-post-04259-public-boundary-docs-maintenance-main-push
+historical_04259_previous_main_push_evidence: docs/ga-ready/evidence/public-boundary-ci-main-push-2026-05-29-04259-admin-smoke-closure-postpush-pass.md
+historical_04259_previous_main_push_run_id: 26629340294
+historical_04259_previous_main_push_job_id: 78473968530
+historical_04259_previous_main_push_head_sha: b1733c1d9777d2c0828897ae2751af33a270b2fe
 previous_04257_main_push_evidence: docs/ga-ready/evidence/public-boundary-ci-main-push-2026-05-29-04257-main-push-pass.md
 previous_04257_main_push_run_id: 26587524245
 previous_04257_main_push_job_id: 78337437665
@@ -159,8 +180,14 @@ historical_main_push_run_id: 25933861585
 historical_main_push_job_id: 76234195716
 historical_main_push_head_sha: 686e4201f823295dc65cde302f613a982ab8cade
 checkout_action_version: actions/checkout@v6.0.2
-branch_protection_ruleset_status: unavailable-private-repo-plan
-fallback_required_guard: public-boundary-ci-required
+branch_protection_ruleset_status: public-repository-enabled-exact-four-required-contexts
+historical_private_plan_branch_protection_ruleset_status: unavailable-private-repo-plan
+historical_private_plan_fallback_required_guard: public-boundary-ci-required
+branch_protection_strict: true
+branch_protection_enforce_admins: true
+branch_protection_required_contexts: dotnet,web,delivery,installer-policy
+historical_private_plan_ruleset_status: unavailable-private-repo-plan
+historical_private_plan_fallback_guard: public-boundary-ci-required
 package_build_decision: closed-0.42.54-admin-smoke-after-running-guest-cancel-policy
 post_04245_public_boundary_guard_status: pass
 post_04245_public_boundary_guard_evidence: docs/ga-ready/evidence/public-boundary-ci-main-push-2026-05-26-04245-postmerge-pass.md
@@ -215,10 +242,11 @@ historical_04227_04228_manual_admin_package_pair: 0.42.27-admin-smoke -> 0.42.28
 historical_04228_04229_update_zip_sha256: 3b399d92107c10f16f4788acafbcfe0a1174a92fd3329bd0f5789b8a1651f542
 ```
 
-이 contract는 Desktop Node의 public release boundary가 CI/Pester 문서 검증에서
-필수로 확인되어야 함을 고정한다. ADR-0005 public distribution expansion candidate는
-`closed-not-adopted` 상태이고, ADR-0006 `internal-private-network-only`가 현재 적용
-배포 경계다.
+이 contract는 Desktop Node의 Public Boundary Pester/PowerShell workflow를 현재
+`provider_required=false`인 residue로 분류한다. Provider가 실제로 요구하는 Required CI는
+`.github/workflows/development-gates.yml`의 `dotnet`, `web`, `delivery`, `installer-policy`
+네 context다. ADR-0005 public distribution expansion candidate는 `closed-not-adopted` 상태이고,
+ADR-0006 `internal-private-network-only`가 현재 적용 배포 경계다.
 
 0.42.49 후속은 Guest Execution policy/API preview disabled boundary package/fullgate/current-card,
 manual-admin `0.42.48 -> 0.42.49` readiness blocker 기록이 main에 반영된 뒤의
@@ -227,32 +255,38 @@ trusted signing, trusted timestamp, winget public submission,
 external stable publication/catalog upload, public stable installer URL, clean-host public
 signed install/update/rollback smoke는 이 contract에서 계속 claim하지 않는다.
 
-필수 guard:
+현재 provider-required guard:
 
-- `packaging/windows-desktop-node/tests/PcvAdminSmokeEvidenceDocs.Tests.ps1`는
-  `PUBLIC_BOUNDARY_CI_CONTRACT`와 `public-boundary-ci-required`를 확인한다.
-- `docs/PUBLIC_RELEASE_BOUNDARY.md`는 이 contract를 public boundary의 active guard로
-  참조한다.
-- `docs/ga-ready/AUTOMATED_BATCH_JOB_CLASSIFICATION.md`는 public boundary guard를
-  `AUTO-REPO` required check로 분류하되 public 실행으로 승격하지 않는다.
+- Main protection은 `strict=true`, admin enforcement enabled이고 GitHub Actions app ID
+  `15368`의 exact contexts `dotnet`, `web`, `delivery`, `installer-policy`만 요구한다.
+- Final-main SHA `6e2bdb93ce308b632c929e2c17f5550ac3845401`의 Development Gates run
+  [`32904006595`](https://github.com/HardcoreMonk/purecvisor-desktop-node-public/actions/runs/32904006595)은
+  네 job과 네 contract-v2 artifact를 PASS했다.
+- `packaging/windows-desktop-node/tests/PcvAdminSmokeEvidenceDocs.Tests.ps1`와
+  `.github/workflows/public-boundary.yml`은 historical/local compatibility 및 non-required residue로
+  남는다. 실제 residue run `32904006619`, job `97983888524`는 PASS했지만 보호 context가 아니다.
+- `docs/PUBLIC_RELEASE_BOUNDARY.md`와
+  `docs/ga-ready/AUTOMATED_BATCH_JOB_CLASSIFICATION.md`는 이 provider-required/residue 분리를
+  참조해야 한다.
 
-## GitHub 플랜 제한과 대체 Guard
+## Provider protection current와 historical private-plan fallback
 
-Branch protection/ruleset API는 현재 private repo 플랜에서
+현재 공개 저장소는 branch protection API를 사용할 수 있고 exact four Required CI를 강제한다.
+과거 private archive 플랜에서 branch protection/ruleset API는
 `Upgrade to GitHub Pro or make this repository public to enable this feature` 403을
-반환한다. 따라서 현재 required guard는 GitHub ruleset 강제가 아니라 PR 생성,
-check 확인, merge 직후 `main` push의 `public-boundary-ci-required` PASS 확인으로
-운영한다.
+반환했다. 당시 PR 생성/check 확인/merge 직후 `main` push의 `public-boundary-ci-required`
+PASS 확인을 fallback으로 사용한 기록은 historical snapshot이며 현재 provider authority가 아니다.
 
-최신 `main` push evidence는
-`docs/ga-ready/evidence/public-boundary-ci-main-push-2026-05-29-04259-docs-maintenance-postpush-pass.md`이며
-run `26636072420`, job `78496568595`, head
-`5a2f91762a6c2a8ab6b84d334fa6cb420474671f`에서 PASS했다. 이 run은 docs-maintenance
-postpush verification이며, `0.42.60-admin-smoke` installed current-card payload 후보는
-직전 product payload evidence가 이미 연 상태를 유지한다. 같은 public-boundary evidence를
-다시 문서화했다는 이유만으로 추가 package 후보를 열지 않는다. account/noVNC는
-0.42.58 PASS를 carry-forward하고 actual VM Guest Execution/QoS smoke는 provider/control payload
-변경 때 재실행한다. 직전 product payload public-boundary main push는 run `26629340294`,
+현재 Required CI evidence는
+`docs/ga-ready/evidence/pester-free-required-ci-cutover-2026-08-25.md`, final-main run
+`32904006595`, head `6e2bdb93ce308b632c929e2c17f5550ac3845401`이다. Public Boundary residue는 run
+`32904006619`, job `97983888524`, 같은 head에서 PASS했으며 `provider_required=false`다.
+이 docs/CI closure는 product payload를 바꾸지 않아 추가 package 후보를 열지 않는다.
+Operational authority는 `0.42.74-admin-smoke`, closed pair는
+`0.42.73-admin-smoke -> 0.42.74-admin-smoke`, promotion은 blocker 1건 때문에 `false`다.
+
+아래 0.42.59 이하 값은 historical predecessor chain이다. 당시 직전 product payload
+public-boundary main push는 run `26629340294`,
 job `78473968530`, head `b1733c1d9777d2c0828897ae2751af33a270b2fe`이다. 그 이전 0.42.57 main push는 run `26587524245`, job `78337437665`, head
 `96182b440b35c17183802ad323a123ff6e4b6730`이고, 그 이전 0.42.56 manual-admin closure main
 push는 run `26578120570`, job `78303066840`, head

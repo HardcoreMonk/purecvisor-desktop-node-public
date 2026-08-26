@@ -1,6 +1,19 @@
 # PureCVisor Desktop Node 운영 가이드
 
-## 2026-07-14 현재 운영자 표면
+## 2026-08-26 현재 운영 기준
+
+- Operational anchor는 `0.42.74-admin-smoke` /
+  `full-admin-host-mutation-gate-20260820-04274`다.
+- 활성 운영자 표면은 Web Console과 PCVCLI이며 `tui_present=false`다. 설치본 current-card는
+  `docs/ga-ready/evidence/installed-operator-surface-current-card-2026-08-20-04274.md`가
+  소유한다.
+- 최신 closed manual-admin package-pair는
+  `0.42.73-admin-smoke -> 0.42.74-admin-smoke` /
+  `manual-admin-campaign-descriptor-20260820-04273-04274-closed`다.
+- 정확한 hash와 current evidence tuple은 `docs/ga-ready/current-evidence.json`과 문서 최상단
+  generated current-evidence 블록이 소유한다.
+
+## 2026-07-14 historical 운영자 표면
 
 ADR-0011에 따라 일상 운영은 Web Console을 기본 대화형 표면으로, PCVCLI를 terminal
 automation/JSON 표면으로 사용한다. TUI는 active product에서 제거됐으며 Local API/backend
@@ -78,11 +91,11 @@ Historical PR #151 public-boundary predecessor는 `docs/ga-ready/evidence/public
 
 이 문서는 설치된 PureCVisor Desktop Node를 운영하는 사람이 보는 runbook이다. 일반 사용자 화면 사용법은 `docs/USER_GUIDE.md`를 따르고, 개발 검증 기준은 `docs/DEVELOPMENT_VERIFICATION_POLICY.md`를 따른다.
 
-## 운영 경계
+## 2026-05-17 historical 운영 경계
 
 PureCVisor Desktop Node는 Windows Desktop Node 전용 내부 서비스다. 현재 적용 결정은 ADR-0004의 `ga-ready-product-runtime`와 ADR-0006의 `internal-private-network-only`이며, 배포 경계는 내부 사설망 전용이다.
 
-현재 operational evidence anchor는 `0.42.29-admin-smoke`다. 최신 full admin host
+이 historical snapshot의 operational evidence anchor는 `0.42.29-admin-smoke`다. 당시 full admin host
 mutation은 `docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-05-17-04229-hostmutation.md`
 및 `full-admin-host-mutation-gate-20260517-04229`이 소유하고, installed Web/TUI/CLI
 current-card는 `artifacts/installed-operator-surface-current-card-20260517-04229`에서
@@ -212,9 +225,9 @@ pwsh -NoProfile -ExecutionPolicy Bypass -File packaging/windows-desktop-node/too
 
 이 runner는 loopback TCP echo target을 만들고 installed service `PathName`에 noVNC target을 임시로 붙인 뒤 WebSocket binary frame 왕복을 확인한다. 종료 시 원래 `PathName`을 복원하고 service를 `Running`으로 되돌려야 PASS다.
 
-## 최신 기준 evidence
+## 2026-05-18 historical 기준 evidence
 
-현재 운영 기준의 최신 PASS evidence:
+당시 운영 기준의 PASS evidence:
 
 | 범위 | 최신 evidence |
 |------|---------------|

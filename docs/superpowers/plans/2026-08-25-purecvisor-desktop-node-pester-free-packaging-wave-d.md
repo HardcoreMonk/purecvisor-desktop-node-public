@@ -1,5 +1,10 @@
 # Pester-free Packaging Wave D Implementation Plan
 
+> **Completion status (2026-08-25): completed.** Packaging 55 files / 528 contracts가 replacement
+> `528/528` local PASS로 닫혔고 ledger 전체 62 files / 627 contracts가 후속 Wave E에서 CI
+> PASS/cutover로 승격됐다. 아래 CI pending 문구는 실행 전 snapshot이다. Wave D 증빙은
+> `docs/ga-ready/evidence/pester-free-packaging-wave-d-2026-08-25.md`다.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:test-driven-development and superpowers:executing-plans to implement this plan task-by-task. Use superpowers:requesting-code-review after each batch. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Packaging legacy Pester 55파일/528계약을 read-only C# delivery 계약으로 1:1 이전하고, current-evidence check를 managed C# handler로 활성화하여 ledger 전체 62파일/627계약을 local parity PASS 상태로 만든다.

@@ -345,24 +345,43 @@ previous_operator_surface_running_job_cancel_affordance_status: `pass-code-level
 previous_manual_admin_04250_04253_baseline_host_prep_evidence: `docs/ga-ready/evidence/manual-admin-package-pair-closure-2026-05-27-04250-04253-blocked-post-ci-rollforward.md`
 previous_manual_admin_04250_04253_baseline_host_prep_status: `blocked-missing-dedicated-baseline-host`
 previous_manual_admin_04250_04253_initial_baseline_host_prep_evidence: `docs/ga-ready/evidence/manual-admin-baseline-host-prep-2026-05-27-04250-04253-blocked.md`
-latest_public_boundary_followup_evidence: `docs/ga-ready/evidence/public-boundary-ci-main-push-2026-08-21-04274-p0-landing-pass.md`
-latest_postmerge_followup_evidence: `docs/ga-ready/evidence/public-boundary-ci-main-push-2026-08-21-04274-p0-landing-pass.md`
-current_public_boundary_main_push_evidence: `docs/ga-ready/evidence/public-boundary-ci-main-push-2026-08-21-04274-p0-landing-pass.md`
+current_required_ci_evidence: `docs/ga-ready/evidence/pester-free-required-ci-cutover-2026-08-25.md`
+current_required_ci_final_main_sha: `6e2bdb93ce308b632c929e2c17f5550ac3845401`
+current_required_ci_final_main_run_id: `32904006595`
+current_required_ci_final_main_run_url: `https://github.com/HardcoreMonk/purecvisor-desktop-node-public/actions/runs/32904006595`
+current_required_ci_pr: `https://github.com/HardcoreMonk/purecvisor-desktop-node-public/pull/2`
+current_required_ci_contexts: `dotnet,web,delivery,installer-policy`
+current_required_ci_provider_required: `true`
+current_required_ci_pester_zero: `true`
+current_required_ci_nonadmin_powershell_zero: `true`
+current_public_boundary_residue_workflow: `.github/workflows/public-boundary.yml`
+current_public_boundary_residue_run_id: `32904006619`
+current_public_boundary_residue_run_url: `https://github.com/HardcoreMonk/purecvisor-desktop-node-public/actions/runs/32904006619`
+current_public_boundary_residue_job_id: `97983888524`
+current_public_boundary_residue_job_name: `public-boundary-ci-required`
+current_public_boundary_residue_head_sha: `6e2bdb93ce308b632c929e2c17f5550ac3845401`
+current_public_boundary_residue_provider_required: `false`
+current_public_boundary_residue_execution: `pester-and-powershell-non-required`
+current_public_boundary_product_payload_change_detected: `false`
+current_public_boundary_package_candidate_decision: `docs-only-required-ci-closure-retains-0.42.74-admin-smoke`
+previous_04274_p0_latest_public_boundary_followup_evidence: `docs/ga-ready/evidence/public-boundary-ci-main-push-2026-08-21-04274-p0-landing-pass.md`
+previous_04274_p0_latest_postmerge_followup_evidence: `docs/ga-ready/evidence/public-boundary-ci-main-push-2026-08-21-04274-p0-landing-pass.md`
+previous_04274_p0_current_public_boundary_main_push_evidence: `docs/ga-ready/evidence/public-boundary-ci-main-push-2026-08-21-04274-p0-landing-pass.md`
 previous_04273_current_public_boundary_main_push_evidence: `docs/ga-ready/evidence/public-boundary-ci-main-push-2026-08-14-04273-promotion-postpush-pass.md`
-current_public_boundary_main_push_run_id: `32388996125`
+previous_04274_p0_current_public_boundary_main_push_run_id: `32388996125`
 previous_04273_current_public_boundary_main_push_run_id: `31737488576`
-current_public_boundary_main_push_job_id: `96490306459`
+previous_04274_p0_current_public_boundary_main_push_job_id: `96490306459`
 previous_04273_current_public_boundary_main_push_job_id: `94572517694`
-current_public_boundary_main_push_head_sha: `5f9cecfd5507e7e5dd726601aae3760e4e1b558c`
+previous_04274_p0_current_public_boundary_main_push_head_sha: `5f9cecfd5507e7e5dd726601aae3760e4e1b558c`
 previous_04273_current_public_boundary_main_push_head_sha: `291435e374efef7f9639b820ac197c11e2c7e8a4`
-current_public_boundary_pr: `none-direct-main-push`
-current_public_boundary_scope: `post-04274-p0-landing-main-push`
+previous_04274_p0_current_public_boundary_pr: `none-direct-main-push`
+previous_04274_p0_current_public_boundary_scope: `post-04274-p0-landing-main-push`
 previous_04273_current_public_boundary_scope: `post-04273-promotion-main-push`
-current_public_boundary_product_payload_change_detected: `true`
+previous_04274_p0_current_public_boundary_product_payload_change_detected: `true`
 previous_04273_current_public_boundary_product_payload_change_detected: `false`
-current_public_boundary_package_candidate_decision: `landed-already-validated-as-0.42.74-admin-smoke`
+previous_04274_p0_current_public_boundary_package_candidate_decision: `landed-already-validated-as-0.42.74-admin-smoke`
 previous_04273_current_public_boundary_package_candidate_decision: `docs-only-followup-retains-0.42.73-admin-smoke`
-current_public_boundary_evidence_gap: `none-dedicated-04274-p0-landing-evidence`
+previous_04274_p0_current_public_boundary_evidence_gap: `none-dedicated-04274-p0-landing-evidence`
 previous_04273_current_public_boundary_evidence_gap: `none-dedicated-04273-promotion-postpush-evidence`
 current_public_boundary_undocumented_latest_head_sha: `none`
 previous_pr187_public_boundary_main_push_evidence: `docs/ga-ready/evidence/public-boundary-ci-main-push-2026-08-12-pr187-postmerge-pass.md`
@@ -839,7 +858,9 @@ previous_04226_pre_branch_product_payload_change_detected: `false`
 | `guest-execution-persistent-windows-target-policy` | `keep`, after 04255 fullgate | `docs/ga-ready/evidence/persistent-windows-guest-target-policy-2026-05-28-04255.md` | `pcv-guest-installed-04253-r1` Hyper-V Notes가 이미 `guest_family=windows`, guest OS, keep policy를 포함해 cleanup과 추가 notes mutation을 수행하지 않았다. |
 | `guest-execution-running-cancel-policy` | `pass-installed`, running guest execution cancel token path installed smoke | `docs/ga-ready/evidence/guest-execution-running-cancel-installed-2026-05-28-04254-pass.md`; predecessor `docs/ga-ready/evidence/guest-execution-running-interrupt-code-level-2026-05-28.md`; `docs/superpowers/specs/2026-05-27-purecvisor-desktop-node-guest-execution-running-interrupt-cancel-design.md` | Runtime/API는 running guest execution job cancel token path와 PowerShell Direct bridge process kill을 설치본 Windows guest에서 확인했다. |
 | `web-tui-running-job-cancel-affordance` | `pass-installed`, 0.42.55 current-card | `docs/ga-ready/evidence/installed-operator-surface-current-card-2026-05-28-04255.md`; predecessor `docs/ga-ready/evidence/web-tui-running-job-cancel-affordance-code-level-2026-05-28.md` | Web job/activity rows와 TUI Job tab이 running guest execution cancel scope를 operator에게 명시하고 04255 설치본에서 확인됐다. |
-| `public-boundary-current` | `pass`, 0.42.74 P0 landing main push | `docs/ga-ready/evidence/public-boundary-ci-main-push-2026-08-21-04274-p0-landing-pass.md`; run `32388996125`, job `96490306459`, head `5f9cecfd5507e7e5dd726601aae3760e4e1b558c` | SERVICE_PLAN P0 payload `33`개와 04274 승격이 origin `main`에 착륙했다. package/fullgate/manual-admin은 이미 `0.42.74-admin-smoke`로 검증돼 새 package candidate를 열지 않는다. 이 CI 성공과 internal admin-smoke evidence는 public trusted signing 또는 external stable publication을 주장하지 않는다. |
+| `required-ci-current` | `pass`, provider-required exact four | `docs/ga-ready/evidence/pester-free-required-ci-cutover-2026-08-25.md`; final main `6e2bdb93ce308b632c929e2c17f5550ac3845401`; run `32904006595`; contexts `dotnet`, `web`, `delivery`, `installer-policy` | 정확히 네 job과 네 contract-v2 artifact가 PASS했다. Required CI executable Pester/비관리자 PowerShell/mutation invocation은 `0`이고 branch protection은 `strict=true`, admin enforcement enabled다. |
+| `public-boundary-residue-current` | `pass-non-required-residue`, `provider_required=false` | `.github/workflows/public-boundary.yml`; run `32904006619`, job `97983888524`, head `6e2bdb93ce308b632c929e2c17f5550ac3845401` | 실제 job identity `public-boundary-ci-required`는 보존되지만 provider required context가 아니다. Pester/PowerShell 실행 residue이므로 Required CI zero claim을 repository-wide claim으로 확대하지 않는다. Docs-only closure라 package candidate는 열지 않고 `0.42.74-admin-smoke`를 유지한다. |
+| `public-boundary-04274-p0-predecessor` | `pass`, historical 0.42.74 P0 landing main push | `docs/ga-ready/evidence/public-boundary-ci-main-push-2026-08-21-04274-p0-landing-pass.md`; run `32388996125`, job `96490306459`, head `5f9cecfd5507e7e5dd726601aae3760e4e1b558c` | SERVICE_PLAN P0 payload `33`개와 04274 승격 착륙을 증명한 predecessor다. 현재 Required CI/provider-protection authority로 사용하지 않는다. |
 | `public-boundary-04273-promotion-predecessor` | `pass`, 0.42.73 promotion main push | `docs/ga-ready/evidence/public-boundary-ci-main-push-2026-08-14-04273-promotion-postpush-pass.md`; run `31737488576`, job `94572517694`, head `291435e374efef7f9639b820ac197c11e2c7e8a4` | 04273 승격 커밋은 docs/tests-only였고 product payload 경로가 `0`개였다. 04274 P0 landing current 아래 predecessor로 보존한다. |
 | `public-boundary-pr187-predecessor` | `pass`, PR #187 post-merge main push | `docs/ga-ready/evidence/public-boundary-ci-main-push-2026-08-12-pr187-postmerge-pass.md`; run `31579083573`, job `94057811212`, head `a626a7e15d51903f2df5d83d48ffcd2c2115dfc1` | PR #187은 docs/tests-only였고 `0.42.72-admin-smoke`를 유지했다. 04273 promotion current 아래 predecessor로 보존한다. |
 | `public-boundary-pr186-predecessor` | `pass`, PR #186 post-merge main push | `docs/ga-ready/evidence/public-boundary-ci-main-push-2026-08-09-pr186-postmerge-pass.md`; run `31302773929`, job `93218124085`, head `02428fabfe5550e0bb3e412db3da29e8ccb57d40` | PR #186 payload 변경은 `0.42.72-admin-smoke` package chain으로 검증됐고 predecessor로 보존한다. |
