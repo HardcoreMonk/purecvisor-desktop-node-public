@@ -27,6 +27,12 @@ function New-P0BehaviorRuntime {
         CheckpointCurrentCount = 1
         JobOutcomes = @{}
         JobStderr = @{}
+        RequireLowLevelCli = $false
+        ServiceLossAfterEnqueue = $null
+        LastEnqueuedStep = $null
+        CreateCompleted = $false
+        FailSummaryOnceAfterCreate = $false
+        SummaryFailureInjected = $false
         CollisionOnCleanup = $false
         CleanupRootFailure = $false
         RemovedVmIds = [System.Collections.Generic.List[string]]::new()
@@ -110,7 +116,27 @@ function New-P0BehaviorRuntime {
                 }
                 return $null
             }
+            'invoke-cli' {
+                $step = [string]$Payload.step
+                $state.LastEnqueuedStep = $step
+                if ([string]$state.ServiceLossAfterEnqueue -eq $step) {
+                    $state.ServiceState = 'Stopped'
+                }
+                return [pscustomobject]@{
+                    exit_code = 0
+                    stdout = (@{
+                        data = @{
+                            job_id = "job-$step"
+                            status = 'queued'
+                        }
+                    } | ConvertTo-Json -Compress)
+                    stderr = [string]$state.JobStderr[$step]
+                }
+            }
             'enqueue-job' {
+                if ($state.RequireLowLevelCli) {
+                    throw 'PCV_P0_LOW_LEVEL_CLI_REQUIRED'
+                }
                 $step = [string]$Payload.step
                 return [pscustomobject]@{
                     job_id = "job-$step"
@@ -125,7 +151,10 @@ function New-P0BehaviorRuntime {
                 if ([string]::IsNullOrWhiteSpace([string]$outcome)) { $outcome = 'succeeded' }
                 if ($outcome -eq 'succeeded') {
                     switch ($step) {
-                        'vm-create' { $state.ManagedExists = $true }
+                        'vm-create' {
+                            $state.ManagedExists = $true
+                            $state.CreateCompleted = $true
+                        }
                         'vm-start' { $state.ManagedState = 'Running' }
                         'vm-save' { $state.ManagedState = $state.SaveHyperVState }
                         'vm-resume-saved' { $state.ManagedState = $state.ResumeHyperVState }
@@ -205,6 +234,18 @@ function Invoke-P0BehaviorScenario {
     )
 
     $runtime = New-P0BehaviorRuntime -Configure $Configure
+    if ($null -eq $SummaryWriter -and $runtime.State.FailSummaryOnceAfterCreate) {
+        $writerState = $runtime.State
+        $SummaryWriter = {
+            param($summaryPath, $temporaryPath, $json)
+            if ($writerState.CreateCompleted -and -not $writerState.SummaryFailureInjected) {
+                $writerState.SummaryFailureInjected = $true
+                throw 'simulated-post-create-summary-write-failure'
+            }
+            [System.IO.File]::WriteAllText($temporaryPath, $json, [System.Text.UTF8Encoding]::new($false))
+            Move-Item -LiteralPath $temporaryPath -Destination $summaryPath -Force
+        }.GetNewClosure()
+    }
     $artifactRoot = Join-Path $TestDrive $Name
     $parameters = @{
         Version = '0.42.75-admin-smoke'
@@ -384,6 +425,43 @@ Describe 'SERVICE_PLAN P0 formal actual-VM runner contract' {
         $run.Summary.queued_jobs.'vm-save'.status | Should -Be 'timed_out'
         $run.Summary.queued_jobs.'vm-save'.polling_status | Should -Be 'timeout'
         $run.Summary.slice_verdicts.saved_lifecycle | Should -Be 'FAIL'
+    }
+
+    It 'retains enqueued job identity when service is lost immediately after CLI enqueue' -Tag 'p1-retention' {
+        $run = Invoke-P0BehaviorScenario -Name 'post-enqueue-service-loss' -Configure {
+            param($state)
+            $state.RequireLowLevelCli = $true
+            $state.ServiceLossAfterEnqueue = 'vm-create'
+        }
+
+        $run.Summary.queued_jobs.'vm-create'.job_id | Should -Be 'job-vm-create'
+        $run.Summary.queued_jobs.'vm-create'.initial_status | Should -Be 'queued'
+        $run.Summary.queued_jobs.'vm-create'.status | Should -Be 'queued'
+        $run.Summary.overall_verdict | Should -Be 'FAIL'
+        $run.Summary.error | Should -Match 'PCV_P0_SERVICE_LOST'
+    }
+
+    It 'records post-create identity before summary failure and exact-cleans that ID' -Tag 'p1-retention' {
+        $run = Invoke-P0BehaviorScenario -Name 'post-create-summary-failure' -Configure {
+            param($state)
+            $state.RequireLowLevelCli = $true
+            $state.FailSummaryOnceAfterCreate = $true
+            $state.JobOutcomes['cleanup-delete-managed'] = 'failed'
+        }
+
+        $run.State.SummaryFailureInjected | Should -BeTrue
+        $run.Summary.managed_vm_id | Should -Be $run.State.ManagedId.ToString('D')
+        @($run.State.RemovedVmIds) | Should -Contain $run.State.ManagedId.ToString('D')
+        @($run.State.RemovedVmIds) | Should -Not -Contain $run.State.ForeignId.ToString('D')
+        @($run.State.RemovedVmIds) | Should -Not -Contain $run.State.CollisionId.ToString('D')
+        $managedRecord = @($run.Summary.cleanup.records | Where-Object kind -eq 'managed')[0]
+        @($run.State.RemovedRoots).Count | Should -Be 1
+        @($run.State.RemovedRoots) | Should -Contain $managedRecord.root
+        $managedRecord.native_fallback_used | Should -BeTrue
+        $managedRecord.root_removed | Should -BeTrue
+        $run.Summary.cleanup.verdict | Should -Be 'PASS'
+        $run.Summary.overall_verdict | Should -Be 'FAIL'
+        $run.Summary.error | Should -Match 'PCV_P0_SUMMARY_WRITE_FAILED'
     }
 
     It 'records a same-name collision but still cleans only the exact owned ID' {

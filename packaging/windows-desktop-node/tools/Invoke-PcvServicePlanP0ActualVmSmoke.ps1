@@ -413,27 +413,41 @@ function Invoke-PcvCliJson {
     )
 
     Assert-ServiceAvailable
-    $startInfo = [System.Diagnostics.ProcessStartInfo]::new()
-    $startInfo.FileName = $script:PcvCli
-    $startInfo.UseShellExecute = $false
-    $startInfo.RedirectStandardOutput = $true
-    $startInfo.RedirectStandardError = $true
-    $startInfo.ArgumentList.Add('--json')
-    foreach ($argument in $Arguments) {
-        $startInfo.ArgumentList.Add($argument)
+    if ($null -ne $RuntimeAdapter) {
+        $external = Invoke-RuntimeOperation -Operation 'invoke-cli' -Input @{
+            step = $StepName
+            arguments = @($Arguments)
+            allow_failure = $AllowFailure.IsPresent
+            timeout_seconds = $CommandTimeoutSeconds
+        }
+        $exitCode = [int](Get-ObjectPropertyValue -InputObject $external -Name 'exit_code')
+        $stdout = [string](Get-ObjectPropertyValue -InputObject $external -Name 'stdout')
+        $stderr = [string](Get-ObjectPropertyValue -InputObject $external -Name 'stderr')
     }
-    $process = [System.Diagnostics.Process]::Start($startInfo)
-    if ($null -eq $process) {
-        throw "PCV_P0_COMMAND_START_FAILED|$StepName"
+    else {
+        $startInfo = [System.Diagnostics.ProcessStartInfo]::new()
+        $startInfo.FileName = $script:PcvCli
+        $startInfo.UseShellExecute = $false
+        $startInfo.RedirectStandardOutput = $true
+        $startInfo.RedirectStandardError = $true
+        $startInfo.ArgumentList.Add('--json')
+        foreach ($argument in $Arguments) {
+            $startInfo.ArgumentList.Add($argument)
+        }
+        $process = [System.Diagnostics.Process]::Start($startInfo)
+        if ($null -eq $process) {
+            throw "PCV_P0_COMMAND_START_FAILED|$StepName"
+        }
+        $stdoutTask = $process.StandardOutput.ReadToEndAsync()
+        $stderrTask = $process.StandardError.ReadToEndAsync()
+        if (-not $process.WaitForExit($CommandTimeoutSeconds * 1000)) {
+            try { $process.Kill($true) } catch { }
+            throw "PCV_P0_COMMAND_TIMEOUT|$StepName"
+        }
+        $stdout = $stdoutTask.GetAwaiter().GetResult()
+        $stderr = $stderrTask.GetAwaiter().GetResult()
+        $exitCode = [int]$process.ExitCode
     }
-    $stdoutTask = $process.StandardOutput.ReadToEndAsync()
-    $stderrTask = $process.StandardError.ReadToEndAsync()
-    if (-not $process.WaitForExit($CommandTimeoutSeconds * 1000)) {
-        try { $process.Kill($true) } catch { }
-        throw "PCV_P0_COMMAND_TIMEOUT|$StepName"
-    }
-    $stdout = $stdoutTask.GetAwaiter().GetResult()
-    $stderr = $stderrTask.GetAwaiter().GetResult()
     $secretObserved = (Test-SecretMaterial -Text $stdout) -or (Test-SecretMaterial -Text $stderr)
     $payload = $null
     if (-not $secretObserved -and -not [string]::IsNullOrWhiteSpace($stdout)) {
@@ -441,18 +455,16 @@ function Invoke-PcvCliJson {
     }
     $script:Steps.Add([pscustomobject][ordered]@{
         step = $StepName
-        exit_code = [int]$process.ExitCode
-        status = if ($process.ExitCode -eq 0) { 'completed' } else { 'failed' }
+        exit_code = $exitCode
+        status = if ($exitCode -eq 0) { 'completed' } else { 'failed' }
         at = (Get-Date).ToUniversalTime().ToString('o')
     }) | Out-Null
-    Write-AtomicSummary
-    Assert-ServiceAvailable
     if ($secretObserved) { Set-SecretObserved }
-    if ($process.ExitCode -ne 0 -and -not $AllowFailure.IsPresent) {
-        throw "PCV_P0_COMMAND_FAILED|$StepName|exit=$($process.ExitCode)"
+    if ($exitCode -ne 0 -and -not $AllowFailure.IsPresent) {
+        throw "PCV_P0_COMMAND_FAILED|$StepName|exit=$exitCode"
     }
     return [pscustomobject]@{
-        ExitCode = [int]$process.ExitCode
+        ExitCode = $exitCode
         Json = $payload
         SecretObserved = $secretObserved
     }
@@ -481,25 +493,15 @@ function Start-PcvCliJob {
     param(
         [Parameter(Mandatory)][string]$StepName,
         [Parameter(Mandatory)][string[]]$Arguments,
-        [switch]$AllowFailure
+        [switch]$AllowFailure,
+        [switch]$DeferTerminalSummaryWrite
     )
 
-    if ($null -ne $RuntimeAdapter) {
-        $queued = Invoke-RuntimeOperation -Operation 'enqueue-job' -Input @{
-            step = $StepName
-            arguments = @($Arguments)
-        }
-        $jobId = [string]$queued.job_id
-        $initialStatus = [string]$queued.status
-        $secretObserved = Test-SecretMaterial -Text ([string]$queued.stderr)
-    }
-    else {
-        $created = Invoke-PcvCliJson -StepName $StepName -Arguments $Arguments -AllowFailure:$AllowFailure
-        $data = Get-ObjectPropertyValue -InputObject $created.Json -Name 'data'
-        $jobId = [string](Get-ObjectPropertyValue -InputObject $data -Name 'job_id')
-        $initialStatus = [string](Get-ObjectPropertyValue -InputObject $data -Name 'status')
-        $secretObserved = [bool]$created.SecretObserved
-    }
+    $created = Invoke-PcvCliJson -StepName $StepName -Arguments $Arguments -AllowFailure:$AllowFailure
+    $data = Get-ObjectPropertyValue -InputObject $created.Json -Name 'data'
+    $jobId = [string](Get-ObjectPropertyValue -InputObject $data -Name 'job_id')
+    $initialStatus = [string](Get-ObjectPropertyValue -InputObject $data -Name 'status')
+    $secretObserved = [bool]$created.SecretObserved
     if ($jobId -notmatch '^[A-Za-z0-9][A-Za-z0-9._-]{2,127}$') {
         if ($secretObserved) { Set-SecretObserved }
         throw "PCV_P0_JOB_ID_MISSING|$StepName"
@@ -514,6 +516,7 @@ function Start-PcvCliJob {
         error_code = $null
     }
     Write-AtomicSummary
+    Assert-ServiceAvailable
     if ($secretObserved) {
         Set-SecretObserved
         $summary.queued_jobs[$StepName].status = 'secret_observed'
@@ -554,7 +557,7 @@ function Start-PcvCliJob {
     $summary.queued_jobs[$StepName].polling_status = 'terminal'
     $summary.queued_jobs[$StepName].terminal = $true
     $summary.queued_jobs[$StepName].error_code = $errorCode
-    Write-AtomicSummary
+    if (-not $DeferTerminalSummaryWrite.IsPresent) { Write-AtomicSummary }
     if ($status -ne 'succeeded' -and -not $AllowFailure.IsPresent) {
         throw "PCV_P0_JOB_FAILED|$StepName|job=$JobId|status=$status"
     }
@@ -625,6 +628,8 @@ function New-VmOwnershipRecord {
         name = $Name
         id = $null
         root = $recordedRoot
+        observed_id = $null
+        observed_path = $null
         identity_status = 'reserved-before-mutation'
         identity_blocker = $false
         product_delete_attempted = $false
@@ -646,15 +651,22 @@ function Set-VmAuthoritativeIdentity {
     )
 
     try {
-        $Record.id = ([Guid]$Vm.Id).ToString('D')
-        if ($Record.kind -eq 'managed') { $summary.managed_vm_id = $Record.id }
-        else { $summary.foreign_vm_id = $Record.id }
-        $Record.identity_status = 'id-recorded-path-pending'
-        Write-AtomicSummary
-        $Record.root = Assert-ValidatedChildPath -Root $vmRootFull -Candidate ([string]$Vm.Path)
-        $Record.identity_status = 'authoritative'
-        $Record.identity_blocker = $false
-        Write-AtomicSummary
+        $observedId = ([Guid]$Vm.Id).ToString('D')
+        $observedPath = Get-AbsolutePath -Path ([string]$Vm.Path)
+        $Record.observed_id = $observedId
+        $Record.observed_path = $observedPath
+        $reservedRoot = Get-AbsolutePath -Path ([string]$Record.root)
+        $comparison = if ($IsWindows) {
+            [System.StringComparison]::OrdinalIgnoreCase
+        }
+        else {
+            [System.StringComparison]::Ordinal
+        }
+        $withinReservedRoot = $observedPath.Equals($reservedRoot, $comparison) -or
+            $observedPath.StartsWith($reservedRoot + [System.IO.Path]::DirectorySeparatorChar, $comparison)
+        if (-not $withinReservedRoot) {
+            throw "PCV_P0_CLEANUP_ROOT_INVALID|observed-vm-outside-reserved-root"
+        }
     }
     catch {
         $Record.identity_status = 'blocker'
@@ -663,6 +675,12 @@ function Set-VmAuthoritativeIdentity {
         Write-AtomicSummary
         throw
     }
+    $Record.id = $observedId
+    if ($Record.kind -eq 'managed') { $summary.managed_vm_id = $Record.id }
+    else { $summary.foreign_vm_id = $Record.id }
+    $Record.identity_status = 'authoritative'
+    $Record.identity_blocker = $false
+    Write-AtomicSummary
     return $Record
 }
 
@@ -699,18 +717,31 @@ function Invoke-SavedLifecycle {
 
     $create = Start-PcvCliJob -StepName 'vm-create' -Arguments @(
         'vm', 'create', '--name', $ManagedVm, '--iso', $summary.iso_path_resolved,
-        '--cpu', '1', '--memory-mb', '1024', '--disk-gb', '8', '--vm-root', $vmRootFull)
+        '--cpu', '1', '--memory-mb', '1024', '--disk-gb', '8', '--vm-root', $vmRootFull) -DeferTerminalSummaryWrite
     if ([string](Get-ObjectPropertyValue -InputObject $create -Name 'status') -ne 'succeeded') {
         throw 'PCV_P0_STATE_MISMATCH|create'
     }
-    $createdRows = @(Get-PcvVmByName -Name $ManagedVm -Purpose 'authoritative-create')
-    if ($createdRows.Count -ne 1) {
-        $Record.identity_status = 'orphan-blocker'
-        $Record.identity_blocker = $true
-        Write-AtomicSummary
-        throw "PCV_P0_STATE_MISMATCH|created-vm-cardinality=$($createdRows.Count)"
+    $createdVm = $null
+    $jobResult = Get-ObjectPropertyValue -InputObject $create -Name 'result'
+    $jobVmIdText = [string](Get-ObjectPropertyValue -InputObject $create -Name 'vm_id')
+    if ([string]::IsNullOrWhiteSpace($jobVmIdText)) {
+        $jobVmIdText = [string](Get-ObjectPropertyValue -InputObject $jobResult -Name 'vm_id')
     }
-    $Record = Set-VmAuthoritativeIdentity -Record $Record -Vm $createdRows[0]
+    $jobVmId = [Guid]::Empty
+    if ([Guid]::TryParse($jobVmIdText, [ref]$jobVmId)) {
+        $createdVm = Get-PcvVmById -Id $jobVmId -Record $Record
+    }
+    if ($null -eq $createdVm) {
+        $createdRows = @(Get-PcvVmByName -Name $ManagedVm -Purpose 'authoritative-create')
+        if ($createdRows.Count -eq 1) { $createdVm = $createdRows[0] }
+        else {
+            $Record.identity_status = 'orphan-blocker'
+            $Record.identity_blocker = $true
+            Write-AtomicSummary
+            throw "PCV_P0_STATE_MISMATCH|created-vm-cardinality=$($createdRows.Count)"
+        }
+    }
+    $Record = Set-VmAuthoritativeIdentity -Record $Record -Vm $createdVm
     $id = [Guid]$Record.id
 
     $start = Start-PcvCliJob -StepName 'vm-start' -Arguments @('vm', 'start', $Record.id)

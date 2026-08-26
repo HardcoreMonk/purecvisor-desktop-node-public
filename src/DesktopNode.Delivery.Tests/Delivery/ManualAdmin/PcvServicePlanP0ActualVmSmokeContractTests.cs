@@ -125,6 +125,10 @@ public sealed class PcvServicePlanP0ActualVmSmokeContractTests
             "initial_status",
             "polling_status",
             "timed_out",
+            "'invoke-cli'",
+            "$DeferTerminalSummaryWrite",
+            "observed_id",
+            "observed_path",
             "New-VmOwnershipRecord",
             "Set-VmAuthoritativeIdentity",
             "productStateAfterResume -ne 'running'");
