@@ -118,8 +118,14 @@ public sealed class PcvServicePlanP0ActualVmSmokeContractTests
             "Assert-ValidatedChildPath",
             "PCV_P0_CLEANUP_ID_MISMATCH",
             "PCV_P0_CLEANUP_ROOT_INVALID",
+            "PCV_P0_VM_ROOT_ALREADY_EXISTS",
+            "PCV_P0_CLEANUP_IDENTITY_DRIFT",
             "native_fallback_used",
-            "same_name_different_id_blocked");
+            "same_name_different_id_blocked",
+            "#requires -Version 7.0",
+            "Assert-PcvPathAbsent",
+            "root_owned_by_run",
+            "Get-ValidatedCleanupVm");
         RequireTokens(
             source,
             "initial_status",

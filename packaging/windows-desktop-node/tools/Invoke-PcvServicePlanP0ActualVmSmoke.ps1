@@ -1,3 +1,5 @@
+#requires -Version 7.0
+
 [CmdletBinding()]
 param(
     [Parameter(Mandatory)]
@@ -123,6 +125,8 @@ Assert-VmName -Name $ForeignVm -VersionTag $versionTag
 if ($ManagedVm -eq $ForeignVm) {
     throw 'PCV_P0_VM_NAME_INVALID|managed-and-foreign-must-differ'
 }
+$managedVmRootFull = Assert-ValidatedChildPath -Root $vmRootFull -Candidate (Join-Path $vmRootFull $ManagedVm)
+$foreignVmRootFull = Assert-ValidatedChildPath -Root $vmRootFull -Candidate (Join-Path $vmRootFull $ForeignVm)
 if ([string]::IsNullOrWhiteSpace($CheckpointName) -or $CheckpointName.IndexOfAny([char[]]'*?[]') -ge 0) {
     throw 'PCV_P0_CHECKPOINT_NAME_INVALID'
 }
@@ -311,7 +315,7 @@ function New-PcvDirectory {
         Invoke-RuntimeOperation -Operation 'create-directory' -Input @{ path = $Path } | Out-Null
         return
     }
-    New-Item -ItemType Directory -Path $Path -Force | Out-Null
+    New-Item -ItemType Directory -Path $Path -ErrorAction Stop | Out-Null
 }
 
 function Test-PcvPath {
@@ -321,6 +325,17 @@ function Test-PcvPath {
         return [bool](Invoke-RuntimeOperation -Operation 'path-exists' -Input @{ path = $Path })
     }
     return Test-Path -LiteralPath $Path
+}
+
+function Assert-PcvPathAbsent {
+    param(
+        [Parameter(Mandatory)][string]$Path,
+        [Parameter(Mandatory)][string]$Kind
+    )
+
+    if (Test-PcvPath -Path $Path) {
+        throw "PCV_P0_VM_ROOT_ALREADY_EXISTS|kind=$Kind|path=$Path"
+    }
 }
 
 function Remove-PcvDirectory {
@@ -628,6 +643,7 @@ function New-VmOwnershipRecord {
         name = $Name
         id = $null
         root = $recordedRoot
+        root_owned_by_run = $false
         observed_id = $null
         observed_path = $null
         identity_status = 'reserved-before-mutation'
@@ -837,9 +853,11 @@ function Invoke-CheckpointRestoreSlice {
 }
 
 function Invoke-ManagedImportSlice {
-    $foreignRoot = Assert-ValidatedChildPath -Root $vmRootFull -Candidate (Join-Path $vmRootFull $ForeignVm)
+    $foreignRoot = $foreignVmRootFull
     $record = New-VmOwnershipRecord -Kind 'foreign' -Name $ForeignVm -ExpectedRoot $foreignRoot
     New-PcvDirectory -Path $foreignRoot
+    $record.root_owned_by_run = $true
+    Write-AtomicSummary
     $vhdPath = Assert-ValidatedChildPath -Root $vmRootFull -Candidate (Join-Path $foreignRoot 'disk0.vhdx')
     if ($null -ne $RuntimeAdapter) {
         $foreignVmResult = Invoke-RuntimeOperation -Operation 'create-foreign-vm' -Input @{
@@ -891,6 +909,49 @@ function Invoke-ManagedImportSlice {
     }
 }
 
+function Get-ValidatedCleanupVm {
+    param(
+        [Parameter(Mandatory)]$Record,
+        [Parameter(Mandatory)][Guid]$RecordedId,
+        [Parameter(Mandatory)][string]$Phase,
+        [switch]$AllowAbsent
+    )
+
+    $current = Get-PcvVmById -Id $RecordedId -Record $Record
+    if ($null -eq $current) {
+        if ($AllowAbsent.IsPresent) { return $null }
+        $Record.identity_status = 'cleanup-blocker'
+        $Record.identity_blocker = $true
+        throw "PCV_P0_CLEANUP_IDENTITY_DRIFT|phase=$Phase|missing-recorded-id"
+    }
+
+    try {
+        $currentId = ([Guid]$current.Id).ToString('D')
+        $currentName = [string]$current.Name
+        $currentPath = Get-AbsolutePath -Path ([string]$current.Path)
+        $recordedPath = Get-AbsolutePath -Path ([string]$Record.observed_path)
+        $reservedRoot = Get-AbsolutePath -Path ([string]$Record.root)
+        $comparison = if ($IsWindows) {
+            [System.StringComparison]::OrdinalIgnoreCase
+        }
+        else {
+            [System.StringComparison]::Ordinal
+        }
+        $matches = $currentId -eq $RecordedId.ToString('D') -and
+            $currentName.Equals([string]$Record.name, $comparison) -and
+            $currentPath.Equals($recordedPath, $comparison) -and
+            ($currentPath.Equals($reservedRoot, $comparison) -or
+                $currentPath.StartsWith($reservedRoot + [System.IO.Path]::DirectorySeparatorChar, $comparison))
+        if (-not $matches) { throw 'identity-mismatch' }
+    }
+    catch {
+        $Record.identity_status = 'cleanup-blocker'
+        $Record.identity_blocker = $true
+        throw "PCV_P0_CLEANUP_IDENTITY_DRIFT|phase=$Phase"
+    }
+    return $current
+}
+
 function Invoke-ExactCleanup {
     $summary.cleanup.attempted = $true
     $cleanupErrors = [System.Collections.Generic.List[string]]::new()
@@ -914,7 +975,7 @@ function Invoke-ExactCleanup {
                 $collisionCode = 'PCV_P0_CLEANUP_ID_MISMATCH'
             }
 
-            $current = Get-PcvVmById -Id $recordedId -Record $record
+            $current = Get-ValidatedCleanupVm -Record $record -RecordedId $recordedId -Phase 'before-product-delete' -AllowAbsent
             if ($null -ne $current) {
                 $record.product_delete_attempted = $true
                 try {
@@ -925,14 +986,12 @@ function Invoke-ExactCleanup {
                     }
                 }
                 catch { }
-                $current = Get-PcvVmById -Id $recordedId -Record $record
+                $current = Get-ValidatedCleanupVm -Record $record -RecordedId $recordedId -Phase 'before-native-fallback' -AllowAbsent
                 if ($null -ne $current) {
-                    if ([Guid]$current.Id -ne $recordedId) {
-                        throw "PCV_P0_CLEANUP_ID_MISMATCH|recorded=$recordedId|actual=$($current.Id)"
-                    }
                     $record.native_fallback_used = $true
                     $summary.cleanup.native_fallback_used = $true
                     if ([string]$current.State -ne 'Off') {
+                        $current = Get-ValidatedCleanupVm -Record $record -RecordedId $recordedId -Phase 'before-native-stop'
                         if ($null -ne $RuntimeAdapter) {
                             Invoke-RuntimeOperation -Operation 'stop-vm' -Input @{ id = $record.id } | Out-Null
                         }
@@ -940,16 +999,18 @@ function Invoke-ExactCleanup {
                             Stop-VM -VM $current -TurnOff -Force -ErrorAction Stop
                         }
                     }
-                    $current = Get-PcvVmById -Id $recordedId -Record $record
-                    if ($null -ne $RuntimeAdapter) {
-                        Invoke-RuntimeOperation -Operation 'remove-vm' -Input @{ id = $record.id } | Out-Null
-                    }
-                    else {
-                        Remove-VM -VM $current -Force -ErrorAction Stop
+                    $current = Get-ValidatedCleanupVm -Record $record -RecordedId $recordedId -Phase 'before-native-delete' -AllowAbsent
+                    if ($null -ne $current) {
+                        if ($null -ne $RuntimeAdapter) {
+                            Invoke-RuntimeOperation -Operation 'remove-vm' -Input @{ id = $record.id } | Out-Null
+                        }
+                        else {
+                            Remove-VM -VM $current -Force -ErrorAction Stop
+                        }
                     }
                 }
             }
-            $record.removed = $null -eq (Get-PcvVmById -Id $recordedId -Record $record)
+            $record.removed = $null -eq (Get-ValidatedCleanupVm -Record $record -RecordedId $recordedId -Phase 'after-delete' -AllowAbsent)
             if (-not $record.removed) {
                 throw "PCV_P0_CLEANUP_ID_MISMATCH|remaining=$recordedId"
             }
@@ -959,7 +1020,11 @@ function Invoke-ExactCleanup {
                 $candidate.Equals($record.root, $comparison) -or
                     $candidate.StartsWith($record.root + [System.IO.Path]::DirectorySeparatorChar, $comparison)
             }).Count -gt 0
-            if (-not $collisionOwnsRecordedRoot -and (Test-PcvPath -Path $record.root)) {
+            if ($record.root_owned_by_run -and -not $collisionOwnsRecordedRoot -and (Test-PcvPath -Path $record.root)) {
+                $beforeRootRemoval = Get-ValidatedCleanupVm -Record $record -RecordedId $recordedId -Phase 'before-root-removal' -AllowAbsent
+                if ($null -ne $beforeRootRemoval) {
+                    throw "PCV_P0_CLEANUP_IDENTITY_DRIFT|phase=before-root-removal|recorded-id-present"
+                }
                 Remove-PcvDirectory -Path $record.root
             }
             $record.root_removed = -not (Test-PcvPath -Path $record.root)
@@ -993,12 +1058,17 @@ try {
     Assert-ServiceAvailable
     Assert-VmAbsent -Name $ManagedVm
     Assert-VmAbsent -Name $ForeignVm
+    Assert-PcvPathAbsent -Path $managedVmRootFull -Kind 'managed'
+    Assert-PcvPathAbsent -Path $foreignVmRootFull -Kind 'foreign'
     Write-AtomicSummary
 
-    $managedRecord = New-VmOwnershipRecord -Kind 'managed' -Name $ManagedVm -ExpectedRoot (Join-Path $vmRootFull $ManagedVm)
+    $managedRecord = New-VmOwnershipRecord -Kind 'managed' -Name $ManagedVm -ExpectedRoot $managedVmRootFull
     $summary.host_mutation_performed = $true
     $summary.actual_execution = 'installed-cli-and-hyperv'
-    New-PcvDirectory -Path $vmRootFull
+    if (-not (Test-PcvPath -Path $vmRootFull)) { New-PcvDirectory -Path $vmRootFull }
+    New-PcvDirectory -Path $managedRecord.root
+    $managedRecord.root_owned_by_run = $true
+    Write-AtomicSummary
     Invoke-TrackedSlice -Slice 'saved_lifecycle' -Action { Invoke-SavedLifecycle -Record $managedRecord }
     Assert-SlicePassed -Slice 'saved_lifecycle'
 

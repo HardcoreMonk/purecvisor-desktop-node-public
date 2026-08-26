@@ -33,8 +33,15 @@ function New-P0BehaviorRuntime {
         CreateCompleted = $false
         FailSummaryOnceAfterCreate = $false
         SummaryFailureInjected = $false
+        PreexistingManagedRoot = $false
+        PreexistingForeignRoot = $false
+        PreexistingContents = @{ managed = $true; foreign = $true }
+        CleanupIdentityDrift = $false
+        LifecycleComplete = $false
         CollisionOnCleanup = $false
         CleanupRootFailure = $false
+        ProductDeleteVmIds = [System.Collections.Generic.List[string]]::new()
+        NativeStopVmIds = [System.Collections.Generic.List[string]]::new()
         RemovedVmIds = [System.Collections.Generic.List[string]]::new()
         RemovedRoots = [System.Collections.Generic.List[string]]::new()
         ExistingRoots = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
@@ -56,7 +63,20 @@ function New-P0BehaviorRuntime {
             }
             'service-state' { return $state.ServiceState }
             'create-directory' {
-                $state.ExistingRoots.Add([string]$Payload.path) | Out-Null
+                $path = [string]$Payload.path
+                $leaf = Split-Path -Path $path -Leaf
+                $preexistingKind = if ($leaf -like '*managed' -and $state.PreexistingManagedRoot) {
+                    'managed'
+                }
+                elseif ($leaf -like '*foreign' -and $state.PreexistingForeignRoot) {
+                    'foreign'
+                }
+                else { $null }
+                if ($null -ne $preexistingKind -or $state.ExistingRoots.Contains($path)) {
+                    if ($null -ne $preexistingKind) { $state.PreexistingContents[$preexistingKind] = $false }
+                    throw "simulated-directory-already-exists|$path"
+                }
+                $state.ExistingRoots.Add($path) | Out-Null
                 return $true
             }
             'vm-by-name' {
@@ -97,10 +117,16 @@ function New-P0BehaviorRuntime {
             'vm-by-id' {
                 $id = [guid]$Payload.id
                 if ($id -eq $state.ManagedId -and $state.ManagedExists) {
+                    $currentName = $Payload.name
+                    $currentPath = Join-Path $Payload.vm_root $Payload.name
+                    if ($state.CleanupIdentityDrift -and $state.LifecycleComplete) {
+                        $currentName = "$($Payload.name)-renamed"
+                        $currentPath = Join-Path $Payload.vm_root 'drifted-managed-root'
+                    }
                     return [pscustomobject]@{
                         Id = $state.ManagedId
-                        Name = $Payload.name
-                        Path = (Join-Path $Payload.vm_root $Payload.name)
+                        Name = $currentName
+                        Path = $currentPath
                         State = $state.ManagedState
                         Notes = ''
                     }
@@ -119,6 +145,9 @@ function New-P0BehaviorRuntime {
             'invoke-cli' {
                 $step = [string]$Payload.step
                 $state.LastEnqueuedStep = $step
+                if ($step -like 'cleanup-delete-*') {
+                    $state.ProductDeleteVmIds.Add([string]@($Payload.arguments)[2]) | Out-Null
+                }
                 if ([string]$state.ServiceLossAfterEnqueue -eq $step) {
                     $state.ServiceState = 'Stopped'
                 }
@@ -152,12 +181,16 @@ function New-P0BehaviorRuntime {
                 if ($outcome -eq 'succeeded') {
                     switch ($step) {
                         'vm-create' {
+                            if ($state.PreexistingManagedRoot) { $state.PreexistingContents.managed = $false }
                             $state.ManagedExists = $true
                             $state.CreateCompleted = $true
                         }
                         'vm-start' { $state.ManagedState = 'Running' }
                         'vm-save' { $state.ManagedState = $state.SaveHyperVState }
-                        'vm-resume-saved' { $state.ManagedState = $state.ResumeHyperVState }
+                        'vm-resume-saved' {
+                            $state.ManagedState = $state.ResumeHyperVState
+                            $state.LifecycleComplete = $true
+                        }
                         'vm-manage' { $state.ForeignNotes = 'managed-by=purecvisor-desktop-node' }
                         'managed-delete' { $state.ForeignExists = $false }
                         'cleanup-delete-managed' { $state.ManagedExists = $false }
@@ -203,7 +236,10 @@ function New-P0BehaviorRuntime {
                     Notes = ''
                 }
             }
-            'stop-vm' { return $true }
+            'stop-vm' {
+                $state.NativeStopVmIds.Add([string]$Payload.id) | Out-Null
+                return $true
+            }
             'remove-vm' {
                 $id = [guid]$Payload.id
                 $state.RemovedVmIds.Add($id.ToString('D')) | Out-Null
@@ -213,11 +249,27 @@ function New-P0BehaviorRuntime {
             }
             'remove-directory' {
                 if ($state.CleanupRootFailure) { throw 'simulated-cleanup-root-failure' }
+                $leaf = Split-Path -Path ([string]$Payload.path) -Leaf
+                if ($leaf -like '*managed' -and $state.PreexistingManagedRoot) {
+                    $state.PreexistingContents.managed = $false
+                }
+                if ($leaf -like '*foreign' -and $state.PreexistingForeignRoot) {
+                    $state.PreexistingContents.foreign = $false
+                }
                 $state.RemovedRoots.Add([string]$Payload.path) | Out-Null
                 $state.ExistingRoots.Remove([string]$Payload.path) | Out-Null
                 return $true
             }
-            'path-exists' { return $state.ExistingRoots.Contains([string]$Payload.path) }
+            'path-exists' {
+                $path = [string]$Payload.path
+                $leaf = Split-Path -Path $path -Leaf
+                if (($leaf -like '*managed' -and $state.PreexistingManagedRoot) -or
+                    ($leaf -like '*foreign' -and $state.PreexistingForeignRoot)) {
+                    $state.ExistingRoots.Add($path) | Out-Null
+                    return $true
+                }
+                return $state.ExistingRoots.Contains($path)
+            }
             default { throw "PCV_P0_TEST_ADAPTER_OPERATION_MISSING|$Operation" }
         }
     }.GetNewClosure()
@@ -373,6 +425,46 @@ Describe 'SERVICE_PLAN P0 formal actual-VM runner contract' {
         $run.Summary.host_mutation_performed | Should -BeFalse
         @($run.State.Operations.operation) | Should -Not -Contain 'create-directory'
         @($run.State.Operations.operation) | Should -Not -Contain 'enqueue-job'
+    }
+
+    It 'blocks nonempty exact managed and foreign roots before mutation and preserves their contents' -Tag 'cleanup-safety' {
+        foreach ($kind in @('managed', 'foreign')) {
+            $run = Invoke-P0BehaviorScenario -Name "preexisting-$kind-root" -Configure {
+                param($state)
+                if ($kind -eq 'managed') { $state.PreexistingManagedRoot = $true }
+                else { $state.PreexistingForeignRoot = $true }
+            }
+
+            $run.Summary.overall_verdict | Should -Be 'FAIL'
+            $run.Summary.error | Should -Match 'PCV_P0_VM_ROOT_ALREADY_EXISTS'
+            $run.Summary.host_mutation_performed | Should -BeFalse
+            $run.State.PreexistingContents[$kind] | Should -BeTrue
+            @($run.State.ProductDeleteVmIds).Count | Should -Be 0
+            @($run.State.NativeStopVmIds).Count | Should -Be 0
+            @($run.State.RemovedVmIds).Count | Should -Be 0
+            @($run.State.RemovedRoots).Count | Should -Be 0
+            @($run.State.Operations.operation) | Should -Not -Contain 'create-directory'
+            @($run.State.Operations.operation) | Should -Not -Contain 'invoke-cli'
+        }
+    }
+
+    It 'blocks cleanup when exact-ID identity drifts and performs no cleanup mutation' -Tag 'cleanup-safety' {
+        $run = Invoke-P0BehaviorScenario -Name 'cleanup-identity-drift' -Configure {
+            param($state)
+            $state.CleanupIdentityDrift = $true
+        }
+
+        $run.Summary.managed_vm_id | Should -Be $run.State.ManagedId.ToString('D')
+        $run.Summary.cleanup.verdict | Should -Be 'FAIL'
+        $run.Summary.overall_verdict | Should -Be 'FAIL'
+        $run.Summary.cleanup.error | Should -Match 'PCV_P0_CLEANUP_IDENTITY_DRIFT'
+        @($run.State.ProductDeleteVmIds).Count | Should -Be 0
+        @($run.State.NativeStopVmIds).Count | Should -Be 0
+        @($run.State.RemovedVmIds).Count | Should -Be 0
+        @($run.State.RemovedRoots).Count | Should -Be 0
+        $managedRecord = @($run.Summary.cleanup.records | Where-Object kind -eq 'managed')[0]
+        $managedRecord.identity_blocker | Should -BeTrue
+        $run.State.ExistingRoots.Contains([string]$managedRecord.root) | Should -BeTrue
     }
 
     It 'marks saved_lifecycle FAIL and runs exact cleanup on save readback mismatch' {
