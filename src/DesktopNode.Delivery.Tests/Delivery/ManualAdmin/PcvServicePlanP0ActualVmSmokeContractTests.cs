@@ -29,6 +29,9 @@ public sealed class PcvServicePlanP0ActualVmSmokeContractTests
             "$JobTimeoutSeconds",
             "$CommandTimeoutSeconds",
             "$DryRun",
+            "$RuntimeAdapter",
+            "$SummaryWriter",
+            "Invoke-RuntimeOperation",
             "PCV_P0_INSTALLED_VERSION_MISMATCH",
             "PCV_P0_VM_NAME_INVALID",
             "PCV_P0_VM_ALREADY_EXISTS",
@@ -62,6 +65,8 @@ public sealed class PcvServicePlanP0ActualVmSmokeContractTests
             "PCV_VM_NOT_MANAGED_BY_PURECVISOR",
             "managed-by=purecvisor-desktop-node",
             "Assert-SlicePassed",
+            "Invoke-TrackedSlice",
+            "slice_verdicts[$Slice] = 'FAIL'",
             "PCV_P0_STATE_MISMATCH",
             "PCV_P0_SERVICE_LOST");
         AssertOrdered(
@@ -92,6 +97,8 @@ public sealed class PcvServicePlanP0ActualVmSmokeContractTests
             "completed_at",
             "overall_verdict",
             "PCV_P0_SUMMARY_WRITE_FAILED",
+            "PCV_P0_SECRET_OBSERVED",
+            "Test-SecretMaterial",
             "summary.json.tmp",
             "Move-Item -LiteralPath");
         Assert.DoesNotMatch(
@@ -113,6 +120,14 @@ public sealed class PcvServicePlanP0ActualVmSmokeContractTests
             "PCV_P0_CLEANUP_ROOT_INVALID",
             "native_fallback_used",
             "same_name_different_id_blocked");
+        RequireTokens(
+            source,
+            "initial_status",
+            "polling_status",
+            "timed_out",
+            "New-VmOwnershipRecord",
+            "Set-VmAuthoritativeIdentity",
+            "productStateAfterResume -ne 'running'");
         Assert.DoesNotContain("Remove-VM -Name", source, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotMatch(
             new Regex(@"(?is)Get-VM\s*\|\s*Where-Object.*?Remove-VM", RegexOptions.CultureInvariant),

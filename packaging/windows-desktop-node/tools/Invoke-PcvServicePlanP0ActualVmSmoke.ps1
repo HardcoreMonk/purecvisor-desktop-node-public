@@ -21,7 +21,13 @@ param(
     [ValidateRange(1, 1800)]
     [int]$CommandTimeoutSeconds = 120,
 
-    [switch]$DryRun
+    [switch]$DryRun,
+
+    [Parameter(DontShow)]
+    [scriptblock]$RuntimeAdapter,
+
+    [Parameter(DontShow)]
+    [scriptblock]$SummaryWriter
 )
 
 Set-StrictMode -Version Latest
@@ -185,22 +191,52 @@ $summary = [ordered]@{
     completed_at = $null
 }
 
+function Test-SecretMaterial {
+    param([AllowNull()][string]$Text)
+
+    if ([string]::IsNullOrEmpty($Text)) { return $false }
+    $patterns = @(
+        '(?i)\bbearer\s+[A-Za-z0-9._~+/=-]{6,}',
+        '\beyJ[A-Za-z0-9_-]{6,}\.eyJ[A-Za-z0-9_-]{6,}\.[A-Za-z0-9_-]{6,}',
+        '(?i)\b(?:token|password|secret)(?:_value)?\b\s*[:=]\s*["'']?(?!false\b|null\b|not-claimed\b|not-observed\b)[^\s,"'']{6,}'
+    )
+    return @($patterns | Where-Object { $Text -match $_ }).Count -gt 0
+}
+
+function Get-SafeFailureCode {
+    param([AllowNull()][string]$Message)
+
+    if (Test-SecretMaterial -Text $Message) { return 'PCV_P0_SECRET_OBSERVED' }
+    $match = [regex]::Match([string]$Message, '\bPCV_[A-Z0-9_]+\b')
+    if ($match.Success) { return $match.Value }
+    return 'PCV_P0_INTERNAL_FAILURE'
+}
+
+function Set-SecretObserved {
+    $summary.secret_observed = $true
+    $summary.ok = $false
+    $summary.overall_verdict = 'FAIL'
+    $summary.error = 'PCV_P0_SECRET_OBSERVED'
+}
+
 function Write-AtomicSummary {
     try {
-        if ([bool]$summary.secret_observed) {
-            throw 'PCV_P0_SECRET_OBSERVED'
-        }
         $summary.steps = $script:Steps.ToArray()
         $json = $summary | ConvertTo-Json -Depth 32
-        if ($json -match '(?i)authorization\s*[:=]\s*bearer\s+\S+') {
+        if (Test-SecretMaterial -Text $json) {
             $summary.secret_observed = $true
-            throw 'PCV_P0_SECRET_OBSERVED'
+            throw 'PCV_P0_SECRET_OBSERVED_IN_SUMMARY'
         }
-        [System.IO.File]::WriteAllText(
-            $summaryTempPath,
-            $json,
-            [System.Text.UTF8Encoding]::new($false))
-        Move-Item -LiteralPath $summaryTempPath -Destination $summaryPath -Force
+        if ($null -ne $SummaryWriter) {
+            & $SummaryWriter $summaryPath $summaryTempPath $json
+        }
+        else {
+            [System.IO.File]::WriteAllText(
+                $summaryTempPath,
+                $json,
+                [System.Text.UTF8Encoding]::new($false))
+            Move-Item -LiteralPath $summaryTempPath -Destination $summaryPath -Force
+        }
     }
     catch {
         try {
@@ -209,10 +245,7 @@ function Write-AtomicSummary {
             }
         }
         catch { }
-        if ($_.Exception.Message -like 'PCV_P0_SECRET_OBSERVED*') {
-            throw
-        }
-        throw "PCV_P0_SUMMARY_WRITE_FAILED|$($_.Exception.Message)"
+        throw 'PCV_P0_SUMMARY_WRITE_FAILED'
     }
 }
 
@@ -227,7 +260,91 @@ if ($DryRun.IsPresent) {
     return [pscustomobject]$summary
 }
 
+function Invoke-RuntimeOperation {
+    param(
+        [Parameter(Mandatory)][string]$Operation,
+        [Alias('Input')][hashtable]$RuntimePayload = @{}
+    )
+
+    if ($null -eq $RuntimeAdapter) {
+        throw "PCV_P0_RUNTIME_ADAPTER_NOT_CONFIGURED|$Operation"
+    }
+    return & $RuntimeAdapter $Operation $RuntimePayload
+}
+
+function Get-PcvVmByName {
+    param(
+        [Parameter(Mandatory)][string]$Name,
+        [Parameter(Mandatory)][string]$Purpose
+    )
+
+    if ($null -ne $RuntimeAdapter) {
+        return @(Invoke-RuntimeOperation -Operation 'vm-by-name' -Input @{
+            name = $Name
+            purpose = $Purpose
+            vm_root = $vmRootFull
+        })
+    }
+    return @(Get-VM -Name $Name -ErrorAction SilentlyContinue)
+}
+
+function Get-PcvVmById {
+    param(
+        [Parameter(Mandatory)][Guid]$Id,
+        [Parameter(Mandatory)]$Record
+    )
+
+    if ($null -ne $RuntimeAdapter) {
+        return Invoke-RuntimeOperation -Operation 'vm-by-id' -Input @{
+            id = $Id.ToString('D')
+            name = [string]$Record.name
+            vm_root = $vmRootFull
+        }
+    }
+    return Get-VM -Id $Id -ErrorAction SilentlyContinue
+}
+
+function New-PcvDirectory {
+    param([Parameter(Mandatory)][string]$Path)
+
+    if ($null -ne $RuntimeAdapter) {
+        Invoke-RuntimeOperation -Operation 'create-directory' -Input @{ path = $Path } | Out-Null
+        return
+    }
+    New-Item -ItemType Directory -Path $Path -Force | Out-Null
+}
+
+function Test-PcvPath {
+    param([Parameter(Mandatory)][string]$Path)
+
+    if ($null -ne $RuntimeAdapter) {
+        return [bool](Invoke-RuntimeOperation -Operation 'path-exists' -Input @{ path = $Path })
+    }
+    return Test-Path -LiteralPath $Path
+}
+
+function Remove-PcvDirectory {
+    param([Parameter(Mandatory)][string]$Path)
+
+    if ($null -ne $RuntimeAdapter) {
+        Invoke-RuntimeOperation -Operation 'remove-directory' -Input @{ path = $Path } | Out-Null
+        return
+    }
+    [System.IO.Directory]::Delete($Path, $true)
+}
+
 function Assert-InstalledProduct {
+    if ($null -ne $RuntimeAdapter) {
+        $installed = Invoke-RuntimeOperation -Operation 'installed-product'
+        $summary.installed_manifest_version = [string]$installed.version
+        $summary.installed_cli_sha256 = [string]$installed.cli_sha256
+        $script:PcvCli = [string]$installed.cli_path
+        if ([string]$installed.version -cne $Version) {
+            throw "PCV_P0_INSTALLED_VERSION_MISMATCH|expected=$Version|actual=$($installed.version)"
+        }
+        if (-not [bool]$installed.iso_exists) { throw 'PCV_P0_ISO_NOT_FOUND' }
+        return
+    }
     $manifestPath = Join-Path $summary.product_root_resolved 'product-manifest.json'
     if (-not (Test-Path -LiteralPath $manifestPath -PathType Leaf)) {
         throw "PCV_P0_INSTALLED_MANIFEST_MISSING|$manifestPath"
@@ -256,6 +373,12 @@ function Assert-InstalledProduct {
 }
 
 function Assert-ServiceAvailable {
+    if ($null -ne $RuntimeAdapter) {
+        if ([string](Invoke-RuntimeOperation -Operation 'service-state') -ne 'Running') {
+            throw 'PCV_P0_SERVICE_LOST'
+        }
+        return
+    }
     $service = Get-Service -Name 'PureCVisorDesktopNode' -ErrorAction SilentlyContinue
     if ($null -eq $service -or [string]$service.Status -ne 'Running') {
         throw 'PCV_P0_SERVICE_LOST'
@@ -265,7 +388,7 @@ function Assert-ServiceAvailable {
 function Assert-VmAbsent {
     param([Parameter(Mandatory)][string]$Name)
 
-    if ($null -ne (Get-VM -Name $Name -ErrorAction SilentlyContinue)) {
+    if (@(Get-PcvVmByName -Name $Name -Purpose 'preflight').Count -ne 0) {
         throw "PCV_P0_VM_ALREADY_EXISTS|$Name"
     }
 }
@@ -311,8 +434,9 @@ function Invoke-PcvCliJson {
     }
     $stdout = $stdoutTask.GetAwaiter().GetResult()
     $stderr = $stderrTask.GetAwaiter().GetResult()
+    $secretObserved = (Test-SecretMaterial -Text $stdout) -or (Test-SecretMaterial -Text $stderr)
     $payload = $null
-    if (-not [string]::IsNullOrWhiteSpace($stdout)) {
+    if (-not $secretObserved -and -not [string]::IsNullOrWhiteSpace($stdout)) {
         try { $payload = $stdout | ConvertFrom-Json -Depth 64 } catch { }
     }
     $script:Steps.Add([pscustomobject][ordered]@{
@@ -323,13 +447,14 @@ function Invoke-PcvCliJson {
     }) | Out-Null
     Write-AtomicSummary
     Assert-ServiceAvailable
+    if ($secretObserved) { Set-SecretObserved }
     if ($process.ExitCode -ne 0 -and -not $AllowFailure.IsPresent) {
-        throw "PCV_P0_COMMAND_FAILED|$StepName|exit=$($process.ExitCode)|$($stderr.Trim())"
+        throw "PCV_P0_COMMAND_FAILED|$StepName|exit=$($process.ExitCode)"
     }
     return [pscustomobject]@{
         ExitCode = [int]$process.ExitCode
         Json = $payload
-        Stderr = $stderr
+        SecretObserved = $secretObserved
     }
 }
 
@@ -359,20 +484,76 @@ function Start-PcvCliJob {
         [switch]$AllowFailure
     )
 
-    $created = Invoke-PcvCliJson -StepName $StepName -Arguments $Arguments -AllowFailure:$AllowFailure
-    $data = Get-ObjectPropertyValue -InputObject $created.Json -Name 'data'
-    $jobId = [string](Get-ObjectPropertyValue -InputObject $data -Name 'job_id')
-    if ([string]::IsNullOrWhiteSpace($jobId)) {
+    if ($null -ne $RuntimeAdapter) {
+        $queued = Invoke-RuntimeOperation -Operation 'enqueue-job' -Input @{
+            step = $StepName
+            arguments = @($Arguments)
+        }
+        $jobId = [string]$queued.job_id
+        $initialStatus = [string]$queued.status
+        $secretObserved = Test-SecretMaterial -Text ([string]$queued.stderr)
+    }
+    else {
+        $created = Invoke-PcvCliJson -StepName $StepName -Arguments $Arguments -AllowFailure:$AllowFailure
+        $data = Get-ObjectPropertyValue -InputObject $created.Json -Name 'data'
+        $jobId = [string](Get-ObjectPropertyValue -InputObject $data -Name 'job_id')
+        $initialStatus = [string](Get-ObjectPropertyValue -InputObject $data -Name 'status')
+        $secretObserved = [bool]$created.SecretObserved
+    }
+    if ($jobId -notmatch '^[A-Za-z0-9][A-Za-z0-9._-]{2,127}$') {
+        if ($secretObserved) { Set-SecretObserved }
         throw "PCV_P0_JOB_ID_MISSING|$StepName"
     }
-    $job = Wait-PcvJobTerminal -JobId $jobId -StepName $StepName
-    $status = [string](Get-ObjectPropertyValue -InputObject $job -Name 'status')
-    $errorObject = Get-ObjectPropertyValue -InputObject $job -Name 'error'
+    if ([string]::IsNullOrWhiteSpace($initialStatus)) { $initialStatus = 'queued' }
     $summary.queued_jobs[$StepName] = [ordered]@{
         job_id = $jobId
-        status = $status
-        error_code = [string](Get-ObjectPropertyValue -InputObject $errorObject -Name 'code')
+        initial_status = $initialStatus
+        status = $initialStatus
+        polling_status = 'pending'
+        terminal = $false
+        error_code = $null
     }
+    Write-AtomicSummary
+    if ($secretObserved) {
+        Set-SecretObserved
+        $summary.queued_jobs[$StepName].status = 'secret_observed'
+        $summary.queued_jobs[$StepName].polling_status = 'blocked'
+        Write-AtomicSummary
+        throw 'PCV_P0_SECRET_OBSERVED'
+    }
+    $summary.queued_jobs[$StepName].polling_status = 'polling'
+    Write-AtomicSummary
+    try {
+        $job = if ($null -ne $RuntimeAdapter) {
+            Invoke-RuntimeOperation -Operation 'wait-job' -Input @{
+                step = $StepName
+                job_id = $jobId
+                timeout_seconds = $JobTimeoutSeconds
+            }
+        }
+        else {
+            Wait-PcvJobTerminal -JobId $jobId -StepName $StepName
+        }
+    }
+    catch {
+        $failureCode = Get-SafeFailureCode -Message $_.Exception.Message
+        $summary.queued_jobs[$StepName].status = if ($failureCode -eq 'PCV_P0_JOB_TIMEOUT') { 'timed_out' } else { 'poll_error' }
+        $summary.queued_jobs[$StepName].polling_status = if ($failureCode -eq 'PCV_P0_JOB_TIMEOUT') { 'timeout' } else { 'error' }
+        $summary.queued_jobs[$StepName].error_code = $failureCode
+        Write-AtomicSummary
+        throw $failureCode
+    }
+    $status = [string](Get-ObjectPropertyValue -InputObject $job -Name 'status')
+    if ($status -notin @('succeeded', 'failed', 'canceled')) { $status = 'invalid-terminal-status' }
+    $errorObject = Get-ObjectPropertyValue -InputObject $job -Name 'error'
+    $errorCode = [string](Get-ObjectPropertyValue -InputObject $errorObject -Name 'code')
+    if (-not [string]::IsNullOrEmpty($errorCode) -and $errorCode -notmatch '^PCV_[A-Z0-9_]+$') {
+        $errorCode = 'PCV_P0_REMOTE_ERROR_REDACTED'
+    }
+    $summary.queued_jobs[$StepName].status = $status
+    $summary.queued_jobs[$StepName].polling_status = 'terminal'
+    $summary.queued_jobs[$StepName].terminal = $true
+    $summary.queued_jobs[$StepName].error_code = $errorCode
     Write-AtomicSummary
     if ($status -ne 'succeeded' -and -not $AllowFailure.IsPresent) {
         throw "PCV_P0_JOB_FAILED|$StepName|job=$JobId|status=$status"
@@ -384,23 +565,43 @@ function Wait-HyperVState {
     param(
         [Parameter(Mandatory)][Guid]$Id,
         [Parameter(Mandatory)][string]$Expected,
+        [Parameter(Mandatory)][string]$Phase,
         [int]$TimeoutSeconds = 60
     )
 
+    if ($null -ne $RuntimeAdapter) {
+        return [string](Invoke-RuntimeOperation -Operation 'wait-hyperv-state' -Input @{
+            id = $Id.ToString('D')
+            expected = $Expected
+            phase = $Phase
+            timeout_seconds = $TimeoutSeconds
+        })
+    }
+    $record = $script:VmRecords | Where-Object { $_.id -eq $Id.ToString('D') } | Select-Object -First 1
     $deadline = (Get-Date).AddSeconds($TimeoutSeconds)
     do {
-        $vm = Get-VM -Id $Id -ErrorAction SilentlyContinue
+        $vm = Get-PcvVmById -Id $Id -Record $record
         if ($null -ne $vm -and [string]$vm.State -eq $Expected) {
             return [string]$vm.State
         }
         Start-Sleep -Seconds 2
     } while ((Get-Date) -lt $deadline)
-    $final = Get-VM -Id $Id -ErrorAction SilentlyContinue
+    $final = Get-PcvVmById -Id $Id -Record $record
     return if ($null -eq $final) { $null } else { [string]$final.State }
 }
 
 function Get-ProductVmState {
-    param([Parameter(Mandatory)][string]$Id)
+    param(
+        [Parameter(Mandatory)][string]$Id,
+        [Parameter(Mandatory)][string]$Phase
+    )
+
+    if ($null -ne $RuntimeAdapter) {
+        return ([string](Invoke-RuntimeOperation -Operation 'product-vm-state' -Input @{
+            id = $Id
+            phase = $Phase
+        })).ToLowerInvariant()
+    }
 
     $result = Invoke-PcvCliJson -StepName 'vm-get-state' -Arguments @('vm', 'get', $Id)
     $data = Get-ObjectPropertyValue -InputObject $result.Json -Name 'data'
@@ -411,19 +612,21 @@ function Get-ProductVmState {
     return ([string]$state).ToLowerInvariant()
 }
 
-function Register-VmRecord {
+function New-VmOwnershipRecord {
     param(
         [Parameter(Mandatory)][string]$Kind,
         [Parameter(Mandatory)][string]$Name,
-        [Parameter(Mandatory)]$Vm
+        [Parameter(Mandatory)][string]$ExpectedRoot
     )
 
-    $recordedRoot = Assert-ValidatedChildPath -Root $vmRootFull -Candidate ([string]$Vm.Path)
+    $recordedRoot = Assert-ValidatedChildPath -Root $vmRootFull -Candidate $ExpectedRoot
     $record = [pscustomobject][ordered]@{
         kind = $Kind
         name = $Name
-        id = ([Guid]$Vm.Id).ToString('D')
+        id = $null
         root = $recordedRoot
+        identity_status = 'reserved-before-mutation'
+        identity_blocker = $false
         product_delete_attempted = $false
         native_fallback_used = $false
         removed = $false
@@ -432,14 +635,35 @@ function Register-VmRecord {
         error = $null
     }
     $script:VmRecords.Add($record) | Out-Null
-    if ($Kind -eq 'managed') {
-        $summary.managed_vm_id = $record.id
-    }
-    else {
-        $summary.foreign_vm_id = $record.id
-    }
     Write-AtomicSummary
     return $record
+}
+
+function Set-VmAuthoritativeIdentity {
+    param(
+        [Parameter(Mandatory)]$Record,
+        [Parameter(Mandatory)]$Vm
+    )
+
+    try {
+        $Record.id = ([Guid]$Vm.Id).ToString('D')
+        if ($Record.kind -eq 'managed') { $summary.managed_vm_id = $Record.id }
+        else { $summary.foreign_vm_id = $Record.id }
+        $Record.identity_status = 'id-recorded-path-pending'
+        Write-AtomicSummary
+        $Record.root = Assert-ValidatedChildPath -Root $vmRootFull -Candidate ([string]$Vm.Path)
+        $Record.identity_status = 'authoritative'
+        $Record.identity_blocker = $false
+        Write-AtomicSummary
+    }
+    catch {
+        $Record.identity_status = 'blocker'
+        $Record.identity_blocker = $true
+        $Record.error = Get-SafeFailureCode -Message $_.Exception.Message
+        Write-AtomicSummary
+        throw
+    }
+    return $Record
 }
 
 function Assert-SlicePassed {
@@ -450,29 +674,54 @@ function Assert-SlicePassed {
     }
 }
 
+function Invoke-TrackedSlice {
+    param(
+        [Parameter(Mandatory)][string]$Slice,
+        [Parameter(Mandatory)][scriptblock]$Action
+    )
+
+    $summary.slice_verdicts[$Slice] = 'RUNNING'
+    Write-AtomicSummary
+    try {
+        & $Action
+        $summary.slice_verdicts[$Slice] = 'PASS'
+        Write-AtomicSummary
+    }
+    catch {
+        $summary.slice_verdicts[$Slice] = 'FAIL'
+        Write-AtomicSummary
+        throw
+    }
+}
+
 function Invoke-SavedLifecycle {
+    param([Parameter(Mandatory)]$Record)
+
     $create = Start-PcvCliJob -StepName 'vm-create' -Arguments @(
         'vm', 'create', '--name', $ManagedVm, '--iso', $summary.iso_path_resolved,
         '--cpu', '1', '--memory-mb', '1024', '--disk-gb', '8', '--vm-root', $vmRootFull)
     if ([string](Get-ObjectPropertyValue -InputObject $create -Name 'status') -ne 'succeeded') {
         throw 'PCV_P0_STATE_MISMATCH|create'
     }
-    $createdRows = @(Get-VM -Name $ManagedVm -ErrorAction SilentlyContinue)
+    $createdRows = @(Get-PcvVmByName -Name $ManagedVm -Purpose 'authoritative-create')
     if ($createdRows.Count -ne 1) {
+        $Record.identity_status = 'orphan-blocker'
+        $Record.identity_blocker = $true
+        Write-AtomicSummary
         throw "PCV_P0_STATE_MISMATCH|created-vm-cardinality=$($createdRows.Count)"
     }
-    $record = Register-VmRecord -Kind 'managed' -Name $ManagedVm -Vm $createdRows[0]
-    $id = [Guid]$record.id
+    $Record = Set-VmAuthoritativeIdentity -Record $Record -Vm $createdRows[0]
+    $id = [Guid]$Record.id
 
-    $start = Start-PcvCliJob -StepName 'vm-start' -Arguments @('vm', 'start', $record.id)
-    $running = Wait-HyperVState -Id $id -Expected 'Running'
+    $start = Start-PcvCliJob -StepName 'vm-start' -Arguments @('vm', 'start', $Record.id)
+    $running = Wait-HyperVState -Id $id -Expected 'Running' -Phase 'after-start'
     if ([string](Get-ObjectPropertyValue -InputObject $start -Name 'status') -ne 'succeeded' -or $running -ne 'Running') {
         throw "PCV_P0_STATE_MISMATCH|start|hyperv=$running"
     }
 
-    $save = Start-PcvCliJob -StepName 'vm-save' -Arguments @('vm', 'save', $record.id)
-    $hypervSaved = Wait-HyperVState -Id $id -Expected 'Saved'
-    $productSaved = Get-ProductVmState -Id $record.id
+    $save = Start-PcvCliJob -StepName 'vm-save' -Arguments @('vm', 'save', $Record.id)
+    $hypervSaved = Wait-HyperVState -Id $id -Expected 'Saved' -Phase 'after-save'
+    $productSaved = Get-ProductVmState -Id $Record.id -Phase 'after-save'
     $summary.hyperv_state_after_save = $hypervSaved
     $summary.product_state_after_save = $productSaved
     $summary.readbacks.saved_not_paused = ($hypervSaved -ne 'Paused')
@@ -482,23 +731,29 @@ function Invoke-SavedLifecycle {
         throw "PCV_P0_STATE_MISMATCH|save|hyperv=$hypervSaved|product=$productSaved"
     }
 
-    $resume = Start-PcvCliJob -StepName 'vm-resume-saved' -Arguments @('vm', 'resume-saved', $record.id)
-    $hypervRunning = Wait-HyperVState -Id $id -Expected 'Running'
-    $productRunning = Get-ProductVmState -Id $record.id
+    $resume = Start-PcvCliJob -StepName 'vm-resume-saved' -Arguments @('vm', 'resume-saved', $Record.id)
+    $hypervRunning = Wait-HyperVState -Id $id -Expected 'Running' -Phase 'after-resume'
+    $productStateAfterResume = Get-ProductVmState -Id $Record.id -Phase 'after-resume'
     $summary.hyperv_state_after_resume = $hypervRunning
-    $summary.product_state_after_resume = $productRunning
+    $summary.product_state_after_resume = $productStateAfterResume
     if ([string](Get-ObjectPropertyValue -InputObject $resume -Name 'status') -ne 'succeeded' -or
-        $hypervRunning -ne 'Running') {
-        throw "PCV_P0_STATE_MISMATCH|resume|hyperv=$hypervRunning|product=$productRunning"
+        $hypervRunning -ne 'Running' -or $productStateAfterResume -ne 'running') {
+        throw "PCV_P0_STATE_MISMATCH|resume|hyperv=$hypervRunning|product=$productStateAfterResume"
     }
-    $summary.slice_verdicts.saved_lifecycle = 'PASS'
-    Write-AtomicSummary
 }
 
 function Invoke-MediaAttachSlice {
     $record = $script:VmRecords | Where-Object kind -eq 'managed' | Select-Object -First 1
     $job = Start-PcvCliJob -StepName 'vm-attach' -Arguments @('vm', 'attach', $record.id, '--iso', $summary.iso_path_resolved)
-    $dvd = Get-VMDvdDrive -VMId ([Guid]$record.id) -ErrorAction Stop | Select-Object -First 1
+    $dvd = if ($null -ne $RuntimeAdapter) {
+        Invoke-RuntimeOperation -Operation 'dvd-readback' -Input @{
+            id = $record.id
+            iso = $summary.iso_path_resolved
+        }
+    }
+    else {
+        Get-VMDvdDrive -VMId ([Guid]$record.id) -ErrorAction Stop | Select-Object -First 1
+    }
     $hostResource = if ($null -ne $dvd.PSObject.Properties['HostResource']) {
         [string](@($dvd.HostResource) | Select-Object -First 1)
     }
@@ -514,8 +769,6 @@ function Invoke-MediaAttachSlice {
     if ([string](Get-ObjectPropertyValue -InputObject $job -Name 'status') -ne 'succeeded' -or -not $matches) {
         throw "PCV_P0_STATE_MISMATCH|media-attach|HostResource=$hostResource"
     }
-    $summary.slice_verdicts.media_attach = 'PASS'
-    Write-AtomicSummary
 }
 
 function Invoke-CheckpointRestoreSlice {
@@ -524,9 +777,17 @@ function Invoke-CheckpointRestoreSlice {
         'vm', 'checkpoint', 'create', $record.id, '--name', $CheckpointName) | Out-Null
     $restore = Start-PcvCliJob -StepName 'checkpoint-restore' -Arguments @(
         'vm', 'checkpoint', 'restore', $record.id, $CheckpointName)
-    $listed = Invoke-PcvCliJson -StepName 'checkpoint-list-after-restore' -Arguments @(
-        'vm', 'checkpoint', 'list', $record.id)
-    $rows = @((Get-ObjectPropertyValue -InputObject $listed.Json -Name 'data'))
+    $rows = if ($null -ne $RuntimeAdapter) {
+        @(Invoke-RuntimeOperation -Operation 'checkpoint-list' -Input @{
+            id = $record.id
+            name = $CheckpointName
+        })
+    }
+    else {
+        $listed = Invoke-PcvCliJson -StepName 'checkpoint-list-after-restore' -Arguments @(
+            'vm', 'checkpoint', 'list', $record.id)
+        @((Get-ObjectPropertyValue -InputObject $listed.Json -Name 'data'))
+    }
     $current = @($rows | Where-Object {
         $name = Get-ObjectPropertyValue -InputObject $_ -Name 'name'
         if ($null -eq $name) { $name = Get-ObjectPropertyValue -InputObject $_ -Name 'checkpoint_name' }
@@ -542,37 +803,50 @@ function Invoke-CheckpointRestoreSlice {
         $current.Count -ne 1) {
         throw "PCV_P0_STATE_MISMATCH|checkpoint-restore|current-count=$($current.Count)"
     }
-    $summary.slice_verdicts.checkpoint_restore = 'PASS'
-    Write-AtomicSummary
 }
 
 function Invoke-ManagedImportSlice {
     $foreignRoot = Assert-ValidatedChildPath -Root $vmRootFull -Candidate (Join-Path $vmRootFull $ForeignVm)
-    New-Item -ItemType Directory -Path $foreignRoot -Force | Out-Null
+    $record = New-VmOwnershipRecord -Kind 'foreign' -Name $ForeignVm -ExpectedRoot $foreignRoot
+    New-PcvDirectory -Path $foreignRoot
     $vhdPath = Assert-ValidatedChildPath -Root $vmRootFull -Candidate (Join-Path $foreignRoot 'disk0.vhdx')
-    New-VHD -Path $vhdPath -SizeBytes 1GB -Dynamic | Out-Null
-    New-VM -Name $ForeignVm -Generation 2 -MemoryStartupBytes 512MB -VHDPath $vhdPath -Path $foreignRoot | Out-Null
-    $foreignRows = @(Get-VM -Name $ForeignVm -ErrorAction SilentlyContinue)
-    if ($foreignRows.Count -ne 1) {
-        throw "PCV_P0_STATE_MISMATCH|foreign-vm-cardinality=$($foreignRows.Count)"
+    if ($null -ne $RuntimeAdapter) {
+        $foreignVmResult = Invoke-RuntimeOperation -Operation 'create-foreign-vm' -Input @{
+            name = $ForeignVm
+            vm_root = $vmRootFull
+            root = $foreignRoot
+            vhd_path = $vhdPath
+        }
     }
-    $record = Register-VmRecord -Kind 'foreign' -Name $ForeignVm -Vm $foreignRows[0]
+    else {
+        New-VHD -Path $vhdPath -SizeBytes 1GB -Dynamic | Out-Null
+        New-VM -Name $ForeignVm -Generation 2 -MemoryStartupBytes 512MB -VHDPath $vhdPath -Path $foreignRoot | Out-Null
+        $foreignRows = @(Get-PcvVmByName -Name $ForeignVm -Purpose 'authoritative-create')
+        if ($foreignRows.Count -ne 1) {
+            $record.identity_status = 'orphan-blocker'
+            $record.identity_blocker = $true
+            Write-AtomicSummary
+            throw "PCV_P0_STATE_MISMATCH|foreign-vm-cardinality=$($foreignRows.Count)"
+        }
+        $foreignVmResult = $foreignRows[0]
+    }
+    $record = Set-VmAuthoritativeIdentity -Record $record -Vm $foreignVmResult
 
     $rejected = Start-PcvCliJob -StepName 'unmanaged-delete' -Arguments @(
         'vm', 'delete', $record.id, '--yes') -AllowFailure
     $rejectStatus = [string](Get-ObjectPropertyValue -InputObject $rejected -Name 'status')
     $rejectError = Get-ObjectPropertyValue -InputObject $rejected -Name 'error'
     $rejectCode = [string](Get-ObjectPropertyValue -InputObject $rejectError -Name 'code')
-    $stillPresent = $null -ne (Get-VM -Id ([Guid]$record.id) -ErrorAction SilentlyContinue)
+    $stillPresent = $null -ne (Get-PcvVmById -Id ([Guid]$record.id) -Record $record)
     if ($rejectStatus -ne 'failed' -or $rejectCode -ne 'PCV_VM_NOT_MANAGED_BY_PURECVISOR' -or -not $stillPresent) {
         throw "PCV_P0_STATE_MISMATCH|unmanaged-delete|status=$rejectStatus|code=$rejectCode"
     }
 
     $managed = Start-PcvCliJob -StepName 'vm-manage' -Arguments @('vm', 'manage', $record.id, '--yes')
-    $managedVm = Get-VM -Id ([Guid]$record.id) -ErrorAction Stop
+    $managedVm = Get-PcvVmById -Id ([Guid]$record.id) -Record $record
     $markerPresent = [string]$managedVm.Notes -match 'managed-by=purecvisor-desktop-node'
     $deleted = Start-PcvCliJob -StepName 'managed-delete' -Arguments @('vm', 'delete', $record.id, '--yes')
-    $gone = $null -eq (Get-VM -Id ([Guid]$record.id) -ErrorAction SilentlyContinue)
+    $gone = $null -eq (Get-PcvVmById -Id ([Guid]$record.id) -Record $record)
     $summary.readbacks.managed_import = [ordered]@{
         unmanaged_delete_rejected = $true
         manage_marker_present = $markerPresent
@@ -584,8 +858,6 @@ function Invoke-ManagedImportSlice {
         -not $gone) {
         throw 'PCV_P0_STATE_MISMATCH|managed-import'
     }
-    $summary.slice_verdicts.managed_import = 'PASS'
-    Write-AtomicSummary
 }
 
 function Invoke-ExactCleanup {
@@ -593,17 +865,25 @@ function Invoke-ExactCleanup {
     $cleanupErrors = [System.Collections.Generic.List[string]]::new()
     foreach ($record in $script:VmRecords) {
         try {
-            $recordedId = [Guid]$record.id
             $record.root = Assert-ValidatedChildPath -Root $vmRootFull -Candidate $record.root
-            $sameName = @(Get-VM -Name $record.name -ErrorAction SilentlyContinue)
+            $sameName = @(Get-PcvVmByName -Name $record.name -Purpose 'cleanup-observation')
+            if ([string]::IsNullOrWhiteSpace([string]$record.id)) {
+                $record.identity_status = 'orphan-blocker'
+                $record.identity_blocker = $true
+                $record.error = 'PCV_P0_CLEANUP_ID_MISMATCH'
+                $cleanupErrors.Add('PCV_P0_CLEANUP_ID_MISMATCH') | Out-Null
+                continue
+            }
+            $recordedId = [Guid]$record.id
             $different = @($sameName | Where-Object { [Guid]$_.Id -ne $recordedId })
+            $collisionCode = $null
             if ($different.Count -gt 0) {
                 $record.same_name_different_id_blocked = $true
                 $summary.cleanup.same_name_different_id_blocked = $true
-                throw "PCV_P0_CLEANUP_ID_MISMATCH|name=$($record.name)|recorded=$recordedId"
+                $collisionCode = 'PCV_P0_CLEANUP_ID_MISMATCH'
             }
 
-            $current = Get-VM -Id $recordedId -ErrorAction SilentlyContinue
+            $current = Get-PcvVmById -Id $recordedId -Record $record
             if ($null -ne $current) {
                 $record.product_delete_attempted = $true
                 try {
@@ -614,7 +894,7 @@ function Invoke-ExactCleanup {
                     }
                 }
                 catch { }
-                $current = Get-VM -Id $recordedId -ErrorAction SilentlyContinue
+                $current = Get-PcvVmById -Id $recordedId -Record $record
                 if ($null -ne $current) {
                     if ([Guid]$current.Id -ne $recordedId) {
                         throw "PCV_P0_CLEANUP_ID_MISMATCH|recorded=$recordedId|actual=$($current.Id)"
@@ -622,33 +902,54 @@ function Invoke-ExactCleanup {
                     $record.native_fallback_used = $true
                     $summary.cleanup.native_fallback_used = $true
                     if ([string]$current.State -ne 'Off') {
-                        Stop-VM -VM $current -TurnOff -Force -ErrorAction Stop
+                        if ($null -ne $RuntimeAdapter) {
+                            Invoke-RuntimeOperation -Operation 'stop-vm' -Input @{ id = $record.id } | Out-Null
+                        }
+                        else {
+                            Stop-VM -VM $current -TurnOff -Force -ErrorAction Stop
+                        }
                     }
-                    $current = Get-VM -Id $recordedId -ErrorAction Stop
-                    Remove-VM -VM $current -Force -ErrorAction Stop
+                    $current = Get-PcvVmById -Id $recordedId -Record $record
+                    if ($null -ne $RuntimeAdapter) {
+                        Invoke-RuntimeOperation -Operation 'remove-vm' -Input @{ id = $record.id } | Out-Null
+                    }
+                    else {
+                        Remove-VM -VM $current -Force -ErrorAction Stop
+                    }
                 }
             }
-            $record.removed = $null -eq (Get-VM -Id $recordedId -ErrorAction SilentlyContinue)
+            $record.removed = $null -eq (Get-PcvVmById -Id $recordedId -Record $record)
             if (-not $record.removed) {
                 throw "PCV_P0_CLEANUP_ID_MISMATCH|remaining=$recordedId"
             }
-            if (Test-Path -LiteralPath $record.root) {
-                [System.IO.Directory]::Delete($record.root, $true)
+            $comparison = if ($IsWindows) { [System.StringComparison]::OrdinalIgnoreCase } else { [System.StringComparison]::Ordinal }
+            $collisionOwnsRecordedRoot = @($different | Where-Object {
+                $candidate = Get-AbsolutePath -Path ([string]$_.Path)
+                $candidate.Equals($record.root, $comparison) -or
+                    $candidate.StartsWith($record.root + [System.IO.Path]::DirectorySeparatorChar, $comparison)
+            }).Count -gt 0
+            if (-not $collisionOwnsRecordedRoot -and (Test-PcvPath -Path $record.root)) {
+                Remove-PcvDirectory -Path $record.root
             }
-            $record.root_removed = -not (Test-Path -LiteralPath $record.root)
+            $record.root_removed = -not (Test-PcvPath -Path $record.root)
             if (-not $record.root_removed) {
                 throw "PCV_P0_CLEANUP_ROOT_INVALID|remaining=$($record.root)"
             }
+            if ($null -ne $collisionCode) {
+                $record.error = $collisionCode
+                $cleanupErrors.Add($collisionCode) | Out-Null
+            }
         }
         catch {
-            $record.error = $_.Exception.Message
-            $cleanupErrors.Add($_.Exception.Message) | Out-Null
+            $safeCode = Get-SafeFailureCode -Message $_.Exception.Message
+            $record.error = $safeCode
+            $cleanupErrors.Add($safeCode) | Out-Null
         }
     }
     $summary.cleanup.records = @($script:VmRecords)
     if ($cleanupErrors.Count -gt 0) {
         $summary.cleanup.verdict = 'FAIL'
-        $summary.cleanup.error = $cleanupErrors -join '; '
+        $summary.cleanup.error = @($cleanupErrors | Select-Object -Unique) -join '; '
         return $false
     }
     $summary.cleanup.verdict = 'PASS'
@@ -663,23 +964,24 @@ try {
     Assert-VmAbsent -Name $ForeignVm
     Write-AtomicSummary
 
+    $managedRecord = New-VmOwnershipRecord -Kind 'managed' -Name $ManagedVm -ExpectedRoot (Join-Path $vmRootFull $ManagedVm)
     $summary.host_mutation_performed = $true
     $summary.actual_execution = 'installed-cli-and-hyperv'
-    New-Item -ItemType Directory -Path $vmRootFull -Force | Out-Null
-    Invoke-SavedLifecycle
+    New-PcvDirectory -Path $vmRootFull
+    Invoke-TrackedSlice -Slice 'saved_lifecycle' -Action { Invoke-SavedLifecycle -Record $managedRecord }
     Assert-SlicePassed -Slice 'saved_lifecycle'
 
     if ($Mode -eq 'Full') {
-        Invoke-MediaAttachSlice
+        Invoke-TrackedSlice -Slice 'media_attach' -Action { Invoke-MediaAttachSlice }
         Assert-SlicePassed -Slice 'media_attach'
-        Invoke-CheckpointRestoreSlice
+        Invoke-TrackedSlice -Slice 'checkpoint_restore' -Action { Invoke-CheckpointRestoreSlice }
         Assert-SlicePassed -Slice 'checkpoint_restore'
-        Invoke-ManagedImportSlice
+        Invoke-TrackedSlice -Slice 'managed_import' -Action { Invoke-ManagedImportSlice }
         Assert-SlicePassed -Slice 'managed_import'
     }
 }
 catch {
-    $runError = $_.Exception.Message
+    $runError = Get-SafeFailureCode -Message $_.Exception.Message
     $summary.error = $runError
 }
 finally {
@@ -690,8 +992,9 @@ finally {
     catch {
         $summary.cleanup.attempted = $true
         $summary.cleanup.verdict = 'FAIL'
-        $summary.cleanup.error = $_.Exception.Message
-        $runError = if ($null -eq $runError) { $_.Exception.Message } else { "$runError; $($_.Exception.Message)" }
+        $cleanupCode = Get-SafeFailureCode -Message $_.Exception.Message
+        $summary.cleanup.error = $cleanupCode
+        $runError = if ($null -eq $runError) { $cleanupCode } else { "$runError; $cleanupCode" }
     }
     try {
         Assert-ServiceAvailable
