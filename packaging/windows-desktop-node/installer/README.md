@@ -1,6 +1,19 @@
 # PureCVisor Desktop Node Installer
 
-## 2026-07-14 현재 payload 경계
+## 2026-08-26 current operational installer closure
+
+- 현재 운영 제품은 `0.42.74-admin-smoke`이며 Web Console과 `pcvcli.exe`가 active
+  operator payload다. TUI는 absent다.
+- 최신 닫힌 manual-admin package-pair는
+  `0.42.73-admin-smoke -> 0.42.74-admin-smoke`이고 feature qualification은
+  `promotion_eligible=false`다.
+- Required CI 기준은 final `main`
+  `6e2bdb93ce308b632c929e2c17f5550ac3845401`, run `32904006595`의 exact four contexts
+  `dotnet`, `web`, `delivery`, `installer-policy`다.
+- Pester/pwsh Public Boundary run `32904006619`는 required check가 아닌
+  transition residue다.
+
+## 2026-07-14 historical payload predecessor
 
 ADR-0011에 따라 새 MSI의 활성 운영자 payload는 Web Console과 `pcvcli.exe`다. TUI
 payload는 제거됐고 upgrade는 이전 설치본의 잔여 실행 파일을 정리해야 한다. Package
@@ -8,7 +21,8 @@ manifest schema는 `2`를 유지한다. Code-level evidence는
 `docs/ga-ready/evidence/tui-removal-cli-web-only-code-level-2026-07-14.md`다.
 `0.42.62-admin-smoke` 설치본 current-card는 당시 TUI 포함 사실을 보존하는 dated
 predecessor이며, `0.42.63-admin-smoke` MSI upgrade cleanup/package/fullgate/CLI-Web
-installed current-card는 아직 pending이다.
+installed current-card는 이 snapshot 시점에는 pending이었다. 이후 closure를 거쳐 현재
+`0.42.74-admin-smoke` current-card가 이를 대체한다.
 
 ## 2026-05-29 historical predecessor
 
@@ -58,7 +72,7 @@ Actual VM Web/TUI QoS/guest readback smoke는
 Public trusted signing 또는 외부 stable publication evidence가 아니며, 아래 이전 날짜
 current 문단은 historical predecessor로 해석한다.
 
-## 2026-05-18 현재 기준
+## 2026-05-18 historical predecessor
 
 최신 installed operational evidence anchor는 `0.42.34-admin-smoke` / `full-admin-host-mutation-gate-20260519-04234`다. Package build는 `docs/ga-ready/evidence/admin-smoke-package-2026-05-19-04234.md`와 operational full-gate package `artifacts/routeparity-service-msi-hyperv-batch-profile-20260519-04234`가 소유하고, full admin host mutation은 `docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-05-19-04234-hostmutation.md`, installed Web/TUI/CLI current-card는 `docs/ga-ready/evidence/installed-operator-surface-current-card-2026-05-19-04234.md`가 소유한다. Manual-admin package-pair closure는 `docs/ga-ready/evidence/manual-admin-campaign-2026-05-19-04232-04234.md` / `manual-admin-campaign-descriptor-20260519-04232-04234-closed`가 current이며 package pair는 `0.42.32-admin-smoke -> 0.42.34-admin-smoke`, update ZIP SHA-256은 `da773bed215984f28523f869f71c7dffe7f4c584667b8817506c2442e2a473ad`, target MSI SHA-256은 `aec956b47c68ad87b33101bf5ffe61ab9dd2f1cfed6d7b216f44f6258b9d8f78`, provenance commit은 `fc8cc284b7824172b8bf035858fb86b21bd26e5d`이다. 0.42.32 closure는 `docs/ga-ready/evidence/manual-admin-campaign-2026-05-19-04231-04232.md`, `full-admin-host-mutation-gate-20260519-04232`, `manual-admin-campaign-descriptor-20260519-04231-04232-closed`로 historical predecessor로 보존한다. Host Ops lifecycle descriptor bridge는 `host-ops-lifecycle-descriptor-bridge-v1`, bucket count `6`, bucket contract `service-action-eventlog-firewall-truststore-credential-manager-data-root-separated`, Web diagnostics table contract `host-ops-web-diagnostics-bucket-table-v1`로 current-card에 연결됐다. Installed account/noVNC smoke는 0.42.29 historical PASS로 보존하고 다음 account/noVNC payload 변경 때 재검증한다. 이 evidence는 internal admin-smoke 범위이며 public trusted signing 또는 외부 stable publication evidence가 아니다.
 
@@ -286,7 +300,7 @@ pwsh -NoProfile -ExecutionPolicy Bypass -File packaging/windows-desktop-node/ins
   -SigningMode AllowUnsignedDev
 ```
 
-WiX CLI가 없는 환경에서는 실제 MSI build가 `PCV_INSTALLER_WIX_NOT_FOUND`로 중단될 수 있다. 이 경우 기본 Pester static/dry-run suite 통과와 WiX 미설치 사유를 검증 결과에 기록한다.
+WiX CLI가 없는 환경에서는 실제 MSI build가 `PCV_INSTALLER_WIX_NOT_FOUND`로 중단될 수 있다. 이 경우 legacy/manual Pester static/dry-run suite 통과와 WiX 미설치 사유를 검증 결과에 기록한다. 현재 Required CI의 installer 검증 소유자는 `installer-policy` .NET verifier shard다.
 
 검증된 개발 환경에서는 explicit `DesktopNode.Host.exe` 입력과 `AllowUnsignedDev` signing mode로 unsigned MSI와 provenance manifest 생성을 확인했다.
 
@@ -666,6 +680,15 @@ msiexec /x $msi REMOVE_DATA=1 REBOOT=ReallySuppress MSIRESTARTMANAGERCONTROL=Dis
 - external stable publication: 실행하지 않음
 
 ## 기본 검증
+
+현재 Required CI는 `.github/workflows/development-gates.yml`의 .NET verifier가 소유한다.
+final `main` `6e2bdb93ce308b632c929e2c17f5550ac3845401`, run `32904006595`에서 exact
+contexts `dotnet`, `web`, `delivery`, `installer-policy`가 PASS했다. 로컬 installer-policy
+shard는 workflow에 기록된 `dotnet run --project src/DesktopNode.Verification ... --shard
+installer-policy` 계약을 따른다.
+
+아래 Pester 명령은 legacy/manual parity 검증이며 Required CI가 아니다. pwsh 기반 Public
+Boundary run `32904006619`도 non-required transition residue다.
 
 ```powershell
 pwsh -NoProfile -Command "Invoke-Pester -Path 'packaging/windows-desktop-node/installer/tests' -Output Detailed"

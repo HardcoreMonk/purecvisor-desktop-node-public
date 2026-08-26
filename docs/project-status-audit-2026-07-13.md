@@ -248,7 +248,8 @@ Host service-action 테스트 6건은 `EnsureProtectedTokenFile` 또는 account 
 
 ### 6.4 GitHub CI 범위
 
-현재 HEAD의 GitHub Actions run은 [Public Boundary Contract run 26637170360]([private-archive-repository]/actions/runs/26637170360)이며 성공했다.
+당시 HEAD의 GitHub Actions `Public Boundary Contract` run은 `26637170360`이며 성공했다.
+원본 provider locator는 private archive 기록으로만 보존하며 이 public 문서에서 링크 대상으로 해석하지 않는다.
 
 그러나 workflow가 실행하는 실질 검사는 다음 두 개다.
 

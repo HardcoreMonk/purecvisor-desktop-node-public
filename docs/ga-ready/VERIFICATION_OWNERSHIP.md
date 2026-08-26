@@ -9,7 +9,14 @@ last_updated_at: 2026-05-10T00:00:00+09:00
 active_operator_surface_decision: cli-web-only
 tui_product_status: removed-from-active-product
 tui_removal_code_level_evidence: docs/ga-ready/evidence/tui-removal-cli-web-only-code-level-2026-07-14.md
-installed_operator_surface_promotion: pass-0.42.65-admin-smoke
+installed_operator_surface_promotion: pass-0.42.74-admin-smoke
+current_required_ci_final_main_sha: 6e2bdb93ce308b632c929e2c17f5550ac3845401
+current_required_ci_run_id: 32904006595
+current_required_ci_contexts: dotnet,web,delivery,installer-policy
+current_required_ci_provider_required: true
+current_public_boundary_residue_run_id: 32904006619
+current_public_boundary_residue_job_id: 97983888524
+current_public_boundary_residue_provider_required: false
 
 ## Ownership Rule
 
@@ -33,14 +40,33 @@ installed_operator_surface_promotion: pass-0.42.65-admin-smoke
 
 ## Default Command Ownership
 
+아래 Required shard의 `--no-build --no-restore`는 clean-checkout prerequisite가 완료됐다는
+뜻이다. Exact four는 clean committed HEAD에서만 실행하며, 먼저 `git status --short`가 빈
+출력인지 확인한 뒤 다음을 수행한다.
+
+```cmd
+git status --short
+dotnet restore src\DesktopNode.sln
+dotnet build src\DesktopNode.sln -c Release --no-restore
+npm ci --prefix web
+```
+
 | Command 영역 | 활성 command owner | 활성 command |
 |---|---|---|
-| Product wrapper/package | `packaging/windows-desktop-node/tests` | `Invoke-Pester -Path 'packaging/windows-desktop-node/tests'` |
-| Installer/MSI package | `packaging/windows-desktop-node/installer/tests` | `Invoke-Pester -Path 'packaging/windows-desktop-node/installer/tests'` |
-| Active .NET CLI | `src/DesktopNode.Cli.Tests`, `src/DesktopNode.sln`, installer/product manifest package tests | `dotnet test src/DesktopNode.Cli.Tests/DesktopNode.Cli.Tests.csproj`, `dotnet test src/DesktopNode.sln`, `Invoke-Pester -Path 'packaging/windows-desktop-node/tests','packaging/windows-desktop-node/installer/tests'` |
-| Web Console package | `web/tests`, `web/package.json` | `Invoke-Pester -Path 'web/tests'`, `npm test --prefix web`, `npm run verify:parity --prefix web`, `npm run browser:fixture --prefix web`, `node --check web/app.js` |
+| Required `dotnet` | `src/DesktopNode.Verification`, .NET product tests | `dotnet run --project src/DesktopNode.Verification -c Release --no-build --no-restore -- verify --lane Full --change-tier M --changed-path .github/workflows/development-gates.yml --artifact-root artifacts/development-gates-dotnet --shard dotnet` |
+| Required `web` | `src/DesktopNode.Verification`, Web contracts | `dotnet run --project src/DesktopNode.Verification -c Release --no-build --no-restore -- verify --lane Full --change-tier M --changed-path web/package.json --artifact-root artifacts/development-gates-web --shard web` |
+| Required `delivery` | `src/DesktopNode.Verification`, Packaging delivery contracts | `dotnet run --project src/DesktopNode.Verification -c Release --no-build --no-restore -- verify --lane Full --change-tier M --changed-path packaging/windows-desktop-node/tests/PcvAdminSmokeEvidenceDocs.Tests.ps1 --artifact-root artifacts/development-gates-delivery --shard delivery` |
+| Required `installer-policy` | `src/DesktopNode.Verification`, installer policy contracts | `dotnet run --project src/DesktopNode.Verification -c Release --no-build --no-restore -- verify --lane Full --change-tier M --changed-path packaging/windows-desktop-node/installer/tests/PcvDesktopNodeInstaller.Plan.Tests.ps1 --artifact-root artifacts/development-gates-installer-policy --shard installer-policy` |
 | .NET product path | `src/DesktopNode.sln` | `dotnet test src/DesktopNode.sln` |
 | Diff hygiene | repository root | `git diff --check` |
+
+Final `main` SHA `6e2bdb93ce308b632c929e2c17f5550ac3845401`의 Development Gates run
+`32904006595`가 위 exact four provider-required contexts를 PASS했다. Required workflow의
+executable Pester 및 비관리자 PowerShell invocation은 `0`이다. `Invoke-Pester` 기반 legacy suite,
+manual/admin scripts, 별도 Public Boundary run `32904006619` / job `97983888524`는 local/manual 또는
+non-required residue로만 남으며 repository-wide Pester/PowerShell 제거를 뜻하지 않는다. Required
+`web` shard는 verification catalog 내부에서 `npm run test:required --prefix web`를 이미 실행하므로
+별도 Required 명령으로 중복 호출하지 않는다.
 
 ## Component/Archive Baseline
 
@@ -63,7 +89,7 @@ installed_operator_surface_promotion: pass-0.42.65-admin-smoke
 | Service lifecycle and SCM actions | `archive/spikes/purecvisor-desktop-node/service/tests` | `src/DesktopNode.Host.Tests`, `src/DesktopNode.Service.Tests`, `packaging/windows-desktop-node/tests` | pass |
 | Protected token preparation and health auth | PowerShell service helper protected-token tests | `packaging/windows-desktop-node/tests/PcvDesktopNodeProduct.Invoke.Tests.ps1`, `src/DesktopNode.Host.Tests`, route parity smoke protected-token self-test | pass |
 | CLI command routing and Local API client behavior | `archive/spikes/purecvisor-desktop-node/cli/tests` | `src/DesktopNode.Cli/**`, `src/DesktopNode.Cli.Tests`, installer CLI payload tests, product manifest/update payload tests; installed command name is `pcvcli.exe` | pass |
-| CLI/Web-only boundary | historical TUI evidence only | solution/package boundary tests, `src/DesktopNode.Cli.Tests`, Web verification, 0.42.64 installed current-card | pass-installed-0.42.64 |
+| CLI/Web-only boundary | historical TUI evidence only | solution/package boundary tests, `src/DesktopNode.Cli.Tests`, Web verification, 0.42.74 installed current-card | pass-installed-0.42.74 |
 | Web Console served asset behavior | legacy Web Console Pester/static parity | `web/tests`, `web/package.json`, `npm test --prefix web`, `npm run verify:parity --prefix web`, `npm run browser:fixture --prefix web` | pass |
 | Packaging/MSI payload and installed root markers | legacy service module payload checks | `packaging/windows-desktop-node/tests`, `packaging/windows-desktop-node/installer/tests`, root-level `DesktopNode.Host.exe` installed marker checks | pass |
 | Post-reboot product verification | retired Hyper-V non-integration profile | `ProductStatus`, `PackagingRegression`, continuation profiles without `spikes/**` command paths | pass |

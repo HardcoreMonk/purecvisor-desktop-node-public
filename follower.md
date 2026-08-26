@@ -1,10 +1,14 @@
 # Desktop Node Follow-Up Queue
 
+> **Historical snapshot:** 이 문서는 2026-05-04 당시 대기열이며 현재 작업 queue나 검증
+> 기준이 아니다. 현재 상태와 후속 작업은 `docs/DEVELOPER_INDEX.md`, 현재 검증 기준은
+> `docs/DEVELOPMENT_VERIFICATION_POLICY.md`를 따른다.
+
 작성 기준: 2026-05-04, 독립 Windows repo 분리, Phase 19 제품 승격 재판정, Phase 25 .NET/TypeScript scaffold, .NET Windows Service Host replacement, internal enterprise `RequireSigned` MSI lifecycle smoke, `0.33.0-admin-smoke` Service/MSI/Hyper-V/firewall/trust-store 실제 host mutation smoke, Windows Server 2022 guest shutdown smoke 이후
 
 이 문서는 `purecvisor-desktop-node` 저장소의 다음 작업 대기열만 정리한다. Phase별 완료 증거는 각 `docs/superpowers/plans/` 문서를 단일 진실로 둔다. 현재 적용 설계 결정은 `docs/ADR_INDEX.md`와 `docs/adr/`를 따르고, 검증 기준은 `docs/DEVELOPMENT_VERIFICATION_POLICY.md`를 따른다.
 
-## 현재 상태
+## 2026-05-04 historical 상태
 
 - `DESKTOP_NODE_REPOSITORY_DECISION: standalone-windows-repo`
 - `DESKTOP_NODE_DOCS_DECISION: lightweight-adr-index`
@@ -170,7 +174,7 @@
    - Ready gate 문서: `docs/superpowers/plans/2026-04-30-purecvisor-desktop-node-draft-pr-ready-gate.md`
    - direct draft-ready evidence가 닫혔으므로 PR 본문을 최신 head와 evidence로 갱신한 뒤 ready 전환을 판단한다.
 
-## 기본 검증 후보
+## 2026-05-04 historical 검증 후보
 
 ```powershell
 pwsh -NoProfile -Command "Invoke-Pester -Path 'packaging/windows-desktop-node/tests' -Output Detailed"
@@ -185,4 +189,7 @@ node --check web/app.js
 git diff --check
 ```
 
-Component/archive baseline 검증은 verification ownership map으로 분리하며, 기본 검증 후보에는 active `spikes/**` Pester path를 넣지 않는다.
+이 명령은 당시 후보를 보존한 것이며 현재 Required CI 명령이 아니다. 현재 Required CI는
+`DesktopNode.Verification`의 `dotnet`, `web`, `delivery`, `installer-policy` 네 shard와
+`npm run test:required --prefix web`을 사용한다. 위 Pester 명령은 legacy/manual/admin
+비필수 경계로만 해석한다.

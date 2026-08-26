@@ -2,6 +2,11 @@
 
 matrix_id: PUBLIC_DISTRIBUTION_GATE_MATRIX
 status: closed-not-adopted
+snapshot_status: historical-closed-not-adopted
+snapshot_as_of: 2026-05-28
+current_authority_pointer: docs/ga-ready/CURRENT_EVIDENCE_LEDGER.md
+current_operational_version_for_reference: 0.42.74-admin-smoke
+current_public_distribution_decision: internal-private-network-only
 candidate_marker: public-distribution-operations-expansion-candidate
 adr: ADR-0005
 closed_by: ADR-0006
@@ -9,7 +14,7 @@ operator_surface_adr: ADR-0011
 active_operator_surface_decision: cli-web-only
 tui_product_status: removed-from-active-product
 tui_removal_code_level_evidence: docs/ga-ready/evidence/tui-removal-cli-web-only-code-level-2026-07-14.md
-installed_operator_surface_promotion: pending-0.42.63-admin-smoke
+historical_installed_operator_surface_promotion_at_snapshot: pending-0.42.63-admin-smoke
 closed_at: 2026-05-10
 public_distribution_scope: out-of-scope
 superseding_matrix: docs/ga-ready/INTERNAL_PRIVATE_NETWORK_DISTRIBUTION_MATRIX.md
@@ -23,14 +28,14 @@ clean_host_public_signed_install_update_rollback_smoke: out-of-scope
 clean_host_smoke_status: out-of-scope
 previous_04256_scope_lock_latest_internal_admin_smoke: 0.42.56-admin-smoke
 previous_04256_scope_lock_latest_internal_admin_smoke_evidence: docs/ga-ready/evidence/installed-operator-surface-current-card-2026-05-28-04256.md
-scope_lock_latest_internal_admin_smoke: 0.42.57-admin-smoke
-scope_lock_latest_internal_admin_smoke_evidence: docs/ga-ready/evidence/installed-operator-surface-current-card-2026-05-28-04257.md
-scope_lock_latest_full_admin_host_mutation_evidence: docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-05-28-04257-hostmutation.md
-scope_lock_latest_full_admin_host_mutation_batch: full-admin-host-mutation-gate-20260528-04257
-scope_lock_latest_full_gate_msi_sha256: 809eacb97a49aeaa32fc0ea3dce8ac5bdeb7c66b8b4502352519a338a512847e
-scope_lock_latest_clean_package_msi_sha256: 2eaa6fa9d22fcc72fad5994ebed397a2c3aead5a0311f32a3b9e013616b246f9
-scope_lock_latest_payload_aggregate_sha256: 7a34468d3a59c2da182835a03f440f22df9e70f31ff062dc625530a9143ef94d
-scope_lock_latest_provenance_commit: 16cc0d6b592d7f2f9ead14c41d8f4ad0e1f28b76
+historical_04257_scope_lock_internal_admin_smoke: 0.42.57-admin-smoke
+historical_04257_scope_lock_internal_admin_smoke_evidence: docs/ga-ready/evidence/installed-operator-surface-current-card-2026-05-28-04257.md
+historical_04257_scope_lock_full_admin_host_mutation_evidence: docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-05-28-04257-hostmutation.md
+historical_04257_scope_lock_full_admin_host_mutation_batch: full-admin-host-mutation-gate-20260528-04257
+historical_04257_scope_lock_full_gate_msi_sha256: 809eacb97a49aeaa32fc0ea3dce8ac5bdeb7c66b8b4502352519a338a512847e
+historical_04257_scope_lock_clean_package_msi_sha256: 2eaa6fa9d22fcc72fad5994ebed397a2c3aead5a0311f32a3b9e013616b246f9
+historical_04257_scope_lock_payload_aggregate_sha256: 7a34468d3a59c2da182835a03f440f22df9e70f31ff062dc625530a9143ef94d
+historical_04257_scope_lock_provenance_commit: 16cc0d6b592d7f2f9ead14c41d8f4ad0e1f28b76
 scope_lock_host_ops_web_diagnostics_bucket_table_contract: host-ops-web-diagnostics-bucket-table-v1
 scope_lock_public_trusted_signing: out-of-scope
 scope_lock_external_stable_publication: out-of-scope

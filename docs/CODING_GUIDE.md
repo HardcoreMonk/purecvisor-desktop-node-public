@@ -1,7 +1,7 @@
 # PureCVisor Desktop Node 통합 코딩 가이드
 
 - 작성 기준: `2026-08-03`
-- 마지막 갱신: `2026-08-25`
+- 마지막 갱신: `2026-08-26`
 - 문서 상태: `current-derived-guide`
 - 적용 저장소: Windows 전용 `purecvisor-desktop-node`
 - 현재 실행 계획 진입점: `docs/DEVELOPER_INDEX.md`
@@ -39,7 +39,7 @@ canonical owner가 우선하며, 이 문서를 같은 변경에서 갱신한다.
 | 변경 등급 | `docs/DEVELOPMENT_CHANGE_CLASSIFICATION.md` | 자동 최소 S/M/L 분류가 작업자가 요청한 낮은 등급보다 우선한다. |
 | 검증 범위 | `docs/DEVELOPMENT_VERIFICATION_POLICY.md` | 변경 표면별 suite와 관리자 opt-in 경계를 따른다. |
 | 현재 계획 포인터 | `docs/DEVELOPER_INDEX.md` | 현재 실행 계획을 찾는 진입점이며 operational tuple이나 ADR을 덮어쓰지 않는다. |
-| 현재 실행 작업 | `docs/DEVELOPER_INDEX.md`의 최신 dated section | 현재 Web 검증 트랙은 Wave B 계획의 Task 1~13 local-parity 구현과 full completion audit까지 완료했다. Required CI dual-run과 cutover는 pending이며 다른 트랙의 historical 계획을 암묵적으로 재활성화하지 않는다. |
+| 현재 실행 작업 | `docs/DEVELOPER_INDEX.md`의 최신 dated section | Wave A~E와 Required CI cutover가 완료됐다. Required CI는 `dotnet`, `web`, `delivery`, `installer-policy` 네 context이며 ledger 62 files / 627 contracts가 모두 CI PASS다. 다른 historical 계획을 암묵적으로 재활성화하지 않는다. |
 | 미래 완료 제어 | Luna stable design과 2026-08-03 successor | materialization과 activation 전에는 설계/controller 정의다. |
 | 주간 projection | 2026-08-03 1주 단위 서비스 개발 명세 | non-authoritative forecast이며 DAG, 승인 또는 mutable state owner가 아니다. |
 
@@ -68,8 +68,9 @@ canonical owner가 우선하며, 이 문서를 같은 변경에서 갱신한다.
 - 제품 core와 backend는 C# / .NET 10이다. Windows 연동 프로젝트는 `net10.0-windows`, 중립
   Contracts/Runtime/Service 프로젝트는 `net10.0`을 유지한다.
 - Web Console source, build와 browser runtime은 TypeScript가 소유한다.
-- PowerShell 7과 Pester는 저장소 측 packaging build, installer authoring/검증, 승인된 admin evidence runner와
-  test를 소유한다. 제품 runtime, deployment 또는 admin operation owner는 C# native 경계다.
+- C#/.NET `DesktopNode.Verification`과 Node가 현재 비관리자 Required CI를 소유한다. PowerShell 7과
+  Pester는 legacy parity, packaging build 또는 승인된 manual/admin evidence runner에만 남는다.
+  제품 runtime, deployment 또는 admin operation owner는 C# native 경계다.
 - 활성 운영자 표면은 Web Console과 PCVCLI뿐이며 TUI는 absent다.
 - 코드의 `native adapter`는 현재 C# `System.Management`/WMI 경계를 뜻하며 C++ 구현을 뜻하지 않는다.
 - 현재 distribution은 내부 사설망 전용이다. `AllowUnsignedDev`/`LocalTest` evidence는 public trusted release
@@ -196,7 +197,8 @@ canonical owner가 우선하며, 이 문서를 같은 변경에서 갱신한다.
 ## 8. PowerShell·packaging 작성 경계
 
 - 제품 runtime/request/deployment/admin operation 경로에 generic PowerShell helper fallback이나 제품 실행
-  dependency를 다시 추가하지 않는다. PowerShell은 repo-side build/verification/evidence runner 경계에 둔다.
+  dependency를 다시 추가하지 않는다. PowerShell은 비필수 legacy parity, repo-side build 또는 승인된
+  manual/admin evidence runner 경계에만 둔다.
 - 승인된 Guest Execution PowerShell Direct provider는 별도 security boundary이며 generic fallback 허가가 아니다.
 - 새 또는 수정하는 script/module은 기존 패턴에 맞춰 `Set-StrictMode -Version Latest`,
   `$ErrorActionPreference = 'Stop'`, `[CmdletBinding()]`, typed/validated parameter, `-LiteralPath`와
@@ -344,27 +346,46 @@ lane을 실행한다.
 
 | 변경 표면 | 기본 검증 |
 |---|---|
-| C# owner | focused test project 후 `dotnet test src/DesktopNode.sln -c Release` |
+| C# owner | 변경 중 focused test project, clean committed HEAD에서 Required CI `dotnet` shard |
 | Web/TypeScript | `npm test --prefix web`, `npm run verify:parity --prefix web`; 생성물을 바꿀 때 build/freshness 확인 |
-| Web verification Wave B checkpoint | `npm run test:web-contracts --prefix web`, `npm run verify:web-contract-negative-parity --prefix web`, `node web/scripts/verify-verification-migration-manifest.mjs --require-web-local-pass`; Task 13 full audit PASS, positive projection `50/50`, manifest `62`행, Web `mapped`/local pass/CI pending이며 required cutover는 pending |
-| PowerShell/packaging | 관련 focused Pester 후 `packaging/windows-desktop-node/tests` |
-| Installer/Web Pester 표면 | `packaging/windows-desktop-node/installer/tests`, `web/tests`의 관련 suite |
-| current evidence | `Update-PcvCurrentEvidenceDocs.ps1 -Check`와 owner evidence 검증 |
+| Required CI | `DesktopNode.Verification`의 `dotnet`, `web`, `delivery`, `installer-policy` 네 shard; ledger 62 files / 627 contracts 전체 `cutover / local pass / CI pass` |
+| Web required entrypoint | `npm run test:required --prefix web` |
+| PowerShell/Pester 표면 | 비필수 legacy parity 또는 승인된 manual/admin 검증에만 관련 suite 실행 |
+| current evidence | `delivery`/`installer-policy` shard와 canonical current-evidence owner 검증; mutation runner는 별도 관리자 승인 |
 | 문서·모든 변경 | 실제 changed-path 분류, 필요한 root boundary test, `git diff --check` |
 | ASP.NET Core | legacy/ASP.NET parity, TestServer, selected-server 실제 socket, static/noVNC/browser와 publish/installed gate |
 | Hyper-V/Host Ops | fake/focused suite; 별도 승인된 경우에만 actual-host/actual-VM runner |
 
-Canonical lane runner는 다음 script다.
+Canonical non-admin lane runner는 `DesktopNode.Verification`이다. 변경 중에는 다음 pre-commit
+검증으로 Release 산출물과 Web dependency를 준비하고 focused regression을 확인한다.
 
-```powershell
-& packaging/windows-desktop-node/tools/Invoke-PcvDevelopmentVerification.ps1 `
-  -Lane <Fast|Full|Release> `
-  -ChangeTier <S|M|L> `
-  -ChangedPath $changedPaths `
-  -ArtifactRoot <artifact-root>
+```text
+dotnet restore src/DesktopNode.sln
+dotnet build src/DesktopNode.sln -c Release --no-restore
+npm ci --prefix web
+npm run test:required --prefix web
+git diff --check
 ```
 
-`-PlanOnly`는 suite 선택 확인일 뿐 PASS evidence가 아니다. Runner를 실제 실행했을 때만 해당 lane 결과를
+전체 solution test의 `policy-boundaries`는 활성 cutover 계약상 clean committed HEAD를 요구한다.
+변경 중에는 영향 범위의 focused test만 실행한다. Clean committed HEAD에서 전체 solution test는
+`dotnet` shard가, Installer 필터와 clean-worktree policy boundary는 `installer-policy` shard가 검증한다.
+
+`installer-policy` shard는 cutover 경계 때문에 clean committed HEAD를 요구한다. 커밋 후
+`git status --short` 출력이 비어 있는 상태에서 Required CI exact four를 모두 실행한다. `web`
+shard가 `npm run test:required`를 포함하므로 별도로 다시 실행하지 않는다.
+
+```text
+git status --short
+dotnet run --project src/DesktopNode.Verification -c Release --no-build --no-restore -- verify --lane Full --change-tier M --changed-path .github/workflows/development-gates.yml --artifact-root artifacts/local-dotnet --shard dotnet
+dotnet run --project src/DesktopNode.Verification -c Release --no-build --no-restore -- verify --lane Full --change-tier M --changed-path web/package.json --artifact-root artifacts/local-web --shard web
+dotnet run --project src/DesktopNode.Verification -c Release --no-build --no-restore -- verify --lane Full --change-tier M --changed-path packaging/windows-desktop-node/tests/PcvAdminSmokeEvidenceDocs.Tests.ps1 --artifact-root artifacts/local-delivery --shard delivery
+dotnet run --project src/DesktopNode.Verification -c Release --no-build --no-restore -- verify --lane Full --change-tier M --changed-path packaging/windows-desktop-node/installer/tests/PcvDesktopNodeInstaller.Plan.Tests.ps1 --artifact-root artifacts/local-installer-policy --shard installer-policy
+```
+
+위 `.ps1` 값은 shard 선택용 changed-path 데이터이며 PowerShell process 호출이 아니다.
+
+`--plan-only`는 suite 선택 확인일 뿐 PASS evidence가 아니다. Runner를 실제 실행했을 때만 해당 lane 결과를
 주장한다.
 
 ## 13. 현재 자동 강제와 공백
@@ -373,7 +394,8 @@ Canonical lane runner는 다음 script다.
 
 - GitHub Development Gates는 .NET SDK `10.0.x` Release solution test를 실행한다.
 - Node 24에서 npm clean install, TypeScript test와 static/browser parity를 실행한다.
-- development CI는 Pester `5.7.1`로 packaging, installer와 Web suite를 실행한다.
+- Development Gates는 `DesktopNode.Verification`의 정확한 네 shard를 실행하며 Required CI의
+  Pester 및 비관리자 PowerShell process invocation은 각각 `0`이다.
 - current evidence generated 문서가 canonical JSON과 일치하는지 검사한다.
 - served TypeScript source와 committed `web/app.js`의 byte freshness/parity를 검사한다.
 - 대형 모듈 라인 수 라쳇을 강제한다. `packaging/windows-desktop-node/tests/PcvModuleSizeRatchet.Tests.ps1`이
@@ -381,8 +403,9 @@ Canonical lane runner는 다음 script다.
   이상 줄면 상한을 실제 값으로 낮추도록 요구한다. 라쳇은 한 방향으로만 움직이므로 순증은 실패한다.
 - `.gitattributes`는 기본 LF, `.ps1`/`.psm1` CRLF 등 파일별 EOL을 정규화한다.
 
-이 자동 검사는 workflow가 설정된 pull request/main push/manual dispatch에서 동작한다. 현재 `merge_group`과
-required-check/ruleset 기반 merge 차단은 증명되지 않았으므로 “merge-blocking gate가 구성됐다”고 주장하지 않는다.
+이 자동 검사는 pull request, `main` push, manual dispatch에서 동작한다. Public `main` branch
+protection은 `strict=true`, admin enforcement와 exact four required contexts를 강제한다.
+`merge_group` trigger는 구성된 것으로 주장하지 않는다.
 
 ### 13.2 정책상 필수지만 일반 PR CI에서 항상 직접 실행되지는 않음
 
@@ -390,12 +413,11 @@ required-check/ruleset 기반 merge 차단은 증명되지 않았으므로 “me
 - `git diff --check`
 - 변경 유형별 actual-host 또는 installed gate
 - package/current-evidence promotion과 관찰
-- Wave B의 별도 `test:web-contracts`와 `verify:web-contract-negative-parity` 로컬 command. 두 command와
-  Task 13 full completion audit는 local parity를 증명했지만 required CI dual-run 또는 cutover에
-  연결되지 않았다.
+- Wave B의 별도 `test:web-contracts`와 `verify:web-contract-negative-parity` command는 현재
+  `npm run test:required --prefix web`과 Required CI `web` shard의 supporting 검증이다.
 
-Development Gates가 runner의 `-PlanOnly` orchestration을 확인하는 것과 실제 Full/Release lane PASS를
-혼동하지 않는다.
+Development Gates는 plan-only가 아니라 실제 네 shard를 실행한다. 로컬 `--plan-only` 결과는 suite
+선택 확인일 뿐 실제 Fast/Full/Release lane PASS와 혼동하지 않는다.
 
 ### 13.3 아직 자동 강제되지 않음
 
@@ -404,8 +426,6 @@ Development Gates가 runner의 `-PlanOnly` orchestration을 확인하는 것과 
 - ESLint/Prettier/Biome와 no-explicit-any gate
 - PSScriptAnalyzer
 - repository-wide formatter clean gate
-- Web verification migration manifest의 Packaging/Installer `61`행 replacement mapping
-- required CI Pester/Node dual-run, required CI Pester 및 non-admin PowerShell zero 전환과 cutover
 
 `향후 게이트`: QG-110 이후 shared nullable/analyzer/warnings, compiled architecture rule, touched-project
 line/branch coverage `0.0%p` 하락 방지와 hotspot ratchet을 도입한다. 구현 전에는 현재 CI 규칙으로 표현하지

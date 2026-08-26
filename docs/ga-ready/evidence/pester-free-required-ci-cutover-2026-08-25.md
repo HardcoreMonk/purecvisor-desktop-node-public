@@ -15,10 +15,24 @@ cutover_sha: `68756f1f2f609951aaf54d76963b10f96409011b`
 cutover_run_id: `32900785756`
 cutover_run_url: `https://github.com/HardcoreMonk/purecvisor-desktop-node-public/actions/runs/32900785756`
 cutover_pr: `https://github.com/HardcoreMonk/purecvisor-desktop-node-public/pull/1`
+pr1_cutover_merge_sha: `d4a952b8e5ab11f7e3a9ae92b41c61b12828bfab`
+pr1_cutover_post_merge_main_sha: `d4a952b8e5ab11f7e3a9ae92b41c61b12828bfab`
+pr1_cutover_post_merge_run_id: `32901477892`
+pr1_cutover_post_merge_run_url: `https://github.com/HardcoreMonk/purecvisor-desktop-node-public/actions/runs/32901477892`
+pr1_historical_metadata_compatibility_alias_semantics: `historical-pr1-cutover-closure-not-final-main-authority`
 merge_sha: `d4a952b8e5ab11f7e3a9ae92b41c61b12828bfab`
 post_merge_main_sha: `d4a952b8e5ab11f7e3a9ae92b41c61b12828bfab`
 post_merge_run_id: `32901477892`
 post_merge_run_url: `https://github.com/HardcoreMonk/purecvisor-desktop-node-public/actions/runs/32901477892`
+final_closure_pr: `https://github.com/HardcoreMonk/purecvisor-desktop-node-public/pull/2`
+final_closure_pr_head_sha: `110c8d998c1f830132eb08ed241afc40b4541879`
+final_main_sha: `6e2bdb93ce308b632c929e2c17f5550ac3845401`
+final_main_run_id: `32904006595`
+final_main_run_url: `https://github.com/HardcoreMonk/purecvisor-desktop-node-public/actions/runs/32904006595`
+required_contexts: `dotnet,web,delivery,installer-policy`
+public_boundary_residue_run_id: `32904006619`
+public_boundary_residue_job_id: `97983888524`
+public_boundary_provider_required: `false`
 cutover_ci_status: `pass`
 branch_protection_switch: `pass`
 ci_parity_pass: `true`
@@ -219,6 +233,43 @@ skipped, and not-run counts were `0`. The four ZIP hashes above were independent
 provider API downloads. Public Boundary run `32901477914` also passed, but it is deliberately not
 one of the four required contexts and still uses Pester/PowerShell.
 
+## Final documentation-closure main authority
+
+The preceding PR #1 merge and run `32901477892` are immutable cutover predecessor evidence. PR #2
+head `110c8d998c1f830132eb08ed241afc40b4541879` merged normally at
+`2026-08-25T22:00:31Z`, producing final `main` SHA
+`6e2bdb93ce308b632c929e2c17f5550ac3845401`. Development Gates run
+[`32904006595`](https://github.com/HardcoreMonk/purecvisor-desktop-node-public/actions/runs/32904006595),
+attempt `1`, event `push`, is bound to that exact SHA and completed successfully. Its workflow
+wall-clock was `120000 ms`; the provider job envelope was `117000 ms`.
+
+| Required job | Job ID / URL | Started UTC | Completed UTC | Result |
+| --- | --- | --- | --- | --- |
+| `dotnet` | [`97983889723`](https://github.com/HardcoreMonk/purecvisor-desktop-node-public/actions/runs/32904006595/job/97983889723) | `2026-08-25T22:00:37Z` | `2026-08-25T22:02:34Z` | `success` |
+| `web` | [`97983889620`](https://github.com/HardcoreMonk/purecvisor-desktop-node-public/actions/runs/32904006595/job/97983889620) | `2026-08-25T22:00:38Z` | `2026-08-25T22:01:28Z` | `success` |
+| `delivery` | [`97983889739`](https://github.com/HardcoreMonk/purecvisor-desktop-node-public/actions/runs/32904006595/job/97983889739) | `2026-08-25T22:00:37Z` | `2026-08-25T22:01:26Z` | `success` |
+| `installer-policy` | [`97983889504`](https://github.com/HardcoreMonk/purecvisor-desktop-node-public/actions/runs/32904006595/job/97983889504) | `2026-08-25T22:00:37Z` | `2026-08-25T22:01:35Z` | `success` |
+
+| Artifact | Artifact ID | Provider/API ZIP SHA-256 | Extracted summary SHA-256 |
+| --- | ---: | --- | --- |
+| `development-gates-dotnet-32904006595` | `9584155808` | `0287f854903e39b5971567d805355b9f0d03b11ed88928bf9442b212a417573d` | `2e753a370d776acf1a72ff31e6c30bbe978d7cf3fcb4923145c69145b4dc02d3` |
+| `development-gates-web-32904006595` | `9584126782` | `d3a812201483578b4a9e601a0b4bead8c5dc937515f9a7c8ecfa9df844419514` | `6f144a03e81b9e591f704ceface3bc2156c0f23bcb4374cab4145c04eacfcd85` |
+| `development-gates-delivery-32904006595` | `9584125168` | `47916ff4ad227d3452e6c02baefd2f4c337c80b912a4963002eb9ff4a59adae8` | `2bc02d6d2f176f500e187a87b0a162ae0ffe15a181954e016d7fc48c3e19932c` |
+| `development-gates-installer-policy-32904006595` | `9584129949` | `22d94e5f679aa498df634199a9aae79b20ca399ef167053159218de07d6f194b` | `d3256323a6a65146cac2a93da436d634bbca33ea8f08d914ea3326fbcc3ebb2d` |
+
+All four `pcv-development-verification-summary-v2` summaries report
+`catalog_activation_state=active`, `ok=true`, `plan_only=false`, and all suites
+`cutover/passed`. Measured results are .NET `2210/2210` in `55913 ms`, Web registry `50/50` in
+`19352 ms`, Delivery `528/528` in `5092 ms`, and Installer Policy `49/49` in `4082 ms`;
+failure, skip, not-run, timeout, cancel, and host-mutation counts are all `0`.
+
+Main branch protection currently requires exactly `dotnet`, `web`, `delivery`, and
+`installer-policy`, each bound to GitHub Actions app ID `15368`, with `strict=true` and admin
+enforcement enabled. The separate Public Boundary run
+[`32904006619`](https://github.com/HardcoreMonk/purecvisor-desktop-node-public/actions/runs/32904006619),
+job `97983888524` (`public-boundary-ci-required`), also passed at the same SHA, but it remains a
+Pester/PowerShell residue workflow with `provider_required=false`.
+
 ## Frozen-reader public boundary
 
 The ignored 0.42.65 executable remains excluded from the public Git tree, archive, Actions inputs,
@@ -234,8 +285,8 @@ actual-reader result remains `8/8 PASS` under the pinned SHA-256 recorded in
 - Exact cutover-SHA CI, the one-request protection transition, fixed-diff review, non-force PR
   merge, and exact remote-main CI all passed.
 - The repository is PUBLIC, main protection requires exact new checks with strict/admin enforcement,
-  and cutover PR #1 is merged. The documentation-only closure PR and its final main run will be
-  recorded in the handoff instead of recursively editing this evidence.
+  cutover PR #1 and documentation-closure PR #2 are merged, and final-main run `32904006595` at
+  `6e2bdb93ce308b632c929e2c17f5550ac3845401` is the current Required CI authority.
 - The 62 legacy Pester source files remain historical parity/rollback material. Non-required
   `.github/workflows/public-boundary.yml`, local/manual Pester instructions, and administrator
   scripts remain residue. Required CI alone has Pester and non-admin PowerShell invocation `0`.

@@ -1,5 +1,10 @@
 # Sanitized Public Authority Bootstrap and Protection Implementation Plan
 
+> **Completion status (2026-08-25): completed.** Parentless public authority가 생성되어 PUBLIC로
+> 전환됐고 main protection이 설치됐다. PR #1 cutover와 PR #2 documentation closure가 일반
+> merge로 완료됐으며 현재 main은 `6e2bdb93ce308b632c929e2c17f5550ac3845401`이다. 아래
+> bootstrap/current-four 문구는 seed 당시 pre-cutover snapshot이다.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:test-driven-development,
 > superpowers:executing-plans, superpowers:verification-before-completion, and
 > superpowers:requesting-code-review at the applicable checkpoints. Steps use checkbox (`- [ ]`) syntax.

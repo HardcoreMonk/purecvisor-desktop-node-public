@@ -4,10 +4,10 @@
 운영 절차는 `docs/OPERATIONS_GUIDE.md`, 사용자 절차는 `docs/USER_GUIDE.md`,
 검증 기준은 `docs/DEVELOPMENT_VERIFICATION_POLICY.md`를 따른다.
 
-이 규격은 `D:\data\projects\codex-zone\purecvisor-single\DESIGN.md`의 Supanova
-운영 콘솔 원칙을 Desktop Node 경계에 맞춰 가져온 것이다. Single Edge runtime
-화면, Linux route, Linux service path를 active Desktop Node Web Console에 직접
-가져오지 않는다.
+이 규격은 별도 Single Edge/Supanova predecessor의 운영 콘솔 원칙을 Desktop Node
+경계에 맞춰 가져온 provenance를 보존한다. 특정 private checkout의 절대 경로를 요구하지
+않는다. Single Edge runtime 화면, Linux route, Linux service path를 active Desktop Node
+Web Console에 직접 가져오지 않는다.
 
 ## 적용 범위
 
@@ -18,7 +18,8 @@
 - `web/src/view-model.ts`
 - `web/src/user-visible-fixtures.ts`
 - `web/scripts/*.mjs`
-- `web/tests/*.ps1`
+- `web/node-tests/*.mjs`
+- `web/tests/*.ps1` (legacy/manual parity residue; Required CI 아님)
 
 ## 제품 문맥
 
@@ -26,6 +27,11 @@ Desktop Node Web Console은 Windows Hyper-V 단일 host 운영자가 반복적�
 installed service console이다. 첫 화면은 marketing이나 landing page가 아니라
 현재 service/API/VM/job/diagnostic 상태를 빠르게 확인하고 조작하는 작업면이어야
 한다.
+
+현재 운영 제품은 `0.42.74-admin-smoke`다. Web Console과 PCVCLI가 active operator
+surface이고 TUI는 absent다. 최신 닫힌 manual-admin package-pair는
+`0.42.73-admin-smoke -> 0.42.74-admin-smoke`이며 feature qualification은
+`promotion_eligible=false`다.
 
 운영자가 먼저 보는 정보:
 
@@ -214,17 +220,27 @@ Active Desktop Node Web Console에 다음을 추가하지 않는다.
 
 ## Validation
 
-Visual/static Web Console 변경 후 기본 검증:
+현재 Required CI Web 검증은 `.github/workflows/development-gates.yml`의 `web` .NET verifier
+shard가 소유한다. final `main` `6e2bdb93ce308b632c929e2c17f5550ac3845401`, run
+`32904006595`에서 exact contexts `dotnet`, `web`, `delivery`, `installer-policy`가 PASS했다.
+로컬 Web 검증의 단일 npm entry point는 다음과 같다.
 
-```powershell
-npm test --prefix web
-npm run verify:parity --prefix web
-node --check web/app.js
-pwsh -NoProfile -Command "Invoke-Pester -Path 'web/tests' -Output Detailed"
+```text
+npm ci --prefix web
+npm run test:required --prefix web
 git diff --check
 ```
 
-2026-08-25 Wave B local completion checkpoint에서는 아래 검사를 사용한다.
+아래 Pester 명령은 legacy/manual parity용이다. pwsh 기반 Public Boundary run
+`32904006619`도 non-required transition residue이며 Required CI를 대체하지 않는다.
+
+```powershell
+pwsh -NoProfile -Command "Invoke-Pester -Path 'web/tests' -Output Detailed"
+```
+
+## 2026-08-25 historical Wave B local checkpoint
+
+당시 local completion checkpoint에서는 아래 검사를 사용했다.
 
 ```text
 npm run test:web-contracts --prefix web
@@ -232,10 +248,11 @@ npm run verify:web-contract-negative-parity --prefix web
 node web/scripts/verify-verification-migration-manifest.mjs --require-web-local-pass
 ```
 
-현재 범위는 legacy metadata/verifier와 positive projection 각각 `50/50`, focused Node unit
-`199/199`, controlled negative parity failed `1`/skipped `49`, migration manifest `62`행이다. Web
-행만 `mapped`/local pass/CI pending이며 Task 13 full completion audit까지 PASS했다. Required CI
-dual-run과 cutover는 pending이므로 위 명령은 legacy Web Pester 또는 required CI를 대체하지 않는다.
+당시 범위는 legacy metadata/verifier와 positive projection 각각 `50/50`, focused Node unit
+`199/199`, controlled negative parity failed `1`/skipped `49`, migration manifest `62`행이었다.
+Web 행만 `mapped`/local pass/CI pending이며 Task 13 full completion audit까지 PASS했다.
+Required CI dual-run과 cutover가 pending이던 historical predecessor 기록이다. 현재는 위 final
+`main`/run의 exact four Required CI contexts가 cutover closure를 소유한다.
 
 ## Static parity snapshot policy
 
@@ -248,6 +265,10 @@ dual-run과 cutover는 pending이므로 위 명령은 legacy Web Pester 또는 r
   generated asset과 parity snapshot을 보고 있음을 확인해야 한다.
 
 Host static serving, content type, packaging payload가 바뀌면:
+
+현재 required 경로는 `dotnet`/`web`/`delivery`/`installer-policy` verifier shards와
+`npm run test:required --prefix web`이다. 아래 Pester는 legacy/manual packaging parity이며
+Required CI가 아니다.
 
 ```powershell
 dotnet test src/DesktopNode.sln

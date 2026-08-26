@@ -1,5 +1,10 @@
 # Pester-free Installer Wave C Implementation Plan
 
+> **Completion status (2026-08-25): completed.** Installer 6 files / 49 contracts가 replacement
+> `49/49` local PASS로 닫혔고 후속 Wave E에서 CI PASS/cutover로 승격됐다. 아래 CI pending과
+> Packaging unmapped 문구는 실행 전 snapshot이다. Wave C 증빙은
+> `docs/ga-ready/evidence/pester-free-installer-wave-c-2026-08-25.md`다.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:test-driven-development and superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Installer legacy Pester 6파일/49계약을 shell-free .NET 10 xUnit 계약으로 1:1 이전하고, 62파일/627계약 ledger v2를 도입하여 Installer는 local parity PASS, Packaging은 정직한 unmapped, Web은 기존 local PASS로 표현한다.

@@ -190,19 +190,19 @@ PR #156 post-merge public-boundary main push는 `docs/ga-ready/evidence/public-b
 - Linux `purecvisor-single`, Linux `purecvisorsd`, KVM/libvirt/LXC/ZFS/OVS/OVN runtime 코드를 추가하지 않는다.
 - 현재 코드 경로는 phase 이력과 테스트 계약을 보존하기 위해 `archive/spikes/purecvisor-desktop-node/**`와 `packaging/windows-desktop-node/**`를 유지한다.
 - 현재 적용 결정은 `docs/ADR_INDEX.md`와 `docs/adr/`를 우선한다.
-- 최신 operational full admin host mutation anchor는 `0.42.41-admin-smoke` /
-  `full-admin-host-mutation-gate-20260522-04241`다. Runtime/API current-card
-  contract는 `runtime-api-current-evidence-rollup-v1`이고 Host Ops lifecycle descriptor
-  bridge contract는 `host-ops-lifecycle-descriptor-bridge-v1`, Web diagnostics table
-  contract는 `host-ops-web-diagnostics-bucket-table-v1`이다. 최신 product payload package는
-  `0.42.41-admin-smoke` 설치본 TUI row projection fix closure다.
-  최신 closed manual-admin package-pair도 `0.42.40-admin-smoke -> 0.42.41-admin-smoke`로
-  전환됐다. 이 evidence는
-  internal admin-smoke 범위이고 public trusted signing 또는 외부 stable publication
-  evidence가 아니다.
+- 현재 operational full admin host mutation anchor는 `0.42.74-admin-smoke` /
+  `full-admin-host-mutation-gate-20260820-04274`다. 설치본 운영자 표면은 Web Console과
+  PCVCLI이며 `tui_present=false`다. 최신 closed manual-admin package-pair는
+  `0.42.73-admin-smoke -> 0.42.74-admin-smoke` /
+  `manual-admin-campaign-descriptor-20260820-04273-04274-closed`다. 정확한 hash와 evidence
+  tuple은 이 파일 최상단 generated current-evidence 블록과
+  `docs/ga-ready/current-evidence.json`이 소유한다. 이 evidence는 internal admin-smoke
+  범위이고 Runtime/API current-card contract는 `runtime-api-current-evidence-rollup-v1`이다.
+  Public trusted signing 또는 외부 stable publication evidence가 아니다.
 
 ## 문서 진입점
 
+- 전체 문서 카탈로그: [docs/DOCUMENTATION_INDEX.md](docs/DOCUMENTATION_INDEX.md)
 - 개발 문서 진입점: `docs/DEVELOPER_INDEX.md`
 - 유저 가이드: `docs/USER_GUIDE.md`
 - 유저 기능 사용 명세서: `docs/USER_FEATURE_USAGE_SPEC.md`
@@ -218,8 +218,11 @@ PR #156 post-merge public-boundary main push는 `docs/ga-ready/evidence/public-b
 - Pester-free Web verification Wave B 설계/계획:
   `docs/superpowers/specs/2026-08-24-purecvisor-desktop-node-pester-free-web-verification-wave-b-design.md`,
   `docs/superpowers/plans/2026-08-24-purecvisor-desktop-node-pester-free-web-verification-wave-b.md`;
-  2026-08-25 현재 Task 1~13 local-parity 구현과 full completion audit 완료, required CI dual-run과
-  cutover는 수행하지 않음
+  Task 1~13 local-parity 구현 뒤 Wave C~E까지 완료했으며 현재 Required CI는 `dotnet`, `web`,
+  `delivery`, `installer-policy` 네 shard다. Migration ledger는 62 files / 627 contracts 전체
+  `cutover / local pass / CI pass`이고 Required CI의 Pester 및 비관리자 PowerShell process
+  invocation은 각각 `0`이다. 비필수 public-boundary workflow와 legacy/manual/admin
+  PowerShell은 별도 residue로 남는다.
 - Phase 19 제품 승격 재판정: `docs/superpowers/specs/2026-04-29-purecvisor-desktop-node-phase19-runtime-promotion-redecision-design.md`
 - Phase 22 release/version policy와 installer artifact contract: `docs/superpowers/plans/2026-04-29-purecvisor-desktop-node-phase22-release-version-policy.md`
 - 내부 신뢰 기반 signing policy: `docs/adr/0003-internal-trusted-signing-policy.md`
@@ -239,11 +242,11 @@ PR #156 post-merge public-boundary main push는 `docs/ga-ready/evidence/public-b
 - Account/RBAC/JWT/console code-level evidence: `docs/ga-ready/evidence/account-rbac-jwt-console-code-level-2026-05-10.md`, `docs/superpowers/plans/2026-05-10-purecvisor-desktop-node-account-rbac-jwt-console.md`
 - Installed account login/noVNC bridge follow-up evidence: `docs/ga-ready/evidence/installed-account-login-novnc-bridge-code-level-2026-05-10.md`, `docs/ga-ready/evidence/installed-novnc-tui-operator-smoke-2026-05-10-0411.md`, `packaging/windows-desktop-node/tools/Invoke-PcvInstalledAccountLoginSmoke.ps1`, `packaging/windows-desktop-node/tools/Invoke-PcvTargetBackedNoVncInstalledStreamingSmoke.ps1`, `docs/superpowers/plans/2026-05-10-purecvisor-desktop-node-installed-account-novnc-evidence.md`
 - Frontend/backend auth console live smoke evidence: `docs/ga-ready/evidence/frontend-backend-auth-console-live-smoke-2026-05-10.md`, `artifacts/installed-account-login-browser-live-smoke-20260510-235543`, `artifacts/web-console-installed-listener-browser-live-smoke-20260510-235543`; installed Web Console real account login form, auth/session/RBAC/console route, diagnostic create/download, responsive screenshot PASS
-- Latest full admin host mutation evidence: `docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-05-22-04241-hostmutation.md`, `artifacts/batch-runs/full-admin-host-mutation-gate-20260522-04241`, `artifacts/routeparity-service-msi-hyperv-batch-profile-20260522-04241`, `artifacts/os-mutation-gates-batch-profile-20260522-04241`; `0.42.41-admin-smoke`, full-gate MSI SHA-256 `e080dbff6525754be7a35dfe316745f9c2f8878ad286a31ea66388ba6915d8fb`, payload aggregate SHA-256 `132695d2e676a3b24321c08cfd783378f74b957865eda2b96b70ea91c31a3b9b`, provenance commit `2f41da1073df6e65113ae8ddaeb183e9b55874f4`, signing mode `AllowUnsignedDev`; installed current-card는 04241 기준 PASS. public trusted signing 또는 외부 stable publication evidence가 아님
+- Historical 2026-05-22 full admin host mutation evidence: `docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-05-22-04241-hostmutation.md`, `artifacts/batch-runs/full-admin-host-mutation-gate-20260522-04241`, `artifacts/routeparity-service-msi-hyperv-batch-profile-20260522-04241`, `artifacts/os-mutation-gates-batch-profile-20260522-04241`; `0.42.41-admin-smoke`, full-gate MSI SHA-256 `e080dbff6525754be7a35dfe316745f9c2f8878ad286a31ea66388ba6915d8fb`, payload aggregate SHA-256 `132695d2e676a3b24321c08cfd783378f74b957865eda2b96b70ea91c31a3b9b`, provenance commit `2f41da1073df6e65113ae8ddaeb183e9b55874f4`, signing mode `AllowUnsignedDev`; installed current-card는 04241 기준 PASS. public trusted signing 또는 외부 stable publication evidence가 아님
 - Previous full admin host mutation evidence: `docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-05-16-04222-hostmutation.md`, `artifacts/batch-runs/full-admin-host-mutation-gate-20260516-04222`, `artifacts/routeparity-service-msi-hyperv-batch-profile-20260516-04222`, `artifacts/os-mutation-gates-batch-profile-20260516-04222`; full-gate MSI SHA-256 `35055d4f7570a0be7d8c2232488b28862cb3bc8ae3e7d9eaa6b3cb8a945cf35c`, provenance commit `8a38995cc25a888f64473e9a2869740949ad6b24`; historical predecessor로 보존한다.
 - Historical 04220 full admin host mutation evidence: `docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-05-16-04220-hostmutation.md`, `artifacts/batch-runs/full-admin-host-mutation-gate-20260516-04220`, `artifacts/routeparity-service-msi-hyperv-batch-profile-20260516-04220`, `artifacts/os-mutation-gates-batch-profile-20260516-04220`; full-gate MSI SHA-256 `12b7baec853f07430581e14603ceb6debfb467ece8bb98a509b51cc365836e3c`, provenance commit `0895d018935298721b25b5d9ce1ae083a6690c25`; public trusted signing 또는 외부 stable publication evidence가 아님
-- Latest product payload package build record: `docs/ga-ready/evidence/admin-smoke-package-2026-05-22-04241.md`, `artifacts/admin-smoke-package-20260522-04241`; `0.42.41-admin-smoke`, clean MSI SHA-256 `d1a36e3efb1f7ae8588f34f4d70acb01037c41abcde4f40a35df669b5c31c639`, payload aggregate SHA-256 `21aeb02757495d8296151ce20dda987ef36fcb2f3320f5163131ffc90e65c361`, provenance commit `2f41da1073df6e65113ae8ddaeb183e9b55874f4`. 0.42.41은 설치본 TUI row projection fix package이며 full admin host mutation gate까지 PASS했다.
-- Latest closed manual-admin package-pair evidence: `docs/ga-ready/evidence/manual-admin-campaign-2026-05-22-04240-04241.md`, `artifacts/manual-admin-campaign-20260522-04240-04241/manual-admin-campaign-descriptor-r2-windows-update/summary.json`; `0.42.40-admin-smoke -> 0.42.41-admin-smoke`, target MSI SHA-256 `d1a36e3efb1f7ae8588f34f4d70acb01037c41abcde4f40a35df669b5c31c639`, update ZIP SHA-256 `9ab7e266c093b98982aa854c19f901a6bb133f51c66904b9bfcdf56d538fee73`, provenance commit `2f41da1073df6e65113ae8ddaeb183e9b55874f4`, descriptor `manual-admin-campaign-descriptor-20260522-04240-04241-closed`, `missing_count=0`, `not_pass_count=0`; public trusted signing 또는 외부 stable publication evidence가 아님
+- Historical 2026-05-22 product payload package build record: `docs/ga-ready/evidence/admin-smoke-package-2026-05-22-04241.md`, `artifacts/admin-smoke-package-20260522-04241`; `0.42.41-admin-smoke`, clean MSI SHA-256 `d1a36e3efb1f7ae8588f34f4d70acb01037c41abcde4f40a35df669b5c31c639`, payload aggregate SHA-256 `21aeb02757495d8296151ce20dda987ef36fcb2f3320f5163131ffc90e65c361`, provenance commit `2f41da1073df6e65113ae8ddaeb183e9b55874f4`. 0.42.41은 설치본 TUI row projection fix package이며 full admin host mutation gate까지 PASS했다.
+- Historical 2026-05-22 closed manual-admin package-pair evidence: `docs/ga-ready/evidence/manual-admin-campaign-2026-05-22-04240-04241.md`, `artifacts/manual-admin-campaign-20260522-04240-04241/manual-admin-campaign-descriptor-r2-windows-update/summary.json`; `0.42.40-admin-smoke -> 0.42.41-admin-smoke`, target MSI SHA-256 `d1a36e3efb1f7ae8588f34f4d70acb01037c41abcde4f40a35df669b5c31c639`, update ZIP SHA-256 `9ab7e266c093b98982aa854c19f901a6bb133f51c66904b9bfcdf56d538fee73`, provenance commit `2f41da1073df6e65113ae8ddaeb183e9b55874f4`, descriptor `manual-admin-campaign-descriptor-20260522-04240-04241-closed`, `missing_count=0`, `not_pass_count=0`; public trusted signing 또는 외부 stable publication evidence가 아님
 - Previous closed manual-admin package-pair evidence: `docs/ga-ready/evidence/manual-admin-campaign-2026-05-20-04234-04235.md`, `artifacts/manual-admin-campaign-20260520-04234-04235/manual-admin-campaign-descriptor/summary.json`; `0.42.34-admin-smoke -> 0.42.35-admin-smoke`, descriptor `manual-admin-campaign-descriptor-20260520-04234-04235-closed`; historical predecessor로 보존
 - Previous `0.42.26-admin-smoke -> 0.42.27-admin-smoke` manual-admin package-pair PASS는 `docs/ga-ready/evidence/manual-admin-campaign-2026-05-17-04226-04227.md`, target MSI SHA-256 `7921d7ecf31a5ba61ac55e74d2f3dbe14c88a40d15e715be75e284f641ef1ab9`, update ZIP SHA-256 `5c522c759f850a32b9cd7367f7059273dcf1357d1d3ae2f337542ce865daa997`, provenance commit `69aba3eb3ff08c843f1a481818ddc86eac2f019b`, descriptor `manual-admin-campaign-descriptor-20260517-04226-04227-closed`, `missing_count=0`, `not_pass_count=0`으로 historical predecessor로 보존한다.
 - Previous `0.42.25-admin-smoke -> 0.42.26-admin-smoke` manual-admin package-pair PASS는 `docs/ga-ready/evidence/manual-admin-campaign-2026-05-17-04225-04226.md`, target MSI SHA-256 `f37d730edf3d7d587e2a46de196bb80069b5794cd9a1a6314ab71d56ca7812c7`, update ZIP SHA-256 `4476880ba536db430e2bc3d9245063c904c203dc1c013e4e93057171866d6fe4`, provenance commit `d6500c01c972cbc7ca1e290e51120181ceea1501`, descriptor `manual-admin-campaign-descriptor-20260517-04225-04226-closed`, `missing_count=0`, `not_pass_count=0`으로 historical predecessor로 보존한다.
@@ -401,21 +404,38 @@ Phase 25는 현재 ADR이 아니라 C#/.NET contract/runtime/API/service/host, T
 
 ## 필수 검증
 
-Desktop Node 변경 후에는 영향 범위에 맞춰 다음을 우선 실행한다.
+Desktop Node 변경 후에는 영향 범위에 맞춰 `DesktopNode.Verification`의 Required CI 네 shard와
+Web required entrypoint를 우선 실행한다.
 
-```powershell
-pwsh -NoProfile -Command "Invoke-Pester -Path 'packaging/windows-desktop-node/tests' -Output Detailed"
-pwsh -NoProfile -Command "Invoke-Pester -Path 'packaging/windows-desktop-node/installer/tests' -Output Detailed"
-pwsh -NoProfile -Command "Invoke-Pester -Path 'web/tests' -Output Detailed"
-dotnet test src/DesktopNode.sln
-npm test --prefix web
-npm run verify:parity --prefix web
-npm run browser:fixture --prefix web
-node --check web/app.js
+`installer-policy` shard는 cutover 경계 때문에 clean committed HEAD를 요구한다. 따라서 변경 중에는
+다음 pre-commit 검증을 실행한다.
+
+```text
+dotnet restore src/DesktopNode.sln
+dotnet build src/DesktopNode.sln -c Release --no-restore
+npm ci --prefix web
+npm run test:required --prefix web
 git diff --check
 ```
 
-Component/archive baseline 검증은 verification ownership map에 따라 별도 실행하며, 기본 개발 loop의 필수 command에는 active `spikes/**` Pester path를 넣지 않는다.
+전체 solution test의 `policy-boundaries`는 활성 cutover 계약상 clean committed HEAD를 요구한다.
+변경 중에는 영향 범위의 focused test만 실행한다. Clean committed HEAD에서 전체 solution test는
+`dotnet` shard가, Installer 필터와 clean-worktree policy boundary는 `installer-policy` shard가 검증한다.
+
+커밋 후 `git status --short` 출력이 비어 있는 상태에서 Required CI exact four를 실행한다. `web`
+shard가 `npm run test:required`를 포함하므로 별도로 다시 실행하지 않는다.
+
+```text
+git status --short
+dotnet run --project src/DesktopNode.Verification -c Release --no-build --no-restore -- verify --lane Full --change-tier M --changed-path .github/workflows/development-gates.yml --artifact-root artifacts/local-dotnet --shard dotnet
+dotnet run --project src/DesktopNode.Verification -c Release --no-build --no-restore -- verify --lane Full --change-tier M --changed-path web/package.json --artifact-root artifacts/local-web --shard web
+dotnet run --project src/DesktopNode.Verification -c Release --no-build --no-restore -- verify --lane Full --change-tier M --changed-path packaging/windows-desktop-node/tests/PcvAdminSmokeEvidenceDocs.Tests.ps1 --artifact-root artifacts/local-delivery --shard delivery
+dotnet run --project src/DesktopNode.Verification -c Release --no-build --no-restore -- verify --lane Full --change-tier M --changed-path packaging/windows-desktop-node/installer/tests/PcvDesktopNodeInstaller.Plan.Tests.ps1 --artifact-root artifacts/local-installer-policy --shard installer-policy
+```
+
+위 `.ps1` 값은 shard 선택용 changed-path 데이터이며 PowerShell process 호출이 아니다. Component/archive
+baseline의 Pester와 관리자 PowerShell은 verification ownership map에 따라 별도 실행하는 비필수
+legacy/manual/admin 검증이다. Active Required CI의 Pester 및 비관리자 PowerShell process invocation은 `0`이다.
 
 실제 Hyper-V VM 생성, service install/start/stop/delete, Windows Firewall 변경, Event Log source 등록, Task Scheduler 등록, `Restart-Computer`, MSI `msiexec` install/repair/uninstall/`REMOVE_DATA=1`, signed release build, mutating update/rollback은 관리자 권한 opt-in 검증으로만 실행한다.
 
@@ -423,7 +443,8 @@ Component/archive baseline 검증은 verification ownership map에 따라 별도
 
 - 모든 신규/수정 문서는 한국어 본문을 기본으로 작성한다. 코드 식별자, 명령어, 파일 경로, route, product/version/evidence id, test fixture token은 원문을 유지한다.
 - 역사 evidence/phase 문서는 검증 anchor와 과거 기록을 깨뜨릴 수 있으므로 `docs/KOREAN_DOCUMENTATION_ROLLOUT.md`의 우선순위에 따라 단계적으로 재작성한다.
-- PowerShell 7과 Pester 5를 기본 검증 기준으로 삼는다.
+- PowerShell 7과 Pester 5는 legacy parity 또는 manual/admin 검증에만 사용한다. 기본 Required CI
+  검증 기준은 C#/.NET `DesktopNode.Verification`과 Node required entrypoint다.
 - 장기 token 값은 command line에 노출하지 않는다. `-ApiTokenProtectedFile` 또는 token file 경로를 우선한다.
 - Local API listener는 기본 loopback-only 정책을 유지한다. 최신 기본 surface는 Web Console `http://127.0.0.1/`, Web API `http://127.0.0.1:7777/api/v1/...` 분리다. `docs/ga-ready/evidence/web-api-port-split-installed-listener-2026-05-10.md`는 설치본 service `PathName`의 `--web-prefix "http://127.0.0.1:80/"`, Web `200`, API `200`, Web-port API `PCV_API_ROUTE_ON_WEB_PORT` rejection을 PASS로 기록한다. `/pcv-config.js`가 browser API origin을 주입하고 LAN mode는 명시적 `-AllowLan`과 token source가 있을 때만 허용한다.
 - 실제 host mutation은 `-WhatIf` 또는 injectable runner 테스트와 분리한다.

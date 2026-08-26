@@ -1,5 +1,10 @@
 # Pester-free C# Verification Wave A Implementation Plan
 
+> **Completion status (2026-08-25): completed.** Wave A foundation은 구현됐고 후속 Wave E가
+> catalog를 `active`로 전환했다. 아래 plan-only, 기존 job name과 Pester 62파일 관련 문구는
+> Wave A 실행 당시 pre-cutover 경계이며 현재 Required CI 상태가 아니다. 현재 전환 증빙은
+> `docs/ga-ready/evidence/pester-free-required-ci-cutover-2026-08-25.md`다.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** 비관리자 개발 검증의 단일 C# 진입점, versioned suite catalog, lane/path planner, shell-free process boundary, 결정론적 JSON summary를 구축하되 후속 migration 전에는 plan-only 이외의 완료 주장을 fail-closed로 차단한다.

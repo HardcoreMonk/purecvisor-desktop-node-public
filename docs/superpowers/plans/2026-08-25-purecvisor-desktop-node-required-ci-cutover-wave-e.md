@@ -1,5 +1,13 @@
 # Required CI Shadow, Pester-free Cutover, and Merge Wave E Implementation Plan
 
+> **Completion status (2026-08-25): completed-with-disclosed-deviation.** Required CI는
+> `dotnet`, `web`, `delivery`, `installer-policy` 네 context로 전환됐고 ledger 62 files / 627
+> contracts가 CI PASS다. PR #1 merge와 remote-main run `32901477892`, PR #2 main
+> `6e2bdb93ce308b632c929e2c17f5550ac3845401` run `32904006595`가 PASS했다. 전환 전 ETag와
+> 원본 provider-before response hash 미보존은 증빙에 명시된 deviation이다. 아래 active branch,
+> CI pending과 precondition 수치는 실행 전 snapshot이며 단일 증빙은
+> `docs/ga-ready/evidence/pester-free-required-ci-cutover-2026-08-25.md`다.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:test-driven-development, superpowers:executing-plans, superpowers:requesting-code-review, superpowers:verification-before-completion, and superpowers:ship in that order at the applicable checkpoints. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** 같은 commit에서 legacy 627 Pester contracts와 replacement 627 contracts를 dual-run하여 CI parity를 고정한 뒤, 단일 후속 commit으로 Required CI 네 job을 Pester/비관리자 PowerShell invocation 0의 C#/Node shards로 cut over하고, GitHub main protection을 새 check identities로 원자적으로 전환하여 PR을 병합·push하고 final remote-main CI를 증명한다.

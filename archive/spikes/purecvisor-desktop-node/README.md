@@ -1,5 +1,7 @@
 # PureCVisor Desktop Node Spike
 
+## Historical Phase 19/22 predecessor snapshot
+
 ```text
 PRODUCT_RUNTIME_PROMOTION_DECISION: keep-spike
 DESKTOP_NODE_PHASE22_RELEASE_VERSION_DECISION: channel-version-artifact-policy-with-keep-spike
@@ -7,13 +9,22 @@ DESKTOP_NODE_PHASE24_JOB_RUNTIME_BOUNDARY_CANDIDATE: local-api-job-runtime-contr
 DESKTOP_NODE_PHASE25_MIXED_RUNTIME_TRANSITION_CANDIDATE: dotnet-core-typescript-web-powershell-adapter-first
 ```
 
-이 디렉터리는 Windows 10/11 Pro/Enterprise + Hyper-V 기반 PureCVisor Desktop Node 제품 방향을 검증하기 위한 격리 spike다. 현재 결정은 Desktop Node 전체를 GA 제품 런타임으로 승격하지 않고 `archive/spikes/purecvisor-desktop-node/**` 아래에 유지하는 것이다.
+이 디렉터리는 Windows 10/11 Pro/Enterprise + Hyper-V 기반 PureCVisor Desktop Node 제품 방향을 검증하기 위한 격리 spike다. 위 `keep-spike` 표식은 Phase 19/22 당시의 historical decision이며, archive 자산 자체를 보존하는 이유를 기록한다.
+
+현재 운영 제품은 repo-root `src/DesktopNode.*`, `web/**`,
+`packaging/windows-desktop-node/**`가 소유하는 `0.42.74-admin-smoke`다. Web Console과
+PCVCLI가 active operator surface이고 TUI는 absent다. 최신 닫힌 manual-admin
+package-pair는 `0.42.73-admin-smoke -> 0.42.74-admin-smoke`이며 feature qualification은
+`promotion_eligible=false`다. Required CI는 final `main`
+`6e2bdb93ce308b632c929e2c17f5550ac3845401`, run `32904006595`의 exact contexts
+`dotnet`, `web`, `delivery`, `installer-policy`가 소유한다. pwsh 기반 Public Boundary run
+`32904006619`는 non-required transition residue다.
 
 Phase 12는 이 spike 자산을 이동하지 않고 `packaging/windows-desktop-node/` Service-first wrapper가 제품 후보 설치 루트로 복사해 검증한다. Phase 13은 같은 wrapper에서 WinSW service wrapper를 service host로 사용해 Windows SCM service 시작 차단점을 해소했다. Phase 14는 같은 packaging 경계에 WiX MSI-first installer source/build/provenance와 repair/uninstall/remove-data UX를 추가한다. Phase 15는 같은 배포 계층의 기본 bearer token source를 DPAPI LocalMachine protected token file로 전환한다. Phase 16은 같은 wrapper에 JSONL first diagnostics policy, log rotation, versioned diagnostic bundle manifest, Windows Event Log opt-in registration plan을 추가한다. Phase 17은 같은 경계에서 LAN mode를 loopback 기본값, preview/admin opt-in, reverse proxy/TLS 전제, non-loopback static bearer auth, firewall opt-in lifecycle로 제한하는 제품 보안 정책으로 고정한다. Phase 18은 같은 경계에서 manifest-first safe update/rollback/config migration 기본 구현, 검증, 관리자 update/rollback smoke를 둔다. Phase 22는 같은 packaging 경계에서 release/version policy와 installer artifact/channel contract 일부를 강제한다. ADR-0003은 같은 installer 경계에서 내부 서비스용 internal Root/leaf `RequireSigned` signing trust model을 채택한다. Phase 24 후보는 `archive/spikes/purecvisor-desktop-node/api/**`에서 Local API job runtime public boundary를 먼저 고정한다. Phase 25 후보는 `src/DesktopNode.*`와 `web/src/**`에 .NET/TypeScript side-by-side contract와 parity scaffold를 추가했고, 2026-05-01 replacement slice에서 기본 제품 service host와 MSI installed custom action runner를 `DesktopNode.Host.exe`로 교체했다. Route parity 시작 slice는 `src/DesktopNode.Api/**`에 native read routes, queued VM/checkpoint lifecycle routes, job get/cancel/retry, JSON job store save/load/recovery를 추가했다. `host.status`, `network.inventory`, `vm.list`, VM detail, checkpoint list는 C# native adapter product path가 직접 처리하며 native parity failure는 PowerShell helper fallback 없이 structured failure로 반환한다. VM create/start/shutdown/poweroff/restart/delete는 C# native lifecycle adapter product path가 직접 처리하고 checkpoint create/restore/delete는 C# WMI snapshot service adapter product path가 직접 처리한다. Native VM create는 이번 slice에서 Hyper-V Generation 2만 지원하며, native VM delete는 managed marker guard와 missing VM idempotent `action=absent` contract를 둔다. Web Console은 repo-root `web/**`로 이동했고 `web/src/served-app.ts`가 served `web/app.js`를 생성한다. 기존 PowerShell Local API와 Hyper-V helper는 component/regression 검증 경계로 남는다. 따라서 `spikes/`는 아직 API/Hyper-V/service/CLI component 검증 경계이고, `web/`는 제품 Web Console 경계이며, `packaging/windows-desktop-node/`는 Service-first/.NET service host/MSI/protected-token/diagnostics/LAN-security/safe-update/release-artifact/signing-trust 배포 계층이다.
 
 이 spike는 Linux `purecvisorsd` 런타임, Single Edge Web UI/API, Single Edge release artifact와 연결하지 않는다. Single Edge 공개 릴리스 gate와 Desktop Node 검증 gate는 분리한다.
 
-## 현재 상태
+## Historical spike component snapshot
 
 - Hyper-V helper: host diagnostics, VM inventory, VM create/lifecycle/checkpoint JSON 계약 검증
 - Local API: loopback-first HTTP listener, queued jobs, persistence, manual retry, runtime policy, Phase 24 `job_runtime` boundary contract, token/token-file/protected-token-file, LAN opt-in 검증
@@ -29,12 +40,12 @@ Phase 12는 이 spike 자산을 이동하지 않고 `packaging/windows-desktop-n
 |------|------|
 | `hyperv/` | Hyper-V PowerShell helper와 non-integration/gated integration tests |
 | `api/` | Local API listener, job queue, runtime policy, static Web Console serving |
-| `../../web/` | Local API가 제공하는 제품 static Web Console assets |
+| `../../../web/` | Local API가 제공하는 제품 static Web Console assets |
 | `cli/` | Local API thin client |
 | `service/` | Windows service packaging과 token file preparation helper |
 | `tests/` | Desktop Node root boundary와 제품 승격 판단 문서 검증 |
-| `../../packaging/windows-desktop-node/` | Phase 12 Service-first 제품 후보 wrapper, Phase 13 WinSW service host 이력, Phase 14 WiX MSI installer, Phase 15 protected token storage, Phase 16 diagnostics policy/rotation/Event Log plan, Phase 17 LAN security policy, Phase 18 safe update/rollback/config migration, Phase 25 .NET service host integration, product manifest, diagnostics, packaging/installer Pester suite |
-| `../../src/DesktopNode.*` | Phase 25 .NET contract/runtime/API/service/host candidate와 xUnit tests |
+| `../../../packaging/windows-desktop-node/` | Phase 12 Service-first 제품 후보 wrapper, Phase 13 WinSW service host 이력, Phase 14 WiX MSI installer, Phase 15 protected token storage, Phase 16 diagnostics policy/rotation/Event Log plan, Phase 17 LAN security policy, Phase 18 safe update/rollback/config migration, Phase 25 .NET service host integration, product manifest, diagnostics, packaging/installer Pester suite |
+| `../../../src/DesktopNode.*` | Phase 25 .NET contract/runtime/API/service/host candidate와 xUnit tests |
 
 ## 제품 승격 판단
 
@@ -93,13 +104,19 @@ Phase 12는 이 spike 자산을 이동하지 않고 `packaging/windows-desktop-n
 
 ## 기본 검증
 
-Root boundary decision 검증:
+현재 Required CI는 `.github/workflows/development-gates.yml`의 .NET verifier shards가
+소유한다. final `main`/run 기준 required contexts는 `dotnet`, `web`, `delivery`,
+`installer-policy` 네 개다. 아래 Pester 명령은 archive/component의 legacy/manual parity
+검증이며 Required CI가 아니다. pwsh 기반 Public Boundary run `32904006619`도
+non-required transition residue다.
+
+Historical root boundary decision 검증:
 
 ```powershell
 pwsh -NoProfile -Command "Invoke-Pester -Path 'archive/spikes/purecvisor-desktop-node/tests' -Output Detailed"
 ```
 
-Component 기본 검증:
+Historical component/manual 검증:
 
 ```powershell
 pwsh -NoProfile -Command "Invoke-Pester -Path 'packaging/windows-desktop-node/tests' -Output Detailed"

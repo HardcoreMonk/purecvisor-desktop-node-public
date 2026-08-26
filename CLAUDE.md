@@ -1,5 +1,7 @@
 ## Skill routing
 
+Project documentation: [complete documentation index](docs/DOCUMENTATION_INDEX.md).
+
 When the user's request matches an available skill, invoke it via the Skill tool. The
 skill has multi-step workflows, checklists, and quality gates that produce better
 results than an ad-hoc answer. When in doubt, invoke the skill. A false positive is

@@ -18,13 +18,27 @@
 - Claims: `public_trusted_signing=false`; `external_stable_publication=false`.
 <!-- END GENERATED CURRENT EVIDENCE -->
 
+## 2026-08-25 Required CI cutover closure
+
+- Required CI는 정확히 `dotnet`, `web`, `delivery`, `installer-policy` 네 context다.
+- `DesktopNode.Verification` migration ledger의 62 files / 627 contracts는 모두
+  `cutover / local pass / CI pass`이며 Required CI의 Pester 및 비관리자 PowerShell process
+  invocation은 각각 `0`이다.
+- PR #1 cutover merge `d4a952b8e5ab11f7e3a9ae92b41c61b12828bfab`과 Development Gates
+  run `32901477892`, PR #2 documentation closure main
+  `6e2bdb93ce308b632c929e2c17f5550ac3845401`과 run `32904006595`가 PASS했다.
+- 비필수 `.github/workflows/public-boundary.yml`, legacy Pester source와 manual/admin
+  PowerShell은 residue로 남는다. 이는 repository-wide PowerShell zero 주장이 아니다.
+- 단일 전환 증빙은
+  `docs/ga-ready/evidence/pester-free-required-ci-cutover-2026-08-25.md`가 소유한다.
+
 ## 2026-08-25 public source authority bootstrap
 
 - Public source authority and rights/security boundaries are `docs/PUBLIC_SOURCE_AUTHORITY.md`, `LICENSE`,
   `SECURITY.md`, and `docs/PUBLIC_RELEASE_BOUNDARY.md`.
-- The approved authority delta is
+- The completed authority delta is
   `docs/superpowers/specs/2026-08-25-purecvisor-desktop-node-public-authority-snapshot-delta-design.md`;
-  bootstrap/cutover execution begins at
+  bootstrap/cutover execution record is
   `docs/superpowers/plans/2026-08-25-purecvisor-desktop-node-public-baseline-and-protection.md`.
 - Repository-owned safety commands are `npm run test:public-source-safety --prefix web` and
   `npm run verify:public-source-safety --prefix web`. They use Node argument arrays and do not require a

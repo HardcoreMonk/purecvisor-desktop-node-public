@@ -8,7 +8,7 @@ operator_surface_adr: ADR-0011
 active_operator_surface_decision: cli-web-only
 tui_product_status: removed-from-active-product
 tui_removal_code_level_evidence: docs/ga-ready/evidence/tui-removal-cli-web-only-code-level-2026-07-14.md
-installed_operator_surface_promotion: pending-0.42.63-admin-smoke
+installed_operator_surface_promotion: pass-0.42.74-admin-smoke
 created_at: 2026-05-10
 distribution_scope: internal-private-network-only
 public_distribution_candidate: closed-not-adopted
@@ -18,8 +18,15 @@ external_stable_publication: out-of-scope
 winget_submission: out-of-scope
 public_stable_installer_url: out-of-scope
 clean_host_public_signed_install_update_rollback_smoke: out-of-scope
-scope_lock_latest_internal_admin_smoke: 0.42.59-admin-smoke
-scope_lock_latest_internal_admin_smoke_evidence: docs/ga-ready/evidence/installed-operator-surface-current-card-2026-05-29-04259.md
+scope_lock_latest_internal_admin_smoke: 0.42.74-admin-smoke
+scope_lock_latest_internal_admin_smoke_evidence: docs/ga-ready/evidence/installed-operator-surface-current-card-2026-08-20-04274.md
+current_required_ci_final_main_sha: 6e2bdb93ce308b632c929e2c17f5550ac3845401
+current_required_ci_final_main_run_id: 32904006595
+current_required_ci_contexts: dotnet,web,delivery,installer-policy
+current_required_ci_provider_required: true
+current_public_boundary_residue_run_id: 32904006619
+current_public_boundary_residue_job_id: 97983888524
+current_public_boundary_residue_provider_required: false
 previous_04258_scope_lock_latest_internal_admin_smoke_evidence: docs/ga-ready/evidence/installed-operator-surface-current-card-2026-05-29-04258.md
 previous_04257_scope_lock_latest_internal_admin_smoke_evidence: docs/ga-ready/evidence/installed-operator-surface-current-card-2026-05-28-04257.md
 previous_04256_scope_lock_latest_internal_admin_smoke_evidence: docs/ga-ready/evidence/installed-operator-surface-current-card-2026-05-28-04256.md
@@ -102,9 +109,12 @@ internal_clean_host_install_update_rollback_current_rebaseline: pass
 previous_04258_latest_product_payload_package: 0.42.58-admin-smoke
 previous_04257_latest_product_payload_package: 0.42.57-admin-smoke
 previous_04256_latest_product_payload_package: 0.42.56-admin-smoke
-latest_product_payload_package: 0.42.59-admin-smoke
-latest_product_payload_package_evidence: docs/ga-ready/evidence/admin-smoke-package-2026-05-29-04259.md
-latest_product_payload_package_artifact_root: artifacts/admin-smoke-package-20260529-04259
+previous_04259_latest_product_payload_package: 0.42.59-admin-smoke
+previous_04259_latest_product_payload_package_evidence: docs/ga-ready/evidence/admin-smoke-package-2026-05-29-04259.md
+previous_04259_latest_product_payload_package_artifact_root: artifacts/admin-smoke-package-20260529-04259
+latest_product_payload_package: 0.42.74-admin-smoke
+latest_product_payload_package_evidence: docs/ga-ready/evidence/admin-smoke-package-2026-08-20-04274.md
+latest_product_payload_package_artifact_root: artifacts/admin-smoke-package-20260820-04274
 current_evidence_ledger: docs/ga-ready/CURRENT_EVIDENCE_LEDGER.md
 post_04226_ledger_contract_followup: code-level-pass-followed-by-04227-package-chain
 post_04226_ledger_contract_followup_evidence: docs/ga-ready/evidence/post-04226-ledger-contract-followup-2026-05-17.md
@@ -127,9 +137,12 @@ post_04228_04229_package_chain_status: historical-closed-manual-admin-package-pa
 previous_post_04227_04228_package_chain_status: closed-manual-admin-package-pair-04227-04228
 manual_admin_current_card_descriptor_batch_id_contract: direct-exposed
 manual_admin_descriptor_schema_version: 2
-latest_product_payload_package_msi_sha256: 6976e4f8c862f30884adfbdfda2fb4008aa877a30585e4acd35430750e480585
-latest_product_payload_package_payload_aggregate_sha256: 666a1351d58963c7908aad4f66d6469de42747a7c7f70d1e30fb0e94771a5808
-latest_product_payload_package_provenance_commit: 63d57feba605f82dabd44a96ed50a4d622f6310a
+previous_04259_latest_product_payload_package_msi_sha256: 6976e4f8c862f30884adfbdfda2fb4008aa877a30585e4acd35430750e480585
+previous_04259_latest_product_payload_package_payload_aggregate_sha256: 666a1351d58963c7908aad4f66d6469de42747a7c7f70d1e30fb0e94771a5808
+previous_04259_latest_product_payload_package_provenance_commit: 63d57feba605f82dabd44a96ed50a4d622f6310a
+latest_product_payload_package_msi_sha256: f4d0fcb75bc463676b831a4f871c402636039a7f1bbaf3780b24d10eceae1b8e
+latest_product_payload_package_payload_aggregate_sha256: c55cd17d14fed521252e6fee1bf08c828410339b23172fadb01dbd19f7d2578e
+latest_product_payload_package_provenance_commit: adc04673b569ef9b587371fdb23bc11ceb14e2e2
 previous_04229_product_payload_package: 0.42.29-admin-smoke
 previous_04229_product_payload_package_evidence: docs/ga-ready/evidence/admin-smoke-package-2026-05-17-04229.md
 previous_04229_product_payload_package_artifact_root: artifacts/admin-smoke-package-20260517-04229
@@ -138,17 +151,20 @@ previous_04229_product_payload_package_provenance_commit: d306712ad671c8a00d5c56
 previous_04258_latest_full_admin_host_mutation: 0.42.58-admin-smoke
 previous_04257_latest_full_admin_host_mutation: 0.42.57-admin-smoke
 previous_04256_latest_full_admin_host_mutation: 0.42.56-admin-smoke
-latest_full_admin_host_mutation: 0.42.59-admin-smoke
-latest_full_admin_host_mutation_evidence: docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-05-29-04259-hostmutation.md
-latest_full_admin_host_mutation_batch: full-admin-host-mutation-gate-20260529-04259
-latest_full_admin_host_mutation_artifact_root: artifacts/batch-runs/full-admin-host-mutation-gate-20260529-04259
-latest_full_admin_host_mutation_routeparity_artifact_root: artifacts/routeparity-service-msi-hyperv-batch-profile-20260529-04259
-latest_full_admin_host_mutation_os_mutation_artifact_root: artifacts/os-mutation-gates-batch-profile-20260529-04259
-latest_full_admin_host_mutation_current_card_artifact_root: artifacts/installed-operator-surface-current-card-20260529-04259
-latest_full_admin_host_mutation_msi_sha256: dff0fce83096ecdf16683307af327af35ae387ed02ac0504948de6633d425596
-latest_full_admin_host_mutation_clean_package_msi_sha256: 6976e4f8c862f30884adfbdfda2fb4008aa877a30585e4acd35430750e480585
-latest_full_admin_host_mutation_payload_aggregate_sha256: 3f015e7743efac3b61de81962c236a03c1bcf882053fc92fd3c525da280a1687
-latest_full_admin_host_mutation_provenance_commit: 63d57feba605f82dabd44a96ed50a4d622f6310a
+previous_04259_latest_full_admin_host_mutation: 0.42.59-admin-smoke
+previous_04259_latest_full_admin_host_mutation_evidence: docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-05-29-04259-hostmutation.md
+historical_04259_latest_full_admin_host_mutation_gate_evidence: docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-05-29-04259-hostmutation.md
+latest_full_admin_host_mutation: 0.42.74-admin-smoke
+latest_full_admin_host_mutation_evidence: docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-08-20-04274-hostmutation.md
+latest_full_admin_host_mutation_batch: full-admin-host-mutation-gate-20260820-04274
+latest_full_admin_host_mutation_artifact_root: artifacts/batch-runs/full-admin-host-mutation-gate-20260820-04274
+latest_full_admin_host_mutation_routeparity_artifact_root: artifacts/routeparity-service-msi-hyperv-batch-profile-20260820-04274
+latest_full_admin_host_mutation_os_mutation_artifact_root: artifacts/os-mutation-gates-batch-profile-20260820-04274
+latest_full_admin_host_mutation_current_card_artifact_root: artifacts/installed-operator-surface-current-card-20260820-04274
+latest_full_admin_host_mutation_msi_sha256: 2bc46c986a629695462f6b424bb3ca963162fd59fbf6359fbcb73b38ea09b787
+latest_full_admin_host_mutation_clean_package_msi_sha256: f4d0fcb75bc463676b831a4f871c402636039a7f1bbaf3780b24d10eceae1b8e
+latest_full_admin_host_mutation_payload_aggregate_sha256: c7984216f1625f2570e2da8cc0428f1a9a4ef9ecf8fe049d8ccfa6d3100df71d
+latest_full_admin_host_mutation_provenance_commit: adc04673b569ef9b587371fdb23bc11ceb14e2e2
 latest_full_admin_host_mutation_current_evidence_contract: runtime-api-current-evidence-rollup-v1
 latest_full_admin_host_mutation_installed_batch_evidence_status: available
 historical_04234_internal_admin_smoke: 0.42.34-admin-smoke
@@ -177,16 +193,23 @@ previous_04257_latest_manual_admin_package_pair: 0.42.56-admin-smoke -> 0.42.57-
 previous_04257_latest_manual_admin_package_pair_descriptor: manual-admin-campaign-descriptor-20260528-04256-04257-closed
 previous_04256_latest_manual_admin_package_pair: 0.42.55-admin-smoke -> 0.42.56-admin-smoke
 previous_04256_latest_manual_admin_package_pair_descriptor: manual-admin-campaign-descriptor-20260528-04255-04256-closed
-latest_manual_admin_package_pair: 0.42.58-admin-smoke -> 0.42.59-admin-smoke
-latest_manual_admin_package_pair_evidence: docs/ga-ready/evidence/manual-admin-campaign-2026-05-29-04258-04259.md
-latest_manual_admin_package_pair_descriptor: manual-admin-campaign-descriptor-20260529-04258-04259-closed
-latest_manual_admin_package_pair_target_msi_sha256: 6976e4f8c862f30884adfbdfda2fb4008aa877a30585e4acd35430750e480585
-latest_manual_admin_package_pair_update_package_sha256: 05951af066f0080c9c111de7e104fc8a9418812b68ca0fb246a573d89b6e44fb
+previous_04259_latest_manual_admin_package_pair: 0.42.58-admin-smoke -> 0.42.59-admin-smoke
+previous_04259_latest_manual_admin_package_pair_evidence: docs/ga-ready/evidence/manual-admin-campaign-2026-05-29-04258-04259.md
+previous_04259_latest_manual_admin_package_pair_descriptor: manual-admin-campaign-descriptor-20260529-04258-04259-closed
+previous_04259_latest_manual_admin_package_pair_target_msi_sha256: 6976e4f8c862f30884adfbdfda2fb4008aa877a30585e4acd35430750e480585
+previous_04259_latest_manual_admin_package_pair_update_package_sha256: 05951af066f0080c9c111de7e104fc8a9418812b68ca0fb246a573d89b6e44fb
+latest_manual_admin_package_pair: 0.42.73-admin-smoke -> 0.42.74-admin-smoke
+latest_manual_admin_package_pair_evidence: docs/ga-ready/evidence/manual-admin-campaign-2026-08-20-04273-04274.md
+latest_manual_admin_package_pair_descriptor: manual-admin-campaign-descriptor-20260820-04273-04274-closed
+latest_manual_admin_package_pair_target_msi_sha256: f4d0fcb75bc463676b831a4f871c402636039a7f1bbaf3780b24d10eceae1b8e
+latest_manual_admin_package_pair_update_package_sha256: cac208cacc9a773893e710b773ca56bc6b3fcd1e315b1d1a28a5099cee7f78f1
 latest_manual_admin_package_pair_descriptor_contract: manual-admin-descriptor-generation-contract-v2
-latest_manual_admin_package_pair_burn_bundle_sha256: 96bb7eed5c3a64cc505789ae604f6ea679017215a75ffaa6e5e721c609d8c518
-latest_manual_admin_package_pair_msix_v1_sha256: 19abd9524be17c816ca712b858213c3f794070fd1e830d741ff11125af33cb6e
-latest_manual_admin_package_pair_msix_v2_sha256: a8fbd0e7119b742ebfa8c172a0941d2e8c711c4b5e949019ff75c7663d7dc835
-latest_manual_admin_package_pair_windows_update_kb: KB5087545
+previous_04259_latest_manual_admin_package_pair_burn_bundle_sha256: 96bb7eed5c3a64cc505789ae604f6ea679017215a75ffaa6e5e721c609d8c518
+previous_04259_latest_manual_admin_package_pair_msix_v1_sha256: 19abd9524be17c816ca712b858213c3f794070fd1e830d741ff11125af33cb6e
+previous_04259_latest_manual_admin_package_pair_msix_v2_sha256: a8fbd0e7119b742ebfa8c172a0941d2e8c711c4b5e949019ff75c7663d7dc835
+latest_manual_admin_package_pair_burn_bundle_sha256: 7e06928f629143bbca85f8941b55ffaa21f0a26a217dccac9029001e55199b2d
+latest_manual_admin_package_pair_msix_v2_sha256: 906501de60f478be65b00b2c491da9c4efdc4adb001a26a22c8f198c4d7f4560
+latest_manual_admin_package_pair_windows_update_kb: KB5120242
 latest_manual_admin_package_pair_descriptor_missing_count: 0
 latest_manual_admin_package_pair_descriptor_not_pass_count: 0
 previous_04229_latest_manual_admin_package_pair: 0.42.28-admin-smoke -> 0.42.29-admin-smoke
@@ -214,12 +237,18 @@ previous_04225_manual_admin_package_pair: 0.42.24-admin-smoke -> 0.42.25-admin-s
 previous_04225_manual_admin_package_pair_evidence: docs/ga-ready/evidence/manual-admin-campaign-2026-05-16-04224-04225.md
 previous_04225_manual_admin_package_pair_descriptor: manual-admin-campaign-descriptor-20260516-04224-04225-closed
 previous_04225_manual_admin_package_pair_update_package_sha256: 393a69802c55d9f1b5d34bc5ed47fe2b7b0e89b52b8102ff4bb3c0dbf59e4585
-latest_public_boundary_main_push: pass
-latest_public_boundary_main_push_evidence: docs/ga-ready/evidence/public-boundary-ci-main-push-2026-05-29-04259-docs-maintenance-postpush-pass.md
-latest_public_boundary_main_push_run_id: 26636072420
-latest_public_boundary_main_push_job_id: 78496568595
-latest_public_boundary_main_push_head_sha: 5a2f91762a6c2a8ab6b84d334fa6cb420474671f
-latest_public_boundary_main_push_pr: none-post-04259-public-boundary-docs-maintenance-main-push
+current_required_ci_main_push: pass
+current_required_ci_main_push_evidence: docs/ga-ready/evidence/pester-free-required-ci-cutover-2026-08-25.md
+current_required_ci_main_push_run_id: 32904006595
+current_required_ci_main_push_head_sha: 6e2bdb93ce308b632c929e2c17f5550ac3845401
+current_required_ci_main_push_pr: https://github.com/HardcoreMonk/purecvisor-desktop-node-public/pull/2
+current_public_boundary_residue: pass-non-required
+current_public_boundary_residue_head_sha: 6e2bdb93ce308b632c929e2c17f5550ac3845401
+historical_04259_public_boundary_main_push_evidence: docs/ga-ready/evidence/public-boundary-ci-main-push-2026-05-29-04259-docs-maintenance-postpush-pass.md
+historical_04259_public_boundary_main_push_run_id: 26636072420
+historical_04259_public_boundary_main_push_job_id: 78496568595
+historical_04259_public_boundary_main_push_head_sha: 5a2f91762a6c2a8ab6b84d334fa6cb420474671f
+historical_04259_public_boundary_main_push_pr: none-post-04259-public-boundary-docs-maintenance-main-push
 post_04259_public_boundary_product_payload_change_detected: true
 post_04259_next_product_payload_package_candidate: 0.42.60-admin-smoke
 post_04259_public_boundary_package_chain_decision: opened-next-product-payload-candidate-current-evidence-rollup
@@ -325,22 +354,22 @@ latest_full_admin_host_mutation_gate: pass
 previous_04258_latest_full_admin_host_mutation_gate_version: 0.42.58-admin-smoke
 previous_04257_latest_full_admin_host_mutation_gate_version: 0.42.57-admin-smoke
 previous_04256_latest_full_admin_host_mutation_gate_version: 0.42.56-admin-smoke
-latest_full_admin_host_mutation_gate_version: 0.42.59-admin-smoke
-latest_full_admin_host_mutation_gate_evidence: docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-05-29-04259-hostmutation.md
-latest_full_admin_host_mutation_gate_artifact_root: artifacts/batch-runs/full-admin-host-mutation-gate-20260529-04259
-latest_full_admin_host_mutation_gate_routeparity_artifact_root: artifacts/routeparity-service-msi-hyperv-batch-profile-20260529-04259
-latest_full_admin_host_mutation_gate_os_mutation_artifact_root: artifacts/os-mutation-gates-batch-profile-20260529-04259
-latest_full_admin_host_mutation_gate_msi_sha256: dff0fce83096ecdf16683307af327af35ae387ed02ac0504948de6633d425596
-latest_full_admin_host_mutation_gate_provenance_commit: 63d57feba605f82dabd44a96ed50a4d622f6310a
-latest_full_admin_host_mutation_gate_package_msi_sha256: 6976e4f8c862f30884adfbdfda2fb4008aa877a30585e4acd35430750e480585
-latest_full_admin_host_mutation_gate_package_provenance_commit: 63d57feba605f82dabd44a96ed50a4d622f6310a
+latest_full_admin_host_mutation_gate_version: 0.42.74-admin-smoke
+latest_full_admin_host_mutation_gate_evidence: docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-08-20-04274-hostmutation.md
+latest_full_admin_host_mutation_gate_artifact_root: artifacts/batch-runs/full-admin-host-mutation-gate-20260820-04274
+latest_full_admin_host_mutation_gate_routeparity_artifact_root: artifacts/routeparity-service-msi-hyperv-batch-profile-20260820-04274
+latest_full_admin_host_mutation_gate_os_mutation_artifact_root: artifacts/os-mutation-gates-batch-profile-20260820-04274
+latest_full_admin_host_mutation_gate_msi_sha256: 2bc46c986a629695462f6b424bb3ca963162fd59fbf6359fbcb73b38ea09b787
+latest_full_admin_host_mutation_gate_provenance_commit: adc04673b569ef9b587371fdb23bc11ceb14e2e2
+latest_full_admin_host_mutation_gate_package_msi_sha256: f4d0fcb75bc463676b831a4f871c402636039a7f1bbaf3780b24d10eceae1b8e
+latest_full_admin_host_mutation_gate_package_provenance_commit: adc04673b569ef9b587371fdb23bc11ceb14e2e2
 latest_full_admin_host_mutation_gate_signing_mode: AllowUnsignedDev
 latest_full_admin_host_mutation_gate_installed_batch_evidence_status: available
-latest_full_admin_host_mutation_gate_installed_batch_evidence_anchor: full-admin-host-mutation-gate-20260529-04259
-latest_full_admin_host_mutation_gate_installed_batch_evidence_artifact_root: artifacts/installed-operator-surface-current-card-20260529-04259
-latest_full_admin_host_mutation_gate_web_console_current_card_artifact_root: artifacts/installed-operator-surface-current-card-20260529-04259
-latest_operator_surface_current_card_evidence: docs/ga-ready/evidence/installed-operator-surface-current-card-2026-05-29-04259.md
-latest_operator_surface_current_card_artifact_root: artifacts/installed-operator-surface-current-card-20260529-04259
+latest_full_admin_host_mutation_gate_installed_batch_evidence_anchor: full-admin-host-mutation-gate-20260820-04274
+latest_full_admin_host_mutation_gate_installed_batch_evidence_artifact_root: artifacts/installed-operator-surface-current-card-20260820-04274
+latest_full_admin_host_mutation_gate_web_console_current_card_artifact_root: artifacts/installed-operator-surface-current-card-20260820-04274
+latest_operator_surface_current_card_evidence: docs/ga-ready/evidence/installed-operator-surface-current-card-2026-08-20-04274.md
+latest_operator_surface_current_card_artifact_root: artifacts/installed-operator-surface-current-card-20260820-04274
 latest_operator_surface_current_evidence_contract: runtime-api-current-evidence-rollup-v1
 previous_04222_full_admin_host_mutation_gate_version: 0.42.22-admin-smoke
 previous_04222_full_admin_host_mutation_gate_evidence: docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-05-16-04222-hostmutation.md
@@ -410,8 +439,11 @@ historical_04220_public_boundary_workflow_main_push_job_id: 76234195716
 historical_04220_public_boundary_workflow_main_push_head_sha: 686e4201f823295dc65cde302f613a982ab8cade
 historical_04220_public_boundary_workflow_main_push_evidence: docs/ga-ready/evidence/public-boundary-ci-main-push-2026-05-16-04220-pass.md
 public_boundary_checkout_action_version: actions/checkout@v6.0.2
-public_boundary_branch_protection_ruleset_status: unavailable-private-repo-plan
-public_boundary_fallback_required_guard: public-boundary-ci-required
+public_boundary_branch_protection_ruleset_status: public-repository-enabled-exact-four-required-contexts
+public_boundary_required_contexts: dotnet,web,delivery,installer-policy
+public_boundary_provider_required: false
+historical_public_boundary_private_plan_ruleset_status: unavailable-private-repo-plan
+historical_public_boundary_fallback_required_guard: public-boundary-ci-required
 next_product_payload_package_build_decision: executed-0.42.26-admin-smoke
 post_04224_runtime_api_current_evidence_rollup: full-host-mutation-current-card-pass
 post_04224_package_evidence: docs/ga-ready/evidence/admin-smoke-package-2026-05-16-04224.md
@@ -657,11 +689,11 @@ post_0426_followup_triage_evidence: docs/ga-ready/evidence/post-0426-manual-admi
 next_admin_smoke_package_build_decision: executed-0.42.19-admin-smoke
 next_admin_smoke_package_build_artifact_root: artifacts/admin-smoke-package-20260515-04219
 next_admin_smoke_package_build_msi_sha256: 3677d69988828f94fd10a0b1fa3036a060e217211d5fb5b215c153eac55b9d55
-latest_product_payload_package_build: 0.42.59-admin-smoke
-latest_product_payload_package_build_evidence: docs/ga-ready/evidence/admin-smoke-package-2026-05-29-04259.md
-latest_product_payload_package_build_artifact_root: artifacts/admin-smoke-package-20260529-04259
-latest_product_payload_package_build_msi_sha256: 6976e4f8c862f30884adfbdfda2fb4008aa877a30585e4acd35430750e480585
-latest_product_payload_package_build_provenance_commit: 63d57feba605f82dabd44a96ed50a4d622f6310a
+latest_product_payload_package_build: 0.42.74-admin-smoke
+latest_product_payload_package_build_evidence: docs/ga-ready/evidence/admin-smoke-package-2026-08-20-04274.md
+latest_product_payload_package_build_artifact_root: artifacts/admin-smoke-package-20260820-04274
+latest_product_payload_package_build_msi_sha256: f4d0fcb75bc463676b831a4f871c402636039a7f1bbaf3780b24d10eceae1b8e
+latest_product_payload_package_build_provenance_commit: adc04673b569ef9b587371fdb23bc11ceb14e2e2
 previous_04226_product_payload_package_build: 0.42.26-admin-smoke
 previous_04226_product_payload_package_build_evidence: docs/ga-ready/evidence/admin-smoke-package-2026-05-16-04226.md
 previous_04226_product_payload_package_build_artifact_root: artifacts/admin-smoke-package-20260516-04226
@@ -968,16 +1000,16 @@ Public trusted signing, public timestamp, external stable catalog upload, winget
 | Internal HTTPS/TLS lifecycle installed smoke | `pass` | `docs/ga-ready/evidence/internal-https-tls-lifecycle-installed-2026-05-10-0397.md` |
 | Internal clean-host install/update/rollback smoke | `pass` | `docs/ga-ready/evidence/internal-clean-host-install-update-rollback-smoke-2026-05-10-0417.md` |
 | Lifecycle/Packaging current rebaseline | `pass`; 0.41.5 baseline to 0.41.6 target package pair, installed update/rollback, and internal clean-host update/rollback passed | `docs/ga-ready/evidence/lifecycle-packaging-rebaseline-2026-05-10-0415-0416.md` |
-| Latest full admin host mutation gate | `pass`; `0.42.57-admin-smoke`; Service/MSI/Hyper-V/firewall/LAN/Event Log/internal trust-store, final service running, installed batch evidence current-card smoke `available`; Runtime/API current evidence contract `runtime-api-current-evidence-rollup-v1`; Host Ops lifecycle descriptor bridge `host-ops-lifecycle-descriptor-bridge-v1`; Web diagnostics bucket table `host-ops-web-diagnostics-bucket-table-v1`; public-boundary current-card evidence; full-gate MSI SHA-256 `809eacb97a49aeaa32fc0ea3dce8ac5bdeb7c66b8b4502352519a338a512847e`, payload aggregate SHA-256 `7a34468d3a59c2da182835a03f440f22df9e70f31ff062dc625530a9143ef94d`, provenance commit `16cc0d6b592d7f2f9ead14c41d8f4ad0e1f28b76`, `AllowUnsignedDev`; installed Web/TUI/CLI current-card smoke `artifacts/installed-operator-surface-current-card-20260528-04257` PASS; public trusted signing 또는 외부 stable publication evidence가 아님 | `docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-05-28-04257-hostmutation.md`; `docs/ga-ready/evidence/installed-operator-surface-current-card-2026-05-28-04257.md`; `artifacts/batch-runs/full-admin-host-mutation-gate-20260528-04257`; `artifacts/routeparity-service-msi-hyperv-batch-profile-20260528-04257`; `artifacts/os-mutation-gates-batch-profile-20260528-04257`; `artifacts/installed-operator-surface-current-card-20260528-04257` |
+| Latest full admin host mutation gate | `pass`; `0.42.74-admin-smoke`; full-gate batch `full-admin-host-mutation-gate-20260820-04274`; operational MSI SHA-256 `2bc46c986a629695462f6b424bb3ca963162fd59fbf6359fbcb73b38ea09b787`, payload aggregate SHA-256 `c7984216f1625f2570e2da8cc0428f1a9a4ef9ecf8fe049d8ccfa6d3100df71d`, provenance commit `adc04673b569ef9b587371fdb23bc11ceb14e2e2`; installed CLI/Web current-card PASS, service `Running/Automatic`, `tui_present=false`; promotion blocker `pcv.vm.saved-lifecycle/actual_vm_tested/fail` remains open; public trusted signing/external stable publication false | `docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-08-20-04274-hostmutation.md`; `docs/ga-ready/evidence/installed-operator-surface-current-card-2026-08-20-04274.md`; private/local artifact locators `artifacts/batch-runs/full-admin-host-mutation-gate-20260820-04274`, `artifacts/routeparity-service-msi-hyperv-batch-profile-20260820-04274`, `artifacts/os-mutation-gates-batch-profile-20260820-04274` |
 | Post 0.42.55 follow-up rebaseline/account noVNC | `pass-with-package-pair-not-opened`; `0.42.55-admin-smoke -> next-admin-smoke-required`; `not-opened-no-next-product-payload-target`; installed account/noVNC smoke PASS, token/password/refresh-token observed false, temporary service config mutation restored | `docs/ga-ready/evidence/post-04255-followup-execution-2026-05-28.md`; `docs/ga-ready/evidence/installed-account-novnc-operator-surface-smoke-2026-05-28-04255-followup.md`; `artifacts/manual-admin-campaign-20260528-04255-next/rebaseline-readiness`; `artifacts/installed-account-login-smoke-20260528-04255-followup`; `artifacts/target-backed-novnc-installed-streaming-smoke-20260528-04255-followup` |
-| Public-boundary CI main push and maintenance | `pass`; latest public-boundary evidence `docs/ga-ready/evidence/public-boundary-ci-main-push-2026-05-29-04259-docs-maintenance-postpush-pass.md`; run `26636072420`, job `78496568595`, head `5a2f91762a6c2a8ab6b84d334fa6cb420474671f`; `public-boundary-ci-required` PASS; checkout `actions/checkout@v6.0.2`; branch protection/ruleset unavailable on private repo plan, fallback guard는 PR/merge `public-boundary-ci-required`; `0.42.60-admin-smoke` installed current-card payload 후보는 직전 product payload evidence가 이미 열었고, docs-maintenance postpush는 추가 package 후보를 열지 않는다. account/noVNC는 0.42.58 PASS를 carry-forward하고 actual VM Guest Execution/QoS smoke는 provider/control payload 변경 때 재실행한다. 직전 product payload public-boundary run은 `26629340294`, 0.42.57 main push run `26587524245`, 0.42.56 manual-admin closure run `26578120570`, 0.42.54 fullgate evidence roll-forward run `26558089193`, 0.42.54 running cancel evidence roll-forward run `26556328902`, 0.42.53 provider/0.42.50/0.42.49/0.42.48/0.42.45와 PR #169 후속은 predecessor로 보존한다. public trusted signing 또는 외부 stable publication evidence가 아님 | `.github/workflows/public-boundary.yml`; `docs/ga-ready/PUBLIC_BOUNDARY_CI_CONTRACT.md`; `docs/ga-ready/evidence/public-boundary-ci-main-push-2026-05-29-04259-docs-maintenance-postpush-pass.md`; `docs/ga-ready/evidence/public-boundary-ci-main-push-2026-05-29-04259-admin-smoke-closure-postpush-pass.md`; `docs/ga-ready/evidence/public-boundary-ci-main-push-2026-05-29-04257-main-push-pass.md`; `docs/ga-ready/evidence/public-boundary-ci-main-push-2026-05-28-04256-manual-admin-closure-postpush-pass.md` |
+| Required CI and Public Boundary residue | Required authority `pass`: final main `6e2bdb93ce308b632c929e2c17f5550ac3845401`, Development Gates run `32904006595`, exact contexts `dotnet`, `web`, `delivery`, `installer-policy`; branch protection `strict=true`, admin enforcement enabled. Separate Public Boundary run `32904006619`, job `97983888524` (`public-boundary-ci-required`) also PASS but `provider_required=false` and still executes Pester/PowerShell. Docs-only closure retains `0.42.74-admin-smoke`; public trusted signing/external stable publication remain false. The 0.42.59 run `26636072420` and earlier values are historical predecessors. | `.github/workflows/development-gates.yml`; `.github/workflows/public-boundary.yml`; `docs/ga-ready/PUBLIC_BOUNDARY_CI_CONTRACT.md`; `docs/ga-ready/evidence/pester-free-required-ci-cutover-2026-08-25.md` |
 | Post-04223 full host mutation current-card | `full-host-mutation-current-card-pass-next-slice-selected`; Runtime/API current evidence rollup을 `0.42.24-admin-smoke` 후보 payload로 선정; next package-pair candidate `0.42.23-admin-smoke -> 0.42.24-admin-smoke`; stale local codex branch cleanup 12개 삭제; public trusted signing 또는 외부 stable publication evidence가 아님 | `docs/ga-ready/evidence/post-04223-full-host-mutation-current-card-2026-05-16.md` |
 | Public-boundary checkout v6.0.2 main push | `pass`; `docs/ga-ready/evidence/public-boundary-ci-main-push-2026-05-16-checkout-v602-pass.md`; run `25934411998`, job `76236050409`, head `3933231e6e2abf3a398dfcc3fdc999b3df38dac6`; `actions/checkout@v6.0.2`, `public-boundary-ci-required` PASS; Node.js 20 deprecation warning 미관찰; public trusted signing 또는 외부 stable publication evidence가 아님 | `.github/workflows/public-boundary.yml`; `docs/ga-ready/PUBLIC_BOUNDARY_CI_CONTRACT.md`; `docs/ga-ready/evidence/public-boundary-ci-main-push-2026-05-16-checkout-v602-pass.md` |
 | Post-04221 successor operator surface | `code-level-and-operator-surface-pass`; Web Console diagnostics registry bridge direct expose, installed Web/TUI/CLI current-card smoke, 04221 canonical latest key cleanup; next product payload candidate `0.42.22-admin-smoke`; host mutation performed `false`; public trusted signing 또는 외부 stable publication evidence가 아님 | `docs/ga-ready/evidence/post-04221-successor-operator-surface-2026-05-16.md`; `docs/ga-ready/evidence/installed-operator-surface-current-card-2026-05-16-04221.md`; `web/src/served-app.ts`; `web/app.js` |
 | Post-ci-maintenance development slices | `code-level-pass`; Runtime/API registry bridge, Hyper-V provider call-site drift guard, Host Ops dry-run/mutation reason code, manual-admin descriptor generation v2; next product payload candidate `0.42.21-admin-smoke`; host mutation performed `false`; public trusted signing 또는 외부 stable publication evidence가 아님 | `docs/ga-ready/evidence/post-ci-maintenance-dev-slices-2026-05-16.md`; `src/DesktopNode.Api/ApiHandlerAdapterContract.cs`; `src/DesktopNode.HyperV/DesktopNodeHyperVWmiProviderCatalog.cs`; `src/DesktopNode.Host/Ops/DesktopNodeHostOpsCatalog.cs`; `packaging/windows-desktop-node/tools/New-PcvManualAdminCampaignDescriptor.ps1` |
 | Post-04212 current-card follow-up | `pass-dashboard-current-card-smoke-deferred-product-chain`; `main` `8224af81c00482145b6c08dcde8c92a039b2aa26` 기준 product payload 변경 없음; `0.42.13-admin-smoke` package/package-pair/clean-host/full gate는 보류; Dashboard/Evidence view current-card smoke는 `full-admin-host-mutation-gate-20260514-04212-rerun`, `0.42.12-admin-smoke` 표시 PASS; host mutation performed `false` | `docs/ga-ready/evidence/post-04212-followup-1-2-3-4-5-current-card-2026-05-14.md`; `artifacts/web-console-current-card-20260514-04212-rerun-followup` |
-| Latest manual-admin package-pair | `pass`; `0.42.56-admin-smoke -> 0.42.57-admin-smoke`; installed update/rollback, Windows Update 포함 clean-host, Burn, MSIX, installed runtime ops summary, descriptor generation v2, installed current-card recheck PASS; target MSI SHA-256 `2eaa6fa9d22fcc72fad5994ebed397a2c3aead5a0311f32a3b9e013616b246f9`, update ZIP SHA-256 `c50e846e51a568a184cd706dc71506cdad95d8248c4e89713f2f52b690236946`, descriptor `manual-admin-campaign-descriptor-20260528-04256-04257-closed`, `missing_count=0`, `not_pass_count=0` | `docs/ga-ready/evidence/manual-admin-campaign-2026-05-28-04256-04257.md`; `artifacts/manual-admin-campaign-20260528-04256-04257` |
-| Latest product payload package build record | `package-build-pass`; `0.42.57-admin-smoke`; public-boundary current evidence current-card payload 포함; product payload MSI SHA-256 `2eaa6fa9d22fcc72fad5994ebed397a2c3aead5a0311f32a3b9e013616b246f9`, payload aggregate SHA-256 `c24512aec2dae7e73da4af24778451b3b3dfdc52d2c7914db61ceaaefae67e07`, commit `16cc0d6b592d7f2f9ead14c41d8f4ad0e1f28b76`; latest full-gate MSI SHA-256 `809eacb97a49aeaa32fc0ea3dce8ac5bdeb7c66b8b4502352519a338a512847e`는 0.42.57 operational anchor다. | `docs/ga-ready/evidence/admin-smoke-package-2026-05-28-04257.md`; `artifacts/admin-smoke-package-20260528-04257`; `docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-05-28-04257-hostmutation.md` |
+| Latest manual-admin package-pair | `pass-closed`; `0.42.73-admin-smoke -> 0.42.74-admin-smoke`; target MSI SHA-256 `f4d0fcb75bc463676b831a4f871c402636039a7f1bbaf3780b24d10eceae1b8e`, update ZIP `cac208cacc9a773893e710b773ca56bc6b3fcd1e315b1d1a28a5099cee7f78f1`, Burn `7e06928f629143bbca85f8941b55ffaa21f0a26a217dccac9029001e55199b2d`, MSIX v2 `906501de60f478be65b00b2c491da9c4efdc4adb001a26a22c8f198c4d7f4560`; descriptor `manual-admin-campaign-descriptor-20260820-04273-04274-closed`, `missing_count=0`, `not_pass_count=0` | `docs/ga-ready/evidence/manual-admin-campaign-2026-08-20-04273-04274.md`; private/local artifact locator `artifacts/manual-admin-campaign-20260820-04273-04274` |
+| Latest product payload package build record | `package-build-pass`; `0.42.74-admin-smoke`; clean MSI SHA-256 `f4d0fcb75bc463676b831a4f871c402636039a7f1bbaf3780b24d10eceae1b8e`, clean payload aggregate `c55cd17d14fed521252e6fee1bf08c828410339b23172fadb01dbd19f7d2578e`, provenance commit `adc04673b569ef9b587371fdb23bc11ceb14e2e2`; operational full-gate MSI `2bc46c986a629695462f6b424bb3ca963162fd59fbf6359fbcb73b38ea09b787` | `docs/ga-ready/evidence/admin-smoke-package-2026-08-20-04274.md`; private/local artifact locator `artifacts/admin-smoke-package-20260820-04274`; `docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-08-20-04274-hostmutation.md` |
 | Previous 0.42.56 package/fullgate/package-pair | `pass`; `0.42.55-admin-smoke -> 0.42.56-admin-smoke` predecessor | `docs/ga-ready/evidence/admin-smoke-package-2026-05-28-04256.md`; `docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-05-28-04256-hostmutation.md`; `docs/ga-ready/evidence/manual-admin-campaign-2026-05-28-04255-04256.md`; `docs/ga-ready/evidence/installed-operator-surface-current-card-2026-05-28-04256.md`; `docs/ga-ready/evidence/installed-account-novnc-operator-surface-smoke-2026-05-28-04256.md` |
 | Previous product payload package build | `package-build-pass`; `0.42.24-admin-smoke`; Runtime/API current evidence rollup 포함; MSI SHA-256 `d2ffa8bb10e064cb9b0a0fc6c853835d7a571a9318ce29fd734140de2c0c766e`, commit `b974d6b541423f2e4160f726f96155b16f105e9d`; 04223→04224 descriptor는 생성됐지만 lifecycle runner evidence 부족으로 `blocked-by-missing-evidence`다 | `docs/ga-ready/evidence/admin-smoke-package-2026-05-16-04224.md`; `artifacts/admin-smoke-package-20260516-04224` |
 | Previous product payload package build | `package-build-pass`; `0.42.23-admin-smoke`; Credential Manager default transition idempotence fix 포함; MSI SHA-256 `2a628547ad506b0ed59e4dfef1c91c3db5d6c090e79901f5460fc76d48594406`, commit `676b4177b10dc80209969066857bab6008ff2473`; 04222→04223 package-pair PASS가 닫힌 package-pair current claim을 소유한다 | `docs/ga-ready/evidence/admin-smoke-package-2026-05-16-04223.md`; `artifacts/admin-smoke-package-20260516-04223` |

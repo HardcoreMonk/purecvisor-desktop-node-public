@@ -1,6 +1,9 @@
 # Public Authority Sanitized Snapshot Delta Design
 
 State: approved
+Implementation status: `completed`
+Completion: PUBLIC parentless authority, protected main, PR #1/#2 merged; current main
+`6e2bdb93ce308b632c929e2c17f5550ac3845401`
 Approval: `2026-08-25 user-approved`
 Parent design: `docs/superpowers/specs/2026-08-25-purecvisor-desktop-node-pester-free-required-ci-cutover-design.md`
 

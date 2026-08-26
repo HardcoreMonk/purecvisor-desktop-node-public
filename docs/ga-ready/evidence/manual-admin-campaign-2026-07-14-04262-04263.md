@@ -5,11 +5,14 @@ result: `BLOCKED`
 scope: `manual-admin-package-pair-readiness`
 baseline_version: `0.42.62-admin-smoke`
 target_version: `0.42.63-admin-smoke`
+historical_current_closed_pair_at_campaign: `0.42.58-admin-smoke -> 0.42.59-admin-smoke`
+current_closed_pair_compatibility_alias_semantics: `historical-at-campaign-time-not-current-operational-authority`
 current_closed_pair: `0.42.58-admin-smoke -> 0.42.59-admin-smoke`
 blocker: `blocked-by-installed-baseline-version-mismatch`
 readiness_exit_code: `0`
 readiness_artifact_id: `manual-admin-campaign-20260714-04262-04263/readiness`
-readiness_summary: [`artifacts/manual-admin-campaign-20260714-04262-04263/readiness/summary.json`](../../../artifacts/manual-admin-campaign-20260714-04262-04263/readiness/summary.json)
+readiness_summary_locator: `artifacts/manual-admin-campaign-20260714-04262-04263/readiness/summary.json`
+readiness_summary_public_tree_status: `private-or-local-artifact-not-tracked-in-public-source`
 installed_version: `0.42.63-admin-smoke`
 host_mutation_performed_by_readiness: `false`
 next_action: `run-on-dedicated-0.42.62-baseline-host-with-approved-burn-msix-runners`
@@ -28,12 +31,13 @@ Readiness는 host mutation을 수행하지 않았다. Host downshift, update/rol
 Burn/MSIX lifecycle runner 실행도 하지 않았으며 runner JSON이나 closed descriptor를 합성하지
 않았다.
 
-## Current anchor 경계
+## Historical current anchor at execution time
 
-`0.42.63-admin-smoke` package/fullgate/CLI-Web installed current-card는 current operational
-anchor로 유지한다. 이 follow-up은 package-pair closure가 아니므로 최신 closed manual-admin
-package-pair는 계속 `0.42.58-admin-smoke -> 0.42.59-admin-smoke` /
-`manual-admin-campaign-descriptor-20260529-04258-04259-closed`다.
+이 campaign 실행 당시 `0.42.63-admin-smoke` package/fullgate/CLI-Web installed current-card가
+operational anchor였다. 이 follow-up은 package-pair closure가 아니므로 당시 closed
+manual-admin package-pair는 `0.42.58-admin-smoke -> 0.42.59-admin-smoke` /
+`manual-admin-campaign-descriptor-20260529-04258-04259-closed`였다. 현재 operational authority는
+`docs/ga-ready/CURRENT_EVIDENCE_LEDGER.md`의 생성 블록이 소유한다.
 
 ## 다음 action
 
