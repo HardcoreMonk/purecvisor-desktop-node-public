@@ -349,11 +349,11 @@ current_public_boundary_residue_provider_required: `false`
 current_public_boundary_residue_execution: `pester-and-powershell-non-required`
 current_required_ci_docs_only_package_candidate_decision: `retain-0.42.75-admin-smoke-no-new-candidate`
 previous_04274_current_required_ci_docs_only_package_candidate_decision: `retain-0.42.74-admin-smoke-no-new-candidate`
-current_public_boundary_main_push_compatibility_alias_semantics: `historical-04274-p0-product-landing-not-provider-required-authority`
-current_public_boundary_main_push_evidence: `docs/ga-ready/evidence/public-boundary-ci-main-push-2026-08-21-04274-p0-landing-pass.md`
-current_public_boundary_main_push_run_id: `32388996125`
-current_public_boundary_main_push_job_id: `96490306459`
-current_public_boundary_main_push_head_sha: `5f9cecfd5507e7e5dd726601aae3760e4e1b558c`
+current_public_boundary_main_push_compatibility_alias_semantics: `04275-promotion-postmerge-not-provider-required-authority`
+current_public_boundary_main_push_evidence: `docs/ga-ready/evidence/public-boundary-ci-main-push-2026-08-27-04275-promotion-postpush-pass.md`
+current_public_boundary_main_push_run_id: `33064087018`
+current_public_boundary_main_push_job_id: `98489770067`
+current_public_boundary_main_push_head_sha: `7cdd56bf0ff3ded2b9541cd242bd1d68905c0e66`
 current_public_boundary_main_push_product_payload_change_detected: `false`
 previous_04274_current_public_boundary_main_push_product_payload_change_detected: `true`
 current_public_boundary_main_push_package_candidate_decision: `docs-only-04275-promotion-retains-0.42.75-admin-smoke`

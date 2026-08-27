@@ -536,6 +536,7 @@
 - [docs/ga-ready/evidence/public-boundary-ci-main-push-2026-08-12-pr187-postmerge-pass.md](ga-ready/evidence/public-boundary-ci-main-push-2026-08-12-pr187-postmerge-pass.md)
 - [docs/ga-ready/evidence/public-boundary-ci-main-push-2026-08-14-04273-promotion-postpush-pass.md](ga-ready/evidence/public-boundary-ci-main-push-2026-08-14-04273-promotion-postpush-pass.md)
 - [docs/ga-ready/evidence/public-boundary-ci-main-push-2026-08-21-04274-p0-landing-pass.md](ga-ready/evidence/public-boundary-ci-main-push-2026-08-21-04274-p0-landing-pass.md)
+- [docs/ga-ready/evidence/public-boundary-ci-main-push-2026-08-27-04275-promotion-postpush-pass.md](ga-ready/evidence/public-boundary-ci-main-push-2026-08-27-04275-promotion-postpush-pass.md)
 - [docs/ga-ready/evidence/public-boundary-ci-rerun-2026-05-16-04220-pass.md](ga-ready/evidence/public-boundary-ci-rerun-2026-05-16-04220-pass.md)
 - [docs/ga-ready/evidence/public-distribution-operations-expansion-phase1-2026-05-07.md](ga-ready/evidence/public-distribution-operations-expansion-phase1-2026-05-07.md)
 - [docs/ga-ready/evidence/public-distribution-ops-execution-bundle-2026-05-09.md](ga-ready/evidence/public-distribution-ops-execution-bundle-2026-05-09.md)

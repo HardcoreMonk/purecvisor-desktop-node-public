@@ -54,7 +54,10 @@
   `manual-admin-campaign-descriptor-20260827-04274-04275`로 PASS다.
 - operational current는 `0.42.75-admin-smoke`다. `promotion_eligible=true`, blockers는
   없다. 04274 P0 `vm.save` FAIL는 historical predecessor다. token R4는 04272
-  carry-forward다. public trusted signing과 external stable publication은 주장하지 않는다.
+  carry-forward다. 04275 승격 main-push public-boundary는
+  `docs/ga-ready/evidence/public-boundary-ci-main-push-2026-08-27-04275-promotion-postpush-pass.md`
+  다. 현재 provider-required authority는 위 2026-08-25 exact-four Development Gates가 소유한다.
+  public trusted signing과 external stable publication은 주장하지 않는다.
 
 ## 2026-08-21 `0.42.74` SERVICE_PLAN P0 predecessor promotion
 

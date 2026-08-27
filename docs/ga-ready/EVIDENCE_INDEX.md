@@ -1,5 +1,18 @@
 # Desktop Node 증거 인덱스
 
+## 2026-08-27 `0.42.75` promotion public-boundary main push
+
+- `docs/ga-ready/evidence/public-boundary-ci-main-push-2026-08-27-04275-promotion-postpush-pass.md`는
+  green head `7cdd56bf0ff3ded2b9541cd242bd1d68905c0e66`의 Public Boundary run
+  `33064087018`, job `98489770067` PASS를 기록한다. 같은 head의 Development Gates run
+  `33064087022`과 네 job `web`/`dotnet`/`delivery`/`installer-policy`도 모두 `success`다.
+- 변경 경로 `37`개 중 product payload 경로는 `0`개다. 이 merge는 이미
+  `0.42.75-admin-smoke`로 승격된 operational evidence와 계약 SHA refresh만 착륙시켰으므로
+  새 package candidate를 열지 않는다. 04274 P0 landing public-boundary는 predecessor로
+  보존한다. 후속 evidence-only 커밋은 재귀적으로 새 package candidate나 전용 post-merge
+  evidence를 요구하지 않는다. public trusted signing과 external stable publication은
+  주장하지 않는다.
+
 ## 2026-08-27 0.42.75 SERVICE_PLAN P0 current promotion
 
 - `docs/ga-ready/evidence/admin-smoke-package-2026-08-21-04275.md`는 clean package PASS를
