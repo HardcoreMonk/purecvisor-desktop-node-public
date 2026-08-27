@@ -155,8 +155,8 @@ function New-P0BehaviorRuntime {
                     if ($state.VmGetNotFound -or $requested -ne 'pcv-p0-04275-behavior-managed') {
                         return [pscustomobject]@{
                             exit_code = 1
-                            stdout = (@{ error = @{ code = 'PCV_VM_NOT_FOUND' } } | ConvertTo-Json -Compress)
-                            stderr = ''
+                            stdout = ''
+                            stderr = "code=PCV_VM_NOT_FOUND`nmessage=VM not found"
                         }
                     }
                     $productState = if ($state.ManagedState -eq 'Saved') {

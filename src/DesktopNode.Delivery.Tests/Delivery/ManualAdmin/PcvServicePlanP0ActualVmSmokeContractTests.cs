@@ -179,6 +179,8 @@ public sealed class PcvServicePlanP0ActualVmSmokeContractTests
             "function Invoke-PcvCliJson",
             "error",
             "code",
+            "stderr",
+            "code=",
             "PCV_P0_COMMAND_FAILED");
         AssertOrdered(
             source,
@@ -186,6 +188,8 @@ public sealed class PcvServicePlanP0ActualVmSmokeContractTests
             "$cliErrorCode",
             "throw");
         Assert.Contains("PCV_P0_COMMAND_FAILED", source, StringComparison.Ordinal);
+        Assert.Contains("Get-CliProblemCode", source, StringComparison.Ordinal);
+        Assert.Contains("-Stderr", source, StringComparison.Ordinal);
     }
 
     [Fact]
