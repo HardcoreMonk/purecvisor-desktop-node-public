@@ -59,6 +59,7 @@ PureCVisor Desktop Node는 Windows 10/11 Pro/Enterprise + Hyper-V host를 로컬
 | VM Hyper-V Saved | [ `pcv.vm.saved-lifecycle` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-saved-lifecycle) | VM detail `Save` / `Resume saved` | `pcvcli vm save` / `pcvcli vm resume-saved` | `POST /vms/{id}/save`, `POST /vms/{id}/resume-saved` |
 | VM QoS/readback | [ `pcv.vm.qos` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-qos)<br>[ `pcv.vm.guest-service-readback` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-guest-service-readback)<br>[ `pcv.vm.guest-execution` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-guest-execution)<br>[ `pcv.vm.guest-channel` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-guest-channel)<br>[ `pcv.vm.resource-limits` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-resource-limits) | 선택 VM detail `QoS / Guest Readback` panel | `pcvcli vm limit/blkio-get/bandwidth/guest-agent-status/guest-ping` | `/vms/{id}/limit`, `/vms/{id}/blkio`, `/vms/{id}/bandwidth`, `/vms/{id}/guest-agent/...` |
 | VM manage | [ `pcv.vm.managed-import` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-managed-import) | VM detail `Manage VM` | `pcvcli vm manage --yes` | `POST /vms/{id}/manage` |
+| VM clone | [ `pcv.vm.clone` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-clone) | VM detail `Clone VM` | `pcvcli vm clone <source> --name <target> --yes` / `--dry-run` | `POST /vms/{id}/clone/preview`, `POST /vms/{id}/clone` |
 | VM delete | [ `pcv.vm.delete` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-delete) | VM detail confirmation | `pcvcli vm delete --yes` | `DELETE /vms/{id}` |
 | VM media attach/eject | [ `pcv.vm.media-attach` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-media-attach)<br>[ `pcv.vm.media-eject` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-media-eject) | Web form | `pcvcli vm attach/eject` | `POST /vms/{id}/attach`, `POST /vms/{id}/eject` |
 | Checkpoints | [ `pcv.checkpoint.lifecycle` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-checkpoint-lifecycle)<br>[ `pcv.checkpoint.restore` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-checkpoint-restore) | VM checkpoint panel | `pcvcli vm checkpoint ...` | `/vms/{id}/checkpoints` |
@@ -97,6 +98,7 @@ PureCVisor Desktop Node는 Windows 10/11 Pro/Enterprise + Hyper-V host를 로컬
 | [ `pcv.vm.saved-lifecycle` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-saved-lifecycle) | 가상 머신 전원 작업 — Saved/Resume saved |
 | [ `pcv.vm.rename` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-rename) | VM 이름 변경 |
 | [ `pcv.vm.managed-import` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-managed-import) | 기존 VM 관리 편입 |
+| [ `pcv.vm.clone` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-clone) | managed VM 독립 VHDX full clone |
 | [ `pcv.vm.media-eject` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-media-eject) | VM media 제거 |
 | [ `pcv.vm.media-attach` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-media-attach) | VM media 연결 |
 | [ `pcv.vm.resource-limits` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-resource-limits) | VM CPU·memory·disk resource 변경 |
@@ -262,6 +264,26 @@ package/fullgate/manual-admin package-pair closure로 닫혔다. 설치본 CLI t
 | 성공 결과 | manage job id 표시, Activity에서 추적. 이미 managed면 `already-managed` |
 
 Web POST `confirm_name`은 다른 lifecycle 버튼과 같은 URL path identifier다.
+
+## 가상 머신 clone
+
+목적: managed Generation 2 VM의 독립 VHDX를 복사해 새 managed VM을 만든다. linked clone, export/import, OVF가 아니다.
+
+| 항목 | 명세 |
+|------|------|
+| 전제조건 | operator 이상, 소스 managed/Gen2/`Off`/checkpoint 0/독립 VHDX, 명시 confirmation, 소스와 다른 대상 이름 |
+| Web Console | 선택 VM detail `Clone VM`. 대상 이름을 입력하고 preview로 `planned_copy_bytes`를 확인한 뒤 confirmation에 소스 표시 이름과 대상 이름을 보여 준다 |
+| CLI | `pcvcli vm clone <source> --name <target> --dry-run`, `pcvcli vm clone <source> --name <target> --yes` |
+| Guard | `--yes` 없음(enqueue), `confirm_name`과 `{vmId}` Ordinal 불일치, 대상 이름 없음, 소스와 같은 대상 이름, unmanaged/Gen1/not-Off/checkpoint/differencing/TPM |
+| 성공 결과 | preview는 복사 계획만 반환. clone job id는 Activity에서 추적. 새 VM만 managed marker를 가진다 |
+
+Web/CLI POST `confirm_name`은 소스 `{vmId}` 그대로다. `name`은 대상 표시 이름이다. 실패 시 대상만 rollback하고 소스 VM은 변경하지 않는다.
+
+```text
+Action blocked: VM clone requires explicit confirmation.
+Use: vm clone <source> --name <target> --yes.
+code=PCV_CLI_CONFIRMATION_REQUIRED
+```
 
 ## 가상 머신 delete
 

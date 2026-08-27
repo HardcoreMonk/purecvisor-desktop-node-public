@@ -62,6 +62,8 @@ internal sealed class DesktopNodeApiHyperVOperationInvoker
             "vm.resume-saved" or
             "vm.rename" or
             "vm.manage" or
+            "vm.clone.preview" or
+            "vm.clone" or
             "vm.eject" or
             "vm.attach" or
             "vm.limit" or

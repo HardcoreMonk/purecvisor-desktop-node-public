@@ -6,7 +6,7 @@
     "source": "src/DesktopNode.Api/ApiHandlerAdapterContract.cs",
     "factory": "DesktopNode.Api.ApiHandlerAdapterContract.CreateDefault",
     "runtime_registry_source": "DesktopNodeApiRuntimeRoutes",
-    "route_count": 60,
+    "route_count": 62,
     "host_integration_scope": "representative-transport-cases-not-route-catalog-duplication",
     "representative_route_keys": [
       "GET /api/v1/runtime/policy",

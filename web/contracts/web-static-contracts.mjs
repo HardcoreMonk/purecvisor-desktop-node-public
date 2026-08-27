@@ -1049,19 +1049,27 @@ function verifyVmLifecycleActions(context) {
     [/Resume saved/i, "resume-saved-label"],
     [/data-action="vm-manage"/i, "manage"],
     [/Manage VM/i, "manage-label"],
+    [/data-action="vm-clone"/i, "clone"],
+    [/Clone VM/i, "clone-label"],
     [/data-action="vm-delete"/i, "delete"]
   ], "vm-lifecycle-actions");
   assertSourceAndGenerated(context, mutateSource, app, [
     [/function\s+queueVmManage\s*\(/i, "queue-manage"],
+    [/function\s+queueVmClone\s*\(/i, "queue-clone"],
+    [/desktopApi\.previewVmClone\s*\(/i, "clone-preview"],
     [/PCV_VM_DELETE_RUNNING_BLOCKED/i, "running-delete-guard"],
     [/window\.confirm\(/i, "destructive-confirmation"]
   ], "vm-lifecycle-actions");
   assertSourceAndGenerated(context, errorsSource, app, [
     [/PCV_VM_NOT_MANAGED_BY_PURECVISOR/i, "unmanaged-delete-guard"],
-    [/Unmanaged delete refusal remains/i, "unmanaged-delete-refusal"]
+    [/Unmanaged delete refusal remains/i, "unmanaged-delete-refusal"],
+    [/function\s+buildVmCloneConfirmation\s*\(/i, "clone-confirmation"],
+    [/planned_copy_bytes/i, "clone-planned-copy-bytes"]
   ], "vm-lifecycle-actions");
   assertSourceAndGenerated(context, clientSource, app, [
     [/queueVmManage:\s*\(vmId/i, "manage-client"],
+    [/previewVmClone:\s*\(vmId/i, "clone-preview-client"],
+    [/queueVmClone:\s*\(vmId/i, "clone-client"],
     [/confirm_name:\s*confirmName/i, "confirm-name"]
   ], "vm-lifecycle-actions");
 }

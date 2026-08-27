@@ -189,6 +189,15 @@ public static class DesktopNodeHyperVWmiProviderCatalog
             nameof(DesktopNodeHyperVProviderSet.VmManageProvider),
             $"{nameof(DesktopNodeHyperVProviderSet)}.{nameof(DesktopNodeHyperVProviderSet.CreateDefaultWmi)}:{nameof(DesktopNodeHyperVProviderSet.VmManageProvider)}"),
         new(
+            "vm-clone-provider",
+            DesktopNodeHyperVWmiHelperCatalog.NamespacePath,
+            DesktopNodeHyperVOperationDomain.VmLifecycle,
+            typeof(IDesktopNodeHyperVVmCloneProvider),
+            typeof(DesktopNodeHyperVWmiVmCloneProvider),
+            ["vm.clone.preview", "vm.clone"],
+            nameof(DesktopNodeHyperVProviderSet.VmCloneProvider),
+            $"{nameof(DesktopNodeHyperVProviderSet)}.{nameof(DesktopNodeHyperVProviderSet.CreateDefaultWmi)}:{nameof(DesktopNodeHyperVProviderSet.VmCloneProvider)}"),
+        new(
             "vm-delete-provider",
             DesktopNodeHyperVWmiHelperCatalog.NamespacePath,
             DesktopNodeHyperVOperationDomain.VmLifecycle,

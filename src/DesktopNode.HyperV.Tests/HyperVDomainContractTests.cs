@@ -11,8 +11,8 @@ public sealed class HyperVDomainContractTests
             .OrderBy(operation => operation.Operation, StringComparer.Ordinal)
             .ToArray();
 
-        Assert.Equal(38, operations.Length);
-        Assert.Equal(38, operations.Select(operation => operation.Operation).Distinct(StringComparer.Ordinal).Count());
+        Assert.Equal(40, operations.Length);
+        Assert.Equal(40, operations.Select(operation => operation.Operation).Distinct(StringComparer.Ordinal).Count());
 
         Assert.Equal(
             [
@@ -25,6 +25,8 @@ public sealed class HyperVDomainContractTests
                 "vm.attach",
                 "vm.bandwidth",
                 "vm.blkio-get",
+                "vm.clone",
+                "vm.clone.preview",
                 "vm.cpu-stats",
                 "vm.create",
                 "vm.delete",
@@ -86,6 +88,8 @@ public sealed class HyperVDomainContractTests
     [InlineData("vm.resume-saved", DesktopNodeHyperVOperationDomain.VmLifecycle, "vm-power-state-provider")]
     [InlineData("vm.rename", DesktopNodeHyperVOperationDomain.VmLifecycle, "vm-rename-provider")]
     [InlineData("vm.manage", DesktopNodeHyperVOperationDomain.VmLifecycle, "vm-manage-provider")]
+    [InlineData("vm.clone.preview", DesktopNodeHyperVOperationDomain.VmLifecycle, "vm-clone-provider")]
+    [InlineData("vm.clone", DesktopNodeHyperVOperationDomain.VmLifecycle, "vm-clone-provider")]
     [InlineData("vm.eject", DesktopNodeHyperVOperationDomain.VmLifecycle, "vm-media-provider")]
     [InlineData("vm.attach", DesktopNodeHyperVOperationDomain.VmLifecycle, "vm-media-provider")]
     [InlineData("vm.limit", DesktopNodeHyperVOperationDomain.VmLifecycle, "vm-resource-mutation-provider")]
@@ -217,7 +221,7 @@ public sealed class HyperVDomainContractTests
         var dispatchCatalog = DesktopNodeHyperVAdapterDispatchCatalog.Entries
             .ToDictionary(entry => entry.Operation, StringComparer.Ordinal);
 
-        Assert.Equal(38, dispatchCatalog.Count);
+        Assert.Equal(40, dispatchCatalog.Count);
 
         foreach (var operation in DesktopNodeHyperVDomain.Catalog)
         {
@@ -278,6 +282,16 @@ public sealed class HyperVDomainContractTests
                 "vm.manage"
             ],
             DesktopNodeHyperVAdapterDispatchCatalog.OperationsForHandler(DesktopNodeHyperVAdapterDispatchHandler.VmManage));
+        Assert.Equal(
+            [
+                "vm.clone.preview"
+            ],
+            DesktopNodeHyperVAdapterDispatchCatalog.OperationsForHandler(DesktopNodeHyperVAdapterDispatchHandler.VmClonePreview));
+        Assert.Equal(
+            [
+                "vm.clone"
+            ],
+            DesktopNodeHyperVAdapterDispatchCatalog.OperationsForHandler(DesktopNodeHyperVAdapterDispatchHandler.VmClone));
         Assert.Equal(
             [
                 "vm.eject",

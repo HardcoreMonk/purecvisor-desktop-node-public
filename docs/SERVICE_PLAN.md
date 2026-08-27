@@ -333,3 +333,5 @@ P0-1 media attach
 | `docs/ga-ready/evidence/service-plan-p0-hyperv-saved-code-level-2026-08-14.md` | P0-3 Hyper-V Saved code-level evidence |
 | `docs/superpowers/specs/2026-08-14-purecvisor-desktop-node-p0-managed-import-design.md` | P0-4 managed import 설계 |
 | `docs/ga-ready/evidence/service-plan-p0-managed-import-code-level-2026-08-14.md` | P0-4 managed import code-level evidence |
+| `docs/superpowers/specs/2026-08-27-purecvisor-desktop-node-p1-managed-full-clone-design.md` | P1-5 managed full clone 설계 |
+| `docs/superpowers/plans/2026-08-27-purecvisor-desktop-node-p1-managed-full-clone.md` | P1-5 managed full clone 구현 계획 |

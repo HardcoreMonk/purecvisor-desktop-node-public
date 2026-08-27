@@ -1,7 +1,7 @@
 # 문서 통합 인덱스
 
 > 2026-08-26 현재 기준. 공개 저장소 Required CI 전환 이후 다시 생성했으며, 이 인덱스를
-> 포함한 Markdown 문서 778개 전체를 수록한다.
+> 포함한 Markdown 문서 779개 전체를 수록한다.
 
 ## 현재 기준
 
@@ -559,6 +559,7 @@
 - [docs/ga-ready/evidence/service-plan-p0-hyperv-saved-code-level-2026-08-14.md](ga-ready/evidence/service-plan-p0-hyperv-saved-code-level-2026-08-14.md)
 - [docs/ga-ready/evidence/service-plan-p0-managed-import-code-level-2026-08-14.md](ga-ready/evidence/service-plan-p0-managed-import-code-level-2026-08-14.md)
 - [docs/ga-ready/evidence/service-plan-p0-media-attach-code-level-2026-08-14.md](ga-ready/evidence/service-plan-p0-media-attach-code-level-2026-08-14.md)
+- [docs/ga-ready/evidence/service-plan-p1-managed-full-clone-code-level-2026-08-27.md](ga-ready/evidence/service-plan-p1-managed-full-clone-code-level-2026-08-27.md)
 - [docs/ga-ready/evidence/service-token-rotation-replace-hardening-2026-08-09.md](ga-ready/evidence/service-token-rotation-replace-hardening-2026-08-09.md)
 - [docs/ga-ready/evidence/service-token-rotation-revoke-installed-2026-05-09.md](ga-ready/evidence/service-token-rotation-revoke-installed-2026-05-09.md)
 - [docs/ga-ready/evidence/service-token-rotation-revoke-preflight-2026-05-08.md](ga-ready/evidence/service-token-rotation-revoke-preflight-2026-05-08.md)
@@ -732,6 +733,7 @@
 - [docs/superpowers/plans/2026-08-25-purecvisor-desktop-node-public-baseline-and-protection.md](superpowers/plans/2026-08-25-purecvisor-desktop-node-public-baseline-and-protection.md)
 - [docs/superpowers/plans/2026-08-25-purecvisor-desktop-node-required-ci-cutover-wave-e.md](superpowers/plans/2026-08-25-purecvisor-desktop-node-required-ci-cutover-wave-e.md)
 - [docs/superpowers/plans/2026-08-27-purecvisor-desktop-node-lane-separated-development-procedure.md](superpowers/plans/2026-08-27-purecvisor-desktop-node-lane-separated-development-procedure.md)
+- [docs/superpowers/plans/2026-08-27-purecvisor-desktop-node-p1-managed-full-clone.md](superpowers/plans/2026-08-27-purecvisor-desktop-node-p1-managed-full-clone.md)
 
 ## 설계 명세
 
@@ -816,6 +818,7 @@
 - [docs/superpowers/specs/2026-08-25-purecvisor-desktop-node-pester-free-required-ci-cutover-design.md](superpowers/specs/2026-08-25-purecvisor-desktop-node-pester-free-required-ci-cutover-design.md)
 - [docs/superpowers/specs/2026-08-25-purecvisor-desktop-node-public-authority-snapshot-delta-design.md](superpowers/specs/2026-08-25-purecvisor-desktop-node-public-authority-snapshot-delta-design.md)
 - [docs/superpowers/specs/2026-08-27-purecvisor-desktop-node-lane-separated-development-procedure-design.md](superpowers/specs/2026-08-27-purecvisor-desktop-node-lane-separated-development-procedure-design.md)
+- [docs/superpowers/specs/2026-08-27-purecvisor-desktop-node-p1-managed-full-clone-design.md](superpowers/specs/2026-08-27-purecvisor-desktop-node-p1-managed-full-clone-design.md)
 
 ## 패키징 문서
 

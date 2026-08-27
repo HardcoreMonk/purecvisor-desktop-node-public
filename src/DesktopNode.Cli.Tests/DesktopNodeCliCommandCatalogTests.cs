@@ -263,6 +263,73 @@ public sealed class DesktopNodeCliCommandCatalogTests
         Assert.Equal("ubuntu lab", document.RootElement.GetProperty("confirm_name").GetString());
     }
 
+    [Fact]
+    public void RequiresExplicitYesForVmClone()
+    {
+        var error = Assert.Throws<ArgumentException>(() =>
+            DesktopNodeCliCommandCatalog.CreateRequest(["vm", "clone", "ubuntu-lab-01", "--name", "ubuntu-lab-02"]));
+
+        Assert.Contains("PCV_CLI_CONFIRMATION_REQUIRED", error.Message, StringComparison.Ordinal);
+        Assert.Contains("Use: vm clone <source> --name <target> --yes.", error.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void RoutesVmCloneWhenExplicitlyConfirmed()
+    {
+        var request = DesktopNodeCliCommandCatalog.CreateRequest([
+            "vm",
+            "clone",
+            "ubuntu-lab-01",
+            "--name",
+            "ubuntu-lab-02",
+            "--yes"
+        ]);
+
+        Assert.Equal("POST", request.Method);
+        Assert.Equal("/api/v1/vms/ubuntu-lab-01/clone", request.Path);
+        using var document = JsonDocument.Parse(request.Body!);
+        Assert.Equal("ubuntu-lab-01", document.RootElement.GetProperty("confirm_name").GetString());
+        Assert.Equal("ubuntu-lab-02", document.RootElement.GetProperty("name").GetString());
+    }
+
+    [Fact]
+    public void RoutesVmCloneDryRunToPreview()
+    {
+        var request = DesktopNodeCliCommandCatalog.CreateRequest([
+            "vm",
+            "clone",
+            "ubuntu-lab-01",
+            "--name",
+            "ubuntu-lab-02",
+            "--dry-run"
+        ]);
+
+        Assert.Equal("POST", request.Method);
+        Assert.Equal("/api/v1/vms/ubuntu-lab-01/clone/preview", request.Path);
+        using var document = JsonDocument.Parse(request.Body!);
+        Assert.Equal("ubuntu-lab-01", document.RootElement.GetProperty("confirm_name").GetString());
+        Assert.Equal("ubuntu-lab-02", document.RootElement.GetProperty("name").GetString());
+    }
+
+    [Fact]
+    public void UsesVmCloneArgumentVerbatimAsConfirmName()
+    {
+        var request = DesktopNodeCliCommandCatalog.CreateRequest([
+            "vm",
+            "clone",
+            "ubuntu lab",
+            "--name",
+            "ubuntu lab 2",
+            "--yes"
+        ]);
+
+        Assert.Equal("POST", request.Method);
+        Assert.Equal("/api/v1/vms/ubuntu%20lab/clone", request.Path);
+        using var document = JsonDocument.Parse(request.Body!);
+        Assert.Equal("ubuntu lab", document.RootElement.GetProperty("confirm_name").GetString());
+        Assert.Equal("ubuntu lab 2", document.RootElement.GetProperty("name").GetString());
+    }
+
     [Theory]
     [InlineData("vm guest-agent-ensure-channel ubuntu-lab-01")]
     public void RejectsGuestExecutionApplyShapeUntilSecurityBoundaryOpens(string commandLine)
@@ -625,7 +692,7 @@ public sealed class DesktopNodeCliCommandCatalogTests
             }
         }
 
-        Assert.Equal(53, presentCount);
+        Assert.Equal(55, presentCount);
         Assert.Equal(7, excludedCount);
     }
 
@@ -644,6 +711,8 @@ public sealed class DesktopNodeCliCommandCatalogTests
         Assert.Contains("pcvcli vm attach <vm> --iso <path>", usage, StringComparison.Ordinal);
         Assert.Contains("pause|resume|save|resume-saved", usage, StringComparison.Ordinal);
         Assert.Contains("pcvcli vm manage <vm> --yes", usage, StringComparison.Ordinal);
+        Assert.Contains("pcvcli vm clone <source> --name <target> --yes", usage, StringComparison.Ordinal);
+        Assert.Contains("pcvcli vm clone <source> --name <target> --dry-run", usage, StringComparison.Ordinal);
         Assert.Contains("pcvcli vm eject|delete-status", usage, StringComparison.Ordinal);
         Assert.Contains("pcvcli diagnostics bundle list [--limit N] [--offset N]", usage, StringComparison.Ordinal);
         Assert.Contains("pcvcli diagnostics bundle create", usage, StringComparison.Ordinal);
@@ -675,6 +744,8 @@ public sealed class DesktopNodeCliCommandCatalogTests
         Assert.Contains("Checkpoint mutation", terms, StringComparison.Ordinal);
         Assert.Contains("CLI checkpoint command는 API job으로 라우팅되는 명시 subcommand다", terms, StringComparison.Ordinal);
         Assert.Contains("pcvcli vm manage <vm> --yes", usage, StringComparison.Ordinal);
+        Assert.Contains("pcvcli vm clone <source> --name <target> --yes", usage, StringComparison.Ordinal);
+        Assert.Contains("pcvcli vm clone <source> --name <target> --dry-run", usage, StringComparison.Ordinal);
         Assert.Contains("pcvcli vm delete <vm> --yes", usage, StringComparison.Ordinal);
         Assert.Contains("pcvcli vm checkpoint list|create|restore|delete", usage, StringComparison.Ordinal);
         Assert.Contains("VM delete requires explicit confirmation", error.Message, StringComparison.Ordinal);

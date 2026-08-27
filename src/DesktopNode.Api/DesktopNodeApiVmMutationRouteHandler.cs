@@ -35,6 +35,14 @@ internal sealed class DesktopNodeApiVmMutationRouteHandler
         string normalizedPath,
         CancellationToken cancellationToken)
     {
+        // HandleCore는 ProductOperation preview를 TryHandleQosPreview로만 보낸다.
+        if (method == "POST" &&
+            DesktopNodeApiRuntimeRoutes.TryMatchContract(method, normalizedPath, out var clonePreviewMatch) &&
+            string.Equals(clonePreviewMatch.Route.OperationName, "PreviewCloneVm", StringComparison.Ordinal))
+        {
+            return HandleClonePreviewRoute(request, clonePreviewMatch, cancellationToken);
+        }
+
         if (method == "POST" &&
             DesktopNodeApiRequestParsing.TryMatch(normalizedPath, "^/api/v1/vms/([^/]*)/qos/(storage|network)/preview$", out var qosPreviewMatch))
         {
@@ -248,6 +256,29 @@ internal sealed class DesktopNodeApiVmMutationRouteHandler
                         request.RequestId!));
                 }
 
+            case "QueueCloneVm":
+                {
+                    var parsed = TryReadCloneRequest(
+                        request,
+                        routeMatch.Parameters["vmId"],
+                        "vm.clone",
+                        out var sourceName,
+                        out var targetName);
+                    if (parsed is not null)
+                    {
+                        return parsed;
+                    }
+
+                    return DesktopNodeApiResponseFactory.JobCreated(CreateJob(
+                        "vm.clone",
+                        DesktopNodeApiResponseFactory.JsonFromObject(new SortedDictionary<string, object?>
+                        {
+                            ["name"] = targetName,
+                            ["source"] = sourceName
+                        }),
+                        request.RequestId!));
+                }
+
             case "QueueEjectVmMedia":
                 {
                     var routeId = DesktopNodeApiRequestParsing.DecodeRouteId(routeMatch.Parameters["vmId"], "vm.eject");
@@ -416,6 +447,99 @@ internal sealed class DesktopNodeApiVmMutationRouteHandler
         }
 
         return DesktopNodeApiResponseFactory.JobCreated(CreateJob("vm.limit", DesktopNodeApiResponseFactory.JsonFromObject(parameters), request.RequestId!));
+    }
+
+    private DesktopNodeApiResponse HandleClonePreviewRoute(
+        DesktopNodeApiRequest request,
+        DesktopNodeApiRouteMatch routeMatch,
+        CancellationToken cancellationToken)
+    {
+        var parsed = TryReadCloneRequest(
+            request,
+            routeMatch.Parameters["vmId"],
+            "vm.clone.preview",
+            out var sourceName,
+            out var targetName);
+        if (parsed is not null)
+        {
+            return parsed;
+        }
+
+        return DesktopNodeApiResponseFactory.OperationResponse(operationInvoker.Invoke(
+            "vm.clone.preview",
+            DesktopNodeApiResponseFactory.JsonFromObject(new SortedDictionary<string, object?>
+            {
+                ["name"] = targetName,
+                ["source"] = sourceName
+            }),
+            cancellationToken));
+    }
+
+    private static DesktopNodeApiResponse? TryReadCloneRequest(
+        DesktopNodeApiRequest request,
+        string encodedVmId,
+        string operation,
+        out string sourceName,
+        out string targetName)
+    {
+        sourceName = null!;
+        targetName = null!;
+        var routeId = DesktopNodeApiRequestParsing.DecodeRouteId(encodedVmId, operation);
+        if (!routeId.Ok)
+        {
+            return routeId.Response;
+        }
+
+        string? confirmName = null;
+        string? name = null;
+        if (!string.IsNullOrWhiteSpace(request.Body))
+        {
+            var parsed = DesktopNodeApiRequestParsing.TryParseBody(request.Body, operation);
+            if (!parsed.Ok)
+            {
+                return parsed.Response;
+            }
+
+            confirmName = DesktopNodeApiJsonReader.GetStringProperty(parsed.Value!.Value, "confirm_name");
+            name = DesktopNodeApiJsonReader.GetStringProperty(parsed.Value.Value, "name");
+        }
+
+        if (!string.Equals(confirmName, routeId.Value, StringComparison.Ordinal))
+        {
+            return DesktopNodeApiResponseFactory.Failure(
+                400,
+                operation,
+                "PCV_VM_CLONE_CONFIRMATION_MISMATCH",
+                "VM clone confirmation does not match the source VM name.",
+                "Pass confirm_name equal to the VM display name in the route.",
+                false);
+        }
+
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            return DesktopNodeApiResponseFactory.Failure(
+                400,
+                operation,
+                "PCV_VM_CLONE_NAME_REQUIRED",
+                "VM clone target name is required.",
+                "Pass a JSON body with name set to the new VM display name.",
+                false);
+        }
+
+        if (string.Equals(name, routeId.Value, StringComparison.Ordinal))
+        {
+            return DesktopNodeApiResponseFactory.Failure(
+                400,
+                operation,
+                "PCV_VM_CLONE_NAME_CONFLICT",
+                "VM clone target name matches the source VM name.",
+                "Pass a different display name for the cloned VM.",
+                false);
+        }
+
+        sourceName = routeId.Value!;
+        targetName = name;
+        return null;
     }
 
     private DesktopNodeApiResponse HandleQosPreviewRoute(

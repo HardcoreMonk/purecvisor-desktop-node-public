@@ -376,6 +376,43 @@ async function queueVmManage(vmId) {
   }
 }
 
+async function queueVmClone(vmId, rawName) {
+  requireRbac('operate', 'VM clone');
+  const name = String(rawName || '').trim();
+  if (!name) {
+    throw normalizeError({
+      code: 'PCV_VM_CLONE_NAME_REQUIRED',
+      message: 'Enter a target VM name.',
+      detail: 'name is required before queueing vm.clone.'
+    });
+  }
+
+  const vm = state.selectedVm || findCachedVm(vmId);
+  const payload = { confirm_name: vmId, name };
+
+  state.actionPending = true;
+  setVmActionPending(vmId, 'clone');
+  state.error = null;
+  render();
+  try {
+    const preview = await desktopApi.previewVmClone(vmId, payload);
+    if (!window.confirm(buildVmCloneConfirmation(vmId, vm, name, preview))) {
+      return;
+    }
+
+    const job = await desktopApi.queueVmClone(vmId, payload);
+    trackJob(job);
+    state.connectionState = 'connected';
+    startPolling();
+  } catch (error) {
+    state.error = normalizeError(error);
+  } finally {
+    state.actionPending = false;
+    clearVmActionPending(vmId);
+    render();
+  }
+}
+
 async function queueVmDelete(vmId) {
   requireRbac('operate', 'VM delete');
   const vm = state.selectedVm || findCachedVm(vmId);

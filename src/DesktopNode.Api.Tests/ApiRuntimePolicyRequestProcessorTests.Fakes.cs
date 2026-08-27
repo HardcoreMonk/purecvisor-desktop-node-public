@@ -173,6 +173,69 @@ public sealed partial class ApiRuntimePolicyRequestProcessorTests
         }
     }
 
+    private sealed class RecordingNativeHyperVVmCloneAdapter(IList<DesktopNodeHyperVOperationCall> calls) : IDesktopNodeHyperVNativeAdapter
+    {
+        public bool TryInvoke(string operation, JsonElement parameters, CancellationToken cancellationToken, out DesktopNodeHyperVOperationResult result)
+        {
+            calls.Add(new DesktopNodeHyperVOperationCall(operation, parameters.GetRawText()));
+            var source = parameters.GetProperty("source").GetString()!;
+            var name = parameters.GetProperty("name").GetString()!;
+            if (operation == "vm.clone.preview")
+            {
+                var data = new SortedDictionary<string, object?>
+                {
+                    ["action"] = "preview",
+                    ["directory"] = $@"D:\PureCVisor\VMs\{name}",
+                    ["disk_count"] = 1,
+                    ["disks"] = new object[]
+                    {
+                        new SortedDictionary<string, object?>
+                        {
+                            ["source"] = $@"D:\PureCVisor\VMs\{source}\disk0.vhdx",
+                            ["target"] = $@"D:\PureCVisor\VMs\{name}\disk0.vhdx"
+                        }
+                    },
+                    ["generation"] = 2,
+                    ["name"] = name,
+                    ["planned_copy_bytes"] = 1024,
+                    ["source"] = source
+                };
+                result = new DesktopNodeHyperVOperationResult(
+                    Ok: true,
+                    Operation: operation,
+                    Data: JsonSerializer.SerializeToElement(data),
+                    Error: null);
+                return true;
+            }
+
+            if (operation == "vm.clone")
+            {
+                var data = new SortedDictionary<string, object?>
+                {
+                    ["action"] = "clone",
+                    ["directory"] = $@"D:\PureCVisor\VMs\{name}",
+                    ["disks"] = new[] { $@"D:\PureCVisor\VMs\{name}\disk0.vhdx" },
+                    ["name"] = name,
+                    ["source"] = source
+                };
+                result = new DesktopNodeHyperVOperationResult(
+                    Ok: true,
+                    Operation: operation,
+                    Data: JsonSerializer.SerializeToElement(data),
+                    Error: null);
+                return true;
+            }
+
+            result = DesktopNodeHyperVOperationResult.Failure(
+                operation,
+                "PCV_NATIVE_ROUTE_NOT_HANDLED",
+                $"The native adapter did not handle '{operation}'.",
+                "No PowerShell helper fallback is available for this product route.",
+                false);
+            return false;
+        }
+    }
+
     private sealed class RecordingNativeHyperVVmMediaAdapter(IList<DesktopNodeHyperVOperationCall> calls) : IDesktopNodeHyperVNativeAdapter
     {
         public bool TryInvoke(string operation, JsonElement parameters, CancellationToken cancellationToken, out DesktopNodeHyperVOperationResult result)

@@ -68,7 +68,7 @@ public sealed class RuntimePolicyContractTests
             .GetProperty("native_core");
 
         Assert.Equal("read-route-vm-qos-preview-guestservice-guest-execution-resource-checkpoint-and-qos-mutation-started", nativeCore.GetProperty("status").GetString());
-        Assert.Equal("host.status,network.inventory,vm.list,vm.memory-stats,vm.cpu-stats,vm.blkio-get,vm.bandwidth,vm.qos.storage.preview,vm.qos.network.preview,vm.guest-agent-status,vm.guest-ping,checkpoint.list,vm.create,vm.start,vm.shutdown,vm.poweroff,vm.restart,vm.pause,vm.resume,vm.save,vm.resume-saved,vm.rename,vm.manage,vm.eject,vm.attach,vm.limit,vm.qos.storage.set,vm.qos.network.set,vm.guest.exec,vm.guest.channel.verify,vm.guest.channel.ensure,vm.set-memory,vm.set-vcpu,vm.disk-resize,vm.delete,checkpoint.create,checkpoint.restore,checkpoint.delete", nativeCore.GetProperty("reason").GetString());
+        Assert.Equal("host.status,network.inventory,vm.list,vm.memory-stats,vm.cpu-stats,vm.blkio-get,vm.bandwidth,vm.qos.storage.preview,vm.qos.network.preview,vm.guest-agent-status,vm.guest-ping,checkpoint.list,vm.create,vm.start,vm.shutdown,vm.poweroff,vm.restart,vm.pause,vm.resume,vm.save,vm.resume-saved,vm.rename,vm.manage,vm.clone.preview,vm.clone,vm.eject,vm.attach,vm.limit,vm.qos.storage.set,vm.qos.network.set,vm.guest.exec,vm.guest.channel.verify,vm.guest.channel.ensure,vm.set-memory,vm.set-vcpu,vm.disk-resize,vm.delete,checkpoint.create,checkpoint.restore,checkpoint.delete", nativeCore.GetProperty("reason").GetString());
     }
 
     [Fact]
@@ -87,7 +87,7 @@ public sealed class RuntimePolicyContractTests
             new[] { "host.status", "network.inventory", "vm.list", "vm.memory-stats", "vm.cpu-stats", "vm.blkio-get", "vm.bandwidth", "vm.qos.storage.preview", "vm.qos.network.preview", "vm.guest-agent-status", "vm.guest-ping", "checkpoint.list" },
             dispatch.GetProperty("native_probe_operations").EnumerateArray().Select(item => item.GetString()).ToArray());
         Assert.Equal(
-            new[] { "vm.create", "vm.start", "vm.shutdown", "vm.poweroff", "vm.restart", "vm.pause", "vm.resume", "vm.save", "vm.resume-saved", "vm.rename", "vm.manage", "vm.eject", "vm.attach", "vm.limit", "vm.qos.storage.set", "vm.qos.network.set", "vm.guest.exec", "vm.guest.channel.verify", "vm.guest.channel.ensure", "vm.set-memory", "vm.set-vcpu", "vm.disk-resize", "vm.delete", "checkpoint.create", "checkpoint.restore", "checkpoint.delete" },
+            new[] { "vm.create", "vm.start", "vm.shutdown", "vm.poweroff", "vm.restart", "vm.pause", "vm.resume", "vm.save", "vm.resume-saved", "vm.rename", "vm.manage", "vm.clone.preview", "vm.clone", "vm.eject", "vm.attach", "vm.limit", "vm.qos.storage.set", "vm.qos.network.set", "vm.guest.exec", "vm.guest.channel.verify", "vm.guest.channel.ensure", "vm.set-memory", "vm.set-vcpu", "vm.disk-resize", "vm.delete", "checkpoint.create", "checkpoint.restore", "checkpoint.delete" },
             dispatch.GetProperty("native_mutation_operations").EnumerateArray().Select(item => item.GetString()).ToArray());
         Assert.Equal("native-vm-qos-guest-execution-and-mutation-create-lifecycle-media-resource-delete-checkpoint-mutation", dispatch.GetProperty("mutation_dispatch").GetString());
     }

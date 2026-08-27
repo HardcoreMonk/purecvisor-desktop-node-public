@@ -1486,6 +1486,66 @@
       ]
     },
     {
+      "feature_id": "pcv.vm.clone",
+      "title": "Managed VM full clone",
+      "routes": [
+        {
+          "operation_id": "vm.clone.preview",
+          "method": "POST",
+          "route_template": "/api/v1/vms/{vmId}/clone/preview",
+          "required_permission": "operate",
+          "present_surfaces": [
+            "api",
+            "cli",
+            "web"
+          ],
+          "excluded_surfaces": [],
+          "surface_bindings": {
+            "web": {
+              "coverage_id": "vm.clone.preview"
+            },
+            "cli": {
+              "command": [
+                "vm",
+                "clone",
+                "vm-01",
+                "--name",
+                "vm-02",
+                "--dry-run"
+              ]
+            }
+          }
+        },
+        {
+          "operation_id": "vm.clone",
+          "method": "POST",
+          "route_template": "/api/v1/vms/{vmId}/clone",
+          "required_permission": "operate",
+          "present_surfaces": [
+            "api",
+            "cli",
+            "web"
+          ],
+          "excluded_surfaces": [],
+          "surface_bindings": {
+            "web": {
+              "coverage_id": "vm.clone"
+            },
+            "cli": {
+              "command": [
+                "vm",
+                "clone",
+                "vm-01",
+                "--name",
+                "vm-02",
+                "--yes"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
       "feature_id": "pcv.vm.media-eject",
       "title": "VM media eject",
       "routes": [

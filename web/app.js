@@ -197,7 +197,8 @@ const DESKTOP_NODE_API_ROUTES = Object.freeze({
     vmGuestExec: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/guest/exec`,
     vmGuestChannelVerify: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/guest/channel/verify`,
     vmGuestChannelEnsure: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/guest/channel`,
-    vmAction: (vmId, action) => `/api/v1/vms/${encodeRouteSegment(vmId)}/${requireRouteAction(action, ['start', 'shutdown', 'poweroff', 'restart', 'save', 'resume-saved', 'eject', 'attach', 'delete-status', 'set-memory', 'set-vcpu', 'disk-resize', 'manage'])}`,
+    vmAction: (vmId, action) => `/api/v1/vms/${encodeRouteSegment(vmId)}/${requireRouteAction(action, ['start', 'shutdown', 'poweroff', 'restart', 'save', 'resume-saved', 'eject', 'attach', 'delete-status', 'set-memory', 'set-vcpu', 'disk-resize', 'manage', 'clone'])}`,
+    vmClonePreview: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/clone/preview`,
     vmCheckpoints: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/checkpoints`,
     checkpointDetail: (vmId, checkpointId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/checkpoints/${encodeRouteSegment(checkpointId)}`,
     checkpointAction: (vmId, checkpointId, action) => `/api/v1/vms/${encodeRouteSegment(vmId)}/checkpoints/${encodeRouteSegment(checkpointId)}/${requireRouteAction(action, ['restore'])}`,
@@ -233,6 +234,8 @@ const DESKTOP_NODE_ROUTE_COVERAGE = Object.freeze([
     { id: 'vm.resource-mutation', featureId: 'pcv.vm.resource-limits', method: 'POST', route: '/api/v1/vms/{vm_id}/set-memory|set-vcpu|disk-resize', view: 'vms', mutating: true, tokenRequired: true },
     { id: 'vm.delete-status', featureId: 'pcv.vm.delete', method: 'GET', route: '/api/v1/vms/{vm_id}/delete-status', view: 'vms', mutating: false, tokenRequired: true },
     { id: 'vm.manage', featureId: 'pcv.vm.managed-import', method: 'POST', route: '/api/v1/vms/{vm_id}/manage', view: 'vms', mutating: true, tokenRequired: true },
+    { id: 'vm.clone.preview', featureId: 'pcv.vm.clone', method: 'POST', route: '/api/v1/vms/{vm_id}/clone/preview', view: 'vms', mutating: false, tokenRequired: true },
+    { id: 'vm.clone', featureId: 'pcv.vm.clone', method: 'POST', route: '/api/v1/vms/{vm_id}/clone', view: 'vms', mutating: true, tokenRequired: true },
     { id: 'vm.delete', featureId: 'pcv.vm.delete', method: 'DELETE', route: '/api/v1/vms/{vm_id}', view: 'vms', mutating: true, tokenRequired: true },
     { id: 'checkpoint.list', featureId: 'pcv.checkpoint.lifecycle', method: 'GET', route: '/api/v1/vms/{vm_id}/checkpoints', view: 'vms', mutating: false, tokenRequired: true },
     { id: 'checkpoint.create', featureId: 'pcv.checkpoint.lifecycle', method: 'POST', route: '/api/v1/vms/{vm_id}/checkpoints', view: 'vms', mutating: true, tokenRequired: true },
@@ -321,6 +324,22 @@ function buildVmManageConfirmation(vmId, vm) {
         'After success this VM will pass PureCVisor managed delete.',
         'Unmanaged delete refusal remains.',
         'This queues a Hyper-V Notes managed-marker mutation.',
+        'The result will appear in Tracked Jobs.'
+    ].join('\n');
+}
+function buildVmCloneConfirmation(vmId, vm, targetName, preview) {
+    const sourceName = getVmName(vm);
+    const plannedCopyBytes = preview?.planned_copy_bytes;
+    const plannedCopyBytesText = plannedCopyBytes === null || plannedCopyBytes === undefined || plannedCopyBytes === ''
+        ? '-'
+        : String(plannedCopyBytes);
+    return [
+        `Clone VM ${sourceName} to ${targetName}?`,
+        `Source: ${sourceName}`,
+        `VM id: ${vmId}`,
+        `Target name: ${targetName}`,
+        `planned_copy_bytes: ${plannedCopyBytesText}`,
+        '독립 VHDX를 복사한 새 managed VM을 만든다. 소스 VM은 변경하지 않는다.',
         'The result will appear in Tracked Jobs.'
     ].join('\n');
 }
@@ -666,6 +685,14 @@ const desktopApi = Object.freeze({
     queueVmManage: (vmId, confirmName) => apiFetch(DESKTOP_NODE_API_ROUTES.vmAction(vmId, 'manage'), {
         method: 'POST',
         body: JSON.stringify({ confirm_name: confirmName })
+    }),
+    previewVmClone: (vmId, payload) => apiFetch(DESKTOP_NODE_API_ROUTES.vmClonePreview(vmId), {
+        method: 'POST',
+        body: JSON.stringify(payload)
+    }),
+    queueVmClone: (vmId, payload) => apiFetch(DESKTOP_NODE_API_ROUTES.vmAction(vmId, 'clone'), {
+        method: 'POST',
+        body: JSON.stringify(payload)
     }),
     queueVmResourceMutation: (vmId, action, payload) => apiFetch(DESKTOP_NODE_API_ROUTES.vmAction(vmId, action), {
         method: 'POST',
@@ -1634,6 +1661,7 @@ function renderVmDetail() {
       <button data-action="vm-eject" data-vm-id="${escapeHtml(vmId)}"${actionDisabled}>Eject media</button>
       <button data-action="vm-delete-status" data-vm-id="${escapeHtml(vmId)}"${actionDisabled}>Delete status</button>
       <button data-action="vm-manage" data-vm-id="${escapeHtml(vmId)}"${actionDisabled}>Manage VM</button>
+      <button data-action="vm-clone" data-vm-id="${escapeHtml(vmId)}"${actionDisabled}>Clone VM</button>
       <button class="danger-button" data-action="vm-delete" data-vm-id="${escapeHtml(vmId)}"${actionDisabled}>Delete VM</button>
       <button data-action="vm-console" data-vm-id="${escapeHtml(vmId)}"${consoleDisabled}>Console</button>
       ${pendingVmAction ? `<span class="muted">Pending action: ${escapeHtml(pendingVmAction)}</span>` : ''}
@@ -1655,6 +1683,10 @@ function renderVmDetail() {
       <form class="vm-resource-form" data-action="vm-disk-resize" data-vm-id="${escapeHtml(vmId)}">
         <input name="disk_gb" type="number" min="8" max="4096" step="1" placeholder="Disk GB" aria-label="disk GB"${actionDisabled}>
         <button type="submit"${actionDisabled}>Resize disk</button>
+      </form>
+      <form class="vm-resource-form" data-action="vm-clone" data-vm-id="${escapeHtml(vmId)}">
+        <input name="name" autocomplete="off" placeholder="Target VM name" aria-label="clone target name"${actionDisabled}>
+        <button type="submit" data-action="vm-clone"${actionDisabled}>Clone VM</button>
       </form>
     </div>
     <div class="details-grid detail-grid">
@@ -3679,6 +3711,41 @@ async function queueVmManage(vmId) {
         render();
     }
 }
+async function queueVmClone(vmId, rawName) {
+    requireRbac('operate', 'VM clone');
+    const name = String(rawName || '').trim();
+    if (!name) {
+        throw normalizeError({
+            code: 'PCV_VM_CLONE_NAME_REQUIRED',
+            message: 'Enter a target VM name.',
+            detail: 'name is required before queueing vm.clone.'
+        });
+    }
+    const vm = state.selectedVm || findCachedVm(vmId);
+    const payload = { confirm_name: vmId, name };
+    state.actionPending = true;
+    setVmActionPending(vmId, 'clone');
+    state.error = null;
+    render();
+    try {
+        const preview = await desktopApi.previewVmClone(vmId, payload);
+        if (!window.confirm(buildVmCloneConfirmation(vmId, vm, name, preview))) {
+            return;
+        }
+        const job = await desktopApi.queueVmClone(vmId, payload);
+        trackJob(job);
+        state.connectionState = 'connected';
+        startPolling();
+    }
+    catch (error) {
+        state.error = normalizeError(error);
+    }
+    finally {
+        state.actionPending = false;
+        clearVmActionPending(vmId);
+        render();
+    }
+}
 async function queueVmDelete(vmId) {
     requireRbac('operate', 'VM delete');
     const vm = state.selectedVm || findCachedVm(vmId);
@@ -4610,6 +4677,10 @@ function bindEvents() {
                 await queueVmAttach(form.dataset.vmId, data.get('iso_path'));
                 form.reset();
             }
+            else if (form.dataset.action === 'vm-clone') {
+                await queueVmClone(form.dataset.vmId, data.get('name'));
+                form.reset();
+            }
         }
         catch (error) {
             state.error = normalizeError(error);
@@ -4640,6 +4711,13 @@ function bindEvents() {
             }
             else if (button.dataset.action === 'vm-manage') {
                 await queueVmManage(button.dataset.vmId);
+            }
+            else if (button.dataset.action === 'vm-clone') {
+                if (button.closest('form[data-action="vm-clone"]')) {
+                    return;
+                }
+                const cloneForm = els.vmDetailPanel.querySelector('form[data-action="vm-clone"]');
+                await queueVmClone(button.dataset.vmId, cloneForm ? new FormData(cloneForm).get('name') : '');
             }
             else if (button.dataset.action === 'vm-delete') {
                 await queueVmDelete(button.dataset.vmId);

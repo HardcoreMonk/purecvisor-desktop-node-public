@@ -759,6 +759,103 @@ public sealed class DesktopNodeHyperVNativeAdapterTests
     }
 
     [Fact]
+    public void NativeVmClonePreviewAdapterMapsProviderResult()
+    {
+        using var parameters = JsonDocument.Parse("""{"source":"alpha","name":"beta"}""");
+        var provider = new RecordingHyperVVmCloneProvider();
+        var adapter = CreateCloneAdapter(provider);
+
+        var handled = adapter.TryInvoke("vm.clone.preview", parameters.RootElement, CancellationToken.None, out var result);
+
+        Assert.True(handled);
+        Assert.True(result.Ok);
+        Assert.Equal("vm.clone.preview", result.Operation);
+        Assert.Equal("alpha", result.Data!.Value.GetProperty("source").GetString());
+        Assert.Equal("beta", result.Data.Value.GetProperty("name").GetString());
+        Assert.Equal("preview", result.Data.Value.GetProperty("action").GetString());
+        Assert.Equal(2, result.Data.Value.GetProperty("generation").GetInt32());
+        Assert.Equal(@"D:\PureCVisor\VMs\beta", result.Data.Value.GetProperty("directory").GetString());
+        Assert.Equal(1, result.Data.Value.GetProperty("disk_count").GetInt32());
+        Assert.Equal(1024, result.Data.Value.GetProperty("planned_copy_bytes").GetInt64());
+        var disk = Assert.Single(result.Data.Value.GetProperty("disks").EnumerateArray());
+        Assert.Equal(@"D:\PureCVisor\VMs\alpha\disk0.vhdx", disk.GetProperty("source").GetString());
+        Assert.Equal(@"D:\PureCVisor\VMs\beta\disk0.vhdx", disk.GetProperty("target").GetString());
+        Assert.Equal(1, provider.PreviewCallCount);
+        Assert.Equal(0, provider.InvokeCallCount);
+        Assert.Equal("alpha", provider.LastRequest!.SourceName);
+        Assert.Equal("beta", provider.LastRequest.TargetName);
+        Assert.Equal(@"D:\PureCVisor\VMs", provider.LastRequest.VmRoot);
+    }
+
+    [Fact]
+    public void NativeVmCloneAdapterMapsProviderResult()
+    {
+        using var parameters = JsonDocument.Parse("""{"source":"alpha","name":"beta"}""");
+        var provider = new RecordingHyperVVmCloneProvider();
+        var adapter = CreateCloneAdapter(provider);
+
+        var handled = adapter.TryInvoke("vm.clone", parameters.RootElement, CancellationToken.None, out var result);
+
+        Assert.True(handled);
+        Assert.True(result.Ok);
+        Assert.Equal("vm.clone", result.Operation);
+        Assert.Equal("alpha", result.Data!.Value.GetProperty("source").GetString());
+        Assert.Equal("beta", result.Data.Value.GetProperty("name").GetString());
+        Assert.Equal("clone", result.Data.Value.GetProperty("action").GetString());
+        Assert.Equal(@"D:\PureCVisor\VMs\beta", result.Data.Value.GetProperty("directory").GetString());
+        Assert.Equal(@"D:\PureCVisor\VMs\beta\disk0.vhdx", Assert.Single(result.Data.Value.GetProperty("disks").EnumerateArray()).GetString());
+        Assert.Equal(0, provider.PreviewCallCount);
+        Assert.Equal(1, provider.InvokeCallCount);
+        Assert.Equal("alpha", provider.LastRequest!.SourceName);
+        Assert.Equal("beta", provider.LastRequest.TargetName);
+    }
+
+    [Fact]
+    public void NativeVmClonePreviewAdapterMapsNameAndTargetParamsAsSourceAndName()
+    {
+        using var parameters = JsonDocument.Parse("""{"name":"alpha","target":"beta"}""");
+        var provider = new RecordingHyperVVmCloneProvider();
+        var adapter = CreateCloneAdapter(provider);
+
+        var handled = adapter.TryInvoke("vm.clone.preview", parameters.RootElement, CancellationToken.None, out var result);
+
+        Assert.True(handled);
+        Assert.True(result.Ok);
+        Assert.Equal("alpha", provider.LastRequest!.SourceName);
+        Assert.Equal("beta", provider.LastRequest.TargetName);
+        Assert.Equal("alpha", result.Data!.Value.GetProperty("source").GetString());
+        Assert.Equal("beta", result.Data.Value.GetProperty("name").GetString());
+    }
+
+    [Theory]
+    [InlineData("vm.clone.preview")]
+    [InlineData("vm.clone")]
+    public void NativeVmCloneAdapterPassesThroughProviderNotFound(string operation)
+    {
+        using var parameters = JsonDocument.Parse("""{"source":"missing","name":"beta"}""");
+        var provider = new RecordingHyperVVmCloneProvider(throwNotFound: true);
+        var adapter = CreateCloneAdapter(provider);
+
+        var handled = adapter.TryInvoke(operation, parameters.RootElement, CancellationToken.None, out var result);
+
+        Assert.True(handled);
+        Assert.False(result.Ok);
+        Assert.Equal(operation, result.Operation);
+        Assert.Equal("PCV_VM_NOT_FOUND", result.Error!.Code);
+        Assert.False(result.Error.Retryable);
+        if (operation == "vm.clone.preview")
+        {
+            Assert.Equal(1, provider.PreviewCallCount);
+            Assert.Equal(0, provider.InvokeCallCount);
+        }
+        else
+        {
+            Assert.Equal(0, provider.PreviewCallCount);
+            Assert.Equal(1, provider.InvokeCallCount);
+        }
+    }
+
+    [Fact]
     public void NativeVmDeleteAdapterProceedsAfterManagePromotesUnmanagedRow()
     {
         using var manageParameters = JsonDocument.Parse("""{"name":"foreign"}""");
@@ -1129,6 +1226,77 @@ public sealed class DesktopNodeHyperVNativeAdapterTests
             LastVmName = vmName;
             return new DesktopNodeHyperVVmManageInfo(vmName, action);
         }
+    }
+
+    private sealed class RecordingHyperVVmCloneProvider(bool throwNotFound = false) : IDesktopNodeHyperVVmCloneProvider
+    {
+        public int PreviewCallCount { get; private set; }
+
+        public int InvokeCallCount { get; private set; }
+
+        public DesktopNodeHyperVVmCloneRequest? LastRequest { get; private set; }
+
+        public DesktopNodeHyperVVmClonePlan Preview(DesktopNodeHyperVVmCloneRequest request, CancellationToken cancellationToken)
+        {
+            PreviewCallCount += 1;
+            LastRequest = request;
+            ThrowIfMissing(request.SourceName);
+            return new DesktopNodeHyperVVmClonePlan(
+                request.SourceName,
+                request.TargetName,
+                "preview",
+                2,
+                Path.Combine(request.VmRoot, request.TargetName),
+                1,
+                1024,
+                [
+                    new DesktopNodeHyperVVmCloneDiskPlan(
+                        Path.Combine(request.VmRoot, request.SourceName, "disk0.vhdx"),
+                        Path.Combine(request.VmRoot, request.TargetName, "disk0.vhdx"))
+                ]);
+        }
+
+        public DesktopNodeHyperVVmCloneInfo Invoke(DesktopNodeHyperVVmCloneRequest request, CancellationToken cancellationToken)
+        {
+            InvokeCallCount += 1;
+            LastRequest = request;
+            ThrowIfMissing(request.SourceName);
+            return new DesktopNodeHyperVVmCloneInfo(
+                request.SourceName,
+                request.TargetName,
+                "clone",
+                Path.Combine(request.VmRoot, request.TargetName),
+                [Path.Combine(request.VmRoot, request.TargetName, "disk0.vhdx")]);
+        }
+
+        private void ThrowIfMissing(string sourceName)
+        {
+            if (!throwNotFound)
+            {
+                return;
+            }
+
+            throw new DesktopNodeHyperVNativeOperationException(
+                "PCV_VM_NOT_FOUND",
+                $"VM '{sourceName}' was not found.",
+                "The VM was not present in the native Hyper-V VM inventory response.",
+                false);
+        }
+    }
+
+    private static DesktopNodeHyperVNativeAdapter CreateCloneAdapter(IDesktopNodeHyperVVmCloneProvider cloneProvider)
+    {
+        return new DesktopNodeHyperVNativeAdapter(
+            new RecordingHyperVSwitchProvider([]),
+            new RecordingHyperVVmProvider([CompleteVm("alpha")]),
+            new RecordingHyperVCheckpointProvider([]),
+            new RecordingHyperVCheckpointMutationProvider(),
+            new RecordingHyperVVmPowerStateProvider(),
+            new RecordingHyperVVmCreateProvider(),
+            new RecordingHyperVVmDeleteProvider(),
+            new RecordingHyperVVmRenameProvider(),
+            new RecordingHyperVVmManageProvider(),
+            cloneProvider);
     }
 
     private sealed class MutableHyperVVmProvider(IEnumerable<DesktopNodeHyperVVmInfo> vms) : IDesktopNodeHyperVVmProvider

@@ -226,11 +226,14 @@ VM detail panel에서 전원 작업을 실행한다.
 | `Save` | Hyper-V Saved 상태 저장 job을 queue한다. pause가 아니며, 확인 dialog가 VM 표시 이름과 현재 state를 보여 준다. |
 | `Resume saved` | Saved 상태에서 재개 job을 queue한다. 현재 state가 `saved`가 아니면 `PCV_VM_NOT_SAVED`다. |
 | `Manage VM` | existing Hyper-V VM에 managed marker를 붙이는 job을 queue한다. 확인 dialog는 Hyper-V 표시 이름과, 성공 후 이 VM이 managed delete 가드를 통과한다는 점, unmanaged delete 거절은 유지된다는 점을 보여 준다. |
+| `Clone VM` | managed VM의 독립 VHDX를 복사해 새 managed VM을 만드는 job을 queue한다. 대상 이름을 입력하고, 확인 dialog는 소스 표시 이름, 대상 이름, `planned_copy_bytes`를 보여 준다. |
 | `Delete VM` | PureCVisor managed VM delete job을 queue한다. 실행 전 확인 dialog가 뜨며, running VM은 Web Console에서 먼저 `Power off`를 요구한다. |
 
 전원 작업은 queued job으로 처리된다. 작업 직후 VM 목록이 바로 바뀌지 않으면 `Tracked Jobs`의 job 상태를 먼저 확인한다. `Save`와 `Resume saved`는 `pcvcli vm save <vm>` / `pcvcli vm resume-saved <vm>`과 같은 route다. `vm resume saved` 두 단어는 pause resume과 충돌하므로 쓰지 않는다.
 
 `Manage VM`과 `pcvcli vm manage <vm> --yes`는 `POST /api/v1/vms/{id}/manage`를 쓴다. 실험실에서 먼저 만든 Hyper-V VM을 제품 delete 대상으로 쓰려면 이 opt-in이 필요하다. 성공 후 그 VM만 managed delete 가드를 통과한다. unmanaged VM delete는 계속 `PCV_VM_NOT_MANAGED_BY_PURECVISOR`로 거절된다.
+
+`Clone VM`과 `pcvcli vm clone <source> --name <target> --yes`는 `POST /api/v1/vms/{id}/clone`을 쓴다. `--dry-run`과 Web preview는 `POST /api/v1/vms/{id}/clone/preview`다. 소스는 managed Generation 2, 전원 `Off`, checkpoint 0, 독립 VHDX여야 한다. confirmation은 소스 표시 이름과 대상 이름을 보여 주고 “독립 VHDX를 복사한 새 managed VM을 만든다. 소스 VM은 변경하지 않는다.”고 안내한다. TPM/shielded VM과 linked/differencing disk는 이 경로로 클론하지 않는다. 결과는 `Tracked Jobs`에서 확인한다.
 
 VM delete는 destructive host mutation이다. Web Console은 running VM delete를 먼저 차단하고, API는 PureCVisor managed marker가 없는 VM을 `PCV_VM_NOT_MANAGED_BY_PURECVISOR`로 차단한다. Delete job 결과는 `Tracked Jobs`에서 확인한다.
 

@@ -107,6 +107,11 @@
   P0-4 code-level 기록은
   `docs/ga-ready/evidence/service-plan-p0-managed-import-code-level-2026-08-14.md`다.
   이 문서 전용 편집은 product payload가 아니며 `0.42.74`를 열지 않는다.
+  P1-5 managed full clone 설계는
+  `docs/superpowers/specs/2026-08-27-purecvisor-desktop-node-p1-managed-full-clone-design.md`이며
+  구현 계획은
+  `docs/superpowers/plans/2026-08-27-purecvisor-desktop-node-p1-managed-full-clone.md`다.
+  그 설계·계획 자체는 `0.42.76`을 열지 않는다.
 - 2026-07-16 구현 평가는 `0.42.65` 기준 predecessor다. Web 기본 경로 미완은 04273
   loopback session으로 닫힌 것으로 해석한다.
 

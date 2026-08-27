@@ -181,6 +181,14 @@ const desktopApi: Readonly<PcvDesktopApi> = Object.freeze({
     method: 'POST',
     body: JSON.stringify({ confirm_name: confirmName })
   }),
+  previewVmClone: (vmId: string, payload: Record<string, unknown>) => apiFetch(DESKTOP_NODE_API_ROUTES.vmClonePreview(vmId), {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  }),
+  queueVmClone: (vmId: string, payload: Record<string, unknown>) => apiFetch(DESKTOP_NODE_API_ROUTES.vmAction(vmId, 'clone'), {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  }),
   queueVmResourceMutation: (vmId: string, action: string, payload: Record<string, unknown>) => apiFetch(DESKTOP_NODE_API_ROUTES.vmAction(vmId, action), {
     method: 'POST',
     body: JSON.stringify(payload)

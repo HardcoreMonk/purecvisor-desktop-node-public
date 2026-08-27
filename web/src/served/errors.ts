@@ -50,6 +50,23 @@ function buildVmManageConfirmation(vmId: string, vm: any): string {
   ].join('\n');
 }
 
+function buildVmCloneConfirmation(vmId: string, vm: any, targetName: string, preview: any): string {
+  const sourceName = getVmName(vm);
+  const plannedCopyBytes = preview?.planned_copy_bytes;
+  const plannedCopyBytesText = plannedCopyBytes === null || plannedCopyBytes === undefined || plannedCopyBytes === ''
+    ? '-'
+    : String(plannedCopyBytes);
+  return [
+    `Clone VM ${sourceName} to ${targetName}?`,
+    `Source: ${sourceName}`,
+    `VM id: ${vmId}`,
+    `Target name: ${targetName}`,
+    `planned_copy_bytes: ${plannedCopyBytesText}`,
+    '독립 VHDX를 복사한 새 managed VM을 만든다. 소스 VM은 변경하지 않는다.',
+    'The result will appear in Tracked Jobs.'
+  ].join('\n');
+}
+
 function buildVmDeleteConfirmation(vmId: string, vm: any): string {
   const vmName = getVmName(vm);
   const vmState = getVmState(vm) || 'unknown';
