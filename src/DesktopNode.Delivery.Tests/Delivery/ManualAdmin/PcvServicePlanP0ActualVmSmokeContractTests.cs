@@ -221,6 +221,8 @@ public sealed class PcvServicePlanP0ActualVmSmokeContractTests
         var adapter = RepositoryContractContext.Find().ReadUtf8Text(AdapterPath);
         Assert.DoesNotContain("'product-vm-state'", adapter, StringComparison.Ordinal);
         Assert.DoesNotContain("product-vm-state", Source(), StringComparison.Ordinal);
+        Assert.Contains("ProductDeleteOperatorIds", adapter, StringComparison.Ordinal);
+        Assert.DoesNotContain("ProductDeleteVmIds", adapter, StringComparison.Ordinal);
     }
 
     private static string Source() =>
