@@ -8,9 +8,9 @@ source_commit: `f30c94683b41a1d46ba6ab3a8fd6c735e76996a1`
 installed_cli_sha256: `7e2b99bc0eda1fb11dcaac40b24b829581de7167d79552e0c48c40decdf1211d`
 host_mutation_performed: `true`
 secret_observed: `false`
-canonical_current_evidence: `0.42.74-admin-smoke`
-canonical_current_changed: `false`
-promotion_eligible_changed: `false`
+canonical_current_evidence: `0.42.75-admin-smoke`
+canonical_current_changed: `true`
+promotion_eligible_changed: `true`
 public_trusted_signing: `not-claimed`
 external_stable_publication: `not-claimed`
 
@@ -18,8 +18,8 @@ external_stable_publication: `not-claimed`
 
 설치본 `0.42.75-admin-smoke`에서 Lane 2 SavedOnly와 Full P0를 실제 Hyper-V VM으로
 실행했다. Saved 왕복, DVD attach, restore, managed import, cleanup이 PASS다. 이 증거는
-04275 candidate actual-VM이지 operational current 전환이 아니다. `0.42.74-admin-smoke`
-ledger와 `pcv.vm.saved-lifecycle/actual_vm_tested/fail` blocker는 유지한다.
+operational current `0.42.75-admin-smoke`의 actual-VM P0 PASS다. 04274 P0 `vm.save`
+FAIL는 historical predecessor로만 남는다.
 
 | 실행 | artifact | summary SHA-256 | overall_verdict |
 | --- | --- | --- | --- |
@@ -51,18 +51,15 @@ restore 전 `vm poweroff`와 Off 대기, list는 표시 이름 운영자 id를 �
 `docs/ga-ready/evidence/service-plan-p0-actual-vm-2026-08-20-04274.md`가 계속 소유한다.
 이 문서는 그 FAIL를 pass로 재해석하지 않는다.
 
-## 아직 열리지 않은 04275 승격 입력
+## Lane 3 승격 입력
 
-- functional carry-forward actual-VM
-- `0.42.74-admin-smoke -> 0.42.75-admin-smoke` manual-admin package-pair
-- clean-target SavedOnly
-- final installed current-card
-
-위가 모두 PASS하기 전에는 `docs/ga-ready/current-evidence.json`의 `current.version`과
-`feature_qualification.promotion_eligible`을 바꾸지 않는다.
+functional carry-forward, `0.42.74-admin-smoke -> 0.42.75-admin-smoke` package-pair,
+clean-target SavedOnly, final current-card가 모두 PASS다. 같은 Lane 3가
+`docs/ga-ready/current-evidence.json`을 `0.42.75-admin-smoke`로 승격하고
+`promotion_eligible=true`, blockers `[]`로 닫는다.
 
 ## Nonclaims
 
 - host mutation을 수행했다. leftover `pcv-p0-*` VM은 없다.
 - public trusted signing 또는 external stable publication을 주장하지 않는다.
-- 04274 operational current를 소급 삭제하거나 04275로 바꾸지 않는다.
+- 04274 P0 FAIL 문서를 삭제하거나 pass로 재해석하지 않는다.

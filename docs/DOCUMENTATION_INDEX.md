@@ -8,7 +8,7 @@
 - 공개 소스 권위: `HardcoreMonk/purecvisor-desktop-node-public`, final main `6e2bdb93ce308b632c929e2c17f5550ac3845401`.
 - Required CI 권위: Development Gates run `32904006595`; 보호 context는 정확히 `dotnet`, `web`, `delivery`, `installer-policy`다.
 - PowerShell/Pester 경계: invocation 0은 위 Required CI 네 context에만 적용한다. 별도 Public Boundary workflow는 비필수 legacy residue로 보존한다(run `32904006619`, job `97983888524`).
-- 운영 제품 권위: `0.42.74-admin-smoke`; Web Console과 PCVCLI가 active이고 TUI는 absent다. 승격은 `pcv.vm.saved-lifecycle/actual_vm_tested/fail`로 계속 차단된다.
+- 운영 제품 권위: `0.42.75-admin-smoke`; Web Console과 PCVCLI가 active이고 TUI는 absent다. Feature promotion은 `promotion_eligible=true`, blockers `none`이다.
 - 릴리스 주장 경계: `public_trusted_signing=false`, `external_stable_publication=false`.
 
 ## 관례적 진입점 매핑

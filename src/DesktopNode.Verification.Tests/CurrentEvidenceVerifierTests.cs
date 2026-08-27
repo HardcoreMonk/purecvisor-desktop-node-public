@@ -22,7 +22,7 @@ public sealed class CurrentEvidenceVerifierTests
 
         var result = CurrentEvidenceVerifier.Verify(root, CancellationToken.None);
 
-        Assert.Equal("0.42.74-admin-smoke", result.Record.Current.Version);
+        Assert.Equal("0.42.75-admin-smoke", result.Record.Current.Version);
         Assert.Equal(8, result.Targets.Count);
         Assert.All(result.Targets, target => Assert.Equal("current", target.Status));
         Assert.Equal(
@@ -73,9 +73,9 @@ public sealed class CurrentEvidenceVerifierTests
         Assert.StartsWith("<!-- BEGIN GENERATED CURRENT EVIDENCE -->", block, StringComparison.Ordinal);
         Assert.EndsWith("<!-- END GENERATED CURRENT EVIDENCE -->", block, StringComparison.Ordinal);
         Assert.Contains("Feature qualification:", block, StringComparison.Ordinal);
-        Assert.Contains("promotion_eligible=false", block, StringComparison.Ordinal);
-        Assert.Contains("blocker_count=1", block, StringComparison.Ordinal);
-        Assert.Contains("pcv.vm.saved-lifecycle/actual_vm_tested/fail", block, StringComparison.Ordinal);
+        Assert.Contains("promotion_eligible=true", block, StringComparison.Ordinal);
+        Assert.Contains("blocker_count=0", block, StringComparison.Ordinal);
+        Assert.Contains("blockers=none", block, StringComparison.Ordinal);
         Assert.DoesNotContain("Web/TUI/CLI current-card", block, StringComparison.Ordinal);
     }
 
@@ -145,10 +145,17 @@ public sealed class CurrentEvidenceVerifierTests
                 qualification["contract"] = "PCV-FEATURE-PROMOTION-DECISION-V1";
                 break;
             case "blocker-extra":
-                qualification["blockers"]!.AsArray()[0]!["unexpected"] = true;
+                qualification["promotion_eligible"] = false;
+                qualification["blockers"] = new JsonArray(new JsonObject
+                {
+                    ["feature_id"] = "pcv.vm.saved-lifecycle",
+                    ["stage"] = "actual_vm_tested",
+                    ["verdict"] = "fail",
+                    ["unexpected"] = true,
+                });
                 break;
             case "contradictory":
-                qualification["promotion_eligible"] = true;
+                qualification["promotion_eligible"] = false;
                 break;
             case "version-case":
                 current["version"] = "0.42.74-ADMIN-SMOKE";

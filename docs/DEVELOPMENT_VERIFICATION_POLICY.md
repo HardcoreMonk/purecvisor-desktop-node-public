@@ -3,18 +3,18 @@
 <!-- BEGIN GENERATED CURRENT EVIDENCE -->
 ## Current operational evidence (generated)
 
-- Version: `0.42.74-admin-smoke`
+- Version: `0.42.75-admin-smoke`
 - Active operator surfaces: Web Console and PCVCLI; `tui_present=false`.
-- Package evidence: `docs/ga-ready/evidence/admin-smoke-package-2026-08-20-04274.md`.
-- Full admin host mutation: `full-admin-host-mutation-gate-20260820-04274` / `docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-08-20-04274-hostmutation.md`.
-- Actual-VM functional evidence: `docs/ga-ready/evidence/functional-correctness-actual-host-validation-2026-08-20-04274.md`.
-- Feature qualification: `contract=pcv-feature-promotion-decision-v1`; `promotion_eligible=false`; `blocker_count=1`; `blockers=pcv.vm.saved-lifecycle/actual_vm_tested/fail`.
-- Installed CLI/Web current-card: `docs/ga-ready/evidence/installed-operator-surface-current-card-2026-08-20-04274.md`; CLI exit 0, Web HTTP 200, service Running/Automatic, TUI absent.
-- Clean MSI SHA-256: `f4d0fcb75bc463676b831a4f871c402636039a7f1bbaf3780b24d10eceae1b8e`.
-- Operational MSI SHA-256: `2bc46c986a629695462f6b424bb3ca963162fd59fbf6359fbcb73b38ea09b787`.
-- Operational payload aggregate SHA-256: `c7984216f1625f2570e2da8cc0428f1a9a4ef9ecf8fe049d8ccfa6d3100df71d`.
-- Provenance commit: `adc04673b569ef9b587371fdb23bc11ceb14e2e2`.
-- Latest closed manual-admin pair: `0.42.73-admin-smoke -> 0.42.74-admin-smoke` / `manual-admin-campaign-descriptor-20260820-04273-04274-closed`.
+- Package evidence: `docs/ga-ready/evidence/admin-smoke-package-2026-08-21-04275.md`.
+- Full admin host mutation: `full-admin-host-mutation-gate-20260821-04275` / `docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-08-21-04275-hostmutation.md`.
+- Actual-VM functional evidence: `docs/ga-ready/evidence/functional-correctness-actual-host-validation-2026-08-27-04275.md`.
+- Feature qualification: `contract=pcv-feature-promotion-decision-v1`; `promotion_eligible=true`; `blocker_count=0`; `blockers=none`.
+- Installed CLI/Web current-card: `docs/ga-ready/evidence/installed-operator-surface-current-card-2026-08-27-04275.md`; CLI exit 0, Web HTTP 200, service Running/Automatic, TUI absent.
+- Clean MSI SHA-256: `3d3ee255f7a16c90715da27c436a9ebce479b5ae91f1f4a7067a47dc6dbc0fb6`.
+- Operational MSI SHA-256: `d5afd8774ca5c33b84b10faa771703dcdba37c96d816be4dbb8f9a886f7c967b`.
+- Operational payload aggregate SHA-256: `b6882c9ab40dffc2a9a15785841a097140c23fef6eba26dc76bc892107c2c9b7`.
+- Provenance commit: `dbe1b48cf8bfc45fe7c431fac30ff498dfc9bbe4`.
+- Latest closed manual-admin pair: `0.42.74-admin-smoke -> 0.42.75-admin-smoke` / `manual-admin-campaign-descriptor-20260827-04274-04275`.
 - Claims: `public_trusted_signing=false`; `external_stable_publication=false`.
 <!-- END GENERATED CURRENT EVIDENCE -->
 

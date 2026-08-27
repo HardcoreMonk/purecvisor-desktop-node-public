@@ -128,9 +128,9 @@ feature promotion evidence를 서로 다른 계약으로 유지한다.
 
 ## Evidence stage 투영
 
-Operational current package/service anchor는 `0.42.74-admin-smoke`다. 이것은 별도의
+Operational current package/service anchor는 `0.42.75-admin-smoke`다. 이것은 별도의
 feature promotion 결정과 동일하지 않다. 현재 feature promotion은
-`promotion_eligible=false`, `blocker_count=1`이다.
+`promotion_eligible=true`, `blocker_count=0`이다.
 
 | Feature ID | code_tested | packaged | installed_tested | actual_vm_tested | manual_admin_tested | blocker |
 |---|---|---|---|---|---|---|
@@ -155,7 +155,7 @@ feature promotion 결정과 동일하지 않다. 현재 feature promotion은
 | `pcv.checkpoint.restore` | pass | pass | pass | pass | pass | none |
 | `pcv.vm.power-lifecycle` | not-assessed | not-assessed | not-assessed | not-assessed | not-assessed | none |
 | `pcv.vm.pause-lifecycle` | not-assessed | not-assessed | not-assessed | not-assessed | not-assessed | none |
-| `pcv.vm.saved-lifecycle` | pass | pass | pass | fail | pass | `pcv.vm.saved-lifecycle/actual_vm_tested/fail` |
+| `pcv.vm.saved-lifecycle` | pass | pass | pass | pass | pass | none |
 | `pcv.vm.rename` | not-assessed | not-assessed | not-assessed | not-assessed | not-assessed | none |
 | `pcv.vm.managed-import` | pass | pass | pass | pass | pass | none |
 | `pcv.vm.media-eject` | not-assessed | not-assessed | not-assessed | not-assessed | not-assessed | none |
@@ -164,20 +164,21 @@ feature promotion 결정과 동일하지 않다. 현재 feature promotion은
 
 ## 현재 blocker
 
-유일한 승격 blocker는
-`pcv.vm.saved-lifecycle/actual_vm_tested/fail`이다. Saved lifecycle의 code, package,
-installed, manual-admin 관측은 pass지만 operational current `0.42.74-admin-smoke`의
-actual VM 관측은 fail이므로 feature promotion eligible로 판정하지 않는다.
+열린 승격 blocker는 없다. Saved lifecycle의 code, package, installed, actual-VM,
+manual-admin 관측은 `0.42.75-admin-smoke`에서 모두 pass다.
 
-설치본 `0.42.75-admin-smoke` Lane 2 SavedOnly r2와 Full r4는
+04274 P0 `vm.save` FAIL는 historical predecessor
+`docs/ga-ready/evidence/service-plan-p0-actual-vm-2026-08-20-04274.md`가 소유한다.
+그 문자열 `pcv.vm.saved-lifecycle/actual_vm_tested/fail`은 과거 blocker 기록이며
+현재 판정이 아니다.
+
+설치본 `0.42.75-admin-smoke` Lane 2 SavedOnly r2, Full r4, clean-target SavedOnly는
 `docs/ga-ready/evidence/service-plan-p0-actual-vm-2026-08-27-04275.md`에서 PASS다.
-그 증거는 04275 candidate actual-VM이며, 04274 ledger `current.verdict=fail`과
-`docs/ga-ready/current-evidence.json`의 `promotion_eligible=false`를 바꾸지 않는다.
 
 ## Non-claims
 
 - 이 문서는 public trusted signing을 증명하지 않는다.
 - 이 문서는 external stable publication을 증명하지 않는다.
-- `0.42.74-admin-smoke` operational current 상태가 27개 feature의 promotion 완료를 뜻하지 않는다.
+- `0.42.75-admin-smoke` operational current 상태가 27개 feature의 promotion 완료를 뜻하지 않는다.
 - `not-assessed`는 pass도 fail도 아니며, 실제 VM 또는 manual-admin evidence를 추정하지 않는다.
 - 이 문서 생성 과정에서 host, VM, service, package mutation을 수행하지 않았다.
