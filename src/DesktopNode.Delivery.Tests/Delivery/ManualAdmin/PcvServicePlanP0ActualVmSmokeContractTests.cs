@@ -79,6 +79,25 @@ public sealed class PcvServicePlanP0ActualVmSmokeContractTests
     }
 
     [Fact]
+    public void PinsDvdReadbackUsesVmObjectAndStructuredFailure()
+    {
+        var source = Source();
+        RequireTokens(
+            source,
+            "function Invoke-MediaAttachSlice",
+            "Get-VMDvdDrive -VM $vm",
+            "PCV_P0_STATE_MISMATCH|media-attach|dvd-readback-failed",
+            "PCV_P0_STATE_MISMATCH|media-attach|HostResource=");
+        Assert.DoesNotContain("Get-VMDvdDrive -VMId", source, StringComparison.Ordinal);
+        AssertOrdered(
+            source,
+            "function Invoke-MediaAttachSlice",
+            "Get-PcvVmById",
+            "Get-VMDvdDrive -VM $vm",
+            "readbacks.media_attach");
+    }
+
+    [Fact]
     public void PinsSummaryAtomicityFailureSemanticsAndSecretRedaction()
     {
         var source = Source();

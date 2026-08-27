@@ -818,20 +818,39 @@ function Invoke-MediaAttachSlice {
         }
     }
     else {
-        Get-VMDvdDrive -VMId ([Guid]$record.id) -ErrorAction Stop | Select-Object -First 1
+        $vm = Get-PcvVmById -Id ([Guid]$record.id) -Record $record
+        if ($null -eq $vm) {
+            throw 'PCV_P0_STATE_MISMATCH|media-attach|dvd-readback-failed'
+        }
+        try {
+            Get-VMDvdDrive -VM $vm -ErrorAction Stop | Select-Object -First 1
+        }
+        catch {
+            throw 'PCV_P0_STATE_MISMATCH|media-attach|dvd-readback-failed'
+        }
     }
-    $hostResource = if ($null -ne $dvd.PSObject.Properties['HostResource']) {
+    $hostResource = if ($null -ne $dvd -and $null -ne $dvd.PSObject.Properties['HostResource']) {
         [string](@($dvd.HostResource) | Select-Object -First 1)
     }
-    else { [string]$dvd.Path }
+    elseif ($null -ne $dvd -and $null -ne $dvd.PSObject.Properties['Path']) {
+        [string]$dvd.Path
+    }
+    else { '' }
     $summary.readbacks.media_attach = [ordered]@{
         HostResource = $hostResource
         iso = $summary.iso_path_resolved
     }
-    $matches = -not [string]::IsNullOrWhiteSpace($hostResource) -and
-        (Get-AbsolutePath -Path $hostResource).Equals(
-            $summary.iso_path_resolved,
-            [System.StringComparison]::OrdinalIgnoreCase)
+    $matches = $false
+    if (-not [string]::IsNullOrWhiteSpace($hostResource)) {
+        try {
+            $matches = (Get-AbsolutePath -Path $hostResource).Equals(
+                $summary.iso_path_resolved,
+                [System.StringComparison]::OrdinalIgnoreCase)
+        }
+        catch {
+            throw "PCV_P0_STATE_MISMATCH|media-attach|HostResource=$hostResource"
+        }
+    }
     if ([string](Get-ObjectPropertyValue -InputObject $job -Name 'status') -ne 'succeeded' -or -not $matches) {
         throw "PCV_P0_STATE_MISMATCH|media-attach|HostResource=$hostResource"
     }
