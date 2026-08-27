@@ -887,8 +887,8 @@ function Invoke-CloneOkSlice {
     $managed = Test-ManagedMarker -Vm $targetVm -ProductData $targetData
     $targetDisk = Join-Path $targetVmRootFull 'disk0.vhdx'
     $sourceDisk = Join-Path $sourceVmRootFull 'disk0.vhdx'
-    $targetDiskPresent = if ($null -eq $RuntimeAdapter) { Test-Path -LiteralPath $targetDisk -PathType Leaf } else { $true }
-    $sourceDiskPresent = if ($null -eq $RuntimeAdapter) { Test-Path -LiteralPath $sourceDisk -PathType Leaf } else { $true }
+    $targetDiskPresent = Test-PcvPath -Path $targetDisk
+    $sourceDiskPresent = Test-PcvPath -Path $sourceDisk
     $summary.readbacks.clone_ok = [ordered]@{
         target_product = $targetState
         source_product = $sourceState
