@@ -144,6 +144,31 @@ public sealed class PcvServicePlanP0ActualVmSmokeContractTests
             source);
     }
 
+    [Fact]
+    public void PinsCanonicalOperatorIdForProductGetAndDelete()
+    {
+        var source = Source();
+        RequireTokens(
+            source,
+            "Get-ProductVmState",
+            "-OperatorId",
+            "$ManagedVm",
+            "'vm', 'get', $OperatorId",
+            "'vm', 'delete', $record.name");
+        Assert.DoesNotContain(
+            "'vm', 'get', $Id",
+            source,
+            StringComparison.Ordinal);
+        Assert.DoesNotContain(
+            "Get-ProductVmState -Id $Record.id",
+            source,
+            StringComparison.Ordinal);
+        Assert.DoesNotContain(
+            "'vm', 'delete', $record.id",
+            source,
+            StringComparison.Ordinal);
+    }
+
     private static string Source() =>
         RepositoryContractContext.Find().ReadUtf8Text(RunnerPath);
 

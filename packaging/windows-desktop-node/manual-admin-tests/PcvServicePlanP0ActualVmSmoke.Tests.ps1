@@ -144,9 +144,31 @@ function New-P0BehaviorRuntime {
             }
             'invoke-cli' {
                 $step = [string]$Payload.step
+                $arguments = @($Payload.arguments)
                 $state.LastEnqueuedStep = $step
                 if ($step -like 'cleanup-delete-*') {
-                    $state.ProductDeleteVmIds.Add([string]@($Payload.arguments)[2]) | Out-Null
+                    $state.ProductDeleteVmIds.Add([string]$arguments[2]) | Out-Null
+                }
+                if ($step -eq 'vm-get-state') {
+                    $requested = [string]$arguments[2]
+                    if ($requested -ne 'pcv-p0-04275-behavior-managed') {
+                        return [pscustomobject]@{
+                            exit_code = 1
+                            stdout = (@{ error = @{ code = 'PCV_VM_NOT_FOUND' } } | ConvertTo-Json -Compress)
+                            stderr = ''
+                        }
+                    }
+                    $productState = if ($state.ManagedState -eq 'Saved') {
+                        $state.SaveProductState
+                    }
+                    else {
+                        $state.ResumeProductState
+                    }
+                    return [pscustomobject]@{
+                        exit_code = 0
+                        stdout = (@{ data = @{ name = $requested; state = $productState } } | ConvertTo-Json -Compress)
+                        stderr = ''
+                    }
                 }
                 if ([string]$state.ServiceLossAfterEnqueue -eq $step) {
                     $state.ServiceState = 'Stopped'
