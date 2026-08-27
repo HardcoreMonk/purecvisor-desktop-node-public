@@ -16,11 +16,14 @@
 section과 접두사 없는 `status:` 줄은 작성 시점 기록이며 현재 판이 아니다. 현재 판단이 필요하면
 위 `current_*` 블록과 `docs/ga-ready/CURRENT_EVIDENCE_LEDGER.md`를 읽는다.
 
-descriptor_id: `manual-admin-next-campaign-descriptor-2026-08-21-04274-promotion-closure`
+descriptor_id: `manual-admin-next-campaign-descriptor-2026-08-27-04275-promotion-closure`
+previous_04274_descriptor_id: `manual-admin-next-campaign-descriptor-2026-08-21-04274-promotion-closure`
 previous_04273_descriptor_id: `manual-admin-next-campaign-descriptor-2026-08-14-04273-promotion-closure`
-updated_at: `2026-08-21T00:34:57.0450674+09:00`
+updated_at: `2026-08-27T17:30:00+09:00`
+previous_04274_updated_at: `2026-08-21T00:34:57.0450674+09:00`
 previous_04273_updated_at: `2026-08-20T22:42:08.9382675+09:00`
-current_status: `closed-package-pair-04273-04274-and-04274-fullgate-functional-current-card-pass-with-p0-save-open-defect`
+current_status: `closed-package-pair-04274-04275-and-04275-fullgate-functional-p0-current-card-pass`
+previous_04274_current_status: `closed-package-pair-04273-04274-and-04274-fullgate-functional-current-card-pass-with-p0-save-open-defect`
 previous_04273_current_status: `closed-package-pair-04272-04273-and-04273-fullgate-functional-current-card-pass`
 previous_04272_descriptor_id: `manual-admin-next-campaign-descriptor-2026-08-10-04272-r4-promotion-closure`
 previous_04272_updated_at: `2026-08-10T00:40:16.3006641+09:00`
@@ -30,7 +33,8 @@ previous_04271_updated_at: `2026-08-09T00:27:00+09:00`
 previous_04271_current_status: `closed-package-pair-04270-04271-pass-and-04271-fullgate-pass`
 previous_04259_descriptor_id: `manual-admin-next-campaign-descriptor-2026-05-29-04259-public-boundary-docs-maintenance-postpush`
 previous_04259_updated_at: `2026-05-29T21:15:00+09:00`
-current_manual_admin_package_pair: `0.42.73-admin-smoke -> 0.42.74-admin-smoke`
+current_manual_admin_package_pair: `0.42.74-admin-smoke -> 0.42.75-admin-smoke`
+previous_04274_current_manual_admin_package_pair: `0.42.73-admin-smoke -> 0.42.74-admin-smoke`
 previous_04273_current_manual_admin_package_pair: `0.42.72-admin-smoke -> 0.42.73-admin-smoke`
 previous_04272_current_manual_admin_package_pair: `0.42.71-admin-smoke -> 0.42.72-admin-smoke`
 previous_04271_current_manual_admin_package_pair: `0.42.70-admin-smoke -> 0.42.71-admin-smoke`
@@ -50,21 +54,28 @@ previous_04256_current_manual_admin_package_pair: `0.42.55-admin-smoke -> 0.42.5
 previous_04256_current_descriptor_batch_id: `manual-admin-campaign-descriptor-20260528-04255-04256-closed`
 previous_04256_installed_operator_surface_current_card_evidence: `docs/ga-ready/evidence/installed-operator-surface-current-card-2026-05-28-04256.md`
 previous_04256_installed_account_novnc_evidence: `docs/ga-ready/evidence/installed-account-novnc-operator-surface-smoke-2026-05-28-04256.md`
-current_manual_admin_campaign: `docs/ga-ready/evidence/manual-admin-campaign-2026-08-20-04273-04274.md`
+current_manual_admin_campaign: `docs/ga-ready/evidence/manual-admin-campaign-2026-08-27-04274-04275.md`
+previous_04274_current_manual_admin_campaign: `docs/ga-ready/evidence/manual-admin-campaign-2026-08-20-04273-04274.md`
 previous_04273_current_manual_admin_campaign: `docs/ga-ready/evidence/manual-admin-campaign-2026-08-14-04272-04273.md`
-current_manual_admin_campaign_root: `artifacts/manual-admin-campaign-20260820-04273-04274`
+current_manual_admin_campaign_root: `artifacts/manual-admin-campaign-20260827-04274-04275`
+previous_04274_current_manual_admin_campaign_root: `artifacts/manual-admin-campaign-20260820-04273-04274`
 previous_04273_current_manual_admin_campaign_root: `artifacts/manual-admin-campaign-20260814-04272-04273`
-current_manual_admin_target_package_root: `artifacts/admin-smoke-package-20260820-04274`
+current_manual_admin_target_package_root: `artifacts/admin-smoke-package-20260821-04275`
+previous_04274_current_manual_admin_target_package_root: `artifacts/admin-smoke-package-20260820-04274`
 previous_04273_current_manual_admin_target_package_root: `artifacts/admin-smoke-package-20260814-04273`
-current_manual_admin_target_msi_sha256: `f4d0fcb75bc463676b831a4f871c402636039a7f1bbaf3780b24d10eceae1b8e`
+current_manual_admin_target_msi_sha256: `3d3ee255f7a16c90715da27c436a9ebce479b5ae91f1f4a7067a47dc6dbc0fb6`
+previous_04274_current_manual_admin_target_msi_sha256: `f4d0fcb75bc463676b831a4f871c402636039a7f1bbaf3780b24d10eceae1b8e`
 previous_04273_current_manual_admin_target_msi_sha256: `03244819d1850bc9cd5cf01f1141091c41e95dce6208c7f82601f99e1cf69cee`
-current_manual_admin_update_package_sha256: `cac208cacc9a773893e710b773ca56bc6b3fcd1e315b1d1a28a5099cee7f78f1`
+current_manual_admin_update_package_sha256: `ecae6e9fc7f2f3c49e12a7fec5b4e6d7ca0ce8ba017adf7970cb516a7b5e15df`
+previous_04274_current_manual_admin_update_package_sha256: `cac208cacc9a773893e710b773ca56bc6b3fcd1e315b1d1a28a5099cee7f78f1`
 previous_04273_current_manual_admin_update_package_sha256: `1a7b17e2f1e2e3175f94c1ffce03b5d358a291f795ca34b3e0d4602e116d1b3c`
 current_manual_admin_descriptor_generation_contract: `manual-admin-descriptor-generation-contract-v2`
 current_manual_admin_descriptor_schema_version: `2`
-current_manual_admin_descriptor_batch_manifest: `manual-admin-campaign-descriptor-20260820-04273-04274-closed`
+current_manual_admin_descriptor_batch_manifest: `manual-admin-campaign-descriptor-20260827-04274-04275`
+previous_04274_current_manual_admin_descriptor_batch_manifest: `manual-admin-campaign-descriptor-20260820-04273-04274-closed`
 previous_04273_current_manual_admin_descriptor_batch_manifest: `manual-admin-campaign-descriptor-20260814-04272-04273-closed`
-current_manual_admin_descriptor_summary: `artifacts/manual-admin-campaign-20260820-04273-04274/manual-admin-campaign-descriptor/summary.json`
+current_manual_admin_descriptor_summary: `artifacts/manual-admin-campaign-20260827-04274-04275/manual-admin-campaign-descriptor/summary.json`
+previous_04274_current_manual_admin_descriptor_summary: `artifacts/manual-admin-campaign-20260820-04273-04274/manual-admin-campaign-descriptor/summary.json`
 previous_04273_current_manual_admin_descriptor_summary: `artifacts/manual-admin-campaign-20260814-04272-04273/manual-admin-campaign-descriptor/summary.json`
 current_manual_admin_current_card_descriptor_batch_id_contract: `direct-exposed`
 current_manual_admin_runner_count: `6`
@@ -73,17 +84,23 @@ current_manual_admin_not_pass_count: `0`
 current_manual_admin_days_since_previous_closure: `6`
 previous_04273_current_manual_admin_days_since_previous_closure: `4`
 current_evidence_ledger: `docs/ga-ready/CURRENT_EVIDENCE_LEDGER.md`
-current_installed_operator_surface_current_card_evidence: `docs/ga-ready/evidence/installed-operator-surface-current-card-2026-08-20-04274.md`
+current_installed_operator_surface_current_card_evidence: `docs/ga-ready/evidence/installed-operator-surface-current-card-2026-08-27-04275.md`
+previous_04274_current_installed_operator_surface_current_card_evidence: `docs/ga-ready/evidence/installed-operator-surface-current-card-2026-08-20-04274.md`
 previous_04273_current_installed_operator_surface_current_card_evidence: `docs/ga-ready/evidence/installed-operator-surface-current-card-2026-08-14-04273.md`
-current_installed_operator_surface_current_card_summary: `artifacts/installed-operator-surface-current-card-20260820-04274/summary.json`
+current_installed_operator_surface_current_card_summary: `artifacts/installed-operator-surface-current-card-20260827-04275-r2/summary.json`
+previous_04274_current_installed_operator_surface_current_card_summary: `artifacts/installed-operator-surface-current-card-20260820-04274/summary.json`
 previous_04273_current_installed_operator_surface_current_card_summary: `artifacts/installed-operator-surface-current-card-20260814-04273/summary.json`
-current_installed_operator_surface_current_card_summary_sha256: `531fc614da5edb0e11994b021383491ccb8830115d59fb211c6c330f5b25f8c8`
+current_installed_operator_surface_current_card_summary_sha256: `3c0378fc0046e328b5637e5872d349920b01bd53a671567fa947e643538f6ce6`
+previous_04274_current_installed_operator_surface_current_card_summary_sha256: `531fc614da5edb0e11994b021383491ccb8830115d59fb211c6c330f5b25f8c8`
 previous_04273_current_installed_operator_surface_current_card_summary_sha256: `44a91426579c6fb486e6b99cca2321ba4fd8cd547d16797017e0baa6c9d0da14`
-current_functional_correctness_actual_host_evidence: `docs/ga-ready/evidence/functional-correctness-actual-host-validation-2026-08-20-04274.md`
+current_functional_correctness_actual_host_evidence: `docs/ga-ready/evidence/functional-correctness-actual-host-validation-2026-08-27-04275.md`
+previous_04274_current_functional_correctness_actual_host_evidence: `docs/ga-ready/evidence/functional-correctness-actual-host-validation-2026-08-20-04274.md`
 previous_04273_current_functional_correctness_actual_host_evidence: `docs/ga-ready/evidence/functional-correctness-actual-host-validation-2026-08-14-04273.md`
-current_functional_correctness_actual_host_summary: `artifacts/functional-correctness-carryforward-20260820-04274/summary.json`
+current_functional_correctness_actual_host_summary: `artifacts/functional-correctness-carryforward-20260827-04275/summary.json`
+previous_04274_current_functional_correctness_actual_host_summary: `artifacts/functional-correctness-carryforward-20260820-04274/summary.json`
 previous_04273_current_functional_correctness_actual_host_summary: `artifacts/functional-correctness-carryforward-20260814-04273/summary.json`
-current_functional_correctness_actual_host_summary_sha256: `5395286b74ca7dabd3edccbb63c0b006c32999a4c350559e8b90ddb1ea1fb4b8`
+current_functional_correctness_actual_host_summary_sha256: `a907535a5868d0e9a16095f2cf933dc2a8348a947d09af7537e038af4cf16ed5`
+previous_04274_current_functional_correctness_actual_host_summary_sha256: `5395286b74ca7dabd3edccbb63c0b006c32999a4c350559e8b90ddb1ea1fb4b8`
 previous_04273_current_functional_correctness_actual_host_summary_sha256: `09a571235524b1a32c6066b7ef8c3c4ab4a425a7016ef4ccd1d284f75f9e6fac`
 current_operational_credential_rebootstrap_recovery_evidence: `docs/ga-ready/evidence/operational-credential-rebootstrap-recovery-r2-2026-08-09-04272.md`
 current_operational_credential_rebootstrap_recovery_summary: `artifacts/operational-credential-rebootstrap-recovery-r2-20260809-04272/summary.json`
@@ -119,25 +136,33 @@ previous_04259_current_manual_admin_target_msi_sha256: `6976e4f8c862f30884adfbdf
 previous_04259_current_manual_admin_update_package_sha256: `05951af066f0080c9c111de7e104fc8a9418812b68ca0fb246a573d89b6e44fb`
 previous_04259_current_manual_admin_descriptor_batch_manifest: `manual-admin-campaign-descriptor-20260529-04258-04259-closed`
 previous_04259_current_manual_admin_descriptor_summary: `artifacts/manual-admin-campaign-20260529-04258-04259/manual-admin-campaign-descriptor/summary.json`
-latest_manual_admin_candidate_package_pair: `0.42.73-admin-smoke -> 0.42.74-admin-smoke`
+latest_manual_admin_candidate_package_pair: `0.42.74-admin-smoke -> 0.42.75-admin-smoke`
+previous_04274_latest_manual_admin_candidate_package_pair: `0.42.73-admin-smoke -> 0.42.74-admin-smoke`
 previous_04273_latest_manual_admin_candidate_package_pair: `0.42.72-admin-smoke -> 0.42.73-admin-smoke`
-latest_manual_admin_candidate_campaign: `docs/ga-ready/evidence/manual-admin-campaign-2026-08-20-04273-04274.md`
+latest_manual_admin_candidate_campaign: `docs/ga-ready/evidence/manual-admin-campaign-2026-08-27-04274-04275.md`
+previous_04274_latest_manual_admin_candidate_campaign: `docs/ga-ready/evidence/manual-admin-campaign-2026-08-20-04273-04274.md`
 previous_04273_latest_manual_admin_candidate_campaign: `docs/ga-ready/evidence/manual-admin-campaign-2026-08-14-04272-04273.md`
-latest_manual_admin_candidate_campaign_root: `artifacts/manual-admin-campaign-20260820-04273-04274`
+latest_manual_admin_candidate_campaign_root: `artifacts/manual-admin-campaign-20260827-04274-04275`
+previous_04274_latest_manual_admin_candidate_campaign_root: `artifacts/manual-admin-campaign-20260820-04273-04274`
 previous_04273_latest_manual_admin_candidate_campaign_root: `artifacts/manual-admin-campaign-20260814-04272-04273`
-latest_manual_admin_candidate_descriptor_batch_manifest: `manual-admin-campaign-descriptor-20260820-04273-04274-closed`
+latest_manual_admin_candidate_descriptor_batch_manifest: `manual-admin-campaign-descriptor-20260827-04274-04275`
+previous_04274_latest_manual_admin_candidate_descriptor_batch_manifest: `manual-admin-campaign-descriptor-20260820-04273-04274-closed`
 previous_04273_latest_manual_admin_candidate_descriptor_batch_manifest: `manual-admin-campaign-descriptor-20260814-04272-04273-closed`
-latest_manual_admin_candidate_descriptor_summary: `artifacts/manual-admin-campaign-20260820-04273-04274/manual-admin-campaign-descriptor/summary.json`
+latest_manual_admin_candidate_descriptor_summary: `artifacts/manual-admin-campaign-20260827-04274-04275/manual-admin-campaign-descriptor/summary.json`
+previous_04274_latest_manual_admin_candidate_descriptor_summary: `artifacts/manual-admin-campaign-20260820-04273-04274/manual-admin-campaign-descriptor/summary.json`
 previous_04273_latest_manual_admin_candidate_descriptor_summary: `artifacts/manual-admin-campaign-20260814-04272-04273/manual-admin-campaign-descriptor/summary.json`
 latest_manual_admin_candidate_status: `pass-closed`
 latest_manual_admin_candidate_missing_count: `0`
 latest_manual_admin_candidate_not_pass_count: `0`
 latest_manual_admin_candidate_blocker: `none`
-latest_manual_admin_candidate_target_msi_sha256: `f4d0fcb75bc463676b831a4f871c402636039a7f1bbaf3780b24d10eceae1b8e`
+latest_manual_admin_candidate_target_msi_sha256: `3d3ee255f7a16c90715da27c436a9ebce479b5ae91f1f4a7067a47dc6dbc0fb6`
+previous_04274_latest_manual_admin_candidate_target_msi_sha256: `f4d0fcb75bc463676b831a4f871c402636039a7f1bbaf3780b24d10eceae1b8e`
 previous_04273_latest_manual_admin_candidate_target_msi_sha256: `03244819d1850bc9cd5cf01f1141091c41e95dce6208c7f82601f99e1cf69cee`
-latest_manual_admin_candidate_update_package_sha256: `cac208cacc9a773893e710b773ca56bc6b3fcd1e315b1d1a28a5099cee7f78f1`
+latest_manual_admin_candidate_update_package_sha256: `ecae6e9fc7f2f3c49e12a7fec5b4e6d7ca0ce8ba017adf7970cb516a7b5e15df`
+previous_04274_latest_manual_admin_candidate_update_package_sha256: `cac208cacc9a773893e710b773ca56bc6b3fcd1e315b1d1a28a5099cee7f78f1`
 previous_04273_latest_manual_admin_candidate_update_package_sha256: `1a7b17e2f1e2e3175f94c1ffce03b5d358a291f795ca34b3e0d4602e116d1b3c`
-latest_manual_admin_candidate_provenance_commit: `adc04673b569ef9b587371fdb23bc11ceb14e2e2`
+latest_manual_admin_candidate_provenance_commit: `dbe1b48cf8bfc45fe7c431fac30ff498dfc9bbe4`
+previous_04274_latest_manual_admin_candidate_provenance_commit: `adc04673b569ef9b587371fdb23bc11ceb14e2e2`
 previous_04273_latest_manual_admin_candidate_provenance_commit: `b84441f0750a9f77fd0588a86912dbdb68b94f0c`
 previous_04272_latest_manual_admin_candidate_package_pair: `0.42.71-admin-smoke -> 0.42.72-admin-smoke`
 previous_04272_latest_manual_admin_candidate_campaign: `docs/ga-ready/evidence/manual-admin-campaign-2026-08-09-04271-04272.md`
@@ -178,25 +203,33 @@ latest_hyperv_qos_mutation_value_hardening_status: `pass-code-level-promoted-by-
 latest_hyperv_qos_mutation_value_hardening_package_gate_candidate: `0.42.59-admin-smoke`
 latest_hyperv_qos_mutation_value_hardening_manual_admin_package_pair_candidate: `0.42.58-admin-smoke -> 0.42.59-admin-smoke`
 latest_hyperv_qos_mutation_value_hardening_problem_codes: `PCV_VM_QOS_STORAGE_RANGE_INVALID`, `PCV_VM_QOS_NETWORK_RANGE_INVALID`
-next_manual_admin_package_pair_trigger: `product-payload-change-after-04274`
+next_manual_admin_package_pair_trigger: `product-payload-change-after-04275`
+previous_04275_next_manual_admin_package_pair_trigger: `product-payload-change-after-04274`
 previous_04274_next_manual_admin_package_pair_trigger: `product-payload-change-after-04273`
-next_manual_admin_package_pair_candidate: `0.42.74-admin-smoke -> next-admin-smoke-required`
+next_manual_admin_package_pair_candidate: `0.42.75-admin-smoke -> next-admin-smoke-required`
+previous_04275_next_manual_admin_package_pair_candidate: `0.42.74-admin-smoke -> next-admin-smoke-required`
 previous_04274_next_manual_admin_package_pair_candidate: `0.42.73-admin-smoke -> 0.42.74-admin-smoke`
 next_manual_admin_package_pair_candidate_status: `not-opened-awaiting-next-product-payload`
 previous_04274_next_manual_admin_package_pair_candidate_status: `pass-closed-awaiting-current-evidence-promotion`
-next_manual_admin_package_pair_payload_change_source_commit_range: `adc04673b569ef9b587371fdb23bc11ceb14e2e2..next-admin-smoke-required`
+next_manual_admin_package_pair_payload_change_source_commit_range: `dbe1b48cf8bfc45fe7c431fac30ff498dfc9bbe4..next-admin-smoke-required`
+previous_04275_next_manual_admin_package_pair_payload_change_source_commit_range: `adc04673b569ef9b587371fdb23bc11ceb14e2e2..next-admin-smoke-required`
 previous_04274_next_manual_admin_package_pair_payload_change_source_commit_range: `b84441f0750a9f77fd0588a86912dbdb68b94f0c..adc04673b569ef9b587371fdb23bc11ceb14e2e2`
 next_manual_admin_package_pair_payload_changed_source_file_count: `0`
 previous_04274_next_manual_admin_package_pair_payload_changed_source_file_count: `33`
 next_manual_admin_package_pair_target_package_root: `not-opened`
+previous_04275_next_manual_admin_package_pair_target_package_root: `not-opened`
 previous_04274_next_manual_admin_package_pair_target_package_root: `artifacts/admin-smoke-package-20260820-04274`
 next_manual_admin_package_pair_target_package_evidence: `not-opened`
+previous_04275_next_manual_admin_package_pair_target_package_evidence: `not-opened`
 previous_04274_next_manual_admin_package_pair_target_package_evidence: `docs/ga-ready/evidence/admin-smoke-package-2026-08-20-04274.md`
 next_manual_admin_package_pair_target_msi_sha256: `not-opened`
+previous_04275_next_manual_admin_package_pair_target_msi_sha256: `not-opened`
 previous_04274_next_manual_admin_package_pair_target_msi_sha256: `f4d0fcb75bc463676b831a4f871c402636039a7f1bbaf3780b24d10eceae1b8e`
 next_manual_admin_package_pair_target_provenance_commit: `not-opened`
+previous_04275_next_manual_admin_package_pair_target_provenance_commit: `not-opened`
 previous_04274_next_manual_admin_package_pair_target_provenance_commit: `adc04673b569ef9b587371fdb23bc11ceb14e2e2`
 next_manual_admin_package_pair_update_zip_sha256: `not-opened`
+previous_04275_next_manual_admin_package_pair_update_zip_sha256: `not-opened`
 previous_04274_next_manual_admin_package_pair_update_zip_sha256: `cac208cacc9a773893e710b773ca56bc6b3fcd1e315b1d1a28a5099cee7f78f1`
 next_manual_admin_package_pair_descriptor_batch_id: `not-opened`
 previous_04274_next_manual_admin_package_pair_descriptor_batch_id: `manual-admin-campaign-descriptor-20260820-04273-04274-closed`
@@ -233,11 +266,14 @@ post_04226_ledger_contract_followup: `docs/ga-ready/evidence/post-04226-ledger-c
 post_04226_pre_branch_product_payload_change_detected: `false`
 post_04226_branch_product_payload_change: `true`
 post_04226_next_product_payload_package_build_trigger: `post-04226-ledger-contract-merge`
-current_full_admin_host_mutation_gate: `docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-08-20-04274-hostmutation.md`
+current_full_admin_host_mutation_gate: `docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-08-21-04275-hostmutation.md`
+previous_04274_current_full_admin_host_mutation_gate: `docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-08-20-04274-hostmutation.md`
 previous_04273_current_full_admin_host_mutation_gate: `docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-08-14-04273-hostmutation.md`
-current_full_admin_host_mutation_batch: `full-admin-host-mutation-gate-20260820-04274`
+current_full_admin_host_mutation_batch: `full-admin-host-mutation-gate-20260821-04275`
+previous_04274_current_full_admin_host_mutation_batch: `full-admin-host-mutation-gate-20260820-04274`
 previous_04273_current_full_admin_host_mutation_batch: `full-admin-host-mutation-gate-20260814-04273`
-latest_full_admin_gate_batch: `full-admin-host-mutation-gate-20260820-04274`
+latest_full_admin_gate_batch: `full-admin-host-mutation-gate-20260821-04275`
+previous_04274_latest_full_admin_gate_batch: `full-admin-host-mutation-gate-20260820-04274`
 previous_04273_latest_full_admin_gate_batch: `full-admin-host-mutation-gate-20260814-04273`
 previous_04272_current_full_admin_host_mutation_gate: `docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-08-09-04272-hostmutation.md`
 previous_04272_current_full_admin_host_mutation_batch: `full-admin-host-mutation-gate-20260809-04272`
@@ -255,17 +291,23 @@ previous_04257_current_full_admin_host_mutation_batch: `full-admin-host-mutation
 previous_04257_latest_full_admin_gate_batch: `full-admin-host-mutation-gate-20260528-04257`
 previous_04256_current_full_admin_host_mutation_batch: `full-admin-host-mutation-gate-20260528-04256`
 previous_04256_latest_full_admin_gate_batch: `full-admin-host-mutation-gate-20260528-04256`
-current_full_admin_host_mutation_current_card: `artifacts/installed-operator-surface-current-card-20260820-04274/summary.json`
+current_full_admin_host_mutation_current_card: `artifacts/installed-operator-surface-current-card-20260827-04275-r2/summary.json`
+previous_04274_current_full_admin_host_mutation_current_card: `artifacts/installed-operator-surface-current-card-20260820-04274/summary.json`
 previous_04273_current_full_admin_host_mutation_current_card: `artifacts/installed-operator-surface-current-card-20260814-04273/summary.json`
-current_full_admin_host_mutation_payload_aggregate_sha256: `c7984216f1625f2570e2da8cc0428f1a9a4ef9ecf8fe049d8ccfa6d3100df71d`
+current_full_admin_host_mutation_payload_aggregate_sha256: `b6882c9ab40dffc2a9a15785841a097140c23fef6eba26dc76bc892107c2c9b7`
+previous_04274_current_full_admin_host_mutation_payload_aggregate_sha256: `c7984216f1625f2570e2da8cc0428f1a9a4ef9ecf8fe049d8ccfa6d3100df71d`
 previous_04273_current_full_admin_host_mutation_payload_aggregate_sha256: `a5d74ed394c4fc3d230457fb24059aab658fa621abbba630ce1d113a21a75d85`
-current_full_admin_host_mutation_operational_msi_sha256: `2bc46c986a629695462f6b424bb3ca963162fd59fbf6359fbcb73b38ea09b787`
+current_full_admin_host_mutation_operational_msi_sha256: `d5afd8774ca5c33b84b10faa771703dcdba37c96d816be4dbb8f9a886f7c967b`
+previous_04274_current_full_admin_host_mutation_operational_msi_sha256: `2bc46c986a629695462f6b424bb3ca963162fd59fbf6359fbcb73b38ea09b787`
 previous_04273_current_full_admin_host_mutation_operational_msi_sha256: `3151807589504f1ede79592cf0bb077a9cb6da3b54206f89002df5d63b30dac1`
-current_full_admin_host_mutation_provenance_commit: `adc04673b569ef9b587371fdb23bc11ceb14e2e2`
+current_full_admin_host_mutation_provenance_commit: `dbe1b48cf8bfc45fe7c431fac30ff498dfc9bbe4`
+previous_04274_current_full_admin_host_mutation_provenance_commit: `adc04673b569ef9b587371fdb23bc11ceb14e2e2`
 previous_04273_current_full_admin_host_mutation_provenance_commit: `b84441f0750a9f77fd0588a86912dbdb68b94f0c`
-current_full_admin_host_mutation_routeparity_artifact_root: `artifacts/routeparity-service-msi-hyperv-batch-profile-20260820-04274`
+current_full_admin_host_mutation_routeparity_artifact_root: `artifacts/routeparity-service-msi-hyperv-batch-profile-20260821-04275`
+previous_04274_current_full_admin_host_mutation_routeparity_artifact_root: `artifacts/routeparity-service-msi-hyperv-batch-profile-20260820-04274`
 previous_04273_current_full_admin_host_mutation_routeparity_artifact_root: `artifacts/routeparity-service-msi-hyperv-batch-profile-20260814-04273`
-current_full_admin_host_mutation_os_mutation_artifact_root: `artifacts/os-mutation-gates-batch-profile-20260820-04274`
+current_full_admin_host_mutation_os_mutation_artifact_root: `artifacts/os-mutation-gates-batch-profile-20260821-04275`
+previous_04274_current_full_admin_host_mutation_os_mutation_artifact_root: `artifacts/os-mutation-gates-batch-profile-20260820-04274`
 previous_04273_current_full_admin_host_mutation_os_mutation_artifact_root: `artifacts/os-mutation-gates-batch-profile-20260814-04273`
 previous_04272_current_full_admin_host_mutation_current_card: `artifacts/installed-operator-surface-current-card-20260809-04272/summary.json`
 previous_04272_current_full_admin_host_mutation_payload_aggregate_sha256: `deb40a67c5913fd3129adcdbf5aaec29951ce1b223647f28e7df4f6b141c8933`
@@ -305,14 +347,17 @@ current_public_boundary_residue_job_name: `public-boundary-ci-required`
 current_public_boundary_residue_head_sha: `6e2bdb93ce308b632c929e2c17f5550ac3845401`
 current_public_boundary_residue_provider_required: `false`
 current_public_boundary_residue_execution: `pester-and-powershell-non-required`
-current_required_ci_docs_only_package_candidate_decision: `retain-0.42.74-admin-smoke-no-new-candidate`
+current_required_ci_docs_only_package_candidate_decision: `retain-0.42.75-admin-smoke-no-new-candidate`
+previous_04274_current_required_ci_docs_only_package_candidate_decision: `retain-0.42.74-admin-smoke-no-new-candidate`
 current_public_boundary_main_push_compatibility_alias_semantics: `historical-04274-p0-product-landing-not-provider-required-authority`
 current_public_boundary_main_push_evidence: `docs/ga-ready/evidence/public-boundary-ci-main-push-2026-08-21-04274-p0-landing-pass.md`
 current_public_boundary_main_push_run_id: `32388996125`
 current_public_boundary_main_push_job_id: `96490306459`
 current_public_boundary_main_push_head_sha: `5f9cecfd5507e7e5dd726601aae3760e4e1b558c`
-current_public_boundary_main_push_product_payload_change_detected: `true`
-current_public_boundary_main_push_package_candidate_decision: `landed-already-validated-as-0.42.74-admin-smoke`
+current_public_boundary_main_push_product_payload_change_detected: `false`
+previous_04274_current_public_boundary_main_push_product_payload_change_detected: `true`
+current_public_boundary_main_push_package_candidate_decision: `docs-only-04275-promotion-retains-0.42.75-admin-smoke`
+previous_04274_current_public_boundary_main_push_package_candidate_decision: `landed-already-validated-as-0.42.74-admin-smoke`
 previous_04274_p0_current_public_boundary_main_push_evidence: `docs/ga-ready/evidence/public-boundary-ci-main-push-2026-08-21-04274-p0-landing-pass.md`
 previous_04273_current_public_boundary_main_push_evidence: `docs/ga-ready/evidence/public-boundary-ci-main-push-2026-08-14-04273-promotion-postpush-pass.md`
 previous_04274_p0_current_public_boundary_main_push_run_id: `32388996125`
@@ -851,7 +896,8 @@ post_04212_host_mutation_explicit_provenance_commit: `d338b8a99f3e1e3839ac89a6de
 post_04212_host_mutation_explicit_web_console_current_card_smoke: `pass`
 post_04212_host_mutation_explicit_web_console_current_card_artifact_root: `artifacts/web-console-current-card-20260514-140126-04212-explicit`
 latest_full_admin_gate: `docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-05-22-04241-hostmutation.md`
-latest_full_admin_gate_batch: `full-admin-host-mutation-gate-20260528-04257`
+latest_full_admin_gate_batch: `full-admin-host-mutation-gate-20260821-04275`
+previous_04274_latest_full_admin_gate_batch: `full-admin-host-mutation-gate-20260820-04274`
 latest_full_admin_gate_msi_sha256: `e080dbff6525754be7a35dfe316745f9c2f8878ad286a31ea66388ba6915d8fb`
 latest_full_admin_gate_payload_aggregate_sha256: `132695d2e676a3b24321c08cfd783378f74b957865eda2b96b70ea91c31a3b9b`
 latest_full_admin_gate_provenance_commit: `2f41da1073df6e65113ae8ddaeb183e9b55874f4`

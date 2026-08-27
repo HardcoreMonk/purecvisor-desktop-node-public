@@ -214,6 +214,7 @@ function New-P0BehaviorRuntime {
                             $state.ManagedState = $state.ResumeHyperVState
                             $state.LifecycleComplete = $true
                         }
+                        'vm-poweroff' { $state.ManagedState = 'Off' }
                         'vm-manage' { $state.ForeignNotes = 'managed-by=purecvisor-desktop-node' }
                         'managed-delete' { $state.ForeignExists = $false }
                         'cleanup-delete-managed' { $state.ManagedExists = $false }
@@ -231,6 +232,7 @@ function New-P0BehaviorRuntime {
             }
             'wait-hyperv-state' {
                 if ($Payload.expected -eq 'Saved') { return $state.SaveHyperVState }
+                if ($Payload.expected -eq 'Off') { return 'Off' }
                 if ($Payload.phase -eq 'after-resume') { return $state.ResumeHyperVState }
                 return 'Running'
             }

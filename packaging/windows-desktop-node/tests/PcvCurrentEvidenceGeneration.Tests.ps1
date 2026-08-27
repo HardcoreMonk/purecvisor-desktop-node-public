@@ -34,11 +34,8 @@ Describe 'current evidence canonical record' {
 
         $record.feature_qualification.schema_version | Should -Be 1
         $record.feature_qualification.contract | Should -Be 'pcv-feature-promotion-decision-v1'
-        $record.feature_qualification.promotion_eligible | Should -BeFalse
-        @($record.feature_qualification.blockers).Count | Should -Be 1
-        $record.feature_qualification.blockers[0].feature_id | Should -Be 'pcv.vm.saved-lifecycle'
-        $record.feature_qualification.blockers[0].stage | Should -Be 'actual_vm_tested'
-        $record.feature_qualification.blockers[0].verdict | Should -Be 'fail'
+        $record.feature_qualification.promotion_eligible | Should -BeTrue
+        @($record.feature_qualification.blockers).Count | Should -Be 0
     }
 
     It 'rejects contradictory eligibility and blocker combinations in the schema' {
@@ -50,7 +47,7 @@ Describe 'current evidence canonical record' {
             Should -BeTrue
 
         $contradictory = $script:Record | ConvertTo-Json -Depth 64 | ConvertFrom-Json -Depth 64
-        $contradictory.feature_qualification.promotion_eligible = $true
+        $contradictory.feature_qualification.promotion_eligible = $false
         ($contradictory | ConvertTo-Json -Depth 64) |
             Test-Json -SchemaFile $script:SchemaPath -ErrorVariable schemaErrors -ErrorAction SilentlyContinue |
             Should -BeFalse
@@ -130,17 +127,46 @@ Describe 'current evidence canonical record' {
                             Add-Member -NotePropertyName 'unexpected' -NotePropertyValue $true
                     }
                     'blocker-extra-property' {
+                        $record.feature_qualification.promotion_eligible = $false
+                        $record.feature_qualification.blockers = @(
+                            [pscustomobject]@{
+                                feature_id = 'pcv.vm.saved-lifecycle'
+                                stage = 'actual_vm_tested'
+                                verdict = 'fail'
+                            }
+                        )
                         $record.feature_qualification.blockers[0] |
                             Add-Member -NotePropertyName 'unexpected' -NotePropertyValue $true
                     }
                     'feature-id-case' {
-                        $record.feature_qualification.blockers[0].feature_id = 'PCV.vm.saved-lifecycle'
+                        $record.feature_qualification.promotion_eligible = $false
+                        $record.feature_qualification.blockers = @(
+                            [pscustomobject]@{
+                                feature_id = 'PCV.vm.saved-lifecycle'
+                                stage = 'actual_vm_tested'
+                                verdict = 'fail'
+                            }
+                        )
                     }
                     'stage-case' {
-                        $record.feature_qualification.blockers[0].stage = 'ACTUAL_VM_TESTED'
+                        $record.feature_qualification.promotion_eligible = $false
+                        $record.feature_qualification.blockers = @(
+                            [pscustomobject]@{
+                                feature_id = 'pcv.vm.saved-lifecycle'
+                                stage = 'ACTUAL_VM_TESTED'
+                                verdict = 'fail'
+                            }
+                        )
                     }
                     'verdict-case' {
-                        $record.feature_qualification.blockers[0].verdict = 'FAIL'
+                        $record.feature_qualification.promotion_eligible = $false
+                        $record.feature_qualification.blockers = @(
+                            [pscustomobject]@{
+                                feature_id = 'pcv.vm.saved-lifecycle'
+                                stage = 'actual_vm_tested'
+                                verdict = 'FAIL'
+                            }
+                        )
                     }
                     'schema-version-string' {
                         $record.feature_qualification.schema_version = '1'
@@ -149,13 +175,19 @@ Describe 'current evidence canonical record' {
                         $record.schema_version = '1'
                     }
                     'blockers-scalar' {
-                        $record.feature_qualification.blockers = $record.feature_qualification.blockers[0]
+                        $record.feature_qualification.promotion_eligible = $false
+                        $failBlocker = [pscustomobject]@{
+                            feature_id = 'pcv.vm.saved-lifecycle'
+                            stage = 'actual_vm_tested'
+                            verdict = 'fail'
+                        }
+                        $record.feature_qualification.blockers = $failBlocker
                     }
                     'blocked-empty' {
-                        $record.feature_qualification.blockers = @()
+                        $record.feature_qualification.promotion_eligible = $false
                     }
                     'current-version-case' {
-                        $record.current.version = '0.42.74-ADMIN-SMOKE'
+                        $record.current.version = '0.42.75-ADMIN-SMOKE'
                     }
                 }
 
@@ -193,16 +225,24 @@ Describe 'current evidence canonical record' {
         $block = ConvertTo-PcvCurrentEvidenceMarkdown -Record $script:Record
 
         $block | Should -Match 'Feature qualification:'
-        $block | Should -Match 'promotion_eligible=false'
-        $block | Should -Match 'blocker_count=1'
-        $block | Should -Match 'pcv\.vm\.saved-lifecycle/actual_vm_tested/fail'
+        $block | Should -Match 'promotion_eligible=true'
+        $block | Should -Match 'blocker_count=0'
+        $block | Should -Match 'blockers=none'
         $block | Should -Match ([regex]::Escape([string]$script:Record.current.version))
     }
 
     It 'rejects a blocked candidate before writing any source or target file' {
         $candidatePath = Join-Path $TestDrive '04275-blocked.json'
         $candidate = $script:Record | ConvertTo-Json -Depth 64 | ConvertFrom-Json -Depth 64
-        $candidate.current.version = '0.42.75-admin-smoke'
+        $candidate.current.version = '0.42.76-admin-smoke'
+        $candidate.feature_qualification.promotion_eligible = $false
+        $candidate.feature_qualification.blockers = @(
+            [pscustomobject]@{
+                feature_id = 'pcv.vm.saved-lifecycle'
+                stage = 'actual_vm_tested'
+                verdict = 'fail'
+            }
+        )
         $candidate | ConvertTo-Json -Depth 64 | Set-Content -LiteralPath $candidatePath -Encoding utf8
 
         $ownedPaths = @(
@@ -244,7 +284,7 @@ Describe 'current evidence canonical record' {
         $canonical | ConvertTo-Json -Depth 64 |
             Set-Content -LiteralPath $canonicalPath -Encoding utf8
         $candidate = $script:Record | ConvertTo-Json -Depth 64 | ConvertFrom-Json -Depth 64
-        $candidate.current.version = '0.42.74-ADMIN-SMOKE'
+        $candidate.current.version = '0.42.75-ADMIN-SMOKE'
         $candidate | ConvertTo-Json -Depth 64 |
             Set-Content -LiteralPath $candidatePath -Encoding utf8
 

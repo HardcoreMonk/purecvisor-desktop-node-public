@@ -3,18 +3,18 @@
 <!-- BEGIN GENERATED CURRENT EVIDENCE -->
 ## Current operational evidence (generated)
 
-- Version: `0.42.74-admin-smoke`
+- Version: `0.42.75-admin-smoke`
 - Active operator surfaces: Web Console and PCVCLI; `tui_present=false`.
-- Package evidence: `docs/ga-ready/evidence/admin-smoke-package-2026-08-20-04274.md`.
-- Full admin host mutation: `full-admin-host-mutation-gate-20260820-04274` / `docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-08-20-04274-hostmutation.md`.
-- Actual-VM functional evidence: `docs/ga-ready/evidence/functional-correctness-actual-host-validation-2026-08-20-04274.md`.
-- Feature qualification: `contract=pcv-feature-promotion-decision-v1`; `promotion_eligible=false`; `blocker_count=1`; `blockers=pcv.vm.saved-lifecycle/actual_vm_tested/fail`.
-- Installed CLI/Web current-card: `docs/ga-ready/evidence/installed-operator-surface-current-card-2026-08-20-04274.md`; CLI exit 0, Web HTTP 200, service Running/Automatic, TUI absent.
-- Clean MSI SHA-256: `f4d0fcb75bc463676b831a4f871c402636039a7f1bbaf3780b24d10eceae1b8e`.
-- Operational MSI SHA-256: `2bc46c986a629695462f6b424bb3ca963162fd59fbf6359fbcb73b38ea09b787`.
-- Operational payload aggregate SHA-256: `c7984216f1625f2570e2da8cc0428f1a9a4ef9ecf8fe049d8ccfa6d3100df71d`.
-- Provenance commit: `adc04673b569ef9b587371fdb23bc11ceb14e2e2`.
-- Latest closed manual-admin pair: `0.42.73-admin-smoke -> 0.42.74-admin-smoke` / `manual-admin-campaign-descriptor-20260820-04273-04274-closed`.
+- Package evidence: `docs/ga-ready/evidence/admin-smoke-package-2026-08-21-04275.md`.
+- Full admin host mutation: `full-admin-host-mutation-gate-20260821-04275` / `docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-08-21-04275-hostmutation.md`.
+- Actual-VM functional evidence: `docs/ga-ready/evidence/functional-correctness-actual-host-validation-2026-08-27-04275.md`.
+- Feature qualification: `contract=pcv-feature-promotion-decision-v1`; `promotion_eligible=true`; `blocker_count=0`; `blockers=none`.
+- Installed CLI/Web current-card: `docs/ga-ready/evidence/installed-operator-surface-current-card-2026-08-27-04275.md`; CLI exit 0, Web HTTP 200, service Running/Automatic, TUI absent.
+- Clean MSI SHA-256: `3d3ee255f7a16c90715da27c436a9ebce479b5ae91f1f4a7067a47dc6dbc0fb6`.
+- Operational MSI SHA-256: `d5afd8774ca5c33b84b10faa771703dcdba37c96d816be4dbb8f9a886f7c967b`.
+- Operational payload aggregate SHA-256: `b6882c9ab40dffc2a9a15785841a097140c23fef6eba26dc76bc892107c2c9b7`.
+- Provenance commit: `dbe1b48cf8bfc45fe7c431fac30ff498dfc9bbe4`.
+- Latest closed manual-admin pair: `0.42.74-admin-smoke -> 0.42.75-admin-smoke` / `manual-admin-campaign-descriptor-20260827-04274-04275`.
 - Claims: `public_trusted_signing=false`; `external_stable_publication=false`.
 <!-- END GENERATED CURRENT EVIDENCE -->
 
@@ -45,13 +45,17 @@ previous_04263_installed_operator_surface: `docs/ga-ready/evidence/installed-ope
 previous_04264_full_admin_host_mutation: `0.42.64-admin-smoke`
 previous_04264_full_admin_host_mutation_batch: `full-admin-host-mutation-gate-20260715-04264`
 previous_04264_installed_operator_surface: `docs/ga-ready/evidence/installed-operator-surface-current-card-2026-07-15-04264.md`
-current_full_admin_host_mutation: `0.42.74-admin-smoke`
+current_full_admin_host_mutation: `0.42.75-admin-smoke`
+previous_04274_current_full_admin_host_mutation: `0.42.74-admin-smoke`
 previous_04273_current_full_admin_host_mutation: `0.42.73-admin-smoke`
-current_manual_admin_package_pair: `0.42.73-admin-smoke -> 0.42.74-admin-smoke`
+current_manual_admin_package_pair: `0.42.74-admin-smoke -> 0.42.75-admin-smoke`
+previous_04274_current_manual_admin_package_pair: `0.42.73-admin-smoke -> 0.42.74-admin-smoke`
 previous_04273_current_manual_admin_package_pair: `0.42.72-admin-smoke -> 0.42.73-admin-smoke`
-current_descriptor_batch_id: `manual-admin-campaign-descriptor-20260820-04273-04274-closed`
+current_descriptor_batch_id: `manual-admin-campaign-descriptor-20260827-04274-04275`
+previous_04274_current_descriptor_batch_id: `manual-admin-campaign-descriptor-20260820-04273-04274-closed`
 previous_04273_current_descriptor_batch_id: `manual-admin-campaign-descriptor-20260814-04272-04273-closed`
-current_manual_admin_evidence: `docs/ga-ready/evidence/manual-admin-campaign-2026-08-20-04273-04274.md`
+current_manual_admin_evidence: `docs/ga-ready/evidence/manual-admin-campaign-2026-08-27-04274-04275.md`
+previous_04274_current_manual_admin_evidence: `docs/ga-ready/evidence/manual-admin-campaign-2026-08-20-04273-04274.md`
 previous_04273_current_manual_admin_evidence: `docs/ga-ready/evidence/manual-admin-campaign-2026-08-14-04272-04273.md`
 previous_04272_current_full_admin_host_mutation: `0.42.72-admin-smoke`
 previous_04272_current_manual_admin_package_pair: `0.42.71-admin-smoke -> 0.42.72-admin-smoke`
@@ -78,24 +82,33 @@ previous_04270_current_manual_admin_evidence: `docs/ga-ready/evidence/manual-adm
 current_manual_admin_runner_count: `6`
 current_manual_admin_missing_count: `0`
 current_manual_admin_not_pass_count: `0`
-current_manual_admin_installed_version_after_campaign: `0.42.74-admin-smoke`
+current_manual_admin_installed_version_after_campaign: `0.42.75-admin-smoke`
+previous_04274_current_manual_admin_installed_version_after_campaign: `0.42.74-admin-smoke`
 previous_04273_current_manual_admin_installed_version_after_campaign: `0.42.73-admin-smoke`
 current_manual_admin_anchor_promotion_performed: `true`
-current_manual_admin_target_msi_sha256: `f4d0fcb75bc463676b831a4f871c402636039a7f1bbaf3780b24d10eceae1b8e`
+current_manual_admin_target_msi_sha256: `3d3ee255f7a16c90715da27c436a9ebce479b5ae91f1f4a7067a47dc6dbc0fb6`
+previous_04274_current_manual_admin_target_msi_sha256: `f4d0fcb75bc463676b831a4f871c402636039a7f1bbaf3780b24d10eceae1b8e`
 previous_04273_current_manual_admin_target_msi_sha256: `03244819d1850bc9cd5cf01f1141091c41e95dce6208c7f82601f99e1cf69cee`
-current_manual_admin_update_package_sha256: `cac208cacc9a773893e710b773ca56bc6b3fcd1e315b1d1a28a5099cee7f78f1`
+current_manual_admin_update_package_sha256: `ecae6e9fc7f2f3c49e12a7fec5b4e6d7ca0ce8ba017adf7970cb516a7b5e15df`
+previous_04274_current_manual_admin_update_package_sha256: `cac208cacc9a773893e710b773ca56bc6b3fcd1e315b1d1a28a5099cee7f78f1`
 previous_04273_current_manual_admin_update_package_sha256: `1a7b17e2f1e2e3175f94c1ffce03b5d358a291f795ca34b3e0d4602e116d1b3c`
-current_full_admin_host_mutation_operational_msi_sha256: `2bc46c986a629695462f6b424bb3ca963162fd59fbf6359fbcb73b38ea09b787`
+current_full_admin_host_mutation_operational_msi_sha256: `d5afd8774ca5c33b84b10faa771703dcdba37c96d816be4dbb8f9a886f7c967b`
+previous_04274_current_full_admin_host_mutation_operational_msi_sha256: `2bc46c986a629695462f6b424bb3ca963162fd59fbf6359fbcb73b38ea09b787`
 previous_04273_current_full_admin_host_mutation_operational_msi_sha256: `3151807589504f1ede79592cf0bb077a9cb6da3b54206f89002df5d63b30dac1`
-current_full_admin_host_mutation_payload_aggregate_sha256: `c7984216f1625f2570e2da8cc0428f1a9a4ef9ecf8fe049d8ccfa6d3100df71d`
+current_full_admin_host_mutation_payload_aggregate_sha256: `b6882c9ab40dffc2a9a15785841a097140c23fef6eba26dc76bc892107c2c9b7`
+previous_04274_current_full_admin_host_mutation_payload_aggregate_sha256: `c7984216f1625f2570e2da8cc0428f1a9a4ef9ecf8fe049d8ccfa6d3100df71d`
 previous_04273_current_full_admin_host_mutation_payload_aggregate_sha256: `a5d74ed394c4fc3d230457fb24059aab658fa621abbba630ce1d113a21a75d85`
-current_full_admin_host_mutation_provenance_commit: `adc04673b569ef9b587371fdb23bc11ceb14e2e2`
+current_full_admin_host_mutation_provenance_commit: `dbe1b48cf8bfc45fe7c431fac30ff498dfc9bbe4`
+previous_04274_current_full_admin_host_mutation_provenance_commit: `adc04673b569ef9b587371fdb23bc11ceb14e2e2`
 previous_04273_current_full_admin_host_mutation_provenance_commit: `b84441f0750a9f77fd0588a86912dbdb68b94f0c`
-current_functional_correctness_actual_host_evidence: `docs/ga-ready/evidence/functional-correctness-actual-host-validation-2026-08-20-04274.md`
+current_functional_correctness_actual_host_evidence: `docs/ga-ready/evidence/functional-correctness-actual-host-validation-2026-08-27-04275.md`
+previous_04274_current_functional_correctness_actual_host_evidence: `docs/ga-ready/evidence/functional-correctness-actual-host-validation-2026-08-20-04274.md`
 previous_04273_current_functional_correctness_actual_host_evidence: `docs/ga-ready/evidence/functional-correctness-actual-host-validation-2026-08-14-04273.md`
-current_functional_correctness_actual_host_summary: `artifacts/functional-correctness-carryforward-20260820-04274/summary.json`
+current_functional_correctness_actual_host_summary: `artifacts/functional-correctness-carryforward-20260827-04275/summary.json`
+previous_04274_current_functional_correctness_actual_host_summary: `artifacts/functional-correctness-carryforward-20260820-04274/summary.json`
 previous_04273_current_functional_correctness_actual_host_summary: `artifacts/functional-correctness-carryforward-20260814-04273/summary.json`
-current_functional_correctness_actual_host_summary_sha256: `5395286b74ca7dabd3edccbb63c0b006c32999a4c350559e8b90ddb1ea1fb4b8`
+current_functional_correctness_actual_host_summary_sha256: `a907535a5868d0e9a16095f2cf933dc2a8348a947d09af7537e038af4cf16ed5`
+previous_04274_current_functional_correctness_actual_host_summary_sha256: `5395286b74ca7dabd3edccbb63c0b006c32999a4c350559e8b90ddb1ea1fb4b8`
 previous_04273_current_functional_correctness_actual_host_summary_sha256: `09a571235524b1a32c6066b7ef8c3c4ab4a425a7016ef4ccd1d284f75f9e6fac`
 previous_04272_current_manual_admin_installed_version_after_campaign: `0.42.72-admin-smoke`
 previous_04272_current_manual_admin_target_msi_sha256: `142a9e3d8a5e2ce61f0517b10c9e1bffd9c4f618ccacdcf07aebc3774dd45a22`
@@ -112,11 +125,14 @@ current_operational_credential_rebootstrap_recovery_summary_sha256: `529626336fc
 current_installed_token_rotation_evidence: `docs/ga-ready/evidence/installed-token-rotation-smoke-2026-08-09-04272.md`
 current_installed_token_rotation_summary: `artifacts/installed-token-rotation-smoke-reconciliation-r4-20260810-04272/summary.json`
 current_installed_token_rotation_summary_sha256: `285661fe50ade63169b6cfc85ff1dcf754a679e30152bd04d166581b4d762136`
-current_installed_operator_surface_current_card_evidence: `docs/ga-ready/evidence/installed-operator-surface-current-card-2026-08-20-04274.md`
+current_installed_operator_surface_current_card_evidence: `docs/ga-ready/evidence/installed-operator-surface-current-card-2026-08-27-04275.md`
+previous_04274_current_installed_operator_surface_current_card_evidence: `docs/ga-ready/evidence/installed-operator-surface-current-card-2026-08-20-04274.md`
 previous_04273_current_installed_operator_surface_current_card_evidence: `docs/ga-ready/evidence/installed-operator-surface-current-card-2026-08-14-04273.md`
-current_installed_operator_surface_current_card_summary: `artifacts/installed-operator-surface-current-card-20260820-04274/summary.json`
+current_installed_operator_surface_current_card_summary: `artifacts/installed-operator-surface-current-card-20260827-04275-r2/summary.json`
+previous_04274_current_installed_operator_surface_current_card_summary: `artifacts/installed-operator-surface-current-card-20260820-04274/summary.json`
 previous_04273_current_installed_operator_surface_current_card_summary: `artifacts/installed-operator-surface-current-card-20260814-04273/summary.json`
-current_installed_operator_surface_current_card_summary_sha256: `531fc614da5edb0e11994b021383491ccb8830115d59fb211c6c330f5b25f8c8`
+current_installed_operator_surface_current_card_summary_sha256: `3c0378fc0046e328b5637e5872d349920b01bd53a671567fa947e643538f6ce6`
+previous_04274_current_installed_operator_surface_current_card_summary_sha256: `531fc614da5edb0e11994b021383491ccb8830115d59fb211c6c330f5b25f8c8`
 previous_04273_current_installed_operator_surface_current_card_summary_sha256: `44a91426579c6fb486e6b99cca2321ba4fd8cd547d16797017e0baa6c9d0da14`
 previous_04272_current_installed_operator_surface_current_card_evidence: `docs/ga-ready/evidence/installed-operator-surface-current-card-2026-08-09-04272.md`
 previous_04272_current_installed_operator_surface_current_card_summary: `artifacts/installed-operator-surface-current-card-20260809-04272/summary.json`
@@ -363,7 +379,8 @@ current_public_boundary_residue_head_sha: `6e2bdb93ce308b632c929e2c17f5550ac3845
 current_public_boundary_residue_provider_required: `false`
 current_public_boundary_residue_execution: `pester-and-powershell-non-required`
 current_public_boundary_product_payload_change_detected: `false`
-current_public_boundary_package_candidate_decision: `docs-only-required-ci-closure-retains-0.42.74-admin-smoke`
+current_public_boundary_package_candidate_decision: `docs-only-04275-promotion-retains-0.42.75-admin-smoke`
+previous_04274_current_public_boundary_package_candidate_decision: `docs-only-required-ci-closure-retains-0.42.74-admin-smoke`
 previous_04274_p0_latest_public_boundary_followup_evidence: `docs/ga-ready/evidence/public-boundary-ci-main-push-2026-08-21-04274-p0-landing-pass.md`
 previous_04274_p0_latest_postmerge_followup_evidence: `docs/ga-ready/evidence/public-boundary-ci-main-push-2026-08-21-04274-p0-landing-pass.md`
 previous_04274_p0_current_public_boundary_main_push_evidence: `docs/ga-ready/evidence/public-boundary-ci-main-push-2026-08-21-04274-p0-landing-pass.md`
@@ -833,24 +850,25 @@ previous_04226_pre_branch_product_payload_change_detected: `false`
 
 | ledger key | current 상태 | Evidence | 운영 규칙 |
 | --- | --- | --- | --- |
-| `active-operator-surface-decision` | `installed-pass`, `cli-web-only` | `docs/adr/0011-cli-web-only-operator-surface.md`; `docs/ga-ready/evidence/tui-removal-cli-web-only-code-level-2026-07-14.md`; `docs/ga-ready/evidence/installed-operator-surface-current-card-2026-08-20-04274.md` | Web Console과 PCVCLI가 active surface다. Local API/backend는 유지하며 설치 후 `pcvtui.exe` 부재를 확인했다. |
-| `full-admin-host-mutation-current` | `pass`, `0.42.74-admin-smoke` | `docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-08-20-04274-hostmutation.md`; `artifacts/batch-runs/full-admin-host-mutation-gate-20260820-04274`; operational MSI SHA-256 `2bc46c986a629695462f6b424bb3ca963162fd59fbf6359fbcb73b38ea09b787`; payload SHA-256 `c7984216f1625f2570e2da8cc0428f1a9a4ef9ecf8fe049d8ccfa6d3100df71d`; provenance `adc04673b569ef9b587371fdb23bc11ceb14e2e2` | Elevated Service/MSI/Hyper-V route와 OS mutation `2/2`가 재시도 없이 PASS했다. `service-msi-hyperv-admin-smoke` `218.355s`, `os-mutation-gate` `11.106s`이며 둘 다 `attempts=1`이다. 직전 anchor는 `0.42.73-admin-smoke`였다. |
-| `manual-admin-package-pair-current` | `pass`, `0.42.73-admin-smoke -> 0.42.74-admin-smoke` | `docs/ga-ready/evidence/manual-admin-campaign-2026-08-20-04273-04274.md`; descriptor `manual-admin-campaign-descriptor-20260820-04273-04274-closed`; update ZIP SHA-256 `cac208cacc9a773893e710b773ca56bc6b3fcd1e315b1d1a28a5099cee7f78f1` | 최신 closed campaign은 Windows Update clean-host(`KB5120242`, UBR `169 -> 5499`), installed update/rollback, Burn, MSIX, runtime ops를 모두 PASS했다. `runner_count=6`, `missing_count=0`, `not_pass_count=0`, `overall_status=pass`다. 직전 closure는 `0.42.72-admin-smoke -> 0.42.73-admin-smoke`였다. |
+| `active-operator-surface-decision` | `installed-pass`, `cli-web-only` | `docs/adr/0011-cli-web-only-operator-surface.md`; `docs/ga-ready/evidence/tui-removal-cli-web-only-code-level-2026-07-14.md`; `docs/ga-ready/evidence/installed-operator-surface-current-card-2026-08-27-04275.md` | Web Console과 PCVCLI가 active surface다. Local API/backend는 유지하며 설치 후 `pcvtui.exe` 부재를 확인했다. |
+| `full-admin-host-mutation-current` | `pass`, `0.42.75-admin-smoke` | `docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-08-21-04275-hostmutation.md`; `artifacts/batch-runs/full-admin-host-mutation-gate-20260821-04275`; operational MSI SHA-256 `d5afd8774ca5c33b84b10faa771703dcdba37c96d816be4dbb8f9a886f7c967b`; payload SHA-256 `b6882c9ab40dffc2a9a15785841a097140c23fef6eba26dc76bc892107c2c9b7`; provenance `dbe1b48cf8bfc45fe7c431fac30ff498dfc9bbe4` | Elevated Service/MSI/Hyper-V route와 OS mutation `2/2`가 재시도 없이 PASS했다. `service-msi-hyperv-admin-smoke` `236.922s`, `os-mutation-gate` `11.099s`이며 둘 다 `attempts=1`이다. 직전 anchor는 `0.42.74-admin-smoke`였다. |
+| `manual-admin-package-pair-current` | `pass`, `0.42.74-admin-smoke -> 0.42.75-admin-smoke` | `docs/ga-ready/evidence/manual-admin-campaign-2026-08-27-04274-04275.md`; descriptor `manual-admin-campaign-descriptor-20260827-04274-04275`; update ZIP SHA-256 `ecae6e9fc7f2f3c49e12a7fec5b4e6d7ca0ce8ba017adf7970cb516a7b5e15df` | 최신 closed campaign은 Windows Update clean-host(`KB5120242`, UBR `169 -> 5499`), installed update/rollback, Burn, MSIX, runtime ops를 모두 PASS했다. `runner_count=6`, `missing_count=0`, `not_pass_count=0`, `overall_status=pass`다. 직전 closure는 `0.42.73-admin-smoke -> 0.42.74-admin-smoke`였다. |
 | `runtime-api-current-card-contract` | `runtime-api-current-evidence-rollup-v1` | `GET /api/v1/ops/summary`; `src/DesktopNode.Api/DesktopNodeApiOpsSummaryBuilder.cs`; `src/DesktopNode.Api/BatchEvidenceSummaryReader.cs` | `manual_admin.latest_package_pair.current_card_descriptor_batch_id`와 `descriptor_batch_id`가 같은 closure descriptor를 직접 노출한다. |
 | `host-ops-lifecycle-descriptor-current` | `host-ops-lifecycle-descriptor-bridge-v1`, bucket count `6`, Web table `host-ops-web-diagnostics-bucket-table-v1` | `src/DesktopNode.Contracts/HostOpsLifecycleDescriptor.cs`; `src/DesktopNode.Host/Ops/DesktopNodeHostOpsCatalog.cs`; `docs/ga-ready/evidence/installed-operator-surface-current-card-2026-05-21-04240.md` | `service-action`, `event-log`, `firewall`, `trust-store`, `credential-manager`, `data-root` lifecycle bucket을 current evidence와 Web diagnostics table에 연결한다. |
-| `package-build-current` | `package-build-pass`, `0.42.74-admin-smoke` | `docs/ga-ready/evidence/admin-smoke-package-2026-08-20-04274.md`; `artifacts/admin-smoke-package-20260820-04274`; MSI SHA-256 `f4d0fcb75bc463676b831a4f871c402636039a7f1bbaf3780b24d10eceae1b8e` | CLI/Web-only payload package이며 fullgate, functional correctness, installed current-card까지 승격됐다. token R4는 04272 carry-forward다. source/provenance commit은 `adc04673b569ef9b587371fdb23bc11ceb14e2e2`이고 직전 anchor는 `0.42.73-admin-smoke`다. P0 `vm.save` actual-VM FAIL는 열린 결함이다. |
-| `latest-product-payload-smoke` | `pass`, package `0.42.74-admin-smoke` | `docs/ga-ready/evidence/admin-smoke-package-2026-08-20-04274.md`; `docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-08-20-04274-hostmutation.md`; operational MSI SHA-256 `2bc46c986a629695462f6b424bb3ca963162fd59fbf6359fbcb73b38ea09b787`; payload SHA-256 `c7984216f1625f2570e2da8cc0428f1a9a4ef9ecf8fe049d8ccfa6d3100df71d` | CLI/Web-only package, actual-host fullgate, functional correctness와 installed surface current-card가 PASS했다. credential recovery와 token R4는 04272 carry-forward다. P0 `vm.save`는 열린 결함이다. |
-| `functional-correctness-actual-host-latest` | `pass`, installed `0.42.74-admin-smoke` | `docs/ga-ready/evidence/functional-correctness-actual-host-validation-2026-08-20-04274.md`; `artifacts/functional-correctness-carryforward-20260820-04274/summary.json`; summary SHA-256 `5395286b74ca7dabd3edccbb63c0b006c32999a4c350559e8b90ddb1ea1fb4b8` | 설치본 PCVCLI와 실제 VM으로 QoS `2048 Kbps -> 2,048,000 bps`, disk shrink guard, `10 -> 11 GiB` expansion, cleanup을 새로 실행해 `10/10` exit/readback PASS로 닫았다. |
+| `package-build-current` | `package-build-pass`, `0.42.75-admin-smoke` | `docs/ga-ready/evidence/admin-smoke-package-2026-08-21-04275.md`; `artifacts/admin-smoke-package-20260821-04275`; MSI SHA-256 `3d3ee255f7a16c90715da27c436a9ebce479b5ae91f1f4a7067a47dc6dbc0fb6` | CLI/Web-only payload package이며 fullgate, functional correctness, P0 actual-VM, installed current-card까지 승격됐다. token R4는 04272 carry-forward다. source/provenance commit은 `dbe1b48cf8bfc45fe7c431fac30ff498dfc9bbe4`이고 직전 anchor는 `0.42.74-admin-smoke`다. |
+| `latest-product-payload-smoke` | `pass`, package `0.42.75-admin-smoke` | `docs/ga-ready/evidence/admin-smoke-package-2026-08-21-04275.md`; `docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-08-21-04275-hostmutation.md`; operational MSI SHA-256 `d5afd8774ca5c33b84b10faa771703dcdba37c96d816be4dbb8f9a886f7c967b`; payload SHA-256 `b6882c9ab40dffc2a9a15785841a097140c23fef6eba26dc76bc892107c2c9b7` | CLI/Web-only package, actual-host fullgate, functional correctness, P0 Saved 왕복과 installed surface current-card가 PASS했다. credential recovery와 token R4는 04272 carry-forward다. |
+| `functional-correctness-actual-host-latest` | `pass`, installed `0.42.75-admin-smoke` | `docs/ga-ready/evidence/functional-correctness-actual-host-validation-2026-08-27-04275.md`; `artifacts/functional-correctness-carryforward-20260827-04275/summary.json`; summary SHA-256 `a907535a5868d0e9a16095f2cf933dc2a8348a947d09af7537e038af4cf16ed5` | 설치본 PCVCLI와 실제 VM으로 QoS `2048 Kbps -> 2,048,000 bps`, disk shrink guard, `10 -> 11 GiB` expansion, cleanup을 새로 실행해 `10/10` exit/readback PASS로 닫았다. |
 | `operational-credential-rebootstrap-current` | `pass`, read-only R2 reconciliation | `docs/ga-ready/evidence/operational-credential-rebootstrap-recovery-r2-2026-08-09-04272.md`; `artifacts/operational-credential-rebootstrap-recovery-r2-20260809-04272/summary.json`; summary SHA-256 `529626336fcb79696f5cf765e7f1dacbf81a96beafc30000e00fa591ec7bfacb` | 선행 uninstall/install 성공을 보존 evidence로 재판정해 transition content hash 비변경 verifier false-negative를 닫았다. R2 자체의 host/MSI/service/registry/product-file mutation은 `false`다. |
 | `installed-token-rotation-current` | `pass`, R4 current-eligible | `docs/ga-ready/evidence/installed-token-rotation-smoke-2026-08-09-04272.md`; `artifacts/installed-token-rotation-smoke-reconciliation-r4-20260810-04272/summary.json`; summary SHA-256 `285661fe50ade63169b6cfc85ff1dcf754a679e30152bd04d166581b4d762136` | R4 read-only reconciliation은 native rotation 성공과 verifier false-negative를 old `403`/new `200`, audit 1건, secret scan `0/0`으로 닫았다. R4 자체 mutation은 `false`, 보존 retry2 mutation은 `true`다. |
-| `installed-operator-surface-smoke-latest` | `pass`, installed `0.42.74-admin-smoke` | `docs/ga-ready/evidence/installed-operator-surface-current-card-2026-08-20-04274.md`; `artifacts/installed-operator-surface-current-card-20260820-04274/summary.json`; summary SHA-256 `531fc614da5edb0e11994b021383491ccb8830115d59fb211c6c330f5b25f8c8` | CLI 3개 exit `0`, Web 2개 HTTP `200`, service `Running/Automatic`, `tui_present=false`, secret observation false이며 04272 token R4를 carry-forward해 `promoted-current`다. 04273은 immediate predecessor, 04262는 historical TUI predecessor다. |
+| `installed-operator-surface-smoke-latest` | `pass`, installed `0.42.75-admin-smoke` | `docs/ga-ready/evidence/installed-operator-surface-current-card-2026-08-27-04275.md`; `artifacts/installed-operator-surface-current-card-20260827-04275-r2/summary.json`; summary SHA-256 `3c0378fc0046e328b5637e5872d349920b01bd53a671567fa947e643538f6ce6` | CLI 3개 exit `0`, Web 2개 HTTP `200`, service `Running/Automatic`, `tui_present=false`, secret observation false이며 04272 token R4를 carry-forward해 `promoted-current`다. 04274는 immediate predecessor, 04262는 historical TUI predecessor다. |
 | `post-04255-followup-current` | `pass-with-package-pair-not-opened`, `0.42.55-admin-smoke -> next-admin-smoke-required` | `docs/ga-ready/evidence/post-04255-followup-execution-2026-05-28.md`; `docs/ga-ready/evidence/installed-account-novnc-operator-surface-smoke-2026-05-28-04255-followup.md`; `artifacts/manual-admin-campaign-20260528-04255-next/rebaseline-readiness/summary.json` | Guest Execution/QoS/Web/TUI direct control은 기존 닫힌 evidence를 carry-forward하고, account/noVNC installed smoke는 04255에서 재검증했다. Package-pair는 `not-opened-no-next-product-payload-target`으로 닫고 다음 target payload가 생기면 연다. |
 | `installed-pcvcli-qos-guest-targeted-smoke` | `pass`, installed `0.42.39-admin-smoke` | `docs/ga-ready/evidence/installed-pcvcli-qos-guest-targeted-smoke-2026-05-21-04239.md`; `artifacts/installed-cli-qos-guest-smoke-20260521-04239/summary.json` | 실제 VM 대상 `vm limit`, `blkio-get`, `bandwidth`, `guest-agent-status`, `guest-ping`, cleanup을 설치본 CLI로 확인했다. |
 | `operator-surface-qos-guest-readback-code-level` | `pass-code-level`, product payload change | `docs/ga-ready/evidence/web-tui-qos-guest-readback-surface-2026-05-21.md` | Web 선택 VM `QoS / Guest Readback` panel과 TUI 선택 VM `G` readback을 추가했다. Direct mutation/control은 열지 않는다. |
 | `operator-surface-qos-guest-actual-vm-smoke` | `pass-installed-tui-row-projection`, installed `0.42.41-admin-smoke` | `docs/ga-ready/evidence/web-tui-qos-guest-readback-actual-vm-2026-05-22-04241.md`; `artifacts/web-tui-qos-guest-readback-actual-vm-20260522-04241/summary.json` | 실제 VM `pcv-ux-qos-04241`로 설치본 `pcvtui --smoke-once vm` row projection PASS와 cleanup PASS를 확인했다. 04240 blocker 기록은 predecessor로 보존한다. |
-| `manual-admin-package-pair-latest-candidate` | `pass-closed`, `0.42.73-admin-smoke -> 0.42.74-admin-smoke` | `docs/ga-ready/evidence/manual-admin-campaign-2026-08-20-04273-04274.md`; descriptor `manual-admin-campaign-descriptor-20260820-04273-04274-closed`; update ZIP SHA-256 `cac208cacc9a773893e710b773ca56bc6b3fcd1e315b1d1a28a5099cee7f78f1` | readiness/update-rollback/clean-host-Windows-Update/Burn/MSIX/runtime ops PASS, `runner_count=6`, `missing_count=0`, `not_pass_count=0`. |
-| `manual-admin-package-pair-next` | `not-opened-awaiting-next-product-payload`, `0.42.74-admin-smoke -> next-admin-smoke-required` | 다음 product payload 변경 후 연다 | `0.42.73-admin-smoke -> 0.42.74-admin-smoke` pair는 current closure다. |
-| `service-plan-p0-save-open-defect` | `fail-open`, installed `0.42.74-admin-smoke` | `docs/ga-ready/evidence/service-plan-p0-actual-vm-2026-08-20-04274.md`; summary SHA-256 `11d8d1b34d6e6ff49e2ebb81bc234d20b7eab9f1299baa36ce8daac9c9b14e5d` | attach overwrite, restore `is_current=1`, manage PASS. `vm.save`는 WMI `RequestStateChange` RequestedState `32769`에서 ReturnValue `32775`로 FAIL이다. 이 호스트는 CIM RequestedState `6`과 `Stop-VM -Save`로 Saved에 들어간다. 수정은 후속 product payload/`0.42.75-admin-smoke` 후보가 소유한다. |
+| `manual-admin-package-pair-latest-candidate` | `pass-closed`, `0.42.74-admin-smoke -> 0.42.75-admin-smoke` | `docs/ga-ready/evidence/manual-admin-campaign-2026-08-27-04274-04275.md`; descriptor `manual-admin-campaign-descriptor-20260827-04274-04275`; update ZIP SHA-256 `ecae6e9fc7f2f3c49e12a7fec5b4e6d7ca0ce8ba017adf7970cb516a7b5e15df` | readiness/update-rollback/clean-host-Windows-Update/Burn/MSIX/runtime ops PASS, `runner_count=6`, `missing_count=0`, `not_pass_count=0`. |
+| `manual-admin-package-pair-next` | `not-opened-awaiting-next-product-payload`, `0.42.75-admin-smoke -> next-admin-smoke-required` | 다음 product payload 변경 후 연다 | `0.42.74-admin-smoke -> 0.42.75-admin-smoke` pair는 current closure다. |
+| `service-plan-p0-save-historical-defect` | `fail-historical`, installed `0.42.74-admin-smoke` | `docs/ga-ready/evidence/service-plan-p0-actual-vm-2026-08-20-04274.md`; summary SHA-256 `11d8d1b34d6e6ff49e2ebb81bc234d20b7eab9f1299baa36ce8daac9c9b14e5d` | 04274 P0 `vm.save`는 WMI ReturnValue `32775`로 FAIL였다. 이 문서는 삭제하지 않으며 04275 current P0 PASS가 그 결함을 닫는다. |
+| `service-plan-p0-04275-actual-vm-current` | `pass`, installed `0.42.75-admin-smoke` | `docs/ga-ready/evidence/service-plan-p0-actual-vm-2026-08-27-04275.md`; SavedOnly r2 SHA-256 `3c614d183e9fb37377895a677e9dffc0cc683df613c1fd1c5fac659d411cde60`; Full r4 SHA-256 `ab6b8e44042f6c89735d0dddf6a3c56f8ff490329f6e1df253e6f33bbb22aff7`; clean-target SHA-256 `8559820be766eb672cd30e50ca087fe30bd0018c6e5270e86b476d693226f058` | SavedOnly/Full/clean-target P0 PASS. `promotion_eligible=true`, blockers `[]`. |
 | `operator-surface-account-novnc-current` | `pass`, installed `0.42.58-admin-smoke` | `docs/ga-ready/evidence/installed-account-novnc-operator-surface-smoke-2026-05-29-04258.md`; `artifacts/installed-account-login-smoke-20260529-04258/summary.json`; `artifacts/target-backed-novnc-installed-streaming-smoke-20260529-04258-r2/summary.json` | account login/browser smoke와 target-backed noVNC streaming을 04258 설치본에서 PASS했다. token/password/refresh-token 노출 없이 임시 service config를 복구했으며, account/noVNC payload 변경 전까지 carry-forward한다. |
 | `phase1-direct-control-residual-review` | `closed`, direct mutation deferred | `docs/ga-ready/evidence/phase1-account-novnc-direct-control-residual-review-2026-05-26.md` | Phase 1은 read-only Console Access Card와 open handoff만 열고 Guest Exec, QoS mutation, Web/TUI direct mutation은 다음 phase로 유지한다. |
 | `guest-execution-security-boundary-current` | `pass-code-installed-provider-and-actual-credentialed-smoke` | `docs/ga-ready/evidence/guest-execution-provider-direct-control-code-level-2026-05-27-04253.md`; `docs/ga-ready/evidence/installed-operator-surface-current-card-2026-05-28-04255.md`; `docs/ga-ready/evidence/guest-execution-installed-windows-vhd-web-tui-smoke-2026-05-28-04255-pass.md`; `docs/adr/0009-guest-execution-security-boundary.md` | Credential reference, audit schema, redaction, RBAC, runtime policy, API/CLI queued provider route, Web/TUI direct-control surface, actual Windows PowerShell Direct guest-exec를 04255 설치본에서 재확인했다. |
@@ -859,7 +877,7 @@ previous_04226_pre_branch_product_payload_change_detected: `false`
 | `guest-execution-running-cancel-policy` | `pass-installed`, running guest execution cancel token path installed smoke | `docs/ga-ready/evidence/guest-execution-running-cancel-installed-2026-05-28-04254-pass.md`; predecessor `docs/ga-ready/evidence/guest-execution-running-interrupt-code-level-2026-05-28.md`; `docs/superpowers/specs/2026-05-27-purecvisor-desktop-node-guest-execution-running-interrupt-cancel-design.md` | Runtime/API는 running guest execution job cancel token path와 PowerShell Direct bridge process kill을 설치본 Windows guest에서 확인했다. |
 | `web-tui-running-job-cancel-affordance` | `pass-installed`, 0.42.55 current-card | `docs/ga-ready/evidence/installed-operator-surface-current-card-2026-05-28-04255.md`; predecessor `docs/ga-ready/evidence/web-tui-running-job-cancel-affordance-code-level-2026-05-28.md` | Web job/activity rows와 TUI Job tab이 running guest execution cancel scope를 operator에게 명시하고 04255 설치본에서 확인됐다. |
 | `required-ci-current` | `pass`, provider-required exact four | `docs/ga-ready/evidence/pester-free-required-ci-cutover-2026-08-25.md`; final main `6e2bdb93ce308b632c929e2c17f5550ac3845401`; run `32904006595`; contexts `dotnet`, `web`, `delivery`, `installer-policy` | 정확히 네 job과 네 contract-v2 artifact가 PASS했다. Required CI executable Pester/비관리자 PowerShell/mutation invocation은 `0`이고 branch protection은 `strict=true`, admin enforcement enabled다. |
-| `public-boundary-residue-current` | `pass-non-required-residue`, `provider_required=false` | `.github/workflows/public-boundary.yml`; run `32904006619`, job `97983888524`, head `6e2bdb93ce308b632c929e2c17f5550ac3845401` | 실제 job identity `public-boundary-ci-required`는 보존되지만 provider required context가 아니다. Pester/PowerShell 실행 residue이므로 Required CI zero claim을 repository-wide claim으로 확대하지 않는다. Docs-only closure라 package candidate는 열지 않고 `0.42.74-admin-smoke`를 유지한다. |
+| `public-boundary-residue-current` | `pass-non-required-residue`, `provider_required=false` | `.github/workflows/public-boundary.yml`; run `32904006619`, job `97983888524`, head `6e2bdb93ce308b632c929e2c17f5550ac3845401` | 실제 job identity `public-boundary-ci-required`는 보존되지만 provider required context가 아니다. Pester/PowerShell 실행 residue이므로 Required CI zero claim을 repository-wide claim으로 확대하지 않는다. Docs-only 04275 승격은 새 package candidate를 열지 않고 `0.42.75-admin-smoke`를 유지한다. |
 | `public-boundary-04274-p0-predecessor` | `pass`, historical 0.42.74 P0 landing main push | `docs/ga-ready/evidence/public-boundary-ci-main-push-2026-08-21-04274-p0-landing-pass.md`; run `32388996125`, job `96490306459`, head `5f9cecfd5507e7e5dd726601aae3760e4e1b558c` | SERVICE_PLAN P0 payload `33`개와 04274 승격 착륙을 증명한 predecessor다. 현재 Required CI/provider-protection authority로 사용하지 않는다. |
 | `public-boundary-04273-promotion-predecessor` | `pass`, 0.42.73 promotion main push | `docs/ga-ready/evidence/public-boundary-ci-main-push-2026-08-14-04273-promotion-postpush-pass.md`; run `31737488576`, job `94572517694`, head `291435e374efef7f9639b820ac197c11e2c7e8a4` | 04273 승격 커밋은 docs/tests-only였고 product payload 경로가 `0`개였다. 04274 P0 landing current 아래 predecessor로 보존한다. |
 | `public-boundary-pr187-predecessor` | `pass`, PR #187 post-merge main push | `docs/ga-ready/evidence/public-boundary-ci-main-push-2026-08-12-pr187-postmerge-pass.md`; run `31579083573`, job `94057811212`, head `a626a7e15d51903f2df5d83d48ffcd2c2115dfc1` | PR #187은 docs/tests-only였고 `0.42.72-admin-smoke`를 유지했다. 04273 promotion current 아래 predecessor로 보존한다. |
