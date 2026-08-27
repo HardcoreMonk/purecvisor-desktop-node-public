@@ -1014,7 +1014,7 @@
     {
       "legacy_path": "packaging/windows-desktop-node/tests/Pcv04274PackageEvidence.Tests.ps1",
       "legacy_ordinal": 1,
-      "legacy_name": "pins the canonical current evidence record to the exact 0.42.74 tuple",
+      "legacy_name": "pins the canonical current evidence record to the exact 0.42.75 tuple",
       "domain": "packaging",
       "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Evidence/Pcv04274PackageEvidenceContractTests.cs",
       "replacement_contract_id": "pcv.delivery.04274-package-evidence.001",
@@ -1031,7 +1031,7 @@
     {
       "legacy_path": "packaging/windows-desktop-node/tests/Pcv04274PackageEvidence.Tests.ps1",
       "legacy_ordinal": 2,
-      "legacy_name": "records the clean 0.42.74 package as current",
+      "legacy_name": "records the clean 0.42.75 package as current",
       "domain": "packaging",
       "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Evidence/Pcv04274PackageEvidenceContractTests.cs",
       "replacement_contract_id": "pcv.delivery.04274-package-evidence.002",
@@ -1048,7 +1048,7 @@
     {
       "legacy_path": "packaging/windows-desktop-node/tests/Pcv04274PackageEvidence.Tests.ps1",
       "legacy_ordinal": 3,
-      "legacy_name": "closes the 0.42.73 -> 0.42.74 pair as current and opens the next not-opened pair",
+      "legacy_name": "closes the 0.42.74 -> 0.42.75 pair as current and opens the next not-opened pair",
       "domain": "packaging",
       "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Evidence/Pcv04274PackageEvidenceContractTests.cs",
       "replacement_contract_id": "pcv.delivery.04274-package-evidence.003",
@@ -1065,7 +1065,7 @@
     {
       "legacy_path": "packaging/windows-desktop-node/tests/Pcv04274PackageEvidence.Tests.ps1",
       "legacy_ordinal": 4,
-      "legacy_name": "indexes 0.42.74 as generated current and keeps the save defect visible",
+      "legacy_name": "indexes 0.42.75 as generated current and keeps the 04274 save defect historical",
       "domain": "packaging",
       "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Evidence/Pcv04274PackageEvidenceContractTests.cs",
       "replacement_contract_id": "pcv.delivery.04274-package-evidence.004",
@@ -1082,7 +1082,7 @@
     {
       "legacy_path": "packaging/windows-desktop-node/tests/Pcv04274PackageEvidence.Tests.ps1",
       "legacy_ordinal": 5,
-      "legacy_name": "records the 0.42.74 fullgate PASS as current",
+      "legacy_name": "records the 0.42.75 fullgate PASS as current",
       "domain": "packaging",
       "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Evidence/Pcv04274PackageEvidenceContractTests.cs",
       "replacement_contract_id": "pcv.delivery.04274-package-evidence.005",
@@ -1099,7 +1099,7 @@
     {
       "legacy_path": "packaging/windows-desktop-node/tests/Pcv04274PackageEvidence.Tests.ps1",
       "legacy_ordinal": 6,
-      "legacy_name": "promotes the 0.42.74 installed current-card with carried-forward token evidence",
+      "legacy_name": "promotes the 0.42.75 installed current-card with carried-forward token evidence",
       "domain": "packaging",
       "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Evidence/Pcv04274PackageEvidenceContractTests.cs",
       "replacement_contract_id": "pcv.delivery.04274-package-evidence.006",
@@ -1116,7 +1116,7 @@
     {
       "legacy_path": "packaging/windows-desktop-node/tests/Pcv04274PackageEvidence.Tests.ps1",
       "legacy_ordinal": 7,
-      "legacy_name": "records the 0.42.74 functional actual-VM PASS as current",
+      "legacy_name": "records the 0.42.75 functional actual-VM PASS as current",
       "domain": "packaging",
       "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Evidence/Pcv04274PackageEvidenceContractTests.cs",
       "replacement_contract_id": "pcv.delivery.04274-package-evidence.007",
@@ -1133,7 +1133,7 @@
     {
       "legacy_path": "packaging/windows-desktop-node/tests/Pcv04274PackageEvidence.Tests.ps1",
       "legacy_ordinal": 8,
-      "legacy_name": "keeps the 0.42.74 P0 actual-VM save failure as an open defect after promotion",
+      "legacy_name": "keeps the 0.42.74 P0 actual-VM save failure as historical after 04275 promotion",
       "domain": "packaging",
       "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Evidence/Pcv04274PackageEvidenceContractTests.cs",
       "replacement_contract_id": "pcv.delivery.04274-package-evidence.008",
@@ -1150,7 +1150,7 @@
     {
       "legacy_path": "packaging/windows-desktop-node/tests/Pcv04274PackageEvidence.Tests.ps1",
       "legacy_ordinal": 9,
-      "legacy_name": "records the 0.42.73 -> 0.42.74 manual-admin pair PASS as current",
+      "legacy_name": "records the 0.42.74 -> 0.42.75 manual-admin pair PASS as current",
       "domain": "packaging",
       "replacement_owner": "src/DesktopNode.Delivery.Tests/Delivery/Evidence/Pcv04274PackageEvidenceContractTests.cs",
       "replacement_contract_id": "pcv.delivery.04274-package-evidence.009",
