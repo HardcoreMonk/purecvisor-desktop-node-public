@@ -732,6 +732,7 @@
 - [docs/superpowers/plans/2026-08-25-purecvisor-desktop-node-public-baseline-and-protection.md](superpowers/plans/2026-08-25-purecvisor-desktop-node-public-baseline-and-protection.md)
 - [docs/superpowers/plans/2026-08-25-purecvisor-desktop-node-required-ci-cutover-wave-e.md](superpowers/plans/2026-08-25-purecvisor-desktop-node-required-ci-cutover-wave-e.md)
 - [docs/superpowers/plans/2026-08-27-purecvisor-desktop-node-lane-separated-development-procedure.md](superpowers/plans/2026-08-27-purecvisor-desktop-node-lane-separated-development-procedure.md)
+- [docs/superpowers/plans/2026-08-27-purecvisor-desktop-node-p1-managed-full-clone.md](superpowers/plans/2026-08-27-purecvisor-desktop-node-p1-managed-full-clone.md)
 
 ## 설계 명세
 
@@ -816,6 +817,7 @@
 - [docs/superpowers/specs/2026-08-25-purecvisor-desktop-node-pester-free-required-ci-cutover-design.md](superpowers/specs/2026-08-25-purecvisor-desktop-node-pester-free-required-ci-cutover-design.md)
 - [docs/superpowers/specs/2026-08-25-purecvisor-desktop-node-public-authority-snapshot-delta-design.md](superpowers/specs/2026-08-25-purecvisor-desktop-node-public-authority-snapshot-delta-design.md)
 - [docs/superpowers/specs/2026-08-27-purecvisor-desktop-node-lane-separated-development-procedure-design.md](superpowers/specs/2026-08-27-purecvisor-desktop-node-lane-separated-development-procedure-design.md)
+- [docs/superpowers/specs/2026-08-27-purecvisor-desktop-node-p1-managed-full-clone-design.md](superpowers/specs/2026-08-27-purecvisor-desktop-node-p1-managed-full-clone-design.md)
 
 ## 패키징 문서
 
