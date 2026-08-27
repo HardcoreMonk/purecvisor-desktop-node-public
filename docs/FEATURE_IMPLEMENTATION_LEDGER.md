@@ -8,8 +8,9 @@ Web Console coverage, PCVCLI command binding을 설명하기 위해 그 계약�
 
 기능 승격 evidence는 별도 `config/desktop-node-feature-evidence-ledger.json`과
 `packaging/windows-desktop-node/tests/fixtures/feature-evidence-promotion/04274-p0-fail.json`
-범위만 사용한다. Surface catalog 27개 전체를 승격 후보로 간주하지 않으며, evidence가 없는
-23개 기능의 단계는 `not-assessed`로 표시한다.
+범위만 사용한다. Surface catalog 28개 전체를 승격 후보로 간주하지 않으며, evidence가 없는
+24개 기능의 단계는 `not-assessed`로 표시한다. `pcv.vm.clone`은 이 투영에 포함하지만
+evidence 단계는 모두 `not-assessed`이며 승격 후보가 아니다.
 
 ## Core / Backend / Frontend / Evidence 흐름
 
@@ -25,7 +26,7 @@ flowchart LR
     I -->|"1 blocker"| J["promotion_eligible=false"]
 ```
 
-API는 모든 60개 route의 backend 경계다. Web Console과 PCVCLI는 각 route에 대해 실제
+API는 모든 62개 route의 backend 경계다. Web Console과 PCVCLI는 각 route에 대해 실제
 binding 또는 이유가 있는 제외 중 하나를 가져야 한다. 이 흐름은 surface 존재 여부와
 feature promotion evidence를 서로 다른 계약으로 유지한다.
 
@@ -57,11 +58,12 @@ feature promotion evidence를 서로 다른 계약으로 유지한다.
 | <a id="pcv-vm-saved-lifecycle"></a>`pcv.vm.saved-lifecycle` | VM saved lifecycle | 2 | 2 present / 0 excluded | 2 present / 0 excluded |
 | <a id="pcv-vm-rename"></a>`pcv.vm.rename` | VM rename | 1 | 0 present / 1 excluded | 1 present / 0 excluded |
 | <a id="pcv-vm-managed-import"></a>`pcv.vm.managed-import` | Managed VM import | 1 | 1 present / 0 excluded | 1 present / 0 excluded |
+| <a id="pcv-vm-clone"></a>`pcv.vm.clone` | Managed VM full clone | 2 | 2 present / 0 excluded | 2 present / 0 excluded |
 | <a id="pcv-vm-media-eject"></a>`pcv.vm.media-eject` | VM media eject | 1 | 1 present / 0 excluded | 1 present / 0 excluded |
 | <a id="pcv-vm-media-attach"></a>`pcv.vm.media-attach` | VM media attach | 1 | 1 present / 0 excluded | 1 present / 0 excluded |
 | <a id="pcv-vm-resource-limits"></a>`pcv.vm.resource-limits` | VM resource limits | 4 | 3 present / 1 excluded | 4 present / 0 excluded |
 
-## 60-route surface 투영
+## 62-route surface 투영
 
 | Feature ID | Operation ID | Canonical API route | Permission | Web Console | PCVCLI |
 |---|---|---|---|---|---|
@@ -119,6 +121,8 @@ feature promotion evidence를 서로 다른 계약으로 유지한다.
 | `pcv.vm.saved-lifecycle` | `vm.resume-saved` | `POST /api/v1/vms/{vmId}/resume-saved` | `operate` | present — `vm.resume-saved` | present — `pcvcli vm resume-saved vm-01` |
 | `pcv.vm.rename` | `vm.rename` | `POST /api/v1/vms/{vmId}/rename` | `operate` | excluded — Web Console does not expose rename in the current operator flow; this route remains API/CLI-only. | present — `pcvcli vm rename vm-01 vm-02` |
 | `pcv.vm.managed-import` | `vm.manage` | `POST /api/v1/vms/{vmId}/manage` | `operate` | present — `vm.manage` | present — `pcvcli vm manage vm-01 --yes` |
+| `pcv.vm.clone` | `vm.clone.preview` | `POST /api/v1/vms/{vmId}/clone/preview` | `operate` | present — `vm.clone.preview` | present — `pcvcli vm clone vm-01 --name vm-02 --dry-run` |
+| `pcv.vm.clone` | `vm.clone` | `POST /api/v1/vms/{vmId}/clone` | `operate` | present — `vm.clone` | present — `pcvcli vm clone vm-01 --name vm-02 --yes` |
 | `pcv.vm.media-eject` | `vm.eject` | `POST /api/v1/vms/{vmId}/eject` | `operate` | present — `vm.media` | present — `pcvcli vm eject vm-01` |
 | `pcv.vm.media-attach` | `vm.attach` | `POST /api/v1/vms/{vmId}/attach` | `operate` | present — `vm.media.attach` | present — `pcvcli vm attach vm-01 --iso D:\isos\windows.iso` |
 | `pcv.vm.resource-limits` | `vm.limit` | `POST /api/v1/vms/{vmId}/limit` | `operate` | excluded — Web Console exposes explicit QoS controls instead of the combined limit command; this route remains API/CLI-only. | present — `pcvcli vm limit vm-01 --cpu 4 --memory-mb 4096` |
@@ -158,6 +162,7 @@ feature promotion 결정과 동일하지 않다. 현재 feature promotion은
 | `pcv.vm.saved-lifecycle` | pass | pass | pass | pass | pass | none |
 | `pcv.vm.rename` | not-assessed | not-assessed | not-assessed | not-assessed | not-assessed | none |
 | `pcv.vm.managed-import` | pass | pass | pass | pass | pass | none |
+| `pcv.vm.clone` | not-assessed | not-assessed | not-assessed | not-assessed | not-assessed | none |
 | `pcv.vm.media-eject` | not-assessed | not-assessed | not-assessed | not-assessed | not-assessed | none |
 | `pcv.vm.media-attach` | pass | pass | pass | pass | pass | none |
 | `pcv.vm.resource-limits` | not-assessed | not-assessed | not-assessed | not-assessed | not-assessed | none |
@@ -179,6 +184,7 @@ manual-admin 관측은 `0.42.75-admin-smoke`에서 모두 pass다.
 
 - 이 문서는 public trusted signing을 증명하지 않는다.
 - 이 문서는 external stable publication을 증명하지 않는다.
-- `0.42.75-admin-smoke` operational current 상태가 27개 feature의 promotion 완료를 뜻하지 않는다.
+- `0.42.75-admin-smoke` operational current 상태가 28개 feature의 promotion 완료를 뜻하지 않는다.
+- `pcv.vm.clone` code-level 표면은 packaged/installed/actual-VM/manual-admin evidence가 없으므로 승격 후보가 아니다.
 - `not-assessed`는 pass도 fail도 아니며, 실제 VM 또는 manual-admin evidence를 추정하지 않는다.
 - 이 문서 생성 과정에서 host, VM, service, package mutation을 수행하지 않았다.

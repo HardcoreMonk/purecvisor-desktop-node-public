@@ -249,10 +249,14 @@ pcvcli vm create ubuntu-lab-01 `
 
 `pcvcli vm manage <vm> --yes`는 existing Hyper-V VM에 managed marker를 붙이는 queued job이다. `--yes`가 없으면 `PCV_CLI_CONFIRMATION_REQUIRED`다. body `confirm_name`은 `<vm>` 인자를 그대로 넣는다.
 
+`pcvcli vm clone <source> --name <target> --dry-run`은 `POST /api/v1/vms/{vm}/clone/preview`로 복사 계획만 조회한다. `--yes`는 필요 없다. `pcvcli vm clone <source> --name <target> --yes`는 `POST /api/v1/vms/{vm}/clone`로 독립 VHDX full clone job을 queue한다. `--yes`가 없으면 `PCV_CLI_CONFIRMATION_REQUIRED`다. body `confirm_name`은 `<source>` 인자 그대로, `name`은 `--name`이다. 소스는 managed Generation 2, 전원 `Off`, checkpoint 0, 독립 VHDX만 허용한다.
+
 VM delete는 destructive host mutation을 queue하므로 `--yes`가 필수다. API는 PureCVisor managed marker가 없는 VM을 provider mutation 전에 차단한다. unmanaged delete 거절은 manage 이후에도 다른 unmanaged VM에 유지된다.
 
 ```powershell
 pcvcli vm manage ubuntu-lab-01 --yes
+pcvcli vm clone ubuntu-lab-01 --name ubuntu-lab-02 --dry-run
+pcvcli vm clone ubuntu-lab-01 --name ubuntu-lab-02 --yes
 pcvcli vm delete ubuntu-lab-01 --yes
 ```
 
