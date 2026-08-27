@@ -10,6 +10,9 @@ public sealed class PcvServicePlanP0ActualVmSmokeContractTests
     private const string RunnerPath =
         "packaging/windows-desktop-node/tools/Invoke-PcvServicePlanP0ActualVmSmoke.ps1";
 
+    private const string AdapterPath =
+        "packaging/windows-desktop-node/manual-admin-tests/PcvServicePlanP0ActualVmSmoke.Tests.ps1";
+
     [Fact]
     public void PublishesValidatedInputsAndStrictDryRunBoundary()
     {
@@ -210,6 +213,14 @@ public sealed class PcvServicePlanP0ActualVmSmokeContractTests
     public void Lane2FailObservationDoesNotMakePromotionEligible()
     {
         D2EvidenceContractVerifier.Verify("feature-evidence-promotion", 4);
+    }
+
+    [Fact]
+    public void AdapterDoesNotKeepRetiredProductVmStateShortcut()
+    {
+        var adapter = RepositoryContractContext.Find().ReadUtf8Text(AdapterPath);
+        Assert.DoesNotContain("'product-vm-state'", adapter, StringComparison.Ordinal);
+        Assert.DoesNotContain("product-vm-state", Source(), StringComparison.Ordinal);
     }
 
     private static string Source() =>

@@ -234,10 +234,6 @@ function New-P0BehaviorRuntime {
                 if ($Payload.phase -eq 'after-resume') { return $state.ResumeHyperVState }
                 return 'Running'
             }
-            'product-vm-state' {
-                if ($Payload.phase -eq 'after-save') { return $state.SaveProductState }
-                return $state.ResumeProductState
-            }
             'dvd-readback' {
                 $path = if ($null -eq $state.DvdHostResource) { $Payload.iso } else { $state.DvdHostResource }
                 return [pscustomobject]@{ HostResource = @($path); Path = $path }
