@@ -1,5 +1,22 @@
 # Desktop Node 증거 인덱스
 
+## 2026-08-27 0.42.75 SERVICE_PLAN P0 actual-VM candidate PASS
+
+- `docs/ga-ready/evidence/service-plan-p0-actual-vm-2026-08-27-04275.md`는 설치본
+  `0.42.75-admin-smoke` Lane 2 SavedOnly r2와 Full r4를 `overall_verdict=PASS`로 기록한다.
+  SavedOnly summary SHA-256은
+  `3c614d183e9fb37377895a677e9dffc0cc683df613c1fd1c5fac659d411cde60`, Full r4 summary
+  SHA-256은 `ab6b8e44042f6c89735d0dddf6a3c56f8ff490329f6e1df253e6f33bbb22aff7`다.
+- Full r4 slice는 saved_lifecycle, media_attach, checkpoint_restore, managed_import,
+  cleanup이 모두 PASS다. restore는 `vm.poweroff` 뒤 Hyper-V `Off`에서 성공했고 list는
+  표시 이름 운영자 id를 썼다.
+- 이 증거는 04275 candidate actual-VM이다. canonical current는
+  `0.42.74-admin-smoke`로 남고 `promotion_eligible=false`, blocker
+  `pcv.vm.saved-lifecycle/actual_vm_tested/fail`를 유지한다. functional carry-forward,
+  `0.42.74 -> 0.42.75` package-pair, clean-target SavedOnly, final current-card는 아직
+  이 승격 chain을 열지 않았다. public trusted signing과 external stable publication은
+  주장하지 않는다.
+
 ## 2026-08-25 Required CI final-main authority PASS and Public Boundary residue
 
 - `docs/ga-ready/evidence/pester-free-required-ci-cutover-2026-08-25.md`는 shadow SHA

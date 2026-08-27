@@ -553,6 +553,7 @@
 - [docs/ga-ready/evidence/secondary-hyperv-wmi-topology-smoke-2026-07-13-04262.md](ga-ready/evidence/secondary-hyperv-wmi-topology-smoke-2026-07-13-04262.md)
 - [docs/ga-ready/evidence/served-app-decomposition-2026-08-08.md](ga-ready/evidence/served-app-decomposition-2026-08-08.md)
 - [docs/ga-ready/evidence/service-plan-p0-actual-vm-2026-08-20-04274.md](ga-ready/evidence/service-plan-p0-actual-vm-2026-08-20-04274.md)
+- [docs/ga-ready/evidence/service-plan-p0-actual-vm-2026-08-27-04275.md](ga-ready/evidence/service-plan-p0-actual-vm-2026-08-27-04275.md)
 - [docs/ga-ready/evidence/service-plan-p0-checkpoint-restore-reconciliation-code-level-2026-08-14.md](ga-ready/evidence/service-plan-p0-checkpoint-restore-reconciliation-code-level-2026-08-14.md)
 - [docs/ga-ready/evidence/service-plan-p0-hyperv-saved-code-level-2026-08-14.md](ga-ready/evidence/service-plan-p0-hyperv-saved-code-level-2026-08-14.md)
 - [docs/ga-ready/evidence/service-plan-p0-managed-import-code-level-2026-08-14.md](ga-ready/evidence/service-plan-p0-managed-import-code-level-2026-08-14.md)

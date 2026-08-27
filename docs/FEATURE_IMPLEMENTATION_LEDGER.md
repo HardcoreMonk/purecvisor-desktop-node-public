@@ -166,8 +166,13 @@ feature promotion 결정과 동일하지 않다. 현재 feature promotion은
 
 유일한 승격 blocker는
 `pcv.vm.saved-lifecycle/actual_vm_tested/fail`이다. Saved lifecycle의 code, package,
-installed, manual-admin 관측은 pass지만 actual VM 관측은 fail이므로 feature promotion
-eligible로 판정하지 않는다.
+installed, manual-admin 관측은 pass지만 operational current `0.42.74-admin-smoke`의
+actual VM 관측은 fail이므로 feature promotion eligible로 판정하지 않는다.
+
+설치본 `0.42.75-admin-smoke` Lane 2 SavedOnly r2와 Full r4는
+`docs/ga-ready/evidence/service-plan-p0-actual-vm-2026-08-27-04275.md`에서 PASS다.
+그 증거는 04275 candidate actual-VM이며, 04274 ledger `current.verdict=fail`과
+`docs/ga-ready/current-evidence.json`의 `promotion_eligible=false`를 바꾸지 않는다.
 
 ## Non-claims
 
