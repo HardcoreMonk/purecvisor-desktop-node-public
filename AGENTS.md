@@ -25,6 +25,9 @@
 - `vague_resume_policy`: `one-bounded-checkpoint`
 - `out_of_scope_findings`: `report-only`
 - 기본 한도는 30분, 도구 작업 묶음 18회, 정규 리뷰 1회와 제한 재검토 2회다.
+- 차선: Lane 0 권위 읽기, Lane 1 계약, Lane 2 설치본 프로브, Lane 3 승격. 한 checkpoint는 한 차선만.
+- FAIL 프로브는 current를 못 쓴다.
+- canonical operator id는 `GET /api/v1/vms/{id}`가 받는 문자열이며 현행은 VM 표시 이름이다.
 - 먼저 도달한 한도 또는 동일 원인 3회 실패 시 추가 구현을 중단하고 stop protocol만 수행한다.
 - 사용자의 명시적 승인 없이는 예산, 범위 또는 checkpoint를 연장하지 않는다.
 
@@ -448,3 +451,5 @@ legacy/manual/admin 검증이다. Active Required CI의 Pester 및 비관리자 
 - 장기 token 값은 command line에 노출하지 않는다. `-ApiTokenProtectedFile` 또는 token file 경로를 우선한다.
 - Local API listener는 기본 loopback-only 정책을 유지한다. 최신 기본 surface는 Web Console `http://127.0.0.1/`, Web API `http://127.0.0.1:7777/api/v1/...` 분리다. `docs/ga-ready/evidence/web-api-port-split-installed-listener-2026-05-10.md`는 설치본 service `PathName`의 `--web-prefix "http://127.0.0.1:80/"`, Web `200`, API `200`, Web-port API `PCV_API_ROUTE_ON_WEB_PORT` rejection을 PASS로 기록한다. `/pcv-config.js`가 browser API origin을 주입하고 LAN mode는 명시적 `-AllowLan`과 token source가 있을 때만 허용한다.
 - 실제 host mutation은 `-WhatIf` 또는 injectable runner 테스트와 분리한다.
+- FAIL 프로브는 current를 못 쓴다.
+- canonical operator id는 `GET /api/v1/vms/{id}`가 받는 문자열이며 현행은 VM 표시 이름이다.

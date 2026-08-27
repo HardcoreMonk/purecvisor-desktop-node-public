@@ -7,5 +7,31 @@
   "review_pass_limit": 1,
   "narrow_rereview_pass_limit": 2,
   "same_failure_limit": 3,
-  "progress_warning_percent": 70
+  "progress_warning_percent": 70,
+  "lanes": {
+    "0": {
+      "elapsed_minutes_limit": 10,
+      "tool_batch_limit": 6,
+      "review_pass_limit": 0,
+      "narrow_rereview_pass_limit": 0
+    },
+    "1": {
+      "elapsed_minutes_limit": 30,
+      "tool_batch_limit": 18,
+      "review_pass_limit": 1,
+      "narrow_rereview_pass_limit": 2
+    },
+    "2": {
+      "elapsed_minutes_limit": 45,
+      "tool_batch_limit": 12,
+      "review_pass_limit": 1,
+      "narrow_rereview_pass_limit": 0
+    },
+    "3": {
+      "elapsed_minutes_limit": 30,
+      "tool_batch_limit": 12,
+      "review_pass_limit": 1,
+      "narrow_rereview_pass_limit": 2
+    }
+  }
 }
