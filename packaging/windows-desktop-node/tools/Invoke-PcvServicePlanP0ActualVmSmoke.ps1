@@ -860,6 +860,12 @@ function Invoke-CheckpointRestoreSlice {
     $record = $script:VmRecords | Where-Object kind -eq 'managed' | Select-Object -First 1
     Start-PcvCliJob -StepName 'checkpoint-create' -Arguments @(
         'vm', 'checkpoint', 'create', $record.id, '--name', $CheckpointName) | Out-Null
+    $poweroff = Start-PcvCliJob -StepName 'vm-poweroff' -Arguments @('vm', 'poweroff', $record.id)
+    $hypervOff = Wait-HyperVState -Id ([Guid]$record.id) -Expected 'Off' -Phase 'before-restore'
+    if ([string](Get-ObjectPropertyValue -InputObject $poweroff -Name 'status') -ne 'succeeded' -or
+        $hypervOff -ne 'Off') {
+        throw "PCV_P0_STATE_MISMATCH|poweroff-before-restore|hyperv=$hypervOff"
+    }
     $restore = Start-PcvCliJob -StepName 'checkpoint-restore' -Arguments @(
         'vm', 'checkpoint', 'restore', $record.id, $CheckpointName)
     $rows = if ($null -ne $RuntimeAdapter) {
@@ -870,7 +876,7 @@ function Invoke-CheckpointRestoreSlice {
     }
     else {
         $listed = Invoke-PcvCliJson -StepName 'checkpoint-list-after-restore' -Arguments @(
-            'vm', 'checkpoint', 'list', $record.id)
+            'vm', 'checkpoint', 'list', $record.name)
         @((Get-ObjectPropertyValue -InputObject $listed.Json -Name 'data'))
     }
     $current = @($rows | Where-Object {

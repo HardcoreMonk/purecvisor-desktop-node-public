@@ -98,6 +98,48 @@ public sealed class PcvServicePlanP0ActualVmSmokeContractTests
     }
 
     [Fact]
+    public void PinsCheckpointRestorePoweroffBeforeRestore()
+    {
+        var source = Source();
+        RequireTokens(
+            source,
+            "function Invoke-CheckpointRestoreSlice",
+            "'vm-poweroff'",
+            "'vm', 'poweroff'",
+            "-Expected 'Off'",
+            "PCV_P0_STATE_MISMATCH|poweroff-before-restore|");
+        AssertOrdered(
+            source,
+            "function Invoke-CheckpointRestoreSlice",
+            "checkpoint-create",
+            "'vm-poweroff'",
+            "Wait-HyperVState",
+            "-Expected 'Off'",
+            "checkpoint-restore");
+    }
+
+    [Fact]
+    public void PinsCheckpointListAfterRestoreUsesOperatorId()
+    {
+        var source = Source();
+        RequireTokens(
+            source,
+            "function Invoke-CheckpointRestoreSlice",
+            "checkpoint-list-after-restore",
+            "'vm', 'checkpoint', 'list', $record.name");
+        Assert.DoesNotContain(
+            "'vm', 'checkpoint', 'list', $record.id",
+            source,
+            StringComparison.Ordinal);
+        AssertOrdered(
+            source,
+            "function Invoke-CheckpointRestoreSlice",
+            "checkpoint-restore",
+            "'vm', 'checkpoint', 'list', $record.name",
+            "readbacks.checkpoint_restore");
+    }
+
+    [Fact]
     public void PinsSummaryAtomicityFailureSemanticsAndSecretRedaction()
     {
         var source = Source();
