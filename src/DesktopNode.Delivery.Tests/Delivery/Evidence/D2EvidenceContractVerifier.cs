@@ -444,13 +444,82 @@ internal static class D2EvidenceContractVerifier
                 ["current_public_boundary_main_push_package_candidate_decision"] =
                     "docs-only-04275-promotion-retains-0.42.75-admin-smoke",
                 ["current_public_boundary_main_push_evidence"] =
-                    "docs/ga-ready/evidence/public-boundary-ci-main-push-2026-08-21-04274-p0-landing-pass.md",
-                ["current_public_boundary_main_push_run_id"] = "32388996125",
-                ["current_public_boundary_main_push_job_id"] = "96490306459",
+                    "docs/ga-ready/evidence/public-boundary-ci-main-push-2026-08-27-04275-promotion-postpush-pass.md",
+                ["current_public_boundary_main_push_run_id"] = "33064087018",
+                ["current_public_boundary_main_push_job_id"] = "98489770067",
                 ["current_public_boundary_main_push_head_sha"] =
-                    "5f9cecfd5507e7e5dd726601aae3760e4e1b558c",
+                    "7cdd56bf0ff3ded2b9541cd242bd1d68905c0e66",
                 ["current_public_boundary_main_push_product_payload_change_detected"] = "false",
             });
+        Verify04275PostPush();
+    }
+
+    private static void Verify04275PostPush()
+    {
+        const string path =
+            "docs/ga-ready/evidence/public-boundary-ci-main-push-2026-08-27-04275-promotion-postpush-pass.md";
+        RequireMetadata(path, new Dictionary<string, string>
+        {
+            ["result"] = "PASS",
+            ["scope"] = "post-04275-promotion-main-push",
+            ["run_id"] = "33064087018",
+            ["job_id"] = "98489770067",
+            ["head_sha"] = "7cdd56bf0ff3ded2b9541cd242bd1d68905c0e66",
+            ["development_gates_run_id"] = "33064087022",
+            ["product_payload_change_detected"] = "false",
+            ["changed_path_count"] = "37",
+            ["product_payload_path_count"] = "0",
+            ["current_version_anchor"] = "0.42.75-admin-smoke",
+            ["additional_package_candidate_opened"] = "false",
+            ["package_candidate_decision"] =
+                "docs-only-04275-promotion-retains-0.42.75-admin-smoke",
+            ["public_trusted_signing"] = "not-claimed",
+            ["external_stable_publication"] = "not-claimed",
+        });
+        RequireMatches(path, [
+            @"\|\s*`web`\s*\|\s*`98489770455`\s*\|\s*`success`\s*\|",
+            @"\|\s*`dotnet`\s*\|\s*`98489770454`\s*\|\s*`success`\s*\|",
+            @"\|\s*`delivery`\s*\|\s*`98489770181`\s*\|\s*`success`\s*\|",
+            @"\|\s*`installer-policy`\s*\|\s*`98489770451`\s*\|\s*`success`\s*\|",
+        ]);
+        RequireMetadata(
+            "docs/ga-ready/MANUAL_ADMIN_NEXT_CAMPAIGN_DESCRIPTOR.md",
+            new Dictionary<string, string>
+            {
+                ["current_public_boundary_main_push_evidence"] = path,
+                ["current_public_boundary_main_push_run_id"] = "33064087018",
+                ["current_public_boundary_main_push_job_id"] = "98489770067",
+                ["current_public_boundary_main_push_head_sha"] =
+                    "7cdd56bf0ff3ded2b9541cd242bd1d68905c0e66",
+                ["current_public_boundary_main_push_product_payload_change_detected"] =
+                    "false",
+                ["current_public_boundary_main_push_package_candidate_decision"] =
+                    "docs-only-04275-promotion-retains-0.42.75-admin-smoke",
+                ["previous_04274_p0_current_public_boundary_main_push_evidence"] =
+                    "docs/ga-ready/evidence/public-boundary-ci-main-push-2026-08-21-04274-p0-landing-pass.md",
+            });
+        var ledger = "docs/ga-ready/CURRENT_EVIDENCE_LEDGER.md";
+        RequireMetadata(ledger, new Dictionary<string, string>
+        {
+            ["current_public_boundary_main_push_evidence"] = path,
+            ["current_public_boundary_main_push_run_id"] = "33064087018",
+            ["current_public_boundary_main_push_job_id"] = "98489770067",
+            ["current_public_boundary_main_push_head_sha"] =
+                "7cdd56bf0ff3ded2b9541cd242bd1d68905c0e66",
+            ["current_public_boundary_product_payload_change_detected"] = "false",
+            ["current_public_boundary_package_candidate_decision"] =
+                "docs-only-04275-promotion-retains-0.42.75-admin-smoke",
+            ["previous_04274_p0_current_public_boundary_main_push_evidence"] =
+                "docs/ga-ready/evidence/public-boundary-ci-main-push-2026-08-21-04274-p0-landing-pass.md",
+        });
+        RequireMatches(ledger, [
+            @"\|\s*`public-boundary-04275-promotion-current`\s*\|\s*`pass`, 0\.42\.75 promotion main push\s*\|",
+            @"\|\s*`public-boundary-04274-p0-predecessor`\s*\|",
+            "docs-only-04275-promotion-retains-0\\.42\\.75-admin-smoke",
+        ]);
+        var index = Text("docs/ga-ready/EVIDENCE_INDEX.md");
+        Assert.Contains(path, index, StringComparison.Ordinal);
+        Assert.Contains("product payload 경로는 `0`개", index, StringComparison.Ordinal);
     }
 
     private static void Verify04274Indexes()
@@ -463,6 +532,7 @@ internal static class D2EvidenceContractVerifier
             "docs/ga-ready/evidence/manual-admin-campaign-2026-08-27-04274-04275.md",
             "docs/ga-ready/evidence/functional-correctness-actual-host-validation-2026-08-27-04275.md",
             "docs/ga-ready/evidence/service-plan-p0-actual-vm-2026-08-27-04275.md",
+            "docs/ga-ready/evidence/public-boundary-ci-main-push-2026-08-27-04275-promotion-postpush-pass.md",
         ]);
         RequireMatches("docs/ga-ready/CONTROL_PLANE_INDEX.md", [
             "docs/ga-ready/evidence/admin-smoke-package-2026-08-21-04275.md",

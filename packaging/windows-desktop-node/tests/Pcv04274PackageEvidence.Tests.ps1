@@ -86,10 +86,10 @@ Describe '0.42.75 SERVICE_PLAN P0 promotion evidence contract' {
         Assert-MetadataValue -Content $descriptor -Name 'current_manual_admin_target_msi_sha256' -Value '3d3ee255f7a16c90715da27c436a9ebce479b5ae91f1f4a7067a47dc6dbc0fb6'
         Assert-MetadataValue -Content $descriptor -Name 'current_full_admin_host_mutation_provenance_commit' -Value 'dbe1b48cf8bfc45fe7c431fac30ff498dfc9bbe4'
         Assert-MetadataValue -Content $descriptor -Name 'current_public_boundary_main_push_package_candidate_decision' -Value 'docs-only-04275-promotion-retains-0.42.75-admin-smoke'
-        Assert-MetadataValue -Content $descriptor -Name 'current_public_boundary_main_push_evidence' -Value 'docs/ga-ready/evidence/public-boundary-ci-main-push-2026-08-21-04274-p0-landing-pass.md'
-        Assert-MetadataValue -Content $descriptor -Name 'current_public_boundary_main_push_run_id' -Value '32388996125'
-        Assert-MetadataValue -Content $descriptor -Name 'current_public_boundary_main_push_job_id' -Value '96490306459'
-        Assert-MetadataValue -Content $descriptor -Name 'current_public_boundary_main_push_head_sha' -Value '5f9cecfd5507e7e5dd726601aae3760e4e1b558c'
+        Assert-MetadataValue -Content $descriptor -Name 'current_public_boundary_main_push_evidence' -Value 'docs/ga-ready/evidence/public-boundary-ci-main-push-2026-08-27-04275-promotion-postpush-pass.md'
+        Assert-MetadataValue -Content $descriptor -Name 'current_public_boundary_main_push_run_id' -Value '33064087018'
+        Assert-MetadataValue -Content $descriptor -Name 'current_public_boundary_main_push_job_id' -Value '98489770067'
+        Assert-MetadataValue -Content $descriptor -Name 'current_public_boundary_main_push_head_sha' -Value '7cdd56bf0ff3ded2b9541cd242bd1d68905c0e66'
         Assert-MetadataValue -Content $descriptor -Name 'current_public_boundary_main_push_product_payload_change_detected' -Value 'false'
     }
 
@@ -109,6 +109,7 @@ Describe '0.42.75 SERVICE_PLAN P0 promotion evidence contract' {
         $index | Should -Match 'docs/ga-ready/evidence/manual-admin-campaign-2026-08-27-04274-04275.md'
         $index | Should -Match 'docs/ga-ready/evidence/functional-correctness-actual-host-validation-2026-08-27-04275.md'
         $index | Should -Match 'docs/ga-ready/evidence/service-plan-p0-actual-vm-2026-08-27-04275.md'
+        $index | Should -Match 'docs/ga-ready/evidence/public-boundary-ci-main-push-2026-08-27-04275-promotion-postpush-pass.md'
         $ledger | Should -Match '\|\s*`package-build-current`\s*\|\s*`package-build-pass`,\s*`0\.42\.75-admin-smoke`\s*\|'
         $ledger | Should -Match '\|\s*`full-admin-host-mutation-current`\s*\|\s*`pass`,\s*`0\.42\.75-admin-smoke`\s*\|'
         $ledger | Should -Match '\|\s*`installed-operator-surface-smoke-latest`\s*\|\s*`pass`,\s*installed\s*`0\.42\.75-admin-smoke`\s*\|'
