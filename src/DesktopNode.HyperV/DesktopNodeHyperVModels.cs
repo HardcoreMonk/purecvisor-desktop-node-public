@@ -58,6 +58,17 @@ public interface IDesktopNodeHyperVVmManageProvider
     DesktopNodeHyperVVmManageInfo Invoke(string vmName, CancellationToken cancellationToken);
 }
 
+public interface IDesktopNodeHyperVVmCloneProvider
+{
+    DesktopNodeHyperVVmClonePlan Preview(
+        DesktopNodeHyperVVmCloneRequest request,
+        CancellationToken cancellationToken);
+
+    DesktopNodeHyperVVmCloneInfo Invoke(
+        DesktopNodeHyperVVmCloneRequest request,
+        CancellationToken cancellationToken);
+}
+
 public interface IDesktopNodeHyperVVmMediaProvider
 {
     DesktopNodeHyperVVmMediaInfo Invoke(

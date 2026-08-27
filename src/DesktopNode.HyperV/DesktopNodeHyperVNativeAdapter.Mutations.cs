@@ -258,6 +258,99 @@ public sealed partial class DesktopNodeHyperVNativeAdapter
         }
     }
 
+    private bool TryInvokeVmClone(string operation, JsonElement parameters, CancellationToken cancellationToken, out DesktopNodeHyperVOperationResult result)
+    {
+        if (!TryReadVmCloneRequest(parameters, out var request, out result, operation))
+        {
+            return true;
+        }
+
+        try
+        {
+            ThrowIfNativeCanceled(cancellationToken, operation);
+            var data = operation == "vm.clone.preview"
+                ? JsonSerializer.SerializeToElement(vmCloneProvider.Preview(request, cancellationToken), JsonOptions)
+                : JsonSerializer.SerializeToElement(vmCloneProvider.Invoke(request, cancellationToken), JsonOptions);
+
+            result = new DesktopNodeHyperVOperationResult(
+                Ok: true,
+                Operation: operation,
+                Data: data,
+                Error: null);
+            return true;
+        }
+        catch (DesktopNodeHyperVNativeOperationException ex)
+        {
+            result = DesktopNodeHyperVOperationResult.Failure(operation, ex.Code, ex.Message, ex.Detail, ex.Retryable);
+            return true;
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            result = CanceledResult(operation);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            result = DesktopNodeHyperVOperationResult.Failure(
+                operation,
+                "PCV_VM_CLONE_FAILED",
+                $"VM clone operation '{operation}' failed for VM '{request.SourceName}'.",
+                ex.Message,
+                true);
+            return true;
+        }
+    }
+
+    private static bool TryReadVmCloneRequest(
+        JsonElement parameters,
+        out DesktopNodeHyperVVmCloneRequest request,
+        out DesktopNodeHyperVOperationResult result,
+        string operation)
+    {
+        var sourceName = GetStringProperty(parameters, "source");
+        var targetName = GetStringProperty(parameters, "target");
+        if (string.IsNullOrWhiteSpace(sourceName) && !string.IsNullOrWhiteSpace(targetName))
+        {
+            sourceName = GetStringProperty(parameters, "name");
+        }
+        else if (string.IsNullOrWhiteSpace(targetName))
+        {
+            targetName = GetStringProperty(parameters, "name");
+        }
+
+        var vmRoot = TryGetStringProperty(parameters, "vm_root", out var parsedVmRoot)
+            ? parsedVmRoot
+            : @"D:\PureCVisor\VMs";
+
+        if (string.IsNullOrWhiteSpace(sourceName) || !IsValidHyperVName(sourceName))
+        {
+            request = null!;
+            result = DesktopNodeHyperVOperationResult.Failure(
+                operation,
+                "PCV_VM_NAME_INVALID",
+                $"VM name '{sourceName ?? string.Empty}' is invalid.",
+                "Use a non-empty Hyper-V display name without leading/trailing whitespace, control characters, slash, or backslash.",
+                false);
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(targetName) || !IsValidHyperVName(targetName))
+        {
+            request = null!;
+            result = DesktopNodeHyperVOperationResult.Failure(
+                operation,
+                "PCV_VM_NAME_INVALID",
+                $"VM name '{targetName ?? string.Empty}' is invalid.",
+                "Use a non-empty Hyper-V display name without leading/trailing whitespace, control characters, slash, or backslash.",
+                false);
+            return false;
+        }
+
+        request = new DesktopNodeHyperVVmCloneRequest(sourceName, targetName, vmRoot);
+        result = null!;
+        return true;
+    }
+
     private bool TryInvokeVmMedia(string operation, JsonElement parameters, CancellationToken cancellationToken, out DesktopNodeHyperVOperationResult result)
     {
         var vmName = GetStringProperty(parameters, "name");
