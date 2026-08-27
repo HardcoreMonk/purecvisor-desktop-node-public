@@ -25,15 +25,15 @@
     },
     {
       "path": "src/DesktopNode.Api/DesktopNodeApiVmMutationRouteHandler.cs",
-      "max_lines": 846,
+      "max_lines": 970,
       "owner": "queued VM mutation routes and QoS validation",
-      "note": "2026-08-06 분해가 만들어 낸 모듈이다. 2026-08-20 SERVICE_PLAN P0 attach/save/resume-saved/manage queued routes가 846줄로 늘렸다."
+      "note": "2026-08-06 분해가 만들어 낸 모듈이다. 2026-08-27 SERVICE_PLAN P1-5 clone preview/queue routes가 970줄로 늘렸다."
     },
     {
       "path": "src/DesktopNode.HyperV/DesktopNodeHyperVNativeAdapter.cs",
-      "max_lines": 540,
+      "max_lines": 643,
       "owner": "provider domain orchestration core: construction, dispatch table, TryInvoke entry",
-      "note": "2026-08-09 pure partial split. Predecessor single-file ceiling was 2038. evidence: docs/ga-ready/evidence/hyperv-native-adapter-partial-decomposition-2026-08-09.md"
+      "note": "2026-08-09 pure partial split. Predecessor single-file ceiling was 2038. 2026-08-27 vm.clone preview/clone dispatch가 643줄로 늘렸다. evidence: docs/ga-ready/evidence/hyperv-native-adapter-partial-decomposition-2026-08-09.md"
     },
     {
       "path": "src/DesktopNode.HyperV/DesktopNodeHyperVNativeAdapter.Reads.cs",
@@ -43,15 +43,21 @@
     },
     {
       "path": "src/DesktopNode.HyperV/DesktopNodeHyperVNativeAdapter.Mutations.cs",
-      "max_lines": 832,
+      "max_lines": 925,
       "owner": "checkpoint mutation, power state, create/delete/rename, media, resource/qos mutation",
-      "note": "2026-08-09 pure partial split from DesktopNodeHyperVNativeAdapter.cs. Registered at creation so the large module is not renamed away from the ratchet."
+      "note": "2026-08-09 pure partial split from DesktopNodeHyperVNativeAdapter.cs. 2026-08-27 vm.clone queued mutation wiring이 925줄로 늘렸다. Registered at creation so the large module is not renamed away from the ratchet."
+    },
+    {
+      "path": "src/DesktopNode.HyperV/DesktopNodeHyperVWmiVmCloneProvider.cs",
+      "max_lines": 1165,
+      "owner": "managed full clone: CopyVhdx, DefineSystem, contained rollback, fail-closed inspect",
+      "note": "2026-08-27 SERVICE_PLAN P1-5 managed full clone. Registered at creation so the large module is not renamed away from the ratchet."
     },
     {
       "path": "web/src/served-app.ts",
-      "max_lines": 420,
+      "max_lines": 429,
       "owner": "Web Console event binding and initialization",
-      "note": "2026-08-08 분해로 4005줄에서 413줄이 됐다. UI layer는 src/served/*.ts 18개 part로 옮겼고 가장 큰 것이 mutate.ts 422줄이라 신규 등록 대상(500줄 초과)은 없다. evidence: docs/ga-ready/evidence/served-app-decomposition-2026-08-08.md"
+      "note": "2026-08-08 분해로 4005줄에서 413줄이 됐다. 2026-08-27 managed clone confirmation이 429줄로 늘렸다. UI layer는 src/served/*.ts 18개 part로 옮겼고 가장 큰 것이 mutate.ts 422줄이라 신규 등록 대상(500줄 초과)은 없다. evidence: docs/ga-ready/evidence/served-app-decomposition-2026-08-08.md"
     },
     {
       "path": "src/DesktopNode.Runtime/DesktopNodeJobRuntime.cs",
