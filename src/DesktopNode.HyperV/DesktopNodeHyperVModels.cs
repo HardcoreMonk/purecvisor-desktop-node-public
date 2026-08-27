@@ -224,6 +224,46 @@ public sealed record DesktopNodeHyperVVmManageInfo(
     [property: JsonPropertyName("name")] string Name,
     [property: JsonPropertyName("action")] string Action);
 
+public sealed record DesktopNodeHyperVVmCloneDiskSnapshot(
+    string SourcePath,
+    long FileLength,
+    bool IndependentVhdx);
+
+public sealed record DesktopNodeHyperVVmCloneSourceSnapshot(
+    string Name,
+    bool Managed,
+    int Generation,
+    string PowerState,
+    int CheckpointCount,
+    IReadOnlyList<DesktopNodeHyperVVmCloneDiskSnapshot> Disks,
+    bool SecurityFeaturesPresent);
+
+public sealed record DesktopNodeHyperVVmCloneRequest(
+    string SourceName,
+    string TargetName,
+    string VmRoot);
+
+public sealed record DesktopNodeHyperVVmCloneDiskPlan(
+    [property: JsonPropertyName("source")] string Source,
+    [property: JsonPropertyName("target")] string Target);
+
+public sealed record DesktopNodeHyperVVmClonePlan(
+    [property: JsonPropertyName("source")] string Source,
+    [property: JsonPropertyName("name")] string Name,
+    [property: JsonPropertyName("action")] string Action,
+    [property: JsonPropertyName("generation")] int Generation,
+    [property: JsonPropertyName("directory")] string Directory,
+    [property: JsonPropertyName("disk_count")] int DiskCount,
+    [property: JsonPropertyName("planned_copy_bytes")] long PlannedCopyBytes,
+    [property: JsonPropertyName("disks")] IReadOnlyList<DesktopNodeHyperVVmCloneDiskPlan> Disks);
+
+public sealed record DesktopNodeHyperVVmCloneInfo(
+    [property: JsonPropertyName("source")] string Source,
+    [property: JsonPropertyName("name")] string Name,
+    [property: JsonPropertyName("action")] string Action,
+    [property: JsonPropertyName("directory")] string Directory,
+    [property: JsonPropertyName("disks")] IReadOnlyList<string> Disks);
+
 public sealed record DesktopNodeHyperVVmMediaRequest(
     string Operation,
     string VmName,
