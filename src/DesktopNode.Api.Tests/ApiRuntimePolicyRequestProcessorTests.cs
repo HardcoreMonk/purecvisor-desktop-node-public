@@ -2823,6 +2823,152 @@ public sealed partial class ApiRuntimePolicyRequestProcessorTests
         Assert.False(data.GetProperty("params").TryGetProperty("confirm_name", out _));
     }
 
+    [Theory]
+    [InlineData("/api/v1/vms/lab%20vm/clone/preview", "vm.clone.preview", """{"confirm_name":"other vm","name":"lab vm 2"}""")]
+    [InlineData("/api/v1/vms/lab%20vm/clone/preview", "vm.clone.preview", """{"confirm_name":"Lab vm","name":"lab vm 2"}""")]
+    [InlineData("/api/v1/vms/lab%20vm/clone/preview", "vm.clone.preview", """{"confirm_name":"lab vm ","name":"lab vm 2"}""")]
+    [InlineData("/api/v1/vms/lab%20vm/clone/preview", "vm.clone.preview", """{"confirm_name":"","name":"lab vm 2"}""")]
+    [InlineData("/api/v1/vms/lab%20vm/clone/preview", "vm.clone.preview", """{"confirm_name":"   ","name":"lab vm 2"}""")]
+    [InlineData("/api/v1/vms/lab%20vm/clone/preview", "vm.clone.preview", """{"name":"lab vm 2"}""")]
+    [InlineData("/api/v1/vms/lab%20vm/clone/preview", "vm.clone.preview", "{}")]
+    [InlineData("/api/v1/vms/lab%20vm/clone/preview", "vm.clone.preview", null)]
+    [InlineData("/api/v1/vms/lab%20vm/clone", "vm.clone", """{"confirm_name":"other vm","name":"lab vm 2"}""")]
+    [InlineData("/api/v1/vms/lab%20vm/clone", "vm.clone", """{"confirm_name":"Lab vm","name":"lab vm 2"}""")]
+    [InlineData("/api/v1/vms/lab%20vm/clone", "vm.clone", """{"confirm_name":"lab vm ","name":"lab vm 2"}""")]
+    [InlineData("/api/v1/vms/lab%20vm/clone", "vm.clone", """{"confirm_name":"","name":"lab vm 2"}""")]
+    [InlineData("/api/v1/vms/lab%20vm/clone", "vm.clone", """{"confirm_name":"   ","name":"lab vm 2"}""")]
+    [InlineData("/api/v1/vms/lab%20vm/clone", "vm.clone", """{"name":"lab vm 2"}""")]
+    [InlineData("/api/v1/vms/lab%20vm/clone", "vm.clone", "{}")]
+    [InlineData("/api/v1/vms/lab%20vm/clone", "vm.clone", null)]
+    public void VmCloneRoutesRejectConfirmNameMismatch(string path, string expectedOperation, string? body)
+    {
+        var nativeCalls = new List<DesktopNodeHyperVOperationCall>();
+        var processor = DesktopNodeApiRequestProcessor.CreateDefault(
+            nativeAdapter: new RecordingNativeHyperVVmCloneAdapter(nativeCalls));
+
+        var response = processor.Handle(new DesktopNodeApiRequest("POST", path, body));
+        var tick = processor.ProcessOneQueuedJob();
+
+        Assert.Equal(400, response.StatusCode);
+        Assert.Empty(nativeCalls);
+        Assert.False(tick.Processed);
+        using var document = JsonDocument.Parse(response.Body);
+        Assert.False(document.RootElement.GetProperty("ok").GetBoolean());
+        Assert.Equal(expectedOperation, document.RootElement.GetProperty("operation").GetString());
+        Assert.Equal("PCV_VM_CLONE_CONFIRMATION_MISMATCH", document.RootElement.GetProperty("error").GetProperty("code").GetString());
+    }
+
+    [Theory]
+    [InlineData("/api/v1/vms/lab%20vm/clone/preview", "vm.clone.preview", """{"confirm_name":"lab vm"}""")]
+    [InlineData("/api/v1/vms/lab%20vm/clone/preview", "vm.clone.preview", """{"confirm_name":"lab vm","name":""}""")]
+    [InlineData("/api/v1/vms/lab%20vm/clone/preview", "vm.clone.preview", """{"confirm_name":"lab vm","name":"   "}""")]
+    [InlineData("/api/v1/vms/lab%20vm/clone", "vm.clone", """{"confirm_name":"lab vm"}""")]
+    [InlineData("/api/v1/vms/lab%20vm/clone", "vm.clone", """{"confirm_name":"lab vm","name":""}""")]
+    [InlineData("/api/v1/vms/lab%20vm/clone", "vm.clone", """{"confirm_name":"lab vm","name":"   "}""")]
+    public void VmCloneRoutesRejectMissingName(string path, string expectedOperation, string body)
+    {
+        var nativeCalls = new List<DesktopNodeHyperVOperationCall>();
+        var processor = DesktopNodeApiRequestProcessor.CreateDefault(
+            nativeAdapter: new RecordingNativeHyperVVmCloneAdapter(nativeCalls));
+
+        var response = processor.Handle(new DesktopNodeApiRequest("POST", path, body));
+        var tick = processor.ProcessOneQueuedJob();
+
+        Assert.Equal(400, response.StatusCode);
+        Assert.Empty(nativeCalls);
+        Assert.False(tick.Processed);
+        using var document = JsonDocument.Parse(response.Body);
+        Assert.False(document.RootElement.GetProperty("ok").GetBoolean());
+        Assert.Equal(expectedOperation, document.RootElement.GetProperty("operation").GetString());
+        Assert.Equal("PCV_VM_CLONE_NAME_REQUIRED", document.RootElement.GetProperty("error").GetProperty("code").GetString());
+    }
+
+    [Theory]
+    [InlineData("/api/v1/vms/lab%20vm/clone/preview", "vm.clone.preview")]
+    [InlineData("/api/v1/vms/lab%20vm/clone", "vm.clone")]
+    public void VmCloneRoutesRejectNameMatchingDecodedVmId(string path, string expectedOperation)
+    {
+        var nativeCalls = new List<DesktopNodeHyperVOperationCall>();
+        var processor = DesktopNodeApiRequestProcessor.CreateDefault(
+            nativeAdapter: new RecordingNativeHyperVVmCloneAdapter(nativeCalls));
+
+        var response = processor.Handle(new DesktopNodeApiRequest(
+            "POST",
+            path,
+            """{"confirm_name":"lab vm","name":"lab vm"}"""));
+        var tick = processor.ProcessOneQueuedJob();
+
+        Assert.Equal(400, response.StatusCode);
+        Assert.Empty(nativeCalls);
+        Assert.False(tick.Processed);
+        using var document = JsonDocument.Parse(response.Body);
+        Assert.False(document.RootElement.GetProperty("ok").GetBoolean());
+        Assert.Equal(expectedOperation, document.RootElement.GetProperty("operation").GetString());
+        Assert.Equal("PCV_VM_CLONE_NAME_CONFLICT", document.RootElement.GetProperty("error").GetProperty("code").GetString());
+    }
+
+    [Fact]
+    public void VmClonePreviewRouteReturnsPlanWithoutQueuingJob()
+    {
+        var nativeCalls = new List<DesktopNodeHyperVOperationCall>();
+        var processor = DesktopNodeApiRequestProcessor.CreateDefault(
+            nativeAdapter: new RecordingNativeHyperVVmCloneAdapter(nativeCalls));
+
+        var response = processor.Handle(new DesktopNodeApiRequest(
+            "POST",
+            "/api/v1/vms/lab%20vm/clone/preview",
+            """{"confirm_name":"lab vm","name":"lab vm 2"}""",
+            RequestId: "req-clone-preview"));
+        var tick = processor.ProcessOneQueuedJob();
+
+        Assert.Equal(200, response.StatusCode);
+        Assert.False(tick.Processed);
+        var nativeCall = Assert.Single(nativeCalls);
+        Assert.Equal("vm.clone.preview", nativeCall.Operation);
+        using var parameters = JsonDocument.Parse(nativeCall.ParamsJson);
+        Assert.Equal("lab vm", parameters.RootElement.GetProperty("source").GetString());
+        Assert.Equal("lab vm 2", parameters.RootElement.GetProperty("name").GetString());
+        Assert.False(parameters.RootElement.TryGetProperty("confirm_name", out _));
+        using var document = JsonDocument.Parse(response.Body);
+        Assert.Equal("vm.clone.preview", document.RootElement.GetProperty("operation").GetString());
+        var data = document.RootElement.GetProperty("data");
+        Assert.Equal("lab vm", data.GetProperty("source").GetString());
+        Assert.Equal("lab vm 2", data.GetProperty("name").GetString());
+        Assert.Equal("preview", data.GetProperty("action").GetString());
+        Assert.Equal(2, data.GetProperty("generation").GetInt32());
+        Assert.Equal(@"D:\PureCVisor\VMs\lab vm 2", data.GetProperty("directory").GetString());
+        Assert.Equal(1, data.GetProperty("disk_count").GetInt32());
+        Assert.Equal(1024, data.GetProperty("planned_copy_bytes").GetInt64());
+        var disk = Assert.Single(data.GetProperty("disks").EnumerateArray());
+        Assert.Equal(@"D:\PureCVisor\VMs\lab vm\disk0.vhdx", disk.GetProperty("source").GetString());
+        Assert.Equal(@"D:\PureCVisor\VMs\lab vm 2\disk0.vhdx", disk.GetProperty("target").GetString());
+        Assert.DoesNotContain("token", response.Body, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void VmCloneRouteQueuesJobWithSourceAndName()
+    {
+        var nativeCalls = new List<DesktopNodeHyperVOperationCall>();
+        var processor = DesktopNodeApiRequestProcessor.CreateDefault(
+            nativeAdapter: new RecordingNativeHyperVVmCloneAdapter(nativeCalls));
+
+        var response = processor.Handle(new DesktopNodeApiRequest(
+            "POST",
+            "/api/v1/vms/lab%20vm/clone",
+            """{"confirm_name":"lab vm","name":"lab vm 2"}"""));
+
+        Assert.Equal(202, response.StatusCode);
+        Assert.Empty(nativeCalls);
+        using var document = JsonDocument.Parse(response.Body);
+        var data = document.RootElement.GetProperty("data");
+        Assert.Equal("job.create", document.RootElement.GetProperty("operation").GetString());
+        Assert.Equal("vm.clone", data.GetProperty("operation").GetString());
+        Assert.Equal("lab vm", data.GetProperty("params").GetProperty("source").GetString());
+        Assert.Equal("lab vm 2", data.GetProperty("params").GetProperty("name").GetString());
+        Assert.False(data.GetProperty("params").TryGetProperty("confirm_name", out _));
+        Assert.False(data.GetProperty("params").TryGetProperty("target", out _));
+    }
+
     [Fact]
     public void VmRenameQueueCapturesReadbackBaselineWithoutMutatingProvider()
     {
