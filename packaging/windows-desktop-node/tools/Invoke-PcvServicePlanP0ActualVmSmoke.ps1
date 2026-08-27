@@ -420,6 +420,19 @@ function Get-ObjectPropertyValue {
     return $InputObject.$Name
 }
 
+function Get-CliProblemCode {
+    param($Payload)
+    foreach ($candidate in @(
+        (Get-ObjectPropertyValue -InputObject (Get-ObjectPropertyValue -InputObject $Payload -Name 'error') -Name 'code'),
+        (Get-ObjectPropertyValue -InputObject $Payload -Name 'code')
+    )) {
+        if ([string]$candidate -match '^PCV_[A-Z0-9_]+$') {
+            return [string]$candidate
+        }
+    }
+    return $null
+}
+
 function Invoke-PcvCliJson {
     param(
         [Parameter(Mandatory)][string]$StepName,
@@ -476,7 +489,11 @@ function Invoke-PcvCliJson {
     }) | Out-Null
     if ($secretObserved) { Set-SecretObserved }
     if ($exitCode -ne 0 -and -not $AllowFailure.IsPresent) {
-        throw "PCV_P0_COMMAND_FAILED|$StepName|exit=$exitCode"
+        $cliErrorCode = Get-CliProblemCode -Payload $payload
+        if ([string]::IsNullOrWhiteSpace($cliErrorCode)) {
+            $cliErrorCode = 'PCV_P0_COMMAND_FAILED'
+        }
+        throw "$cliErrorCode|$StepName|exit=$exitCode"
     }
     return [pscustomobject]@{
         ExitCode = $exitCode

@@ -40,6 +40,7 @@ function New-P0BehaviorRuntime {
         LifecycleComplete = $false
         CollisionOnCleanup = $false
         CleanupRootFailure = $false
+        VmGetNotFound = $false
         ProductDeleteVmIds = [System.Collections.Generic.List[string]]::new()
         NativeStopVmIds = [System.Collections.Generic.List[string]]::new()
         RemovedVmIds = [System.Collections.Generic.List[string]]::new()
@@ -151,7 +152,7 @@ function New-P0BehaviorRuntime {
                 }
                 if ($step -eq 'vm-get-state') {
                     $requested = [string]$arguments[2]
-                    if ($requested -ne 'pcv-p0-04275-behavior-managed') {
+                    if ($state.VmGetNotFound -or $requested -ne 'pcv-p0-04275-behavior-managed') {
                         return [pscustomobject]@{
                             exit_code = 1
                             stdout = (@{ error = @{ code = 'PCV_VM_NOT_FOUND' } } | ConvertTo-Json -Compress)
@@ -487,6 +488,19 @@ Describe 'SERVICE_PLAN P0 formal actual-VM runner contract' {
         $managedRecord = @($run.Summary.cleanup.records | Where-Object kind -eq 'managed')[0]
         $managedRecord.identity_blocker | Should -BeTrue
         $run.State.ExistingRoots.Contains([string]$managedRecord.root) | Should -BeTrue
+    }
+
+    It 'preserves PCV_VM_NOT_FOUND from vm get instead of PCV_P0_COMMAND_FAILED' {
+        $run = Invoke-P0BehaviorScenario -Name 'get-not-found' -Configure {
+            param($state)
+            $state.VmGetNotFound = $true
+        }
+        $run.Summary.overall_verdict | Should -Be 'FAIL'
+        $run.Summary.error | Should -Be 'PCV_VM_NOT_FOUND'
+        $run.Summary.error | Should -Not -Be 'PCV_P0_COMMAND_FAILED'
+        $run.Summary.queued_jobs.'vm-save'.status | Should -Be 'succeeded'
+        $run.Summary.slice_verdicts.saved_lifecycle | Should -Be 'FAIL'
+        $run.Summary.cleanup.verdict | Should -Be 'PASS'
     }
 
     It 'marks saved_lifecycle FAIL and runs exact cleanup on save readback mismatch' {

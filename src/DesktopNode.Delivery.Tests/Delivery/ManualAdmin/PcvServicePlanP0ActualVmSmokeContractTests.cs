@@ -169,6 +169,24 @@ public sealed class PcvServicePlanP0ActualVmSmokeContractTests
             StringComparison.Ordinal);
     }
 
+    [Fact]
+    public void PinsInnerProblemCodeAheadOfGenericCommandFailure()
+    {
+        var source = Source();
+        RequireTokens(
+            source,
+            "function Invoke-PcvCliJson",
+            "error",
+            "code",
+            "PCV_P0_COMMAND_FAILED");
+        AssertOrdered(
+            source,
+            "function Invoke-PcvCliJson",
+            "$cliErrorCode",
+            "throw");
+        Assert.Contains("PCV_P0_COMMAND_FAILED", source, StringComparison.Ordinal);
+    }
+
     private static string Source() =>
         RepositoryContractContext.Find().ReadUtf8Text(RunnerPath);
 
