@@ -25,6 +25,23 @@ write, 외부 mutation 또는 하위 에이전트 시작 전에 commentary에 �
 도구 작업 묶음은 하나의 목적을 위한 단일 tool call이다. 호출을 불필요하게 쪼개 한도를
 우회하지 않는다. 시간과 작업 묶음 중 먼저 도달한 한도가 우선한다.
 
+## 작업 차선
+
+모호한 `재개`는 다음 한 checkpoint이며, 그 checkpoint는 정확히 한 차선에 속한다.
+
+| 차선 | elapsed | tool batch | review | mutation |
+| --- | ---: | ---: | --- | --- |
+| Lane 0 권위 읽기 | 10분 | 6 | 0 | false |
+| Lane 1 계약 | 30분 | 18 | 정규 1 + 제한 재검토 2 | false |
+| Lane 2 설치본 프로브 | 45분 | 12 | 정규 1 | 사용자 명시 opt-in |
+| Lane 3 승격 | 30분 | 12 | 정규 1 + 제한 재검토 2 | current-evidence만. host mutation 별도 |
+
+Lane 1 경고는 21분과 13번째 묶음이다. Lane 2 경고는 32분과 9번째 묶음이다.
+차선을 바꾸면 새 시작 계약을 공개한다. 같은 checkpoint에서 예산을 소급 확장하지 않는다.
+Lane 2 `overall_verdict=FAIL` summary는 `actual_vm_tested=pass` 입력이 될 수 없다.
+에이전트 종료 보고는 `lane=`, `working_authority=`, `current_evidence_written=false|true`를 포함한다.
+`current_evidence_written=true`는 Lane 3가 아니면 즉시 회로를 연다.
+
 ## 진행 보고
 
 예산 70% 또는 주요 checkpoint 종료 시 `elapsed/limit`, `tool batches/limit`, 완료 항목,

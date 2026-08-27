@@ -2,7 +2,7 @@
 
 - Design-ID: `pcv-lane-separated-development-procedure-v1`
 - 작성일: `2026-08-27`
-- 문서 상태: `approved-for-written-spec-review`
+- 문서 상태: `approved-for-implementation`
 - 승인 locator:
   - `User-Approval: pcv-dev-procedure-lane-model-20260827`
   - `User-Approval: pcv-dev-procedure-doc-plus-min-guards-20260827`
