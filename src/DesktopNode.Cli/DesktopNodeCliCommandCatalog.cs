@@ -80,7 +80,7 @@ public static class DesktopNodeCliCommandCatalog
     {
         if (args.Count < 2)
         {
-            throw Usage("Use: vm list|get|create|start|shutdown|poweroff|restart|pause|resume|save|resume-saved|rename|manage|delete|checkpoint|attach.");
+            throw Usage("Use: vm list|get|create|start|shutdown|poweroff|restart|pause|resume|save|resume-saved|rename|manage|clone|delete|checkpoint|attach.");
         }
 
         return args[1].ToLowerInvariant() switch
@@ -95,6 +95,7 @@ public static class DesktopNodeCliCommandCatalog
             "memory-stats" => VmStats(args, "memory-stats"),
             "cpu-stats" => VmStats(args, "cpu-stats"),
             "manage" => VmManage(args),
+            "clone" => VmClone(args),
             "delete" => VmDelete(args),
             "checkpoint" or "snapshot" => CheckpointRequest(args),
             "rename" => VmRename(args),
@@ -129,7 +130,7 @@ public static class DesktopNodeCliCommandCatalog
                 "--maximum-kbps",
                 "minimum_kbps",
                 "--minimum-kbps"),
-            _ => throw Usage("Use: vm list|get|create|start|stop|shutdown|guest-shutdown|poweroff|restart|pause|resume|save|resume-saved|rename|console|vnc|manage|delete|checkpoint|snapshot|attach.")
+            _ => throw Usage("Use: vm list|get|create|start|stop|shutdown|guest-shutdown|poweroff|restart|pause|resume|save|resume-saved|rename|console|vnc|manage|clone|delete|checkpoint|snapshot|attach.")
         };
     }
 
@@ -517,6 +518,35 @@ public static class DesktopNodeCliCommandCatalog
             JsonSerializer.Serialize(body, JsonOptions));
     }
 
+    private static DesktopNodeCliRequest VmClone(IReadOnlyList<string> args)
+    {
+        if (args.Count < 3 || args[2].StartsWith("--", StringComparison.Ordinal))
+        {
+            throw Usage("Use: vm clone <source> --name <target> --yes|--dry-run.");
+        }
+
+        var parsed = ParseOptions(args.Skip(3).ToArray(), allowFlags: true);
+        var name = Required(parsed.Options, "--name");
+        var dryRun = HasFlag(parsed.Options, "--dry-run");
+        var confirmed = HasFlag(parsed.Options, "--yes");
+        if (dryRun == confirmed)
+        {
+            throw new ArgumentException(
+                "PCV_CLI_CONFIRMATION_REQUIRED|VM clone requires explicit confirmation.|Use: vm clone <source> --name <target> --yes.");
+        }
+
+        var body = new SortedDictionary<string, object?>
+        {
+            ["confirm_name"] = args[2],
+            ["name"] = name
+        };
+
+        return new DesktopNodeCliRequest(
+            "POST",
+            $"/api/v1/vms/{Segment(args[2])}/clone{(dryRun ? "/preview" : string.Empty)}",
+            JsonSerializer.Serialize(body, JsonOptions));
+    }
+
     private static DesktopNodeCliRequest VmDelete(IReadOnlyList<string> args)
     {
         if (args.Count != 4 || !Is(args[3], "--yes"))
@@ -848,6 +878,8 @@ public static class DesktopNodeCliCommandCatalog
             "  pcvcli vm attach <vm> --iso <path>",
             "  pcvcli vm eject|delete-status <vm>",
             "  pcvcli vm manage <vm> --yes",
+            "  pcvcli vm clone <source> --name <target> --yes",
+            "  pcvcli vm clone <source> --name <target> --dry-run",
             "  pcvcli vm delete <vm> --yes",
             "  pcvcli vm checkpoint list|create|restore|delete",
             "  pcvcli vm snapshot list|create|rollback|delete",

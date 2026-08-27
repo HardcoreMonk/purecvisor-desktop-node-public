@@ -81,6 +81,7 @@ public sealed class DesktopNodeCliInteractiveShellTests
         Assert.Contains(lines, line => string.Equals(line.Trim(), "vm save | Save VM to Hyper-V Saved state", StringComparison.Ordinal));
         Assert.Contains(lines, line => string.Equals(line.Trim(), "vm resume-saved | Resume a VM from Hyper-V Saved state", StringComparison.Ordinal));
         Assert.Contains(lines, line => string.Equals(line.Trim(), "vm manage | Promote an existing VM to PureCVisor managed", StringComparison.Ordinal));
+        Assert.Contains(lines, line => string.Equals(line.Trim(), "vm clone | Clone a managed VM to a new independent disk", StringComparison.Ordinal));
         Assert.Contains(lines, line => string.Equals(line.Trim(), "vm attach | Attach ISO media to the virtual DVD", StringComparison.Ordinal));
         Assert.Contains(lines, line => string.Equals(line.Trim(), "vm eject | Eject ISO media from the virtual DVD", StringComparison.Ordinal));
         Assert.Contains(lines, line => string.Equals(line.Trim(), "vm memory-stats | Show VM memory stats", StringComparison.Ordinal));
@@ -182,6 +183,7 @@ public sealed class DesktopNodeCliInteractiveShellTests
     [InlineData("vm sav", "vm save ")]
     [InlineData("vm resume-s", "vm resume-saved ")]
     [InlineData("vm mana", "vm manage ")]
+    [InlineData("vm clo", "vm clone ")]
     [InlineData("diagnostics bundle l", "diagnostics bundle list")]
     [InlineData("snapshot roll", "snapshot roll")]
     [InlineData("unknown", "unknown")]

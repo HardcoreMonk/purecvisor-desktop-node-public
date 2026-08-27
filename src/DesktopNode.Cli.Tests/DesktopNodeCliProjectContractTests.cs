@@ -52,6 +52,8 @@ public sealed class DesktopNodeCliProjectContractTests
             "pcvcli vm save <vm>",
             "pcvcli vm resume-saved <vm>",
             "pcvcli vm manage <vm> --yes",
+            "pcvcli vm clone <source> --name <target> --yes",
+            "pcvcli vm clone <source> --name <target> --dry-run",
             "pcvcli vm eject <vm>",
             "pcvcli vm delete-status <vm>"
         ];

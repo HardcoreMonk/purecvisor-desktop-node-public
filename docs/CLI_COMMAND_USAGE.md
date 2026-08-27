@@ -219,6 +219,8 @@ pcvcli network list
 | `pcvcli vm guest-exec <vm> --dry-run [--credential-ref <ref>] [--timeout-sec <n>] -- <command...>` | `POST /api/v1/vms/{vm}/guest/exec/preview` | Command hash/redaction/audit preview. Guest 실행 없음 |
 | `pcvcli vm guest-exec <vm> --credential-ref <ref> [--timeout-sec <n>] -- <command...>` | `POST /api/v1/vms/{vm}/guest/exec` | Protected credential reference 기반 guest execution job queue |
 | `pcvcli vm manage <vm> --yes` | `POST /api/v1/vms/{vm}/manage` | existing Hyper-V VM을 PureCVisor managed로 승격. `--yes` 필수. body `confirm_name`은 `<vm>` 인자 그대로 |
+| `pcvcli vm clone <source> --name <target> --dry-run` | `POST /api/v1/vms/{vm}/clone/preview` | managed VM full clone preview. `--yes` 불필요. body `confirm_name`은 `<source>` 인자 그대로, `name`은 `--name` |
+| `pcvcli vm clone <source> --name <target> --yes` | `POST /api/v1/vms/{vm}/clone` | managed VM을 독립 disk로 clone. `--yes` 필수. body `confirm_name`은 `<source>` 인자 그대로, `name`은 `--name` |
 | `pcvcli vm delete <vm> --yes` | `DELETE /api/v1/vms/{vm}` | Managed VM delete job queue |
 
 VM 생성 예:
