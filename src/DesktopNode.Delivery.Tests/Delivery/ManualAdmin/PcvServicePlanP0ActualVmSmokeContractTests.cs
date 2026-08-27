@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using DesktopNode.Delivery.Tests.Delivery.Evidence;
 using DesktopNode.Delivery.Tests.Infrastructure;
 
 namespace DesktopNode.Delivery.Tests.Delivery.ManualAdmin;
@@ -185,6 +186,26 @@ public sealed class PcvServicePlanP0ActualVmSmokeContractTests
             "$cliErrorCode",
             "throw");
         Assert.Contains("PCV_P0_COMMAND_FAILED", source, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Lane2RunnerDoesNotWriteCurrentEvidence()
+    {
+        var source = Source();
+        Assert.DoesNotContain(
+            "docs/ga-ready/current-evidence.json",
+            source,
+            StringComparison.Ordinal);
+        Assert.DoesNotContain(
+            "Update-PcvCurrentEvidence",
+            source,
+            StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Lane2FailObservationDoesNotMakePromotionEligible()
+    {
+        D2EvidenceContractVerifier.Verify("feature-evidence-promotion", 4);
     }
 
     private static string Source() =>
