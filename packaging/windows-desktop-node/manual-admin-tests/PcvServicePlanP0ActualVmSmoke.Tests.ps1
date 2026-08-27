@@ -40,6 +40,7 @@ function New-P0BehaviorRuntime {
         LifecycleComplete = $false
         CollisionOnCleanup = $false
         CleanupRootFailure = $false
+        VmGetNotFound = $false
         ProductDeleteVmIds = [System.Collections.Generic.List[string]]::new()
         NativeStopVmIds = [System.Collections.Generic.List[string]]::new()
         RemovedVmIds = [System.Collections.Generic.List[string]]::new()
@@ -144,9 +145,31 @@ function New-P0BehaviorRuntime {
             }
             'invoke-cli' {
                 $step = [string]$Payload.step
+                $arguments = @($Payload.arguments)
                 $state.LastEnqueuedStep = $step
                 if ($step -like 'cleanup-delete-*') {
-                    $state.ProductDeleteVmIds.Add([string]@($Payload.arguments)[2]) | Out-Null
+                    $state.ProductDeleteVmIds.Add([string]$arguments[2]) | Out-Null
+                }
+                if ($step -eq 'vm-get-state') {
+                    $requested = [string]$arguments[2]
+                    if ($state.VmGetNotFound -or $requested -ne 'pcv-p0-04275-behavior-managed') {
+                        return [pscustomobject]@{
+                            exit_code = 1
+                            stdout = ''
+                            stderr = "code=PCV_VM_NOT_FOUND`nmessage=VM not found"
+                        }
+                    }
+                    $productState = if ($state.ManagedState -eq 'Saved') {
+                        $state.SaveProductState
+                    }
+                    else {
+                        $state.ResumeProductState
+                    }
+                    return [pscustomobject]@{
+                        exit_code = 0
+                        stdout = (@{ data = @{ name = $requested; state = $productState } } | ConvertTo-Json -Compress)
+                        stderr = ''
+                    }
                 }
                 if ([string]$state.ServiceLossAfterEnqueue -eq $step) {
                     $state.ServiceState = 'Stopped'
@@ -465,6 +488,19 @@ Describe 'SERVICE_PLAN P0 formal actual-VM runner contract' {
         $managedRecord = @($run.Summary.cleanup.records | Where-Object kind -eq 'managed')[0]
         $managedRecord.identity_blocker | Should -BeTrue
         $run.State.ExistingRoots.Contains([string]$managedRecord.root) | Should -BeTrue
+    }
+
+    It 'preserves PCV_VM_NOT_FOUND from vm get instead of PCV_P0_COMMAND_FAILED' {
+        $run = Invoke-P0BehaviorScenario -Name 'get-not-found' -Configure {
+            param($state)
+            $state.VmGetNotFound = $true
+        }
+        $run.Summary.overall_verdict | Should -Be 'FAIL'
+        $run.Summary.error | Should -Be 'PCV_VM_NOT_FOUND'
+        $run.Summary.error | Should -Not -Be 'PCV_P0_COMMAND_FAILED'
+        $run.Summary.queued_jobs.'vm-save'.status | Should -Be 'succeeded'
+        $run.Summary.slice_verdicts.saved_lifecycle | Should -Be 'FAIL'
+        $run.Summary.cleanup.verdict | Should -Be 'PASS'
     }
 
     It 'marks saved_lifecycle FAIL and runs exact cleanup on save readback mismatch' {

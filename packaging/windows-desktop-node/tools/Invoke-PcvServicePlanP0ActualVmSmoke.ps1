@@ -420,6 +420,28 @@ function Get-ObjectPropertyValue {
     return $InputObject.$Name
 }
 
+function Get-CliProblemCode {
+    param(
+        $Payload,
+        [string]$Stderr = ''
+    )
+    foreach ($candidate in @(
+        (Get-ObjectPropertyValue -InputObject (Get-ObjectPropertyValue -InputObject $Payload -Name 'error') -Name 'code'),
+        (Get-ObjectPropertyValue -InputObject $Payload -Name 'code')
+    )) {
+        if ([string]$candidate -match '^PCV_[A-Z0-9_]+$') {
+            return [string]$candidate
+        }
+    }
+    if ([string]$Stderr -match '(?m)^code=(PCV_[A-Z0-9_]+)') {
+        return $Matches[1]
+    }
+    if ([string]$Stderr -match '\b(PCV_[A-Z0-9_]+)\b') {
+        return $Matches[1]
+    }
+    return $null
+}
+
 function Invoke-PcvCliJson {
     param(
         [Parameter(Mandatory)][string]$StepName,
@@ -476,7 +498,11 @@ function Invoke-PcvCliJson {
     }) | Out-Null
     if ($secretObserved) { Set-SecretObserved }
     if ($exitCode -ne 0 -and -not $AllowFailure.IsPresent) {
-        throw "PCV_P0_COMMAND_FAILED|$StepName|exit=$exitCode"
+        $cliErrorCode = Get-CliProblemCode -Payload $payload -Stderr $stderr
+        if ([string]::IsNullOrWhiteSpace($cliErrorCode)) {
+            $cliErrorCode = 'PCV_P0_COMMAND_FAILED'
+        }
+        throw "$cliErrorCode|$StepName|exit=$exitCode"
     }
     return [pscustomobject]@{
         ExitCode = $exitCode
@@ -610,18 +636,11 @@ function Wait-HyperVState {
 
 function Get-ProductVmState {
     param(
-        [Parameter(Mandatory)][string]$Id,
+        [Parameter(Mandatory)][string]$OperatorId,
         [Parameter(Mandatory)][string]$Phase
     )
 
-    if ($null -ne $RuntimeAdapter) {
-        return ([string](Invoke-RuntimeOperation -Operation 'product-vm-state' -Input @{
-            id = $Id
-            phase = $Phase
-        })).ToLowerInvariant()
-    }
-
-    $result = Invoke-PcvCliJson -StepName 'vm-get-state' -Arguments @('vm', 'get', $Id)
+    $result = Invoke-PcvCliJson -StepName 'vm-get-state' -Arguments @('vm', 'get', $OperatorId)
     $data = Get-ObjectPropertyValue -InputObject $result.Json -Name 'data'
     $state = Get-ObjectPropertyValue -InputObject $data -Name 'state'
     if ($null -eq $state) {
@@ -768,7 +787,7 @@ function Invoke-SavedLifecycle {
 
     $save = Start-PcvCliJob -StepName 'vm-save' -Arguments @('vm', 'save', $Record.id)
     $hypervSaved = Wait-HyperVState -Id $id -Expected 'Saved' -Phase 'after-save'
-    $productSaved = Get-ProductVmState -Id $Record.id -Phase 'after-save'
+    $productSaved = Get-ProductVmState -OperatorId $ManagedVm -Phase 'after-save'
     $summary.hyperv_state_after_save = $hypervSaved
     $summary.product_state_after_save = $productSaved
     $summary.readbacks.saved_not_paused = ($hypervSaved -ne 'Paused')
@@ -780,7 +799,7 @@ function Invoke-SavedLifecycle {
 
     $resume = Start-PcvCliJob -StepName 'vm-resume-saved' -Arguments @('vm', 'resume-saved', $Record.id)
     $hypervRunning = Wait-HyperVState -Id $id -Expected 'Running' -Phase 'after-resume'
-    $productStateAfterResume = Get-ProductVmState -Id $Record.id -Phase 'after-resume'
+    $productStateAfterResume = Get-ProductVmState -OperatorId $ManagedVm -Phase 'after-resume'
     $summary.hyperv_state_after_resume = $hypervRunning
     $summary.product_state_after_resume = $productStateAfterResume
     if ([string](Get-ObjectPropertyValue -InputObject $resume -Name 'status') -ne 'succeeded' -or
@@ -882,7 +901,7 @@ function Invoke-ManagedImportSlice {
     $record = Set-VmAuthoritativeIdentity -Record $record -Vm $foreignVmResult
 
     $rejected = Start-PcvCliJob -StepName 'unmanaged-delete' -Arguments @(
-        'vm', 'delete', $record.id, '--yes') -AllowFailure
+        'vm', 'delete', $record.name, '--yes') -AllowFailure
     $rejectStatus = [string](Get-ObjectPropertyValue -InputObject $rejected -Name 'status')
     $rejectError = Get-ObjectPropertyValue -InputObject $rejected -Name 'error'
     $rejectCode = [string](Get-ObjectPropertyValue -InputObject $rejectError -Name 'code')
@@ -894,7 +913,7 @@ function Invoke-ManagedImportSlice {
     $managed = Start-PcvCliJob -StepName 'vm-manage' -Arguments @('vm', 'manage', $record.id, '--yes')
     $managedVm = Get-PcvVmById -Id ([Guid]$record.id) -Record $record
     $markerPresent = [string]$managedVm.Notes -match 'managed-by=purecvisor-desktop-node'
-    $deleted = Start-PcvCliJob -StepName 'managed-delete' -Arguments @('vm', 'delete', $record.id, '--yes')
+    $deleted = Start-PcvCliJob -StepName 'managed-delete' -Arguments @('vm', 'delete', $record.name, '--yes')
     $gone = $null -eq (Get-PcvVmById -Id ([Guid]$record.id) -Record $record)
     $summary.readbacks.managed_import = [ordered]@{
         unmanaged_delete_rejected = $true
@@ -980,7 +999,7 @@ function Invoke-ExactCleanup {
                 $record.product_delete_attempted = $true
                 try {
                     $delete = Start-PcvCliJob -StepName "cleanup-delete-$($record.kind)" -Arguments @(
-                        'vm', 'delete', $record.id, '--yes') -AllowFailure
+                        'vm', 'delete', $record.name, '--yes') -AllowFailure
                     if ([string](Get-ObjectPropertyValue -InputObject $delete -Name 'status') -ne 'succeeded') {
                         throw 'product-delete-failed'
                     }

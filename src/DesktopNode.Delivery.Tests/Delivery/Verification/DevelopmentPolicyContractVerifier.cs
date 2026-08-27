@@ -13,7 +13,7 @@ internal sealed class DevelopmentPolicyContractVerifier
     internal const string SpecPath = "config/pcv-development-policy-contract-spec-v1.json";
 
     private const string ExpectedSpecSha256 =
-        "821d1e3af1af0264fb49b13f250b92e46adee11f8e251cdde602a0a6a22891a0";
+        "e3e4e819c566747fa96debba1c9746fec73b1336e037628baad050de7187c50e";
 
     private static readonly string[] ExpectedKeys =
     [
@@ -423,7 +423,7 @@ internal sealed class DevelopmentPolicyContractVerifier
             "config/agent-execution-circuit-breaker.json",
             Source("config/agent-execution-circuit-breaker.json"));
         var root = json.Root;
-        if (root.EnumerateObject().Count() != 9 ||
+        if (root.EnumerateObject().Count() != 10 ||
             root.GetProperty("schema_version").GetInt32() != 1 ||
             root.GetProperty("contract").GetString() !=
                 "pcv-agent-execution-circuit-breaker-v1" ||
@@ -438,6 +438,28 @@ internal sealed class DevelopmentPolicyContractVerifier
             throw Invalid("circuit-breaker-contract");
         }
 
+        var lanes = root.GetProperty("lanes");
+        if (lanes.EnumerateObject().Count() != 4 ||
+            lanes.GetProperty("0").GetProperty("elapsed_minutes_limit").GetInt32() != 10 ||
+            lanes.GetProperty("0").GetProperty("tool_batch_limit").GetInt32() != 6 ||
+            lanes.GetProperty("0").GetProperty("review_pass_limit").GetInt32() != 0 ||
+            lanes.GetProperty("0").GetProperty("narrow_rereview_pass_limit").GetInt32() != 0 ||
+            lanes.GetProperty("1").GetProperty("elapsed_minutes_limit").GetInt32() != 30 ||
+            lanes.GetProperty("1").GetProperty("tool_batch_limit").GetInt32() != 18 ||
+            lanes.GetProperty("1").GetProperty("review_pass_limit").GetInt32() != 1 ||
+            lanes.GetProperty("1").GetProperty("narrow_rereview_pass_limit").GetInt32() != 2 ||
+            lanes.GetProperty("2").GetProperty("elapsed_minutes_limit").GetInt32() != 45 ||
+            lanes.GetProperty("2").GetProperty("tool_batch_limit").GetInt32() != 12 ||
+            lanes.GetProperty("2").GetProperty("review_pass_limit").GetInt32() != 1 ||
+            lanes.GetProperty("2").GetProperty("narrow_rereview_pass_limit").GetInt32() != 0 ||
+            lanes.GetProperty("3").GetProperty("elapsed_minutes_limit").GetInt32() != 30 ||
+            lanes.GetProperty("3").GetProperty("tool_batch_limit").GetInt32() != 12 ||
+            lanes.GetProperty("3").GetProperty("review_pass_limit").GetInt32() != 1 ||
+            lanes.GetProperty("3").GetProperty("narrow_rereview_pass_limit").GetInt32() != 2)
+        {
+            throw Invalid("circuit-breaker-lanes");
+        }
+
         var policy = Source("docs/AGENT_EXECUTION_CIRCUIT_BREAKER.md");
         var agents = Source("AGENTS.md");
         RequireTokens(
@@ -447,6 +469,12 @@ internal sealed class DevelopmentPolicyContractVerifier
             "18회",
             "21분",
             "13번째",
+            "Lane 0",
+            "Lane 1",
+            "Lane 2",
+            "Lane 3",
+            "45분",
+            "current_evidence_written",
             "추가 patch는 금지",
             "새 테스트도 금지",
             "Add-Type",
@@ -458,7 +486,10 @@ internal sealed class DevelopmentPolicyContractVerifier
             "docs/AGENT_EXECUTION_CIRCUIT_BREAKER.md",
             "config/agent-execution-circuit-breaker.json",
             "`vague_resume_policy`: `one-bounded-checkpoint`",
-            "`out_of_scope_findings`: `report-only`");
+            "`out_of_scope_findings`: `report-only`",
+            "Lane 0",
+            "FAIL 프로브는 current를 못 쓴다",
+            "canonical operator id");
     }
 
     private void ValidateArchitectureRegistry()

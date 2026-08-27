@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using DesktopNode.Delivery.Tests.Delivery.Evidence;
 using DesktopNode.Delivery.Tests.Infrastructure;
 
 namespace DesktopNode.Delivery.Tests.Delivery.ManualAdmin;
@@ -142,6 +143,73 @@ public sealed class PcvServicePlanP0ActualVmSmokeContractTests
         Assert.DoesNotMatch(
             new Regex(@"(?is)Get-VM\s*\|\s*Where-Object.*?Remove-VM", RegexOptions.CultureInvariant),
             source);
+    }
+
+    [Fact]
+    public void PinsCanonicalOperatorIdForProductGetAndDelete()
+    {
+        var source = Source();
+        RequireTokens(
+            source,
+            "Get-ProductVmState",
+            "-OperatorId",
+            "$ManagedVm",
+            "'vm', 'get', $OperatorId",
+            "'vm', 'delete', $record.name");
+        Assert.DoesNotContain(
+            "'vm', 'get', $Id",
+            source,
+            StringComparison.Ordinal);
+        Assert.DoesNotContain(
+            "Get-ProductVmState -Id $Record.id",
+            source,
+            StringComparison.Ordinal);
+        Assert.DoesNotContain(
+            "'vm', 'delete', $record.id",
+            source,
+            StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void PinsInnerProblemCodeAheadOfGenericCommandFailure()
+    {
+        var source = Source();
+        RequireTokens(
+            source,
+            "function Invoke-PcvCliJson",
+            "error",
+            "code",
+            "stderr",
+            "code=",
+            "PCV_P0_COMMAND_FAILED");
+        AssertOrdered(
+            source,
+            "function Invoke-PcvCliJson",
+            "$cliErrorCode",
+            "throw");
+        Assert.Contains("PCV_P0_COMMAND_FAILED", source, StringComparison.Ordinal);
+        Assert.Contains("Get-CliProblemCode", source, StringComparison.Ordinal);
+        Assert.Contains("-Stderr", source, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Lane2RunnerDoesNotWriteCurrentEvidence()
+    {
+        var source = Source();
+        Assert.DoesNotContain(
+            "docs/ga-ready/current-evidence.json",
+            source,
+            StringComparison.Ordinal);
+        Assert.DoesNotContain(
+            "Update-PcvCurrentEvidence",
+            source,
+            StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Lane2FailObservationDoesNotMakePromotionEligible()
+    {
+        D2EvidenceContractVerifier.Verify("feature-evidence-promotion", 4);
     }
 
     private static string Source() =>
