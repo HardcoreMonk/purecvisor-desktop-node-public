@@ -78,6 +78,12 @@ public static class DesktopNodeHyperVVmCloneGuard
             return false;
         }
 
+        if (string.IsNullOrWhiteSpace(request.TargetName) || IsReservedCloneTargetName(request.TargetName))
+        {
+            error = InvalidCloneTargetName(request.TargetName);
+            return false;
+        }
+
         if (string.Equals(request.TargetName, request.SourceName, StringComparison.Ordinal))
         {
             error = Reject(
@@ -87,7 +93,12 @@ public static class DesktopNodeHyperVVmCloneGuard
             return false;
         }
 
-        var directory = Path.Combine(request.VmRoot, request.TargetName);
+        if (!TryResolveContainedCloneDirectory(request.VmRoot, request.TargetName, out var directory))
+        {
+            error = InvalidCloneTargetName(request.TargetName);
+            return false;
+        }
+
         var disks = new DesktopNodeHyperVVmCloneDiskPlan[source.Disks.Count];
         long plannedCopyBytes = 0;
         for (var index = 0; index < source.Disks.Count; index++)
@@ -109,6 +120,65 @@ public static class DesktopNodeHyperVVmCloneGuard
             plannedCopyBytes,
             disks);
         return true;
+    }
+
+    internal static bool IsReservedCloneTargetName(string? name)
+    {
+        return string.Equals(name, ".", StringComparison.Ordinal) ||
+            string.Equals(name, "..", StringComparison.Ordinal);
+    }
+
+    internal static bool TryResolveContainedCloneDirectory(string vmRoot, string targetName, out string directory)
+    {
+        directory = string.Empty;
+        if (string.IsNullOrWhiteSpace(vmRoot) || string.IsNullOrWhiteSpace(targetName) || IsReservedCloneTargetName(targetName))
+        {
+            return false;
+        }
+
+        try
+        {
+            directory = Path.GetFullPath(Path.Combine(vmRoot, targetName));
+            return IsContainedCloneDirectory(vmRoot, directory);
+        }
+        catch (Exception ex) when (ex is ArgumentException or NotSupportedException or PathTooLongException)
+        {
+            directory = string.Empty;
+            return false;
+        }
+    }
+
+    internal static bool IsContainedCloneDirectory(string vmRoot, string directory)
+    {
+        if (string.IsNullOrWhiteSpace(vmRoot) || string.IsNullOrWhiteSpace(directory))
+        {
+            return false;
+        }
+
+        try
+        {
+            var fullRoot = Path.TrimEndingDirectorySeparator(Path.GetFullPath(vmRoot));
+            var fullDirectory = Path.TrimEndingDirectorySeparator(Path.GetFullPath(directory));
+            var relative = Path.GetRelativePath(fullRoot, fullDirectory);
+            return !string.IsNullOrWhiteSpace(relative) &&
+                relative != "." &&
+                !relative.Equals("..", StringComparison.Ordinal) &&
+                !relative.StartsWith(".." + Path.DirectorySeparatorChar, StringComparison.Ordinal) &&
+                !relative.StartsWith(".." + Path.AltDirectorySeparatorChar, StringComparison.Ordinal) &&
+                !Path.IsPathRooted(relative);
+        }
+        catch (Exception ex) when (ex is ArgumentException or NotSupportedException or PathTooLongException)
+        {
+            return false;
+        }
+    }
+
+    internal static DesktopNodeHyperVNativeOperationException InvalidCloneTargetName(string? targetName)
+    {
+        return Reject(
+            "PCV_VM_NAME_INVALID",
+            $"VM name '{targetName ?? string.Empty}' is invalid.",
+            "Use a VM display name that is not '.' or '..' and resolves to a subdirectory of the VM root.");
     }
 
     private static DesktopNodeHyperVNativeOperationException Reject(string code, string message, string detail)

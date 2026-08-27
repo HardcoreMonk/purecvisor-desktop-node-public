@@ -92,6 +92,18 @@ public sealed class DesktopNodeHyperVVmCloneGuardTests
             "PCV_VM_CLONE_NAME_CONFLICT");
     }
 
+    [Theory]
+    [InlineData(".")]
+    [InlineData("..")]
+    public void TryPlanRejectsDotAndDotDotTargetNames(string targetName)
+    {
+        AssertRejected(
+            ValidSource(),
+            new DesktopNodeHyperVVmCloneRequest("lab-vm", targetName, @"D:\vms"),
+            targetExists: false,
+            "PCV_VM_NAME_INVALID");
+    }
+
     [Fact]
     public void TryPlanBuildsPreviewPlanForManagedIndependentSource()
     {
@@ -108,12 +120,12 @@ public sealed class DesktopNodeHyperVVmCloneGuardTests
         Assert.Equal("lab-vm-2", plan.Name);
         Assert.Equal("preview", plan.Action);
         Assert.Equal(2, plan.Generation);
-        Assert.Equal(Path.Combine(@"D:\vms", "lab-vm-2"), plan.Directory);
+        Assert.Equal(Path.GetFullPath(Path.Combine(@"D:\vms", "lab-vm-2")), plan.Directory);
         Assert.Equal(1, plan.DiskCount);
         Assert.Equal(1024, plan.PlannedCopyBytes);
         var disk = Assert.Single(plan.Disks);
         Assert.Equal(@"D:\vms\lab-vm\disk0.vhdx", disk.Source);
-        Assert.Equal(@"D:\vms\lab-vm-2\disk0.vhdx", disk.Target);
+        Assert.Equal(Path.Combine(plan.Directory, "disk0.vhdx"), disk.Target);
 
         using var document = JsonDocument.Parse(JsonSerializer.Serialize(plan));
         var root = document.RootElement;
@@ -121,12 +133,12 @@ public sealed class DesktopNodeHyperVVmCloneGuardTests
         Assert.Equal("lab-vm-2", root.GetProperty("name").GetString());
         Assert.Equal("preview", root.GetProperty("action").GetString());
         Assert.Equal(2, root.GetProperty("generation").GetInt32());
-        Assert.Equal(@"D:\vms\lab-vm-2", root.GetProperty("directory").GetString());
+        Assert.Equal(plan.Directory, root.GetProperty("directory").GetString());
         Assert.Equal(1, root.GetProperty("disk_count").GetInt32());
         Assert.Equal(1024, root.GetProperty("planned_copy_bytes").GetInt64());
         var jsonDisk = Assert.Single(root.GetProperty("disks").EnumerateArray());
         Assert.Equal(@"D:\vms\lab-vm\disk0.vhdx", jsonDisk.GetProperty("source").GetString());
-        Assert.Equal(@"D:\vms\lab-vm-2\disk0.vhdx", jsonDisk.GetProperty("target").GetString());
+        Assert.Equal(Path.Combine(plan.Directory, "disk0.vhdx"), jsonDisk.GetProperty("target").GetString());
     }
 
     [Fact]

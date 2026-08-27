@@ -82,6 +82,7 @@ public sealed class DesktopNodeHyperVWmiVmCloneProvider : IDesktopNodeHyperVVmCl
             throw error!;
         }
 
+        EnsureCloneTargetIsSafe(request.VmRoot, request.TargetName, plan.Directory);
         return plan;
     }
 
@@ -93,9 +94,11 @@ public sealed class DesktopNodeHyperVWmiVmCloneProvider : IDesktopNodeHyperVVmCl
         Action<DesktopNodeHyperVVmClonePlan, IReadOnlyList<string>, CancellationToken>? afterCopy)
     {
         var plan = PreviewFromSnapshot(source, request, targetExists);
+        var directoryPreExisting = Directory.Exists(plan.Directory);
+        IReadOnlyList<string> copied = [];
         try
         {
-            var copied = CopyPlannedDisks(plan, cancellationToken);
+            copied = CopyPlannedDisks(plan, request.VmRoot, cancellationToken);
             afterCopy?.Invoke(plan, copied, cancellationToken);
             return new DesktopNodeHyperVVmCloneInfo(
                 request.SourceName,
@@ -106,21 +109,30 @@ public sealed class DesktopNodeHyperVWmiVmCloneProvider : IDesktopNodeHyperVVmCl
         }
         catch
         {
-            TryDeleteTargetDirectory(plan.Directory);
+            TryRollbackCloneArtifacts(request.VmRoot, plan.Directory, directoryPreExisting, copied);
             throw;
         }
     }
 
     internal static IReadOnlyList<string> CopyPlannedDisks(
         DesktopNodeHyperVVmClonePlan plan,
+        string vmRoot,
         CancellationToken cancellationToken)
     {
-        Directory.CreateDirectory(plan.Directory);
+        EnsureCloneTargetIsSafe(vmRoot, plan.Name, plan.Directory);
+        var directoryPreExisting = Directory.Exists(plan.Directory);
+        var createdFiles = new List<string>();
         try
         {
+            Directory.CreateDirectory(plan.Directory);
             var copied = new List<string>(plan.Disks.Count);
             foreach (var disk in plan.Disks)
             {
+                if (!File.Exists(disk.Target))
+                {
+                    createdFiles.Add(disk.Target);
+                }
+
                 CopyVhdx(disk.Source, disk.Target, cancellationToken);
                 copied.Add(disk.Target);
             }
@@ -129,7 +141,7 @@ public sealed class DesktopNodeHyperVWmiVmCloneProvider : IDesktopNodeHyperVVmCl
         }
         catch
         {
-            TryDeleteTargetDirectory(plan.Directory);
+            TryRollbackCloneArtifacts(vmRoot, plan.Directory, directoryPreExisting, createdFiles);
             throw;
         }
     }
@@ -147,9 +159,31 @@ public sealed class DesktopNodeHyperVWmiVmCloneProvider : IDesktopNodeHyperVVmCl
         }
     }
 
-    internal static void TryDeleteTargetDirectory(string directory)
+    internal static void EnsureCloneTargetIsSafe(string vmRoot, string targetName, string directory)
     {
-        if (string.IsNullOrWhiteSpace(directory) || !Directory.Exists(directory))
+        if (string.IsNullOrWhiteSpace(targetName) ||
+            DesktopNodeHyperVVmCloneGuard.IsReservedCloneTargetName(targetName) ||
+            !DesktopNodeHyperVVmCloneGuard.IsContainedCloneDirectory(vmRoot, directory))
+        {
+            throw DesktopNodeHyperVVmCloneGuard.InvalidCloneTargetName(targetName);
+        }
+    }
+
+    internal static void TryRollbackCloneArtifacts(
+        string vmRoot,
+        string directory,
+        bool directoryPreExisting,
+        IReadOnlyList<string> createdFiles)
+    {
+        foreach (var file in createdFiles)
+        {
+            TryDeleteCreatedFile(vmRoot, file);
+        }
+
+        if (directoryPreExisting ||
+            string.IsNullOrWhiteSpace(directory) ||
+            !DesktopNodeHyperVVmCloneGuard.IsContainedCloneDirectory(vmRoot, directory) ||
+            !Directory.Exists(directory))
         {
             return;
         }
@@ -157,6 +191,58 @@ public sealed class DesktopNodeHyperVWmiVmCloneProvider : IDesktopNodeHyperVVmCl
         try
         {
             Directory.Delete(directory, recursive: true);
+        }
+        catch
+        {
+        }
+    }
+
+    internal static DesktopNodeHyperVNativeOperationException SecurityFeaturesInspectFailed()
+    {
+        return new DesktopNodeHyperVNativeOperationException(
+            "PCV_VM_CLONE_SECURITY_FEATURES_UNSUPPORTED",
+            "Clone security feature inspect failed.",
+            "Hyper-V security settings could not be read. This clone path does not copy security key material.",
+            false);
+    }
+
+    internal static DesktopNodeHyperVNativeOperationException CheckpointsInspectFailed()
+    {
+        return new DesktopNodeHyperVNativeOperationException(
+            "PCV_VM_CLONE_CHECKPOINTS_PRESENT",
+            "Clone checkpoint inspect failed.",
+            "Hyper-V checkpoints could not be read. Flatten is not supported.",
+            false);
+    }
+
+    [System.Diagnostics.CodeAnalysis.DoesNotReturn]
+    internal static void ThrowIfSecurityInspectFailed()
+    {
+        throw SecurityFeaturesInspectFailed();
+    }
+
+    [System.Diagnostics.CodeAnalysis.DoesNotReturn]
+    internal static void ThrowIfCheckpointInspectFailed()
+    {
+        throw CheckpointsInspectFailed();
+    }
+
+    private static void TryDeleteCreatedFile(string vmRoot, string file)
+    {
+        if (string.IsNullOrWhiteSpace(file))
+        {
+            return;
+        }
+
+        try
+        {
+            var fullFile = Path.GetFullPath(file);
+            if (!File.Exists(fullFile) || !DesktopNodeHyperVVmCloneGuard.IsContainedCloneDirectory(vmRoot, fullFile))
+            {
+                return;
+            }
+
+            File.Delete(fullFile);
         }
         catch
         {
@@ -340,11 +426,11 @@ public sealed class DesktopNodeHyperVWmiVmCloneProvider : IDesktopNodeHyperVVmCl
         }
         catch (ManagementException)
         {
-            return false;
+            throw SecurityFeaturesInspectFailed();
         }
         catch (UnauthorizedAccessException)
         {
-            return false;
+            throw SecurityFeaturesInspectFailed();
         }
 
         return false;
@@ -400,11 +486,11 @@ public sealed class DesktopNodeHyperVWmiVmCloneProvider : IDesktopNodeHyperVVmCl
         }
         catch (ManagementException)
         {
-            return 0;
+            throw CheckpointsInspectFailed();
         }
         catch (UnauthorizedAccessException)
         {
-            return 0;
+            throw CheckpointsInspectFailed();
         }
     }
 
