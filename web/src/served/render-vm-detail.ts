@@ -46,6 +46,7 @@ function renderVmDetail() {
       <button data-action="vm-eject" data-vm-id="${escapeHtml(vmId)}"${actionDisabled}>Eject media</button>
       <button data-action="vm-delete-status" data-vm-id="${escapeHtml(vmId)}"${actionDisabled}>Delete status</button>
       <button data-action="vm-manage" data-vm-id="${escapeHtml(vmId)}"${actionDisabled}>Manage VM</button>
+      <button data-action="vm-clone" data-vm-id="${escapeHtml(vmId)}"${actionDisabled}>Clone VM</button>
       <button class="danger-button" data-action="vm-delete" data-vm-id="${escapeHtml(vmId)}"${actionDisabled}>Delete VM</button>
       <button data-action="vm-console" data-vm-id="${escapeHtml(vmId)}"${consoleDisabled}>Console</button>
       ${pendingVmAction ? `<span class="muted">Pending action: ${escapeHtml(pendingVmAction)}</span>` : ''}
@@ -67,6 +68,10 @@ function renderVmDetail() {
       <form class="vm-resource-form" data-action="vm-disk-resize" data-vm-id="${escapeHtml(vmId)}">
         <input name="disk_gb" type="number" min="8" max="4096" step="1" placeholder="Disk GB" aria-label="disk GB"${actionDisabled}>
         <button type="submit"${actionDisabled}>Resize disk</button>
+      </form>
+      <form class="vm-resource-form" data-action="vm-clone" data-vm-id="${escapeHtml(vmId)}">
+        <input name="name" autocomplete="off" placeholder="Target VM name" aria-label="clone target name"${actionDisabled}>
+        <button type="submit" data-action="vm-clone"${actionDisabled}>Clone VM</button>
       </form>
     </div>
     <div class="details-grid detail-grid">

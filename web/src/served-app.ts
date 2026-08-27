@@ -255,6 +255,9 @@ function bindEvents() {
       } else if (form.dataset.action === 'vm-attach') {
         await queueVmAttach(form.dataset.vmId, data.get('iso_path'));
         form.reset();
+      } else if (form.dataset.action === 'vm-clone') {
+        await queueVmClone(form.dataset.vmId, data.get('name'));
+        form.reset();
       }
     } catch (error) {
       state.error = normalizeError(error);
@@ -282,6 +285,12 @@ function bindEvents() {
         await refreshVmDeleteStatus(button.dataset.vmId);
       } else if (button.dataset.action === 'vm-manage') {
         await queueVmManage(button.dataset.vmId);
+      } else if (button.dataset.action === 'vm-clone') {
+        if (button.closest('form[data-action="vm-clone"]')) {
+          return;
+        }
+        const cloneForm = els.vmDetailPanel.querySelector('form[data-action="vm-clone"]');
+        await queueVmClone(button.dataset.vmId, cloneForm ? new FormData(cloneForm).get('name') : '');
       } else if (button.dataset.action === 'vm-delete') {
         await queueVmDelete(button.dataset.vmId);
       } else if (button.dataset.action === 'vm-console') {
