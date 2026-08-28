@@ -50,6 +50,7 @@ public sealed class PcvServicePlanP1CloneActualVmSmokeContractTests
             "'clone_ok'",
             "'cleanup'",
             "'vm', 'create'",
+            "'--disk-gb', '8'",
             "'vm', 'clone'",
             "'--dry-run'",
             "'--yes'",
@@ -57,8 +58,11 @@ public sealed class PcvServicePlanP1CloneActualVmSmokeContractTests
             "'vm', 'get', $OperatorId",
             "'vm', 'delete', $record.name",
             "'vm', 'clone', $SourceVm",
+            "'vm', 'clone', $SourceVm, '--name', $TargetVm, '--dry-run', '--vm-root', $vmRootFull",
+            "'vm', 'clone', $SourceVm, '--name', $TargetVm, '--yes', '--vm-root', $vmRootFull",
             "Assert-SlicePassed",
-            "Invoke-TrackedSlice");
+            "Invoke-TrackedSlice",
+            "Test-PcvProductOff");
         AssertOrdered(
             source,
             "'source_create'",
@@ -69,6 +73,7 @@ public sealed class PcvServicePlanP1CloneActualVmSmokeContractTests
         Assert.DoesNotContain("'vm', 'get', $Id", source, StringComparison.Ordinal);
         Assert.DoesNotContain("'vm', 'delete', $record.id", source, StringComparison.Ordinal);
         Assert.DoesNotContain("'vm', 'clone', $record.id", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("'--disk-gb', '1'", source, StringComparison.Ordinal);
         Assert.DoesNotContain("'vm-start'", source, StringComparison.Ordinal);
         Assert.DoesNotContain("'vm-save'", source, StringComparison.Ordinal);
     }

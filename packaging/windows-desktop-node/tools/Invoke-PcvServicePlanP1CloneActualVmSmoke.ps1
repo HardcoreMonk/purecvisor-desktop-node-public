@@ -634,6 +634,12 @@ function Get-ProductVmState {
     return ([string]$state).ToLowerInvariant()
 }
 
+function Test-PcvProductOff {
+    param([AllowNull()][string]$State)
+
+    return ([string]$State).ToLowerInvariant() -in @('off', 'stopped')
+}
+
 function New-VmOwnershipRecord {
     param(
         [Parameter(Mandatory)][string]$Kind,
@@ -794,7 +800,7 @@ function Invoke-SourceCreateSlice {
 
     $create = Start-PcvCliJob -StepName 'vm-create' -Arguments @(
         'vm', 'create', '--name', $SourceVm, '--iso', $summary.iso_path_resolved,
-        '--cpu', '1', '--memory-mb', '1024', '--disk-gb', '1', '--vm-root', $vmRootFull) -DeferTerminalSummaryWrite
+        '--cpu', '1', '--memory-mb', '1024', '--disk-gb', '8', '--vm-root', $vmRootFull) -DeferTerminalSummaryWrite
     if ([string](Get-ObjectPropertyValue -InputObject $create -Name 'status') -ne 'succeeded') {
         throw 'PCV_P1_CLONE_STATE_MISMATCH|create'
     }
@@ -810,7 +816,7 @@ function Invoke-SourceCreateSlice {
         started = $false
     }
     Write-AtomicSummary
-    if ($hypervOff -ne 'Off' -or $productOff -ne 'off') {
+    if ($hypervOff -ne 'Off' -or -not (Test-PcvProductOff $productOff)) {
         throw "PCV_P1_CLONE_STATE_MISMATCH|create|hyperv=$hypervOff|product=$productOff"
     }
 }
@@ -839,7 +845,7 @@ function Invoke-PreviewMismatchSlice {
 
 function Invoke-PreviewOkSlice {
     $preview = Invoke-PcvCliJson -StepName 'vm-clone-preview' -Arguments @(
-        'vm', 'clone', $SourceVm, '--name', $TargetVm, '--dry-run')
+        'vm', 'clone', $SourceVm, '--name', $TargetVm, '--dry-run', '--vm-root', $vmRootFull)
     $data = Get-ObjectPropertyValue -InputObject $preview.Json -Name 'data'
     if ($null -eq $data) { $data = $preview.Json }
     $plannedBytes = Get-Int64PropertyValue -InputObject $data -Name 'planned_copy_bytes'
@@ -867,7 +873,7 @@ function Invoke-CloneOkSlice {
     )
 
     $clone = Start-PcvCliJob -StepName 'vm-clone' -Arguments @(
-        'vm', 'clone', $SourceVm, '--name', $TargetVm, '--yes')
+        'vm', 'clone', $SourceVm, '--name', $TargetVm, '--yes', '--vm-root', $vmRootFull)
     if ([string](Get-ObjectPropertyValue -InputObject $clone -Name 'status') -ne 'succeeded') {
         throw 'PCV_P1_CLONE_STATE_MISMATCH|clone'
     }
@@ -900,7 +906,7 @@ function Invoke-CloneOkSlice {
         target_disk_present = $targetDiskPresent
     }
     Write-AtomicSummary
-    if ($targetState -ne 'off' -or $sourceState -ne 'off' -or
+    if (-not (Test-PcvProductOff $targetState) -or -not (Test-PcvProductOff $sourceState) -or
         $targetHyperV -ne 'Off' -or $sourceHyperV -ne 'Off' -or
         -not $managed -or -not $targetDiskPresent -or -not $sourceDiskPresent) {
         throw "PCV_P1_CLONE_STATE_MISMATCH|clone|target=$targetState|source=$sourceState|managed=$managed"

@@ -16,6 +16,7 @@ function New-P1CloneBehaviorRuntime {
         TargetName = 'pcv-p1-clone-04276-behavior-dst'
         VmRoot = $null
         PendingDeleteName = $null
+        ProductPowerState = 'off'
         Vms = @{}
         ExistingRoots = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
     }
@@ -109,7 +110,7 @@ function New-P1CloneBehaviorRuntime {
                         stdout = (@{
                             data = @{
                                 name = $requested
-                                state = 'off'
+                                state = [string]$state.ProductPowerState
                                 managed_by_purecvisor = $true
                             }
                         } | ConvertTo-Json -Compress)
@@ -262,6 +263,54 @@ Describe 'SERVICE_PLAN P1 clone actual-VM runner contract' {
         $run.Summary.host_mutation_performed | Should -BeFalse
         @($run.State.Operations.operation) | Should -Not -Contain 'create-directory'
         @($run.State.Operations.operation) | Should -Not -Contain 'invoke-cli'
+    }
+
+    It 'queues source create with the product-minimum 8 GB disk' {
+        $run = Invoke-P1CloneBehaviorScenario -Name 'source-create-disk-gb'
+
+        $create = @($run.State.Operations | Where-Object {
+            $_.operation -eq 'invoke-cli' -and [string]$_.input.step -eq 'vm-create'
+        })
+        $create.Count | Should -Be 1
+        $arguments = @($create[0].input.arguments)
+        $diskIndex = [array]::IndexOf($arguments, '--disk-gb')
+        $diskIndex | Should -BeGreaterThan -1
+        $arguments[$diskIndex + 1] | Should -Be '8'
+        $run.Summary.slice_verdicts.source_create | Should -Be 'PASS'
+    }
+
+    It 'passes dedicated --vm-root on clone preview and confirmed clone' {
+        $run = Invoke-P1CloneBehaviorScenario -Name 'clone-vm-root'
+
+        $preview = @($run.State.Operations | Where-Object {
+            $_.operation -eq 'invoke-cli' -and [string]$_.input.step -eq 'vm-clone-preview'
+        })
+        $clone = @($run.State.Operations | Where-Object {
+            $_.operation -eq 'invoke-cli' -and [string]$_.input.step -eq 'vm-clone'
+        })
+        $preview.Count | Should -Be 1
+        $clone.Count | Should -Be 1
+        $previewArgs = @($preview[0].input.arguments)
+        $cloneArgs = @($clone[0].input.arguments)
+        $previewRootIndex = [array]::IndexOf($previewArgs, '--vm-root')
+        $cloneRootIndex = [array]::IndexOf($cloneArgs, '--vm-root')
+        $previewRootIndex | Should -BeGreaterThan -1
+        $cloneRootIndex | Should -BeGreaterThan -1
+        $previewArgs[$previewRootIndex + 1] | Should -Be $run.Summary.vm_root_resolved
+        $cloneArgs[$cloneRootIndex + 1] | Should -Be $run.Summary.vm_root_resolved
+        $run.Summary.slice_verdicts.clone_ok | Should -Be 'PASS'
+    }
+
+    It 'treats installed product stopped as Off after source create' {
+        $run = Invoke-P1CloneBehaviorScenario -Name 'source-create-product-stopped' -Configure {
+            param($state)
+            $state.ProductPowerState = 'stopped'
+        }
+
+        $run.Summary.slice_verdicts.source_create | Should -Be 'PASS'
+        $run.Summary.product_state_after_create | Should -Be 'stopped'
+        $run.Summary.hyperv_state_after_create | Should -Be 'Off'
+        $run.Summary.error | Should -BeNullOrEmpty
     }
 
     It 'records clone confirmation-required mismatch through the adapter without Hyper-V' {

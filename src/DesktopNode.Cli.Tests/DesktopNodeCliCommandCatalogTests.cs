@@ -290,6 +290,29 @@ public sealed class DesktopNodeCliCommandCatalogTests
         using var document = JsonDocument.Parse(request.Body!);
         Assert.Equal("ubuntu-lab-01", document.RootElement.GetProperty("confirm_name").GetString());
         Assert.Equal("ubuntu-lab-02", document.RootElement.GetProperty("name").GetString());
+        Assert.False(document.RootElement.TryGetProperty("vm_root", out _));
+    }
+
+    [Fact]
+    public void RoutesVmCloneVmRootIntoBody()
+    {
+        var request = DesktopNodeCliCommandCatalog.CreateRequest([
+            "vm",
+            "clone",
+            "ubuntu-lab-01",
+            "--name",
+            "ubuntu-lab-02",
+            "--yes",
+            "--vm-root",
+            @"D:\data\pcv-p1-clone-04276"
+        ]);
+
+        Assert.Equal("POST", request.Method);
+        Assert.Equal("/api/v1/vms/ubuntu-lab-01/clone", request.Path);
+        using var document = JsonDocument.Parse(request.Body!);
+        Assert.Equal("ubuntu-lab-01", document.RootElement.GetProperty("confirm_name").GetString());
+        Assert.Equal("ubuntu-lab-02", document.RootElement.GetProperty("name").GetString());
+        Assert.Equal(@"D:\data\pcv-p1-clone-04276", document.RootElement.GetProperty("vm_root").GetString());
     }
 
     [Fact]

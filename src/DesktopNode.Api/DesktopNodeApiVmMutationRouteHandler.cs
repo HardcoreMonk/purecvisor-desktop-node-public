@@ -263,7 +263,8 @@ internal sealed class DesktopNodeApiVmMutationRouteHandler
                         routeMatch.Parameters["vmId"],
                         "vm.clone",
                         out var sourceName,
-                        out var targetName);
+                        out var targetName,
+                        out var vmRoot);
                     if (parsed is not null)
                     {
                         return parsed;
@@ -271,11 +272,7 @@ internal sealed class DesktopNodeApiVmMutationRouteHandler
 
                     return DesktopNodeApiResponseFactory.JobCreated(CreateJob(
                         "vm.clone",
-                        DesktopNodeApiResponseFactory.JsonFromObject(new SortedDictionary<string, object?>
-                        {
-                            ["name"] = targetName,
-                            ["source"] = sourceName
-                        }),
+                        DesktopNodeApiResponseFactory.JsonFromObject(CloneParameters(sourceName, targetName, vmRoot)),
                         request.RequestId!));
                 }
 
@@ -459,7 +456,8 @@ internal sealed class DesktopNodeApiVmMutationRouteHandler
             routeMatch.Parameters["vmId"],
             "vm.clone.preview",
             out var sourceName,
-            out var targetName);
+            out var targetName,
+            out var vmRoot);
         if (parsed is not null)
         {
             return parsed;
@@ -467,12 +465,26 @@ internal sealed class DesktopNodeApiVmMutationRouteHandler
 
         return DesktopNodeApiResponseFactory.OperationResponse(operationInvoker.Invoke(
             "vm.clone.preview",
-            DesktopNodeApiResponseFactory.JsonFromObject(new SortedDictionary<string, object?>
-            {
-                ["name"] = targetName,
-                ["source"] = sourceName
-            }),
+            DesktopNodeApiResponseFactory.JsonFromObject(CloneParameters(sourceName, targetName, vmRoot)),
             cancellationToken));
+    }
+
+    private static SortedDictionary<string, object?> CloneParameters(
+        string sourceName,
+        string targetName,
+        string? vmRoot)
+    {
+        var parameters = new SortedDictionary<string, object?>
+        {
+            ["name"] = targetName,
+            ["source"] = sourceName
+        };
+        if (!string.IsNullOrWhiteSpace(vmRoot))
+        {
+            parameters["vm_root"] = vmRoot;
+        }
+
+        return parameters;
     }
 
     private static DesktopNodeApiResponse? TryReadCloneRequest(
@@ -480,10 +492,12 @@ internal sealed class DesktopNodeApiVmMutationRouteHandler
         string encodedVmId,
         string operation,
         out string sourceName,
-        out string targetName)
+        out string targetName,
+        out string? vmRoot)
     {
         sourceName = null!;
         targetName = null!;
+        vmRoot = null;
         var routeId = DesktopNodeApiRequestParsing.DecodeRouteId(encodedVmId, operation);
         if (!routeId.Ok)
         {
@@ -502,6 +516,11 @@ internal sealed class DesktopNodeApiVmMutationRouteHandler
 
             confirmName = DesktopNodeApiJsonReader.GetStringProperty(parsed.Value!.Value, "confirm_name");
             name = DesktopNodeApiJsonReader.GetStringProperty(parsed.Value.Value, "name");
+            vmRoot = DesktopNodeApiJsonReader.GetStringProperty(parsed.Value.Value, "vm_root");
+            if (string.IsNullOrWhiteSpace(vmRoot))
+            {
+                vmRoot = null;
+            }
         }
 
         if (!string.Equals(confirmName, routeId.Value, StringComparison.Ordinal))

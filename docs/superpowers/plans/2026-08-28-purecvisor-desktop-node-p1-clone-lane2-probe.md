@@ -265,9 +265,9 @@ if ($DryRun.IsPresent) {
 ```powershell
 Start-PcvCliJob -StepName 'vm-create' -Arguments @(
     'vm', 'create', '--name', $SourceVm, '--iso', $summary.iso_path_resolved,
-    '--cpu', '1', '--memory-mb', '1024', '--disk-gb', '1', '--vm-root', $vmRootFull)
+    '--cpu', '1', '--memory-mb', '1024', '--disk-gb', '8', '--vm-root', $vmRootFull)
 Get-ProductVmState -OperatorId $SourceVm -Phase 'after-create'
-# 기대: off. Hyper-V EnabledState Off.
+# 기대: off 또는 stopped. Hyper-V EnabledState Off. Test-PcvProductOff.
 ```
 
 `preview_mismatch` — `--yes`/`--dry-run` 없음. CLI는 confirm_name=source라 API mismatch를 만들 수 없다. 운영자 표면 거절은 confirmation이다.
@@ -275,6 +275,7 @@ Get-ProductVmState -OperatorId $SourceVm -Phase 'after-create'
 ```powershell
 Invoke-PcvCliJson -StepName 'vm-clone-unconfirmed' -AllowFailure -Arguments @(
     'vm', 'clone', $SourceVm, '--name', $TargetVm)
+# preview/clone --yes|--dry-run 에는 '--vm-root', $vmRootFull 을 붙인다.
 # exit != 0, Get-CliProblemCode == PCV_CLI_CONFIRMATION_REQUIRED
 # 대상 디렉터리/VM 없음
 ```

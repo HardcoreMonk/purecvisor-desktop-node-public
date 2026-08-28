@@ -132,10 +132,10 @@ PASS가 아니다.
 
 | slice | 동작 | PASS |
 | --- | --- | --- |
-| `source_create` | 제품 create, Gen2, 작은 독립 VHDX, Off 확인, manage marker | job succeeded, get 표시 이름 200, Hyper-V Off |
+| `source_create` | 제품 create, Gen2, 제품 최소 `8` GB 독립 VHDX, Off 확인, manage marker | job succeeded, get 표시 이름 200, Hyper-V `Off`, 제품 `off` 또는 `stopped` |
 | `preview_mismatch` | `pcvcli vm clone <src> --name <dst>` confirm 없이 또는 잘못된 `--yes` 대상. 구현은 `confirm_name` Ordinal 불일치 | `PCV_VM_CLONE_CONFIRMATION_MISMATCH` 또는 `PCV_CLI_CONFIRMATION_REQUIRED`. 대상 디렉터리/VM 없음 |
 | `preview_ok` | `pcvcli vm clone <src> --name <dst> --dry-run` | preview 200, `planned_copy_bytes` = 소스 VHDX 파일 길이, 파일 write 0 |
-| `clone_ok` | `pcvcli vm clone <src> --name <dst> --yes`, job 대기 | job `vm.clone` succeeded, 대상 get 200, managed true, `disk0.vhdx`가 대상 디렉터리, 소스 VHDX 길이/경로 불변, 소스 Off |
+| `clone_ok` | `pcvcli vm clone <src> --name <dst> --yes --vm-root <VmRoot>`, job 대기 | job `vm.clone` succeeded, 대상 get 200, managed true, `disk0.vhdx`가 전용 VmRoot 대상 디렉터리, 소스 VHDX 길이/경로 불변, 소스 Off |
 | `cleanup` | 대상 delete 다음 소스 delete | 둘 다 absent, `pcv-p1-clone-*` 0, VmRoot 비움 |
 
 `preview_mismatch`는 write 0을 증명하기 위해 `clone_ok`보다 앞선다.

@@ -2967,6 +2967,49 @@ public sealed partial class ApiRuntimePolicyRequestProcessorTests
         Assert.Equal("lab vm 2", data.GetProperty("params").GetProperty("name").GetString());
         Assert.False(data.GetProperty("params").TryGetProperty("confirm_name", out _));
         Assert.False(data.GetProperty("params").TryGetProperty("target", out _));
+        Assert.False(data.GetProperty("params").TryGetProperty("vm_root", out _));
+    }
+
+    [Fact]
+    public void VmCloneRouteQueuesJobWithVmRoot()
+    {
+        var nativeCalls = new List<DesktopNodeHyperVOperationCall>();
+        var processor = DesktopNodeApiRequestProcessor.CreateDefault(
+            nativeAdapter: new RecordingNativeHyperVVmCloneAdapter(nativeCalls));
+
+        var response = processor.Handle(new DesktopNodeApiRequest(
+            "POST",
+            "/api/v1/vms/lab%20vm/clone",
+            """{"confirm_name":"lab vm","name":"lab vm 2","vm_root":"D:\\data\\pcv-p1-clone-04276"}"""));
+
+        Assert.Equal(202, response.StatusCode);
+        Assert.Empty(nativeCalls);
+        using var document = JsonDocument.Parse(response.Body);
+        var parameters = document.RootElement.GetProperty("data").GetProperty("params");
+        Assert.Equal("lab vm", parameters.GetProperty("source").GetString());
+        Assert.Equal("lab vm 2", parameters.GetProperty("name").GetString());
+        Assert.Equal(@"D:\data\pcv-p1-clone-04276", parameters.GetProperty("vm_root").GetString());
+    }
+
+    [Fact]
+    public void VmClonePreviewPassesVmRootToNativeAdapter()
+    {
+        var nativeCalls = new List<DesktopNodeHyperVOperationCall>();
+        var processor = DesktopNodeApiRequestProcessor.CreateDefault(
+            nativeAdapter: new RecordingNativeHyperVVmCloneAdapter(nativeCalls));
+
+        var response = processor.Handle(new DesktopNodeApiRequest(
+            "POST",
+            "/api/v1/vms/lab%20vm/clone/preview",
+            """{"confirm_name":"lab vm","name":"lab vm 2","vm_root":"D:\\data\\pcv-p1-clone-04276"}""",
+            RequestId: "req-clone-preview-vm-root"));
+
+        Assert.Equal(200, response.StatusCode);
+        var nativeCall = Assert.Single(nativeCalls);
+        using var parameters = JsonDocument.Parse(nativeCall.ParamsJson);
+        Assert.Equal("lab vm", parameters.RootElement.GetProperty("source").GetString());
+        Assert.Equal("lab vm 2", parameters.RootElement.GetProperty("name").GetString());
+        Assert.Equal(@"D:\data\pcv-p1-clone-04276", parameters.RootElement.GetProperty("vm_root").GetString());
     }
 
     [Fact]

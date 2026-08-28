@@ -541,6 +541,12 @@ public static class DesktopNodeCliCommandCatalog
             ["name"] = name
         };
 
+        var vmRoot = FirstOption(parsed.Options, "--vm-root", "--image_dir");
+        if (!string.IsNullOrWhiteSpace(vmRoot))
+        {
+            body["vm_root"] = vmRoot;
+        }
+
         return new DesktopNodeCliRequest(
             "POST",
             $"/api/v1/vms/{Segment(args[2])}/clone{(dryRun ? "/preview" : string.Empty)}",
@@ -878,8 +884,8 @@ public static class DesktopNodeCliCommandCatalog
             "  pcvcli vm attach <vm> --iso <path>",
             "  pcvcli vm eject|delete-status <vm>",
             "  pcvcli vm manage <vm> --yes",
-            "  pcvcli vm clone <source> --name <target> --yes",
-            "  pcvcli vm clone <source> --name <target> --dry-run",
+            "  pcvcli vm clone <source> --name <target> --yes [--vm-root <path>]",
+            "  pcvcli vm clone <source> --name <target> --dry-run [--vm-root <path>]",
             "  pcvcli vm delete <vm> --yes",
             "  pcvcli vm checkpoint list|create|restore|delete",
             "  pcvcli vm snapshot list|create|rollback|delete",

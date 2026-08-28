@@ -219,8 +219,8 @@ pcvcli network list
 | `pcvcli vm guest-exec <vm> --dry-run [--credential-ref <ref>] [--timeout-sec <n>] -- <command...>` | `POST /api/v1/vms/{vm}/guest/exec/preview` | Command hash/redaction/audit preview. Guest 실행 없음 |
 | `pcvcli vm guest-exec <vm> --credential-ref <ref> [--timeout-sec <n>] -- <command...>` | `POST /api/v1/vms/{vm}/guest/exec` | Protected credential reference 기반 guest execution job queue |
 | `pcvcli vm manage <vm> --yes` | `POST /api/v1/vms/{vm}/manage` | existing Hyper-V VM을 PureCVisor managed로 승격. `--yes` 필수. body `confirm_name`은 `<vm>` 인자 그대로 |
-| `pcvcli vm clone <source> --name <target> --dry-run` | `POST /api/v1/vms/{vm}/clone/preview` | managed VM full clone preview. `--yes` 불필요. body `confirm_name`은 `<source>` 인자 그대로, `name`은 `--name` |
-| `pcvcli vm clone <source> --name <target> --yes` | `POST /api/v1/vms/{vm}/clone` | managed VM을 독립 disk로 clone. `--yes` 필수. body `confirm_name`은 `<source>` 인자 그대로, `name`은 `--name` |
+| `pcvcli vm clone <source> --name <target> --dry-run [--vm-root <path>]` | `POST /api/v1/vms/{vm}/clone/preview` | managed VM full clone preview. `--yes` 불필요. body `confirm_name`은 `<source>` 인자 그대로, `name`은 `--name`, `--vm-root`는 `vm_root` |
+| `pcvcli vm clone <source> --name <target> --yes [--vm-root <path>]` | `POST /api/v1/vms/{vm}/clone` | managed VM을 독립 disk로 clone. `--yes` 필수. body `confirm_name`은 `<source>` 인자 그대로, `name`은 `--name`, `--vm-root`는 `vm_root`. 생략 시 기본 `D:\PureCVisor\VMs` |
 | `pcvcli vm delete <vm> --yes` | `DELETE /api/v1/vms/{vm}` | Managed VM delete job queue |
 
 VM 생성 예:
@@ -249,7 +249,7 @@ pcvcli vm create ubuntu-lab-01 `
 
 `pcvcli vm manage <vm> --yes`는 existing Hyper-V VM에 managed marker를 붙이는 queued job이다. `--yes`가 없으면 `PCV_CLI_CONFIRMATION_REQUIRED`다. body `confirm_name`은 `<vm>` 인자를 그대로 넣는다.
 
-`pcvcli vm clone <source> --name <target> --dry-run`은 `POST /api/v1/vms/{vm}/clone/preview`로 복사 계획만 조회한다. `--yes`는 필요 없다. `pcvcli vm clone <source> --name <target> --yes`는 `POST /api/v1/vms/{vm}/clone`로 독립 VHDX full clone job을 queue한다. `--yes`가 없으면 `PCV_CLI_CONFIRMATION_REQUIRED`다. body `confirm_name`은 `<source>` 인자 그대로, `name`은 `--name`이다. 소스는 managed Generation 2, 전원 `Off`, checkpoint 0, 독립 VHDX만 허용한다.
+`pcvcli vm clone <source> --name <target> --dry-run [--vm-root <path>]`은 `POST /api/v1/vms/{vm}/clone/preview`로 복사 계획만 조회한다. `--yes`는 필요 없다. `pcvcli vm clone <source> --name <target> --yes [--vm-root <path>]`는 `POST /api/v1/vms/{vm}/clone`로 독립 VHDX full clone job을 queue한다. `--yes`가 없으면 `PCV_CLI_CONFIRMATION_REQUIRED`다. body `confirm_name`은 `<source>` 인자 그대로, `name`은 `--name`이다. `--vm-root`는 body `vm_root`다. 생략하면 native 기본값은 `D:\PureCVisor\VMs`다. 소스는 managed Generation 2, 전원 `Off`, checkpoint 0, 독립 VHDX만 허용한다.
 
 VM delete는 destructive host mutation을 queue하므로 `--yes`가 필수다. API는 PureCVisor managed marker가 없는 VM을 provider mutation 전에 차단한다. unmanaged delete 거절은 manage 이후에도 다른 unmanaged VM에 유지된다.
 
@@ -257,6 +257,7 @@ VM delete는 destructive host mutation을 queue하므로 `--yes`가 필수다. A
 pcvcli vm manage ubuntu-lab-01 --yes
 pcvcli vm clone ubuntu-lab-01 --name ubuntu-lab-02 --dry-run
 pcvcli vm clone ubuntu-lab-01 --name ubuntu-lab-02 --yes
+pcvcli vm clone ubuntu-lab-01 --name ubuntu-lab-02 --yes --vm-root D:\data\pcv-p1-clone-04276
 pcvcli vm delete ubuntu-lab-01 --yes
 ```
 
