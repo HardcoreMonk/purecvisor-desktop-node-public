@@ -15,7 +15,7 @@
 
 이 저장소는 관례적 파일명을 중복 생성하지 않고 기존 권위 문서를 사용한다.
 
-- 기여자 온보딩: `docs/DEVELOPER_INDEX.md`, `docs/CODING_GUIDE.md`, `docs/DEVELOPMENT_VERIFICATION_POLICY.md`
+- 기여자 온보딩: `docs/DEVELOPMENT_PROCEDURE.md`, `docs/DEVELOPER_INDEX.md`, `docs/CODING_GUIDE.md`, `docs/DEVELOPMENT_VERIFICATION_POLICY.md`
 - 아키텍처: `docs/ADR_INDEX.md`, `docs/adr/`, `docs/service-core-backend-frontend-implementation-evaluation-2026-07-16.md`
 - 현재 작업과 상태: `docs/FEATURE_IMPLEMENTATION_LEDGER.md`, `docs/ga-ready/CURRENT_EVIDENCE_LEDGER.md`, `docs/ga-ready/EVIDENCE_INDEX.md`
 - 버전·릴리스 증거: [docs/ga-ready/current-evidence.json](ga-ready/current-evidence.json)과 위 evidence index
@@ -40,6 +40,7 @@
 - [docs/CODING_GUIDE.md](CODING_GUIDE.md)
 - [docs/DEVELOPER_INDEX.md](DEVELOPER_INDEX.md)
 - [docs/DEVELOPMENT_CHANGE_CLASSIFICATION.md](DEVELOPMENT_CHANGE_CLASSIFICATION.md)
+- [docs/DEVELOPMENT_PROCEDURE.md](DEVELOPMENT_PROCEDURE.md)
 - [docs/DEVELOPMENT_VERIFICATION_POLICY.md](DEVELOPMENT_VERIFICATION_POLICY.md)
 - [docs/DOCUMENTATION_INDEX.md](DOCUMENTATION_INDEX.md)
 - [docs/FEATURE_IMPLEMENTATION_LEDGER.md](FEATURE_IMPLEMENTATION_LEDGER.md)
@@ -734,6 +735,7 @@
 - [docs/superpowers/plans/2026-08-25-purecvisor-desktop-node-required-ci-cutover-wave-e.md](superpowers/plans/2026-08-25-purecvisor-desktop-node-required-ci-cutover-wave-e.md)
 - [docs/superpowers/plans/2026-08-27-purecvisor-desktop-node-lane-separated-development-procedure.md](superpowers/plans/2026-08-27-purecvisor-desktop-node-lane-separated-development-procedure.md)
 - [docs/superpowers/plans/2026-08-27-purecvisor-desktop-node-p1-managed-full-clone.md](superpowers/plans/2026-08-27-purecvisor-desktop-node-p1-managed-full-clone.md)
+- [docs/superpowers/plans/2026-08-29-purecvisor-desktop-node-efficient-development-procedure.md](superpowers/plans/2026-08-29-purecvisor-desktop-node-efficient-development-procedure.md)
 
 ## 설계 명세
 
@@ -819,6 +821,7 @@
 - [docs/superpowers/specs/2026-08-25-purecvisor-desktop-node-public-authority-snapshot-delta-design.md](superpowers/specs/2026-08-25-purecvisor-desktop-node-public-authority-snapshot-delta-design.md)
 - [docs/superpowers/specs/2026-08-27-purecvisor-desktop-node-lane-separated-development-procedure-design.md](superpowers/specs/2026-08-27-purecvisor-desktop-node-lane-separated-development-procedure-design.md)
 - [docs/superpowers/specs/2026-08-27-purecvisor-desktop-node-p1-managed-full-clone-design.md](superpowers/specs/2026-08-27-purecvisor-desktop-node-p1-managed-full-clone-design.md)
+- [docs/superpowers/specs/2026-08-29-purecvisor-desktop-node-efficient-development-procedure-design.md](superpowers/specs/2026-08-29-purecvisor-desktop-node-efficient-development-procedure-design.md)
 
 ## 패키징 문서
 

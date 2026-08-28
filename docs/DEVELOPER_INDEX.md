@@ -492,7 +492,7 @@ manual-admin descriptor schema v2(`descriptor_schema_version=2`,
 | 저장소 경계 확인 | `docs/PUBLIC_RELEASE_BOUNDARY.md` |
 | 현재 적용 ADR 확인 | `docs/ADR_INDEX.md` |
 | 검증 기준 확인 | `docs/DEVELOPMENT_VERIFICATION_POLICY.md` |
-| 개발 가속 고정 기준 확인 | `docs/DEVELOPMENT_VERIFICATION_POLICY.md` |
+| 개발 작업 시작·분류·Lane·승인 절차 | `docs/DEVELOPMENT_PROCEDURE.md` |
 | 전체 phase 순서 확인 | `docs/superpowers/plans/2026-04-27-purecvisor-desktop-node-phase-roadmap.md` |
 | Phase 11 제품 승격 판단 확인 | `docs/superpowers/specs/2026-04-25-purecvisor-desktop-node-phase11-runtime-promotion-decision-design.md` |
 | Phase 13 WinSW product wrapper 변경 | `docs/superpowers/plans/2026-04-26-purecvisor-desktop-node-phase13-winsw-service-wrapper.md` |
