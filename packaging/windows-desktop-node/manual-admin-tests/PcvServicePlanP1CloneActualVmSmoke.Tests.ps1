@@ -301,6 +301,17 @@ Describe 'SERVICE_PLAN P1 clone actual-VM runner contract' {
         $run.Summary.slice_verdicts.clone_ok | Should -Be 'PASS'
     }
 
+    It 'gets the cloned target by display name after clone' {
+        $run = Invoke-P1CloneBehaviorScenario -Name 'clone-get-display-name'
+
+        $targetGet = @($run.State.Operations | Where-Object {
+            $_.operation -eq 'invoke-cli' -and [string]$_.input.step -eq 'vm-get-target'
+        })
+        $targetGet.Count | Should -Be 1
+        [string]$targetGet[0].input.arguments[2] | Should -Be 'pcv-p1-clone-04276-behavior-dst'
+        $run.Summary.slice_verdicts.clone_ok | Should -Be 'PASS'
+    }
+
     It 'treats installed product stopped as Off after source create' {
         $run = Invoke-P1CloneBehaviorScenario -Name 'source-create-product-stopped' -Configure {
             param($state)

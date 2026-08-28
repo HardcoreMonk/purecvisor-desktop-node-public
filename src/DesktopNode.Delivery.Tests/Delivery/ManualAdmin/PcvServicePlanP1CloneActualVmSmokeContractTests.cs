@@ -56,6 +56,7 @@ public sealed class PcvServicePlanP1CloneActualVmSmokeContractTests
             "'--yes'",
             "PCV_CLI_CONFIRMATION_REQUIRED",
             "'vm', 'get', $OperatorId",
+            "'vm', 'get', $TargetVm",
             "'vm', 'delete', $record.name",
             "'vm', 'clone', $SourceVm",
             "'vm', 'clone', $SourceVm, '--name', $TargetVm, '--dry-run', '--vm-root', $vmRootFull",
@@ -70,6 +71,7 @@ public sealed class PcvServicePlanP1CloneActualVmSmokeContractTests
             "'preview_ok'",
             "'clone_ok'",
             "'cleanup'");
+        Assert.DoesNotContain("$targetVm = Get-PcvVmById", source, StringComparison.Ordinal);
         Assert.DoesNotContain("'vm', 'get', $Id", source, StringComparison.Ordinal);
         Assert.DoesNotContain("'vm', 'delete', $record.id", source, StringComparison.Ordinal);
         Assert.DoesNotContain("'vm', 'clone', $record.id", source, StringComparison.Ordinal);

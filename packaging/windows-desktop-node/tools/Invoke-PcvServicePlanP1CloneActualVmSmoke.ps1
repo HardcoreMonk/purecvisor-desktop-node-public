@@ -887,10 +887,10 @@ function Invoke-CloneOkSlice {
     $summary.product_state_after_clone_source = $sourceState
     $summary.hyperv_state_after_clone_target = $targetHyperV
     $summary.hyperv_state_after_clone_source = $sourceHyperV
-    $targetVm = Get-PcvVmById -Id ([Guid]$TargetRecord.id) -Record $TargetRecord
+    $targetHyperVVm = Get-PcvVmById -Id ([Guid]$TargetRecord.id) -Record $TargetRecord
     $targetGet = Invoke-PcvCliJson -StepName 'vm-get-target' -Arguments @('vm', 'get', $TargetVm)
     $targetData = Get-ObjectPropertyValue -InputObject $targetGet.Json -Name 'data'
-    $managed = Test-ManagedMarker -Vm $targetVm -ProductData $targetData
+    $managed = Test-ManagedMarker -Vm $targetHyperVVm -ProductData $targetData
     $targetDisk = Join-Path $targetVmRootFull 'disk0.vhdx'
     $sourceDisk = Join-Path $sourceVmRootFull 'disk0.vhdx'
     $targetDiskPresent = Test-PcvPath -Path $targetDisk
