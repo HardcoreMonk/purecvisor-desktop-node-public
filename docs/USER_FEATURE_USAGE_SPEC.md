@@ -273,7 +273,7 @@ Web POST `confirm_name`은 다른 lifecycle 버튼과 같은 URL path identifier
 |------|------|
 | 전제조건 | operator 이상, 소스 managed/Gen2/`Off`/checkpoint 0/독립 VHDX, 명시 confirmation, 소스와 다른 대상 이름 |
 | Web Console | 선택 VM detail `Clone VM`. 대상 이름을 입력하고 preview로 `planned_copy_bytes`를 확인한 뒤 confirmation에 소스 표시 이름과 대상 이름을 보여 준다 |
-| CLI | `pcvcli vm clone <source> --name <target> --dry-run`, `pcvcli vm clone <source> --name <target> --yes` |
+| CLI | `pcvcli vm clone <source> --name <target> --dry-run [--vm-root <path>]`, `pcvcli vm clone <source> --name <target> --yes [--vm-root <path>]` |
 | Guard | `--yes` 없음(enqueue), `confirm_name`과 `{vmId}` Ordinal 불일치, 대상 이름 없음, 소스와 같은 대상 이름, unmanaged/Gen1/not-Off/checkpoint/differencing/TPM |
 | 성공 결과 | preview는 복사 계획만 반환. clone job id는 Activity에서 추적. 새 VM만 managed marker를 가진다 |
 

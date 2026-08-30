@@ -14,6 +14,10 @@
 - public trusted signing: `false`
 - external stable publication: `false`
 
+> 작업 시작 체크리스트, 검증 명령, 승인표와 종료 보고 형식은
+> `docs/DEVELOPMENT_PROCEDURE.md`에서 시작한다. 이 설계는 Lane 의미와 금지 조건의 canonical
+> owner로 유지된다.
+
 ## 1. 목적
 
 코드 검증, 설치본 한 경로 프로브, operational current 승격이 한 세션에서 섞이지 않게 한다.

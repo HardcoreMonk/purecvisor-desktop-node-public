@@ -25,9 +25,9 @@
     },
     {
       "path": "src/DesktopNode.Api/DesktopNodeApiVmMutationRouteHandler.cs",
-      "max_lines": 970,
+      "max_lines": 989,
       "owner": "queued VM mutation routes and QoS validation",
-      "note": "2026-08-06 분해가 만들어 낸 모듈이다. 2026-08-27 SERVICE_PLAN P1-5 clone preview/queue routes가 970줄로 늘렸다."
+      "note": "2026-08-06 분해가 만들어 낸 모듈이다. 2026-08-27 SERVICE_PLAN P1-5 clone preview/queue routes가 970줄로 늘렸고, 2026-08-29 P1 clone disk/Off/vm-root 보정이 989줄로 늘렸다."
     },
     {
       "path": "src/DesktopNode.HyperV/DesktopNodeHyperVNativeAdapter.cs",
