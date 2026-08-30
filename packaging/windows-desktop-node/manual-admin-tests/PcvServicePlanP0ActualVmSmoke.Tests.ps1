@@ -41,7 +41,7 @@ function New-P0BehaviorRuntime {
         CollisionOnCleanup = $false
         CleanupRootFailure = $false
         VmGetNotFound = $false
-        ProductDeleteVmIds = [System.Collections.Generic.List[string]]::new()
+        ProductDeleteOperatorIds = [System.Collections.Generic.List[string]]::new()
         NativeStopVmIds = [System.Collections.Generic.List[string]]::new()
         RemovedVmIds = [System.Collections.Generic.List[string]]::new()
         RemovedRoots = [System.Collections.Generic.List[string]]::new()
@@ -148,7 +148,7 @@ function New-P0BehaviorRuntime {
                 $arguments = @($Payload.arguments)
                 $state.LastEnqueuedStep = $step
                 if ($step -like 'cleanup-delete-*') {
-                    $state.ProductDeleteVmIds.Add([string]$arguments[2]) | Out-Null
+                    $state.ProductDeleteOperatorIds.Add([string]$arguments[2]) | Out-Null
                 }
                 if ($step -eq 'vm-get-state') {
                     $requested = [string]$arguments[2]
@@ -235,10 +235,6 @@ function New-P0BehaviorRuntime {
                 if ($Payload.expected -eq 'Off') { return 'Off' }
                 if ($Payload.phase -eq 'after-resume') { return $state.ResumeHyperVState }
                 return 'Running'
-            }
-            'product-vm-state' {
-                if ($Payload.phase -eq 'after-save') { return $state.SaveProductState }
-                return $state.ResumeProductState
             }
             'dvd-readback' {
                 $path = if ($null -eq $state.DvdHostResource) { $Payload.iso } else { $state.DvdHostResource }
@@ -464,7 +460,7 @@ Describe 'SERVICE_PLAN P0 formal actual-VM runner contract' {
             $run.Summary.error | Should -Match 'PCV_P0_VM_ROOT_ALREADY_EXISTS'
             $run.Summary.host_mutation_performed | Should -BeFalse
             $run.State.PreexistingContents[$kind] | Should -BeTrue
-            @($run.State.ProductDeleteVmIds).Count | Should -Be 0
+            @($run.State.ProductDeleteOperatorIds).Count | Should -Be 0
             @($run.State.NativeStopVmIds).Count | Should -Be 0
             @($run.State.RemovedVmIds).Count | Should -Be 0
             @($run.State.RemovedRoots).Count | Should -Be 0
@@ -483,7 +479,7 @@ Describe 'SERVICE_PLAN P0 formal actual-VM runner contract' {
         $run.Summary.cleanup.verdict | Should -Be 'FAIL'
         $run.Summary.overall_verdict | Should -Be 'FAIL'
         $run.Summary.cleanup.error | Should -Match 'PCV_P0_CLEANUP_IDENTITY_DRIFT'
-        @($run.State.ProductDeleteVmIds).Count | Should -Be 0
+        @($run.State.ProductDeleteOperatorIds).Count | Should -Be 0
         @($run.State.NativeStopVmIds).Count | Should -Be 0
         @($run.State.RemovedVmIds).Count | Should -Be 0
         @($run.State.RemovedRoots).Count | Should -Be 0
