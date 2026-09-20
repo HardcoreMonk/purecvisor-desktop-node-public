@@ -5,10 +5,10 @@
   "id": "lane1-continuous-development-20260920",
   "intent": "lane1-continuous-development",
   "working_authority": "source_head",
-  "allowed_lanes": ["0", "1"],
-  "mutation_allowed": false,
+  "allowed_lanes": ["0", "1", "2"],
+  "mutation_allowed": true,
   "current_write_allowed": false,
-  "next_step": "P1-9 slice 1 AccountMutationContract is in source_head. Next is slice 2 accounts.json persist/reload. Do not open Lane 2 Hyper-V recovery unless named.",
+  "next_step": "P1-9 slice 2 persist/reload is in source_head. Next is slice 3 HTTP/CLI account create/disable. Host mutation is allowed; do not open Hyper-V recovery or write current-evidence unless named.",
   "stop_on": [
     "same-cause-fail-3",
     "budget",

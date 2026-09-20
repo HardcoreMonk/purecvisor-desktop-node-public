@@ -108,6 +108,20 @@ public sealed partial class DesktopNodeHostApplication : IDisposable
                 : null;
             var accountAuthOptions = options.AccountAuthOptions ??
                 DesktopNodeAccountAuthOptions.FromFiles(options.AccountFilePath, options.JwtSigningKeyFilePath);
+            if (string.IsNullOrWhiteSpace(accountAuthOptions.AccountFilePath) &&
+                !string.IsNullOrWhiteSpace(options.AccountFilePath))
+            {
+                accountAuthOptions = accountAuthOptions with { AccountFilePath = options.AccountFilePath };
+            }
+
+            if (accountAuthOptions.HardenAccountFile is null)
+            {
+                accountAuthOptions = accountAuthOptions with
+                {
+                    HardenAccountFile = DesktopNodeHostFileAclHardener.Instance.Harden
+                };
+            }
+
             var accountAuthService = new DesktopNodeAccountAuthService(accountAuthOptions);
             var consoleOptions = new DesktopNodeConsoleOptions(
                 NoVncEnabled: options.NoVncBridgeEnabled,

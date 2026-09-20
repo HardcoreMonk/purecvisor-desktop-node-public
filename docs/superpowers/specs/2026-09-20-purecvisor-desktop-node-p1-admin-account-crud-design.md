@@ -2,7 +2,7 @@
 
 - Design-ID: `purecvisor-desktop-node-p1-admin-account-crud-v1`
 - 작성일: `2026-09-20`
-- 문서 상태: `implemented-slice-1`
+- 문서 상태: `implemented-slice-2`
 - 소스 기획: `docs/SERVICE_PLAN.md` §7.1 P1-9
 - 선행: `pcv.account.session` login/refresh/logout/session/rbac, loopback session, `no-default-account` bootstrap
 - host mutation: `false`
@@ -104,7 +104,7 @@ List 항목에 `password_hash` 없음.
 
 - `accounts.json` 원자 쓰기, ACL harden, in-process reload.
 - `enabled` / `disabled_at` / `bootstrap_state` round-trip. extra JSON 필드 보존.
-- Login이 disable 계정을 `PCV_LOGIN_FAILED`로 거절하는지만 기존 Login 경로에 연결한다.
+- Login이 disable 계정을 `PCV_LOGIN_FAILED`로 거절한다. Refresh는 `PCV_REFRESH_ACCOUNT_NOT_FOUND`.
 - HTTP/CLI/Web은 이 slice가 아니다.
 
 ## Slice 3 범위
