@@ -2,7 +2,7 @@
 
 - Design-ID: `purecvisor-desktop-node-p1-admin-account-crud-v1`
 - 작성일: `2026-09-20`
-- 문서 상태: `approved-design`
+- 문서 상태: `implemented-slice-1`
 - 소스 기획: `docs/SERVICE_PLAN.md` §7.1 P1-9
 - 선행: `pcv.account.session` login/refresh/logout/session/rbac, loopback session, `no-default-account` bootstrap
 - host mutation: `false`
@@ -94,7 +94,7 @@ List 항목에 `password_hash` 없음.
 5. 기존 loopback access token은 만료까지 남을 수 있다. account CRUD는 Ready 이후 loopback token을
    받지 않는다. 운영자는 login으로 admin JWT를 받는다.
 
-## Slice 1 범위 (다음 구현)
+## Slice 1 범위
 
 - `AccountMutationContract.EvaluateCreate` / `EvaluateDisable` (순수, IO 없음).
 - 거절 코드와 username/password/role/last-admin/bootstrap 규칙을 테스트로 고정한다.
