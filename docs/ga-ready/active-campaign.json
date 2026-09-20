@@ -8,7 +8,7 @@
   "allowed_lanes": ["0", "1", "2"],
   "mutation_allowed": true,
   "current_write_allowed": false,
-  "next_step": "P1-10 slice 2 vm.shutdown reconcile is in source_head. Next is slice 3 vm.restart reconcile. Host mutation is allowed; do not open Hyper-V recovery or write current-evidence unless named.",
+  "next_step": "P1-10 slice 3 vm.restart reconcile is in source_head. Next is slice 4 QoS storage/network reconcile. Host mutation is allowed; do not open Hyper-V recovery or write current-evidence unless named.",
   "stop_on": [
     "same-cause-fail-3",
     "budget",

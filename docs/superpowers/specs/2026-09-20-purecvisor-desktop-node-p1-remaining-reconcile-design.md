@@ -2,7 +2,7 @@
 
 - Design-ID: `purecvisor-desktop-node-p1-remaining-reconcile-v1`
 - 작성일: `2026-09-20`
-- 문서 상태: `implemented-slice-2`
+- 문서 상태: `implemented-slice-3`
 - 소스 기획: `docs/SERVICE_PLAN.md` §7.1 P1-10
 - 선행: Wave 2C `vm.rename` / `vm.delete` / `checkpoint.create`, P0-2 `checkpoint.restore`
 - host mutation: `false`

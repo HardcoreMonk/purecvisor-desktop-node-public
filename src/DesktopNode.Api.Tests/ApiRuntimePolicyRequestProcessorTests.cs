@@ -3701,6 +3701,232 @@ public sealed partial class ApiRuntimePolicyRequestProcessorTests
     }
 
     [Fact]
+    public void VmRestartQueueCapturesRunningReadbackBaselineWithoutMutatingProvider()
+    {
+        var nativeCalls = new List<string>();
+        var processor = DesktopNodeApiRequestProcessor.CreateDefault(
+            nativeAdapter: new RecordingNativeHyperVAdapter(nativeCalls, new Dictionary<string, string>
+            {
+                ["vm.list"] = """
+                {"ok":true,"operation":"vm.list","data":[{"id":"vm-id","name":"lab-vm","platform":"hyperv","guest_family":"windows","state":"running","cpu":{"count":2},"memory":{"startup_mb":4096},"generation":2,"managed_by_purecvisor":true,"last_powered_on":"2026-09-20T04:05:06.0000000Z"}],"error":null}
+                """
+            }));
+
+        var response = processor.Handle(new DesktopNodeApiRequest("POST", "/api/v1/vms/lab-vm/restart"));
+
+        Assert.Equal(202, response.StatusCode);
+        Assert.Equal(["vm.list"], nativeCalls);
+        using var document = JsonDocument.Parse(response.Body);
+        var reconciliation = document.RootElement.GetProperty("data").GetProperty("params").GetProperty("reconciliation");
+        Assert.Equal("pcv-vm-restart-reconciliation/v1", reconciliation.GetProperty("schema").GetString());
+        Assert.Equal("captured", reconciliation.GetProperty("capture_status").GetString());
+        Assert.Equal("running", reconciliation.GetProperty("before").GetProperty("state").GetString());
+        Assert.Equal("2026-09-20T04:05:06.0000000Z", reconciliation.GetProperty("before").GetProperty("last_powered_on").GetString());
+        Assert.Equal("running", reconciliation.GetProperty("expected_after").GetProperty("state").GetString());
+        Assert.Equal("lab-vm", document.RootElement.GetProperty("data").GetProperty("params").GetProperty("name").GetString());
+    }
+
+    [Fact]
+    public void VmRestartReconcileConfirmsLaterLastPoweredOnWithoutCallingRestartProvider()
+    {
+        var jobStorePath = Path.Combine(Path.GetTempPath(), "pcv-dotnet-api-vm-restart-reconcile-" + Guid.NewGuid().ToString("N") + ".json");
+        try
+        {
+            File.WriteAllText(jobStorePath, """
+            {
+              "version": 1,
+              "jobs": [
+                {
+                  "job_id": "job-vm-restart-reconcile",
+                  "operation": "vm.restart",
+                  "status": "failed",
+                  "params": {
+                    "name": "lab-vm",
+                    "reconciliation": {
+                      "schema": "pcv-vm-restart-reconciliation/v1",
+                      "capture_status": "captured",
+                      "before": { "id": "vm-id", "name": "lab-vm", "platform": "hyperv", "guest_family": "windows", "state": "running", "cpu": { "count": 2 }, "memory": { "startup_mb": 4096 }, "generation": 2, "managed_by_purecvisor": true, "last_powered_on": "2026-09-20T04:05:06.0000000Z" },
+                      "before_fingerprint": { "platform": "hyperv", "guest_family": "windows", "cpu_count": 2, "startup_memory_mb": 4096, "generation": 2, "managed_by_purecvisor": true },
+                      "expected_after": { "name": "lab-vm", "state": "running" }
+                    }
+                  },
+                  "result": null,
+                  "error": { "code": "PCV_JOB_INTERRUPTED", "message": "Interrupted.", "detail": "Provider side effect is unresolved.", "retryable": false, "recommended_action": "Reconcile the provider state." },
+                  "retry_of": null,
+                  "request_id": "req-vm-restart-reconcile",
+                  "correlation_id": "corr-vm-restart-reconcile",
+                  "attempt": 1,
+                  "canceled_at": null,
+                  "created_at": "2026-09-20T00:00:00.0000000Z",
+                  "updated_at": "2026-09-20T00:00:01.0000000Z"
+                }
+              ],
+              "queue": []
+            }
+            """);
+
+            var nativeCalls = new List<string>();
+            var processor = DesktopNodeApiRequestProcessor.CreateDefault(
+                jobStorePath: jobStorePath,
+                nativeAdapter: new RecordingNativeHyperVAdapter(nativeCalls, new Dictionary<string, string>
+                {
+                    ["vm.list"] = """
+                    {"ok":true,"operation":"vm.list","data":[{"id":"vm-id","name":"lab-vm","platform":"hyperv","guest_family":"windows","state":"running","cpu":{"count":2},"memory":{"startup_mb":4096},"generation":2,"managed_by_purecvisor":true,"last_powered_on":"2026-09-20T04:06:07.0000000Z"}],"error":null}
+                    """
+                }));
+
+            var response = processor.Handle(new DesktopNodeApiRequest(
+                "POST",
+                "/api/v1/jobs/job-vm-restart-reconcile/reconcile"));
+
+            Assert.Equal(200, response.StatusCode);
+            Assert.Equal(["vm.list"], nativeCalls);
+            using var document = JsonDocument.Parse(response.Body);
+            var data = document.RootElement.GetProperty("data");
+            Assert.Equal("succeeded", data.GetProperty("status").GetString());
+            Assert.Equal("vm.restart", data.GetProperty("result").GetProperty("operation").GetString());
+            Assert.Equal("postcondition-confirmed", data.GetProperty("result").GetProperty("reconciliation").GetProperty("classification").GetString());
+        }
+        finally
+        {
+            if (File.Exists(jobStorePath))
+            {
+                File.Delete(jobStorePath);
+            }
+        }
+    }
+
+    [Fact]
+    public void VmRestartReconcileKeepsFailedWhenLastPoweredOnUnchanged()
+    {
+        var jobStorePath = Path.Combine(Path.GetTempPath(), "pcv-dotnet-api-vm-restart-unchanged-" + Guid.NewGuid().ToString("N") + ".json");
+        try
+        {
+            File.WriteAllText(jobStorePath, """
+            {
+              "version": 1,
+              "jobs": [
+                {
+                  "job_id": "job-vm-restart-unchanged",
+                  "operation": "vm.restart",
+                  "status": "failed",
+                  "params": {
+                    "name": "lab-vm",
+                    "reconciliation": {
+                      "schema": "pcv-vm-restart-reconciliation/v1",
+                      "capture_status": "captured",
+                      "before": { "id": "vm-id", "name": "lab-vm", "platform": "hyperv", "guest_family": "windows", "state": "running", "cpu": { "count": 2 }, "memory": { "startup_mb": 4096 }, "generation": 2, "managed_by_purecvisor": true, "last_powered_on": "2026-09-20T04:05:06.0000000Z" },
+                      "before_fingerprint": { "platform": "hyperv", "guest_family": "windows", "cpu_count": 2, "startup_memory_mb": 4096, "generation": 2, "managed_by_purecvisor": true },
+                      "expected_after": { "name": "lab-vm", "state": "running" }
+                    }
+                  },
+                  "result": null,
+                  "error": { "code": "PCV_JOB_INTERRUPTED", "message": "Interrupted.", "detail": "Provider side effect is unresolved.", "retryable": false, "recommended_action": "Reconcile the provider state." },
+                  "retry_of": null,
+                  "request_id": "req-vm-restart-unchanged",
+                  "correlation_id": "corr-vm-restart-unchanged",
+                  "attempt": 1,
+                  "canceled_at": null,
+                  "created_at": "2026-09-20T00:00:00.0000000Z",
+                  "updated_at": "2026-09-20T00:00:01.0000000Z"
+                }
+              ],
+              "queue": []
+            }
+            """);
+
+            var processor = DesktopNodeApiRequestProcessor.CreateDefault(
+                jobStorePath: jobStorePath,
+                nativeAdapter: new RecordingNativeHyperVAdapter(new List<string>(), new Dictionary<string, string>
+                {
+                    ["vm.list"] = """
+                    {"ok":true,"operation":"vm.list","data":[{"id":"vm-id","name":"lab-vm","platform":"hyperv","guest_family":"windows","state":"running","cpu":{"count":2},"memory":{"startup_mb":4096},"generation":2,"managed_by_purecvisor":true,"last_powered_on":"2026-09-20T04:05:06.0000000Z"}],"error":null}
+                    """
+                }));
+
+            var response = processor.Handle(new DesktopNodeApiRequest(
+                "POST",
+                "/api/v1/jobs/job-vm-restart-unchanged/reconcile"));
+
+            Assert.Equal(409, response.StatusCode);
+            Assert.Contains("PCV_JOB_RECONCILIATION_REQUIRED", response.Body, StringComparison.Ordinal);
+            Assert.Contains("not-applied", response.Body, StringComparison.Ordinal);
+        }
+        finally
+        {
+            if (File.Exists(jobStorePath))
+            {
+                File.Delete(jobStorePath);
+            }
+        }
+    }
+
+    [Fact]
+    public void VmRestartReconcileKeepsFailedWhenLastPoweredOnUnavailable()
+    {
+        var jobStorePath = Path.Combine(Path.GetTempPath(), "pcv-dotnet-api-vm-restart-ts-" + Guid.NewGuid().ToString("N") + ".json");
+        try
+        {
+            File.WriteAllText(jobStorePath, """
+            {
+              "version": 1,
+              "jobs": [
+                {
+                  "job_id": "job-vm-restart-ts",
+                  "operation": "vm.restart",
+                  "status": "failed",
+                  "params": {
+                    "name": "lab-vm",
+                    "reconciliation": {
+                      "schema": "pcv-vm-restart-reconciliation/v1",
+                      "capture_status": "captured",
+                      "before": { "id": "vm-id", "name": "lab-vm", "platform": "hyperv", "guest_family": "windows", "state": "running", "cpu": { "count": 2 }, "memory": { "startup_mb": 4096 }, "generation": 2, "managed_by_purecvisor": true, "last_powered_on": "2026-09-20T04:05:06.0000000Z" },
+                      "before_fingerprint": { "platform": "hyperv", "guest_family": "windows", "cpu_count": 2, "startup_memory_mb": 4096, "generation": 2, "managed_by_purecvisor": true },
+                      "expected_after": { "name": "lab-vm", "state": "running" }
+                    }
+                  },
+                  "result": null,
+                  "error": { "code": "PCV_JOB_INTERRUPTED", "message": "Interrupted.", "detail": "Provider side effect is unresolved.", "retryable": false, "recommended_action": "Reconcile the provider state." },
+                  "retry_of": null,
+                  "request_id": "req-vm-restart-ts",
+                  "correlation_id": "corr-vm-restart-ts",
+                  "attempt": 1,
+                  "canceled_at": null,
+                  "created_at": "2026-09-20T00:00:00.0000000Z",
+                  "updated_at": "2026-09-20T00:00:01.0000000Z"
+                }
+              ],
+              "queue": []
+            }
+            """);
+
+            var processor = DesktopNodeApiRequestProcessor.CreateDefault(
+                jobStorePath: jobStorePath,
+                nativeAdapter: new RecordingNativeHyperVAdapter(new List<string>(), new Dictionary<string, string>
+                {
+                    ["vm.list"] = """
+                    {"ok":true,"operation":"vm.list","data":[{"id":"vm-id","name":"lab-vm","platform":"hyperv","guest_family":"windows","state":"running","cpu":{"count":2},"memory":{"startup_mb":4096},"generation":2,"managed_by_purecvisor":true}],"error":null}
+                    """
+                }));
+
+            var response = processor.Handle(new DesktopNodeApiRequest(
+                "POST",
+                "/api/v1/jobs/job-vm-restart-ts/reconcile"));
+
+            Assert.Equal(409, response.StatusCode);
+            Assert.Contains("PCV_JOB_RECONCILIATION_REQUIRED", response.Body, StringComparison.Ordinal);
+            Assert.Contains("timestamp-unavailable", response.Body, StringComparison.Ordinal);
+        }
+        finally
+        {
+            if (File.Exists(jobStorePath))
+            {
+                File.Delete(jobStorePath);
+            }
+        }
+    }
+
+    [Fact]
     public void CheckpointRestoreQueueCapturesCurrentReadbackBaselineWithoutMutatingProvider()
     {
         var nativeCalls = new List<string>();
@@ -4206,7 +4432,7 @@ public sealed partial class ApiRuntimePolicyRequestProcessorTests
 
         Assert.Equal(202, create.StatusCode);
         Assert.Empty(fallbackCalls);
-        if (expectedOperation == "vm.shutdown")
+        if (expectedOperation is "vm.shutdown" or "vm.restart")
         {
             Assert.Equal("vm.list", Assert.Single(nativeCalls).Operation);
         }

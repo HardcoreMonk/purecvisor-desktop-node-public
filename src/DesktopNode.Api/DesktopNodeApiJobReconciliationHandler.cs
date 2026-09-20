@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using DesktopNode.Runtime;
@@ -39,6 +40,7 @@ internal sealed class DesktopNodeApiJobReconciliationHandler
     private const string CheckpointRestoreReconciliationSchema = "pcv-checkpoint-restore-reconciliation/v1";
     private const string VmCreateReconciliationSchema = "pcv-vm-create-reconciliation/v1";
     private const string VmShutdownReconciliationSchema = "pcv-vm-shutdown-reconciliation/v1";
+    private const string VmRestartReconciliationSchema = "pcv-vm-restart-reconciliation/v1";
 
     private DesktopNodeApiResponse HandleJobReconcile(
         string jobId,
@@ -98,6 +100,13 @@ internal sealed class DesktopNodeApiJobReconciliationHandler
             return ReconcileVmShutdownJob(job, cancellationToken);
         }
 
+        if (string.Equals(job.Operation, "vm.restart", StringComparison.Ordinal) &&
+            string.Equals(job.Status, "failed", StringComparison.Ordinal) &&
+            string.Equals(job.Error?.Code, "PCV_JOB_INTERRUPTED", StringComparison.Ordinal))
+        {
+            return ReconcileVmRestartJob(job, cancellationToken);
+        }
+
         if (!string.Equals(job.Operation, "vm.rename", StringComparison.Ordinal) ||
             !string.Equals(job.Status, "failed", StringComparison.Ordinal) ||
             !string.Equals(job.Error?.Code, "PCV_JOB_INTERRUPTED", StringComparison.Ordinal))
@@ -109,7 +118,7 @@ internal sealed class DesktopNodeApiJobReconciliationHandler
                 ReconciliationRequiredError(
                     jobId,
                     "job-not-reconcilable",
-                    "Only a failed vm.rename, vm.delete, checkpoint.create, checkpoint.restore, vm.create, or vm.shutdown job with PCV_JOB_INTERRUPTED can be reconciled.",
+                    "Only a failed vm.rename, vm.delete, checkpoint.create, checkpoint.restore, vm.create, vm.shutdown, or vm.restart job with PCV_JOB_INTERRUPTED can be reconciled.",
                     job.Operation));
             return RenderReconciliationResult(jobRuntime.Reconcile(jobId, assessment));
         }
@@ -677,6 +686,139 @@ internal sealed class DesktopNodeApiJobReconciliationHandler
                     "vm.shutdown"))));
     }
 
+    private DesktopNodeApiResponse ReconcileVmRestartJob(
+        DesktopNodeJobSnapshot job,
+        CancellationToken cancellationToken)
+    {
+        var jobId = job.JobId;
+        var vmName = DesktopNodeApiJsonReader.ReadString(job.Parameters, "name");
+        var metadata = DesktopNodeApiJsonReader.ReadElement(job.Parameters, "reconciliation");
+        if (string.IsNullOrWhiteSpace(vmName) ||
+            !TryReadCapturedVmRestartBaseline(metadata, vmName, out var baseline))
+        {
+            var assessment = new DesktopNodeJobReconciliationAssessment(
+                false,
+                "baseline-unavailable",
+                null,
+                ReconciliationRequiredError(
+                    jobId,
+                    "baseline-unavailable",
+                    "The durable vm.restart baseline was not captured or is not structurally valid.",
+                    "vm.restart"));
+            return RenderReconciliationResult(jobRuntime.Reconcile(jobId, assessment));
+        }
+
+        using var readbackTimeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        readbackTimeout.CancelAfter(TimeSpan.FromSeconds(Math.Max(1, hardeningOptions.RouteTimeoutSeconds)));
+        var readback = operationInvoker.Invoke("vm.list", DesktopNodeApiResponseFactory.EmptyObject(), readbackTimeout.Token);
+        if (!readback.Ok || readback.Data is null)
+        {
+            var providerCode = readback.Error?.Code ?? "PCV_VM_LIST_FAILED";
+            var assessment = new DesktopNodeJobReconciliationAssessment(
+                false,
+                "readback-unavailable",
+                null,
+                ReconciliationRequiredError(
+                    jobId,
+                    "readback-unavailable",
+                    $"Provider vm.list readback failed with {providerCode}; no mutation was attempted.",
+                    "vm.restart"));
+            return RenderReconciliationResult(jobRuntime.Reconcile(jobId, assessment));
+        }
+
+        var matching = DesktopNodeApiJsonReader.EnumerateVmList(readback.Data.Value)
+            .Where(vm => string.Equals(DesktopNodeApiJsonReader.GetStringProperty(vm, "name"), vmName, StringComparison.OrdinalIgnoreCase))
+            .ToArray();
+        if (matching.Length == 1 &&
+            ShutdownIdentityMatches(baseline.BeforeFingerprint, matching[0]))
+        {
+            var observedState = NormalizePowerState(DesktopNodeApiJsonReader.GetStringProperty(matching[0], "state"));
+            if (observedState == "off" || observedState != "running")
+            {
+                return RenderReconciliationResult(jobRuntime.Reconcile(
+                    jobId,
+                    new DesktopNodeJobReconciliationAssessment(
+                        false,
+                        "incomplete-power-state",
+                        null,
+                        ReconciliationRequiredError(
+                            jobId,
+                            "incomplete-power-state",
+                            "Provider vm.list readback did not prove the captured VM is Running after restart.",
+                            "vm.restart"))));
+            }
+
+            var observedLastPoweredOn = DesktopNodeApiJsonReader.GetStringProperty(matching[0], "last_powered_on");
+            if (!TryReadTimestamp(baseline.LastPoweredOn, out var baselineTimestamp) ||
+                !TryReadTimestamp(observedLastPoweredOn, out var observedTimestamp))
+            {
+                return RenderReconciliationResult(jobRuntime.Reconcile(
+                    jobId,
+                    new DesktopNodeJobReconciliationAssessment(
+                        false,
+                        "timestamp-unavailable",
+                        null,
+                        ReconciliationRequiredError(
+                            jobId,
+                            "timestamp-unavailable",
+                            "Provider vm.list readback did not prove last_powered_on advanced after restart.",
+                            "vm.restart"))));
+            }
+
+            if (observedTimestamp > baselineTimestamp)
+            {
+                var result = DesktopNodeApiResponseFactory.JsonFromObject(new SortedDictionary<string, object?>
+                {
+                    ["action"] = "reconciled",
+                    ["operation"] = "vm.restart",
+                    ["reconciliation"] = new SortedDictionary<string, object?>
+                    {
+                        ["schema"] = baseline.Schema,
+                        ["classification"] = "postcondition-confirmed",
+                        ["before"] = baseline.Before,
+                        ["expected_after"] = baseline.ExpectedAfter,
+                        ["observed"] = matching[0]
+                    }
+                });
+                return RenderReconciliationResult(jobRuntime.Reconcile(
+                    jobId,
+                    new DesktopNodeJobReconciliationAssessment(
+                        true,
+                        "postcondition-confirmed",
+                        result)));
+            }
+
+            return RenderReconciliationResult(jobRuntime.Reconcile(
+                jobId,
+                new DesktopNodeJobReconciliationAssessment(
+                    false,
+                    "not-applied",
+                    null,
+                    ReconciliationRequiredError(
+                        jobId,
+                        "not-applied",
+                        "Provider vm.list readback did not prove last_powered_on advanced after restart.",
+                        "vm.restart"))));
+        }
+
+        var identityClassification = matching.Length == 0
+            ? "expected-target-not-observed"
+            : matching.Length > 1
+                ? "ambiguous-duplicate-names"
+                : "identity-mismatch";
+        return RenderReconciliationResult(jobRuntime.Reconcile(
+            jobId,
+            new DesktopNodeJobReconciliationAssessment(
+                false,
+                identityClassification,
+                null,
+                ReconciliationRequiredError(
+                    jobId,
+                    identityClassification,
+                    "Provider vm.list readback did not prove a unique VM identity for restart reconciliation.",
+                    "vm.restart"))));
+    }
+
     private DesktopNodeApiResponse RenderReconciliationResult(DesktopNodeJobReconciliationResult result)
     {
         return result.Outcome switch
@@ -698,6 +840,7 @@ internal sealed class DesktopNodeApiJobReconciliationHandler
             "vm.delete" => "delete",
             "vm.create" => "create",
             "vm.shutdown" => "shutdown",
+            "vm.restart" => "restart",
             "checkpoint.create" => "checkpoint create",
             "checkpoint.restore" => "checkpoint restore",
             _ => "rename"
@@ -787,6 +930,16 @@ internal sealed class DesktopNodeApiJobReconciliationHandler
     public JsonElement BuildVmShutdownParameters(string vmName, CancellationToken cancellationToken)
     {
         var reconciliation = CaptureVmShutdownBaseline(vmName, cancellationToken);
+        return DesktopNodeApiResponseFactory.JsonFromObject(new SortedDictionary<string, object?>
+        {
+            ["name"] = vmName,
+            ["reconciliation"] = reconciliation
+        });
+    }
+
+    public JsonElement BuildVmRestartParameters(string vmName, CancellationToken cancellationToken)
+    {
+        var reconciliation = CaptureVmRestartBaseline(vmName, cancellationToken);
         return DesktopNodeApiResponseFactory.JsonFromObject(new SortedDictionary<string, object?>
         {
             ["name"] = vmName,
@@ -941,6 +1094,72 @@ internal sealed class DesktopNodeApiJobReconciliationHandler
             return DesktopNodeApiResponseFactory.JsonFromObject(new SortedDictionary<string, object?>
             {
                 ["schema"] = VmShutdownReconciliationSchema,
+                ["capture_status"] = "unavailable",
+                ["capture_error_code"] = "PCV_VM_LIST_FAILED",
+                ["before"] = null,
+                ["before_fingerprint"] = null,
+                ["expected_after"] = expectedAfter
+            });
+        }
+    }
+
+    private JsonElement CaptureVmRestartBaseline(string vmName, CancellationToken cancellationToken)
+    {
+        var expectedAfter = new SortedDictionary<string, object?>
+        {
+            ["name"] = vmName,
+            ["state"] = "running"
+        };
+
+        try
+        {
+            using var readbackTimeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            readbackTimeout.CancelAfter(TimeSpan.FromSeconds(Math.Max(1, hardeningOptions.RouteTimeoutSeconds)));
+            var readback = operationInvoker.Invoke("vm.list", DesktopNodeApiResponseFactory.EmptyObject(), readbackTimeout.Token);
+            if (!readback.Ok || readback.Data is null)
+            {
+                return DesktopNodeApiResponseFactory.JsonFromObject(new SortedDictionary<string, object?>
+                {
+                    ["schema"] = VmRestartReconciliationSchema,
+                    ["capture_status"] = "unavailable",
+                    ["capture_error_code"] = readback.Error?.Code ?? "PCV_VM_LIST_FAILED",
+                    ["before"] = null,
+                    ["before_fingerprint"] = null,
+                    ["expected_after"] = expectedAfter
+                });
+            }
+
+            var matches = DesktopNodeApiJsonReader.EnumerateVmList(readback.Data.Value)
+                .Where(vm => string.Equals(DesktopNodeApiJsonReader.GetStringProperty(vm, "name"), vmName, StringComparison.OrdinalIgnoreCase))
+                .ToArray();
+            if (matches.Length != 1)
+            {
+                return DesktopNodeApiResponseFactory.JsonFromObject(new SortedDictionary<string, object?>
+                {
+                    ["schema"] = VmRestartReconciliationSchema,
+                    ["capture_status"] = "unavailable",
+                    ["capture_error_code"] = matches.Length == 0 ? "PCV_VM_NOT_FOUND" : "PCV_VM_IDENTITY_AMBIGUOUS",
+                    ["before"] = null,
+                    ["before_fingerprint"] = null,
+                    ["expected_after"] = expectedAfter
+                });
+            }
+
+            var before = matches[0].Clone();
+            return DesktopNodeApiResponseFactory.JsonFromObject(new SortedDictionary<string, object?>
+            {
+                ["schema"] = VmRestartReconciliationSchema,
+                ["capture_status"] = "captured",
+                ["before"] = before,
+                ["before_fingerprint"] = BuildVmShutdownIdentityFingerprint(before),
+                ["expected_after"] = expectedAfter
+            });
+        }
+        catch (Exception)
+        {
+            return DesktopNodeApiResponseFactory.JsonFromObject(new SortedDictionary<string, object?>
+            {
+                ["schema"] = VmRestartReconciliationSchema,
                 ["capture_status"] = "unavailable",
                 ["capture_error_code"] = "PCV_VM_LIST_FAILED",
                 ["before"] = null,
@@ -1386,6 +1605,21 @@ internal sealed class DesktopNodeApiJobReconciliationHandler
         return value;
     }
 
+    private static bool TryReadTimestamp(string? value, out DateTimeOffset timestamp)
+    {
+        timestamp = default;
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return false;
+        }
+
+        return DateTimeOffset.TryParse(
+            value,
+            CultureInfo.InvariantCulture,
+            DateTimeStyles.RoundtripKind,
+            out timestamp);
+    }
+
     private static JsonElement BuildVmDeleteFingerprint(JsonElement vm)
     {
         return BuildVmRenameFingerprint(vm);
@@ -1529,6 +1763,48 @@ internal sealed class DesktopNodeApiJobReconciliationHandler
             before.Value.Clone(),
             beforeFingerprint.Value.Clone(),
             NormalizePowerState(DesktopNodeApiJsonReader.GetStringProperty(before.Value, "state")),
+            expectedAfter.Value.Clone());
+        return true;
+    }
+
+    private static bool TryReadCapturedVmRestartBaseline(
+        JsonElement? metadata,
+        string vmName,
+        out VmRestartBaseline baseline)
+    {
+        baseline = null!;
+        if (metadata is null || metadata.Value.ValueKind != JsonValueKind.Object)
+        {
+            return false;
+        }
+
+        var value = metadata.Value;
+        if (!string.Equals(DesktopNodeApiJsonReader.ReadString(value, "schema"), VmRestartReconciliationSchema, StringComparison.Ordinal) ||
+            !string.Equals(DesktopNodeApiJsonReader.ReadString(value, "capture_status"), "captured", StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        var before = DesktopNodeApiJsonReader.ReadElement(value, "before");
+        var beforeFingerprint = DesktopNodeApiJsonReader.ReadElement(value, "before_fingerprint");
+        var expectedAfter = DesktopNodeApiJsonReader.ReadElement(value, "expected_after");
+        if (before is null ||
+            beforeFingerprint is null ||
+            expectedAfter is null ||
+            before.Value.ValueKind != JsonValueKind.Object ||
+            beforeFingerprint.Value.ValueKind != JsonValueKind.Object ||
+            !string.Equals(DesktopNodeApiJsonReader.ReadString(expectedAfter.Value, "name"), vmName, StringComparison.Ordinal) ||
+            !string.Equals(NormalizePowerState(DesktopNodeApiJsonReader.ReadString(expectedAfter.Value, "state")), "running", StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        baseline = new VmRestartBaseline(
+            VmRestartReconciliationSchema,
+            vmName,
+            before.Value.Clone(),
+            beforeFingerprint.Value.Clone(),
+            DesktopNodeApiJsonReader.GetStringProperty(before.Value, "last_powered_on"),
             expectedAfter.Value.Clone());
         return true;
     }
@@ -1684,5 +1960,13 @@ internal sealed class DesktopNodeApiJobReconciliationHandler
         JsonElement Before,
         JsonElement BeforeFingerprint,
         string BeforeState,
+        JsonElement ExpectedAfter);
+
+    private sealed record VmRestartBaseline(
+        string Schema,
+        string Name,
+        JsonElement Before,
+        JsonElement BeforeFingerprint,
+        string? LastPoweredOn,
         JsonElement ExpectedAfter);
 }

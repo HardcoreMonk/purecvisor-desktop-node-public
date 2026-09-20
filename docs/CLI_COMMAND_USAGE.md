@@ -423,7 +423,7 @@ pcvcli --json job reconcile job-123
 `limit`과 `offset`은 integer여야 한다. API의 job retention 정책은 user guide의 Operator Activity 설명을 따른다.
 
 `job reconcile`은 일반 retry가 아니다. Service restart 등으로 `PCV_JOB_INTERRUPTED`가 된
-`vm.rename`, `vm.delete`, `checkpoint.create`, `checkpoint.restore`, `vm.create`, `vm.shutdown` job에만 사용한다. API는 먼저 Hyper-V/provider
+`vm.rename`, `vm.delete`, `checkpoint.create`, `checkpoint.restore`, `vm.create`, `vm.shutdown`, `vm.restart` job에만 사용한다. API는 먼저 Hyper-V/provider
 readback으로 원래 mutation의 postcondition을 확인한다. Postcondition이 확정되면 기존
 mutation을 중복 제출하지 않고 기존 job을 reconciled terminal state로 저장한다. 결과가 없거나
 모호하면 `409`와 `PCV_JOB_RECONCILIATION_REQUIRED`를 반환한다. 이때 `retry`를 먼저 실행하지

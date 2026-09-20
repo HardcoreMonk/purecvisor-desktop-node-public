@@ -206,6 +206,7 @@ public sealed class ApiRequestProcessorDecompositionOwnershipTests
             "ReconcileCheckpointRestoreJob",
             "ReconcileVmCreateJob",
             "ReconcileVmShutdownJob",
+            "ReconcileVmRestartJob",
             "RenderReconciliationResult",
             "ReconciliationRequiredError",
             "BuildVmRenameParameters",
@@ -214,12 +215,14 @@ public sealed class ApiRequestProcessorDecompositionOwnershipTests
             "BuildCheckpointRestoreParameters",
             "BuildVmCreateParameters",
             "BuildVmShutdownParameters",
+            "BuildVmRestartParameters",
             "CaptureVmRenameBaseline",
             "CaptureVmDeleteBaseline",
             "CaptureCheckpointCreateBaseline",
             "CaptureCheckpointRestoreBaseline",
             "CaptureVmCreateBaseline",
             "CaptureVmShutdownBaseline",
+            "CaptureVmRestartBaseline",
             "BuildVmRenameFingerprint",
             "BuildVmDeleteFingerprint",
             "IsManagedVm",
@@ -230,10 +233,12 @@ public sealed class ApiRequestProcessorDecompositionOwnershipTests
             "TryReadCapturedCheckpointRestoreBaseline",
             "TryReadCapturedVmCreateBaseline",
             "TryReadCapturedVmShutdownBaseline",
+            "TryReadCapturedVmRestartBaseline",
             "CreateFingerprintMatches",
             "BuildVmShutdownIdentityFingerprint",
             "ShutdownIdentityMatches",
-            "NormalizePowerState");
+            "NormalizePowerState",
+            "TryReadTimestamp");
         AssertTypeDeclares(
             "DesktopNodeApiJobReconciliationHandler",
             "TryHandle",
@@ -242,7 +247,8 @@ public sealed class ApiRequestProcessorDecompositionOwnershipTests
             "BuildCheckpointCreateParameters",
             "BuildCheckpointRestoreParameters",
             "BuildVmCreateParameters",
-            "BuildVmShutdownParameters");
+            "BuildVmShutdownParameters",
+            "BuildVmRestartParameters");
         AssertTypeIsCallbackFreeOwner("DesktopNodeApiJobReconciliationHandler");
     }
 
