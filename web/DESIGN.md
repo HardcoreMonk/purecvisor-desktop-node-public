@@ -178,7 +178,9 @@ width를 사용해 hover/loading/error state가 layout shift를 만들지 않게
   Local API가 담당한다.
 - Console UX는 `/api/v1/console/capabilities`와 `/api/v1/vms/{id}/console`만
   사용한다. noVNC bridge가 없으면 `not_configured` 상태를 표시하고 Hyper-V
-  `vmconnect` handoff를 안내한다.
+  `vmconnect` handoff를 안내한다. Console Access Card는 `enabled`/`status`/
+  `reason_code` readback만 유지한다. target host/port 입력, 저장 버튼, LAN 토글은
+  열지 않으며 configure는 CLI/API `pcvcli console novnc-target`이다.
 - Selected VM QoS/guest readback UX는 `/api/v1/vms/{id}/blkio`,
   `/api/v1/vms/{id}/bandwidth`, `/api/v1/vms/{id}/guest-agent/status`,
   `/api/v1/vms/{id}/guest-agent/ping`을 readback으로 사용한다.
@@ -194,8 +196,9 @@ width를 사용해 hover/loading/error state가 layout shift를 만들지 않게
   protected credential reference, confirmation guard, queued provider route만 사용한다. 실제
   Windows guest credentialed execution smoke는 PASS했고, running interrupt policy는
   `0.42.54-admin-smoke` 설치본 long-running cancel smoke로 PASS했다. `0.42.55-admin-smoke`는
-  running cancel affordance 설치본 표시와 actual credentialed guest-exec를 current-card로 재확인했다. ADR-0010이 닫히기 전까지
-  account/noVNC target config mutation은 열지 않는다.
+  running cancel affordance 설치본 표시와 actual credentialed guest-exec를 current-card로 재확인했다. noVNC target
+  set/clear는 API/CLI queued mutation으로 열렸고, Web Console은 save form을 열지 않는다.
+  ADR-0010 적용 파일 승격은 별도 named step이다.
 - Job/Activity row의 running guest execution cancel affordance는 일반 job cancel과 구분해
   `Cancel running guest exec` label과 `running-guest-execution` scope를 표시한다. 이 UI는
   0.42.55 package/current-card에서 설치본으로 승격됐다.

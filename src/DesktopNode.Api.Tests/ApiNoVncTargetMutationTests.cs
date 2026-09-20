@@ -47,9 +47,19 @@ public sealed class ApiNoVncTargetMutationTests
         var capabilities = processor.Handle(new DesktopNodeApiRequest("GET", "/api/v1/console/capabilities"));
         Assert.Equal(200, capabilities.StatusCode);
         using var capabilitiesDocument = JsonDocument.Parse(capabilities.Body);
-        var novnc = capabilitiesDocument.RootElement.GetProperty("data").GetProperty("novnc");
+        var data = capabilitiesDocument.RootElement.GetProperty("data");
+        var novnc = data.GetProperty("novnc");
         Assert.True(novnc.GetProperty("enabled").GetBoolean());
         Assert.Equal("available", novnc.GetProperty("status").GetString());
+        Assert.False(novnc.TryGetProperty("host", out _));
+        Assert.False(novnc.TryGetProperty("port", out _));
+        var card = data.GetProperty("console_access").GetProperty("novnc");
+        Assert.True(card.GetProperty("enabled").GetBoolean());
+        Assert.Equal("available", card.GetProperty("status").GetString());
+        Assert.Equal("available", card.GetProperty("reason_code").GetString());
+        Assert.False(card.TryGetProperty("host", out _));
+        Assert.False(card.TryGetProperty("port", out _));
+        Assert.False(card.TryGetProperty("allow_lan_target", out _));
     }
 
     [Fact]

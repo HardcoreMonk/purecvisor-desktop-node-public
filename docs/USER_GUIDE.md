@@ -294,9 +294,10 @@ Token Rotation 패널은 protected token file root `%ProgramData%\PureCVisor\des
 Diagnostic Bundle 패널은 `%ProgramData%\PureCVisor\desktop-node\diagnostics` 출력 root, server-side bundle API, `CollectDiagnostics` product wrapper fallback, redaction boundary를 표시한다. 설치 listener가 diagnostic bundle API를 제공하면 Web Console에서 bundle 목록 조회, create, download를 실행할 수 있고, CLI에서는 `pcvcli --json diagnostics bundle list --limit 10 --offset 0`으로 같은 metadata 목록을 조회해 반환된 `bundle_id`를 download command 입력으로 사용한다. 지원되지 않는 listener에서는 product wrapper 수동 수집 절차를 안내한다. 목록은 최신순이며 기본 `limit=10`, `offset=0`, 최대 `limit=100` pagination을 사용한다. 응답은 `count`, `returned`, `next_offset`, bundle ID/시각/크기/download URL을 포함한다. 조회 시 기본 14일/최대 50개 retention을 적용하므로 만료·초과 bundle 파일이 diagnostics root에서 제거될 수 있다. 이 화면은 Hyper-V/VM, Event Log source registration, firewall rule, trust-store, MSI, service lifecycle, reboot, Task Scheduler 작업을 실행하지 않는다.
 
 Console capability card의 전역 capability discovery는 API/Web Console 전용이며 `GET /api/v1/console/capabilities`로 listener의 local `vmconnect`
-handoff와 optional noVNC bridge 상태를 조회한다. `console-access-card.v1`의 status,
-`console.view` permission, token redaction, WebSocket path template, 다음 조치를 표시할 뿐 console
-프로세스나 browser stream을 자동 생성하지 않는다. VM을 선택한 뒤 `GET
+handoff와 optional noVNC bridge 상태를 조회한다. `console-access-card.v1`의 enabled/status/
+`reason_code`, `console.view` permission, token redaction, WebSocket path template, 다음 조치를 표시할 뿐 console
+프로세스나 browser stream을 자동 생성하지 않는다. Web Console은 target host/port 저장 폼과 LAN
+토글을 열지 않는다. target 설정은 `pcvcli console novnc-target set|clear --yes`다. VM을 선택한 뒤 `GET
 /api/v1/vms/{id}/console` 또는 `pcvcli vm console|vnc <vm>`으로 실제 VM별 session/handoff
 metadata를 조회한다. noVNC가 `not_configured`이면 local Hyper-V `vmconnect`를 사용한다.
 

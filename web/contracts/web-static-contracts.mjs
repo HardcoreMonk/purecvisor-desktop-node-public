@@ -970,11 +970,20 @@ function verifyAccountRbacConsole(context) {
   assertSourceAndGenerated(context, consoleSource, app, [
     [/function\s+renderConsolePanel\s*\(/i, "render-console"],
     [/noVNC/i, "novnc"],
-    [/vmconnect/i, "vmconnect"]
+    [/vmconnect/i, "vmconnect"],
+    [/noVNC enabled/i, "novnc-enabled"],
+    [/noVNC status/i, "novnc-status"],
+    [/noVNC reason_code/i, "novnc-reason-code"],
+    [/no target save form/i, "no-save-form"],
+    [/CLI\/API configure only/i, "cli-api-configure"]
   ], "account-rbac-console");
   context.assertNotMatch(index, /access_token\s*[:=]/i, "account-rbac-console:no-literal-access-token");
   context.assertNotMatch(servedSource, /\/auth\/token|\/ws\/events/i, "account-rbac-console:no-forbidden-auth-routes:source");
   context.assertNotMatch(app, /\/auth\/token|\/ws\/events/i, "account-rbac-console:no-forbidden-auth-routes:generated");
+  context.assertNotMatch(servedSource, /\/api\/v1\/console\/novnc-target/i, "account-rbac-console:no-novnc-target-route:source");
+  context.assertNotMatch(app, /\/api\/v1\/console\/novnc-target/i, "account-rbac-console:no-novnc-target-route:generated");
+  context.assertNotMatch(servedSource, /name="novnc-host"|name="novnc-port"|allow_lan_target/i, "account-rbac-console:no-novnc-target-fields:source");
+  context.assertNotMatch(app, /name="novnc-host"|name="novnc-port"|allow_lan_target/i, "account-rbac-console:no-novnc-target-fields:generated");
 }
 
 function verifyListenerApiBase(context) {

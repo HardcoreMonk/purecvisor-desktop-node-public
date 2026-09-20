@@ -2,7 +2,7 @@
 
 - Design-ID: `purecvisor-desktop-node-p2-novnc-target-config-v1`
 - 작성일: `2026-09-21`
-- 문서 상태: `implemented-slice-3`
+- 문서 상태: `implemented-slice-4`
 - 소스 기획: `docs/SERVICE_PLAN.md` §7.1 P2-11
 - 선행: ADR-0010 후보, `GET /api/v1/console/capabilities`, Host `--novnc-target-host`/`--novnc-target-port`
 - host mutation: `false`
