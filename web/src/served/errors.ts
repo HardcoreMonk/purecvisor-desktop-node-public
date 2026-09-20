@@ -14,6 +14,7 @@ function asArray(value: any): any[] {
   if (Array.isArray(value?.bundles)) return value.bundles;
   if (Array.isArray(value?.checkpoints)) return value.checkpoints;
   if (Array.isArray(value?.jobs)) return value.jobs;
+  if (Array.isArray(value?.accounts)) return value.accounts;
   if (value && typeof value === 'object') {
     return Object.values(value).filter((item) => item && typeof item === 'object');
   }
@@ -51,6 +52,26 @@ function buildVmManageConfirmation(vmId: string, vm: any): string {
     'Unmanaged delete refusal remains.',
     'This queues a Hyper-V Notes managed-marker mutation.',
     'The result will appear in Tracked Jobs.'
+  ].join('\n');
+}
+
+function buildAccountCreateConfirmation(username: string, role: string, bootstrap: boolean): string {
+  return [
+    bootstrap ? `Create the first admin account ${username}?` : `Create account ${username}?`,
+    `Role: ${role}`,
+    bootstrap
+      ? 'After success loopback session is closed. Login with this admin account.'
+      : 'The account is stored in accounts.json. Password is not shown again.',
+    'No default password is generated.'
+  ].join('\n');
+}
+
+function buildAccountDisableConfirmation(username: string): string {
+  return [
+    `Disable account ${username}?`,
+    'The last enabled admin cannot be disabled.',
+    'Login for this username will fail after success.',
+    'This does not delete the account record.'
   ].join('\n');
 }
 

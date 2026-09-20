@@ -244,6 +244,15 @@ const desktopApi: Readonly<PcvDesktopApi> = Object.freeze({
   } as RequestInit & { skipAuth: boolean }),
   getAccountSession: (options = {}) => apiFetch(DESKTOP_NODE_API_ROUTES.authSession, options),
   getAccountRbac: (options = {}) => apiFetch(DESKTOP_NODE_API_ROUTES.authRbac, options),
+  listAccounts: (options = {}) => apiFetch(DESKTOP_NODE_API_ROUTES.accounts, options),
+  createAccount: (payload: Record<string, unknown>) => apiFetch(DESKTOP_NODE_API_ROUTES.accounts, {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  }),
+  disableAccount: (username: string, payload: Record<string, unknown>) => apiFetch(DESKTOP_NODE_API_ROUTES.accountDisable(username), {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  }),
   getConsoleCapabilities: (options = {}) => apiFetch(DESKTOP_NODE_API_ROUTES.consoleCapabilities, options),
   getVmConsole: (vmId: string, options = {}) => apiFetch(DESKTOP_NODE_API_ROUTES.vmConsole(vmId), options)
 });

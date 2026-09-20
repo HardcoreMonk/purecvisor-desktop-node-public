@@ -943,7 +943,12 @@ function verifyAccountRbacConsole(context) {
     [/\/api\/v1\/auth\/rbac/i, "rbac-route"],
     [/\/api\/v1\/console\/capabilities/i, "console-capabilities"],
     [/\/api\/v1\/vms\/\$\{encodeRouteSegment\(vmId\)\}\/console/i, "vm-console-route"],
-    [/id:\s*['"]auth\.logout['"]/i, "logout-action"]
+    [/id:\s*['"]auth\.logout['"]/i, "logout-action"],
+    [/id:\s*['"]account\.list['"]/i, "account-list-coverage"],
+    [/id:\s*['"]account\.create['"]/i, "account-create-coverage"],
+    [/id:\s*['"]account\.disable['"]/i, "account-disable-coverage"],
+    [/\/api\/v1\/accounts/i, "accounts-route"],
+    [/\/api\/v1\/accounts\/\$\{encodeRouteSegment\(username\)\}\/disable/i, "account-disable-route"]
   ], "account-rbac-console");
   assertSourceAndGenerated(context, actionsSource, app, [
     [/function\s+ensureLoopbackSession\s*\(/i, "ensure-loopback-session"],
@@ -957,7 +962,10 @@ function verifyAccountRbacConsole(context) {
     [/function\s+rbacAllows\s*\(/i, "rbac-allows"]
   ], "account-rbac-console");
   assertSourceAndGenerated(context, panelsSource, app, [
-    [/function\s+renderAccountSession\s*\(/i, "render-session"]
+    [/function\s+renderAccountSession\s*\(/i, "render-session"],
+    [/id="account-create-form"/i, "create-form"],
+    [/data-action="account-disable"/i, "disable-action"],
+    [/Create first admin/i, "bootstrap-label"]
   ], "account-rbac-console");
   assertSourceAndGenerated(context, consoleSource, app, [
     [/function\s+renderConsolePanel\s*\(/i, "render-console"],

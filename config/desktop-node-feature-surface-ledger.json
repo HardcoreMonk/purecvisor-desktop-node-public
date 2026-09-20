@@ -491,20 +491,19 @@
           "required_permission": "account.manage",
           "present_surfaces": [
             "api",
-            "cli"
+            "cli",
+            "web"
           ],
-          "excluded_surfaces": [
-            {
-              "surface": "web",
-              "reason": "P1-9 slice 3 ships API/CLI account list; Web control is a later slice."
-            }
-          ],
+          "excluded_surfaces": [],
           "surface_bindings": {
             "cli": {
               "command": [
                 "account",
                 "list"
               ]
+            },
+            "web": {
+              "coverage_id": "account.list"
             }
           }
         },
@@ -515,14 +514,10 @@
           "required_permission": "account.manage",
           "present_surfaces": [
             "api",
-            "cli"
+            "cli",
+            "web"
           ],
-          "excluded_surfaces": [
-            {
-              "surface": "web",
-              "reason": "P1-9 slice 3 ships API/CLI account create; Web control is a later slice."
-            }
-          ],
+          "excluded_surfaces": [],
           "surface_bindings": {
             "cli": {
               "command": [
@@ -536,6 +531,9 @@
                 "PCV_ACCOUNT_PASSWORD",
                 "--yes"
               ]
+            },
+            "web": {
+              "coverage_id": "account.create"
             }
           }
         },
@@ -546,14 +544,10 @@
           "required_permission": "account.manage",
           "present_surfaces": [
             "api",
-            "cli"
+            "cli",
+            "web"
           ],
-          "excluded_surfaces": [
-            {
-              "surface": "web",
-              "reason": "P1-9 slice 3 ships API/CLI account disable; Web control is a later slice."
-            }
-          ],
+          "excluded_surfaces": [],
           "surface_bindings": {
             "cli": {
               "command": [
@@ -562,6 +556,9 @@
                 "lab-operator",
                 "--yes"
               ]
+            },
+            "web": {
+              "coverage_id": "account.disable"
             }
           }
         }

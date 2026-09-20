@@ -38,6 +38,16 @@ function rbacAllows(permission) {
   return permissions.includes('*') || permissions.includes(permission);
 }
 
+function isAccountBootstrapOpen() {
+  const mode = String(readNested(state.runtimePolicy || {}, ['auth', 'mode']) || '').toLowerCase();
+  return mode.includes('not_configured') ||
+    String(state.accountDirectory?.bootstrap_state || '') === 'no-default-account';
+}
+
+function canManageAccounts() {
+  return rbacAllows('account.manage');
+}
+
 function requireRbac(permission, actionLabel = 'this action') {
   if (rbacAllows(permission)) return;
   throw normalizeError({

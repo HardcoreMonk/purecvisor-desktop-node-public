@@ -31,6 +31,7 @@ async function refreshAll() {
       { label: 'network.inventory', run: () => loadNetworkInventory(requestOptions) },
       { label: 'runtime.policy', run: () => loadRuntimePolicy(requestOptions) },
       { label: 'auth.session', run: () => loadAccountSession(requestOptions) },
+      { label: 'account.list', run: () => loadAccountDirectory(requestOptions) },
       { label: 'console.capabilities', run: () => loadConsoleCapabilities(requestOptions) },
       { label: 'job.list', run: () => loadServerJobs(requestOptions) },
       { label: 'diagnostic.bundle.list', run: () => loadDiagnosticBundleList(requestOptions) },

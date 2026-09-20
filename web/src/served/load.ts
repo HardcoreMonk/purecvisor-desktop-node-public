@@ -51,6 +51,22 @@ async function loadAccountSession(options = {}) {
   }
 }
 
+async function loadAccountDirectory(options = {}) {
+  if (!state.authAccessToken.trim() && !state.apiToken.trim()) {
+    state.accountDirectory = null;
+    state.accountDirectoryError = null;
+    return;
+  }
+
+  try {
+    state.accountDirectory = await desktopApi.listAccounts(options);
+    state.accountDirectoryError = null;
+  } catch (error) {
+    state.accountDirectoryError = normalizeError(error);
+    state.accountDirectory = null;
+  }
+}
+
 async function loadConsoleCapabilities(options = {}) {
   state.consoleError = null;
   try {

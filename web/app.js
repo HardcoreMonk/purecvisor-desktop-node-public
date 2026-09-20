@@ -17,6 +17,9 @@ const state = {
     authRbac: null,
     authError: null,
     authPending: false,
+    accountDirectory: null,
+    accountDirectoryError: null,
+    accountManagePending: false,
     activeView: 'dashboard',
     host: null,
     vms: [],
@@ -182,6 +185,8 @@ const DESKTOP_NODE_API_ROUTES = Object.freeze({
     authLogout: '/api/v1/auth/logout',
     authSession: '/api/v1/auth/session',
     authRbac: '/api/v1/auth/rbac',
+    accounts: '/api/v1/accounts',
+    accountDisable: (username) => `/api/v1/accounts/${encodeRouteSegment(username)}/disable`,
     consoleCapabilities: '/api/v1/console/capabilities',
     jobsPage: (limit = 50, offset = 0) => `/api/v1/jobs?limit=${encodeRouteQueryValue(limit)}&offset=${encodeRouteQueryValue(offset)}`,
     diagnosticBundlesPage: (limit = 10, offset = 0) => `/api/v1/diagnostics/bundles?limit=${encodeRouteQueryValue(limit)}&offset=${encodeRouteQueryValue(offset)}`,
@@ -260,6 +265,9 @@ const DESKTOP_NODE_ROUTE_COVERAGE = Object.freeze([
     { id: 'auth.logout', featureId: 'pcv.account.session', method: 'POST', route: DESKTOP_NODE_API_ROUTES.authLogout, view: 'troubleshooting', mutating: false, tokenRequired: false },
     { id: 'auth.session', featureId: 'pcv.account.session', method: 'GET', route: DESKTOP_NODE_API_ROUTES.authSession, view: 'troubleshooting', mutating: false, tokenRequired: true },
     { id: 'auth.rbac', featureId: 'pcv.account.session', method: 'GET', route: DESKTOP_NODE_API_ROUTES.authRbac, view: 'troubleshooting', mutating: false, tokenRequired: true },
+    { id: 'account.list', featureId: 'pcv.account.session', method: 'GET', route: DESKTOP_NODE_API_ROUTES.accounts, view: 'troubleshooting', mutating: false, tokenRequired: true },
+    { id: 'account.create', featureId: 'pcv.account.session', method: 'POST', route: DESKTOP_NODE_API_ROUTES.accounts, view: 'troubleshooting', mutating: true, tokenRequired: true },
+    { id: 'account.disable', featureId: 'pcv.account.session', method: 'POST', route: '/api/v1/accounts/{username}/disable', view: 'troubleshooting', mutating: true, tokenRequired: true },
     { id: 'console.capabilities', featureId: 'pcv.console.capabilities', method: 'GET', route: DESKTOP_NODE_API_ROUTES.consoleCapabilities, view: 'troubleshooting', mutating: false, tokenRequired: true },
     { id: 'console.session', featureId: 'pcv.vm.console-handoff', method: 'GET', route: '/api/v1/vms/{vm_id}/console', view: 'vms', mutating: false, tokenRequired: true }
 ]);
@@ -302,6 +310,8 @@ function asArray(value) {
         return value.checkpoints;
     if (Array.isArray(value?.jobs))
         return value.jobs;
+    if (Array.isArray(value?.accounts))
+        return value.accounts;
     if (value && typeof value === 'object') {
         return Object.values(value).filter((item) => item && typeof item === 'object');
     }
@@ -333,6 +343,24 @@ function buildVmManageConfirmation(vmId, vm) {
         'Unmanaged delete refusal remains.',
         'This queues a Hyper-V Notes managed-marker mutation.',
         'The result will appear in Tracked Jobs.'
+    ].join('\n');
+}
+function buildAccountCreateConfirmation(username, role, bootstrap) {
+    return [
+        bootstrap ? `Create the first admin account ${username}?` : `Create account ${username}?`,
+        `Role: ${role}`,
+        bootstrap
+            ? 'After success loopback session is closed. Login with this admin account.'
+            : 'The account is stored in accounts.json. Password is not shown again.',
+        'No default password is generated.'
+    ].join('\n');
+}
+function buildAccountDisableConfirmation(username) {
+    return [
+        `Disable account ${username}?`,
+        'The last enabled admin cannot be disabled.',
+        'Login for this username will fail after success.',
+        'This does not delete the account record.'
     ].join('\n');
 }
 function buildVmGuestFileConfirmation(vmId, payload, preview) {
@@ -783,6 +811,15 @@ const desktopApi = Object.freeze({
     }),
     getAccountSession: (options = {}) => apiFetch(DESKTOP_NODE_API_ROUTES.authSession, options),
     getAccountRbac: (options = {}) => apiFetch(DESKTOP_NODE_API_ROUTES.authRbac, options),
+    listAccounts: (options = {}) => apiFetch(DESKTOP_NODE_API_ROUTES.accounts, options),
+    createAccount: (payload) => apiFetch(DESKTOP_NODE_API_ROUTES.accounts, {
+        method: 'POST',
+        body: JSON.stringify(payload)
+    }),
+    disableAccount: (username, payload) => apiFetch(DESKTOP_NODE_API_ROUTES.accountDisable(username), {
+        method: 'POST',
+        body: JSON.stringify(payload)
+    }),
     getConsoleCapabilities: (options = {}) => apiFetch(DESKTOP_NODE_API_ROUTES.consoleCapabilities, options),
     getVmConsole: (vmId, options = {}) => apiFetch(DESKTOP_NODE_API_ROUTES.vmConsole(vmId), options)
 });
@@ -1160,6 +1197,14 @@ function rbacAllows(permission) {
         return true;
     const permissions = getAccountPermissions();
     return permissions.includes('*') || permissions.includes(permission);
+}
+function isAccountBootstrapOpen() {
+    const mode = String(readNested(state.runtimePolicy || {}, ['auth', 'mode']) || '').toLowerCase();
+    return mode.includes('not_configured') ||
+        String(state.accountDirectory?.bootstrap_state || '') === 'no-default-account';
+}
+function canManageAccounts() {
+    return rbacAllows('account.manage');
 }
 function requireRbac(permission, actionLabel = 'this action') {
     if (rbacAllows(permission))
@@ -2343,6 +2388,86 @@ function renderAccountSession() {
       <span>RBAC gates destructive actions</span>
     </div>
     ${errorHtml}
+  </div>
+  ${renderAccountDirectory()}`;
+}
+function renderAccountDirectory() {
+    const bootstrap = isAccountBootstrapOpen();
+    const canManage = canManageAccounts();
+    const pending = state.accountManagePending || state.authPending;
+    const disabledAttr = pending ? ' disabled' : '';
+    const directoryError = state.accountDirectoryError
+        ? `<div class="diagnostics-result error"><span class="muted">Accounts</span><strong>${escapeHtml(state.accountDirectoryError.code)}</strong><p>${escapeHtml(state.accountDirectoryError.message)} ${escapeHtml(state.accountDirectoryError.detail)}</p></div>`
+        : '';
+    if (bootstrap) {
+        return `<div class="token-rotation-card account-directory-card">
+    <div class="diagnostics-header">
+      <div>
+        <span class="muted">Accounts</span>
+        <strong>Create first admin</strong>
+      </div>
+      <span class="status-badge warn">no-default-account</span>
+    </div>
+    <form id="account-create-form" class="account-login-form" autocomplete="off">
+      <label>Username<input name="username" type="text" autocomplete="off" aria-label="new account username"${disabledAttr}></label>
+      <label>Password<input name="password" type="password" autocomplete="new-password" aria-label="new account password"${disabledAttr}></label>
+      <label>Display name<input name="display_name" type="text" autocomplete="off" aria-label="new account display name"${disabledAttr}></label>
+      <input type="hidden" name="role" value="admin">
+      <button type="submit"${disabledAttr}>Create first admin</button>
+    </form>
+    <div class="boundary-chip-row">
+      <span>loopback bootstrap only</span>
+      <span>password stays out of the DOM after submit</span>
+      <span>no default account</span>
+    </div>
+    ${directoryError}
+  </div>`;
+    }
+    if (!canManage) {
+        return '';
+    }
+    const accounts = asArray(state.accountDirectory);
+    const rows = accounts.length
+        ? accounts.map((account) => {
+            const username = String(account?.username || '');
+            const enabled = account?.enabled !== false;
+            return `<tr>
+        <td>${escapeHtml(username)}</td>
+        <td>${escapeHtml(account?.role || '-')}</td>
+        <td>${escapeHtml(enabled ? 'enabled' : 'disabled')}</td>
+        <td><button type="button" class="danger-button" data-action="account-disable" data-username="${escapeHtml(username)}"${pending || !enabled ? ' disabled' : ''}>Disable</button></td>
+      </tr>`;
+        }).join('')
+        : '<tr><td colspan="4">No accounts listed.</td></tr>';
+    return `<div class="token-rotation-card account-directory-card">
+    <div class="diagnostics-header">
+      <div>
+        <span class="muted">Accounts</span>
+        <strong>Create / disable</strong>
+      </div>
+      <span class="status-badge ok">${escapeHtml(state.accountDirectory?.bootstrap_state || 'accounts-configured')}</span>
+    </div>
+    <table class="data-table account-directory-table">
+      <thead><tr><th>Username</th><th>Role</th><th>State</th><th></th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <form id="account-create-form" class="account-login-form" autocomplete="off">
+      <label>Username<input name="username" type="text" autocomplete="off" aria-label="new account username"${disabledAttr}></label>
+      <label>Password<input name="password" type="password" autocomplete="new-password" aria-label="new account password"${disabledAttr}></label>
+      <label>Role<select name="role" aria-label="new account role"${disabledAttr}>
+        <option value="admin">admin</option>
+        <option value="operator">operator</option>
+        <option value="viewer">viewer</option>
+      </select></label>
+      <label>Display name<input name="display_name" type="text" autocomplete="off" aria-label="new account display name"${disabledAttr}></label>
+      <button type="submit"${disabledAttr}>Create account</button>
+    </form>
+    <div class="boundary-chip-row">
+      <span>account.manage required</span>
+      <span>last enabled admin cannot be disabled</span>
+      <span>password stays out of the DOM after submit</span>
+    </div>
+    ${directoryError}
   </div>`;
 }
 // --- src/served/render-console.ts ---
@@ -3229,6 +3354,21 @@ async function loadAccountSession(options = {}) {
         }
     }
 }
+async function loadAccountDirectory(options = {}) {
+    if (!state.authAccessToken.trim() && !state.apiToken.trim()) {
+        state.accountDirectory = null;
+        state.accountDirectoryError = null;
+        return;
+    }
+    try {
+        state.accountDirectory = await desktopApi.listAccounts(options);
+        state.accountDirectoryError = null;
+    }
+    catch (error) {
+        state.accountDirectoryError = normalizeError(error);
+        state.accountDirectory = null;
+    }
+}
 async function loadConsoleCapabilities(options = {}) {
     state.consoleError = null;
     try {
@@ -4006,6 +4146,7 @@ async function refreshAll() {
             { label: 'network.inventory', run: () => loadNetworkInventory(requestOptions) },
             { label: 'runtime.policy', run: () => loadRuntimePolicy(requestOptions) },
             { label: 'auth.session', run: () => loadAccountSession(requestOptions) },
+            { label: 'account.list', run: () => loadAccountDirectory(requestOptions) },
             { label: 'console.capabilities', run: () => loadConsoleCapabilities(requestOptions) },
             { label: 'job.list', run: () => loadServerJobs(requestOptions) },
             { label: 'diagnostic.bundle.list', run: () => loadDiagnosticBundleList(requestOptions) },
@@ -4445,6 +4586,69 @@ async function logoutAccount() {
         render();
     }
 }
+async function createAccountFromForm(event) {
+    event.preventDefault();
+    const form = event.target.closest('form#account-create-form') || event.currentTarget;
+    const data = new FormData(form);
+    const username = String(data.get('username') || '').trim();
+    const password = String(data.get('password') || '');
+    const role = String(data.get('role') || 'admin').trim() || 'admin';
+    const displayName = String(data.get('display_name') || '').trim();
+    const bootstrap = isAccountBootstrapOpen();
+    if (!window.confirm(buildAccountCreateConfirmation(username, role, bootstrap))) {
+        return;
+    }
+    state.accountManagePending = true;
+    state.accountDirectoryError = null;
+    render();
+    try {
+        const payload = {
+            username,
+            password,
+            role: bootstrap ? 'admin' : role,
+            display_name: displayName || undefined
+        };
+        await desktopApi.createAccount(payload);
+        const passwordInput = form.querySelector('input[name="password"]');
+        if (passwordInput)
+            passwordInput.value = '';
+        if (bootstrap) {
+            const result = await desktopApi.loginAccount({ username, password });
+            applyAccountSessionPayload(result);
+            state.connectionState = 'connected';
+        }
+        await refreshAll();
+    }
+    catch (error) {
+        state.accountDirectoryError = normalizeError(error);
+    }
+    finally {
+        state.accountManagePending = false;
+        render();
+    }
+}
+async function disableAccountFromButton(username) {
+    const name = String(username || '').trim();
+    if (!name)
+        return;
+    if (!window.confirm(buildAccountDisableConfirmation(name))) {
+        return;
+    }
+    state.accountManagePending = true;
+    state.accountDirectoryError = null;
+    render();
+    try {
+        await desktopApi.disableAccount(name, { confirm_username: name });
+        await refreshAll();
+    }
+    catch (error) {
+        state.accountDirectoryError = normalizeError(error);
+    }
+    finally {
+        state.accountManagePending = false;
+        render();
+    }
+}
 async function openSelectedConsole() {
     const vmId = state.selectedVmId;
     requireRbac('console.view', 'console view');
@@ -4582,10 +4786,13 @@ function bindEvents() {
         }
     });
     els.accountSessionPanel?.addEventListener('submit', async (event) => {
-        const form = event.target.closest('form#account-login-form');
-        if (!form)
+        if (event.target.closest('form#account-login-form')) {
+            await loginAccountFromForm(event);
             return;
-        await loginAccountFromForm(event);
+        }
+        if (event.target.closest('form#account-create-form')) {
+            await createAccountFromForm(event);
+        }
     });
     els.accountSessionPanel?.addEventListener('click', async (event) => {
         const button = event.target.closest('button[data-action]');
@@ -4597,6 +4804,9 @@ function bindEvents() {
             }
             else if (button.dataset.action === 'account-logout') {
                 await logoutAccount();
+            }
+            else if (button.dataset.action === 'account-disable') {
+                await disableAccountFromButton(button.dataset.username);
             }
         }
         catch (error) {

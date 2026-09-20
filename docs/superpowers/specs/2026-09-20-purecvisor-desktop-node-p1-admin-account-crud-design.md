@@ -2,7 +2,7 @@
 
 - Design-ID: `purecvisor-desktop-node-p1-admin-account-crud-v1`
 - 작성일: `2026-09-20`
-- 문서 상태: `implemented-slice-3`
+- 문서 상태: `implemented-slice-4`
 - 소스 기획: `docs/SERVICE_PLAN.md` §7.1 P1-9
 - 선행: `pcv.account.session` login/refresh/logout/session/rbac, loopback session, `no-default-account` bootstrap
 - host mutation: `false`

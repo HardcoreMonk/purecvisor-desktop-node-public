@@ -48,9 +48,13 @@ function bindEvents() {
     }
   });
   els.accountSessionPanel?.addEventListener('submit', async (event) => {
-    const form = event.target.closest('form#account-login-form');
-    if (!form) return;
-    await loginAccountFromForm(event);
+    if (event.target.closest('form#account-login-form')) {
+      await loginAccountFromForm(event);
+      return;
+    }
+    if (event.target.closest('form#account-create-form')) {
+      await createAccountFromForm(event);
+    }
   });
   els.accountSessionPanel?.addEventListener('click', async (event) => {
     const button = event.target.closest('button[data-action]');
@@ -60,6 +64,8 @@ function bindEvents() {
         await refreshAccountSession();
       } else if (button.dataset.action === 'account-logout') {
         await logoutAccount();
+      } else if (button.dataset.action === 'account-disable') {
+        await disableAccountFromButton(button.dataset.username);
       }
     } catch (error) {
       state.authError = normalizeError(error);

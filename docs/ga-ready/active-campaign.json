@@ -8,7 +8,7 @@
   "allowed_lanes": ["0", "1", "2"],
   "mutation_allowed": true,
   "current_write_allowed": false,
-  "next_step": "P1-9 slice 3 HTTP/CLI account CRUD is in source_head. Next is slice 4 Web account create/disable. Host mutation is allowed; do not open Hyper-V recovery or write current-evidence unless named.",
+  "next_step": "P1-9 Web account CRUD is in source_head. Next is P1-10 remaining reconcile design. Host mutation is allowed; do not open Hyper-V recovery or write current-evidence unless named.",
   "stop_on": [
     "same-cause-fail-3",
     "budget",

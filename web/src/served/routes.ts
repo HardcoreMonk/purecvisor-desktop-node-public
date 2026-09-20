@@ -14,6 +14,8 @@ const DESKTOP_NODE_API_ROUTES: Readonly<PcvRouteRegistry> = Object.freeze({
   authLogout: '/api/v1/auth/logout',
   authSession: '/api/v1/auth/session',
   authRbac: '/api/v1/auth/rbac',
+  accounts: '/api/v1/accounts',
+  accountDisable: (username: string) => `/api/v1/accounts/${encodeRouteSegment(username)}/disable`,
   consoleCapabilities: '/api/v1/console/capabilities',
   jobsPage: (limit = 50, offset = 0) => `/api/v1/jobs?limit=${encodeRouteQueryValue(limit)}&offset=${encodeRouteQueryValue(offset)}`,
   diagnosticBundlesPage: (limit = 10, offset = 0) => `/api/v1/diagnostics/bundles?limit=${encodeRouteQueryValue(limit)}&offset=${encodeRouteQueryValue(offset)}`,
@@ -93,6 +95,9 @@ const DESKTOP_NODE_ROUTE_COVERAGE: ReadonlyArray<PcvRouteCoverageItem> = Object.
   { id: 'auth.logout', featureId: 'pcv.account.session', method: 'POST', route: DESKTOP_NODE_API_ROUTES.authLogout, view: 'troubleshooting', mutating: false, tokenRequired: false },
   { id: 'auth.session', featureId: 'pcv.account.session', method: 'GET', route: DESKTOP_NODE_API_ROUTES.authSession, view: 'troubleshooting', mutating: false, tokenRequired: true },
   { id: 'auth.rbac', featureId: 'pcv.account.session', method: 'GET', route: DESKTOP_NODE_API_ROUTES.authRbac, view: 'troubleshooting', mutating: false, tokenRequired: true },
+  { id: 'account.list', featureId: 'pcv.account.session', method: 'GET', route: DESKTOP_NODE_API_ROUTES.accounts, view: 'troubleshooting', mutating: false, tokenRequired: true },
+  { id: 'account.create', featureId: 'pcv.account.session', method: 'POST', route: DESKTOP_NODE_API_ROUTES.accounts, view: 'troubleshooting', mutating: true, tokenRequired: true },
+  { id: 'account.disable', featureId: 'pcv.account.session', method: 'POST', route: '/api/v1/accounts/{username}/disable', view: 'troubleshooting', mutating: true, tokenRequired: true },
   { id: 'console.capabilities', featureId: 'pcv.console.capabilities', method: 'GET', route: DESKTOP_NODE_API_ROUTES.consoleCapabilities, view: 'troubleshooting', mutating: false, tokenRequired: true },
   { id: 'console.session', featureId: 'pcv.vm.console-handoff', method: 'GET', route: '/api/v1/vms/{vm_id}/console', view: 'vms', mutating: false, tokenRequired: true }
 ]);

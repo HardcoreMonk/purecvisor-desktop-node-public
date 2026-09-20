@@ -33,6 +33,8 @@ interface PcvRouteRegistry {
   authLogout: string;
   authSession: string;
   authRbac: string;
+  accounts: string;
+  accountDisable(username: string): string;
   consoleCapabilities: string;
   jobsPage(limit?: number, offset?: number): string;
   diagnosticBundlesPage(limit?: number, offset?: number): string;
@@ -119,6 +121,9 @@ interface PcvDesktopApi {
   logoutAccount(payload?: Record<string, unknown>): Promise<any>;
   getAccountSession(options?: RequestInit): Promise<any>;
   getAccountRbac(options?: RequestInit): Promise<any>;
+  listAccounts(options?: RequestInit): Promise<any>;
+  createAccount(payload: Record<string, unknown>): Promise<any>;
+  disableAccount(username: string, payload: Record<string, unknown>): Promise<any>;
   getConsoleCapabilities(options?: RequestInit): Promise<any>;
   getVmConsole(vmId: string, options?: RequestInit): Promise<any>;
 }
@@ -138,6 +143,9 @@ interface PcvState {
   authRbac: any;
   authError: PcvNormalizedError | null;
   authPending: boolean;
+  accountDirectory: any;
+  accountDirectoryError: PcvNormalizedError | null;
+  accountManagePending: boolean;
   activeView: PcvView;
   host: any;
   vms: any[];
