@@ -94,7 +94,8 @@ public sealed record DesktopNodeConsoleOptions(
     bool NoVncEnabled = false,
     string? NoVncWebSocketPath = null,
     string NoVncBridgeMode = "disabled",
-    bool AllowLan = false);
+    bool AllowLan = false,
+    string? NoVncTargetFilePath = null);
 
 public static class DesktopNodeAccountPassword
 {

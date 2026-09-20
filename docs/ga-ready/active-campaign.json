@@ -8,7 +8,7 @@
   "allowed_lanes": ["0", "1", "2"],
   "mutation_allowed": true,
   "current_write_allowed": false,
-  "next_step": "P2-11 slice 2 noVNC target preview HTTP/CLI is in source_head. Next is slice 3 queued set/clear. Host mutation is allowed; do not open Hyper-V recovery or write current-evidence unless named.",
+  "next_step": "P2-11 slice 3 queued noVNC set/clear persist and reload is in source_head. Next is slice 4 Web Console Access Card readback only (no save form). Host mutation is allowed; do not open Hyper-V recovery, ADR-0010 promotion, or write current-evidence unless named.",
   "stop_on": [
     "same-cause-fail-3",
     "budget",

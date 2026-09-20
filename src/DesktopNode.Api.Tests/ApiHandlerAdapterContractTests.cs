@@ -71,8 +71,8 @@ public sealed class ApiHandlerAdapterContractTests
 
         var contract = ApiHandlerAdapterContract.CreateDefault();
         Assert.Equal(28, featureIds.Count);
-        Assert.Equal(69, ledgerRoutes.Count);
-        Assert.Equal(69, contract.Routes.Count);
+        Assert.Equal(71, ledgerRoutes.Count);
+        Assert.Equal(71, contract.Routes.Count);
         foreach (var route in contract.Routes)
         {
             Assert.Matches("^pcv\\.[a-z0-9._-]+$", route.FeatureId);
@@ -111,8 +111,8 @@ public sealed class ApiHandlerAdapterContractTests
         var contract = ApiHandlerAdapterContract.CreateDefault();
         var routes = contract.Routes.ToDictionary(route => (route.Method, route.RouteTemplate));
 
-        Assert.Equal(69, contract.Routes.Count);
-        Assert.Equal(69, routes.Count);
+        Assert.Equal(71, contract.Routes.Count);
+        Assert.Equal(71, routes.Count);
 
         AssertRoute(routes[("GET", "/api/v1/runtime/policy")], "GET", "RuntimePolicy", MutationStance.ReadOnly);
         AssertRoute(routes[("GET", "/api/v1/host/status")], "GET", "HostStatus", MutationStance.ReadOnly);
@@ -140,6 +140,8 @@ public sealed class ApiHandlerAdapterContractTests
         AssertRoute(routes[("GET", "/api/v1/vms/{vmId}")], "GET", "GetVm", MutationStance.ReadOnly);
         AssertRoute(routes[("GET", "/api/v1/vms/{vmId}/console")], "GET", "GetVmConsoleSession", MutationStance.ReadOnly);
         AssertRoute(routes[("POST", "/api/v1/console/novnc-target/preview")], "POST", "PreviewNoVncTarget", MutationStance.ProductOperation);
+        AssertRoute(routes[("POST", "/api/v1/console/novnc-target")], "POST", "QueueSetNoVncTarget", MutationStance.QueuedMutation);
+        AssertRoute(routes[("POST", "/api/v1/console/novnc-target/clear")], "POST", "QueueClearNoVncTarget", MutationStance.QueuedMutation);
         AssertRoute(routes[("GET", "/api/v1/vms/{vmId}/memory-stats")], "GET", "GetVmMemoryStats", MutationStance.ReadOnly);
         AssertRoute(routes[("GET", "/api/v1/vms/{vmId}/cpu-stats")], "GET", "GetVmCpuStats", MutationStance.ReadOnly);
         AssertRoute(routes[("GET", "/api/v1/vms/{vmId}/blkio")], "GET", "GetVmBlockIoPolicy", MutationStance.ReadOnly);
@@ -192,7 +194,7 @@ public sealed class ApiHandlerAdapterContractTests
         AssertRoute(routes[("POST", "/api/v1/vms/{vmId}/disk-resize")], "POST", "QueueResizeVmDisk", MutationStance.QueuedMutation);
         AssertRoute(routes[("DELETE", "/api/v1/vms/{vmId}")], "DELETE", "QueueDeleteVm", MutationStance.QueuedMutation);
         Assert.Equal(17, contract.Routes.Count(route => route.MutationStance == MutationStance.ProductOperation));
-        Assert.Equal(29, contract.Routes.Count(route => route.MutationStance == MutationStance.QueuedMutation));
+        Assert.Equal(31, contract.Routes.Count(route => route.MutationStance == MutationStance.QueuedMutation));
         Assert.DoesNotContain(contract.Routes, route => route.RouteTemplate == "/api/v1/vms/{vmId}/lifecycle/{action}");
         Assert.DoesNotContain(contract.Routes, route => route.RouteTemplate.Contains("/evidence", StringComparison.OrdinalIgnoreCase));
     }
@@ -219,10 +221,10 @@ public sealed class ApiHandlerAdapterContractTests
                 System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(snapshot)))
             .ToLowerInvariant();
 
-        Assert.Equal("8e6eb61af8042c81d68abdd1c29040f635a2c8be886e2c9f7c1ebc26e0f247d0", digest);
+        Assert.Equal("38d442922b3ce6344f5be454e9254f82cca2da4b562083f3adbf368d0fef5417", digest);
         Assert.Equal(23, routes.Count(route => route.MutationStance == MutationStance.ReadOnly));
         Assert.Equal(17, routes.Count(route => route.MutationStance == MutationStance.ProductOperation));
-        Assert.Equal(29, routes.Count(route => route.MutationStance == MutationStance.QueuedMutation));
+        Assert.Equal(31, routes.Count(route => route.MutationStance == MutationStance.QueuedMutation));
         Assert.Equal(13, routes.Select(route => route.RouteFamily).Distinct(StringComparer.Ordinal).Count());
     }
 
@@ -245,7 +247,11 @@ public sealed class ApiHandlerAdapterContractTests
             });
         Assert.All(
             queuedMutations,
-            route => Assert.Equal("dotnet-native-adapter", route.DefaultOwner));
+            route => Assert.Equal(
+                string.Equals(route.RouteFamily, "console", StringComparison.Ordinal)
+                    ? "dotnet-runtime"
+                    : "dotnet-native-adapter",
+                route.DefaultOwner));
 
         var productOperations = contract.Routes.Where(route => route.MutationStance == MutationStance.ProductOperation).ToArray();
         Assert.All(
@@ -327,6 +333,15 @@ public sealed class ApiHandlerAdapterContractTests
             routes[("GET", "/api/v1/vms/{vmId}/console")].DefaultOwner);
         Assert.Equal(
             "dotnet-runtime",
+            routes[("POST", "/api/v1/console/novnc-target/preview")].DefaultOwner);
+        Assert.Equal(
+            "dotnet-runtime",
+            routes[("POST", "/api/v1/console/novnc-target")].DefaultOwner);
+        Assert.Equal(
+            "dotnet-runtime",
+            routes[("POST", "/api/v1/console/novnc-target/clear")].DefaultOwner);
+        Assert.Equal(
+            "dotnet-runtime",
             routes[("GET", "/api/v1/vms/{vmId}/delete-status")].DefaultOwner);
         Assert.Equal(
             "dotnet-runtime",
@@ -393,7 +408,11 @@ public sealed class ApiHandlerAdapterContractTests
             routes[("DELETE", "/api/v1/vms/{vmId}")].DefaultOwner);
         Assert.All(
             contract.Routes.Where(route => route.MutationStance == MutationStance.QueuedMutation),
-            route => Assert.Equal("dotnet-native-adapter", route.DefaultOwner));
+            route => Assert.Equal(
+                string.Equals(route.RouteFamily, "console", StringComparison.Ordinal)
+                    ? "dotnet-runtime"
+                    : "dotnet-native-adapter",
+                route.DefaultOwner));
 
         var serialized = JsonSerializer.Serialize(contract);
         Assert.DoesNotContain("powershell", serialized, StringComparison.OrdinalIgnoreCase);
@@ -467,6 +486,9 @@ public sealed class ApiHandlerAdapterContractTests
         Assert.Equal("auth", routes[("GET", "/api/v1/auth/rbac")].RouteFamily);
         Assert.Equal("console", routes[("GET", "/api/v1/console/capabilities")].RouteFamily);
         Assert.Equal("console", routes[("GET", "/api/v1/vms/{vmId}/console")].RouteFamily);
+        Assert.Equal("console", routes[("POST", "/api/v1/console/novnc-target/preview")].RouteFamily);
+        Assert.Equal("console", routes[("POST", "/api/v1/console/novnc-target")].RouteFamily);
+        Assert.Equal("console", routes[("POST", "/api/v1/console/novnc-target/clear")].RouteFamily);
 
         Assert.Equal("hyperv-host", routes[("GET", "/api/v1/host/status")].RouteFamily);
         Assert.Equal("hyperv-network", routes[("GET", "/api/v1/network/inventory")].RouteFamily);
@@ -508,6 +530,9 @@ public sealed class ApiHandlerAdapterContractTests
         Assert.Equal("guest.channel.configure", routes[("POST", "/api/v1/vms/{vmId}/guest/channel/preview")].RequiredPermission);
         Assert.Equal("guest.channel.configure", routes[("POST", "/api/v1/vms/{vmId}/guest/channel/verify")].RequiredPermission);
         Assert.Equal("guest.channel.configure", routes[("POST", "/api/v1/vms/{vmId}/guest/channel")].RequiredPermission);
+        Assert.Equal("console.configure", routes[("POST", "/api/v1/console/novnc-target/preview")].RequiredPermission);
+        Assert.Equal("console.configure", routes[("POST", "/api/v1/console/novnc-target")].RequiredPermission);
+        Assert.Equal("console.configure", routes[("POST", "/api/v1/console/novnc-target/clear")].RequiredPermission);
     }
 
     [Fact]
@@ -663,6 +688,12 @@ public sealed class ApiHandlerAdapterContractTests
         Assert.True(DesktopNodeApiRuntimeRoutes.TryMatchQueuedMutation("POST", "/api/v1/vms/lab%20vm/template-lock", out var templateLockMatch));
         Assert.True(DesktopNodeApiRuntimeRoutes.TryMatchQueuedMutation("POST", "/api/v1/vms/lab%20vm/guest/file", out var guestFileMatch));
         Assert.Equal("QueueVmGuestFile", guestFileMatch.Route.OperationName);
+
+        Assert.True(DesktopNodeApiRuntimeRoutes.TryMatchQueuedMutation("POST", "/api/v1/console/novnc-target", out var setNoVncMatch));
+        Assert.Equal("QueueSetNoVncTarget", setNoVncMatch.Route.OperationName);
+        Assert.True(DesktopNodeApiRuntimeRoutes.TryMatchQueuedMutation("POST", "/api/v1/console/novnc-target/clear", out var clearNoVncMatch));
+        Assert.Equal("QueueClearNoVncTarget", clearNoVncMatch.Route.OperationName);
+        Assert.False(DesktopNodeApiRuntimeRoutes.IsQueuedMutationRoute("POST", "/api/v1/console/novnc-target/preview"));
         Assert.Equal("QueueTemplateLockVm", templateLockMatch.Route.OperationName);
         Assert.Equal("lab vm", templateLockMatch.Parameters["vmId"]);
 

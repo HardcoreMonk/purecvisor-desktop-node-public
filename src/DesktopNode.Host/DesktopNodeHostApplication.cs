@@ -124,7 +124,8 @@ public sealed partial class DesktopNodeHostApplication : IDisposable
                 NoVncEnabled: options.NoVncBridgeEnabled,
                 NoVncWebSocketPath: options.NoVncWebSocketPath,
                 NoVncBridgeMode: options.NoVncBridgeEnabled ? "websocket-to-vnc-tcp" : "disabled",
-                AllowLan: options.AllowLan);
+                AllowLan: options.AllowLan,
+                NoVncTargetFilePath: DesktopNodeNoVncTargetStore.DefaultFilePath);
 
             return Task.FromResult(new DesktopNodeHostApplication(
                 bindings,

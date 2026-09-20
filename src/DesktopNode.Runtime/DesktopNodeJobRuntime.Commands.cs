@@ -218,7 +218,7 @@ public sealed partial class DesktopNodeJobRuntime
                 var rejected = ReconciliationRequiredError(
                     jobId,
                     assessment.Classification,
-                    "Only an interrupted vm.rename, vm.delete, checkpoint.create, checkpoint.restore, vm.create, vm.shutdown, vm.restart, vm.qos.storage.set, or vm.qos.network.set job can be reconciled by this contract.",
+                    "Only an interrupted vm.rename, vm.delete, checkpoint.create, checkpoint.restore, vm.create, vm.shutdown, vm.restart, vm.qos.storage.set, vm.qos.network.set, console.novnc-target.set, or console.novnc-target.clear job can be reconciled by this contract.",
                     job.Operation);
                 RecordObservationUnsafe(
                     "job-reconciliation-required",

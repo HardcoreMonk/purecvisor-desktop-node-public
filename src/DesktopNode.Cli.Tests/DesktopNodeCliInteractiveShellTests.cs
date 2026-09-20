@@ -92,6 +92,9 @@ public sealed class DesktopNodeCliInteractiveShellTests
         Assert.Contains(lines, line => string.Equals(line.Trim(), "job reconcile | Reconcile an interrupted rename, delete, checkpoint create, or restore", StringComparison.Ordinal));
         Assert.Contains(lines, line => string.Equals(line.Trim(), "diagnostics bundle list | List diagnostic bundles", StringComparison.Ordinal));
         Assert.Contains(lines, line => string.Equals(line.Trim(), "diagnostics bundle download | Download an evidence bundle", StringComparison.Ordinal));
+        Assert.Contains(lines, line => string.Equals(line.Trim(), "console novnc-target preview | Dry-run a noVNC target without writing PathName", StringComparison.Ordinal));
+        Assert.Contains(lines, line => string.Equals(line.Trim(), "console novnc-target set | Queue a durable noVNC target and reload in-process", StringComparison.Ordinal));
+        Assert.Contains(lines, line => string.Equals(line.Trim(), "console novnc-target clear | Queue a durable noVNC target clear so PathName cannot resurrect", StringComparison.Ordinal));
         Assert.DoesNotContain(lines, line => line.Trim().StartsWith("snapshot ", StringComparison.Ordinal));
         Assert.DoesNotContain(lines, line => line.Contains("list|get|create", StringComparison.Ordinal));
         Assert.DoesNotContain(lines, line => line.Contains("start|stop|shutdown", StringComparison.Ordinal));

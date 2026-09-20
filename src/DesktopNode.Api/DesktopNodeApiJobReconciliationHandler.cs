@@ -13,15 +13,18 @@ internal sealed class DesktopNodeApiJobReconciliationHandler
     private readonly DesktopNodeJobRuntime jobRuntime;
     private readonly DesktopNodeApiHyperVOperationInvoker operationInvoker;
     private readonly DesktopNodeApiHardeningOptions hardeningOptions;
+    private readonly DesktopNodeNoVncTargetStore noVncTargetStore;
 
     public DesktopNodeApiJobReconciliationHandler(
         DesktopNodeJobRuntime jobRuntime,
         DesktopNodeApiHyperVOperationInvoker operationInvoker,
-        DesktopNodeApiHardeningOptions hardeningOptions)
+        DesktopNodeApiHardeningOptions hardeningOptions,
+        DesktopNodeNoVncTargetStore noVncTargetStore)
     {
         this.jobRuntime = jobRuntime;
         this.operationInvoker = operationInvoker;
         this.hardeningOptions = hardeningOptions;
+        this.noVncTargetStore = noVncTargetStore;
     }
 
     public DesktopNodeApiResponse? TryHandle(string method, string normalizedPath, CancellationToken cancellationToken)
@@ -117,6 +120,14 @@ internal sealed class DesktopNodeApiJobReconciliationHandler
             return ReconcileVmQosJob(job, cancellationToken);
         }
 
+        if ((string.Equals(job.Operation, "console.novnc-target.set", StringComparison.Ordinal) ||
+                string.Equals(job.Operation, "console.novnc-target.clear", StringComparison.Ordinal)) &&
+            string.Equals(job.Status, "failed", StringComparison.Ordinal) &&
+            string.Equals(job.Error?.Code, "PCV_JOB_INTERRUPTED", StringComparison.Ordinal))
+        {
+            return ReconcileNoVncTargetJob(job);
+        }
+
         if (!string.Equals(job.Operation, "vm.rename", StringComparison.Ordinal) ||
             !string.Equals(job.Status, "failed", StringComparison.Ordinal) ||
             !string.Equals(job.Error?.Code, "PCV_JOB_INTERRUPTED", StringComparison.Ordinal))
@@ -128,7 +139,7 @@ internal sealed class DesktopNodeApiJobReconciliationHandler
                 ReconciliationRequiredError(
                     jobId,
                     "job-not-reconcilable",
-                    "Only a failed vm.rename, vm.delete, checkpoint.create, checkpoint.restore, vm.create, vm.shutdown, vm.restart, vm.qos.storage.set, or vm.qos.network.set job with PCV_JOB_INTERRUPTED can be reconciled.",
+                    "Only a failed vm.rename, vm.delete, checkpoint.create, checkpoint.restore, vm.create, vm.shutdown, vm.restart, vm.qos.storage.set, vm.qos.network.set, console.novnc-target.set, or console.novnc-target.clear job with PCV_JOB_INTERRUPTED can be reconciled.",
                     job.Operation));
             return RenderReconciliationResult(jobRuntime.Reconcile(jobId, assessment));
         }
@@ -937,6 +948,81 @@ internal sealed class DesktopNodeApiJobReconciliationHandler
                     operation))));
     }
 
+    private DesktopNodeApiResponse ReconcileNoVncTargetJob(DesktopNodeJobSnapshot job)
+    {
+        var jobId = job.JobId;
+        var operation = job.Operation;
+        var metadata = DesktopNodeApiJsonReader.ReadElement(job.Parameters, "reconciliation");
+        if (metadata is null ||
+            metadata.Value.ValueKind != JsonValueKind.Object ||
+            !string.Equals(DesktopNodeApiJsonReader.ReadString(metadata.Value, "schema"), DesktopNodeNoVncTargetStore.ReconciliationSchema, StringComparison.Ordinal) ||
+            !string.Equals(DesktopNodeApiJsonReader.ReadString(metadata.Value, "capture_status"), "captured", StringComparison.Ordinal))
+        {
+            return RenderReconciliationResult(jobRuntime.Reconcile(
+                jobId,
+                new DesktopNodeJobReconciliationAssessment(
+                    false,
+                    "baseline-unavailable",
+                    null,
+                    ReconciliationRequiredError(
+                        jobId,
+                        "baseline-unavailable",
+                        $"The durable {operation} baseline was not captured or is not structurally valid.",
+                        operation))));
+        }
+
+        var expectedAfter = DesktopNodeApiJsonReader.ReadElement(metadata.Value, "expected_after");
+        var before = DesktopNodeApiJsonReader.ReadElement(metadata.Value, "before");
+        if (expectedAfter is null || before is null)
+        {
+            return RenderReconciliationResult(jobRuntime.Reconcile(
+                jobId,
+                new DesktopNodeJobReconciliationAssessment(
+                    false,
+                    "baseline-unavailable",
+                    null,
+                    ReconciliationRequiredError(
+                        jobId,
+                        "baseline-unavailable",
+                        $"The durable {operation} baseline was not captured or is not structurally valid.",
+                        operation))));
+        }
+
+        if (noVncTargetStore.MatchesExpected(expectedAfter.Value))
+        {
+            noVncTargetStore.TryReadCurrent(out var observed);
+            var result = DesktopNodeApiResponseFactory.JsonFromObject(new SortedDictionary<string, object?>
+            {
+                ["action"] = "reconciled",
+                ["operation"] = operation,
+                ["reconciliation"] = new SortedDictionary<string, object?>
+                {
+                    ["schema"] = DesktopNodeNoVncTargetStore.ReconciliationSchema,
+                    ["classification"] = "postcondition-confirmed",
+                    ["before"] = before.Value,
+                    ["expected_after"] = expectedAfter.Value,
+                    ["observed"] = observed
+                }
+            });
+            return RenderReconciliationResult(jobRuntime.Reconcile(
+                jobId,
+                new DesktopNodeJobReconciliationAssessment(true, "postcondition-confirmed", result)));
+        }
+
+        var classification = noVncTargetStore.MatchesBefore(before.Value) ? "not-applied" : "partial-policy";
+        return RenderReconciliationResult(jobRuntime.Reconcile(
+            jobId,
+            new DesktopNodeJobReconciliationAssessment(
+                false,
+                classification,
+                null,
+                ReconciliationRequiredError(
+                    jobId,
+                    classification,
+                    $"The noVNC target file did not prove the captured {operation} postcondition.",
+                    operation))));
+    }
+
     private DesktopNodeApiResponse RenderReconciliationResult(DesktopNodeJobReconciliationResult result)
     {
         return result.Outcome switch
@@ -961,6 +1047,8 @@ internal sealed class DesktopNodeApiJobReconciliationHandler
             "vm.restart" => "restart",
             "vm.qos.storage.set" => "storage QoS",
             "vm.qos.network.set" => "network QoS",
+            "console.novnc-target.set" => "noVNC target",
+            "console.novnc-target.clear" => "noVNC clear",
             "checkpoint.create" => "checkpoint create",
             "checkpoint.restore" => "checkpoint restore",
             _ => "rename"

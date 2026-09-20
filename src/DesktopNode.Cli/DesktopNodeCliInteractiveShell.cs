@@ -76,7 +76,9 @@ public static class DesktopNodeCliInteractiveShell
         "account list",
         "account create ",
         "account disable ",
-        "console novnc-target preview "
+        "console novnc-target preview ",
+        "console novnc-target set ",
+        "console novnc-target clear "
     ];
 
     private static readonly HelpCommand[] AvailableCommands =
@@ -134,7 +136,9 @@ public static class DesktopNodeCliInteractiveShell
         new("diagnostics bundle list", "List diagnostic bundles"),
         new("diagnostics bundle create", "Create an evidence bundle"),
         new("diagnostics bundle download", "Download an evidence bundle"),
-        new("console novnc-target preview", "Dry-run a noVNC target without writing PathName")
+        new("console novnc-target preview", "Dry-run a noVNC target without writing PathName"),
+        new("console novnc-target set", "Queue a durable noVNC target and reload in-process"),
+        new("console novnc-target clear", "Queue a durable noVNC target clear so PathName cannot resurrect")
     ];
 
     private const string Banner = """

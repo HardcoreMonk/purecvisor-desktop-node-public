@@ -36,15 +36,67 @@ public static class DesktopNodeCliCommandCatalog
 
     private static DesktopNodeCliRequest ConsoleRequest(IReadOnlyList<string> args)
     {
-        const string usage = "console novnc-target preview --host 127.0.0.1 --port 5900 [--allow-lan-target] [--reason TEXT]";
-        if (args.Count < 3 ||
-            !string.Equals(args[1], "novnc-target", StringComparison.OrdinalIgnoreCase) ||
-            !string.Equals(args[2], "preview", StringComparison.OrdinalIgnoreCase))
+        const string usage = "console novnc-target preview|set --host 127.0.0.1 --port 5900 [--allow-lan-target] [--reason TEXT] | console novnc-target set ... --yes | console novnc-target clear --yes";
+        if (args.Count < 3 || !Is(args[1], "novnc-target"))
         {
             throw Usage("Use: " + usage + ".");
         }
 
+        return args[2].ToLowerInvariant() switch
+        {
+            "preview" => ConsoleNoVncTargetPreview(args),
+            "set" => ConsoleNoVncTargetSet(args),
+            "clear" => ConsoleNoVncTargetClear(args),
+            _ => throw Usage("Use: " + usage + ".")
+        };
+    }
+
+    private static DesktopNodeCliRequest ConsoleNoVncTargetPreview(IReadOnlyList<string> args)
+    {
+        return new DesktopNodeCliRequest(
+            "POST",
+            "/api/v1/console/novnc-target/preview",
+            JsonSerializer.Serialize(ReadNoVncTargetBody(args), JsonOptions));
+    }
+
+    private static DesktopNodeCliRequest ConsoleNoVncTargetSet(IReadOnlyList<string> args)
+    {
+        const string usage = "console novnc-target set --host 127.0.0.1 --port 5900 [--allow-lan-target] [--reason TEXT] --yes";
         var parsed = ParseOptions(args.Skip(3).ToArray(), allowFlags: true);
+        if (!HasFlag(parsed.Options, "--yes"))
+        {
+            throw new ArgumentException(
+                "PCV_CLI_CONFIRMATION_REQUIRED|" +
+                "noVNC target set requires explicit confirmation.|" +
+                "Use: pcvcli " + usage + ".");
+        }
+
+        return new DesktopNodeCliRequest(
+            "POST",
+            "/api/v1/console/novnc-target",
+            JsonSerializer.Serialize(ReadNoVncTargetBody(args, parsed), JsonOptions));
+    }
+
+    private static DesktopNodeCliRequest ConsoleNoVncTargetClear(IReadOnlyList<string> args)
+    {
+        const string usage = "console novnc-target clear --yes";
+        var parsed = ParseOptions(args.Skip(3).ToArray(), allowFlags: true);
+        if (!HasFlag(parsed.Options, "--yes"))
+        {
+            throw new ArgumentException(
+                "PCV_CLI_CONFIRMATION_REQUIRED|" +
+                "noVNC target clear requires explicit confirmation.|" +
+                "Use: pcvcli " + usage + ".");
+        }
+
+        return new DesktopNodeCliRequest("POST", "/api/v1/console/novnc-target/clear");
+    }
+
+    private static SortedDictionary<string, object?> ReadNoVncTargetBody(
+        IReadOnlyList<string> args,
+        ParsedOptions? parsed = null)
+    {
+        parsed ??= ParseOptions(args.Skip(3).ToArray(), allowFlags: true);
         var body = new SortedDictionary<string, object?>
         {
             ["host"] = Required(parsed.Options, "--host"),
@@ -57,10 +109,7 @@ public static class DesktopNodeCliCommandCatalog
             body["reason"] = reason;
         }
 
-        return new DesktopNodeCliRequest(
-            "POST",
-            "/api/v1/console/novnc-target/preview",
-            JsonSerializer.Serialize(body, JsonOptions));
+        return body;
     }
 
     private static DesktopNodeCliRequest AccountRequest(IReadOnlyList<string> args)
@@ -1087,7 +1136,9 @@ public static class DesktopNodeCliCommandCatalog
             "  pcvcli account list",
             "  pcvcli account create --username NAME --role ROLE --password-env VAR|--password-stdin --yes",
             "  pcvcli account disable NAME --yes",
-            "  pcvcli console novnc-target preview --host 127.0.0.1 --port 5900 [--allow-lan-target] [--reason TEXT]"
+            "  pcvcli console novnc-target preview --host 127.0.0.1 --port 5900 [--allow-lan-target] [--reason TEXT]",
+            "  pcvcli console novnc-target set --host 127.0.0.1 --port 5900 [--allow-lan-target] [--reason TEXT] --yes",
+            "  pcvcli console novnc-target clear --yes"
         ]);
     }
 

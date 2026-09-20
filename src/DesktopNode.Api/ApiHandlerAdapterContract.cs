@@ -98,6 +98,8 @@ public sealed record ApiHandlerAdapterContract(
                 NativeReadOnly("/api/v1/vms/{vmId}", "vm.detail", "GetVm", "pcv.vm.inventory", "hyperv-vm"),
                 RuntimeReadOnly("/api/v1/vms/{vmId}/console", "console.session", "GetVmConsoleSession", "pcv.vm.console-handoff", "console", "console.view"),
                 RuntimeProductOperation("/api/v1/console/novnc-target/preview", "console.novnc-target.preview", "PreviewNoVncTarget", "pcv.vm.console-handoff", "console", requiredPermission: "console.configure"),
+                RuntimeQueuedMutation("/api/v1/console/novnc-target", "console.novnc-target.set", "QueueSetNoVncTarget", "pcv.vm.console-handoff", "console", requiredPermission: "console.configure"),
+                RuntimeQueuedMutation("/api/v1/console/novnc-target/clear", "console.novnc-target.clear", "QueueClearNoVncTarget", "pcv.vm.console-handoff", "console", requiredPermission: "console.configure"),
                 NativeReadOnly("/api/v1/vms/{vmId}/memory-stats", "vm.memory-stats", "GetVmMemoryStats", "pcv.vm.telemetry", "hyperv-vm"),
                 NativeReadOnly("/api/v1/vms/{vmId}/cpu-stats", "vm.cpu-stats", "GetVmCpuStats", "pcv.vm.telemetry", "hyperv-vm"),
                 NativeReadOnly("/api/v1/vms/{vmId}/blkio", "vm.blkio-get", "GetVmBlockIoPolicy", "pcv.vm.qos", "hyperv-vm-qos"),
@@ -224,6 +226,27 @@ public sealed record ApiHandlerAdapterContract(
             OperationName: operationName,
             FeatureId: featureId,
             DefaultOwner: DotNetNativeAdapterOwner,
+            RouteFamily: routeFamily);
+    }
+
+    private static ApiHandlerRouteContract RuntimeQueuedMutation(
+        string routeTemplate,
+        string operationId,
+        string operationName,
+        string featureId,
+        string routeFamily,
+        string requiredPermission)
+    {
+        return new ApiHandlerRouteContract(
+            RouteTemplate: routeTemplate,
+            Method: "POST",
+            AuthPolicy: "TokenRequired",
+            RequiredPermission: requiredPermission,
+            MutationStance: MutationStance.QueuedMutation,
+            OperationId: operationId,
+            OperationName: operationName,
+            FeatureId: featureId,
+            DefaultOwner: DotNetRuntimeOwner,
             RouteFamily: routeFamily);
     }
 

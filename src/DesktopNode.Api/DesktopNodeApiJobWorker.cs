@@ -18,17 +18,20 @@ internal sealed class DesktopNodeApiJobWorker
     private readonly IDesktopNodeApiCancellationScopeFactory cancellationScopes;
     private readonly DesktopNodeApiHyperVOperationInvoker operationInvoker;
     private readonly object sync;
+    private readonly DesktopNodeNoVncTargetStore noVncTargetStore;
 
     public DesktopNodeApiJobWorker(
         DesktopNodeJobRuntime jobRuntime,
         IDesktopNodeApiCancellationScopeFactory cancellationScopes,
         DesktopNodeApiHyperVOperationInvoker operationInvoker,
-        object sync)
+        object sync,
+        DesktopNodeNoVncTargetStore noVncTargetStore)
     {
         this.jobRuntime = jobRuntime;
         this.cancellationScopes = cancellationScopes;
         this.operationInvoker = operationInvoker;
         this.sync = sync;
+        this.noVncTargetStore = noVncTargetStore;
     }
 
     // Deterministic test seam for the provider-result/serialized-finalization boundary.
@@ -71,7 +74,9 @@ internal sealed class DesktopNodeApiJobWorker
         try
         {
             result = await Task.Run(
-                () => operationInvoker.Invoke(started.Operation, started.Parameters, jobCancellation.Token),
+                () => IsNoVncTargetOperation(started.Operation)
+                    ? noVncTargetStore.Apply(started.Operation, started.Parameters)
+                    : operationInvoker.Invoke(started.Operation, started.Parameters, jobCancellation.Token),
                 jobCancellation.Token).ConfigureAwait(false);
         }
         catch (OperationCanceledException) when (jobCancellation.IsCancellationRequested)
@@ -127,5 +132,11 @@ internal sealed class DesktopNodeApiJobWorker
             completion.Processed,
             completion.Job is null ? null : DesktopNodeApiResponseFactory.JobData(completion.Job),
             null);
+    }
+
+    private static bool IsNoVncTargetOperation(string operation)
+    {
+        return string.Equals(operation, "console.novnc-target.set", StringComparison.Ordinal) ||
+            string.Equals(operation, "console.novnc-target.clear", StringComparison.Ordinal);
     }
 }

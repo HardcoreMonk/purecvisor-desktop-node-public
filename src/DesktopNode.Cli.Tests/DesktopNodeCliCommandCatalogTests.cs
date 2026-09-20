@@ -45,6 +45,8 @@ public sealed class DesktopNodeCliCommandCatalogTests
     [InlineData("diagnostics bundle list", "GET", "/api/v1/diagnostics/bundles")]
     [InlineData("diagnostics bundle create", "POST", "/api/v1/diagnostics/bundles")]
     [InlineData("console novnc-target preview --host 127.0.0.1 --port 5900", "POST", "/api/v1/console/novnc-target/preview")]
+    [InlineData("console novnc-target set --host 127.0.0.1 --port 5900 --yes", "POST", "/api/v1/console/novnc-target")]
+    [InlineData("console novnc-target clear --yes", "POST", "/api/v1/console/novnc-target/clear")]
     public void RoutesCommandsToLocalApiRequests(string commandLine, string method, string path)
     {
         var request = DesktopNodeCliCommandCatalog.CreateRequest(Split(commandLine));
@@ -52,7 +54,8 @@ public sealed class DesktopNodeCliCommandCatalogTests
         Assert.Equal(method, request.Method);
         Assert.Equal(path, request.Path);
         if (path.EndsWith("/attach", StringComparison.Ordinal) ||
-            path.EndsWith("/novnc-target/preview", StringComparison.Ordinal))
+            path.EndsWith("/novnc-target/preview", StringComparison.Ordinal) ||
+            path.EndsWith("/novnc-target", StringComparison.Ordinal))
         {
             Assert.NotNull(request.Body);
             return;
@@ -805,7 +808,7 @@ public sealed class DesktopNodeCliCommandCatalogTests
             }
         }
 
-        Assert.Equal(62, presentCount);
+        Assert.Equal(64, presentCount);
         Assert.Equal(7, excludedCount);
     }
 
@@ -835,6 +838,8 @@ public sealed class DesktopNodeCliCommandCatalogTests
         Assert.Contains("pcvcli account create --username NAME --role ROLE --password-env VAR|--password-stdin --yes", usage, StringComparison.Ordinal);
         Assert.Contains("pcvcli account disable NAME --yes", usage, StringComparison.Ordinal);
         Assert.Contains("pcvcli console novnc-target preview --host 127.0.0.1 --port 5900", usage, StringComparison.Ordinal);
+        Assert.Contains("pcvcli console novnc-target set --host 127.0.0.1 --port 5900", usage, StringComparison.Ordinal);
+        Assert.Contains("pcvcli console novnc-target clear --yes", usage, StringComparison.Ordinal);
         Assert.DoesNotContain("pcvcli snapshot list|create|rollback|delete", usage, StringComparison.Ordinal);
         Assert.DoesNotContain("pcvcli console capabilities", usage, StringComparison.Ordinal);
         Assert.DoesNotContain("  pcv [--api URL]", usage);
@@ -849,6 +854,57 @@ public sealed class DesktopNodeCliCommandCatalogTests
         Assert.Contains("PCV_CLI_USAGE", error.Message, StringComparison.Ordinal);
         Assert.Contains("console novnc-target preview", error.Message, StringComparison.Ordinal);
         Assert.DoesNotContain("Unknown command group 'console'", error.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void RequiresExplicitYesForNoVncTargetSet()
+    {
+        var error = Assert.Throws<ArgumentException>(() =>
+            DesktopNodeCliCommandCatalog.CreateRequest([
+                "console",
+                "novnc-target",
+                "set",
+                "--host",
+                "127.0.0.1",
+                "--port",
+                "5900"
+            ]));
+
+        Assert.Contains("PCV_CLI_CONFIRMATION_REQUIRED", error.Message, StringComparison.Ordinal);
+        Assert.Contains("console novnc-target set", error.Message, StringComparison.Ordinal);
+        Assert.Contains("--yes", error.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void RequiresExplicitYesForNoVncTargetClear()
+    {
+        var error = Assert.Throws<ArgumentException>(() =>
+            DesktopNodeCliCommandCatalog.CreateRequest(["console", "novnc-target", "clear"]));
+
+        Assert.Contains("PCV_CLI_CONFIRMATION_REQUIRED", error.Message, StringComparison.Ordinal);
+        Assert.Contains("console novnc-target clear --yes", error.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void RoutesNoVncTargetSetBodyWhenExplicitlyConfirmed()
+    {
+        var request = DesktopNodeCliCommandCatalog.CreateRequest([
+            "console",
+            "novnc-target",
+            "set",
+            "--host",
+            "127.0.0.1",
+            "--port",
+            "5900",
+            "--yes"
+        ]);
+
+        Assert.Equal("POST", request.Method);
+        Assert.Equal("/api/v1/console/novnc-target", request.Path);
+        using var document = JsonDocument.Parse(request.Body!);
+        Assert.Equal("127.0.0.1", document.RootElement.GetProperty("host").GetString());
+        Assert.Equal(5900, document.RootElement.GetProperty("port").GetInt32());
+        Assert.False(document.RootElement.GetProperty("allow_lan_target").GetBoolean());
     }
 
     [Fact]

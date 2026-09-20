@@ -169,9 +169,12 @@ internal sealed class DesktopNodeApiAuthSessionHandler
 
         if (string.Equals(requiredPermission, NoVncTargetPolicy.PermissionConfigure, StringComparison.Ordinal))
         {
+            var operationId = DesktopNodeApiRuntimeRoutes.TryMatchContract(method, path, out var configureMatch)
+                ? configureMatch.Route.OperationId
+                : "console.novnc-target.preview";
             return DesktopNodeApiResponseFactory.Failure(
                 403,
-                "console.novnc-target.preview",
+                operationId,
                 NoVncTargetProblemCodes.ConfigureForbidden,
                 "The current account role is not allowed to configure the noVNC target.",
                 $"Required permission: {requiredPermission}. Current role: {validation.Principal!.Role}.",

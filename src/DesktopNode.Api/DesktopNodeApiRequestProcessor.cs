@@ -125,14 +125,16 @@ public sealed partial class DesktopNodeApiRequestProcessor
         // this lock is the mutual exclusion between request handling and the worker tick,
         // so a second lock object would silently drop that exclusion.
         throttle = new DesktopNodeApiRequestThrottle(this.hardeningOptions, sync);
-        consoleRouteHandler = new DesktopNodeApiConsoleRouteHandler(resolvedConsoleOptions, authSessionHandler);
+        var noVncTargetStore = new DesktopNodeNoVncTargetStore(resolvedConsoleOptions);
+        consoleRouteHandler = new DesktopNodeApiConsoleRouteHandler(noVncTargetStore, authSessionHandler, jobRuntime);
         guestExecutionRouteHandler = new DesktopNodeApiGuestExecutionRouteHandler(authSessionHandler);
         jobRouteHandler = new DesktopNodeApiJobRouteHandler(jobRuntime);
         vmReadRouteHandler = new DesktopNodeApiVmReadRouteHandler(operationInvoker, jobRouteHandler);
         reconciliationHandler = new DesktopNodeApiJobReconciliationHandler(
             jobRuntime,
             operationInvoker,
-            this.hardeningOptions);
+            this.hardeningOptions,
+            noVncTargetStore);
         vmMutationRouteHandler = new DesktopNodeApiVmMutationRouteHandler(
             jobRuntime,
             operationInvoker,
@@ -142,7 +144,8 @@ public sealed partial class DesktopNodeApiRequestProcessor
             jobRuntime,
             cancellationScopes,
             operationInvoker,
-            sync);
+            sync,
+            noVncTargetStore);
     }
 
     public DesktopNodeApiResponse Handle(DesktopNodeApiRequest request)
@@ -282,6 +285,12 @@ public sealed partial class DesktopNodeApiRequestProcessor
             return diagnosticsRouteResponse;
         }
 
+        var consoleRouteResponse = consoleRouteHandler.TryHandle(request, method, path);
+        if (consoleRouteResponse is not null)
+        {
+            return consoleRouteResponse;
+        }
+
         if (isQueuedMutationRoute)
         {
             return vmMutationRouteHandler.HandleQueuedMutationRoute(request, queuedMutationMatch, cancellationToken);
@@ -307,12 +316,6 @@ public sealed partial class DesktopNodeApiRequestProcessor
                 currentExposure,
                 authSessionHandler.CreateRuntimePolicy(tokenStorage),
                 consoleRouteHandler.CreateRuntimePolicy()));
-        }
-
-        var consoleRouteResponse = consoleRouteHandler.TryHandle(request, method, path);
-        if (consoleRouteResponse is not null)
-        {
-            return consoleRouteResponse;
         }
 
         var opsSummaryResponse = opsSummaryHandler.TryHandle(

@@ -731,6 +731,62 @@
               ]
             }
           }
+        },
+        {
+          "operation_id": "console.novnc-target.set",
+          "method": "POST",
+          "route_template": "/api/v1/console/novnc-target",
+          "required_permission": "console.configure",
+          "present_surfaces": [
+            "api",
+            "cli"
+          ],
+          "excluded_surfaces": [
+            {
+              "surface": "web",
+              "reason": "noVNC target configuration stays CLI/API; Web Console keeps Console Access Card readback without a save form."
+            }
+          ],
+          "surface_bindings": {
+            "cli": {
+              "command": [
+                "console",
+                "novnc-target",
+                "set",
+                "--host",
+                "127.0.0.1",
+                "--port",
+                "5900",
+                "--yes"
+              ]
+            }
+          }
+        },
+        {
+          "operation_id": "console.novnc-target.clear",
+          "method": "POST",
+          "route_template": "/api/v1/console/novnc-target/clear",
+          "required_permission": "console.configure",
+          "present_surfaces": [
+            "api",
+            "cli"
+          ],
+          "excluded_surfaces": [
+            {
+              "surface": "web",
+              "reason": "noVNC target configuration stays CLI/API; Web Console keeps Console Access Card readback without a save form."
+            }
+          ],
+          "surface_bindings": {
+            "cli": {
+              "command": [
+                "console",
+                "novnc-target",
+                "clear",
+                "--yes"
+              ]
+            }
+          }
         }
       ]
     },

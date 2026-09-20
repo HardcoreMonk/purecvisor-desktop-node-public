@@ -4,7 +4,7 @@
 
 운영자 대상 용어와 제품 경계 문구는 `docs/OPERATOR_SURFACE_TERMS.md`에 모은다.
 
-`pcvcli.exe`는 설치된 PureCVisor Desktop Node Local API를 호출하는 .NET command-line client다. Web Console과 같은 API contract를 사용하며, Hyper-V helper나 Linux `purecvisor-single` runtime을 직접 실행하지 않는다. 현재 first-class CLI command surface는 host/runtime/ops/network/VM/job/diagnostics/account/console이며, Account/RBAC/JWT login/refresh/logout은 Web Console 또는 Web API 직접 호출 경로가 소유한다. `POST /api/v1/auth/loopback-session`도 Web Console 전용이다. PCVCLI는 설치본 protected token file을 계속 사용한다. 계정 create/disable은 service bearer로 `pcvcli account`를 쓴다. 비밀번호는 `--password-env` 또는 `--password-stdin`만 받고 argv에 두지 않는다. noVNC target preview는 `pcvcli console novnc-target preview`다.
+`pcvcli.exe`는 설치된 PureCVisor Desktop Node Local API를 호출하는 .NET command-line client다. Web Console과 같은 API contract를 사용하며, Hyper-V helper나 Linux `purecvisor-single` runtime을 직접 실행하지 않는다. 현재 first-class CLI command surface는 host/runtime/ops/network/VM/job/diagnostics/account/console이며, Account/RBAC/JWT login/refresh/logout은 Web Console 또는 Web API 직접 호출 경로가 소유한다. `POST /api/v1/auth/loopback-session`도 Web Console 전용이다. PCVCLI는 설치본 protected token file을 계속 사용한다. 계정 create/disable은 service bearer로 `pcvcli account`를 쓴다. 비밀번호는 `--password-env` 또는 `--password-stdin`만 받고 argv에 두지 않는다. noVNC target preview/set/clear는 `pcvcli console novnc-target`이다.
 
 이 문서는 설치된 제품을 사용하는 운영자와 repository checkout에서 CLI를 검증하는 개발자를 함께 대상으로 한다.
 
@@ -516,11 +516,16 @@ $capabilities.data.console_access
 pcvcli --json vm console ubuntu-lab-01
 pcvcli --json vm vnc ubuntu-lab-01
 pcvcli console novnc-target preview --host 127.0.0.1 --port 5900 [--allow-lan-target] [--reason TEXT]
+pcvcli console novnc-target set --host 127.0.0.1 --port 5900 [--allow-lan-target] [--reason TEXT] --yes
+pcvcli console novnc-target clear --yes
 ```
 
 `console novnc-target preview`는 dry-run이다. PathName을 쓰지 않고 listener를 reload하지 않는다.
-LAN target은 `--allow-lan-target`과 `--reason`이 필요하고, listener에 `--allow-lan`이 이미 있어야 한다.
-Web Console에 target 저장 폼은 없다.
+`set`/`clear`는 queued mutation이다. `--yes`가 없으면 `PCV_CLI_CONFIRMATION_REQUIRED`다. durable source는
+`%ProgramData%\PureCVisor\desktop-node\novnc-target.json`이고, 파일이 PathName보다 이긴다. `clear`는
+파일을 지워서 PathName이 부활하게 두지 않고 `{ "enabled": false }`를 남긴다. listen 프로세스를
+stop/start 하지 않는다. LAN target은 `--allow-lan-target`과 `--reason`이 필요하고, listener에
+`--allow-lan`이 이미 있어야 한다. Web Console에 target 저장 폼은 없다.
 
 PCVCLI에 별도 `console capabilities` command를 두지 않은 것은 실제 운영 action이 VM별
 `vm console|vnc`이고, 전역 capability card는 Web Console의 연결/문제 해결 화면이 주로
