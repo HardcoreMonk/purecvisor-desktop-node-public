@@ -8,13 +8,17 @@ namespace DesktopNode.Api;
 internal sealed class DesktopNodeApiConsoleRouteHandler
 {
     private readonly DesktopNodeConsoleOptions consoleOptions;
+    private readonly DesktopNodeApiAuthSessionHandler authSessionHandler;
 
-    public DesktopNodeApiConsoleRouteHandler(DesktopNodeConsoleOptions consoleOptions)
+    public DesktopNodeApiConsoleRouteHandler(
+        DesktopNodeConsoleOptions consoleOptions,
+        DesktopNodeApiAuthSessionHandler authSessionHandler)
     {
         this.consoleOptions = consoleOptions;
+        this.authSessionHandler = authSessionHandler;
     }
 
-    public DesktopNodeApiResponse? TryHandle(string method, string normalizedPath)
+    public DesktopNodeApiResponse? TryHandle(DesktopNodeApiRequest request, string method, string normalizedPath)
     {
         if (DesktopNodeApiRuntimeRoutes.TryMatchOperation(method, normalizedPath, "GetConsoleCapabilities", out _))
         {
@@ -24,6 +28,11 @@ internal sealed class DesktopNodeApiConsoleRouteHandler
         if (DesktopNodeApiRuntimeRoutes.TryMatchOperation(method, normalizedPath, "GetVmConsoleSession", out var consoleMatch))
         {
             return HandleVmConsoleSession(consoleMatch.Parameters["vmId"]);
+        }
+
+        if (DesktopNodeApiRuntimeRoutes.TryMatchOperation(method, normalizedPath, "PreviewNoVncTarget", out _))
+        {
+            return HandleNoVncTargetPreview(request);
         }
 
         return null;
@@ -116,5 +125,58 @@ internal sealed class DesktopNodeApiConsoleRouteHandler
             "{vm_id}",
             Uri.EscapeDataString(vmId),
             StringComparison.OrdinalIgnoreCase);
+    }
+
+    private DesktopNodeApiResponse HandleNoVncTargetPreview(DesktopNodeApiRequest request)
+    {
+        const string operation = "console.novnc-target.preview";
+        var parsed = DesktopNodeApiRequestParsing.TryParseBody(request.Body, operation);
+        if (!parsed.Ok)
+        {
+            return parsed.Response!;
+        }
+
+        var evaluation = NoVncTargetPolicy.EvaluatePreview(new NoVncTargetRequest(
+            Host: DesktopNodeApiJsonReader.GetStringProperty(parsed.Value!.Value, "host"),
+            Port: DesktopNodeApiJsonReader.ReadInt(parsed.Value.Value, "port"),
+            Auth: authSessionHandler.ResolveNoVncAuth(request),
+            AllowLanTarget: DesktopNodeApiJsonReader.ReadBool(parsed.Value.Value, "allow_lan_target"),
+            ListenerAllowLan: consoleOptions.AllowLan,
+            Reason: DesktopNodeApiJsonReader.GetStringProperty(parsed.Value.Value, "reason")));
+        if (!evaluation.Ok)
+        {
+            var forbidden = string.Equals(
+                evaluation.ErrorCode,
+                NoVncTargetProblemCodes.ConfigureForbidden,
+                StringComparison.Ordinal);
+            return DesktopNodeApiResponseFactory.Failure(
+                forbidden ? 403 : 400,
+                operation,
+                evaluation.ErrorCode!,
+                forbidden
+                    ? "The current account role is not allowed to configure the noVNC target."
+                    : "The noVNC target preview was rejected.",
+                forbidden
+                    ? "Grant console.configure or use the service bearer."
+                    : "Pass a loopback host and port, or satisfy the LAN target gates.",
+                false);
+        }
+
+        return DesktopNodeApiResponseFactory.Json(200, DesktopNodeApiResponseFactory.Body(
+            true,
+            operation,
+            new SortedDictionary<string, object?>
+            {
+                ["action"] = evaluation.Action,
+                ["allow_lan_target"] = evaluation.AllowLanTarget,
+                ["dry_run"] = true,
+                ["host"] = evaluation.Host,
+                ["host_mutation_performed"] = false,
+                ["loopback"] = evaluation.Loopback,
+                ["port"] = evaluation.Port,
+                ["reason"] = evaluation.Reason,
+                ["schema"] = NoVncTargetPolicy.Schema
+            },
+            null));
     }
 }

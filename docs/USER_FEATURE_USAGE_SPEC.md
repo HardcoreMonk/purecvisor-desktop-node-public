@@ -68,7 +68,7 @@ PureCVisor Desktop Node는 Windows 10/11 Pro/Enterprise + Hyper-V host를 로컬
 | Diagnostics create/download | [ `pcv.diagnostics.bundle` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-diagnostics-bundle) | Troubleshooting create/download | `pcvcli diagnostics bundle create/download` | `POST /diagnostics/bundles`, `GET /diagnostics/bundles/{id}/download` |
 | Account/RBAC/JWT | [ `pcv.account.session` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-account-session) | Account login과 create/disable | `pcvcli account list/create/disable` | `/auth/...`, `/accounts` |
 | Console capability discovery | [ `pcv.console.capabilities` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-console-capabilities) | Console/Troubleshooting capability card | API/Web Console 전용 | `GET /console/capabilities` |
-| VM console/noVNC handoff | [ `pcv.vm.console-handoff` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-console-handoff) | 선택 VM Console panel | `pcvcli vm console/vnc <vm>` | `GET /vms/{id}/console` |
+| VM console/noVNC handoff | [ `pcv.vm.console-handoff` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-console-handoff) | 선택 VM Console panel | `pcvcli vm console/vnc <vm>`; `pcvcli console novnc-target preview --host 127.0.0.1 --port 5900` | `GET /vms/{id}/console`; `POST /console/novnc-target/preview` |
 
 ## Feature ID 추적
 

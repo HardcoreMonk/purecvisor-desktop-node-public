@@ -29,8 +29,38 @@ public static class DesktopNodeCliCommandCatalog
             "job" => JobRequest(arguments),
             "diagnostics" => DiagnosticsRequest(arguments),
             "account" => AccountRequest(arguments),
+            "console" => ConsoleRequest(arguments),
             _ => throw Usage($"Unknown command group '{arguments[0]}'.")
         };
+    }
+
+    private static DesktopNodeCliRequest ConsoleRequest(IReadOnlyList<string> args)
+    {
+        const string usage = "console novnc-target preview --host 127.0.0.1 --port 5900 [--allow-lan-target] [--reason TEXT]";
+        if (args.Count < 3 ||
+            !string.Equals(args[1], "novnc-target", StringComparison.OrdinalIgnoreCase) ||
+            !string.Equals(args[2], "preview", StringComparison.OrdinalIgnoreCase))
+        {
+            throw Usage("Use: " + usage + ".");
+        }
+
+        var parsed = ParseOptions(args.Skip(3).ToArray(), allowFlags: true);
+        var body = new SortedDictionary<string, object?>
+        {
+            ["host"] = Required(parsed.Options, "--host"),
+            ["port"] = RequiredInt(parsed.Options, "--port"),
+            ["allow_lan_target"] = HasFlag(parsed.Options, "--allow-lan-target")
+        };
+        var reason = FirstOption(parsed.Options, "--reason");
+        if (!string.IsNullOrWhiteSpace(reason))
+        {
+            body["reason"] = reason;
+        }
+
+        return new DesktopNodeCliRequest(
+            "POST",
+            "/api/v1/console/novnc-target/preview",
+            JsonSerializer.Serialize(body, JsonOptions));
     }
 
     private static DesktopNodeCliRequest AccountRequest(IReadOnlyList<string> args)
@@ -1056,7 +1086,8 @@ public static class DesktopNodeCliCommandCatalog
             "  pcvcli diagnostics bundle download <bundle_id> --output <path>",
             "  pcvcli account list",
             "  pcvcli account create --username NAME --role ROLE --password-env VAR|--password-stdin --yes",
-            "  pcvcli account disable NAME --yes"
+            "  pcvcli account disable NAME --yes",
+            "  pcvcli console novnc-target preview --host 127.0.0.1 --port 5900 [--allow-lan-target] [--reason TEXT]"
         ]);
     }
 

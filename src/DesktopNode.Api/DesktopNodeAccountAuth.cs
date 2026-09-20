@@ -93,7 +93,8 @@ public sealed record DesktopNodeConsoleOptions(
     bool Enabled = true,
     bool NoVncEnabled = false,
     string? NoVncWebSocketPath = null,
-    string NoVncBridgeMode = "disabled");
+    string NoVncBridgeMode = "disabled",
+    bool AllowLan = false);
 
 public static class DesktopNodeAccountPassword
 {
@@ -670,6 +671,7 @@ public sealed class DesktopNodeAccountAuthService
                 ["operate"] = "operator",
                 ["diagnostics.create"] = "operator",
                 ["console.view"] = "operator",
+                ["console.configure"] = "admin",
                 ["account.manage"] = "admin"
             }
         };
@@ -848,7 +850,7 @@ public sealed class DesktopNodeAccountAuthService
     {
         return NormalizeRole(role) switch
         {
-            "admin" => ["*", "read", "operate", "job.control", "diagnostics.read", "diagnostics.create", "console.view", "account.manage"],
+            "admin" => ["*", "read", "operate", "job.control", "diagnostics.read", "diagnostics.create", "console.view", "console.configure", "account.manage"],
             "operator" => ["read", "operate", "job.control", "diagnostics.read", "diagnostics.create", "console.view"],
             _ => ["read"]
         };

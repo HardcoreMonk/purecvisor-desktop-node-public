@@ -702,6 +702,35 @@
               ]
             }
           }
+        },
+        {
+          "operation_id": "console.novnc-target.preview",
+          "method": "POST",
+          "route_template": "/api/v1/console/novnc-target/preview",
+          "required_permission": "console.configure",
+          "present_surfaces": [
+            "api",
+            "cli"
+          ],
+          "excluded_surfaces": [
+            {
+              "surface": "web",
+              "reason": "noVNC target configuration stays CLI/API; Web Console keeps Console Access Card readback without a save form."
+            }
+          ],
+          "surface_bindings": {
+            "cli": {
+              "command": [
+                "console",
+                "novnc-target",
+                "preview",
+                "--host",
+                "127.0.0.1",
+                "--port",
+                "5900"
+              ]
+            }
+          }
         }
       ]
     },

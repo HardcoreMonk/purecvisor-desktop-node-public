@@ -44,7 +44,7 @@ feature promotion evidence를 서로 다른 계약으로 유지한다.
 | <a id="pcv-console-capabilities"></a>`pcv.console.capabilities` | Console capability discovery | 1 | 1 present / 0 excluded | 0 present / 1 excluded |
 | <a id="pcv-network-inventory"></a>`pcv.network.inventory` | Network inventory | 1 | 1 present / 0 excluded | 1 present / 0 excluded |
 | <a id="pcv-vm-delete"></a>`pcv.vm.delete` | VM delete lifecycle | 2 | 2 present / 0 excluded | 2 present / 0 excluded |
-| <a id="pcv-vm-console-handoff"></a>`pcv.vm.console-handoff` | VM console handoff | 1 | 1 present / 0 excluded | 1 present / 0 excluded |
+| <a id="pcv-vm-console-handoff"></a>`pcv.vm.console-handoff` | VM console handoff | 2 | 1 present / 1 excluded | 2 present / 0 excluded |
 | <a id="pcv-vm-telemetry"></a>`pcv.vm.telemetry` | VM telemetry | 2 | 0 present / 2 excluded | 2 present / 0 excluded |
 | <a id="pcv-vm-qos"></a>`pcv.vm.qos` | VM QoS | 6 | 6 present / 0 excluded | 6 present / 0 excluded |
 | <a id="pcv-vm-guest-service-readback"></a>`pcv.vm.guest-service-readback` | Guest service readback | 2 | 2 present / 0 excluded | 2 present / 0 excluded |
@@ -63,7 +63,7 @@ feature promotion evidence를 서로 다른 계약으로 유지한다.
 | <a id="pcv-vm-media-attach"></a>`pcv.vm.media-attach` | VM media attach | 1 | 1 present / 0 excluded | 1 present / 0 excluded |
 | <a id="pcv-vm-resource-limits"></a>`pcv.vm.resource-limits` | VM resource limits | 4 | 3 present / 1 excluded | 4 present / 0 excluded |
 
-## 68-route surface 투영
+## 69-route surface 투영
 
 | Feature ID | Operation ID | Canonical API route | Permission | Web Console | PCVCLI |
 |---|---|---|---|---|---|
@@ -94,6 +94,7 @@ feature promotion evidence를 서로 다른 계약으로 유지한다.
 | `pcv.vm.delete` | `vm.delete-status` | `GET /api/v1/vms/{vmId}/delete-status` | `read` | present — `vm.delete-status` | present — `pcvcli vm delete-status vm-01` |
 | `pcv.vm.delete` | `vm.delete` | `DELETE /api/v1/vms/{vmId}` | `operate` | present — `vm.delete` | present — `pcvcli vm delete vm-01 --yes` |
 | `pcv.vm.console-handoff` | `console.session` | `GET /api/v1/vms/{vmId}/console` | `console.view` | present — `console.session` | present — `pcvcli vm console vm-01` |
+| `pcv.vm.console-handoff` | `console.novnc-target.preview` | `POST /api/v1/console/novnc-target/preview` | `console.configure` | excluded — noVNC target configuration stays CLI/API; Web Console keeps Console Access Card readback without a save form. | present — `pcvcli console novnc-target preview --host 127.0.0.1 --port 5900` |
 | `pcv.vm.telemetry` | `vm.memory-stats` | `GET /api/v1/vms/{vmId}/memory-stats` | `read` | excluded — Web Console uses inventory and ops-summary projections instead of raw per-VM telemetry endpoints. | present — `pcvcli vm memory-stats vm-01` |
 | `pcv.vm.telemetry` | `vm.cpu-stats` | `GET /api/v1/vms/{vmId}/cpu-stats` | `read` | excluded — Web Console uses inventory and ops-summary projections instead of raw per-VM telemetry endpoints. | present — `pcvcli vm cpu-stats vm-01` |
 | `pcv.vm.qos` | `vm.blkio-get` | `GET /api/v1/vms/{vmId}/blkio` | `read` | present — `vm.blkio-get` | present — `pcvcli vm blkio-get vm-01` |

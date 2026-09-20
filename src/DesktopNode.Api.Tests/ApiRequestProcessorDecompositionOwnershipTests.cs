@@ -164,7 +164,8 @@ public sealed class ApiRequestProcessorDecompositionOwnershipTests
             "HandleVmConsoleSession",
             "BuildConsoleCapabilities",
             "BuildVmConsoleSession",
-            "FormatNoVncWebSocketPath");
+            "FormatNoVncWebSocketPath",
+            "HandleNoVncTargetPreview");
         AssertTypeDeclares("DesktopNodeApiConsoleRouteHandler", "TryHandle", "CreateRuntimePolicy");
         AssertTypeIsCallbackFreeOwner("DesktopNodeApiConsoleRouteHandler");
         AssertApiAssemblyDoesNotDefine("DesktopNodeApiConsoleHandler");

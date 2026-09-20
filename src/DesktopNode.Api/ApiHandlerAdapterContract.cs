@@ -97,6 +97,7 @@ public sealed record ApiHandlerAdapterContract(
                 RuntimeReadOnly("/api/v1/vms/{vmId}/delete-status", "vm.delete-status", "GetVmDeleteStatus", "pcv.vm.delete", "jobs"),
                 NativeReadOnly("/api/v1/vms/{vmId}", "vm.detail", "GetVm", "pcv.vm.inventory", "hyperv-vm"),
                 RuntimeReadOnly("/api/v1/vms/{vmId}/console", "console.session", "GetVmConsoleSession", "pcv.vm.console-handoff", "console", "console.view"),
+                RuntimeProductOperation("/api/v1/console/novnc-target/preview", "console.novnc-target.preview", "PreviewNoVncTarget", "pcv.vm.console-handoff", "console", requiredPermission: "console.configure"),
                 NativeReadOnly("/api/v1/vms/{vmId}/memory-stats", "vm.memory-stats", "GetVmMemoryStats", "pcv.vm.telemetry", "hyperv-vm"),
                 NativeReadOnly("/api/v1/vms/{vmId}/cpu-stats", "vm.cpu-stats", "GetVmCpuStats", "pcv.vm.telemetry", "hyperv-vm"),
                 NativeReadOnly("/api/v1/vms/{vmId}/blkio", "vm.blkio-get", "GetVmBlockIoPolicy", "pcv.vm.qos", "hyperv-vm-qos"),

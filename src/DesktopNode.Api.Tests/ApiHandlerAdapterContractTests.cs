@@ -71,8 +71,8 @@ public sealed class ApiHandlerAdapterContractTests
 
         var contract = ApiHandlerAdapterContract.CreateDefault();
         Assert.Equal(28, featureIds.Count);
-        Assert.Equal(68, ledgerRoutes.Count);
-        Assert.Equal(68, contract.Routes.Count);
+        Assert.Equal(69, ledgerRoutes.Count);
+        Assert.Equal(69, contract.Routes.Count);
         foreach (var route in contract.Routes)
         {
             Assert.Matches("^pcv\\.[a-z0-9._-]+$", route.FeatureId);
@@ -111,8 +111,8 @@ public sealed class ApiHandlerAdapterContractTests
         var contract = ApiHandlerAdapterContract.CreateDefault();
         var routes = contract.Routes.ToDictionary(route => (route.Method, route.RouteTemplate));
 
-        Assert.Equal(68, contract.Routes.Count);
-        Assert.Equal(68, routes.Count);
+        Assert.Equal(69, contract.Routes.Count);
+        Assert.Equal(69, routes.Count);
 
         AssertRoute(routes[("GET", "/api/v1/runtime/policy")], "GET", "RuntimePolicy", MutationStance.ReadOnly);
         AssertRoute(routes[("GET", "/api/v1/host/status")], "GET", "HostStatus", MutationStance.ReadOnly);
@@ -139,6 +139,7 @@ public sealed class ApiHandlerAdapterContractTests
         AssertRoute(routes[("GET", "/api/v1/console/capabilities")], "GET", "GetConsoleCapabilities", MutationStance.ReadOnly);
         AssertRoute(routes[("GET", "/api/v1/vms/{vmId}")], "GET", "GetVm", MutationStance.ReadOnly);
         AssertRoute(routes[("GET", "/api/v1/vms/{vmId}/console")], "GET", "GetVmConsoleSession", MutationStance.ReadOnly);
+        AssertRoute(routes[("POST", "/api/v1/console/novnc-target/preview")], "POST", "PreviewNoVncTarget", MutationStance.ProductOperation);
         AssertRoute(routes[("GET", "/api/v1/vms/{vmId}/memory-stats")], "GET", "GetVmMemoryStats", MutationStance.ReadOnly);
         AssertRoute(routes[("GET", "/api/v1/vms/{vmId}/cpu-stats")], "GET", "GetVmCpuStats", MutationStance.ReadOnly);
         AssertRoute(routes[("GET", "/api/v1/vms/{vmId}/blkio")], "GET", "GetVmBlockIoPolicy", MutationStance.ReadOnly);
@@ -190,7 +191,7 @@ public sealed class ApiHandlerAdapterContractTests
         AssertRoute(routes[("POST", "/api/v1/vms/{vmId}/set-vcpu")], "POST", "QueueSetVmVcpu", MutationStance.QueuedMutation);
         AssertRoute(routes[("POST", "/api/v1/vms/{vmId}/disk-resize")], "POST", "QueueResizeVmDisk", MutationStance.QueuedMutation);
         AssertRoute(routes[("DELETE", "/api/v1/vms/{vmId}")], "DELETE", "QueueDeleteVm", MutationStance.QueuedMutation);
-        Assert.Equal(16, contract.Routes.Count(route => route.MutationStance == MutationStance.ProductOperation));
+        Assert.Equal(17, contract.Routes.Count(route => route.MutationStance == MutationStance.ProductOperation));
         Assert.Equal(29, contract.Routes.Count(route => route.MutationStance == MutationStance.QueuedMutation));
         Assert.DoesNotContain(contract.Routes, route => route.RouteTemplate == "/api/v1/vms/{vmId}/lifecycle/{action}");
         Assert.DoesNotContain(contract.Routes, route => route.RouteTemplate.Contains("/evidence", StringComparison.OrdinalIgnoreCase));
@@ -218,9 +219,9 @@ public sealed class ApiHandlerAdapterContractTests
                 System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(snapshot)))
             .ToLowerInvariant();
 
-        Assert.Equal("22d762046f18a8b5a47cac0bcdc1f3aa6700b678a8c4fe5ed0eba392829b15d1", digest);
+        Assert.Equal("8e6eb61af8042c81d68abdd1c29040f635a2c8be886e2c9f7c1ebc26e0f247d0", digest);
         Assert.Equal(23, routes.Count(route => route.MutationStance == MutationStance.ReadOnly));
-        Assert.Equal(16, routes.Count(route => route.MutationStance == MutationStance.ProductOperation));
+        Assert.Equal(17, routes.Count(route => route.MutationStance == MutationStance.ProductOperation));
         Assert.Equal(29, routes.Count(route => route.MutationStance == MutationStance.QueuedMutation));
         Assert.Equal(13, routes.Select(route => route.RouteFamily).Distinct(StringComparer.Ordinal).Count());
     }

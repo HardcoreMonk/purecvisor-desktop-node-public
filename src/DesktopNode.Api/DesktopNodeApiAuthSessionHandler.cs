@@ -127,6 +127,11 @@ internal sealed class DesktopNodeApiAuthSessionHandler
         string method,
         string path)
     {
+        if (request.ServiceBearerAccepted)
+        {
+            return null;
+        }
+
         if (!accountAuth.Ready)
         {
             return null;
@@ -160,6 +165,18 @@ internal sealed class DesktopNodeApiAuthSessionHandler
                 $"Required guest execution permission: {requiredPermission}. Current role: {validation.Principal!.Role}.",
                 false,
                 "Grant the explicit ADR-0009 guest execution capability before opening this route.");
+        }
+
+        if (string.Equals(requiredPermission, NoVncTargetPolicy.PermissionConfigure, StringComparison.Ordinal))
+        {
+            return DesktopNodeApiResponseFactory.Failure(
+                403,
+                "console.novnc-target.preview",
+                NoVncTargetProblemCodes.ConfigureForbidden,
+                "The current account role is not allowed to configure the noVNC target.",
+                $"Required permission: {requiredPermission}. Current role: {validation.Principal!.Role}.",
+                false,
+                "Grant console.configure or use the service bearer.");
         }
 
         return DesktopNodeApiResponseFactory.Failure(
@@ -200,6 +217,18 @@ internal sealed class DesktopNodeApiAuthSessionHandler
         }
 
         return "read";
+    }
+
+    public NoVncTargetAuthContext ResolveNoVncAuth(DesktopNodeApiRequest request)
+    {
+        var access = accountAuth.Ready
+            ? accountAuth.ValidateAccessToken(request.Authorization)
+            : new DesktopNodeAuthValidationResult(false, null, null);
+        return new NoVncTargetAuthContext(
+            HasConsoleConfigure: access.Ok &&
+                access.Principal is not null &&
+                accountAuth.HasPermission(access.Principal, NoVncTargetPolicy.PermissionConfigure),
+            HasServiceBearer: request.ServiceBearerAccepted);
     }
 
     private AccountMutationAuthContext ResolveMutationAuth(DesktopNodeApiRequest request)

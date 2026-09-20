@@ -125,7 +125,7 @@ public sealed partial class DesktopNodeApiRequestProcessor
         // this lock is the mutual exclusion between request handling and the worker tick,
         // so a second lock object would silently drop that exclusion.
         throttle = new DesktopNodeApiRequestThrottle(this.hardeningOptions, sync);
-        consoleRouteHandler = new DesktopNodeApiConsoleRouteHandler(resolvedConsoleOptions);
+        consoleRouteHandler = new DesktopNodeApiConsoleRouteHandler(resolvedConsoleOptions, authSessionHandler);
         guestExecutionRouteHandler = new DesktopNodeApiGuestExecutionRouteHandler(authSessionHandler);
         jobRouteHandler = new DesktopNodeApiJobRouteHandler(jobRuntime);
         vmReadRouteHandler = new DesktopNodeApiVmReadRouteHandler(operationInvoker, jobRouteHandler);
@@ -309,7 +309,7 @@ public sealed partial class DesktopNodeApiRequestProcessor
                 consoleRouteHandler.CreateRuntimePolicy()));
         }
 
-        var consoleRouteResponse = consoleRouteHandler.TryHandle(method, path);
+        var consoleRouteResponse = consoleRouteHandler.TryHandle(request, method, path);
         if (consoleRouteResponse is not null)
         {
             return consoleRouteResponse;

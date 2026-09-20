@@ -123,7 +123,8 @@ public sealed partial class DesktopNodeHostApplication : IDisposable
             var consoleOptions = new DesktopNodeConsoleOptions(
                 NoVncEnabled: options.NoVncBridgeEnabled,
                 NoVncWebSocketPath: options.NoVncWebSocketPath,
-                NoVncBridgeMode: options.NoVncBridgeEnabled ? "websocket-to-vnc-tcp" : "disabled");
+                NoVncBridgeMode: options.NoVncBridgeEnabled ? "websocket-to-vnc-tcp" : "disabled",
+                AllowLan: options.AllowLan);
 
             return Task.FromResult(new DesktopNodeHostApplication(
                 bindings,

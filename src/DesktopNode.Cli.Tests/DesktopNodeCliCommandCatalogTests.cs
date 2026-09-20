@@ -44,13 +44,15 @@ public sealed class DesktopNodeCliCommandCatalogTests
     [InlineData("job reconcile job-123", "POST", "/api/v1/jobs/job-123/reconcile")]
     [InlineData("diagnostics bundle list", "GET", "/api/v1/diagnostics/bundles")]
     [InlineData("diagnostics bundle create", "POST", "/api/v1/diagnostics/bundles")]
+    [InlineData("console novnc-target preview --host 127.0.0.1 --port 5900", "POST", "/api/v1/console/novnc-target/preview")]
     public void RoutesCommandsToLocalApiRequests(string commandLine, string method, string path)
     {
         var request = DesktopNodeCliCommandCatalog.CreateRequest(Split(commandLine));
 
         Assert.Equal(method, request.Method);
         Assert.Equal(path, request.Path);
-        if (path.EndsWith("/attach", StringComparison.Ordinal))
+        if (path.EndsWith("/attach", StringComparison.Ordinal) ||
+            path.EndsWith("/novnc-target/preview", StringComparison.Ordinal))
         {
             Assert.NotNull(request.Body);
             return;
@@ -803,7 +805,7 @@ public sealed class DesktopNodeCliCommandCatalogTests
             }
         }
 
-        Assert.Equal(61, presentCount);
+        Assert.Equal(62, presentCount);
         Assert.Equal(7, excludedCount);
     }
 
@@ -832,6 +834,7 @@ public sealed class DesktopNodeCliCommandCatalogTests
         Assert.Contains("pcvcli account list", usage, StringComparison.Ordinal);
         Assert.Contains("pcvcli account create --username NAME --role ROLE --password-env VAR|--password-stdin --yes", usage, StringComparison.Ordinal);
         Assert.Contains("pcvcli account disable NAME --yes", usage, StringComparison.Ordinal);
+        Assert.Contains("pcvcli console novnc-target preview --host 127.0.0.1 --port 5900", usage, StringComparison.Ordinal);
         Assert.DoesNotContain("pcvcli snapshot list|create|rollback|delete", usage, StringComparison.Ordinal);
         Assert.DoesNotContain("pcvcli console capabilities", usage, StringComparison.Ordinal);
         Assert.DoesNotContain("  pcv [--api URL]", usage);
@@ -844,7 +847,8 @@ public sealed class DesktopNodeCliCommandCatalogTests
             DesktopNodeCliCommandCatalog.CreateRequest(["console", "capabilities"]));
 
         Assert.Contains("PCV_CLI_USAGE", error.Message, StringComparison.Ordinal);
-        Assert.Contains("Unknown command group 'console'", error.Message, StringComparison.Ordinal);
+        Assert.Contains("console novnc-target preview", error.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain("Unknown command group 'console'", error.Message, StringComparison.Ordinal);
     }
 
     [Fact]

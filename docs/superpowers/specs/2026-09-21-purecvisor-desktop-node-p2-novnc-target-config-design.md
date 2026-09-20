@@ -2,7 +2,7 @@
 
 - Design-ID: `purecvisor-desktop-node-p2-novnc-target-config-v1`
 - 작성일: `2026-09-21`
-- 문서 상태: `implemented-slice-1`
+- 문서 상태: `implemented-slice-2`
 - 소스 기획: `docs/SERVICE_PLAN.md` §7.1 P2-11
 - 선행: ADR-0010 후보, `GET /api/v1/console/capabilities`, Host `--novnc-target-host`/`--novnc-target-port`
 - host mutation: `false`
@@ -115,7 +115,8 @@ token, password, JWT, credential 값은 금지. LAN host는 Event Log/diagnostic
 
 - `POST /api/v1/console/novnc-target/preview`.
 - `pcvcli console novnc-target preview --host 127.0.0.1 --port 5900`.
-- catalog 68→69, ProductOperation 16→17. set/clear와 Web 저장 폼은 이 slice가 아니다.
+- catalog 68→69, ProductOperation 16→17, digest `8e6eb61af8042c81d68abdd1c29040f635a2c8be886e2c9f7c1ebc26e0f247d0`.
+  set/clear와 Web 저장 폼은 이 slice가 아니다.
 
 ## Slice 3 — queued set/clear
 
