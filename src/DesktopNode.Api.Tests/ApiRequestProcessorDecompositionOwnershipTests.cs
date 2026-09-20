@@ -205,6 +205,7 @@ public sealed class ApiRequestProcessorDecompositionOwnershipTests
             "ReconcileCheckpointCreateJob",
             "ReconcileCheckpointRestoreJob",
             "ReconcileVmCreateJob",
+            "ReconcileVmShutdownJob",
             "RenderReconciliationResult",
             "ReconciliationRequiredError",
             "BuildVmRenameParameters",
@@ -212,11 +213,13 @@ public sealed class ApiRequestProcessorDecompositionOwnershipTests
             "BuildCheckpointCreateParameters",
             "BuildCheckpointRestoreParameters",
             "BuildVmCreateParameters",
+            "BuildVmShutdownParameters",
             "CaptureVmRenameBaseline",
             "CaptureVmDeleteBaseline",
             "CaptureCheckpointCreateBaseline",
             "CaptureCheckpointRestoreBaseline",
             "CaptureVmCreateBaseline",
+            "CaptureVmShutdownBaseline",
             "BuildVmRenameFingerprint",
             "BuildVmDeleteFingerprint",
             "IsManagedVm",
@@ -226,7 +229,11 @@ public sealed class ApiRequestProcessorDecompositionOwnershipTests
             "TryReadCapturedCheckpointCreateBaseline",
             "TryReadCapturedCheckpointRestoreBaseline",
             "TryReadCapturedVmCreateBaseline",
-            "CreateFingerprintMatches");
+            "TryReadCapturedVmShutdownBaseline",
+            "CreateFingerprintMatches",
+            "BuildVmShutdownIdentityFingerprint",
+            "ShutdownIdentityMatches",
+            "NormalizePowerState");
         AssertTypeDeclares(
             "DesktopNodeApiJobReconciliationHandler",
             "TryHandle",
@@ -234,7 +241,8 @@ public sealed class ApiRequestProcessorDecompositionOwnershipTests
             "BuildVmDeleteParameters",
             "BuildCheckpointCreateParameters",
             "BuildCheckpointRestoreParameters",
-            "BuildVmCreateParameters");
+            "BuildVmCreateParameters",
+            "BuildVmShutdownParameters");
         AssertTypeIsCallbackFreeOwner("DesktopNodeApiJobReconciliationHandler");
     }
 

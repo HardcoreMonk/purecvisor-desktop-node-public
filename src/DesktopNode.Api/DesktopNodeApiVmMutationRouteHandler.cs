@@ -162,8 +162,21 @@ internal sealed class DesktopNodeApiVmMutationRouteHandler
                         request.RequestId!));
                 }
 
-            case "QueueStartVm":
             case "QueueShutdownVm":
+                {
+                    var routeId = DesktopNodeApiRequestParsing.DecodeRouteId(routeMatch.Parameters["vmId"], "vm.shutdown");
+                    if (!routeId.Ok)
+                    {
+                        return routeId.Response!;
+                    }
+
+                    return DesktopNodeApiResponseFactory.JobCreated(CreateJob(
+                        "vm.shutdown",
+                        reconciliationHandler.BuildVmShutdownParameters(routeId.Value!, cancellationToken),
+                        request.RequestId!));
+                }
+
+            case "QueueStartVm":
             case "QueuePowerOffVm":
             case "QueueRestartVm":
             case "QueuePauseVm":
@@ -180,7 +193,6 @@ internal sealed class DesktopNodeApiVmMutationRouteHandler
                     var lifecycleOperation = routeMatch.Route.OperationName switch
                     {
                         "QueueStartVm" => "vm.start",
-                        "QueueShutdownVm" => "vm.shutdown",
                         "QueuePowerOffVm" => "vm.poweroff",
                         "QueueRestartVm" => "vm.restart",
                         "QueuePauseVm" => "vm.pause",

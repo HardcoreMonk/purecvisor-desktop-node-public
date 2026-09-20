@@ -244,7 +244,8 @@ public sealed partial class DesktopNodeJobRuntime
             string.Equals(operation, "vm.delete", StringComparison.Ordinal) ||
             string.Equals(operation, "checkpoint.create", StringComparison.Ordinal) ||
             string.Equals(operation, "checkpoint.restore", StringComparison.Ordinal) ||
-            string.Equals(operation, "vm.create", StringComparison.Ordinal);
+            string.Equals(operation, "vm.create", StringComparison.Ordinal) ||
+            string.Equals(operation, "vm.shutdown", StringComparison.Ordinal);
     }
 
     private static DesktopNodeJobRuntimeError ReconciliationRequiredError(
@@ -257,6 +258,7 @@ public sealed partial class DesktopNodeJobRuntime
         {
             "vm.delete" => "delete",
             "vm.create" => "create",
+            "vm.shutdown" => "shutdown",
             "checkpoint.create" => "checkpoint create",
             "checkpoint.restore" => "checkpoint restore",
             _ => "rename"

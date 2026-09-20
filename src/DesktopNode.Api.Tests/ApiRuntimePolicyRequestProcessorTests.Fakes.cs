@@ -108,6 +108,16 @@ public sealed partial class ApiRuntimePolicyRequestProcessorTests
         public bool TryInvoke(string operation, JsonElement parameters, CancellationToken cancellationToken, out DesktopNodeHyperVOperationResult result)
         {
             calls.Add(new DesktopNodeHyperVOperationCall(operation, parameters.GetRawText()));
+            if (string.Equals(operation, "vm.list", StringComparison.Ordinal))
+            {
+                result = new DesktopNodeHyperVOperationResult(
+                    Ok: true,
+                    Operation: operation,
+                    Data: JsonSerializer.SerializeToElement(Array.Empty<object>()),
+                    Error: null);
+                return true;
+            }
+
             var action = operation switch
             {
                 "vm.start" => "start",

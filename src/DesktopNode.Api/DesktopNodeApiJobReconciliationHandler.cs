@@ -38,6 +38,7 @@ internal sealed class DesktopNodeApiJobReconciliationHandler
     private const string CheckpointCreateReconciliationSchema = "pcv-checkpoint-create-reconciliation/v1";
     private const string CheckpointRestoreReconciliationSchema = "pcv-checkpoint-restore-reconciliation/v1";
     private const string VmCreateReconciliationSchema = "pcv-vm-create-reconciliation/v1";
+    private const string VmShutdownReconciliationSchema = "pcv-vm-shutdown-reconciliation/v1";
 
     private DesktopNodeApiResponse HandleJobReconcile(
         string jobId,
@@ -90,6 +91,13 @@ internal sealed class DesktopNodeApiJobReconciliationHandler
             return ReconcileVmCreateJob(job, cancellationToken);
         }
 
+        if (string.Equals(job.Operation, "vm.shutdown", StringComparison.Ordinal) &&
+            string.Equals(job.Status, "failed", StringComparison.Ordinal) &&
+            string.Equals(job.Error?.Code, "PCV_JOB_INTERRUPTED", StringComparison.Ordinal))
+        {
+            return ReconcileVmShutdownJob(job, cancellationToken);
+        }
+
         if (!string.Equals(job.Operation, "vm.rename", StringComparison.Ordinal) ||
             !string.Equals(job.Status, "failed", StringComparison.Ordinal) ||
             !string.Equals(job.Error?.Code, "PCV_JOB_INTERRUPTED", StringComparison.Ordinal))
@@ -101,7 +109,7 @@ internal sealed class DesktopNodeApiJobReconciliationHandler
                 ReconciliationRequiredError(
                     jobId,
                     "job-not-reconcilable",
-                    "Only a failed vm.rename, vm.delete, checkpoint.create, checkpoint.restore, or vm.create job with PCV_JOB_INTERRUPTED can be reconciled.",
+                    "Only a failed vm.rename, vm.delete, checkpoint.create, checkpoint.restore, vm.create, or vm.shutdown job with PCV_JOB_INTERRUPTED can be reconciled.",
                     job.Operation));
             return RenderReconciliationResult(jobRuntime.Reconcile(jobId, assessment));
         }
@@ -564,6 +572,111 @@ internal sealed class DesktopNodeApiJobReconciliationHandler
         return RenderReconciliationResult(jobRuntime.Reconcile(jobId, requiredAssessment));
     }
 
+    private DesktopNodeApiResponse ReconcileVmShutdownJob(
+        DesktopNodeJobSnapshot job,
+        CancellationToken cancellationToken)
+    {
+        var jobId = job.JobId;
+        var vmName = DesktopNodeApiJsonReader.ReadString(job.Parameters, "name");
+        var metadata = DesktopNodeApiJsonReader.ReadElement(job.Parameters, "reconciliation");
+        if (string.IsNullOrWhiteSpace(vmName) ||
+            !TryReadCapturedVmShutdownBaseline(metadata, vmName, out var baseline))
+        {
+            var assessment = new DesktopNodeJobReconciliationAssessment(
+                false,
+                "baseline-unavailable",
+                null,
+                ReconciliationRequiredError(
+                    jobId,
+                    "baseline-unavailable",
+                    "The durable vm.shutdown baseline was not captured or is not structurally valid.",
+                    "vm.shutdown"));
+            return RenderReconciliationResult(jobRuntime.Reconcile(jobId, assessment));
+        }
+
+        using var readbackTimeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        readbackTimeout.CancelAfter(TimeSpan.FromSeconds(Math.Max(1, hardeningOptions.RouteTimeoutSeconds)));
+        var readback = operationInvoker.Invoke("vm.list", DesktopNodeApiResponseFactory.EmptyObject(), readbackTimeout.Token);
+        if (!readback.Ok || readback.Data is null)
+        {
+            var providerCode = readback.Error?.Code ?? "PCV_VM_LIST_FAILED";
+            var assessment = new DesktopNodeJobReconciliationAssessment(
+                false,
+                "readback-unavailable",
+                null,
+                ReconciliationRequiredError(
+                    jobId,
+                    "readback-unavailable",
+                    $"Provider vm.list readback failed with {providerCode}; no mutation was attempted.",
+                    "vm.shutdown"));
+            return RenderReconciliationResult(jobRuntime.Reconcile(jobId, assessment));
+        }
+
+        var matching = DesktopNodeApiJsonReader.EnumerateVmList(readback.Data.Value)
+            .Where(vm => string.Equals(DesktopNodeApiJsonReader.GetStringProperty(vm, "name"), vmName, StringComparison.OrdinalIgnoreCase))
+            .ToArray();
+        if (matching.Length == 1 &&
+            ShutdownIdentityMatches(baseline.BeforeFingerprint, matching[0]))
+        {
+            var observedState = NormalizePowerState(DesktopNodeApiJsonReader.GetStringProperty(matching[0], "state"));
+            if (observedState == "off")
+            {
+                var result = DesktopNodeApiResponseFactory.JsonFromObject(new SortedDictionary<string, object?>
+                {
+                    ["action"] = "reconciled",
+                    ["operation"] = "vm.shutdown",
+                    ["reconciliation"] = new SortedDictionary<string, object?>
+                    {
+                        ["schema"] = baseline.Schema,
+                        ["classification"] = "postcondition-confirmed",
+                        ["before"] = baseline.Before,
+                        ["expected_after"] = baseline.ExpectedAfter,
+                        ["observed"] = matching[0]
+                    }
+                });
+                return RenderReconciliationResult(jobRuntime.Reconcile(
+                    jobId,
+                    new DesktopNodeJobReconciliationAssessment(
+                        true,
+                        "postcondition-confirmed",
+                        result)));
+            }
+
+            var sameAsBaseline = string.Equals(observedState, baseline.BeforeState, StringComparison.Ordinal);
+            var classification = sameAsBaseline
+                ? "not-applied"
+                : "incomplete-power-state";
+            return RenderReconciliationResult(jobRuntime.Reconcile(
+                jobId,
+                new DesktopNodeJobReconciliationAssessment(
+                    false,
+                    classification,
+                    null,
+                    ReconciliationRequiredError(
+                        jobId,
+                        classification,
+                        "Provider vm.list readback did not prove the captured VM is Off.",
+                        "vm.shutdown"))));
+        }
+
+        var identityClassification = matching.Length == 0
+            ? "expected-target-not-observed"
+            : matching.Length > 1
+                ? "ambiguous-duplicate-names"
+                : "identity-mismatch";
+        return RenderReconciliationResult(jobRuntime.Reconcile(
+            jobId,
+            new DesktopNodeJobReconciliationAssessment(
+                false,
+                identityClassification,
+                null,
+                ReconciliationRequiredError(
+                    jobId,
+                    identityClassification,
+                    "Provider vm.list readback did not prove a unique VM identity for shutdown reconciliation.",
+                    "vm.shutdown"))));
+    }
+
     private DesktopNodeApiResponse RenderReconciliationResult(DesktopNodeJobReconciliationResult result)
     {
         return result.Outcome switch
@@ -584,6 +697,7 @@ internal sealed class DesktopNodeApiJobReconciliationHandler
         {
             "vm.delete" => "delete",
             "vm.create" => "create",
+            "vm.shutdown" => "shutdown",
             "checkpoint.create" => "checkpoint create",
             "checkpoint.restore" => "checkpoint restore",
             _ => "rename"
@@ -668,6 +782,16 @@ internal sealed class DesktopNodeApiJobReconciliationHandler
             CaptureVmCreateBaseline(name, generation, cancellationToken).GetRawText());
         using var document = JsonDocument.Parse(payload.ToJsonString());
         return document.RootElement.Clone();
+    }
+
+    public JsonElement BuildVmShutdownParameters(string vmName, CancellationToken cancellationToken)
+    {
+        var reconciliation = CaptureVmShutdownBaseline(vmName, cancellationToken);
+        return DesktopNodeApiResponseFactory.JsonFromObject(new SortedDictionary<string, object?>
+        {
+            ["name"] = vmName,
+            ["reconciliation"] = reconciliation
+        });
     }
 
     private JsonElement CaptureVmCreateBaseline(
@@ -755,6 +879,72 @@ internal sealed class DesktopNodeApiJobReconciliationHandler
                 ["capture_error_code"] = "PCV_VM_LIST_FAILED",
                 ["before"] = null,
                 ["expected_before"] = expectedBefore,
+                ["expected_after"] = expectedAfter
+            });
+        }
+    }
+
+    private JsonElement CaptureVmShutdownBaseline(string vmName, CancellationToken cancellationToken)
+    {
+        var expectedAfter = new SortedDictionary<string, object?>
+        {
+            ["name"] = vmName,
+            ["state"] = "off"
+        };
+
+        try
+        {
+            using var readbackTimeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            readbackTimeout.CancelAfter(TimeSpan.FromSeconds(Math.Max(1, hardeningOptions.RouteTimeoutSeconds)));
+            var readback = operationInvoker.Invoke("vm.list", DesktopNodeApiResponseFactory.EmptyObject(), readbackTimeout.Token);
+            if (!readback.Ok || readback.Data is null)
+            {
+                return DesktopNodeApiResponseFactory.JsonFromObject(new SortedDictionary<string, object?>
+                {
+                    ["schema"] = VmShutdownReconciliationSchema,
+                    ["capture_status"] = "unavailable",
+                    ["capture_error_code"] = readback.Error?.Code ?? "PCV_VM_LIST_FAILED",
+                    ["before"] = null,
+                    ["before_fingerprint"] = null,
+                    ["expected_after"] = expectedAfter
+                });
+            }
+
+            var matches = DesktopNodeApiJsonReader.EnumerateVmList(readback.Data.Value)
+                .Where(vm => string.Equals(DesktopNodeApiJsonReader.GetStringProperty(vm, "name"), vmName, StringComparison.OrdinalIgnoreCase))
+                .ToArray();
+            if (matches.Length != 1)
+            {
+                return DesktopNodeApiResponseFactory.JsonFromObject(new SortedDictionary<string, object?>
+                {
+                    ["schema"] = VmShutdownReconciliationSchema,
+                    ["capture_status"] = "unavailable",
+                    ["capture_error_code"] = matches.Length == 0 ? "PCV_VM_NOT_FOUND" : "PCV_VM_IDENTITY_AMBIGUOUS",
+                    ["before"] = null,
+                    ["before_fingerprint"] = null,
+                    ["expected_after"] = expectedAfter
+                });
+            }
+
+            var before = matches[0].Clone();
+            return DesktopNodeApiResponseFactory.JsonFromObject(new SortedDictionary<string, object?>
+            {
+                ["schema"] = VmShutdownReconciliationSchema,
+                ["capture_status"] = "captured",
+                ["before"] = before,
+                ["before_fingerprint"] = BuildVmShutdownIdentityFingerprint(before),
+                ["expected_after"] = expectedAfter
+            });
+        }
+        catch (Exception)
+        {
+            return DesktopNodeApiResponseFactory.JsonFromObject(new SortedDictionary<string, object?>
+            {
+                ["schema"] = VmShutdownReconciliationSchema,
+                ["capture_status"] = "unavailable",
+                ["capture_error_code"] = "PCV_VM_LIST_FAILED",
+                ["before"] = null,
+                ["before_fingerprint"] = null,
                 ["expected_after"] = expectedAfter
             });
         }
@@ -1155,6 +1345,47 @@ internal sealed class DesktopNodeApiJobReconciliationHandler
         });
     }
 
+    private static JsonElement BuildVmShutdownIdentityFingerprint(JsonElement vm)
+    {
+        return DesktopNodeApiResponseFactory.JsonFromObject(new SortedDictionary<string, object?>
+        {
+            ["platform"] = DesktopNodeApiJsonReader.GetStringProperty(vm, "platform"),
+            ["guest_family"] = DesktopNodeApiJsonReader.GetStringProperty(vm, "guest_family"),
+            ["cpu_count"] = DesktopNodeApiJsonReader.ReadNestedElement(vm, "cpu", "count"),
+            ["startup_memory_mb"] = DesktopNodeApiJsonReader.ReadNestedElement(vm, "memory", "startup_mb"),
+            ["generation"] = DesktopNodeApiJsonReader.ReadElement(vm, "generation"),
+            ["managed_by_purecvisor"] = DesktopNodeApiJsonReader.ReadElement(vm, "managed_by_purecvisor")
+        });
+    }
+
+    private static bool ShutdownIdentityMatches(JsonElement beforeFingerprint, JsonElement observed)
+    {
+        if (beforeFingerprint.ValueKind != JsonValueKind.Object || observed.ValueKind != JsonValueKind.Object)
+        {
+            return false;
+        }
+
+        return JsonNode.DeepEquals(
+            JsonNode.Parse(beforeFingerprint.GetRawText()),
+            JsonNode.Parse(BuildVmShutdownIdentityFingerprint(observed).GetRawText()));
+    }
+
+    private static string NormalizePowerState(string? state)
+    {
+        var value = (state ?? string.Empty).Trim().ToLowerInvariant();
+        if (value is "off" or "stopped")
+        {
+            return "off";
+        }
+
+        if (value.Contains("running", StringComparison.Ordinal))
+        {
+            return "running";
+        }
+
+        return value;
+    }
+
     private static JsonElement BuildVmDeleteFingerprint(JsonElement vm)
     {
         return BuildVmRenameFingerprint(vm);
@@ -1257,6 +1488,48 @@ internal sealed class DesktopNodeApiJobReconciliationHandler
             VmDeleteReconciliationSchema,
             before.Value.Clone(),
             beforeFingerprint.Value.Clone());
+        return true;
+    }
+
+    private static bool TryReadCapturedVmShutdownBaseline(
+        JsonElement? metadata,
+        string vmName,
+        out VmShutdownBaseline baseline)
+    {
+        baseline = null!;
+        if (metadata is null || metadata.Value.ValueKind != JsonValueKind.Object)
+        {
+            return false;
+        }
+
+        var value = metadata.Value;
+        if (!string.Equals(DesktopNodeApiJsonReader.ReadString(value, "schema"), VmShutdownReconciliationSchema, StringComparison.Ordinal) ||
+            !string.Equals(DesktopNodeApiJsonReader.ReadString(value, "capture_status"), "captured", StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        var before = DesktopNodeApiJsonReader.ReadElement(value, "before");
+        var beforeFingerprint = DesktopNodeApiJsonReader.ReadElement(value, "before_fingerprint");
+        var expectedAfter = DesktopNodeApiJsonReader.ReadElement(value, "expected_after");
+        if (before is null ||
+            beforeFingerprint is null ||
+            expectedAfter is null ||
+            before.Value.ValueKind != JsonValueKind.Object ||
+            beforeFingerprint.Value.ValueKind != JsonValueKind.Object ||
+            !string.Equals(DesktopNodeApiJsonReader.ReadString(expectedAfter.Value, "name"), vmName, StringComparison.Ordinal) ||
+            !string.Equals(NormalizePowerState(DesktopNodeApiJsonReader.ReadString(expectedAfter.Value, "state")), "off", StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        baseline = new VmShutdownBaseline(
+            VmShutdownReconciliationSchema,
+            vmName,
+            before.Value.Clone(),
+            beforeFingerprint.Value.Clone(),
+            NormalizePowerState(DesktopNodeApiJsonReader.GetStringProperty(before.Value, "state")),
+            expectedAfter.Value.Clone());
         return true;
     }
 
@@ -1403,5 +1676,13 @@ internal sealed class DesktopNodeApiJobReconciliationHandler
         string Schema,
         string Name,
         int Generation,
+        JsonElement ExpectedAfter);
+
+    private sealed record VmShutdownBaseline(
+        string Schema,
+        string Name,
+        JsonElement Before,
+        JsonElement BeforeFingerprint,
+        string BeforeState,
         JsonElement ExpectedAfter);
 }
