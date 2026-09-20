@@ -50,6 +50,8 @@ internal sealed class DesktopNodeApiHyperVOperationInvoker
             "vm.guest.exec" or
             "vm.guest.channel.verify" or
             "vm.guest.channel.ensure" or
+            "vm.guest.file.preview" or
+            "vm.guest.file" or
             "checkpoint.list" or
             "vm.create" or
             "vm.start" or

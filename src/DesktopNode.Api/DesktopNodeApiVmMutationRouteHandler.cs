@@ -44,6 +44,13 @@ internal sealed class DesktopNodeApiVmMutationRouteHandler
         }
 
         if (method == "POST" &&
+            DesktopNodeApiRuntimeRoutes.TryMatchContract(method, normalizedPath, out var guestFilePreviewMatch) &&
+            string.Equals(guestFilePreviewMatch.Route.OperationName, "PreviewVmGuestFile", StringComparison.Ordinal))
+        {
+            return HandleGuestFilePreviewRoute(request, guestFilePreviewMatch, cancellationToken);
+        }
+
+        if (method == "POST" &&
             DesktopNodeApiRequestParsing.TryMatch(normalizedPath, "^/api/v1/vms/([^/]*)/qos/(storage|network)/preview$", out var qosPreviewMatch))
         {
             return HandleQosPreviewRoute(request, qosPreviewMatch, cancellationToken);
@@ -448,6 +455,9 @@ internal sealed class DesktopNodeApiVmMutationRouteHandler
             case "QueueVmGuestExec":
                 return QueueVmGuestExec(request, routeMatch);
 
+            case "QueueVmGuestFile":
+                return QueueVmGuestFile(request, routeMatch);
+
             case "QueueVerifyVmGuestChannel":
                 return QueueVmGuestChannelVerify(request, routeMatch);
 
@@ -503,6 +513,117 @@ internal sealed class DesktopNodeApiVmMutationRouteHandler
         }
 
         return DesktopNodeApiResponseFactory.JobCreated(CreateJob("vm.limit", DesktopNodeApiResponseFactory.JsonFromObject(parameters), request.RequestId!));
+    }
+
+    private DesktopNodeApiResponse HandleGuestFilePreviewRoute(
+        DesktopNodeApiRequest request,
+        DesktopNodeApiRouteMatch routeMatch,
+        CancellationToken cancellationToken)
+    {
+        var parsed = TryReadGuestFileRequest(
+            request,
+            routeMatch.Parameters["vmId"],
+            "vm.guest.file.preview",
+            out var parameters);
+        if (parsed is not null)
+        {
+            return parsed;
+        }
+
+        return DesktopNodeApiResponseFactory.OperationResponse(operationInvoker.Invoke(
+            "vm.guest.file.preview",
+            DesktopNodeApiResponseFactory.JsonFromObject(parameters),
+            cancellationToken));
+    }
+
+    private DesktopNodeApiResponse QueueVmGuestFile(DesktopNodeApiRequest request, DesktopNodeApiRouteMatch routeMatch)
+    {
+        var parsed = TryReadGuestFileRequest(
+            request,
+            routeMatch.Parameters["vmId"],
+            "vm.guest.file",
+            out var parameters);
+        if (parsed is not null)
+        {
+            return parsed;
+        }
+
+        return DesktopNodeApiResponseFactory.JobCreated(CreateJob(
+            "vm.guest.file",
+            DesktopNodeApiResponseFactory.JsonFromObject(parameters),
+            request.RequestId!));
+    }
+
+    private static DesktopNodeApiResponse? TryReadGuestFileRequest(
+        DesktopNodeApiRequest request,
+        string encodedVmId,
+        string operation,
+        out SortedDictionary<string, object?> parameters)
+    {
+        parameters = [];
+        var routeId = DesktopNodeApiRequestParsing.DecodeRouteId(encodedVmId, operation);
+        if (!routeId.Ok)
+        {
+            return routeId.Response;
+        }
+
+        var parsed = DesktopNodeApiRequestParsing.TryParseBody(request.Body, operation);
+        if (!parsed.Ok)
+        {
+            return parsed.Response;
+        }
+
+        var hostPath = DesktopNodeApiJsonReader.GetStringProperty(parsed.Value!.Value, "host_path");
+        var guestPath = DesktopNodeApiJsonReader.GetStringProperty(parsed.Value.Value, "guest_path");
+        var credentialRef = DesktopNodeApiJsonReader.GetStringProperty(parsed.Value.Value, "credential_ref");
+        var direction = DesktopNodeApiJsonReader.GetStringProperty(parsed.Value.Value, "direction") ?? GuestFileJobContract.DirectionHostToGuest;
+        var sharedFolder = DesktopNodeApiJsonReader.GetStringProperty(parsed.Value.Value, "shared_folder");
+        var timeoutSeconds = DesktopNodeApiJsonReader.ReadInt(parsed.Value.Value, "timeout_sec") ?? 60;
+        var sizeBytes = DesktopNodeApiJsonReader.ReadInt(parsed.Value.Value, "size_bytes");
+        if (timeoutSeconds is < 1 or > 600)
+        {
+            return DesktopNodeApiResponseFactory.Failure(
+                400,
+                operation,
+                GuestExecutionProblemCodes.Timeout,
+                "Guest file timeout is outside the supported range.",
+                "Pass timeout_sec between 1 and 600 seconds.",
+                false);
+        }
+
+        var evaluation = GuestFileJobContract.Evaluate(new GuestFileJobRequest(
+            direction,
+            hostPath,
+            guestPath,
+            sizeBytes ?? 1,
+            credentialRef,
+            sharedFolder));
+        if (!evaluation.Ok)
+        {
+            return DesktopNodeApiResponseFactory.Failure(
+                400,
+                operation,
+                evaluation.ErrorCode ?? GuestFileJobProblemCodes.PathNotAllowed,
+                "Guest file job request is outside the allowlist.",
+                "Use host-to-guest, credential-ref, and allowlisted paths/size. HGFS shared folders are forbidden.",
+                false);
+        }
+
+        parameters = new SortedDictionary<string, object?>
+        {
+            ["name"] = routeId.Value,
+            ["credential_ref"] = credentialRef,
+            ["direction"] = evaluation.Direction,
+            ["guest_path"] = evaluation.NormalizedGuestPath,
+            ["host_path"] = evaluation.NormalizedHostPath,
+            ["timeout_sec"] = timeoutSeconds
+        };
+        if (sizeBytes is not null)
+        {
+            parameters["size_bytes"] = sizeBytes.Value;
+        }
+
+        return null;
     }
 
     private DesktopNodeApiResponse HandleClonePreviewRoute(

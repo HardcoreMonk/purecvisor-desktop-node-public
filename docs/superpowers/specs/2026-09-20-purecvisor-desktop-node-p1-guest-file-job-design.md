@@ -2,7 +2,7 @@
 
 - Design-ID: `purecvisor-desktop-node-p1-guest-file-job-v1`
 - 작성일: `2026-09-20`
-- 문서 상태: `implemented-slice-2`
+- 문서 상태: `implemented-slice-3`
 - 소스 기획: `docs/SERVICE_PLAN.md` §7.1 P1-8
 - 선행: ADR-0009 guest execution, P1-7 template lock
 - host mutation: `false`
@@ -45,11 +45,16 @@ lab에서 ISO/스크립트 한 개를 guest에 넣어야 한다. Workstation HGF
 - Preview는 allowlist + host file 길이. Copy는 PowerShell Direct `Copy-Item -ToSession`.
 - HTTP/CLI/Web은 이 slice가 아니다. Domain catalog 41→43.
 
-## Slice 3 이후 (이번 checkpoint 아님)
+## Slice 3 범위
 
-- `POST /api/v1/vms/{vmId}/guest/file/preview`와 queued `.../guest/file`
-- `pcvcli vm guest-file` `--yes` / `--dry-run`
-- Web은 더 뒤의 slice
+- `POST /api/v1/vms/{vmId}/guest/file/preview` NativeProductOperation.
+- `POST /api/v1/vms/{vmId}/guest/file` queued mutation.
+- `pcvcli vm guest-file <vm> --host-path PATH --guest-path PATH --credential-ref REF --dry-run|--yes`.
+- Web은 excluded. Route catalog 63→65, queued 28→29.
+
+## Slice 4 이후 (이번 checkpoint 아님)
+
+- Web Console guest-file control
 
 ## 비목표
 

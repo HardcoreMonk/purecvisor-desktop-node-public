@@ -8,7 +8,7 @@
   "allowed_lanes": ["0", "1"],
   "mutation_allowed": false,
   "current_write_allowed": false,
-  "next_step": "P1-8 native preview/copy is in source_head. Next is HTTP/CLI guest-file route. Do not open Lane 2 Hyper-V recovery unless named.",
+  "next_step": "P1-8 HTTP/CLI guest-file is in source_head. Next is Web guest-file control or P1-9. Do not open Lane 2 Hyper-V recovery unless named.",
   "stop_on": [
     "same-cause-fail-3",
     "budget",

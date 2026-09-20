@@ -46,6 +46,7 @@ public sealed class DesktopNodeCliProjectContractTests
             "pcvcli vm guest-agent-ensure-channel <vm> --repair --yes",
             "pcvcli vm guest-exec <vm> --dry-run [--credential-ref <ref>] [--timeout-sec <n>] -- <command...>",
             "pcvcli vm guest-exec <vm> --credential-ref <ref> [--timeout-sec <n>] -- <command...>",
+            "pcvcli vm guest-file <vm> --host-path PATH --guest-path PATH --credential-ref REF [--timeout-sec N] --dry-run|--yes",
             "pcvcli vm set-memory <vm> <memory_mb>",
             "pcvcli vm set-vcpu <vm> <vcpu_count>",
             "pcvcli vm disk-resize <vm> <disk_gb>",
@@ -144,7 +145,7 @@ public sealed class DesktopNodeCliProjectContractTests
         }
 
         Assert.Equal(28, featureCount);
-        Assert.Equal(63, routeCount);
+        Assert.Equal(65, routeCount);
         string[] stageLabels =
         [
             "code_tested",

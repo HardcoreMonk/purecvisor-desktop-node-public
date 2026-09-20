@@ -197,6 +197,8 @@ internal sealed class DesktopNodeApiGuestExecutionRouteHandler
         {
             "PreviewVmGuestExec" => "vm.guest.exec.preview",
             "QueueVmGuestExec" => "vm.guest.exec",
+            "PreviewVmGuestFile" => "vm.guest.file.preview",
+            "QueueVmGuestFile" => "vm.guest.file",
             "PreviewVmGuestChannel" => "vm.guest.channel.preview",
             "QueueVerifyVmGuestChannel" or "VerifyVmGuestChannel" => "vm.guest.channel.verify",
             "QueueEnsureVmGuestChannel" or "EnsureVmGuestChannel" => "vm.guest.channel.ensure",

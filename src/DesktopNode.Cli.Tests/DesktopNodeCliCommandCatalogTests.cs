@@ -276,6 +276,70 @@ public sealed class DesktopNodeCliCommandCatalogTests
     }
 
     [Fact]
+    public void RoutesVmGuestFilePreviewOnDryRun()
+    {
+        var request = DesktopNodeCliCommandCatalog.CreateRequest([
+            "vm",
+            "guest-file",
+            "gold",
+            "--host-path",
+            @"C:\ProgramData\PureCVisor\desktop-node\guest-files\payload.iso",
+            "--guest-path",
+            @"C:\Users\Public\PureCVisor\payload.iso",
+            "--credential-ref",
+            "wincred:PureCVisor/guest/admin",
+            "--dry-run"
+        ]);
+
+        Assert.Equal("POST", request.Method);
+        Assert.Equal("/api/v1/vms/gold/guest/file/preview", request.Path);
+        using var document = JsonDocument.Parse(request.Body!);
+        Assert.Equal(@"C:\ProgramData\PureCVisor\desktop-node\guest-files\payload.iso", document.RootElement.GetProperty("host_path").GetString());
+        Assert.Equal(@"C:\Users\Public\PureCVisor\payload.iso", document.RootElement.GetProperty("guest_path").GetString());
+        Assert.Equal("wincred:PureCVisor/guest/admin", document.RootElement.GetProperty("credential_ref").GetString());
+        Assert.Equal("host-to-guest", document.RootElement.GetProperty("direction").GetString());
+    }
+
+    [Fact]
+    public void RoutesVmGuestFileCopyWhenExplicitlyConfirmed()
+    {
+        var request = DesktopNodeCliCommandCatalog.CreateRequest([
+            "vm",
+            "guest-file",
+            "gold",
+            "--host-path",
+            @"C:\ProgramData\PureCVisor\desktop-node\guest-files\payload.iso",
+            "--guest-path",
+            @"C:\Users\Public\PureCVisor\payload.iso",
+            "--credential-ref",
+            "wincred:PureCVisor/guest/admin",
+            "--yes"
+        ]);
+
+        Assert.Equal("POST", request.Method);
+        Assert.Equal("/api/v1/vms/gold/guest/file", request.Path);
+    }
+
+    [Fact]
+    public void RequiresDryRunOrYesForVmGuestFile()
+    {
+        var error = Assert.Throws<ArgumentException>(() =>
+            DesktopNodeCliCommandCatalog.CreateRequest([
+                "vm",
+                "guest-file",
+                "gold",
+                "--host-path",
+                @"C:\ProgramData\PureCVisor\desktop-node\guest-files\payload.iso",
+                "--guest-path",
+                @"C:\Users\Public\PureCVisor\payload.iso",
+                "--credential-ref",
+                "wincred:PureCVisor/guest/admin"
+            ]));
+
+        Assert.Contains("PCV_CLI_CONFIRMATION_REQUIRED", error.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void RoutesVmTemplateUnlockWhenExplicitlyConfirmed()
     {
         var request = DesktopNodeCliCommandCatalog.CreateRequest(["vm", "template-unlock", "gold", "--yes"]);
@@ -739,7 +803,7 @@ public sealed class DesktopNodeCliCommandCatalogTests
             }
         }
 
-        Assert.Equal(56, presentCount);
+        Assert.Equal(58, presentCount);
         Assert.Equal(7, excludedCount);
     }
 
@@ -760,6 +824,7 @@ public sealed class DesktopNodeCliCommandCatalogTests
         Assert.Contains("pcvcli vm manage <vm> --yes", usage, StringComparison.Ordinal);
         Assert.Contains("pcvcli vm clone <source> --name <target> --yes", usage, StringComparison.Ordinal);
         Assert.Contains("pcvcli vm clone <source> --name <target> --dry-run", usage, StringComparison.Ordinal);
+        Assert.Contains("pcvcli vm guest-file <vm> --host-path PATH --guest-path PATH --credential-ref REF [--timeout-sec N] --dry-run|--yes", usage, StringComparison.Ordinal);
         Assert.Contains("pcvcli vm eject|delete-status", usage, StringComparison.Ordinal);
         Assert.Contains("pcvcli diagnostics bundle list [--limit N] [--offset N]", usage, StringComparison.Ordinal);
         Assert.Contains("pcvcli diagnostics bundle create", usage, StringComparison.Ordinal);

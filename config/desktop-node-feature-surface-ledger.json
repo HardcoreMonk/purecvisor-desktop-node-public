@@ -968,6 +968,70 @@
               ]
             }
           }
+        },
+        {
+          "operation_id": "vm.guest.file.preview",
+          "method": "POST",
+          "route_template": "/api/v1/vms/{vmId}/guest/file/preview",
+          "required_permission": "guest.exec",
+          "present_surfaces": [
+            "api",
+            "cli"
+          ],
+          "excluded_surfaces": [
+            {
+              "surface": "web",
+              "reason": "P1-8 slice 3 ships API/CLI guest-file; Web control is a later slice."
+            }
+          ],
+          "surface_bindings": {
+            "cli": {
+              "command": [
+                "vm",
+                "guest-file",
+                "vm-01",
+                "--host-path",
+                "C:\\ProgramData\\PureCVisor\\desktop-node\\guest-files\\payload.iso",
+                "--guest-path",
+                "C:\\Users\\Public\\PureCVisor\\payload.iso",
+                "--credential-ref",
+                "wincred:PureCVisor/guest/admin",
+                "--dry-run"
+              ]
+            }
+          }
+        },
+        {
+          "operation_id": "vm.guest.file",
+          "method": "POST",
+          "route_template": "/api/v1/vms/{vmId}/guest/file",
+          "required_permission": "guest.exec",
+          "present_surfaces": [
+            "api",
+            "cli"
+          ],
+          "excluded_surfaces": [
+            {
+              "surface": "web",
+              "reason": "P1-8 slice 3 ships API/CLI guest-file; Web control is a later slice."
+            }
+          ],
+          "surface_bindings": {
+            "cli": {
+              "command": [
+                "vm",
+                "guest-file",
+                "vm-01",
+                "--host-path",
+                "C:\\ProgramData\\PureCVisor\\desktop-node\\guest-files\\payload.iso",
+                "--guest-path",
+                "C:\\Users\\Public\\PureCVisor\\payload.iso",
+                "--credential-ref",
+                "wincred:PureCVisor/guest/admin",
+                "--yes"
+              ]
+            }
+          }
         }
       ]
     },

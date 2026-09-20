@@ -184,6 +184,7 @@ pcvcli network list
 | `pcvcli vm list` | `GET /api/v1/vms` | VM 목록 조회 |
 | `pcvcli vm template-lock <vm> --yes` | `POST /api/v1/vms/{id}/template-lock` | managed VM을 start/clone-only template로 잠근다 |
 | `pcvcli vm template-unlock <vm> --yes` | `POST /api/v1/vms/{id}/template-lock` | template lock을 해제한다 |
+| `pcvcli vm guest-file <vm> --host-path PATH --guest-path PATH --credential-ref REF [--timeout-sec N] --dry-run|--yes` | `POST /api/v1/vms/{id}/guest/file/preview`, `POST /api/v1/vms/{id}/guest/file` | allowlist host-to-guest 한 파일. `--dry-run`은 preview, `--yes`는 copy job |
 | `pcvcli vm get <vm>` | `GET /api/v1/vms/{vm}` | VM 상세 조회 |
 | `pcvcli vm create --name <name> --iso <path> --cpu <n> --memory-mb <mb> --disk-gb <gb> [--vm-root <path>] [--generation <n>]` | `POST /api/v1/vms` | VM 생성 job queue |
 | `pcvcli vm create <name> --iso_path <path> --vcpu <n> --memory_mb <mb> --disk_size_gb <gb> [--image_dir <path>]` | `POST /api/v1/vms` | Linux `pcvctl vm create` shape 호환 alias |

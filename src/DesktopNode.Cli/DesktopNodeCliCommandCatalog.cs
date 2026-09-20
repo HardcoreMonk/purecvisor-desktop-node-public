@@ -80,7 +80,7 @@ public static class DesktopNodeCliCommandCatalog
     {
         if (args.Count < 2)
         {
-            throw Usage("Use: vm list|get|create|start|shutdown|poweroff|restart|pause|resume|save|resume-saved|rename|manage|template-lock|template-unlock|clone|delete|checkpoint|attach.");
+            throw Usage("Use: vm list|get|create|start|shutdown|poweroff|restart|pause|resume|save|resume-saved|rename|manage|template-lock|template-unlock|clone|guest-file|delete|checkpoint|attach.");
         }
 
         return args[1].ToLowerInvariant() switch
@@ -112,6 +112,7 @@ public static class DesktopNodeCliCommandCatalog
             "guest-agent-ensure-channel" => VmGuestAgentEnsureChannel(args),
             "guest-ping" => VmReadback(args, "guest-agent/ping"),
             "guest-exec" => VmGuestExec(args),
+            "guest-file" => VmGuestFile(args),
             "blkio-set" => VmQosMutation(
                 args,
                 "qos/storage",
@@ -132,7 +133,7 @@ public static class DesktopNodeCliCommandCatalog
                 "--maximum-kbps",
                 "minimum_kbps",
                 "--minimum-kbps"),
-            _ => throw Usage("Use: vm list|get|create|start|stop|shutdown|guest-shutdown|poweroff|restart|pause|resume|save|resume-saved|rename|console|vnc|manage|template-lock|template-unlock|clone|delete|checkpoint|snapshot|attach.")
+            _ => throw Usage("Use: vm list|get|create|start|stop|shutdown|guest-shutdown|poweroff|restart|pause|resume|save|resume-saved|rename|console|vnc|manage|template-lock|template-unlock|clone|guest-file|delete|checkpoint|snapshot|attach.")
         };
     }
 
@@ -365,6 +366,44 @@ public static class DesktopNodeCliCommandCatalog
         }
 
         throw Usage("Use: vm guest-agent-ensure-channel <vm> --dry-run|--verify --credential-ref REF [--timeout-sec N]|--repair --yes.");
+    }
+
+    private static DesktopNodeCliRequest VmGuestFile(IReadOnlyList<string> args)
+    {
+        const string usage = "vm guest-file <vm> --host-path PATH --guest-path PATH --credential-ref REF [--timeout-sec N] --dry-run|--yes";
+        if (args.Count < 3 || args[2].StartsWith("--", StringComparison.Ordinal))
+        {
+            throw Usage("Use: " + usage + ".");
+        }
+
+        var parsed = ParseOptions(args.Skip(3).ToArray(), allowFlags: true);
+        var dryRun = HasFlag(parsed.Options, "--dry-run");
+        var yes = HasFlag(parsed.Options, "--yes");
+        if (dryRun == yes)
+        {
+            throw new ArgumentException(
+                "PCV_CLI_CONFIRMATION_REQUIRED|" +
+                "Guest file copy requires --dry-run or --yes.|" +
+                "Use: " + usage + ".");
+        }
+
+        var body = new SortedDictionary<string, object?>
+        {
+            ["host_path"] = Required(parsed.Options, "--host-path"),
+            ["guest_path"] = Required(parsed.Options, "--guest-path"),
+            ["credential_ref"] = Required(parsed.Options, "--credential-ref"),
+            ["direction"] = "host-to-guest"
+        };
+        var timeoutSec = FirstOption(parsed.Options, "--timeout-sec", "--timeout");
+        if (!string.IsNullOrWhiteSpace(timeoutSec))
+        {
+            body["timeout_sec"] = ParseInt("--timeout-sec", timeoutSec);
+        }
+
+        return new DesktopNodeCliRequest(
+            "POST",
+            $"/api/v1/vms/{Segment(args[2])}/guest/file{(dryRun ? "/preview" : string.Empty)}",
+            JsonSerializer.Serialize(body, JsonOptions));
     }
 
     private static DesktopNodeCliRequest VmGuestExec(IReadOnlyList<string> args)
@@ -903,6 +942,7 @@ public static class DesktopNodeCliCommandCatalog
             "  pcvcli vm guest-agent-ensure-channel <vm> --dry-run|--verify --credential-ref REF [--timeout-sec N]|--repair --yes",
             "  pcvcli vm guest-exec <vm> --dry-run [--credential-ref REF] [--timeout-sec N] -- <command...>",
             "  pcvcli vm guest-exec <vm> --credential-ref REF [--timeout-sec N] -- <command...>",
+            "  pcvcli vm guest-file <vm> --host-path PATH --guest-path PATH --credential-ref REF [--timeout-sec N] --dry-run|--yes",
             "  pcvcli vm set-memory|set-vcpu|disk-resize <vm> <value>",
             "  pcvcli vm attach <vm> --iso <path>",
             "  pcvcli vm eject|delete-status <vm>",
