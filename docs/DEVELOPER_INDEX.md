@@ -424,7 +424,8 @@ Web/TUI cancel affordance와 actual credentialed guest-exec를 설치본 current
 04250→04254 manual-admin readiness는 baseline mismatch로 blocked
 기록만 남겼다.
 noVNC target config mutation은 `docs/adr/0010-account-novnc-target-config-security-policy-candidate.md`가
-보류 경계를 소유한다. Guest Execution docs-contract evidence는
+보류 경계를 소유한다. 현재 적용 문서는
+`docs/adr/0010-novnc-target-config-security-policy.md`다. Guest Execution docs-contract evidence는
 `docs/ga-ready/evidence/guest-execution-security-boundary-2026-05-26.md`다.
 
 설치본 TUI row projection fix는 실제 VM `pcv-ux-qos-04241` 기반
@@ -538,7 +539,7 @@ manual-admin descriptor schema v2(`descriptor_schema_version=2`,
 | CLI 명령어 사용 설명서 확인 | `docs/CLI_COMMAND_USAGE.md`, `src/DesktopNode.Cli/README.md` |
 | Phase 2 Hyper-V QoS mutation 설치본 승격 | `docs/adr/0008-hyperv-qos-mutation-policy.md`, `docs/ga-ready/evidence/hyperv-qos-mutation-code-level-2026-05-26.md`, `docs/ga-ready/evidence/hyperv-qos-mutation-installed-2026-05-26-04247.md`, `docs/superpowers/specs/2026-05-26-purecvisor-desktop-node-phase2-hyperv-qos-mutation-design.md`, `docs/superpowers/plans/2026-05-26-purecvisor-desktop-node-phase2-hyperv-qos-mutation.md` |
 | Guest Execution 보안 경계 확인 | `docs/adr/0009-guest-execution-security-boundary.md`, `docs/ga-ready/evidence/guest-execution-security-boundary-2026-05-26.md` |
-| noVNC target config mutation 보안 정책 확인 | `docs/adr/0010-account-novnc-target-config-security-policy-candidate.md` |
+| noVNC target config mutation 보안 정책 확인 | `docs/adr/0010-novnc-target-config-security-policy.md`, `docs/adr/0010-account-novnc-target-config-security-policy-candidate.md` |
 | 설치본 운영/runbook 확인 | `docs/OPERATIONS_GUIDE.md`, `docs/PUBLIC_RELEASE_BOUNDARY.md`, `packaging/windows-desktop-node/README.md` |
 | 저장소 경계 확인 | `docs/PUBLIC_RELEASE_BOUNDARY.md` |
 | 현재 적용 ADR 확인 | `docs/ADR_INDEX.md` |

@@ -81,6 +81,7 @@
 - [docs/adr/0009-guest-execution-security-boundary-candidate.md](adr/0009-guest-execution-security-boundary-candidate.md)
 - [docs/adr/0009-guest-execution-security-boundary.md](adr/0009-guest-execution-security-boundary.md)
 - [docs/adr/0010-account-novnc-target-config-security-policy-candidate.md](adr/0010-account-novnc-target-config-security-policy-candidate.md)
+- [docs/adr/0010-novnc-target-config-security-policy.md](adr/0010-novnc-target-config-security-policy.md)
 - [docs/adr/0011-cli-web-only-operator-surface.md](adr/0011-cli-web-only-operator-surface.md)
 - [docs/adr/0012-api-read-concurrency-policy.md](adr/0012-api-read-concurrency-policy.md)
 - [docs/adr/0013-job-store-single-writer-transaction-lease.md](adr/0013-job-store-single-writer-transaction-lease.md)

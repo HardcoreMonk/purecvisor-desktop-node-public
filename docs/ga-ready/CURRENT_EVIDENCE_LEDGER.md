@@ -314,6 +314,8 @@ latest_phase3_account_novnc_target_config_status: `deferred-adr-0010-security-po
 post_04245_phase3_direct_control_guard: `backend-policy-first`
 post_04245_guest_execution_security_adr: `docs/adr/0009-guest-execution-security-boundary-candidate.md`
 post_04245_account_novnc_target_config_security_adr: `docs/adr/0010-account-novnc-target-config-security-policy-candidate.md`
+latest_adr_0010_applied: `docs/adr/0010-novnc-target-config-security-policy.md`
+latest_adr_0010_implementation_status: `code-level-preview-set-clear-web-readback`
 post_04245_extension_phase2_5_planning_status: `pass-docs-only`
 post_04245_extension_phase2_5_host_mutation_performed: `false`
 post_04245_extension_phase2_5_package_build_performed: `false`

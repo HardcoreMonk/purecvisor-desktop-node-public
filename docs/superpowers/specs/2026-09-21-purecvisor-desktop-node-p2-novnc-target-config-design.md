@@ -141,7 +141,7 @@ token, password, JWT, credential 값은 금지. LAN host는 Event Log/diagnostic
 - 주기 checkpoint, export/import, 스위치 편집, NIC/DVD add
 - current-evidence write, package-pair, Lane 2 Hyper-V 복구
 - 29번째 feature, P0 evidence 후보 변경
-- ADR-0010 적용 파일 승격 (set/clear 이후)
+- ADR-0010 적용 파일은 `docs/adr/0010-novnc-target-config-security-policy.md`. 설치본 streaming smoke는 Lane 2
 
 ## 검증
 
