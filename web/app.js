@@ -1910,7 +1910,7 @@ function formatJobCancelLabel(job) {
 function canReconcileVmMutation(job) {
     const operation = String(job?.operation || '').toLowerCase();
     return String(job?.status || '').toLowerCase() === 'failed' &&
-        ['vm.rename', 'vm.delete', 'checkpoint.create', 'checkpoint.restore'].includes(operation) &&
+        ['vm.rename', 'vm.delete', 'checkpoint.create', 'checkpoint.restore', 'vm.create'].includes(operation) &&
         String(job?.error?.code || '').toUpperCase() === 'PCV_JOB_INTERRUPTED';
 }
 function renderJobReconcileButton(job, canOperate) {
@@ -1923,7 +1923,9 @@ function renderJobReconcileButton(job, canOperate) {
             ? 'Reconcile checkpoint'
             : operation === 'checkpoint.restore'
                 ? 'Reconcile restore'
-                : 'Reconcile rename';
+                : operation === 'vm.create'
+                    ? 'Reconcile create'
+                    : 'Reconcile rename';
     return `<button data-action="reconcile-job" data-job-id="${escapeHtml(job.job_id)}"${canOperate ? '' : ' disabled'}>${label}</button>`;
 }
 function renderJobCancelButton(job, canOperate) {

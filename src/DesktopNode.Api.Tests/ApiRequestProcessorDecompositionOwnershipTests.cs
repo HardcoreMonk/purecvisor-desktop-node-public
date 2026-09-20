@@ -204,16 +204,19 @@ public sealed class ApiRequestProcessorDecompositionOwnershipTests
             "ReconcileVmDeleteJob",
             "ReconcileCheckpointCreateJob",
             "ReconcileCheckpointRestoreJob",
+            "ReconcileVmCreateJob",
             "RenderReconciliationResult",
             "ReconciliationRequiredError",
             "BuildVmRenameParameters",
             "BuildVmDeleteParameters",
             "BuildCheckpointCreateParameters",
             "BuildCheckpointRestoreParameters",
+            "BuildVmCreateParameters",
             "CaptureVmRenameBaseline",
             "CaptureVmDeleteBaseline",
             "CaptureCheckpointCreateBaseline",
             "CaptureCheckpointRestoreBaseline",
+            "CaptureVmCreateBaseline",
             "BuildVmRenameFingerprint",
             "BuildVmDeleteFingerprint",
             "IsManagedVm",
@@ -221,14 +224,17 @@ public sealed class ApiRequestProcessorDecompositionOwnershipTests
             "TryReadCapturedRenameBaseline",
             "TryReadCapturedDeleteBaseline",
             "TryReadCapturedCheckpointCreateBaseline",
-            "TryReadCapturedCheckpointRestoreBaseline");
+            "TryReadCapturedCheckpointRestoreBaseline",
+            "TryReadCapturedVmCreateBaseline",
+            "CreateFingerprintMatches");
         AssertTypeDeclares(
             "DesktopNodeApiJobReconciliationHandler",
             "TryHandle",
             "BuildVmRenameParameters",
             "BuildVmDeleteParameters",
             "BuildCheckpointCreateParameters",
-            "BuildCheckpointRestoreParameters");
+            "BuildCheckpointRestoreParameters",
+            "BuildVmCreateParameters");
         AssertTypeIsCallbackFreeOwner("DesktopNodeApiJobReconciliationHandler");
     }
 

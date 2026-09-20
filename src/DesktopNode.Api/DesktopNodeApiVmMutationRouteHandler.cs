@@ -71,7 +71,10 @@ internal sealed class DesktopNodeApiVmMutationRouteHandler
                     var parsed = DesktopNodeApiRequestParsing.TryParseBody(request.Body, "vm.create");
                     return !parsed.Ok
                         ? parsed.Response!
-                        : DesktopNodeApiResponseFactory.JobCreated(CreateJob("vm.create", parsed.Value!.Value, request.RequestId!));
+                        : DesktopNodeApiResponseFactory.JobCreated(CreateJob(
+                            "vm.create",
+                            reconciliationHandler.BuildVmCreateParameters(parsed.Value!.Value, cancellationToken),
+                            request.RequestId!));
                 }
 
             case "QueueCreateVmCheckpoint":

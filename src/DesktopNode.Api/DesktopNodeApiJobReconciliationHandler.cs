@@ -37,6 +37,7 @@ internal sealed class DesktopNodeApiJobReconciliationHandler
     private const string VmDeleteReconciliationSchema = "pcv-vm-delete-reconciliation/v1";
     private const string CheckpointCreateReconciliationSchema = "pcv-checkpoint-create-reconciliation/v1";
     private const string CheckpointRestoreReconciliationSchema = "pcv-checkpoint-restore-reconciliation/v1";
+    private const string VmCreateReconciliationSchema = "pcv-vm-create-reconciliation/v1";
 
     private DesktopNodeApiResponse HandleJobReconcile(
         string jobId,
@@ -82,6 +83,13 @@ internal sealed class DesktopNodeApiJobReconciliationHandler
             return ReconcileCheckpointRestoreJob(job, cancellationToken);
         }
 
+        if (string.Equals(job.Operation, "vm.create", StringComparison.Ordinal) &&
+            string.Equals(job.Status, "failed", StringComparison.Ordinal) &&
+            string.Equals(job.Error?.Code, "PCV_JOB_INTERRUPTED", StringComparison.Ordinal))
+        {
+            return ReconcileVmCreateJob(job, cancellationToken);
+        }
+
         if (!string.Equals(job.Operation, "vm.rename", StringComparison.Ordinal) ||
             !string.Equals(job.Status, "failed", StringComparison.Ordinal) ||
             !string.Equals(job.Error?.Code, "PCV_JOB_INTERRUPTED", StringComparison.Ordinal))
@@ -93,7 +101,7 @@ internal sealed class DesktopNodeApiJobReconciliationHandler
                 ReconciliationRequiredError(
                     jobId,
                     "job-not-reconcilable",
-                    "Only a failed vm.rename, vm.delete, checkpoint.create, or checkpoint.restore job with PCV_JOB_INTERRUPTED can be reconciled.",
+                    "Only a failed vm.rename, vm.delete, checkpoint.create, checkpoint.restore, or vm.create job with PCV_JOB_INTERRUPTED can be reconciled.",
                     job.Operation));
             return RenderReconciliationResult(jobRuntime.Reconcile(jobId, assessment));
         }
@@ -470,6 +478,92 @@ internal sealed class DesktopNodeApiJobReconciliationHandler
         return RenderReconciliationResult(jobRuntime.Reconcile(jobId, requiredAssessment));
     }
 
+    private DesktopNodeApiResponse ReconcileVmCreateJob(
+        DesktopNodeJobSnapshot job,
+        CancellationToken cancellationToken)
+    {
+        var jobId = job.JobId;
+        var vmName = DesktopNodeApiJsonReader.ReadString(job.Parameters, "name");
+        var metadata = DesktopNodeApiJsonReader.ReadElement(job.Parameters, "reconciliation");
+        if (string.IsNullOrWhiteSpace(vmName) ||
+            !TryReadCapturedVmCreateBaseline(metadata, vmName, out var baseline))
+        {
+            var assessment = new DesktopNodeJobReconciliationAssessment(
+                false,
+                "baseline-unavailable",
+                null,
+                ReconciliationRequiredError(
+                    jobId,
+                    "baseline-unavailable",
+                    "The durable vm.create baseline was not captured or is not structurally valid.",
+                    "vm.create"));
+            return RenderReconciliationResult(jobRuntime.Reconcile(jobId, assessment));
+        }
+
+        using var readbackTimeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        readbackTimeout.CancelAfter(TimeSpan.FromSeconds(Math.Max(1, hardeningOptions.RouteTimeoutSeconds)));
+        var readback = operationInvoker.Invoke("vm.list", DesktopNodeApiResponseFactory.EmptyObject(), readbackTimeout.Token);
+        if (!readback.Ok || readback.Data is null)
+        {
+            var providerCode = readback.Error?.Code ?? "PCV_VM_LIST_FAILED";
+            var assessment = new DesktopNodeJobReconciliationAssessment(
+                false,
+                "readback-unavailable",
+                null,
+                ReconciliationRequiredError(
+                    jobId,
+                    "readback-unavailable",
+                    $"Provider vm.list readback failed with {providerCode}; no mutation was attempted.",
+                    "vm.create"));
+            return RenderReconciliationResult(jobRuntime.Reconcile(jobId, assessment));
+        }
+
+        var matching = DesktopNodeApiJsonReader.EnumerateVmList(readback.Data.Value)
+            .Where(vm => string.Equals(DesktopNodeApiJsonReader.GetStringProperty(vm, "name"), vmName, StringComparison.OrdinalIgnoreCase))
+            .ToArray();
+
+        if (matching.Length == 1 && CreateFingerprintMatches(baseline, matching[0]))
+        {
+            var result = DesktopNodeApiResponseFactory.JsonFromObject(new SortedDictionary<string, object?>
+            {
+                ["action"] = "reconciled",
+                ["operation"] = "vm.create",
+                ["reconciliation"] = new SortedDictionary<string, object?>
+                {
+                    ["schema"] = baseline.Schema,
+                    ["classification"] = "postcondition-confirmed",
+                    ["before"] = null,
+                    ["expected_after"] = baseline.ExpectedAfter,
+                    ["observed"] = matching[0]
+                }
+            });
+            return RenderReconciliationResult(jobRuntime.Reconcile(
+                jobId,
+                new DesktopNodeJobReconciliationAssessment(
+                    true,
+                    "postcondition-confirmed",
+                    result)));
+        }
+
+        var classification = matching.Length == 0
+            ? "not-applied"
+            : matching.Length > 1
+                ? "ambiguous-duplicate-names"
+                : !IsManagedVm(matching[0])
+                    ? "unmanaged-collision"
+                    : "target-fingerprint-mismatch";
+        var requiredAssessment = new DesktopNodeJobReconciliationAssessment(
+            false,
+            classification,
+            null,
+            ReconciliationRequiredError(
+                jobId,
+                classification,
+                "Provider vm.list readback did not prove exactly one managed VM with the captured create postcondition.",
+                "vm.create"));
+        return RenderReconciliationResult(jobRuntime.Reconcile(jobId, requiredAssessment));
+    }
+
     private DesktopNodeApiResponse RenderReconciliationResult(DesktopNodeJobReconciliationResult result)
     {
         return result.Outcome switch
@@ -489,6 +583,7 @@ internal sealed class DesktopNodeApiJobReconciliationHandler
         var mutation = operation switch
         {
             "vm.delete" => "delete",
+            "vm.create" => "create",
             "checkpoint.create" => "checkpoint create",
             "checkpoint.restore" => "checkpoint restore",
             _ => "rename"
@@ -553,6 +648,116 @@ internal sealed class DesktopNodeApiJobReconciliationHandler
             ["vm_name"] = vmName,
             ["reconciliation"] = reconciliation
         });
+    }
+
+    public JsonElement BuildVmCreateParameters(JsonElement body, CancellationToken cancellationToken)
+    {
+        var name = DesktopNodeApiJsonReader.GetStringProperty(body, "name") ?? string.Empty;
+        var generation = 2;
+        if (body.ValueKind == JsonValueKind.Object &&
+            body.TryGetProperty("generation", out var generationElement) &&
+            generationElement.TryGetInt32(out var parsedGeneration))
+        {
+            generation = parsedGeneration;
+        }
+
+        var payload = body.ValueKind == JsonValueKind.Object
+            ? JsonNode.Parse(body.GetRawText()) as JsonObject ?? new JsonObject()
+            : new JsonObject();
+        payload["reconciliation"] = JsonNode.Parse(
+            CaptureVmCreateBaseline(name, generation, cancellationToken).GetRawText());
+        using var document = JsonDocument.Parse(payload.ToJsonString());
+        return document.RootElement.Clone();
+    }
+
+    private JsonElement CaptureVmCreateBaseline(
+        string vmName,
+        int generation,
+        CancellationToken cancellationToken)
+    {
+        var expectedBefore = new SortedDictionary<string, object?>
+        {
+            ["state"] = "absent",
+            ["name"] = vmName
+        };
+        var expectedAfter = new SortedDictionary<string, object?>
+        {
+            ["state"] = "present",
+            ["name"] = vmName,
+            ["generation"] = generation,
+            ["managed_by_purecvisor"] = true
+        };
+
+        if (string.IsNullOrWhiteSpace(vmName))
+        {
+            return DesktopNodeApiResponseFactory.JsonFromObject(new SortedDictionary<string, object?>
+            {
+                ["schema"] = VmCreateReconciliationSchema,
+                ["capture_status"] = "unavailable",
+                ["capture_error_code"] = "PCV_VM_NAME_REQUIRED",
+                ["before"] = null,
+                ["expected_before"] = expectedBefore,
+                ["expected_after"] = expectedAfter
+            });
+        }
+
+        try
+        {
+            using var readbackTimeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            readbackTimeout.CancelAfter(TimeSpan.FromSeconds(Math.Max(1, hardeningOptions.RouteTimeoutSeconds)));
+            var readback = operationInvoker.Invoke("vm.list", DesktopNodeApiResponseFactory.EmptyObject(), readbackTimeout.Token);
+            if (!readback.Ok || readback.Data is null)
+            {
+                return DesktopNodeApiResponseFactory.JsonFromObject(new SortedDictionary<string, object?>
+                {
+                    ["schema"] = VmCreateReconciliationSchema,
+                    ["capture_status"] = "unavailable",
+                    ["capture_error_code"] = readback.Error?.Code ?? "PCV_VM_LIST_FAILED",
+                    ["before"] = null,
+                    ["expected_before"] = expectedBefore,
+                    ["expected_after"] = expectedAfter
+                });
+            }
+
+            var matching = DesktopNodeApiJsonReader.EnumerateVmList(readback.Data.Value)
+                .Where(vm => string.Equals(DesktopNodeApiJsonReader.GetStringProperty(vm, "name"), vmName, StringComparison.OrdinalIgnoreCase))
+                .ToArray();
+            if (matching.Length != 0)
+            {
+                return DesktopNodeApiResponseFactory.JsonFromObject(new SortedDictionary<string, object?>
+                {
+                    ["schema"] = VmCreateReconciliationSchema,
+                    ["capture_status"] = "unavailable",
+                    ["capture_error_code"] = matching.Length == 1
+                        ? "PCV_VM_ALREADY_EXISTS"
+                        : "PCV_VM_IDENTITY_AMBIGUOUS",
+                    ["before"] = matching.Length == 1 ? matching[0] : null,
+                    ["expected_before"] = expectedBefore,
+                    ["expected_after"] = expectedAfter
+                });
+            }
+
+            return DesktopNodeApiResponseFactory.JsonFromObject(new SortedDictionary<string, object?>
+            {
+                ["schema"] = VmCreateReconciliationSchema,
+                ["capture_status"] = "captured",
+                ["before"] = null,
+                ["expected_before"] = expectedBefore,
+                ["expected_after"] = expectedAfter
+            });
+        }
+        catch (Exception)
+        {
+            return DesktopNodeApiResponseFactory.JsonFromObject(new SortedDictionary<string, object?>
+            {
+                ["schema"] = VmCreateReconciliationSchema,
+                ["capture_status"] = "unavailable",
+                ["capture_error_code"] = "PCV_VM_LIST_FAILED",
+                ["before"] = null,
+                ["expected_before"] = expectedBefore,
+                ["expected_after"] = expectedAfter
+            });
+        }
     }
 
     private JsonElement CaptureVmRenameBaseline(
@@ -961,6 +1166,20 @@ internal sealed class DesktopNodeApiJobReconciliationHandler
         return marker is not null && marker.Value.ValueKind == JsonValueKind.True;
     }
 
+    private static bool CreateFingerprintMatches(VmCreateBaseline baseline, JsonElement observed)
+    {
+        if (!IsManagedVm(observed))
+        {
+            return false;
+        }
+
+        var generation = DesktopNodeApiJsonReader.ReadElement(observed, "generation");
+        return generation is not null &&
+            generation.Value.ValueKind == JsonValueKind.Number &&
+            generation.Value.TryGetInt32(out var observedGeneration) &&
+            observedGeneration == baseline.Generation;
+    }
+
     private static bool RenameFingerprintMatches(JsonElement beforeFingerprint, JsonElement observed)
     {
         if (beforeFingerprint.ValueKind != JsonValueKind.Object || observed.ValueKind != JsonValueKind.Object)
@@ -1038,6 +1257,49 @@ internal sealed class DesktopNodeApiJobReconciliationHandler
             VmDeleteReconciliationSchema,
             before.Value.Clone(),
             beforeFingerprint.Value.Clone());
+        return true;
+    }
+
+    private static bool TryReadCapturedVmCreateBaseline(
+        JsonElement? metadata,
+        string vmName,
+        out VmCreateBaseline baseline)
+    {
+        baseline = null!;
+        if (metadata is null || metadata.Value.ValueKind != JsonValueKind.Object)
+        {
+            return false;
+        }
+
+        var value = metadata.Value;
+        if (!string.Equals(DesktopNodeApiJsonReader.ReadString(value, "schema"), VmCreateReconciliationSchema, StringComparison.Ordinal) ||
+            !string.Equals(DesktopNodeApiJsonReader.ReadString(value, "capture_status"), "captured", StringComparison.Ordinal) ||
+            DesktopNodeApiJsonReader.ReadElement(value, "before") is not null)
+        {
+            return false;
+        }
+
+        var expectedBefore = DesktopNodeApiJsonReader.ReadElement(value, "expected_before");
+        var expectedAfter = DesktopNodeApiJsonReader.ReadElement(value, "expected_after");
+        if (expectedBefore is null ||
+            expectedAfter is null ||
+            !string.Equals(DesktopNodeApiJsonReader.ReadString(expectedBefore.Value, "state"), "absent", StringComparison.Ordinal) ||
+            !string.Equals(DesktopNodeApiJsonReader.ReadString(expectedBefore.Value, "name"), vmName, StringComparison.Ordinal) ||
+            !string.Equals(DesktopNodeApiJsonReader.ReadString(expectedAfter.Value, "name"), vmName, StringComparison.Ordinal) ||
+            !string.Equals(DesktopNodeApiJsonReader.ReadString(expectedAfter.Value, "state"), "present", StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        if (!expectedAfter.Value.TryGetProperty("generation", out var generationElement) ||
+            !generationElement.TryGetInt32(out var generation) ||
+            expectedAfter.Value.TryGetProperty("managed_by_purecvisor", out var managed) is false ||
+            managed.ValueKind != JsonValueKind.True)
+        {
+            return false;
+        }
+
+        baseline = new VmCreateBaseline(VmCreateReconciliationSchema, vmName, generation, expectedAfter.Value.Clone());
         return true;
     }
 
@@ -1135,5 +1397,11 @@ internal sealed class DesktopNodeApiJobReconciliationHandler
     private sealed record VmCheckpointRestoreBaseline(
         string Schema,
         JsonElement Before,
+        JsonElement ExpectedAfter);
+
+    private sealed record VmCreateBaseline(
+        string Schema,
+        string Name,
+        int Generation,
         JsonElement ExpectedAfter);
 }
