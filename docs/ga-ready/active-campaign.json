@@ -8,7 +8,7 @@
   "allowed_lanes": ["0", "1"],
   "mutation_allowed": false,
   "current_write_allowed": false,
-  "next_step": "P1-8 Web guest-file is in source_head. Next is P1-9 admin account CRUD design. Do not open Lane 2 Hyper-V recovery unless named.",
+  "next_step": "P1-9 design is in source_head. Next is slice 1 AccountMutationContract (create/disable, no HTTP). Do not open Lane 2 Hyper-V recovery unless named.",
   "stop_on": [
     "same-cause-fail-3",
     "budget",
