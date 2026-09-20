@@ -77,6 +77,8 @@ public static class DesktopNodeHyperVAdapterDispatchCatalog
         new("vm.guest.exec", DesktopNodeHyperVOperationKind.Mutation, DesktopNodeHyperVOperationDomain.GuestExecution, "guest-execution-provider", DesktopNodeHyperVAdapterDispatchHandler.GuestExecution),
         new("vm.guest.channel.verify", DesktopNodeHyperVOperationKind.Mutation, DesktopNodeHyperVOperationDomain.GuestExecution, "guest-execution-provider", DesktopNodeHyperVAdapterDispatchHandler.GuestExecution),
         new("vm.guest.channel.ensure", DesktopNodeHyperVOperationKind.Mutation, DesktopNodeHyperVOperationDomain.GuestExecution, "guest-execution-provider", DesktopNodeHyperVAdapterDispatchHandler.GuestExecution),
+        new("vm.guest.file.preview", DesktopNodeHyperVOperationKind.Read, DesktopNodeHyperVOperationDomain.GuestExecution, "guest-execution-provider", DesktopNodeHyperVAdapterDispatchHandler.GuestExecution),
+        new("vm.guest.file", DesktopNodeHyperVOperationKind.Mutation, DesktopNodeHyperVOperationDomain.GuestExecution, "guest-execution-provider", DesktopNodeHyperVAdapterDispatchHandler.GuestExecution),
         new("vm.set-memory", DesktopNodeHyperVOperationKind.Mutation, DesktopNodeHyperVOperationDomain.VmLifecycle, "vm-resource-mutation-provider", DesktopNodeHyperVAdapterDispatchHandler.VmResourceMutation),
         new("vm.set-vcpu", DesktopNodeHyperVOperationKind.Mutation, DesktopNodeHyperVOperationDomain.VmLifecycle, "vm-resource-mutation-provider", DesktopNodeHyperVAdapterDispatchHandler.VmResourceMutation),
         new("vm.disk-resize", DesktopNodeHyperVOperationKind.Mutation, DesktopNodeHyperVOperationDomain.VmLifecycle, "vm-resource-mutation-provider", DesktopNodeHyperVAdapterDispatchHandler.VmResourceMutation),

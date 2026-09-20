@@ -230,7 +230,7 @@ public static class DesktopNodeHyperVWmiProviderCatalog
             DesktopNodeHyperVOperationDomain.GuestExecution,
             typeof(IDesktopNodeHyperVGuestExecutionProvider),
             typeof(DesktopNodeHyperVPowerShellDirectGuestExecutionProvider),
-            ["vm.guest.exec", "vm.guest.channel.verify", "vm.guest.channel.ensure"],
+            ["vm.guest.exec", "vm.guest.channel.verify", "vm.guest.channel.ensure", "vm.guest.file.preview", "vm.guest.file"],
             nameof(DesktopNodeHyperVProviderSet.GuestExecutionProvider),
             $"{nameof(DesktopNodeHyperVProviderSet)}.{nameof(DesktopNodeHyperVProviderSet.CreateDefaultWmi)}:{nameof(DesktopNodeHyperVProviderSet.GuestExecutionProvider)}"),
         new(

@@ -18,6 +18,7 @@ public sealed class DesktopNodeHyperVVmTemplateLockGuardTests
     [InlineData("vm.rename")]
     [InlineData("vm.save")]
     [InlineData("vm.attach")]
+    [InlineData("vm.guest.file")]
     [InlineData("checkpoint.create")]
     public void RejectsDirectMutationsWhenLocked(string operation)
     {

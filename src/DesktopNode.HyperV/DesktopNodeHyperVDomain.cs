@@ -63,6 +63,8 @@ public static class DesktopNodeHyperVDomain
         new("vm.guest.exec", DesktopNodeHyperVOperationKind.Mutation, DesktopNodeHyperVOperationDomain.GuestExecution, "guest-execution-provider"),
         new("vm.guest.channel.verify", DesktopNodeHyperVOperationKind.Mutation, DesktopNodeHyperVOperationDomain.GuestExecution, "guest-execution-provider"),
         new("vm.guest.channel.ensure", DesktopNodeHyperVOperationKind.Mutation, DesktopNodeHyperVOperationDomain.GuestExecution, "guest-execution-provider"),
+        new("vm.guest.file.preview", DesktopNodeHyperVOperationKind.Read, DesktopNodeHyperVOperationDomain.GuestExecution, "guest-execution-provider"),
+        new("vm.guest.file", DesktopNodeHyperVOperationKind.Mutation, DesktopNodeHyperVOperationDomain.GuestExecution, "guest-execution-provider"),
         new("vm.delete", DesktopNodeHyperVOperationKind.Mutation, DesktopNodeHyperVOperationDomain.VmLifecycle, "vm-delete-provider"),
         new("checkpoint.create", DesktopNodeHyperVOperationKind.Mutation, DesktopNodeHyperVOperationDomain.Checkpoint, "checkpoint-mutation-provider"),
         new("checkpoint.restore", DesktopNodeHyperVOperationKind.Mutation, DesktopNodeHyperVOperationDomain.Checkpoint, "checkpoint-mutation-provider"),

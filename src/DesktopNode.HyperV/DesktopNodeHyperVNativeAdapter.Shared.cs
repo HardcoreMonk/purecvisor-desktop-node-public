@@ -212,6 +212,24 @@ public sealed partial class DesktopNodeHyperVNativeAdapter
             int.TryParse(property.GetString(), NumberStyles.Integer, CultureInfo.InvariantCulture, out value);
     }
 
+    private static bool TryGetInt64Property(JsonElement element, string propertyName, out long value)
+    {
+        value = 0;
+        if (element.ValueKind != JsonValueKind.Object ||
+            !element.TryGetProperty(propertyName, out var property))
+        {
+            return false;
+        }
+
+        if (property.ValueKind == JsonValueKind.Number)
+        {
+            return property.TryGetInt64(out value);
+        }
+
+        return property.ValueKind == JsonValueKind.String &&
+            long.TryParse(property.GetString(), NumberStyles.Integer, CultureInfo.InvariantCulture, out value);
+    }
+
     private sealed record DesktopNodeHyperVNetworkInventoryData(
         [property: JsonPropertyName("source")] string Source,
         [property: JsonPropertyName("mutating")] bool Mutating,

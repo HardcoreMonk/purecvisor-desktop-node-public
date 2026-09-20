@@ -86,6 +86,8 @@ public interface IDesktopNodeHyperVVmResourceMutationProvider
 public interface IDesktopNodeHyperVGuestExecutionProvider
 {
     DesktopNodeHyperVGuestExecutionInfo Invoke(DesktopNodeHyperVGuestExecutionRequest request, CancellationToken cancellationToken);
+
+    DesktopNodeHyperVGuestFileInfo InvokeFile(DesktopNodeHyperVGuestFileRequest request, CancellationToken cancellationToken);
 }
 
 public sealed record DesktopNodeHyperVOperationResult(
@@ -375,6 +377,27 @@ public sealed record DesktopNodeHyperVGuestExecutionInfo(
     [property: JsonPropertyName("evidence")]
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     IReadOnlyDictionary<string, object?>? Evidence = null);
+
+public sealed record DesktopNodeHyperVGuestFileRequest(
+    string Operation,
+    string Name,
+    string? CredentialRef,
+    string? HostPath,
+    string? GuestPath,
+    long? SizeBytes,
+    string? Direction,
+    string? SharedFolder,
+    int TimeoutSeconds);
+
+public sealed record DesktopNodeHyperVGuestFileInfo(
+    [property: JsonPropertyName("name")] string Name,
+    [property: JsonPropertyName("operation")] string Operation,
+    [property: JsonPropertyName("direction")] string Direction,
+    [property: JsonPropertyName("host_path")] string HostPath,
+    [property: JsonPropertyName("guest_path")] string GuestPath,
+    [property: JsonPropertyName("size_bytes")] long SizeBytes,
+    [property: JsonPropertyName("copied")] bool Copied,
+    [property: JsonPropertyName("host_mutation_performed")] bool HostMutationPerformed);
 
 public sealed record DesktopNodeHyperVWmiVmSummary(
     string Id,

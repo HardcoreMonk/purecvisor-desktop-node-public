@@ -11,8 +11,8 @@ public sealed class HyperVDomainContractTests
             .OrderBy(operation => operation.Operation, StringComparer.Ordinal)
             .ToArray();
 
-        Assert.Equal(41, operations.Length);
-        Assert.Equal(41, operations.Select(operation => operation.Operation).Distinct(StringComparer.Ordinal).Count());
+        Assert.Equal(43, operations.Length);
+        Assert.Equal(43, operations.Select(operation => operation.Operation).Distinct(StringComparer.Ordinal).Count());
 
         Assert.Equal(
             [
@@ -37,6 +37,8 @@ public sealed class HyperVDomainContractTests
                 "vm.guest.channel.ensure",
                 "vm.guest.channel.verify",
                 "vm.guest.exec",
+                "vm.guest.file",
+                "vm.guest.file.preview",
                 "vm.limit",
                 "vm.list",
                 "vm.manage",
@@ -80,6 +82,8 @@ public sealed class HyperVDomainContractTests
     [InlineData("vm.guest-agent-status", DesktopNodeHyperVOperationDomain.VmInventory, "vm-provider")]
     [InlineData("vm.guest-ping", DesktopNodeHyperVOperationDomain.VmInventory, "vm-provider")]
     [InlineData("vm.guest.exec", DesktopNodeHyperVOperationDomain.GuestExecution, "guest-execution-provider")]
+    [InlineData("vm.guest.file.preview", DesktopNodeHyperVOperationDomain.GuestExecution, "guest-execution-provider")]
+    [InlineData("vm.guest.file", DesktopNodeHyperVOperationDomain.GuestExecution, "guest-execution-provider")]
     [InlineData("vm.guest.channel.verify", DesktopNodeHyperVOperationDomain.GuestExecution, "guest-execution-provider")]
     [InlineData("vm.guest.channel.ensure", DesktopNodeHyperVOperationDomain.GuestExecution, "guest-execution-provider")]
     [InlineData("vm.create", DesktopNodeHyperVOperationDomain.VmLifecycle, "vm-create-provider")]
@@ -223,7 +227,7 @@ public sealed class HyperVDomainContractTests
         var dispatchCatalog = DesktopNodeHyperVAdapterDispatchCatalog.Entries
             .ToDictionary(entry => entry.Operation, StringComparer.Ordinal);
 
-        Assert.Equal(41, dispatchCatalog.Count);
+        Assert.Equal(43, dispatchCatalog.Count);
 
         foreach (var operation in DesktopNodeHyperVDomain.Catalog)
         {
@@ -315,7 +319,9 @@ public sealed class HyperVDomainContractTests
             [
                 "vm.guest.exec",
                 "vm.guest.channel.verify",
-                "vm.guest.channel.ensure"
+                "vm.guest.channel.ensure",
+                "vm.guest.file.preview",
+                "vm.guest.file"
             ],
             DesktopNodeHyperVAdapterDispatchCatalog.OperationsForHandler(DesktopNodeHyperVAdapterDispatchHandler.GuestExecution));
         Assert.Equal(
