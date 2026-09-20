@@ -376,6 +376,31 @@ async function queueVmManage(vmId) {
   }
 }
 
+async function queueVmTemplateLock(vmId, locked) {
+  requireRbac('operate', 'VM template lock');
+  const vm = state.selectedVm || findCachedVm(vmId);
+  if (!window.confirm(buildVmTemplateLockConfirmation(vmId, vm, locked))) {
+    return;
+  }
+
+  state.actionPending = true;
+  setVmActionPending(vmId, locked ? 'template-lock' : 'template-unlock');
+  state.error = null;
+  render();
+  try {
+    const job = await desktopApi.queueVmTemplateLock(vmId, vmId, locked);
+    trackJob(job);
+    state.connectionState = 'connected';
+    startPolling();
+  } catch (error) {
+    state.error = normalizeError(error);
+  } finally {
+    state.actionPending = false;
+    clearVmActionPending(vmId);
+    render();
+  }
+}
+
 async function queueVmClone(vmId, rawName) {
   requireRbac('operate', 'VM clone');
   const name = String(rawName || '').trim();

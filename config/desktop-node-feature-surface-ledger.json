@@ -1542,6 +1542,31 @@
               ]
             }
           }
+        },
+        {
+          "operation_id": "vm.template.lock",
+          "method": "POST",
+          "route_template": "/api/v1/vms/{vmId}/template-lock",
+          "required_permission": "operate",
+          "present_surfaces": [
+            "api",
+            "cli",
+            "web"
+          ],
+          "excluded_surfaces": [],
+          "surface_bindings": {
+            "web": {
+              "coverage_id": "vm.template.lock"
+            },
+            "cli": {
+              "command": [
+                "vm",
+                "template-lock",
+                "vm-01",
+                "--yes"
+              ]
+            }
+          }
         }
       ]
     },

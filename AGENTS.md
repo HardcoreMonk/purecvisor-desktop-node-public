@@ -3,29 +3,35 @@
 <!-- BEGIN GENERATED CURRENT EVIDENCE -->
 ## Current operational evidence (generated)
 
-- Version: `0.42.75-admin-smoke`
+- Version: `0.42.77-admin-smoke`
 - Active operator surfaces: Web Console and PCVCLI; `tui_present=false`.
-- Package evidence: `docs/ga-ready/evidence/admin-smoke-package-2026-08-21-04275.md`.
-- Full admin host mutation: `full-admin-host-mutation-gate-20260821-04275` / `docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-08-21-04275-hostmutation.md`.
-- Actual-VM functional evidence: `docs/ga-ready/evidence/functional-correctness-actual-host-validation-2026-08-27-04275.md`.
+- Package evidence: `docs/ga-ready/evidence/admin-smoke-package-2026-08-29-04277.md`.
+- Full admin host mutation: `full-admin-host-mutation-gate-20260830-04277` / `docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-08-30-04277-hostmutation.md`.
+- Actual-VM functional evidence: `docs/ga-ready/evidence/functional-correctness-actual-host-validation-2026-09-20-04277-carryforward.md`.
 - Feature qualification: `contract=pcv-feature-promotion-decision-v1`; `promotion_eligible=true`; `blocker_count=0`; `blockers=none`.
-- Installed CLI/Web current-card: `docs/ga-ready/evidence/installed-operator-surface-current-card-2026-08-27-04275.md`; CLI exit 0, Web HTTP 200, service Running/Automatic, TUI absent.
-- Clean MSI SHA-256: `3d3ee255f7a16c90715da27c436a9ebce479b5ae91f1f4a7067a47dc6dbc0fb6`.
-- Operational MSI SHA-256: `d5afd8774ca5c33b84b10faa771703dcdba37c96d816be4dbb8f9a886f7c967b`.
-- Operational payload aggregate SHA-256: `b6882c9ab40dffc2a9a15785841a097140c23fef6eba26dc76bc892107c2c9b7`.
-- Provenance commit: `dbe1b48cf8bfc45fe7c431fac30ff498dfc9bbe4`.
-- Latest closed manual-admin pair: `0.42.74-admin-smoke -> 0.42.75-admin-smoke` / `manual-admin-campaign-descriptor-20260827-04274-04275`.
+- Installed CLI/Web current-card: `docs/ga-ready/evidence/installed-operator-surface-current-card-2026-08-30-04277.md`; CLI exit 0, Web HTTP 200, service Running/Automatic, TUI absent.
+- Clean MSI SHA-256: `d03eedaf12d344ccd2d74c87237aa8d920ea3474be498c7fe91bfa4394984957`.
+- Operational MSI SHA-256: `d4ebba77adcd7af92275509a65809c926f5bc6fb6bf8f61c49a610943998000f`.
+- Operational payload aggregate SHA-256: `d16e498a3d14ed67e361bef26a26feb87839490425e2101453f28742839d84a1`.
+- Provenance commit: `9f051b5a9cca80634e8ad7c4d15267a414c79d66`.
+- Latest closed manual-admin pair: `0.42.75-admin-smoke -> 0.42.77-admin-smoke` / `manual-admin-campaign-descriptor-20260920-04275-04277`.
 - Claims: `public_trusted_signing=false`; `external_stable_publication=false`.
 <!-- END GENERATED CURRENT EVIDENCE -->
+
+04275 predecessor: `0.42.75-admin-smoke` /
+`full-admin-host-mutation-gate-20260821-04275`.
 
 ## 에이전트 실행 회로 차단기 (필수)
 
 - 단일 진실: `docs/AGENT_EXECUTION_CIRCUIT_BREAKER.md`
 - 기계 계약: `config/agent-execution-circuit-breaker.json`
+- 열린 campaign: `docs/ga-ready/active-campaign.json`
+- `campaign_resume_policy`: `continue-open-campaign`
 - `vague_resume_policy`: `one-bounded-checkpoint`
 - `out_of_scope_findings`: `report-only`
 - 기본 한도는 30분, 도구 작업 묶음 18회, 정규 리뷰 1회와 제한 재검토 2회다.
 - 차선: Lane 0 권위 읽기, Lane 1 계약, Lane 2 설치본 프로브, Lane 3 승격. 한 checkpoint는 한 차선만.
+- 열린 campaign의 `next_step`은 재승인 없이 이어서 실행한다. 범위 밖 발견은 `next_step`이 아니다.
 - FAIL 프로브는 current를 못 쓴다.
 - canonical operator id는 `GET /api/v1/vms/{id}`가 받는 문자열이며 현행은 VM 표시 이름이다.
 - 먼저 도달한 한도 또는 동일 원인 3회 실패 시 추가 구현을 중단하고 stop protocol만 수행한다.
@@ -193,11 +199,11 @@ PR #156 post-merge public-boundary main push는 `docs/ga-ready/evidence/public-b
 - Linux `purecvisor-single`, Linux `purecvisorsd`, KVM/libvirt/LXC/ZFS/OVS/OVN runtime 코드를 추가하지 않는다.
 - 현재 코드 경로는 phase 이력과 테스트 계약을 보존하기 위해 `archive/spikes/purecvisor-desktop-node/**`와 `packaging/windows-desktop-node/**`를 유지한다.
 - 현재 적용 결정은 `docs/ADR_INDEX.md`와 `docs/adr/`를 우선한다.
-- 현재 operational full admin host mutation anchor는 `0.42.75-admin-smoke` /
-  `full-admin-host-mutation-gate-20260821-04275`다. 설치본 운영자 표면은 Web Console과
+- 현재 operational full admin host mutation anchor는 `0.42.77-admin-smoke` /
+  `full-admin-host-mutation-gate-20260830-04277`다. 설치본 운영자 표면은 Web Console과
   PCVCLI이며 `tui_present=false`다. 최신 closed manual-admin package-pair는
-  `0.42.74-admin-smoke -> 0.42.75-admin-smoke` /
-  `manual-admin-campaign-descriptor-20260827-04274-04275`다. 정확한 hash와 evidence
+  `0.42.75-admin-smoke -> 0.42.77-admin-smoke` /
+  `manual-admin-campaign-descriptor-20260920-04275-04277`다. 정확한 hash와 evidence
   tuple은 이 파일 최상단 generated current-evidence 블록과
   `docs/ga-ready/current-evidence.json`이 소유한다. 이 evidence는 internal admin-smoke
   범위이고 Runtime/API current-card contract는 `runtime-api-current-evidence-rollup-v1`이다.

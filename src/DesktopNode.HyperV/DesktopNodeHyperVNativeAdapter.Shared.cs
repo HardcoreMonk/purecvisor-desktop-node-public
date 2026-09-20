@@ -121,9 +121,21 @@ public sealed partial class DesktopNodeHyperVNativeAdapter
 
     private static bool GetBooleanProperty(JsonElement element, string propertyName)
     {
-        return element.ValueKind == JsonValueKind.Object &&
-            element.TryGetProperty(propertyName, out var value) &&
-            value.ValueKind == JsonValueKind.True;
+        return TryGetBooleanProperty(element, propertyName, out var value) && value;
+    }
+
+    private static bool TryGetBooleanProperty(JsonElement element, string propertyName, out bool value)
+    {
+        value = false;
+        if (element.ValueKind != JsonValueKind.Object ||
+            !element.TryGetProperty(propertyName, out var property) ||
+            (property.ValueKind != JsonValueKind.True && property.ValueKind != JsonValueKind.False))
+        {
+            return false;
+        }
+
+        value = property.ValueKind == JsonValueKind.True;
+        return true;
     }
 
     private static IReadOnlyList<string> ReadStringList(JsonElement element, string propertyName)

@@ -45,6 +45,47 @@ public sealed class DesktopNodeHyperVWmiProviderTests
         Assert.Equal("vmconnect", vm.Console.Type);
         Assert.True(vm.Console.AvailableLocal);
         Assert.True(vm.ManagedByPurecvisor);
+        Assert.Null(vm.Notes);
+    }
+
+    [Fact]
+    public void WmiVmProviderMapsOperatorNotesWithoutManagedMarker()
+    {
+        var vm = DesktopNodeHyperVWmiVmProvider.MapSummary(new DesktopNodeHyperVWmiVmSummary(
+            Id: "alpha",
+            Name: "alpha",
+            EnabledState: 3,
+            ProcessorCount: 1,
+            StartupMemoryQuantity: 1024,
+            StartupMemoryQuantityUnits: "byte*2^20",
+            GenerationSubtype: "Microsoft:Hyper-V:SubType:2",
+            CheckpointCount: 0,
+            Notes: "lab imported from workstation" + Environment.NewLine +
+                DesktopNodeHyperVManagedNotes.Marker));
+
+        Assert.True(vm.ManagedByPurecvisor);
+        Assert.Equal("lab imported from workstation", vm.Notes);
+        Assert.False(vm.TemplateLock);
+    }
+
+    [Fact]
+    public void WmiVmProviderMapsTemplateLockFromNotesMarker()
+    {
+        var vm = DesktopNodeHyperVWmiVmProvider.MapSummary(new DesktopNodeHyperVWmiVmSummary(
+            Id: "gold",
+            Name: "gold",
+            EnabledState: 3,
+            ProcessorCount: 1,
+            StartupMemoryQuantity: 1024,
+            StartupMemoryQuantityUnits: "byte*2^20",
+            GenerationSubtype: "Microsoft:Hyper-V:SubType:2",
+            CheckpointCount: 0,
+            Notes: DesktopNodeHyperVManagedNotes.Marker + Environment.NewLine +
+                DesktopNodeHyperVManagedNotes.TemplateLockMarker));
+
+        Assert.True(vm.ManagedByPurecvisor);
+        Assert.True(vm.TemplateLock);
+        Assert.Null(vm.Notes);
     }
 
     [Theory]
@@ -176,6 +217,48 @@ public sealed class DesktopNodeHyperVWmiProviderTests
         var network = Assert.Single(vm.Network);
         Assert.Equal("Default Switch", network.Switch);
         Assert.Equal("default-switch", network.Mode);
+    }
+
+    [Fact]
+    public void WmiVmProviderMapsCreatedAtAndLastPoweredOnWhenRunning()
+    {
+        var vm = DesktopNodeHyperVWmiVmProvider.MapSummary(new DesktopNodeHyperVWmiVmSummary(
+            Id: "alpha",
+            Name: "alpha",
+            EnabledState: 2,
+            ProcessorCount: 2,
+            StartupMemoryQuantity: 4096,
+            StartupMemoryQuantityUnits: "byte*2^20",
+            GenerationSubtype: "Microsoft:Hyper-V:SubType:2",
+            CheckpointCount: 0,
+            Notes: null,
+            CreationTime: "2026-09-20T01:02:03.0000000Z",
+            TimeOfLastStateChange: "2026-09-20T04:05:06.0000000Z"));
+
+        Assert.Equal("running", vm.State);
+        Assert.Equal("2026-09-20T01:02:03.0000000Z", vm.CreatedAt);
+        Assert.Equal("2026-09-20T04:05:06.0000000Z", vm.LastPoweredOn);
+    }
+
+    [Fact]
+    public void WmiVmProviderOmitsLastPoweredOnWhenNotRunning()
+    {
+        var vm = DesktopNodeHyperVWmiVmProvider.MapSummary(new DesktopNodeHyperVWmiVmSummary(
+            Id: "alpha",
+            Name: "alpha",
+            EnabledState: 3,
+            ProcessorCount: 1,
+            StartupMemoryQuantity: 1024,
+            StartupMemoryQuantityUnits: "byte*2^20",
+            GenerationSubtype: "Microsoft:Hyper-V:SubType:2",
+            CheckpointCount: 0,
+            Notes: null,
+            CreationTime: "2026-09-20T01:02:03.0000000Z",
+            TimeOfLastStateChange: "2026-09-20T04:05:06.0000000Z"));
+
+        Assert.Equal("stopped", vm.State);
+        Assert.Equal("2026-09-20T01:02:03.0000000Z", vm.CreatedAt);
+        Assert.Null(vm.LastPoweredOn);
     }
 
     [Fact]

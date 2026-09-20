@@ -154,13 +154,22 @@ public static class DesktopNodeCliFormatter
         var idWidth = Math.Max("SYS_UUID".Length, rows.Max(static row => row.Id.Length));
         var nameWidth = Math.Max("ENTITY_ID".Length, rows.Max(static row => row.Name.Length));
         var stateWidth = Math.Max("LIFELINE".Length, rows.Max(static row => row.State.Length));
+        var createdWidth = Math.Max("CREATED".Length, rows.Max(static row => row.CreatedAt.Length));
+        var lastOnWidth = Math.Max("LAST_ON".Length, rows.Max(static row => row.LastPoweredOn.Length));
+        var notesWidth = Math.Max("NOTES".Length, rows.Max(static row => row.Notes.Length));
         var header =
             "SYS_UUID".PadRight(idWidth) + " | " +
             "ENTITY_ID".PadRight(nameWidth) + " | " +
-            "LIFELINE".PadRight(stateWidth);
+            "LIFELINE".PadRight(stateWidth) + " | " +
+            "CREATED".PadRight(createdWidth) + " | " +
+            "LAST_ON".PadRight(lastOnWidth) + " | " +
+            "NOTES".PadRight(notesWidth);
         var separator = new string('-', idWidth) + "-+-" +
             new string('-', nameWidth) + "-+-" +
-            new string('-', stateWidth);
+            new string('-', stateWidth) + "-+-" +
+            new string('-', createdWidth) + "-+-" +
+            new string('-', lastOnWidth) + "-+-" +
+            new string('-', notesWidth);
 
         var lines = new List<string>
         {
@@ -173,7 +182,10 @@ public static class DesktopNodeCliFormatter
             lines.Add(
                 Color(row.Id.PadRight(idWidth), Dim, noColor) + " | " +
                 Color(row.Name.PadRight(nameWidth), Yellow, noColor) + " | " +
-                Color(row.State.PadRight(stateWidth), StateColor(row.State), noColor));
+                Color(row.State.PadRight(stateWidth), StateColor(row.State), noColor) + " | " +
+                Color(row.CreatedAt.PadRight(createdWidth), Dim, noColor) + " | " +
+                Color(row.LastPoweredOn.PadRight(lastOnWidth), Dim, noColor) + " | " +
+                Color(row.Notes.PadRight(notesWidth), Dim, noColor));
         }
 
         table = string.Join(Environment.NewLine, lines);
@@ -191,7 +203,7 @@ public static class DesktopNodeCliFormatter
         plain = rows.Count == 0
             ? "No VMs found."
             : string.Join(Environment.NewLine, rows.Select(static row =>
-                $"sys_uuid={row.Id} | entity_id={row.Name} | lifeline={row.State}"));
+                $"sys_uuid={row.Id} | entity_id={row.Name} | lifeline={row.State} | created_at={row.CreatedAt} | last_powered_on={row.LastPoweredOn} | notes={row.Notes}"));
         return true;
     }
 
@@ -205,10 +217,11 @@ public static class DesktopNodeCliFormatter
 
         var lines = new List<string>
         {
-            "sys_uuid,entity_id,lifeline"
+            "sys_uuid,entity_id,lifeline,created_at,last_powered_on,notes"
         };
         lines.AddRange(rows.Select(static row =>
-            EscapeCsv(row.Id) + "," + EscapeCsv(row.Name) + "," + EscapeCsv(row.State)));
+            EscapeCsv(row.Id) + "," + EscapeCsv(row.Name) + "," + EscapeCsv(row.State) + "," +
+            EscapeCsv(row.CreatedAt) + "," + EscapeCsv(row.LastPoweredOn) + "," + EscapeCsv(row.Notes)));
         csv = string.Join(Environment.NewLine, lines);
         return true;
     }
@@ -625,7 +638,13 @@ public static class DesktopNodeCliFormatter
                     var state = ReadString(item, "state") ??
                         ReadString(item, "lifeline") ??
                         "unknown";
-                    return new VmListRow(id, name, state);
+                    return new VmListRow(
+                        id,
+                        name,
+                        state,
+                        DisplayOrDash(ReadString(item, "created_at")),
+                        DisplayOrDash(ReadString(item, "last_powered_on")),
+                        DisplayOrDash(ReadString(item, "notes")));
                 })
                 .ToArray();
             return true;
@@ -861,6 +880,11 @@ public static class DesktopNodeCliFormatter
             : null;
     }
 
+    private static string DisplayOrDash(string? value)
+    {
+        return string.IsNullOrWhiteSpace(value) ? "-" : value;
+    }
+
     private static string EscapeCsv(string value)
     {
         return "\"" + value.Replace("\"", "\"\"", StringComparison.Ordinal) + "\"";
@@ -890,5 +914,11 @@ public static class DesktopNodeCliFormatter
 
     private sealed record NetworkSwitchRow(string Name, string Type, string IsDefault, string AllowManagementOs, string Adapter);
 
-    private sealed record VmListRow(string Id, string Name, string State);
+    private sealed record VmListRow(
+        string Id,
+        string Name,
+        string State,
+        string CreatedAt,
+        string LastPoweredOn,
+        string Notes);
 }

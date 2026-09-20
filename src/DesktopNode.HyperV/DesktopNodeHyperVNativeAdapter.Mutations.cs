@@ -258,6 +258,71 @@ public sealed partial class DesktopNodeHyperVNativeAdapter
         }
     }
 
+    private bool TryInvokeVmTemplateLock(string operation, JsonElement parameters, CancellationToken cancellationToken, out DesktopNodeHyperVOperationResult result)
+    {
+        var vmName = GetStringProperty(parameters, "name");
+        if (string.IsNullOrWhiteSpace(vmName) || !IsValidHyperVName(vmName))
+        {
+            result = DesktopNodeHyperVOperationResult.Failure(
+                operation,
+                "PCV_VM_NAME_INVALID",
+                $"VM name '{vmName ?? string.Empty}' is invalid.",
+                "Use a non-empty Hyper-V display name without leading/trailing whitespace, control characters, slash, or backslash.",
+                false);
+            return true;
+        }
+
+        if (!TryGetBooleanProperty(parameters, "locked", out var locked))
+        {
+            result = DesktopNodeHyperVOperationResult.Failure(
+                operation,
+                "PCV_VM_TEMPLATE_LOCK_LOCKED_REQUIRED",
+                "Template lock requires params.locked.",
+                "Pass locked=true to lock or locked=false to unlock.",
+                false);
+            return true;
+        }
+
+        try
+        {
+            ThrowIfNativeCanceled(cancellationToken, operation);
+            var data = vmManageProvider.InvokeTemplateLock(vmName, locked, cancellationToken);
+            var payload = new SortedDictionary<string, object?>
+            {
+                ["name"] = data.Name,
+                ["action"] = data.Action,
+                ["locked"] = locked
+            };
+
+            result = new DesktopNodeHyperVOperationResult(
+                Ok: true,
+                Operation: operation,
+                Data: JsonSerializer.SerializeToElement(payload, JsonOptions),
+                Error: null);
+            return true;
+        }
+        catch (DesktopNodeHyperVNativeOperationException ex)
+        {
+            result = DesktopNodeHyperVOperationResult.Failure(operation, ex.Code, ex.Message, ex.Detail, ex.Retryable);
+            return true;
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            result = CanceledResult(operation);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            result = DesktopNodeHyperVOperationResult.Failure(
+                operation,
+                "PCV_VM_TEMPLATE_LOCK_FAILED",
+                $"VM template-lock operation failed for VM '{vmName}'.",
+                ex.Message,
+                true);
+            return true;
+        }
+    }
+
     private bool TryInvokeVmClone(string operation, JsonElement parameters, CancellationToken cancellationToken, out DesktopNodeHyperVOperationResult result)
     {
         if (!TryReadVmCloneRequest(parameters, out var request, out result, operation))

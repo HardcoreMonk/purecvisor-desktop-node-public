@@ -287,6 +287,14 @@ writing-plans가 이 순서를 상세 작업으로 분해한다. 이 문서가 �
    이미 닫혀 있으면 새 코드 없이 계약을 고정한다.
 5. **(별도 승인)** Lane 2 SavedOnly 재실행. 슬라이스 2 PASS 뒤에만. current write 없음.
 
+## 10. 2026-09-20 연속 실행 개정
+
+차선 의미와 FAIL≠current 금지는 이 문서가 계속 소유한다. `재개`/`계속`이 항상 한
+checkpoint로 끝나는 규칙은
+`docs/superpowers/specs/2026-09-20-purecvisor-desktop-node-campaign-continuity-design.md`가
+개정한다. 열린 campaign의 `next_step`은 재승인 없이 이어지고, 범위 밖 발견은 다음 일이
+되지 않는다.
+
 슬라이스 5는 이 설계의 구현 완료 조건이 아니다. Lane 1 가드가 먼저 닫혀야 한다.
 
 ## 10. 관련 문서

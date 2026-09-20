@@ -540,7 +540,63 @@ public sealed partial class DesktopNodeHyperVNativeAdapter : IDesktopNodeHyperVN
             throw new InvalidOperationException($"Unsupported Hyper-V adapter dispatch handler '{dispatch.Handler}'.");
         }
 
+        if (TryRejectTemplateLockedMutation(operation, domainOperation, parameters, cancellationToken, out result))
+        {
+            return true;
+        }
+
         return handler(operation, parameters, cancellationToken, out result);
+    }
+
+    private bool TryRejectTemplateLockedMutation(
+        string operation,
+        DesktopNodeHyperVDomainOperation domainOperation,
+        JsonElement parameters,
+        CancellationToken cancellationToken,
+        out DesktopNodeHyperVOperationResult result)
+    {
+        result = default!;
+        if (domainOperation.Kind != DesktopNodeHyperVOperationKind.Mutation ||
+            DesktopNodeHyperVVmTemplateLockGuard.IsMutationAllowed(operation))
+        {
+            return false;
+        }
+
+        var vmName = GetStringProperty(parameters, "name") ??
+            GetStringProperty(parameters, "vm_name") ??
+            GetStringProperty(parameters, "source");
+        if (string.IsNullOrWhiteSpace(vmName))
+        {
+            return false;
+        }
+
+        IReadOnlyList<DesktopNodeHyperVVmInfo> vms;
+        try
+        {
+            vms = vmProvider.GetVms(cancellationToken);
+        }
+        catch (Exception)
+        {
+            return false;
+        }
+
+        var vm = vms.FirstOrDefault(candidate =>
+            string.Equals(candidate.Name, vmName, StringComparison.Ordinal) ||
+            string.Equals(candidate.Id, vmName, StringComparison.Ordinal));
+        if (vm is null ||
+            !DesktopNodeHyperVVmTemplateLockGuard.TryReject(operation, vm.TemplateLock, vm.Name, out var error) ||
+            error is null)
+        {
+            return false;
+        }
+
+        result = DesktopNodeHyperVOperationResult.Failure(
+            operation,
+            error.Code,
+            error.Message,
+            error.Detail,
+            error.Retryable);
+        return true;
     }
 
     private delegate bool HyperVAdapterDispatchInvoker(
@@ -607,7 +663,9 @@ public sealed partial class DesktopNodeHyperVNativeAdapter : IDesktopNodeHyperVN
 
     private bool InvokeVmManage(string operation, JsonElement parameters, CancellationToken cancellationToken, out DesktopNodeHyperVOperationResult result)
     {
-        return TryInvokeVmManage(operation, parameters, cancellationToken, out result);
+        return operation == "vm.template.lock"
+            ? TryInvokeVmTemplateLock(operation, parameters, cancellationToken, out result)
+            : TryInvokeVmManage(operation, parameters, cancellationToken, out result);
     }
 
     private bool InvokeVmClonePreview(string operation, JsonElement parameters, CancellationToken cancellationToken, out DesktopNodeHyperVOperationResult result)

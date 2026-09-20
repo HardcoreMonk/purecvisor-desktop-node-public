@@ -1,6 +1,6 @@
 Set-StrictMode -Version Latest
 
-Describe '0.42.75 SERVICE_PLAN P0 promotion evidence contract' {
+Describe '0.42.75 predecessor promotion evidence contract' {
     BeforeAll {
         $script:RepoRoot = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..\..\..')).Path
 
@@ -25,28 +25,17 @@ Describe '0.42.75 SERVICE_PLAN P0 promotion evidence contract' {
 
     It 'pins the canonical current evidence record to the exact 0.42.75 tuple' {
         $record = Get-RepoText -RelativePath 'docs/ga-ready/current-evidence.json' | ConvertFrom-Json
+        $record.current.version | Should -Not -BeExactly '0.42.75-admin-smoke'
 
-        $record.schema_version | Should -Be 1
-        $record.contract | Should -BeExactly 'pcv-current-evidence-v1'
-        $record.current.version | Should -BeExactly '0.42.75-admin-smoke'
-        (@($record.current.operator_surfaces) -join ',') | Should -BeExactly 'web,cli'
-        $record.current.tui_present | Should -BeFalse
-        $record.current.package_evidence | Should -BeExactly 'docs/ga-ready/evidence/admin-smoke-package-2026-08-21-04275.md'
-        $record.current.fullgate_batch | Should -BeExactly 'full-admin-host-mutation-gate-20260821-04275'
-        $record.current.fullgate_evidence | Should -BeExactly 'docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-08-21-04275-hostmutation.md'
-        $record.current.functional_evidence | Should -BeExactly 'docs/ga-ready/evidence/functional-correctness-actual-host-validation-2026-08-27-04275.md'
-        $record.current.installed_evidence | Should -BeExactly 'docs/ga-ready/evidence/installed-operator-surface-current-card-2026-08-27-04275.md'
-        $record.current.clean_msi_sha256 | Should -BeExactly '3d3ee255f7a16c90715da27c436a9ebce479b5ae91f1f4a7067a47dc6dbc0fb6'
-        $record.current.operational_msi_sha256 | Should -BeExactly 'd5afd8774ca5c33b84b10faa771703dcdba37c96d816be4dbb8f9a886f7c967b'
-        $record.current.payload_sha256 | Should -BeExactly 'b6882c9ab40dffc2a9a15785841a097140c23fef6eba26dc76bc892107c2c9b7'
-        $record.current.provenance_commit | Should -BeExactly 'dbe1b48cf8bfc45fe7c431fac30ff498dfc9bbe4'
-        $record.manual_admin.latest_closed_baseline | Should -BeExactly '0.42.74-admin-smoke'
-        $record.manual_admin.latest_closed_target | Should -BeExactly '0.42.75-admin-smoke'
-        $record.manual_admin.latest_closed_descriptor | Should -BeExactly 'manual-admin-campaign-descriptor-20260827-04274-04275'
-        $record.feature_qualification.promotion_eligible | Should -BeTrue
-        @($record.feature_qualification.blockers).Count | Should -Be 0
-        $record.claims.public_trusted_signing | Should -BeFalse
-        $record.claims.external_stable_publication | Should -BeFalse
+        $descriptor = Get-RepoText -RelativePath 'docs/ga-ready/MANUAL_ADMIN_NEXT_CAMPAIGN_DESCRIPTOR.md'
+        Assert-MetadataValue -Content $descriptor -Name 'previous_04275_current_manual_admin_package_pair' -Value '0.42.74-admin-smoke -> 0.42.75-admin-smoke'
+        Assert-MetadataValue -Content $descriptor -Name 'previous_04275_current_manual_admin_campaign' -Value 'docs/ga-ready/evidence/manual-admin-campaign-2026-08-27-04274-04275.md'
+        Assert-MetadataValue -Content $descriptor -Name 'previous_04275_current_manual_admin_descriptor_batch_manifest' -Value 'manual-admin-campaign-descriptor-20260827-04274-04275'
+        Assert-MetadataValue -Content $descriptor -Name 'previous_04275_current_full_admin_host_mutation_batch' -Value 'full-admin-host-mutation-gate-20260821-04275'
+        Assert-MetadataValue -Content $descriptor -Name 'previous_04275_current_full_admin_host_mutation_operational_msi_sha256' -Value 'd5afd8774ca5c33b84b10faa771703dcdba37c96d816be4dbb8f9a886f7c967b'
+        Assert-MetadataValue -Content $descriptor -Name 'previous_04275_current_full_admin_host_mutation_payload_aggregate_sha256' -Value 'b6882c9ab40dffc2a9a15785841a097140c23fef6eba26dc76bc892107c2c9b7'
+        Assert-MetadataValue -Content $descriptor -Name 'previous_04275_current_full_admin_host_mutation_provenance_commit' -Value 'dbe1b48cf8bfc45fe7c431fac30ff498dfc9bbe4'
+        Assert-MetadataValue -Content $descriptor -Name 'previous_04275_current_installed_operator_surface_current_card_evidence' -Value 'docs/ga-ready/evidence/installed-operator-surface-current-card-2026-08-27-04275.md'
     }
 
     It 'records the clean 0.42.75 package as current' {
@@ -76,21 +65,18 @@ Describe '0.42.75 SERVICE_PLAN P0 promotion evidence contract' {
     It 'closes the 0.42.74 -> 0.42.75 pair as current and opens the next not-opened pair' {
         $descriptor = Get-RepoText -RelativePath 'docs/ga-ready/MANUAL_ADMIN_NEXT_CAMPAIGN_DESCRIPTOR.md'
 
-        Assert-MetadataValue -Content $descriptor -Name 'current_manual_admin_package_pair' -Value '0.42.74-admin-smoke -> 0.42.75-admin-smoke'
-        Assert-MetadataValue -Content $descriptor -Name 'latest_manual_admin_candidate_status' -Value 'pass-closed'
-        Assert-MetadataValue -Content $descriptor -Name 'latest_manual_admin_candidate_package_pair' -Value '0.42.74-admin-smoke -> 0.42.75-admin-smoke'
-        Assert-MetadataValue -Content $descriptor -Name 'next_manual_admin_package_pair_candidate' -Value '0.42.75-admin-smoke -> next-admin-smoke-required'
-        Assert-MetadataValue -Content $descriptor -Name 'next_manual_admin_package_pair_candidate_status' -Value 'not-opened-awaiting-next-product-payload'
-        Assert-MetadataValue -Content $descriptor -Name 'current_manual_admin_update_package_sha256' -Value 'ecae6e9fc7f2f3c49e12a7fec5b4e6d7ca0ce8ba017adf7970cb516a7b5e15df'
-        Assert-MetadataValue -Content $descriptor -Name 'current_manual_admin_descriptor_batch_manifest' -Value 'manual-admin-campaign-descriptor-20260827-04274-04275'
-        Assert-MetadataValue -Content $descriptor -Name 'current_manual_admin_target_msi_sha256' -Value '3d3ee255f7a16c90715da27c436a9ebce479b5ae91f1f4a7067a47dc6dbc0fb6'
-        Assert-MetadataValue -Content $descriptor -Name 'current_full_admin_host_mutation_provenance_commit' -Value 'dbe1b48cf8bfc45fe7c431fac30ff498dfc9bbe4'
-        Assert-MetadataValue -Content $descriptor -Name 'current_public_boundary_main_push_package_candidate_decision' -Value 'docs-only-04275-promotion-retains-0.42.75-admin-smoke'
-        Assert-MetadataValue -Content $descriptor -Name 'current_public_boundary_main_push_evidence' -Value 'docs/ga-ready/evidence/public-boundary-ci-main-push-2026-08-27-04275-promotion-postpush-pass.md'
-        Assert-MetadataValue -Content $descriptor -Name 'current_public_boundary_main_push_run_id' -Value '33064087018'
-        Assert-MetadataValue -Content $descriptor -Name 'current_public_boundary_main_push_job_id' -Value '98489770067'
-        Assert-MetadataValue -Content $descriptor -Name 'current_public_boundary_main_push_head_sha' -Value '7cdd56bf0ff3ded2b9541cd242bd1d68905c0e66'
-        Assert-MetadataValue -Content $descriptor -Name 'current_public_boundary_main_push_product_payload_change_detected' -Value 'false'
+        Assert-MetadataValue -Content $descriptor -Name 'previous_04275_current_manual_admin_package_pair' -Value '0.42.74-admin-smoke -> 0.42.75-admin-smoke'
+        Assert-MetadataValue -Content $descriptor -Name 'previous_04275_latest_manual_admin_candidate_package_pair' -Value '0.42.74-admin-smoke -> 0.42.75-admin-smoke'
+        Assert-MetadataValue -Content $descriptor -Name 'previous_04277_next_manual_admin_package_pair_candidate' -Value '0.42.75-admin-smoke -> next-admin-smoke-required'
+        Assert-MetadataValue -Content $descriptor -Name 'previous_04275_current_manual_admin_update_package_sha256' -Value 'ecae6e9fc7f2f3c49e12a7fec5b4e6d7ca0ce8ba017adf7970cb516a7b5e15df'
+        Assert-MetadataValue -Content $descriptor -Name 'previous_04275_current_manual_admin_descriptor_batch_manifest' -Value 'manual-admin-campaign-descriptor-20260827-04274-04275'
+        Assert-MetadataValue -Content $descriptor -Name 'previous_04275_current_manual_admin_target_msi_sha256' -Value '3d3ee255f7a16c90715da27c436a9ebce479b5ae91f1f4a7067a47dc6dbc0fb6'
+        Assert-MetadataValue -Content $descriptor -Name 'previous_04275_current_full_admin_host_mutation_provenance_commit' -Value 'dbe1b48cf8bfc45fe7c431fac30ff498dfc9bbe4'
+        Assert-MetadataValue -Content $descriptor -Name 'previous_04275_current_public_boundary_main_push_package_candidate_decision' -Value 'docs-only-04275-promotion-retains-0.42.75-admin-smoke'
+        Assert-MetadataValue -Content $descriptor -Name 'previous_04275_current_public_boundary_main_push_evidence' -Value 'docs/ga-ready/evidence/public-boundary-ci-main-push-2026-08-27-04275-promotion-postpush-pass.md'
+        Assert-MetadataValue -Content $descriptor -Name 'previous_04275_current_public_boundary_main_push_run_id' -Value '33064087018'
+        Assert-MetadataValue -Content $descriptor -Name 'previous_04275_current_public_boundary_main_push_job_id' -Value '98489770067'
+        Assert-MetadataValue -Content $descriptor -Name 'previous_04275_current_public_boundary_main_push_head_sha' -Value '7cdd56bf0ff3ded2b9541cd242bd1d68905c0e66'
     }
 
     It 'indexes 0.42.75 as generated current and keeps the 04274 save defect historical' {
@@ -104,15 +90,11 @@ Describe '0.42.75 SERVICE_PLAN P0 promotion evidence contract' {
         $index | Should -Match 'canonical current는 `0\.42\.75-admin-smoke`다'
         $control | Should -Match 'docs/ga-ready/evidence/admin-smoke-package-2026-08-21-04275.md'
         $control | Should -Match 'operational current는 `0\.42\.75-admin-smoke`다'
-        $ledger | Should -Match '\|\s*`manual-admin-package-pair-next`\s*\|\s*`not-opened-awaiting-next-product-payload`,\s*`0\.42\.75-admin-smoke -> next-admin-smoke-required`\s*\|'
         $ledger | Should -Match '\|\s*`service-plan-p0-save-historical-defect`\s*\|\s*`fail-historical`'
         $index | Should -Match 'docs/ga-ready/evidence/manual-admin-campaign-2026-08-27-04274-04275.md'
         $index | Should -Match 'docs/ga-ready/evidence/functional-correctness-actual-host-validation-2026-08-27-04275.md'
         $index | Should -Match 'docs/ga-ready/evidence/service-plan-p0-actual-vm-2026-08-27-04275.md'
         $index | Should -Match 'docs/ga-ready/evidence/public-boundary-ci-main-push-2026-08-27-04275-promotion-postpush-pass.md'
-        $ledger | Should -Match '\|\s*`package-build-current`\s*\|\s*`package-build-pass`,\s*`0\.42\.75-admin-smoke`\s*\|'
-        $ledger | Should -Match '\|\s*`full-admin-host-mutation-current`\s*\|\s*`pass`,\s*`0\.42\.75-admin-smoke`\s*\|'
-        $ledger | Should -Match '\|\s*`installed-operator-surface-smoke-latest`\s*\|\s*`pass`,\s*installed\s*`0\.42\.75-admin-smoke`\s*\|'
     }
 
     It 'records the 0.42.75 fullgate PASS as current' {
@@ -210,24 +192,23 @@ Describe '0.42.75 SERVICE_PLAN P0 promotion evidence contract' {
     It 'links the closed package pair exactly from the manual-admin descriptor' {
         $descriptor = Get-RepoText -RelativePath 'docs/ga-ready/MANUAL_ADMIN_NEXT_CAMPAIGN_DESCRIPTOR.md'
         $expected = [ordered]@{
-            current_manual_admin_package_pair = '0.42.74-admin-smoke -> 0.42.75-admin-smoke'
-            current_manual_admin_campaign = 'docs/ga-ready/evidence/manual-admin-campaign-2026-08-27-04274-04275.md'
-            current_manual_admin_campaign_root = 'artifacts/manual-admin-campaign-20260827-04274-04275'
-            current_manual_admin_target_package_root = 'artifacts/admin-smoke-package-20260821-04275'
-            current_manual_admin_target_msi_sha256 = '3d3ee255f7a16c90715da27c436a9ebce479b5ae91f1f4a7067a47dc6dbc0fb6'
-            current_manual_admin_update_package_sha256 = 'ecae6e9fc7f2f3c49e12a7fec5b4e6d7ca0ce8ba017adf7970cb516a7b5e15df'
-            current_manual_admin_descriptor_batch_manifest = 'manual-admin-campaign-descriptor-20260827-04274-04275'
-            current_manual_admin_descriptor_summary = 'artifacts/manual-admin-campaign-20260827-04274-04275/manual-admin-campaign-descriptor/summary.json'
-            current_installed_operator_surface_current_card_evidence = 'docs/ga-ready/evidence/installed-operator-surface-current-card-2026-08-27-04275.md'
-            latest_manual_admin_candidate_package_pair = '0.42.74-admin-smoke -> 0.42.75-admin-smoke'
-            latest_manual_admin_candidate_campaign = 'docs/ga-ready/evidence/manual-admin-campaign-2026-08-27-04274-04275.md'
-            latest_manual_admin_candidate_descriptor_batch_manifest = 'manual-admin-campaign-descriptor-20260827-04274-04275'
-            latest_manual_admin_candidate_status = 'pass-closed'
-            current_full_admin_host_mutation_gate = 'docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-08-21-04275-hostmutation.md'
-            current_full_admin_host_mutation_batch = 'full-admin-host-mutation-gate-20260821-04275'
-            current_full_admin_host_mutation_payload_aggregate_sha256 = 'b6882c9ab40dffc2a9a15785841a097140c23fef6eba26dc76bc892107c2c9b7'
-            current_full_admin_host_mutation_operational_msi_sha256 = 'd5afd8774ca5c33b84b10faa771703dcdba37c96d816be4dbb8f9a886f7c967b'
-            current_full_admin_host_mutation_provenance_commit = 'dbe1b48cf8bfc45fe7c431fac30ff498dfc9bbe4'
+            previous_04275_current_manual_admin_package_pair = '0.42.74-admin-smoke -> 0.42.75-admin-smoke'
+            previous_04275_current_manual_admin_campaign = 'docs/ga-ready/evidence/manual-admin-campaign-2026-08-27-04274-04275.md'
+            previous_04275_current_manual_admin_campaign_root = 'artifacts/manual-admin-campaign-20260827-04274-04275'
+            previous_04275_current_manual_admin_target_package_root = 'artifacts/admin-smoke-package-20260821-04275'
+            previous_04275_current_manual_admin_target_msi_sha256 = '3d3ee255f7a16c90715da27c436a9ebce479b5ae91f1f4a7067a47dc6dbc0fb6'
+            previous_04275_current_manual_admin_update_package_sha256 = 'ecae6e9fc7f2f3c49e12a7fec5b4e6d7ca0ce8ba017adf7970cb516a7b5e15df'
+            previous_04275_current_manual_admin_descriptor_batch_manifest = 'manual-admin-campaign-descriptor-20260827-04274-04275'
+            previous_04275_current_manual_admin_descriptor_summary = 'artifacts/manual-admin-campaign-20260827-04274-04275/manual-admin-campaign-descriptor/summary.json'
+            previous_04275_current_installed_operator_surface_current_card_evidence = 'docs/ga-ready/evidence/installed-operator-surface-current-card-2026-08-27-04275.md'
+            previous_04275_latest_manual_admin_candidate_package_pair = '0.42.74-admin-smoke -> 0.42.75-admin-smoke'
+            previous_04275_latest_manual_admin_candidate_campaign = 'docs/ga-ready/evidence/manual-admin-campaign-2026-08-27-04274-04275.md'
+            previous_04275_latest_manual_admin_candidate_descriptor_batch_manifest = 'manual-admin-campaign-descriptor-20260827-04274-04275'
+            previous_04275_current_full_admin_host_mutation_gate = 'docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-08-21-04275-hostmutation.md'
+            previous_04275_current_full_admin_host_mutation_batch = 'full-admin-host-mutation-gate-20260821-04275'
+            previous_04275_current_full_admin_host_mutation_payload_aggregate_sha256 = 'b6882c9ab40dffc2a9a15785841a097140c23fef6eba26dc76bc892107c2c9b7'
+            previous_04275_current_full_admin_host_mutation_operational_msi_sha256 = 'd5afd8774ca5c33b84b10faa771703dcdba37c96d816be4dbb8f9a886f7c967b'
+            previous_04275_current_full_admin_host_mutation_provenance_commit = 'dbe1b48cf8bfc45fe7c431fac30ff498dfc9bbe4'
         }
 
         foreach ($entry in $expected.GetEnumerator()) {
@@ -236,31 +217,14 @@ Describe '0.42.75 SERVICE_PLAN P0 promotion evidence contract' {
     }
 
     It 'links the exact promotion chain from the current ledger and evidence index' {
-        $ledger = Get-RepoText -RelativePath 'docs/ga-ready/CURRENT_EVIDENCE_LEDGER.md'
-        $currentAnchorMatch = [regex]::Match(
-            $ledger,
-            '(?s)## 현재 Anchor\s*(?<body>.*?)(?=\r?\n## |\z)')
-        $currentAnchorMatch.Success | Should -BeTrue
-        $currentAnchor = $currentAnchorMatch.Groups['body'].Value
-
-        $currentAnchor | Should -Match '\|\s*`full-admin-host-mutation-current`\s*\|\s*`pass`,\s*`0\.42\.75-admin-smoke`\s*\|'
-        $currentAnchor | Should -Match '\|\s*`manual-admin-package-pair-current`\s*\|\s*`pass`,\s*`0\.42\.74-admin-smoke -> 0\.42\.75-admin-smoke`\s*\|'
-        $currentAnchor | Should -Match '\|\s*`package-build-current`\s*\|\s*`package-build-pass`,\s*`0\.42\.75-admin-smoke`\s*\|'
-        $currentAnchor | Should -Match '\|\s*`latest-product-payload-smoke`\s*\|\s*`pass`,\s*package\s*`0\.42\.75-admin-smoke`\s*\|'
-        $currentAnchor | Should -Match '\|\s*`functional-correctness-actual-host-latest`\s*\|\s*`pass`,\s*installed\s*`0\.42\.75-admin-smoke`\s*\|'
-        $currentAnchor | Should -Match '\|\s*`installed-operator-surface-smoke-latest`\s*\|\s*`pass`,\s*installed\s*`0\.42\.75-admin-smoke`\s*\|'
-        $currentAnchor | Should -Match '\|\s*`service-plan-p0-save-historical-defect`\s*\|\s*`fail-historical`'
-        $currentAnchor | Should -Match '285661fe50ade63169b6cfc85ff1dcf754a679e30152bd04d166581b4d762136'
-        $currentAnchor | Should -Match ([regex]::Escape('docs/ga-ready/evidence/admin-smoke-package-2026-08-21-04275.md'))
-        $currentAnchor | Should -Match ([regex]::Escape('docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-08-21-04275-hostmutation.md'))
-        $currentAnchor | Should -Match ([regex]::Escape('docs/ga-ready/evidence/installed-operator-surface-current-card-2026-08-27-04275.md'))
-        $currentAnchor | Should -Match ([regex]::Escape('docs/ga-ready/evidence/functional-correctness-actual-host-validation-2026-08-27-04275.md'))
-        $currentAnchor | Should -Match ([regex]::Escape('docs/ga-ready/evidence/manual-admin-campaign-2026-08-27-04274-04275.md'))
-        $currentAnchor | Should -Match ([regex]::Escape('docs/ga-ready/evidence/installed-token-rotation-smoke-2026-08-09-04272.md'))
-        $currentAnchor | Should -Match ([regex]::Escape('docs/ga-ready/evidence/service-plan-p0-actual-vm-2026-08-27-04275.md'))
-
         $index = Get-RepoText -RelativePath 'docs/ga-ready/EVIDENCE_INDEX.md'
         $index | Should -Match 'manual-admin-campaign-descriptor-20260827-04274-04275'
         $index | Should -Match '285661fe50ade63169b6cfc85ff1dcf754a679e30152bd04d166581b4d762136'
+        $index | Should -Match ([regex]::Escape('docs/ga-ready/evidence/admin-smoke-package-2026-08-21-04275.md'))
+        $index | Should -Match ([regex]::Escape('docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-08-21-04275-hostmutation.md'))
+        $index | Should -Match ([regex]::Escape('docs/ga-ready/evidence/installed-operator-surface-current-card-2026-08-27-04275.md'))
+        $index | Should -Match ([regex]::Escape('docs/ga-ready/evidence/functional-correctness-actual-host-validation-2026-08-27-04275.md'))
+        $index | Should -Match ([regex]::Escape('docs/ga-ready/evidence/manual-admin-campaign-2026-08-27-04274-04275.md'))
+        $index | Should -Match ([regex]::Escape('docs/ga-ready/evidence/service-plan-p0-actual-vm-2026-08-27-04275.md'))
     }
 }

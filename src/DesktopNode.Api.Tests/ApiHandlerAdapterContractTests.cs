@@ -71,8 +71,8 @@ public sealed class ApiHandlerAdapterContractTests
 
         var contract = ApiHandlerAdapterContract.CreateDefault();
         Assert.Equal(28, featureIds.Count);
-        Assert.Equal(62, ledgerRoutes.Count);
-        Assert.Equal(62, contract.Routes.Count);
+        Assert.Equal(63, ledgerRoutes.Count);
+        Assert.Equal(63, contract.Routes.Count);
         foreach (var route in contract.Routes)
         {
             Assert.Matches("^pcv\\.[a-z0-9._-]+$", route.FeatureId);
@@ -111,8 +111,8 @@ public sealed class ApiHandlerAdapterContractTests
         var contract = ApiHandlerAdapterContract.CreateDefault();
         var routes = contract.Routes.ToDictionary(route => (route.Method, route.RouteTemplate));
 
-        Assert.Equal(62, contract.Routes.Count);
-        Assert.Equal(62, routes.Count);
+        Assert.Equal(63, contract.Routes.Count);
+        Assert.Equal(63, routes.Count);
 
         AssertRoute(routes[("GET", "/api/v1/runtime/policy")], "GET", "RuntimePolicy", MutationStance.ReadOnly);
         AssertRoute(routes[("GET", "/api/v1/host/status")], "GET", "HostStatus", MutationStance.ReadOnly);
@@ -165,6 +165,7 @@ public sealed class ApiHandlerAdapterContractTests
         AssertRoute(routes[("POST", "/api/v1/vms/{vmId}/resume-saved")], "POST", "QueueResumeSavedVm", MutationStance.QueuedMutation);
         AssertRoute(routes[("POST", "/api/v1/vms/{vmId}/rename")], "POST", "QueueRenameVm", MutationStance.QueuedMutation);
         AssertRoute(routes[("POST", "/api/v1/vms/{vmId}/manage")], "POST", "QueueManageVm", MutationStance.QueuedMutation);
+        AssertRoute(routes[("POST", "/api/v1/vms/{vmId}/template-lock")], "POST", "QueueTemplateLockVm", MutationStance.QueuedMutation);
         AssertRoute(
             routes[("POST", "/api/v1/vms/{vmId}/clone/preview")],
             "POST",
@@ -185,7 +186,7 @@ public sealed class ApiHandlerAdapterContractTests
         AssertRoute(routes[("POST", "/api/v1/vms/{vmId}/disk-resize")], "POST", "QueueResizeVmDisk", MutationStance.QueuedMutation);
         AssertRoute(routes[("DELETE", "/api/v1/vms/{vmId}")], "DELETE", "QueueDeleteVm", MutationStance.QueuedMutation);
         Assert.Equal(13, contract.Routes.Count(route => route.MutationStance == MutationStance.ProductOperation));
-        Assert.Equal(27, contract.Routes.Count(route => route.MutationStance == MutationStance.QueuedMutation));
+        Assert.Equal(28, contract.Routes.Count(route => route.MutationStance == MutationStance.QueuedMutation));
         Assert.DoesNotContain(contract.Routes, route => route.RouteTemplate == "/api/v1/vms/{vmId}/lifecycle/{action}");
         Assert.DoesNotContain(contract.Routes, route => route.RouteTemplate.Contains("/evidence", StringComparison.OrdinalIgnoreCase));
     }
@@ -212,10 +213,10 @@ public sealed class ApiHandlerAdapterContractTests
                 System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(snapshot)))
             .ToLowerInvariant();
 
-        Assert.Equal("e7acde2a5dad7cd4300103b9e58726b92e447ebf2eafff30b0cf0fee328a2e5d", digest);
+        Assert.Equal("af58c4801a3f5a38315c78cd2693ad4e3347aae0a76922aa0fe2a2e29130181b", digest);
         Assert.Equal(22, routes.Count(route => route.MutationStance == MutationStance.ReadOnly));
         Assert.Equal(13, routes.Count(route => route.MutationStance == MutationStance.ProductOperation));
-        Assert.Equal(27, routes.Count(route => route.MutationStance == MutationStance.QueuedMutation));
+        Assert.Equal(28, routes.Count(route => route.MutationStance == MutationStance.QueuedMutation));
         Assert.Equal(13, routes.Select(route => route.RouteFamily).Distinct(StringComparer.Ordinal).Count());
     }
 
@@ -651,6 +652,10 @@ public sealed class ApiHandlerAdapterContractTests
         Assert.True(DesktopNodeApiRuntimeRoutes.TryMatchQueuedMutation("POST", "/api/v1/vms/lab%20vm/manage", out var manageMatch));
         Assert.Equal("QueueManageVm", manageMatch.Route.OperationName);
         Assert.Equal("lab vm", manageMatch.Parameters["vmId"]);
+
+        Assert.True(DesktopNodeApiRuntimeRoutes.TryMatchQueuedMutation("POST", "/api/v1/vms/lab%20vm/template-lock", out var templateLockMatch));
+        Assert.Equal("QueueTemplateLockVm", templateLockMatch.Route.OperationName);
+        Assert.Equal("lab vm", templateLockMatch.Parameters["vmId"]);
 
         Assert.True(DesktopNodeApiRuntimeRoutes.TryMatchContract("GET", "/api/v1/vms/lab%20vm/guest-agent/status", out var guestStatusMatch));
         Assert.Equal("GetVmGuestAgentStatus", guestStatusMatch.Route.OperationName);

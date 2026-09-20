@@ -285,6 +285,10 @@ function bindEvents() {
         await refreshVmDeleteStatus(button.dataset.vmId);
       } else if (button.dataset.action === 'vm-manage') {
         await queueVmManage(button.dataset.vmId);
+      } else if (button.dataset.action === 'vm-template-lock') {
+        await queueVmTemplateLock(button.dataset.vmId, true);
+      } else if (button.dataset.action === 'vm-template-unlock') {
+        await queueVmTemplateLock(button.dataset.vmId, false);
       } else if (button.dataset.action === 'vm-clone') {
         if (button.closest('form[data-action="vm-clone"]')) {
           return;

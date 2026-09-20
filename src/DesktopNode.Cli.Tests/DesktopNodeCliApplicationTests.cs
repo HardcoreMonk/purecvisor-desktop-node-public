@@ -374,6 +374,36 @@ public sealed class DesktopNodeCliApplicationTests
     }
 
     [Fact]
+    public async Task VmListTableRendersCreatedAtLastPoweredOnAndNotes()
+    {
+        var transport = new RecordingTransport(new DesktopNodeCliTransportResponse(
+            200,
+            "application/json",
+            """
+            {"ok":true,"operation":"vm.list","data":[
+              {"id":"alpha-id","name":"alpha","state":"running","created_at":"2026-09-20T01:02:03.0000000Z","last_powered_on":"2026-09-20T04:05:06.0000000Z","notes":"lab imported from workstation"},
+              {"id":"beta-id","name":"beta","state":"stopped"}
+            ],"error":null}
+            """));
+
+        var result = await DesktopNodeCliApplication.RunAsync(
+            ["--no-color", "vm", "list"],
+            transport,
+            environment: _ => null,
+            defaultProtectedTokenFilePath: MissingDefaultProtectedTokenPath(),
+            cancellationToken: CancellationToken.None);
+
+        Assert.Equal(0, result.ExitCode);
+        Assert.Contains("CREATED", result.StandardOutput, StringComparison.Ordinal);
+        Assert.Contains("LAST_ON", result.StandardOutput, StringComparison.Ordinal);
+        Assert.Contains("NOTES", result.StandardOutput, StringComparison.Ordinal);
+        Assert.Contains("2026-09-20T01:02:03.0000000Z", result.StandardOutput, StringComparison.Ordinal);
+        Assert.Contains("2026-09-20T04:05:06.0000000Z", result.StandardOutput, StringComparison.Ordinal);
+        Assert.Contains("lab imported from workstation", result.StandardOutput, StringComparison.Ordinal);
+        Assert.Contains("beta-id", result.StandardOutput, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task RuntimePolicyTableRendersPolicyFields()
     {
         var transport = new RecordingTransport(new DesktopNodeCliTransportResponse(

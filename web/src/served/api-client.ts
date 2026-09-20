@@ -181,6 +181,10 @@ const desktopApi: Readonly<PcvDesktopApi> = Object.freeze({
     method: 'POST',
     body: JSON.stringify({ confirm_name: confirmName })
   }),
+  queueVmTemplateLock: (vmId: string, confirmName: string, locked: boolean) => apiFetch(DESKTOP_NODE_API_ROUTES.vmAction(vmId, 'template-lock'), {
+    method: 'POST',
+    body: JSON.stringify({ confirm_name: confirmName, locked })
+  }),
   previewVmClone: (vmId: string, payload: Record<string, unknown>) => apiFetch(DESKTOP_NODE_API_ROUTES.vmClonePreview(vmId), {
     method: 'POST',
     body: JSON.stringify(payload)

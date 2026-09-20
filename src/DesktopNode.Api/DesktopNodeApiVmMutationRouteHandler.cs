@@ -256,6 +256,65 @@ internal sealed class DesktopNodeApiVmMutationRouteHandler
                         request.RequestId!));
                 }
 
+            case "QueueTemplateLockVm":
+                {
+                    var routeId = DesktopNodeApiRequestParsing.DecodeRouteId(routeMatch.Parameters["vmId"], "vm.template.lock");
+                    if (!routeId.Ok)
+                    {
+                        return routeId.Response!;
+                    }
+
+                    if (string.IsNullOrWhiteSpace(request.Body))
+                    {
+                        return DesktopNodeApiResponseFactory.Failure(
+                            400,
+                            "vm.template.lock",
+                            "PCV_VM_TEMPLATE_LOCK_LOCKED_REQUIRED",
+                            "Template lock requires a JSON body.",
+                            "Pass confirm_name and locked.",
+                            false);
+                    }
+
+                    var parsed = DesktopNodeApiRequestParsing.TryParseBody(request.Body, "vm.template.lock");
+                    if (!parsed.Ok)
+                    {
+                        return parsed.Response!;
+                    }
+
+                    var confirmName = DesktopNodeApiJsonReader.GetStringProperty(parsed.Value!.Value, "confirm_name");
+                    if (!string.Equals(confirmName, routeId.Value, StringComparison.Ordinal))
+                    {
+                        return DesktopNodeApiResponseFactory.Failure(
+                            400,
+                            "vm.template.lock",
+                            "PCV_VM_TEMPLATE_LOCK_CONFIRMATION_MISMATCH",
+                            "VM template-lock confirmation does not match the target VM name.",
+                            "Pass confirm_name equal to the VM display name in the route.",
+                            false);
+                    }
+
+                    if (!parsed.Value.Value.TryGetProperty("locked", out var lockedElement) ||
+                        (lockedElement.ValueKind != JsonValueKind.True && lockedElement.ValueKind != JsonValueKind.False))
+                    {
+                        return DesktopNodeApiResponseFactory.Failure(
+                            400,
+                            "vm.template.lock",
+                            "PCV_VM_TEMPLATE_LOCK_LOCKED_REQUIRED",
+                            "Template lock requires params.locked.",
+                            "Pass locked=true to lock or locked=false to unlock.",
+                            false);
+                    }
+
+                    return DesktopNodeApiResponseFactory.JobCreated(CreateJob(
+                        "vm.template.lock",
+                        DesktopNodeApiResponseFactory.JsonFromObject(new SortedDictionary<string, object?>
+                        {
+                            ["name"] = routeId.Value,
+                            ["locked"] = lockedElement.ValueKind == JsonValueKind.True
+                        }),
+                        request.RequestId!));
+                }
+
             case "QueueCloneVm":
                 {
                     var parsed = TryReadCloneRequest(

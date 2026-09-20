@@ -32,6 +32,10 @@ function getVmState(vm: any): string {
   return String(vm?.state || vm?.status || '').trim();
 }
 
+function isTemplateLockedVm(vm: any): boolean {
+  return Boolean(vm?.template_lock);
+}
+
 function isRunningVmState(value: unknown): boolean {
   return String(value || '').toLowerCase().includes('running');
 }
@@ -46,6 +50,21 @@ function buildVmManageConfirmation(vmId: string, vm: any): string {
     'After success this VM will pass PureCVisor managed delete.',
     'Unmanaged delete refusal remains.',
     'This queues a Hyper-V Notes managed-marker mutation.',
+    'The result will appear in Tracked Jobs.'
+  ].join('\n');
+}
+
+function buildVmTemplateLockConfirmation(vmId: string, vm: any, locked: boolean): string {
+  const vmName = getVmName(vm);
+  const vmState = getVmState(vm) || 'unknown';
+  return [
+    locked ? `Lock VM ${vmName} as a template?` : `Unlock template lock on VM ${vmName}?`,
+    `VM id: ${vmId}`,
+    `Current state: ${vmState}`,
+    locked
+      ? 'After success this managed VM allows start and clone only. Unmanaged lock is blocked by PCV_VM_NOT_MANAGED_BY_PURECVISOR.'
+      : 'After success this VM is no longer a start/clone-only template.',
+    'This queues a Hyper-V Notes template-lock mutation.',
     'The result will appear in Tracked Jobs.'
   ].join('\n');
 }

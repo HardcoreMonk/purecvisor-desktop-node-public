@@ -185,7 +185,7 @@ public static class DesktopNodeHyperVWmiProviderCatalog
             DesktopNodeHyperVOperationDomain.VmLifecycle,
             typeof(IDesktopNodeHyperVVmManageProvider),
             typeof(DesktopNodeHyperVWmiVmManageProvider),
-            ["vm.manage"],
+            ["vm.manage", "vm.template.lock"],
             nameof(DesktopNodeHyperVProviderSet.VmManageProvider),
             $"{nameof(DesktopNodeHyperVProviderSet)}.{nameof(DesktopNodeHyperVProviderSet.CreateDefaultWmi)}:{nameof(DesktopNodeHyperVProviderSet.VmManageProvider)}"),
         new(

@@ -18,17 +18,16 @@ wix_version: `5.0.2+aa65968c`
 build_utc: `2026-08-28T15:59:32.4586362Z`
 host_mutation_performed: `false`
 package_installed: `false`
-canonical_current_evidence: `0.42.75-admin-smoke`
-canonical_current_changed: `false`
+canonical_current_evidence: `0.42.77-admin-smoke`
+canonical_current_changed: `true`
 public_trusted_signing: `not-claimed`
 external_stable_publication: `not-claimed`
 
 ## 배경
 
 local `main` HEAD `04b3c9f` (`fix: pin P1 clone disk, Off state, and vm-root`)에서 P1 clone
-Lane 2 프로브용 probe-vehicle package를 만들었다. 이 package는 operational current가
-아니다. `docs/ga-ready/current-evidence.json`과 AGENTS.md generated current 블록은
-`0.42.75-admin-smoke`로 유지한다.
+Lane 2 프로브용 probe-vehicle package를 만들었다. 2026-09-20 Lane 3가 이 package를
+`0.42.77-admin-smoke` operational current로 승격했다.
 
 04276 설치본 clone은 기본 `D:\PureCVisor\VMs`에 대상을 만들어 전용 VmRoot 계약이
 FAIL였다. 04277 Host/CLI는 clone `--vm-root` / body `vm_root`를 넣는다. runner는 MSI

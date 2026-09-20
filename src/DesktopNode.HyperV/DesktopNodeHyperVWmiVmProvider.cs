@@ -45,12 +45,13 @@ public sealed class DesktopNodeHyperVWmiVmProvider : IDesktopNodeHyperVVmProvide
     {
         var name = string.IsNullOrWhiteSpace(summary.Name) ? summary.Id : summary.Name;
         var id = string.IsNullOrWhiteSpace(summary.Id) ? name : summary.Id;
+        var state = MapEnabledState(summary.EnabledState);
         return new DesktopNodeHyperVVmInfo(
             Id: id,
             Name: name,
             Platform: "hyperv",
             GuestFamily: MapGuestFamily(summary.Notes),
-            State: MapEnabledState(summary.EnabledState),
+            State: state,
             Cpu: new DesktopNodeHyperVVmCpuInfo(ConvertToInt32(summary.ProcessorCount)),
             Memory: new DesktopNodeHyperVVmMemoryInfo(
                 MapMemoryQuantityToMb(summary.StartupMemoryQuantity, summary.StartupMemoryQuantityUnits),
@@ -61,7 +62,21 @@ public sealed class DesktopNodeHyperVWmiVmProvider : IDesktopNodeHyperVVmProvide
             Network: MapNetwork(summary.Network),
             Checkpoints: new DesktopNodeHyperVVmCheckpointInfo(summary.CheckpointCount),
             Console: new DesktopNodeHyperVVmConsoleInfo("vmconnect", true),
-            ManagedByPurecvisor: DesktopNodeHyperVManagedNotes.IsManagedNotes(summary.Notes));
+            ManagedByPurecvisor: DesktopNodeHyperVManagedNotes.IsManagedNotes(summary.Notes),
+            CreatedAt: summary.CreationTime,
+            LastPoweredOn: MapLastPoweredOn(state, summary.TimeOfLastStateChange),
+            Notes: DesktopNodeHyperVManagedNotes.OperatorNotes(summary.Notes),
+            TemplateLock: DesktopNodeHyperVManagedNotes.IsTemplateLocked(summary.Notes));
+    }
+
+    private static string? MapLastPoweredOn(string state, string? timeOfLastStateChange)
+    {
+        if (!string.Equals(state, "running", StringComparison.Ordinal))
+        {
+            return null;
+        }
+
+        return string.IsNullOrWhiteSpace(timeOfLastStateChange) ? null : timeOfLastStateChange;
     }
 
     private static DesktopNodeHyperVWmiVmSummary ReadSummary(ManagementObject vm, string name)
@@ -71,6 +86,7 @@ public sealed class DesktopNodeHyperVWmiVmProvider : IDesktopNodeHyperVVmProvide
         string? startupMemoryQuantityUnits = null;
         string? generationSubtype = null;
         string? notes = null;
+        string? creationTime = null;
         IReadOnlyList<DesktopNodeHyperVWmiVmStorageSummary> storage = [];
         IReadOnlyList<DesktopNodeHyperVWmiVmNetworkSummary> network = [];
 
@@ -95,6 +111,7 @@ public sealed class DesktopNodeHyperVWmiVmProvider : IDesktopNodeHyperVVmProvide
                     startupMemoryQuantityUnits = GetFirstRelatedStringProperty(setting, MemorySettingClass, "VirtualQuantityUnits");
                     generationSubtype = GetStringProperty(setting, "VirtualSystemSubType");
                     notes = GetStringProperty(setting, "Notes");
+                    creationTime = GetDateTimeProperty(setting, "CreationTime");
                     storage = GetStorageSummaries(setting);
                     network = GetNetworkSummaries(setting);
                 }
@@ -120,7 +137,9 @@ public sealed class DesktopNodeHyperVWmiVmProvider : IDesktopNodeHyperVVmProvide
             CheckpointCount: GetCheckpointCount(vm),
             Notes: notes,
             Storage: storage,
-            Network: network);
+            Network: network,
+            CreationTime: creationTime,
+            TimeOfLastStateChange: GetDateTimeProperty(vm, "TimeOfLastStateChange"));
     }
 
     private static int? ConvertToInt32(object? value)

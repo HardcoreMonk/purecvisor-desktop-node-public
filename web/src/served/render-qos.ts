@@ -2,13 +2,14 @@
 function renderCheckpointList(vmId) {
   const checkpoints = asArray(state.selectedVmCheckpoints);
   const canOperate = rbacAllows('operate');
+  const templateLocked = isTemplateLockedVm(state.selectedVm);
   if (checkpoints.length === 0) {
     return '<p class="muted">No checkpoints returned for this VM.</p>';
   }
 
   return checkpoints.map((checkpoint) => {
     const checkpointId = getCheckpointId(checkpoint);
-    const checkpointDisabled = isCheckpointActionPending(vmId, checkpointId) || !canOperate ? ' disabled' : '';
+    const checkpointDisabled = isCheckpointActionPending(vmId, checkpointId) || !canOperate || templateLocked ? ' disabled' : '';
     return `<div class="checkpoint-row">
       <div>
         <strong>${escapeHtml(getCheckpointName(checkpoint))}</strong>
@@ -118,9 +119,10 @@ function renderVmQosDirectControl(vmId) {
   const canOperate = rbacAllows('operate');
   const canGuestExec = rbacAllows('guest.exec');
   const canGuestChannel = rbacAllows('guest.channel.configure');
-  const actionDisabled = isVmActionPending(vmId) || !canOperate ? ' disabled' : '';
-  const guestExecDisabled = isVmActionPending(vmId) || !canGuestExec ? ' disabled' : '';
-  const guestChannelDisabled = isVmActionPending(vmId) || !canGuestChannel ? ' disabled' : '';
+  const templateLocked = isTemplateLockedVm(state.selectedVm);
+  const actionDisabled = isVmActionPending(vmId) || !canOperate || templateLocked ? ' disabled' : '';
+  const guestExecDisabled = isVmActionPending(vmId) || !canGuestExec || templateLocked ? ' disabled' : '';
+  const guestChannelDisabled = isVmActionPending(vmId) || !canGuestChannel || templateLocked ? ' disabled' : '';
   const control = getSelectedVmQosControl(vmId);
   return `<section class="qos-control-panel">
     <div class="mini-section-header">

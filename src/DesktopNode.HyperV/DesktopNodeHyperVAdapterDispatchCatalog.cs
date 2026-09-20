@@ -66,6 +66,7 @@ public static class DesktopNodeHyperVAdapterDispatchCatalog
         new("vm.resume-saved", DesktopNodeHyperVOperationKind.Mutation, DesktopNodeHyperVOperationDomain.VmLifecycle, "vm-power-state-provider", DesktopNodeHyperVAdapterDispatchHandler.VmPowerState),
         new("vm.rename", DesktopNodeHyperVOperationKind.Mutation, DesktopNodeHyperVOperationDomain.VmLifecycle, "vm-rename-provider", DesktopNodeHyperVAdapterDispatchHandler.VmRename),
         new("vm.manage", DesktopNodeHyperVOperationKind.Mutation, DesktopNodeHyperVOperationDomain.VmLifecycle, "vm-manage-provider", DesktopNodeHyperVAdapterDispatchHandler.VmManage),
+        new("vm.template.lock", DesktopNodeHyperVOperationKind.Mutation, DesktopNodeHyperVOperationDomain.VmLifecycle, "vm-manage-provider", DesktopNodeHyperVAdapterDispatchHandler.VmManage),
         new("vm.clone.preview", DesktopNodeHyperVOperationKind.Read, DesktopNodeHyperVOperationDomain.VmLifecycle, "vm-clone-provider", DesktopNodeHyperVAdapterDispatchHandler.VmClonePreview),
         new("vm.clone", DesktopNodeHyperVOperationKind.Mutation, DesktopNodeHyperVOperationDomain.VmLifecycle, "vm-clone-provider", DesktopNodeHyperVAdapterDispatchHandler.VmClone),
         new("vm.eject", DesktopNodeHyperVOperationKind.Mutation, DesktopNodeHyperVOperationDomain.VmLifecycle, "vm-media-provider", DesktopNodeHyperVAdapterDispatchHandler.VmMedia),

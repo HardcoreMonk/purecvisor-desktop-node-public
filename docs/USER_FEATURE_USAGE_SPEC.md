@@ -59,7 +59,7 @@ PureCVisor Desktop Node는 Windows 10/11 Pro/Enterprise + Hyper-V host를 로컬
 | VM Hyper-V Saved | [ `pcv.vm.saved-lifecycle` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-saved-lifecycle) | VM detail `Save` / `Resume saved` | `pcvcli vm save` / `pcvcli vm resume-saved` | `POST /vms/{id}/save`, `POST /vms/{id}/resume-saved` |
 | VM QoS/readback | [ `pcv.vm.qos` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-qos)<br>[ `pcv.vm.guest-service-readback` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-guest-service-readback)<br>[ `pcv.vm.guest-execution` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-guest-execution)<br>[ `pcv.vm.guest-channel` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-guest-channel)<br>[ `pcv.vm.resource-limits` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-resource-limits) | 선택 VM detail `QoS / Guest Readback` panel | `pcvcli vm limit/blkio-get/bandwidth/guest-agent-status/guest-ping` | `/vms/{id}/limit`, `/vms/{id}/blkio`, `/vms/{id}/bandwidth`, `/vms/{id}/guest-agent/...` |
 | VM manage | [ `pcv.vm.managed-import` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-managed-import) | VM detail `Manage VM` | `pcvcli vm manage --yes` | `POST /vms/{id}/manage` |
-| VM clone | [ `pcv.vm.clone` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-clone) | VM detail `Clone VM` | `pcvcli vm clone <source> --name <target> --yes` / `--dry-run` | `POST /vms/{id}/clone/preview`, `POST /vms/{id}/clone` |
+| VM clone | [ `pcv.vm.clone` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-clone) | VM detail `Clone VM` / `Lock template` / `Unlock template` | `pcvcli vm clone <source> --name <target> --yes` / `--dry-run`<br>`pcvcli vm template-lock <vm> --yes` / `template-unlock` | `POST /vms/{id}/clone/preview`, `POST /vms/{id}/clone`, `POST /vms/{id}/template-lock` |
 | VM delete | [ `pcv.vm.delete` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-delete) | VM detail confirmation | `pcvcli vm delete --yes` | `DELETE /vms/{id}` |
 | VM media attach/eject | [ `pcv.vm.media-attach` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-media-attach)<br>[ `pcv.vm.media-eject` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-media-eject) | Web form | `pcvcli vm attach/eject` | `POST /vms/{id}/attach`, `POST /vms/{id}/eject` |
 | Checkpoints | [ `pcv.checkpoint.lifecycle` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-checkpoint-lifecycle)<br>[ `pcv.checkpoint.restore` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-checkpoint-restore) | VM checkpoint panel | `pcvcli vm checkpoint ...` | `/vms/{id}/checkpoints` |
@@ -98,7 +98,7 @@ PureCVisor Desktop Node는 Windows 10/11 Pro/Enterprise + Hyper-V host를 로컬
 | [ `pcv.vm.saved-lifecycle` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-saved-lifecycle) | 가상 머신 전원 작업 — Saved/Resume saved |
 | [ `pcv.vm.rename` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-rename) | VM 이름 변경 |
 | [ `pcv.vm.managed-import` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-managed-import) | 기존 VM 관리 편입 |
-| [ `pcv.vm.clone` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-clone) | managed VM 독립 VHDX full clone |
+| [ `pcv.vm.clone` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-clone) | managed VM 독립 VHDX full clone과 template lock |
 | [ `pcv.vm.media-eject` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-media-eject) | VM media 제거 |
 | [ `pcv.vm.media-attach` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-media-attach) | VM media 연결 |
 | [ `pcv.vm.resource-limits` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-resource-limits) | VM CPU·memory·disk resource 변경 |
@@ -284,6 +284,20 @@ Action blocked: VM clone requires explicit confirmation.
 Use: vm clone <source> --name <target> --yes.
 code=PCV_CLI_CONFIRMATION_REQUIRED
 ```
+
+## 가상 머신 template lock
+
+목적: managed VM을 start/clone만 허용하는 template로 잠근다. 직접 mutate(save/rename/delete/attach 등)는 `PCV_VM_TEMPLATE_LOCKED`로 거절한다.
+
+| 항목 | 명세 |
+|------|------|
+| 전제조건 | operator 이상, 명시 confirmation. lock은 managed VM만 |
+| Web Console | 선택 VM detail `Lock template` / `Unlock template`. 잠긴 VM은 Start, Clone, Unlock만 활성. Template 행은 `locked` |
+| CLI | `pcvcli vm template-lock <vm> --yes`, `pcvcli vm template-unlock <vm> --yes` |
+| Guard | `--yes`/`confirm` 없음, `confirm_name`과 `{vmId}` Ordinal 불일치, unmanaged lock |
+| 성공 결과 | template-lock job id는 Activity에서 추적. 이미 locked/unlocked면 `already-locked` / `already-unlocked` |
+
+Web POST `confirm_name`은 다른 lifecycle 버튼과 같은 URL path identifier다. `locked`는 lock이면 true, unlock이면 false다. 클론 대상 Notes는 managed marker만 가지므로 클론은 template이 아니다.
 
 ## 가상 머신 delete
 

@@ -146,7 +146,8 @@ CLI는 inline token 값을 stdout/stderr에 출력하지 않는다. `--verbose`�
 | `csv` | Route-specific 조회는 row/page metadata를 다중 column으로, 그 외 summary 또는 body는 단일 CSV field로 출력 |
 
 `vm list`와 `diagnostics bundle list` 같은 route-specific list는 `table`, `plain`, `csv`에서
-목록 row와, route가 제공하는 경우 pagination metadata를 직접 표시한다. `json`은 동일 응답의
+목록 row와, route가 제공하는 경우 pagination metadata를 직접 표시한다. `vm list` row는
+`created_at`, `last_powered_on`, `notes`를 포함한다. 값이 없으면 `-`다. `json`은 동일 응답의
 원본 envelope을 보존한다.
 
 API가 problem JSON을 반환하면 CLI는 stderr에 `PCV_*: message` 형태로 표시하고 exit code `1`을 반환한다.
@@ -181,6 +182,8 @@ pcvcli network list
 | Command | API route | 설명 |
 |---------|-----------|------|
 | `pcvcli vm list` | `GET /api/v1/vms` | VM 목록 조회 |
+| `pcvcli vm template-lock <vm> --yes` | `POST /api/v1/vms/{id}/template-lock` | managed VM을 start/clone-only template로 잠근다 |
+| `pcvcli vm template-unlock <vm> --yes` | `POST /api/v1/vms/{id}/template-lock` | template lock을 해제한다 |
 | `pcvcli vm get <vm>` | `GET /api/v1/vms/{vm}` | VM 상세 조회 |
 | `pcvcli vm create --name <name> --iso <path> --cpu <n> --memory-mb <mb> --disk-gb <gb> [--vm-root <path>] [--generation <n>]` | `POST /api/v1/vms` | VM 생성 job queue |
 | `pcvcli vm create <name> --iso_path <path> --vcpu <n> --memory_mb <mb> --disk_size_gb <gb> [--image_dir <path>]` | `POST /api/v1/vms` | Linux `pcvctl vm create` shape 호환 alias |

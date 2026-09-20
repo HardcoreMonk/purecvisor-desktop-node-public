@@ -52,6 +52,8 @@ public sealed class DesktopNodeCliProjectContractTests
             "pcvcli vm save <vm>",
             "pcvcli vm resume-saved <vm>",
             "pcvcli vm manage <vm> --yes",
+            "pcvcli vm template-lock <vm> --yes",
+            "pcvcli vm template-unlock <vm> --yes",
             "pcvcli vm clone <source> --name <target> --yes",
             "pcvcli vm clone <source> --name <target> --dry-run",
             "pcvcli vm eject <vm>",
@@ -142,7 +144,7 @@ public sealed class DesktopNodeCliProjectContractTests
         }
 
         Assert.Equal(28, featureCount);
-        Assert.Equal(62, routeCount);
+        Assert.Equal(63, routeCount);
         string[] stageLabels =
         [
             "code_tested",

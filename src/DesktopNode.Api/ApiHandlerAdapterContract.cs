@@ -122,6 +122,7 @@ public sealed record ApiHandlerAdapterContract(
                 NativeQueuedMutation("/api/v1/vms/{vmId}/resume-saved", "vm.resume-saved", "QueueResumeSavedVm", "pcv.vm.saved-lifecycle", "hyperv-vm"),
                 NativeQueuedMutation("/api/v1/vms/{vmId}/rename", "vm.rename", "QueueRenameVm", "pcv.vm.rename", "hyperv-vm"),
                 NativeQueuedMutation("/api/v1/vms/{vmId}/manage", "vm.manage", "QueueManageVm", "pcv.vm.managed-import", "hyperv-vm"),
+                NativeQueuedMutation("/api/v1/vms/{vmId}/template-lock", "vm.template.lock", "QueueTemplateLockVm", "pcv.vm.clone", "hyperv-vm"),
                 NativeProductOperation("/api/v1/vms/{vmId}/clone/preview", "vm.clone.preview", "PreviewCloneVm", "pcv.vm.clone", "hyperv-vm"),
                 NativeQueuedMutation("/api/v1/vms/{vmId}/clone", "vm.clone", "QueueCloneVm", "pcv.vm.clone", "hyperv-vm"),
                 NativeQueuedMutation("/api/v1/vms/{vmId}/eject", "vm.eject", "QueueEjectVmMedia", "pcv.vm.media-eject", "hyperv-vm"),

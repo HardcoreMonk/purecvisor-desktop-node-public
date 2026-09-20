@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "contract": "pcv-active-campaign-v1",
+  "status": "open",
+  "id": "lane1-continuous-development-20260920",
+  "intent": "lane1-continuous-development",
+  "working_authority": "source_head",
+  "allowed_lanes": ["0", "1"],
+  "mutation_allowed": false,
+  "current_write_allowed": false,
+  "next_step": "P1-7 Web template-lock is in source_head. Next is P1-8 limited guest file job design. Do not open Lane 2 Hyper-V recovery unless named.",
+  "stop_on": [
+    "same-cause-fail-3",
+    "budget",
+    "approval-required-mutation",
+    "new-design-required"
+  ],
+  "out_of_scope_is_not_next_step": true,
+  "closed_predecessor": "04277-align-ledger-and-install"
+}

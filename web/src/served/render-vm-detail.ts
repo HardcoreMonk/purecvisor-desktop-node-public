@@ -14,8 +14,11 @@ function renderVmDetail() {
   const vmId = getVmId(vm);
   const canOperate = rbacAllows('operate');
   const canViewConsole = rbacAllows('console.view');
+  const templateLocked = isTemplateLockedVm(vm);
   const actionDisabled = isVmActionPending(vmId) || !canOperate ? ' disabled' : '';
-  const checkpointDisabled = isCheckpointActionPending(vmId, 'create') || !canOperate ? ' disabled' : '';
+  const lockedMutationDisabled = isVmActionPending(vmId) || !canOperate || templateLocked ? ' disabled' : '';
+  const checkpointRefreshDisabled = isCheckpointActionPending(vmId, 'create') || !canOperate ? ' disabled' : '';
+  const checkpointMutationDisabled = isCheckpointActionPending(vmId, 'create') || !canOperate || templateLocked ? ' disabled' : '';
   const consoleDisabled = canViewConsole ? '' : ' disabled';
   const pendingVmAction = state.pendingVmActions[getVmActionKey(vmId)];
   const storage = flattenNamedList(vm.storage, ['path', 'size_gb', 'attached']);
@@ -32,42 +35,48 @@ function renderVmDetail() {
     ['Checkpoints', vm.checkpoints?.count ?? vm.checkpoints_count],
     ['Console', formatConsoleValue(vm.console)],
     ['Managed', vm.managed_by_purecvisor],
+    ['Template', templateLocked ? 'locked' : 'no'],
     ['Notes', vm.error?.message || vm.notes]
   ];
+  const templateLockButton = templateLocked
+    ? `<button data-action="vm-template-unlock" data-vm-id="${escapeHtml(vmId)}"${actionDisabled}>Unlock template</button>`
+    : `<button data-action="vm-template-lock" data-vm-id="${escapeHtml(vmId)}"${actionDisabled}>Lock template</button>`;
 
   els.vmDetailContent.innerHTML = `
     <div class="lifecycle-actions">
       <button data-action="vm-start" data-vm-id="${escapeHtml(vmId)}"${actionDisabled}>Start</button>
-      <button data-action="vm-shutdown" data-vm-id="${escapeHtml(vmId)}"${actionDisabled}>Shutdown</button>
-      <button class="danger-button" data-action="vm-poweroff" data-vm-id="${escapeHtml(vmId)}"${actionDisabled}>Power off</button>
-      <button class="danger-button" data-action="vm-restart" data-vm-id="${escapeHtml(vmId)}"${actionDisabled}>Restart</button>
-      <button data-action="vm-save" data-vm-id="${escapeHtml(vmId)}"${actionDisabled}>Save</button>
-      <button data-action="vm-resume-saved" data-vm-id="${escapeHtml(vmId)}"${actionDisabled}>Resume saved</button>
-      <button data-action="vm-eject" data-vm-id="${escapeHtml(vmId)}"${actionDisabled}>Eject media</button>
+      <button data-action="vm-shutdown" data-vm-id="${escapeHtml(vmId)}"${lockedMutationDisabled}>Shutdown</button>
+      <button class="danger-button" data-action="vm-poweroff" data-vm-id="${escapeHtml(vmId)}"${lockedMutationDisabled}>Power off</button>
+      <button class="danger-button" data-action="vm-restart" data-vm-id="${escapeHtml(vmId)}"${lockedMutationDisabled}>Restart</button>
+      <button data-action="vm-save" data-vm-id="${escapeHtml(vmId)}"${lockedMutationDisabled}>Save</button>
+      <button data-action="vm-resume-saved" data-vm-id="${escapeHtml(vmId)}"${lockedMutationDisabled}>Resume saved</button>
+      <button data-action="vm-eject" data-vm-id="${escapeHtml(vmId)}"${lockedMutationDisabled}>Eject media</button>
       <button data-action="vm-delete-status" data-vm-id="${escapeHtml(vmId)}"${actionDisabled}>Delete status</button>
-      <button data-action="vm-manage" data-vm-id="${escapeHtml(vmId)}"${actionDisabled}>Manage VM</button>
+      <button data-action="vm-manage" data-vm-id="${escapeHtml(vmId)}"${lockedMutationDisabled}>Manage VM</button>
+      ${templateLockButton}
       <button data-action="vm-clone" data-vm-id="${escapeHtml(vmId)}"${actionDisabled}>Clone VM</button>
-      <button class="danger-button" data-action="vm-delete" data-vm-id="${escapeHtml(vmId)}"${actionDisabled}>Delete VM</button>
+      <button class="danger-button" data-action="vm-delete" data-vm-id="${escapeHtml(vmId)}"${lockedMutationDisabled}>Delete VM</button>
       <button data-action="vm-console" data-vm-id="${escapeHtml(vmId)}"${consoleDisabled}>Console</button>
       ${pendingVmAction ? `<span class="muted">Pending action: ${escapeHtml(pendingVmAction)}</span>` : ''}
+      ${templateLocked ? '<span class="muted">Template lock: start, clone, and unlock only.</span>' : ''}
       ${!canOperate ? '<span class="muted">RBAC: operate permission required for lifecycle actions.</span>' : ''}
     </div>
     <div class="vm-resource-grid">
       <form class="vm-resource-form" data-action="vm-attach" data-vm-id="${escapeHtml(vmId)}">
-        <input name="iso_path" type="text" placeholder="ISO path" aria-label="ISO path"${actionDisabled}>
-        <button type="submit"${actionDisabled}>Attach media</button>
+        <input name="iso_path" type="text" placeholder="ISO path" aria-label="ISO path"${lockedMutationDisabled}>
+        <button type="submit"${lockedMutationDisabled}>Attach media</button>
       </form>
       <form class="vm-resource-form" data-action="vm-set-memory" data-vm-id="${escapeHtml(vmId)}">
-        <input name="memory_mb" type="number" min="512" max="262144" step="128" placeholder="Memory MB" aria-label="memory MB"${actionDisabled}>
-        <button type="submit"${actionDisabled}>Set memory</button>
+        <input name="memory_mb" type="number" min="512" max="262144" step="128" placeholder="Memory MB" aria-label="memory MB"${lockedMutationDisabled}>
+        <button type="submit"${lockedMutationDisabled}>Set memory</button>
       </form>
       <form class="vm-resource-form" data-action="vm-set-vcpu" data-vm-id="${escapeHtml(vmId)}">
-        <input name="cpu" type="number" min="1" max="32" step="1" placeholder="vCPU" aria-label="vCPU"${actionDisabled}>
-        <button type="submit"${actionDisabled}>Set vCPU</button>
+        <input name="cpu" type="number" min="1" max="32" step="1" placeholder="vCPU" aria-label="vCPU"${lockedMutationDisabled}>
+        <button type="submit"${lockedMutationDisabled}>Set vCPU</button>
       </form>
       <form class="vm-resource-form" data-action="vm-disk-resize" data-vm-id="${escapeHtml(vmId)}">
-        <input name="disk_gb" type="number" min="8" max="4096" step="1" placeholder="Disk GB" aria-label="disk GB"${actionDisabled}>
-        <button type="submit"${actionDisabled}>Resize disk</button>
+        <input name="disk_gb" type="number" min="8" max="4096" step="1" placeholder="Disk GB" aria-label="disk GB"${lockedMutationDisabled}>
+        <button type="submit"${lockedMutationDisabled}>Resize disk</button>
       </form>
       <form class="vm-resource-form" data-action="vm-clone" data-vm-id="${escapeHtml(vmId)}">
         <input name="name" autocomplete="off" placeholder="Target VM name" aria-label="clone target name"${actionDisabled}>
@@ -85,11 +94,11 @@ function renderVmDetail() {
           <p class="eyebrow">Checkpoints</p>
           <h3>VM Checkpoints</h3>
         </div>
-        <button data-action="checkpoint-refresh" data-vm-id="${escapeHtml(vmId)}"${checkpointDisabled}>Refresh checkpoints</button>
+        <button data-action="checkpoint-refresh" data-vm-id="${escapeHtml(vmId)}"${checkpointRefreshDisabled}>Refresh checkpoints</button>
       </div>
       <form class="checkpoint-form" data-action="checkpoint-create" data-vm-id="${escapeHtml(vmId)}">
-        <input name="checkpoint_name" autocomplete="off" placeholder="Checkpoint name" aria-label="checkpoint name"${checkpointDisabled}>
-        <button type="submit"${checkpointDisabled}>Create checkpoint</button>
+        <input name="checkpoint_name" autocomplete="off" placeholder="Checkpoint name" aria-label="checkpoint name"${checkpointMutationDisabled}>
+        <button type="submit"${checkpointMutationDisabled}>Create checkpoint</button>
       </form>
       <div class="checkpoint-list">${renderCheckpointList(vmId)}</div>
     </div>`;

@@ -684,6 +684,77 @@ public sealed class DesktopNodeHyperVNativeAdapterTests
     }
 
     [Fact]
+    public void NativeAdapterAllowsStartOnTemplateLockedVm()
+    {
+        using var parameters = JsonDocument.Parse("""{"name":"gold"}""");
+        var adapter = new DesktopNodeHyperVNativeAdapter(
+            new RecordingHyperVSwitchProvider([]),
+            new RecordingHyperVVmProvider([CompleteVm("gold") with { TemplateLock = true, State = "stopped" }]),
+            new RecordingHyperVCheckpointProvider([]),
+            new RecordingHyperVCheckpointMutationProvider(),
+            new RecordingHyperVVmPowerStateProvider());
+
+        var handled = adapter.TryInvoke("vm.start", parameters.RootElement, CancellationToken.None, out var result);
+
+        Assert.True(handled);
+        Assert.True(result.Ok);
+        Assert.Equal("start", result.Data!.Value.GetProperty("action").GetString());
+    }
+
+    [Fact]
+    public void NativeAdapterRejectsDeleteOnTemplateLockedVm()
+    {
+        using var parameters = JsonDocument.Parse("""{"name":"gold"}""");
+        var provider = new RecordingHyperVVmDeleteProvider();
+        var adapter = new DesktopNodeHyperVNativeAdapter(
+            new RecordingHyperVSwitchProvider([]),
+            new RecordingHyperVVmProvider([CompleteVm("gold") with { TemplateLock = true }]),
+            new RecordingHyperVCheckpointProvider([]),
+            new RecordingHyperVCheckpointMutationProvider(),
+            new RecordingHyperVVmPowerStateProvider(),
+            new RecordingHyperVVmCreateProvider(),
+            provider);
+
+        var handled = adapter.TryInvoke("vm.delete", parameters.RootElement, CancellationToken.None, out var result);
+
+        Assert.True(handled);
+        Assert.False(result.Ok);
+        Assert.Equal(DesktopNodeHyperVVmTemplateLockGuard.LockedCode, result.Error!.Code);
+        Assert.False(result.Error.Retryable);
+        Assert.Equal(0, provider.CallCount);
+    }
+
+    [Fact]
+    public void NativeAdapterLocksAndUnlocksTemplateVm()
+    {
+        using var lockParameters = JsonDocument.Parse("""{"name":"gold","locked":true}""");
+        using var unlockParameters = JsonDocument.Parse("""{"name":"gold","locked":false}""");
+        var provider = new RecordingHyperVVmManageProvider();
+        var adapter = new DesktopNodeHyperVNativeAdapter(
+            new RecordingHyperVSwitchProvider([]),
+            new RecordingHyperVVmProvider([CompleteVm("gold")]),
+            new RecordingHyperVCheckpointProvider([]),
+            new RecordingHyperVCheckpointMutationProvider(),
+            new RecordingHyperVVmPowerStateProvider(),
+            new RecordingHyperVVmCreateProvider(),
+            new RecordingHyperVVmDeleteProvider(),
+            new RecordingHyperVVmRenameProvider(),
+            provider);
+
+        var locked = adapter.TryInvoke("vm.template.lock", lockParameters.RootElement, CancellationToken.None, out var lockResult);
+        var unlocked = adapter.TryInvoke("vm.template.lock", unlockParameters.RootElement, CancellationToken.None, out var unlockResult);
+
+        Assert.True(locked);
+        Assert.True(lockResult.Ok);
+        Assert.Equal("lock", lockResult.Data!.Value.GetProperty("action").GetString());
+        Assert.True(unlocked);
+        Assert.True(unlockResult.Ok);
+        Assert.Equal("unlock", unlockResult.Data!.Value.GetProperty("action").GetString());
+        Assert.Equal(2, provider.CallCount);
+        Assert.False(provider.LastLocked);
+    }
+
+    [Fact]
     public void NativeVmRenameAdapterMapsProviderResult()
     {
         using var parameters = JsonDocument.Parse("""{"name":"alpha","new_name":"beta"}""");
@@ -1220,11 +1291,21 @@ public sealed class DesktopNodeHyperVNativeAdapterTests
 
         public string? LastVmName { get; private set; }
 
+        public bool? LastLocked { get; private set; }
+
         public DesktopNodeHyperVVmManageInfo Invoke(string vmName, CancellationToken cancellationToken)
         {
             CallCount += 1;
             LastVmName = vmName;
             return new DesktopNodeHyperVVmManageInfo(vmName, action);
+        }
+
+        public DesktopNodeHyperVVmManageInfo InvokeTemplateLock(string vmName, bool locked, CancellationToken cancellationToken)
+        {
+            CallCount += 1;
+            LastVmName = vmName;
+            LastLocked = locked;
+            return new DesktopNodeHyperVVmManageInfo(vmName, locked ? "lock" : "unlock");
         }
     }
 
@@ -1334,6 +1415,24 @@ public sealed class DesktopNodeHyperVNativeAdapterTests
 
             vms.Replace(current with { ManagedByPurecvisor = true });
             return new DesktopNodeHyperVVmManageInfo(vmName, "manage");
+        }
+
+        public DesktopNodeHyperVVmManageInfo InvokeTemplateLock(string vmName, bool locked, CancellationToken cancellationToken)
+        {
+            var current = vms.GetVms(cancellationToken)
+                .First(vm => string.Equals(vm.Name, vmName, StringComparison.Ordinal));
+            if (locked && current.TemplateLock)
+            {
+                return new DesktopNodeHyperVVmManageInfo(vmName, "already-locked");
+            }
+
+            if (!locked && !current.TemplateLock)
+            {
+                return new DesktopNodeHyperVVmManageInfo(vmName, "already-unlocked");
+            }
+
+            vms.Replace(current with { TemplateLock = locked });
+            return new DesktopNodeHyperVVmManageInfo(vmName, locked ? "lock" : "unlock");
         }
     }
 

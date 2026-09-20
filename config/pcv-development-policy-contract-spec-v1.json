@@ -6,15 +6,15 @@
   "source_files": [
     {
       "path": "config/agent-execution-circuit-breaker.json",
-      "sha256": "4f99355cc51945d2c718fb675cde09611a46b48009ef938d4c72604a465f3029"
+      "sha256": "1a821f1b0a5f2f5bd9f639899ac72926ce667e7b679b5b875b40bbd4f3048144"
     },
     {
       "path": "docs/AGENT_EXECUTION_CIRCUIT_BREAKER.md",
-      "sha256": "901ff922818b9557a48614468003e0c4e08f896f2505c91233c4e8c463247c14"
+      "sha256": "d4154bc7fa247c9685c80c09f37618679328b515ef5e9573767c48813414fca8"
     },
     {
       "path": "AGENTS.md",
-      "sha256": "5c588f2b4d3582010f82c2892af35603132eeb95caa9eeaa78210ba526e12aa5"
+      "sha256": "640193a199edf6a17948d1ff616b41acc59adbeb219ed7990f30b079fcf31769"
     },
     {
       "path": "packaging/windows-desktop-node/tests/fixtures/csharp-architecture-test-migration.json",

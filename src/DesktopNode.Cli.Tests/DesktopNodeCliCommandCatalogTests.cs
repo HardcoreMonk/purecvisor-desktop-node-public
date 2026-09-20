@@ -264,6 +264,30 @@ public sealed class DesktopNodeCliCommandCatalogTests
     }
 
     [Fact]
+    public void RoutesVmTemplateLockWhenExplicitlyConfirmed()
+    {
+        var request = DesktopNodeCliCommandCatalog.CreateRequest(["vm", "template-lock", "gold", "--yes"]);
+
+        Assert.Equal("POST", request.Method);
+        Assert.Equal("/api/v1/vms/gold/template-lock", request.Path);
+        using var document = JsonDocument.Parse(request.Body!);
+        Assert.Equal("gold", document.RootElement.GetProperty("confirm_name").GetString());
+        Assert.True(document.RootElement.GetProperty("locked").GetBoolean());
+    }
+
+    [Fact]
+    public void RoutesVmTemplateUnlockWhenExplicitlyConfirmed()
+    {
+        var request = DesktopNodeCliCommandCatalog.CreateRequest(["vm", "template-unlock", "gold", "--yes"]);
+
+        Assert.Equal("POST", request.Method);
+        Assert.Equal("/api/v1/vms/gold/template-lock", request.Path);
+        using var document = JsonDocument.Parse(request.Body!);
+        Assert.Equal("gold", document.RootElement.GetProperty("confirm_name").GetString());
+        Assert.False(document.RootElement.GetProperty("locked").GetBoolean());
+    }
+
+    [Fact]
     public void RequiresExplicitYesForVmClone()
     {
         var error = Assert.Throws<ArgumentException>(() =>
@@ -715,7 +739,7 @@ public sealed class DesktopNodeCliCommandCatalogTests
             }
         }
 
-        Assert.Equal(55, presentCount);
+        Assert.Equal(56, presentCount);
         Assert.Equal(7, excludedCount);
     }
 

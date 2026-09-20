@@ -56,6 +56,8 @@ public interface IDesktopNodeHyperVVmRenameProvider
 public interface IDesktopNodeHyperVVmManageProvider
 {
     DesktopNodeHyperVVmManageInfo Invoke(string vmName, CancellationToken cancellationToken);
+
+    DesktopNodeHyperVVmManageInfo InvokeTemplateLock(string vmName, bool locked, CancellationToken cancellationToken);
 }
 
 public interface IDesktopNodeHyperVVmCloneProvider
@@ -161,7 +163,19 @@ public sealed record DesktopNodeHyperVVmInfo(
     [property: JsonPropertyName("network")] IReadOnlyList<DesktopNodeHyperVVmNetworkInfo> Network,
     [property: JsonPropertyName("checkpoints")] DesktopNodeHyperVVmCheckpointInfo Checkpoints,
     [property: JsonPropertyName("console")] DesktopNodeHyperVVmConsoleInfo Console,
-    [property: JsonPropertyName("managed_by_purecvisor")] bool ManagedByPurecvisor);
+    [property: JsonPropertyName("managed_by_purecvisor")] bool ManagedByPurecvisor,
+    [property: JsonPropertyName("created_at")]
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    string? CreatedAt = null,
+    [property: JsonPropertyName("last_powered_on")]
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    string? LastPoweredOn = null,
+    [property: JsonPropertyName("notes")]
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    string? Notes = null,
+    [property: JsonPropertyName("template_lock")]
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    bool TemplateLock = false);
 
 public sealed record DesktopNodeHyperVVmCpuInfo(
     [property: JsonPropertyName("count")] int? Count);
@@ -373,7 +387,9 @@ public sealed record DesktopNodeHyperVWmiVmSummary(
     int? CheckpointCount,
     string? Notes,
     IReadOnlyList<DesktopNodeHyperVWmiVmStorageSummary>? Storage = null,
-    IReadOnlyList<DesktopNodeHyperVWmiVmNetworkSummary>? Network = null);
+    IReadOnlyList<DesktopNodeHyperVWmiVmNetworkSummary>? Network = null,
+    string? CreationTime = null,
+    string? TimeOfLastStateChange = null);
 
 public sealed record DesktopNodeHyperVWmiVmStorageSummary(string? Path, bool Attached);
 

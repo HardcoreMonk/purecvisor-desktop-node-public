@@ -1002,7 +1002,8 @@ function verifyVmLifecycleRoutes(context) {
     [/\/api\/v1\/vms\/\{vm_id\}\/attach/i, "attach"],
     [/\/api\/v1\/vms\/\{vm_id\}\/save/i, "save"],
     [/\/api\/v1\/vms\/\{vm_id\}\/resume-saved/i, "resume-saved"],
-    [/\/api\/v1\/vms\/\{vm_id\}\/manage/i, "manage"]
+    [/\/api\/v1\/vms\/\{vm_id\}\/manage/i, "manage"],
+    [/\/api\/v1\/vms\/\{vm_id\}\/template-lock/i, "template-lock"]
   ], "vm-lifecycle-routes");
 }
 
@@ -1049,12 +1050,17 @@ function verifyVmLifecycleActions(context) {
     [/Resume saved/i, "resume-saved-label"],
     [/data-action="vm-manage"/i, "manage"],
     [/Manage VM/i, "manage-label"],
+    [/data-action="vm-template-lock"/i, "template-lock"],
+    [/Lock template/i, "template-lock-label"],
+    [/data-action="vm-template-unlock"/i, "template-unlock"],
+    [/Unlock template/i, "template-unlock-label"],
     [/data-action="vm-clone"/i, "clone"],
     [/Clone VM/i, "clone-label"],
     [/data-action="vm-delete"/i, "delete"]
   ], "vm-lifecycle-actions");
   assertSourceAndGenerated(context, mutateSource, app, [
     [/function\s+queueVmManage\s*\(/i, "queue-manage"],
+    [/function\s+queueVmTemplateLock\s*\(/i, "queue-template-lock"],
     [/function\s+queueVmClone\s*\(/i, "queue-clone"],
     [/desktopApi\.previewVmClone\s*\(/i, "clone-preview"],
     [/PCV_VM_DELETE_RUNNING_BLOCKED/i, "running-delete-guard"],
@@ -1063,14 +1069,17 @@ function verifyVmLifecycleActions(context) {
   assertSourceAndGenerated(context, errorsSource, app, [
     [/PCV_VM_NOT_MANAGED_BY_PURECVISOR/i, "unmanaged-delete-guard"],
     [/Unmanaged delete refusal remains/i, "unmanaged-delete-refusal"],
+    [/function\s+buildVmTemplateLockConfirmation\s*\(/i, "template-lock-confirmation"],
     [/function\s+buildVmCloneConfirmation\s*\(/i, "clone-confirmation"],
     [/planned_copy_bytes/i, "clone-planned-copy-bytes"]
   ], "vm-lifecycle-actions");
   assertSourceAndGenerated(context, clientSource, app, [
     [/queueVmManage:\s*\(vmId/i, "manage-client"],
+    [/queueVmTemplateLock:\s*\(vmId/i, "template-lock-client"],
     [/previewVmClone:\s*\(vmId/i, "clone-preview-client"],
     [/queueVmClone:\s*\(vmId/i, "clone-client"],
-    [/confirm_name:\s*confirmName/i, "confirm-name"]
+    [/JSON\.stringify\(\{\s*confirm_name:\s*confirmName\s*\}\)/i, "confirm-name"],
+    [/JSON\.stringify\(\{\s*confirm_name:\s*confirmName,\s*locked\s*\}\)/i, "template-lock-body"]
   ], "vm-lifecycle-actions");
 }
 

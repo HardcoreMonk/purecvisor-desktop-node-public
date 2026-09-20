@@ -80,7 +80,7 @@ public static class DesktopNodeCliCommandCatalog
     {
         if (args.Count < 2)
         {
-            throw Usage("Use: vm list|get|create|start|shutdown|poweroff|restart|pause|resume|save|resume-saved|rename|manage|clone|delete|checkpoint|attach.");
+            throw Usage("Use: vm list|get|create|start|shutdown|poweroff|restart|pause|resume|save|resume-saved|rename|manage|template-lock|template-unlock|clone|delete|checkpoint|attach.");
         }
 
         return args[1].ToLowerInvariant() switch
@@ -95,6 +95,8 @@ public static class DesktopNodeCliCommandCatalog
             "memory-stats" => VmStats(args, "memory-stats"),
             "cpu-stats" => VmStats(args, "cpu-stats"),
             "manage" => VmManage(args),
+            "template-lock" => VmTemplateLock(args, locked: true),
+            "template-unlock" => VmTemplateLock(args, locked: false),
             "clone" => VmClone(args),
             "delete" => VmDelete(args),
             "checkpoint" or "snapshot" => CheckpointRequest(args),
@@ -130,7 +132,7 @@ public static class DesktopNodeCliCommandCatalog
                 "--maximum-kbps",
                 "minimum_kbps",
                 "--minimum-kbps"),
-            _ => throw Usage("Use: vm list|get|create|start|stop|shutdown|guest-shutdown|poweroff|restart|pause|resume|save|resume-saved|rename|console|vnc|manage|clone|delete|checkpoint|snapshot|attach.")
+            _ => throw Usage("Use: vm list|get|create|start|stop|shutdown|guest-shutdown|poweroff|restart|pause|resume|save|resume-saved|rename|console|vnc|manage|template-lock|template-unlock|clone|delete|checkpoint|snapshot|attach.")
         };
     }
 
@@ -518,6 +520,27 @@ public static class DesktopNodeCliCommandCatalog
             JsonSerializer.Serialize(body, JsonOptions));
     }
 
+    private static DesktopNodeCliRequest VmTemplateLock(IReadOnlyList<string> args, bool locked)
+    {
+        var command = locked ? "template-lock" : "template-unlock";
+        if (args.Count != 4 || !Is(args[3], "--yes"))
+        {
+            throw new ArgumentException(
+                $"PCV_CLI_CONFIRMATION_REQUIRED|VM {command} requires explicit confirmation.|Use: vm {command} <vm> --yes.");
+        }
+
+        var body = new SortedDictionary<string, object?>
+        {
+            ["confirm_name"] = args[2],
+            ["locked"] = locked
+        };
+
+        return new DesktopNodeCliRequest(
+            "POST",
+            $"/api/v1/vms/{Segment(args[2])}/template-lock",
+            JsonSerializer.Serialize(body, JsonOptions));
+    }
+
     private static DesktopNodeCliRequest VmClone(IReadOnlyList<string> args)
     {
         if (args.Count < 3 || args[2].StartsWith("--", StringComparison.Ordinal))
@@ -884,6 +907,8 @@ public static class DesktopNodeCliCommandCatalog
             "  pcvcli vm attach <vm> --iso <path>",
             "  pcvcli vm eject|delete-status <vm>",
             "  pcvcli vm manage <vm> --yes",
+            "  pcvcli vm template-lock <vm> --yes",
+            "  pcvcli vm template-unlock <vm> --yes",
             "  pcvcli vm clone <source> --name <target> --yes [--vm-root <path>]",
             "  pcvcli vm clone <source> --name <target> --dry-run [--vm-root <path>]",
             "  pcvcli vm delete <vm> --yes",

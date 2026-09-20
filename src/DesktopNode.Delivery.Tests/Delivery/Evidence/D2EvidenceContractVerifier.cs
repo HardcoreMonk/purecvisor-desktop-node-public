@@ -42,6 +42,66 @@ internal static class D2EvidenceContractVerifier
         "manual_admin_tested",
     ];
 
+    internal static void Verify04277Current()
+    {
+        var record = D2CurrentEvidenceVerifier.Validate(
+            Text(D2CurrentEvidenceVerifier.RecordPath),
+            Repository);
+        Assert.Equal("0.42.77-admin-smoke", record.Current.Version);
+        Assert.Equal(["web", "cli"], record.Current.OperatorSurfaces);
+        Assert.False(record.Current.TuiPresent);
+        Assert.Equal(
+            "docs/ga-ready/evidence/admin-smoke-package-2026-08-29-04277.md",
+            record.Current.PackageEvidence);
+        Assert.Equal(
+            "full-admin-host-mutation-gate-20260830-04277",
+            record.Current.FullgateBatch);
+        Assert.Equal(
+            "d03eedaf12d344ccd2d74c87237aa8d920ea3474be498c7fe91bfa4394984957",
+            record.Current.CleanMsiSha256);
+        Assert.Equal(
+            "d4ebba77adcd7af92275509a65809c926f5bc6fb6bf8f61c49a610943998000f",
+            record.Current.OperationalMsiSha256);
+        Assert.Equal(
+            "d16e498a3d14ed67e361bef26a26feb87839490425e2101453f28742839d84a1",
+            record.Current.PayloadSha256);
+        Assert.Equal(
+            "9f051b5a9cca80634e8ad7c4d15267a414c79d66",
+            record.Current.ProvenanceCommit);
+        Assert.Equal("0.42.75-admin-smoke", record.ManualAdmin.LatestClosedBaseline);
+        Assert.Equal("0.42.77-admin-smoke", record.ManualAdmin.LatestClosedTarget);
+        Assert.Equal(
+            "manual-admin-campaign-descriptor-20260920-04275-04277",
+            record.ManualAdmin.LatestClosedDescriptor);
+        Assert.True(record.FeatureQualification.PromotionEligible);
+        Assert.Empty(record.FeatureQualification.Blockers);
+        RequireMetadata(
+            "docs/ga-ready/MANUAL_ADMIN_NEXT_CAMPAIGN_DESCRIPTOR.md",
+            new Dictionary<string, string>
+            {
+                ["current_manual_admin_package_pair"] =
+                    "0.42.75-admin-smoke -> 0.42.77-admin-smoke",
+                ["current_manual_admin_descriptor_batch_manifest"] =
+                    "manual-admin-campaign-descriptor-20260920-04275-04277",
+                ["current_manual_admin_target_msi_sha256"] =
+                    "d03eedaf12d344ccd2d74c87237aa8d920ea3474be498c7fe91bfa4394984957",
+                ["current_full_admin_host_mutation_batch"] =
+                    "full-admin-host-mutation-gate-20260830-04277",
+                ["current_full_admin_host_mutation_provenance_commit"] =
+                    "9f051b5a9cca80634e8ad7c4d15267a414c79d66",
+            });
+        RequireMatches("docs/ga-ready/EVIDENCE_INDEX.md", [
+            "canonical current는 `0\\.42\\.77-admin-smoke`다",
+        ]);
+        RequireMatches("docs/ga-ready/CONTROL_PLANE_INDEX.md", [
+            "operational current는 `0\\.42\\.77-admin-smoke`다",
+        ]);
+        RequireMatches("docs/ga-ready/CURRENT_EVIDENCE_LEDGER.md", [
+            @"\|\s*`full-admin-host-mutation-current`\s*\|\s*`pass`,\s*`0\.42\.77-admin-smoke`\s*\|",
+            @"\|\s*`package-build-current`\s*\|\s*`package-build-pass`,\s*`0\.42\.77-admin-smoke`\s*\|",
+        ]);
+    }
+
     internal static void Verify(string owner, int ordinal)
     {
         switch (owner)
@@ -277,35 +337,28 @@ internal static class D2EvidenceContractVerifier
                 var record = D2CurrentEvidenceVerifier.Validate(
                     Text(D2CurrentEvidenceVerifier.RecordPath),
                     Repository);
-                Assert.Equal(1, record.SchemaVersion);
-                Assert.Equal("pcv-current-evidence-v1", record.Contract);
-                Assert.Equal("0.42.75-admin-smoke", record.Current.Version);
-                Assert.Equal(["web", "cli"], record.Current.OperatorSurfaces);
-                Assert.False(record.Current.TuiPresent);
-                Assert.Equal(
-                    "docs/ga-ready/evidence/admin-smoke-package-2026-08-21-04275.md",
-                    record.Current.PackageEvidence);
-                Assert.Equal(
-                    "full-admin-host-mutation-gate-20260821-04275",
-                    record.Current.FullgateBatch);
-                Assert.Equal(
-                    "3d3ee255f7a16c90715da27c436a9ebce479b5ae91f1f4a7067a47dc6dbc0fb6",
-                    record.Current.CleanMsiSha256);
-                Assert.Equal(
-                    "d5afd8774ca5c33b84b10faa771703dcdba37c96d816be4dbb8f9a886f7c967b",
-                    record.Current.OperationalMsiSha256);
-                Assert.Equal(
-                    "b6882c9ab40dffc2a9a15785841a097140c23fef6eba26dc76bc892107c2c9b7",
-                    record.Current.PayloadSha256);
-                Assert.Equal(
-                    "dbe1b48cf8bfc45fe7c431fac30ff498dfc9bbe4",
-                    record.Current.ProvenanceCommit);
-                Assert.Equal("0.42.74-admin-smoke", record.ManualAdmin.LatestClosedBaseline);
-                Assert.Equal("0.42.75-admin-smoke", record.ManualAdmin.LatestClosedTarget);
-                Assert.True(record.FeatureQualification.PromotionEligible);
-                Assert.Empty(record.FeatureQualification.Blockers);
-                Assert.False(record.Claims.PublicTrustedSigning);
-                Assert.False(record.Claims.ExternalStablePublication);
+                Assert.NotEqual("0.42.75-admin-smoke", record.Current.Version);
+                RequireMetadata(
+                    "docs/ga-ready/MANUAL_ADMIN_NEXT_CAMPAIGN_DESCRIPTOR.md",
+                    new Dictionary<string, string>
+                    {
+                        ["previous_04275_current_manual_admin_package_pair"] =
+                            "0.42.74-admin-smoke -> 0.42.75-admin-smoke",
+                        ["previous_04275_current_manual_admin_campaign"] =
+                            "docs/ga-ready/evidence/manual-admin-campaign-2026-08-27-04274-04275.md",
+                        ["previous_04275_current_manual_admin_descriptor_batch_manifest"] =
+                            "manual-admin-campaign-descriptor-20260827-04274-04275",
+                        ["previous_04275_current_full_admin_host_mutation_batch"] =
+                            "full-admin-host-mutation-gate-20260821-04275",
+                        ["previous_04275_current_full_admin_host_mutation_operational_msi_sha256"] =
+                            "d5afd8774ca5c33b84b10faa771703dcdba37c96d816be4dbb8f9a886f7c967b",
+                        ["previous_04275_current_full_admin_host_mutation_payload_aggregate_sha256"] =
+                            "b6882c9ab40dffc2a9a15785841a097140c23fef6eba26dc76bc892107c2c9b7",
+                        ["previous_04275_current_full_admin_host_mutation_provenance_commit"] =
+                            "dbe1b48cf8bfc45fe7c431fac30ff498dfc9bbe4",
+                        ["previous_04275_current_installed_operator_surface_current_card_evidence"] =
+                            "docs/ga-ready/evidence/installed-operator-surface-current-card-2026-08-27-04275.md",
+                    });
                 break;
             case 2:
                 Verify04274Package();
@@ -424,32 +477,29 @@ internal static class D2EvidenceContractVerifier
             "docs/ga-ready/MANUAL_ADMIN_NEXT_CAMPAIGN_DESCRIPTOR.md",
             new Dictionary<string, string>
             {
-                ["current_manual_admin_package_pair"] =
+                ["previous_04275_current_manual_admin_package_pair"] =
                     "0.42.74-admin-smoke -> 0.42.75-admin-smoke",
                 ["latest_manual_admin_candidate_status"] = "pass-closed",
-                ["latest_manual_admin_candidate_package_pair"] =
+                ["previous_04275_latest_manual_admin_candidate_package_pair"] =
                     "0.42.74-admin-smoke -> 0.42.75-admin-smoke",
-                ["next_manual_admin_package_pair_candidate"] =
+                ["previous_04277_next_manual_admin_package_pair_candidate"] =
                     "0.42.75-admin-smoke -> next-admin-smoke-required",
-                ["next_manual_admin_package_pair_candidate_status"] =
-                    "not-opened-awaiting-next-product-payload",
-                ["current_manual_admin_update_package_sha256"] =
+                ["previous_04275_current_manual_admin_update_package_sha256"] =
                     "ecae6e9fc7f2f3c49e12a7fec5b4e6d7ca0ce8ba017adf7970cb516a7b5e15df",
-                ["current_manual_admin_descriptor_batch_manifest"] =
+                ["previous_04275_current_manual_admin_descriptor_batch_manifest"] =
                     "manual-admin-campaign-descriptor-20260827-04274-04275",
-                ["current_manual_admin_target_msi_sha256"] =
+                ["previous_04275_current_manual_admin_target_msi_sha256"] =
                     "3d3ee255f7a16c90715da27c436a9ebce479b5ae91f1f4a7067a47dc6dbc0fb6",
-                ["current_full_admin_host_mutation_provenance_commit"] =
+                ["previous_04275_current_full_admin_host_mutation_provenance_commit"] =
                     "dbe1b48cf8bfc45fe7c431fac30ff498dfc9bbe4",
-                ["current_public_boundary_main_push_package_candidate_decision"] =
+                ["previous_04275_current_public_boundary_main_push_package_candidate_decision"] =
                     "docs-only-04275-promotion-retains-0.42.75-admin-smoke",
-                ["current_public_boundary_main_push_evidence"] =
+                ["previous_04275_current_public_boundary_main_push_evidence"] =
                     "docs/ga-ready/evidence/public-boundary-ci-main-push-2026-08-27-04275-promotion-postpush-pass.md",
-                ["current_public_boundary_main_push_run_id"] = "33064087018",
-                ["current_public_boundary_main_push_job_id"] = "98489770067",
-                ["current_public_boundary_main_push_head_sha"] =
+                ["previous_04275_current_public_boundary_main_push_run_id"] = "33064087018",
+                ["previous_04275_current_public_boundary_main_push_job_id"] = "98489770067",
+                ["previous_04275_current_public_boundary_main_push_head_sha"] =
                     "7cdd56bf0ff3ded2b9541cd242bd1d68905c0e66",
-                ["current_public_boundary_main_push_product_payload_change_detected"] = "false",
             });
         Verify04275PostPush();
     }
@@ -486,14 +536,12 @@ internal static class D2EvidenceContractVerifier
             "docs/ga-ready/MANUAL_ADMIN_NEXT_CAMPAIGN_DESCRIPTOR.md",
             new Dictionary<string, string>
             {
-                ["current_public_boundary_main_push_evidence"] = path,
-                ["current_public_boundary_main_push_run_id"] = "33064087018",
-                ["current_public_boundary_main_push_job_id"] = "98489770067",
-                ["current_public_boundary_main_push_head_sha"] =
+                ["previous_04275_current_public_boundary_main_push_evidence"] = path,
+                ["previous_04275_current_public_boundary_main_push_run_id"] = "33064087018",
+                ["previous_04275_current_public_boundary_main_push_job_id"] = "98489770067",
+                ["previous_04275_current_public_boundary_main_push_head_sha"] =
                     "7cdd56bf0ff3ded2b9541cd242bd1d68905c0e66",
-                ["current_public_boundary_main_push_product_payload_change_detected"] =
-                    "false",
-                ["current_public_boundary_main_push_package_candidate_decision"] =
+                ["previous_04275_current_public_boundary_main_push_package_candidate_decision"] =
                     "docs-only-04275-promotion-retains-0.42.75-admin-smoke",
                 ["previous_04274_p0_current_public_boundary_main_push_evidence"] =
                     "docs/ga-ready/evidence/public-boundary-ci-main-push-2026-08-21-04274-p0-landing-pass.md",
@@ -539,11 +587,7 @@ internal static class D2EvidenceContractVerifier
             "operational current는 `0\\.42\\.75-admin-smoke`다",
         ]);
         RequireMatches("docs/ga-ready/CURRENT_EVIDENCE_LEDGER.md", [
-            @"\|\s*`manual-admin-package-pair-next`\s*\|\s*`not-opened-awaiting-next-product-payload`,\s*`0\.42\.75-admin-smoke -> next-admin-smoke-required`\s*\|",
             @"\|\s*`service-plan-p0-save-historical-defect`\s*\|\s*`fail-historical`",
-            @"\|\s*`package-build-current`\s*\|\s*`package-build-pass`,\s*`0\.42\.75-admin-smoke`\s*\|",
-            @"\|\s*`full-admin-host-mutation-current`\s*\|\s*`pass`,\s*`0\.42\.75-admin-smoke`\s*\|",
-            @"\|\s*`installed-operator-surface-smoke-latest`\s*\|\s*`pass`,\s*installed\s*`0\.42\.75-admin-smoke`\s*\|",
         ]);
     }
 
@@ -607,40 +651,40 @@ internal static class D2EvidenceContractVerifier
             "docs/ga-ready/MANUAL_ADMIN_NEXT_CAMPAIGN_DESCRIPTOR.md",
             new Dictionary<string, string>
             {
-                ["current_manual_admin_package_pair"] =
+                ["previous_04275_current_manual_admin_package_pair"] =
                     "0.42.74-admin-smoke -> 0.42.75-admin-smoke",
-                ["current_manual_admin_campaign"] =
+                ["previous_04275_current_manual_admin_campaign"] =
                     "docs/ga-ready/evidence/manual-admin-campaign-2026-08-27-04274-04275.md",
-                ["current_manual_admin_campaign_root"] =
+                ["previous_04275_current_manual_admin_campaign_root"] =
                     "artifacts/manual-admin-campaign-20260827-04274-04275",
-                ["current_manual_admin_target_package_root"] =
+                ["previous_04275_current_manual_admin_target_package_root"] =
                     "artifacts/admin-smoke-package-20260821-04275",
-                ["current_manual_admin_target_msi_sha256"] =
+                ["previous_04275_current_manual_admin_target_msi_sha256"] =
                     "3d3ee255f7a16c90715da27c436a9ebce479b5ae91f1f4a7067a47dc6dbc0fb6",
-                ["current_manual_admin_update_package_sha256"] =
+                ["previous_04275_current_manual_admin_update_package_sha256"] =
                     "ecae6e9fc7f2f3c49e12a7fec5b4e6d7ca0ce8ba017adf7970cb516a7b5e15df",
-                ["current_manual_admin_descriptor_batch_manifest"] =
+                ["previous_04275_current_manual_admin_descriptor_batch_manifest"] =
                     "manual-admin-campaign-descriptor-20260827-04274-04275",
-                ["current_manual_admin_descriptor_summary"] =
+                ["previous_04275_current_manual_admin_descriptor_summary"] =
                     "artifacts/manual-admin-campaign-20260827-04274-04275/manual-admin-campaign-descriptor/summary.json",
-                ["current_installed_operator_surface_current_card_evidence"] =
+                ["previous_04275_current_installed_operator_surface_current_card_evidence"] =
                     "docs/ga-ready/evidence/installed-operator-surface-current-card-2026-08-27-04275.md",
-                ["latest_manual_admin_candidate_package_pair"] =
+                ["previous_04275_latest_manual_admin_candidate_package_pair"] =
                     "0.42.74-admin-smoke -> 0.42.75-admin-smoke",
-                ["latest_manual_admin_candidate_campaign"] =
+                ["previous_04275_latest_manual_admin_candidate_campaign"] =
                     "docs/ga-ready/evidence/manual-admin-campaign-2026-08-27-04274-04275.md",
-                ["latest_manual_admin_candidate_descriptor_batch_manifest"] =
+                ["previous_04275_latest_manual_admin_candidate_descriptor_batch_manifest"] =
                     "manual-admin-campaign-descriptor-20260827-04274-04275",
                 ["latest_manual_admin_candidate_status"] = "pass-closed",
-                ["current_full_admin_host_mutation_gate"] =
+                ["previous_04275_current_full_admin_host_mutation_gate"] =
                     "docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-08-21-04275-hostmutation.md",
-                ["current_full_admin_host_mutation_batch"] =
+                ["previous_04275_current_full_admin_host_mutation_batch"] =
                     "full-admin-host-mutation-gate-20260821-04275",
-                ["current_full_admin_host_mutation_payload_aggregate_sha256"] =
+                ["previous_04275_current_full_admin_host_mutation_payload_aggregate_sha256"] =
                     "b6882c9ab40dffc2a9a15785841a097140c23fef6eba26dc76bc892107c2c9b7",
-                ["current_full_admin_host_mutation_operational_msi_sha256"] =
+                ["previous_04275_current_full_admin_host_mutation_operational_msi_sha256"] =
                     "d5afd8774ca5c33b84b10faa771703dcdba37c96d816be4dbb8f9a886f7c967b",
-                ["current_full_admin_host_mutation_provenance_commit"] =
+                ["previous_04275_current_full_admin_host_mutation_provenance_commit"] =
                     "dbe1b48cf8bfc45fe7c431fac30ff498dfc9bbe4",
             });
     }
@@ -651,38 +695,27 @@ internal static class D2EvidenceContractVerifier
         var match = Regex.Match(ledger, @"(?s)## 현재 Anchor\s*(?<body>.*?)(?=\r?\n## |\z)");
         Assert.True(match.Success);
         var anchor = match.Groups["body"].Value;
-        foreach (var pattern in new[]
-        {
-            @"\|\s*`full-admin-host-mutation-current`\s*\|\s*`pass`,\s*`0\.42\.75-admin-smoke`\s*\|",
-            @"\|\s*`manual-admin-package-pair-current`\s*\|\s*`pass`,\s*`0\.42\.74-admin-smoke -> 0\.42\.75-admin-smoke`\s*\|",
-            @"\|\s*`package-build-current`\s*\|\s*`package-build-pass`,\s*`0\.42\.75-admin-smoke`\s*\|",
-            @"\|\s*`latest-product-payload-smoke`\s*\|\s*`pass`,\s*package\s*`0\.42\.75-admin-smoke`\s*\|",
-            @"\|\s*`functional-correctness-actual-host-latest`\s*\|\s*`pass`,\s*installed\s*`0\.42\.75-admin-smoke`\s*\|",
-            @"\|\s*`installed-operator-surface-smoke-latest`\s*\|\s*`pass`,\s*installed\s*`0\.42\.75-admin-smoke`\s*\|",
-            @"\|\s*`service-plan-p0-save-historical-defect`\s*\|\s*`fail-historical`",
-            "285661fe50ade63169b6cfc85ff1dcf754a679e30152bd04d166581b4d762136",
-        })
-        {
-            Assert.Matches(new Regex(pattern, RegexOptions.IgnoreCase), anchor);
-        }
+        Assert.Matches(
+            new Regex(@"\|\s*`service-plan-p0-save-historical-defect`\s*\|\s*`fail-historical`", RegexOptions.IgnoreCase),
+            anchor);
+        Assert.Contains("285661fe50ade63169b6cfc85ff1dcf754a679e30152bd04d166581b4d762136", anchor, StringComparison.Ordinal);
+        Assert.Contains(
+            "docs/ga-ready/evidence/installed-token-rotation-smoke-2026-08-09-04272.md",
+            anchor,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "docs/ga-ready/evidence/service-plan-p0-actual-vm-2026-08-27-04275.md",
+            anchor,
+            StringComparison.Ordinal);
 
-        foreach (var path in new[]
-        {
+        RequireMatches("docs/ga-ready/EVIDENCE_INDEX.md", [
+            "manual-admin-campaign-descriptor-20260827-04274-04275",
+            "285661fe50ade63169b6cfc85ff1dcf754a679e30152bd04d166581b4d762136",
             "docs/ga-ready/evidence/admin-smoke-package-2026-08-21-04275.md",
             "docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-08-21-04275-hostmutation.md",
             "docs/ga-ready/evidence/installed-operator-surface-current-card-2026-08-27-04275.md",
             "docs/ga-ready/evidence/functional-correctness-actual-host-validation-2026-08-27-04275.md",
             "docs/ga-ready/evidence/manual-admin-campaign-2026-08-27-04274-04275.md",
-            "docs/ga-ready/evidence/installed-token-rotation-smoke-2026-08-09-04272.md",
-            "docs/ga-ready/evidence/service-plan-p0-actual-vm-2026-08-27-04275.md",
-        })
-        {
-            Assert.Contains(path, anchor, StringComparison.Ordinal);
-        }
-
-        RequireMatches("docs/ga-ready/EVIDENCE_INDEX.md", [
-            "manual-admin-campaign-descriptor-20260827-04274-04275",
-            "285661fe50ade63169b6cfc85ff1dcf754a679e30152bd04d166581b4d762136",
         ]);
     }
 

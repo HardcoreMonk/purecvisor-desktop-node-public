@@ -197,7 +197,7 @@ const DESKTOP_NODE_API_ROUTES = Object.freeze({
     vmGuestExec: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/guest/exec`,
     vmGuestChannelVerify: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/guest/channel/verify`,
     vmGuestChannelEnsure: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/guest/channel`,
-    vmAction: (vmId, action) => `/api/v1/vms/${encodeRouteSegment(vmId)}/${requireRouteAction(action, ['start', 'shutdown', 'poweroff', 'restart', 'save', 'resume-saved', 'eject', 'attach', 'delete-status', 'set-memory', 'set-vcpu', 'disk-resize', 'manage', 'clone'])}`,
+    vmAction: (vmId, action) => `/api/v1/vms/${encodeRouteSegment(vmId)}/${requireRouteAction(action, ['start', 'shutdown', 'poweroff', 'restart', 'save', 'resume-saved', 'eject', 'attach', 'delete-status', 'set-memory', 'set-vcpu', 'disk-resize', 'manage', 'clone', 'template-lock'])}`,
     vmClonePreview: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/clone/preview`,
     vmCheckpoints: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/checkpoints`,
     checkpointDetail: (vmId, checkpointId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/checkpoints/${encodeRouteSegment(checkpointId)}`,
@@ -236,6 +236,7 @@ const DESKTOP_NODE_ROUTE_COVERAGE = Object.freeze([
     { id: 'vm.manage', featureId: 'pcv.vm.managed-import', method: 'POST', route: '/api/v1/vms/{vm_id}/manage', view: 'vms', mutating: true, tokenRequired: true },
     { id: 'vm.clone.preview', featureId: 'pcv.vm.clone', method: 'POST', route: '/api/v1/vms/{vm_id}/clone/preview', view: 'vms', mutating: false, tokenRequired: true },
     { id: 'vm.clone', featureId: 'pcv.vm.clone', method: 'POST', route: '/api/v1/vms/{vm_id}/clone', view: 'vms', mutating: true, tokenRequired: true },
+    { id: 'vm.template.lock', featureId: 'pcv.vm.clone', method: 'POST', route: '/api/v1/vms/{vm_id}/template-lock', view: 'vms', mutating: true, tokenRequired: true },
     { id: 'vm.delete', featureId: 'pcv.vm.delete', method: 'DELETE', route: '/api/v1/vms/{vm_id}', view: 'vms', mutating: true, tokenRequired: true },
     { id: 'checkpoint.list', featureId: 'pcv.checkpoint.lifecycle', method: 'GET', route: '/api/v1/vms/{vm_id}/checkpoints', view: 'vms', mutating: false, tokenRequired: true },
     { id: 'checkpoint.create', featureId: 'pcv.checkpoint.lifecycle', method: 'POST', route: '/api/v1/vms/{vm_id}/checkpoints', view: 'vms', mutating: true, tokenRequired: true },
@@ -311,6 +312,9 @@ function getVmName(vm) {
 function getVmState(vm) {
     return String(vm?.state || vm?.status || '').trim();
 }
+function isTemplateLockedVm(vm) {
+    return Boolean(vm?.template_lock);
+}
 function isRunningVmState(value) {
     return String(value || '').toLowerCase().includes('running');
 }
@@ -324,6 +328,20 @@ function buildVmManageConfirmation(vmId, vm) {
         'After success this VM will pass PureCVisor managed delete.',
         'Unmanaged delete refusal remains.',
         'This queues a Hyper-V Notes managed-marker mutation.',
+        'The result will appear in Tracked Jobs.'
+    ].join('\n');
+}
+function buildVmTemplateLockConfirmation(vmId, vm, locked) {
+    const vmName = getVmName(vm);
+    const vmState = getVmState(vm) || 'unknown';
+    return [
+        locked ? `Lock VM ${vmName} as a template?` : `Unlock template lock on VM ${vmName}?`,
+        `VM id: ${vmId}`,
+        `Current state: ${vmState}`,
+        locked
+            ? 'After success this managed VM allows start and clone only. Unmanaged lock is blocked by PCV_VM_NOT_MANAGED_BY_PURECVISOR.'
+            : 'After success this VM is no longer a start/clone-only template.',
+        'This queues a Hyper-V Notes template-lock mutation.',
         'The result will appear in Tracked Jobs.'
     ].join('\n');
 }
@@ -685,6 +703,10 @@ const desktopApi = Object.freeze({
     queueVmManage: (vmId, confirmName) => apiFetch(DESKTOP_NODE_API_ROUTES.vmAction(vmId, 'manage'), {
         method: 'POST',
         body: JSON.stringify({ confirm_name: confirmName })
+    }),
+    queueVmTemplateLock: (vmId, confirmName, locked) => apiFetch(DESKTOP_NODE_API_ROUTES.vmAction(vmId, 'template-lock'), {
+        method: 'POST',
+        body: JSON.stringify({ confirm_name: confirmName, locked })
     }),
     previewVmClone: (vmId, payload) => apiFetch(DESKTOP_NODE_API_ROUTES.vmClonePreview(vmId), {
         method: 'POST',
@@ -1447,12 +1469,13 @@ function renderNetworkInventory() {
 function renderCheckpointList(vmId) {
     const checkpoints = asArray(state.selectedVmCheckpoints);
     const canOperate = rbacAllows('operate');
+    const templateLocked = isTemplateLockedVm(state.selectedVm);
     if (checkpoints.length === 0) {
         return '<p class="muted">No checkpoints returned for this VM.</p>';
     }
     return checkpoints.map((checkpoint) => {
         const checkpointId = getCheckpointId(checkpoint);
-        const checkpointDisabled = isCheckpointActionPending(vmId, checkpointId) || !canOperate ? ' disabled' : '';
+        const checkpointDisabled = isCheckpointActionPending(vmId, checkpointId) || !canOperate || templateLocked ? ' disabled' : '';
         return `<div class="checkpoint-row">
       <div>
         <strong>${escapeHtml(getCheckpointName(checkpoint))}</strong>
@@ -1552,9 +1575,10 @@ function renderVmQosDirectControl(vmId) {
     const canOperate = rbacAllows('operate');
     const canGuestExec = rbacAllows('guest.exec');
     const canGuestChannel = rbacAllows('guest.channel.configure');
-    const actionDisabled = isVmActionPending(vmId) || !canOperate ? ' disabled' : '';
-    const guestExecDisabled = isVmActionPending(vmId) || !canGuestExec ? ' disabled' : '';
-    const guestChannelDisabled = isVmActionPending(vmId) || !canGuestChannel ? ' disabled' : '';
+    const templateLocked = isTemplateLockedVm(state.selectedVm);
+    const actionDisabled = isVmActionPending(vmId) || !canOperate || templateLocked ? ' disabled' : '';
+    const guestExecDisabled = isVmActionPending(vmId) || !canGuestExec || templateLocked ? ' disabled' : '';
+    const guestChannelDisabled = isVmActionPending(vmId) || !canGuestChannel || templateLocked ? ' disabled' : '';
     const control = getSelectedVmQosControl(vmId);
     return `<section class="qos-control-panel">
     <div class="mini-section-header">
@@ -1630,8 +1654,11 @@ function renderVmDetail() {
     const vmId = getVmId(vm);
     const canOperate = rbacAllows('operate');
     const canViewConsole = rbacAllows('console.view');
+    const templateLocked = isTemplateLockedVm(vm);
     const actionDisabled = isVmActionPending(vmId) || !canOperate ? ' disabled' : '';
-    const checkpointDisabled = isCheckpointActionPending(vmId, 'create') || !canOperate ? ' disabled' : '';
+    const lockedMutationDisabled = isVmActionPending(vmId) || !canOperate || templateLocked ? ' disabled' : '';
+    const checkpointRefreshDisabled = isCheckpointActionPending(vmId, 'create') || !canOperate ? ' disabled' : '';
+    const checkpointMutationDisabled = isCheckpointActionPending(vmId, 'create') || !canOperate || templateLocked ? ' disabled' : '';
     const consoleDisabled = canViewConsole ? '' : ' disabled';
     const pendingVmAction = state.pendingVmActions[getVmActionKey(vmId)];
     const storage = flattenNamedList(vm.storage, ['path', 'size_gb', 'attached']);
@@ -1648,41 +1675,47 @@ function renderVmDetail() {
         ['Checkpoints', vm.checkpoints?.count ?? vm.checkpoints_count],
         ['Console', formatConsoleValue(vm.console)],
         ['Managed', vm.managed_by_purecvisor],
+        ['Template', templateLocked ? 'locked' : 'no'],
         ['Notes', vm.error?.message || vm.notes]
     ];
+    const templateLockButton = templateLocked
+        ? `<button data-action="vm-template-unlock" data-vm-id="${escapeHtml(vmId)}"${actionDisabled}>Unlock template</button>`
+        : `<button data-action="vm-template-lock" data-vm-id="${escapeHtml(vmId)}"${actionDisabled}>Lock template</button>`;
     els.vmDetailContent.innerHTML = `
     <div class="lifecycle-actions">
       <button data-action="vm-start" data-vm-id="${escapeHtml(vmId)}"${actionDisabled}>Start</button>
-      <button data-action="vm-shutdown" data-vm-id="${escapeHtml(vmId)}"${actionDisabled}>Shutdown</button>
-      <button class="danger-button" data-action="vm-poweroff" data-vm-id="${escapeHtml(vmId)}"${actionDisabled}>Power off</button>
-      <button class="danger-button" data-action="vm-restart" data-vm-id="${escapeHtml(vmId)}"${actionDisabled}>Restart</button>
-      <button data-action="vm-save" data-vm-id="${escapeHtml(vmId)}"${actionDisabled}>Save</button>
-      <button data-action="vm-resume-saved" data-vm-id="${escapeHtml(vmId)}"${actionDisabled}>Resume saved</button>
-      <button data-action="vm-eject" data-vm-id="${escapeHtml(vmId)}"${actionDisabled}>Eject media</button>
+      <button data-action="vm-shutdown" data-vm-id="${escapeHtml(vmId)}"${lockedMutationDisabled}>Shutdown</button>
+      <button class="danger-button" data-action="vm-poweroff" data-vm-id="${escapeHtml(vmId)}"${lockedMutationDisabled}>Power off</button>
+      <button class="danger-button" data-action="vm-restart" data-vm-id="${escapeHtml(vmId)}"${lockedMutationDisabled}>Restart</button>
+      <button data-action="vm-save" data-vm-id="${escapeHtml(vmId)}"${lockedMutationDisabled}>Save</button>
+      <button data-action="vm-resume-saved" data-vm-id="${escapeHtml(vmId)}"${lockedMutationDisabled}>Resume saved</button>
+      <button data-action="vm-eject" data-vm-id="${escapeHtml(vmId)}"${lockedMutationDisabled}>Eject media</button>
       <button data-action="vm-delete-status" data-vm-id="${escapeHtml(vmId)}"${actionDisabled}>Delete status</button>
-      <button data-action="vm-manage" data-vm-id="${escapeHtml(vmId)}"${actionDisabled}>Manage VM</button>
+      <button data-action="vm-manage" data-vm-id="${escapeHtml(vmId)}"${lockedMutationDisabled}>Manage VM</button>
+      ${templateLockButton}
       <button data-action="vm-clone" data-vm-id="${escapeHtml(vmId)}"${actionDisabled}>Clone VM</button>
-      <button class="danger-button" data-action="vm-delete" data-vm-id="${escapeHtml(vmId)}"${actionDisabled}>Delete VM</button>
+      <button class="danger-button" data-action="vm-delete" data-vm-id="${escapeHtml(vmId)}"${lockedMutationDisabled}>Delete VM</button>
       <button data-action="vm-console" data-vm-id="${escapeHtml(vmId)}"${consoleDisabled}>Console</button>
       ${pendingVmAction ? `<span class="muted">Pending action: ${escapeHtml(pendingVmAction)}</span>` : ''}
+      ${templateLocked ? '<span class="muted">Template lock: start, clone, and unlock only.</span>' : ''}
       ${!canOperate ? '<span class="muted">RBAC: operate permission required for lifecycle actions.</span>' : ''}
     </div>
     <div class="vm-resource-grid">
       <form class="vm-resource-form" data-action="vm-attach" data-vm-id="${escapeHtml(vmId)}">
-        <input name="iso_path" type="text" placeholder="ISO path" aria-label="ISO path"${actionDisabled}>
-        <button type="submit"${actionDisabled}>Attach media</button>
+        <input name="iso_path" type="text" placeholder="ISO path" aria-label="ISO path"${lockedMutationDisabled}>
+        <button type="submit"${lockedMutationDisabled}>Attach media</button>
       </form>
       <form class="vm-resource-form" data-action="vm-set-memory" data-vm-id="${escapeHtml(vmId)}">
-        <input name="memory_mb" type="number" min="512" max="262144" step="128" placeholder="Memory MB" aria-label="memory MB"${actionDisabled}>
-        <button type="submit"${actionDisabled}>Set memory</button>
+        <input name="memory_mb" type="number" min="512" max="262144" step="128" placeholder="Memory MB" aria-label="memory MB"${lockedMutationDisabled}>
+        <button type="submit"${lockedMutationDisabled}>Set memory</button>
       </form>
       <form class="vm-resource-form" data-action="vm-set-vcpu" data-vm-id="${escapeHtml(vmId)}">
-        <input name="cpu" type="number" min="1" max="32" step="1" placeholder="vCPU" aria-label="vCPU"${actionDisabled}>
-        <button type="submit"${actionDisabled}>Set vCPU</button>
+        <input name="cpu" type="number" min="1" max="32" step="1" placeholder="vCPU" aria-label="vCPU"${lockedMutationDisabled}>
+        <button type="submit"${lockedMutationDisabled}>Set vCPU</button>
       </form>
       <form class="vm-resource-form" data-action="vm-disk-resize" data-vm-id="${escapeHtml(vmId)}">
-        <input name="disk_gb" type="number" min="8" max="4096" step="1" placeholder="Disk GB" aria-label="disk GB"${actionDisabled}>
-        <button type="submit"${actionDisabled}>Resize disk</button>
+        <input name="disk_gb" type="number" min="8" max="4096" step="1" placeholder="Disk GB" aria-label="disk GB"${lockedMutationDisabled}>
+        <button type="submit"${lockedMutationDisabled}>Resize disk</button>
       </form>
       <form class="vm-resource-form" data-action="vm-clone" data-vm-id="${escapeHtml(vmId)}">
         <input name="name" autocomplete="off" placeholder="Target VM name" aria-label="clone target name"${actionDisabled}>
@@ -1700,11 +1733,11 @@ function renderVmDetail() {
           <p class="eyebrow">Checkpoints</p>
           <h3>VM Checkpoints</h3>
         </div>
-        <button data-action="checkpoint-refresh" data-vm-id="${escapeHtml(vmId)}"${checkpointDisabled}>Refresh checkpoints</button>
+        <button data-action="checkpoint-refresh" data-vm-id="${escapeHtml(vmId)}"${checkpointRefreshDisabled}>Refresh checkpoints</button>
       </div>
       <form class="checkpoint-form" data-action="checkpoint-create" data-vm-id="${escapeHtml(vmId)}">
-        <input name="checkpoint_name" autocomplete="off" placeholder="Checkpoint name" aria-label="checkpoint name"${checkpointDisabled}>
-        <button type="submit"${checkpointDisabled}>Create checkpoint</button>
+        <input name="checkpoint_name" autocomplete="off" placeholder="Checkpoint name" aria-label="checkpoint name"${checkpointMutationDisabled}>
+        <button type="submit"${checkpointMutationDisabled}>Create checkpoint</button>
       </form>
       <div class="checkpoint-list">${renderCheckpointList(vmId)}</div>
     </div>`;
@@ -3711,6 +3744,31 @@ async function queueVmManage(vmId) {
         render();
     }
 }
+async function queueVmTemplateLock(vmId, locked) {
+    requireRbac('operate', 'VM template lock');
+    const vm = state.selectedVm || findCachedVm(vmId);
+    if (!window.confirm(buildVmTemplateLockConfirmation(vmId, vm, locked))) {
+        return;
+    }
+    state.actionPending = true;
+    setVmActionPending(vmId, locked ? 'template-lock' : 'template-unlock');
+    state.error = null;
+    render();
+    try {
+        const job = await desktopApi.queueVmTemplateLock(vmId, vmId, locked);
+        trackJob(job);
+        state.connectionState = 'connected';
+        startPolling();
+    }
+    catch (error) {
+        state.error = normalizeError(error);
+    }
+    finally {
+        state.actionPending = false;
+        clearVmActionPending(vmId);
+        render();
+    }
+}
 async function queueVmClone(vmId, rawName) {
     requireRbac('operate', 'VM clone');
     const name = String(rawName || '').trim();
@@ -4711,6 +4769,12 @@ function bindEvents() {
             }
             else if (button.dataset.action === 'vm-manage') {
                 await queueVmManage(button.dataset.vmId);
+            }
+            else if (button.dataset.action === 'vm-template-lock') {
+                await queueVmTemplateLock(button.dataset.vmId, true);
+            }
+            else if (button.dataset.action === 'vm-template-unlock') {
+                await queueVmTemplateLock(button.dataset.vmId, false);
             }
             else if (button.dataset.action === 'vm-clone') {
                 if (button.closest('form[data-action="vm-clone"]')) {
