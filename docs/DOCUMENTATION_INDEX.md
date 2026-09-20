@@ -832,6 +832,7 @@
 - [docs/superpowers/specs/2026-09-20-purecvisor-desktop-node-campaign-continuity-design.md](superpowers/specs/2026-09-20-purecvisor-desktop-node-campaign-continuity-design.md)
 - [docs/superpowers/specs/2026-09-20-purecvisor-desktop-node-p1-inventory-timestamps-design.md](superpowers/specs/2026-09-20-purecvisor-desktop-node-p1-inventory-timestamps-design.md)
 - [docs/superpowers/specs/2026-09-20-purecvisor-desktop-node-p1-template-lock-design.md](superpowers/specs/2026-09-20-purecvisor-desktop-node-p1-template-lock-design.md)
+- [docs/superpowers/specs/2026-09-20-purecvisor-desktop-node-p1-guest-file-job-design.md](superpowers/specs/2026-09-20-purecvisor-desktop-node-p1-guest-file-job-design.md)
 
 ## 패키징 문서
 
