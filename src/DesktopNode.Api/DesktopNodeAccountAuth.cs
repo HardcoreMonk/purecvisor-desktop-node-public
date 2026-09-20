@@ -509,6 +509,36 @@ public sealed class DesktopNodeAccountAuthService
         }
     }
 
+    public DesktopNodeAuthActionResult ListAccounts(AccountMutationAuthContext auth)
+    {
+        var authError = AccountMutationContract.EvaluateListAuth(SnapshotExisting(), auth);
+        if (authError is not null)
+        {
+            return MutationError("account.list", authError);
+        }
+
+        var items = accounts.Values
+            .OrderBy(account => account.Username, StringComparer.OrdinalIgnoreCase)
+            .Select(account => new SortedDictionary<string, object?>
+            {
+                ["disabled_at"] = account.DisabledAt?.ToUniversalTime().ToString("o"),
+                ["display_name"] = account.DisplayName,
+                ["enabled"] = account.Enabled,
+                ["id"] = account.Id,
+                ["role"] = NormalizeRole(account.Role),
+                ["username"] = account.Username
+            })
+            .ToArray();
+
+        return Success("account.list", new SortedDictionary<string, object?>
+        {
+            ["accounts"] = items,
+            ["bootstrap_state"] = accounts.Count == 0
+                ? AccountMutationContract.BootstrapNoDefaultAccount
+                : AccountMutationContract.BootstrapAccountsConfigured
+        });
+    }
+
     public DesktopNodeAuthValidationResult ValidateAccessToken(string? authorization)
     {
         if (!Ready)

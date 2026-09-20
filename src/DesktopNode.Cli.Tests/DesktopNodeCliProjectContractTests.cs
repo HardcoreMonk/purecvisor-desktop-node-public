@@ -58,7 +58,10 @@ public sealed class DesktopNodeCliProjectContractTests
             "pcvcli vm clone <source> --name <target> --yes",
             "pcvcli vm clone <source> --name <target> --dry-run",
             "pcvcli vm eject <vm>",
-            "pcvcli vm delete-status <vm>"
+            "pcvcli vm delete-status <vm>",
+            "pcvcli account list",
+            "pcvcli account create --username NAME --role ROLE --password-env VAR|--password-stdin --yes",
+            "pcvcli account disable NAME --yes"
         ];
 
         foreach (var commandShape in commandShapes)
@@ -145,7 +148,7 @@ public sealed class DesktopNodeCliProjectContractTests
         }
 
         Assert.Equal(28, featureCount);
-        Assert.Equal(65, routeCount);
+        Assert.Equal(68, routeCount);
         string[] stageLabels =
         [
             "code_tested",

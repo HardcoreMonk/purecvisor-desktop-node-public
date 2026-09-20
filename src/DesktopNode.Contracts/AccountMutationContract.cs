@@ -125,6 +125,15 @@ public static class AccountMutationContract
             BootstrapAccountsConfigured);
     }
 
+    public static string? EvaluateListAuth(
+        IReadOnlyList<AccountMutationExistingAccount> existing,
+        AccountMutationAuthContext auth)
+    {
+        return (existing?.Count ?? 0) == 0
+            ? RejectBootstrapAuth(auth)
+            : RejectReadyAuth(auth);
+    }
+
     public static AccountDisableEvaluation EvaluateDisable(AccountDisableRequest request)
     {
         var authError = RejectReadyAuth(request.Auth);

@@ -28,8 +28,104 @@ public static class DesktopNodeCliCommandCatalog
             "vm" => VmRequest(arguments),
             "job" => JobRequest(arguments),
             "diagnostics" => DiagnosticsRequest(arguments),
+            "account" => AccountRequest(arguments),
             _ => throw Usage($"Unknown command group '{arguments[0]}'.")
         };
+    }
+
+    private static DesktopNodeCliRequest AccountRequest(IReadOnlyList<string> args)
+    {
+        if (args.Count < 2)
+        {
+            throw Usage("Use: account list|create|disable.");
+        }
+
+        return args[1].ToLowerInvariant() switch
+        {
+            "list" => AccountList(args),
+            "create" => AccountCreate(args),
+            "disable" => AccountDisable(args),
+            _ => throw Usage("Use: account list|create|disable.")
+        };
+    }
+
+    private static DesktopNodeCliRequest AccountList(IReadOnlyList<string> args)
+    {
+        RequireShape(args, 2, "account list");
+        return new DesktopNodeCliRequest("GET", "/api/v1/accounts");
+    }
+
+    private static DesktopNodeCliRequest AccountCreate(IReadOnlyList<string> args)
+    {
+        const string usage = "account create --username NAME --role ROLE --password-env VAR|--password-stdin --yes";
+        if (args.Count < 3)
+        {
+            throw Usage("Use: " + usage + ".");
+        }
+
+        var parsed = ParseOptions(args.Skip(2).ToArray(), allowFlags: true);
+        var yes = HasFlag(parsed.Options, "--yes");
+        if (!yes)
+        {
+            throw new ArgumentException(
+                "PCV_CLI_CONFIRMATION_REQUIRED|" +
+                "Account create requires explicit confirmation.|" +
+                "Use: pcvcli " + usage + ".");
+        }
+
+        var username = Required(parsed.Options, "--username");
+        var role = Required(parsed.Options, "--role");
+        var passwordEnv = FirstOption(parsed.Options, "--password-env");
+        var passwordStdin = HasFlag(parsed.Options, "--password-stdin");
+        if (!string.IsNullOrWhiteSpace(passwordEnv) == passwordStdin)
+        {
+            throw Usage("Use exactly one of --password-env VAR or --password-stdin.");
+        }
+
+        string? password;
+        if (passwordStdin)
+        {
+            password = Console.IsInputRedirected ? Console.In.ReadLine() : null;
+        }
+        else
+        {
+            password = Environment.GetEnvironmentVariable(passwordEnv!);
+        }
+
+        var displayName = FirstOption(parsed.Options, "--display-name");
+        var body = new Dictionary<string, string?>(StringComparer.Ordinal)
+        {
+            ["username"] = username,
+            ["password"] = password ?? string.Empty,
+            ["role"] = role
+        };
+        if (!string.IsNullOrWhiteSpace(displayName))
+        {
+            body["display_name"] = displayName;
+        }
+
+        return new DesktopNodeCliRequest(
+            "POST",
+            "/api/v1/accounts",
+            JsonSerializer.Serialize(body, JsonOptions));
+    }
+
+    private static DesktopNodeCliRequest AccountDisable(IReadOnlyList<string> args)
+    {
+        const string usage = "account disable NAME --yes";
+        if (args.Count != 4 || !Is(args[3], "--yes"))
+        {
+            throw new ArgumentException(
+                "PCV_CLI_CONFIRMATION_REQUIRED|" +
+                "Account disable requires explicit confirmation.|" +
+                "Use: pcvcli " + usage + ".");
+        }
+
+        var username = args[2];
+        return new DesktopNodeCliRequest(
+            "POST",
+            $"/api/v1/accounts/{Segment(username)}/disable",
+            JsonSerializer.Serialize(new { confirm_username = username }, JsonOptions));
     }
 
     private static DesktopNodeCliRequest HostRequest(IReadOnlyList<string> args)
@@ -957,7 +1053,10 @@ public static class DesktopNodeCliCommandCatalog
             "  pcvcli job list|get|cancel|retry|reconcile",
             "  pcvcli diagnostics bundle list [--limit N] [--offset N]",
             "  pcvcli diagnostics bundle create",
-            "  pcvcli diagnostics bundle download <bundle_id> --output <path>"
+            "  pcvcli diagnostics bundle download <bundle_id> --output <path>",
+            "  pcvcli account list",
+            "  pcvcli account create --username NAME --role ROLE --password-env VAR|--password-stdin --yes",
+            "  pcvcli account disable NAME --yes"
         ]);
     }
 

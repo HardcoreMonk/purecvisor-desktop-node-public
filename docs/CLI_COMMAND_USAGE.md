@@ -4,7 +4,7 @@
 
 운영자 대상 용어와 제품 경계 문구는 `docs/OPERATOR_SURFACE_TERMS.md`에 모은다.
 
-`pcvcli.exe`는 설치된 PureCVisor Desktop Node Local API를 호출하는 .NET command-line client다. Web Console과 같은 API contract를 사용하며, Hyper-V helper나 Linux `purecvisor-single` runtime을 직접 실행하지 않는다. 현재 first-class CLI command surface는 host/runtime/ops/network/VM/job/diagnostics이며, Account/RBAC/JWT login/refresh/logout은 Web Console 또는 Web API 직접 호출 경로가 소유한다. `POST /api/v1/auth/loopback-session`도 Web Console 전용이다. PCVCLI는 설치본 protected token file을 계속 사용한다.
+`pcvcli.exe`는 설치된 PureCVisor Desktop Node Local API를 호출하는 .NET command-line client다. Web Console과 같은 API contract를 사용하며, Hyper-V helper나 Linux `purecvisor-single` runtime을 직접 실행하지 않는다. 현재 first-class CLI command surface는 host/runtime/ops/network/VM/job/diagnostics/account이며, Account/RBAC/JWT login/refresh/logout은 Web Console 또는 Web API 직접 호출 경로가 소유한다. `POST /api/v1/auth/loopback-session`도 Web Console 전용이다. PCVCLI는 설치본 protected token file을 계속 사용한다. 계정 create/disable은 service bearer로 `pcvcli account`를 쓴다. 비밀번호는 `--password-env` 또는 `--password-stdin`만 받고 argv에 두지 않는다.
 
 이 문서는 설치된 제품을 사용하는 운영자와 repository checkout에서 CLI를 검증하는 개발자를 함께 대상으로 한다.
 
@@ -175,6 +175,23 @@ API가 problem JSON을 반환하면 CLI는 stderr에 `PCV_*: message` 형태로 
 pcvcli --json runtime policy
 pcvcli network inventory
 pcvcli network list
+```
+
+## 계정 명령
+
+| Command | API route | 설명 |
+|---------|-----------|------|
+| `pcvcli account list` | `GET /api/v1/accounts` | 계정 목록. password_hash 없음 |
+| `pcvcli account create --username NAME --role ROLE --password-env VAR|--password-stdin --yes` | `POST /api/v1/accounts` | 첫 계정은 admin. `--yes` 필수. 비밀번호는 env 또는 stdin |
+| `pcvcli account disable NAME --yes` | `POST /api/v1/accounts/{username}/disable` | disable. 마지막 enabled admin은 거절 |
+
+예:
+
+```powershell
+$env:PCV_ACCOUNT_PASSWORD = '<password>'
+pcvcli account create --username lab-admin --role admin --password-env PCV_ACCOUNT_PASSWORD --yes
+pcvcli account list
+pcvcli account disable lab-operator --yes
 ```
 
 ## 가상 머신 명령

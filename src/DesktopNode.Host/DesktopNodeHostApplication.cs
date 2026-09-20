@@ -29,7 +29,6 @@ public sealed partial class DesktopNodeHostApplication : IDisposable
     private readonly DesktopNodeApiRequestProcessor processor;
     private readonly DesktopNodeHostResolvedToken token;
     private readonly string? allowedWebOrigin;
-    private readonly bool accountAuthReady;
     private readonly DesktopNodeAccountAuthService accountAuthService;
     private readonly DesktopNodeRequestAdmission? requestAdmission;
     private readonly ConcurrentDictionary<int, Task> requestTasks = new();
@@ -44,7 +43,6 @@ public sealed partial class DesktopNodeHostApplication : IDisposable
         DesktopNodeApiRequestProcessor processor,
         DesktopNodeHostResolvedToken token,
         string? allowedWebOrigin,
-        bool accountAuthReady,
         DesktopNodeAccountAuthService accountAuthService)
     {
         this.listeners = listeners;
@@ -52,7 +50,6 @@ public sealed partial class DesktopNodeHostApplication : IDisposable
         this.processor = processor;
         this.token = token;
         this.allowedWebOrigin = allowedWebOrigin;
-        this.accountAuthReady = accountAuthReady;
         this.accountAuthService = accountAuthService;
         requestAdmission = options.RequestLifetimeMode == DesktopNodeRequestLifetimeMode.TrackedAsyncSerialized
             ? new DesktopNodeRequestAdmission(
@@ -151,7 +148,6 @@ public sealed partial class DesktopNodeHostApplication : IDisposable
                     jobRuntimeEventSink: new DesktopNodeHostJobRuntimeEventSink(options)),
                 token,
                 allowedWebOrigin,
-                accountAuthOptions.Ready,
                 accountAuthService));
         }
         catch

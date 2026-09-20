@@ -109,7 +109,7 @@ public sealed partial class DesktopNodeHostApplication : IDisposable
             return null;
         }
 
-        if (accountAuthReady)
+        if (processor.AccountAuthReady)
         {
             var validation = accountAuthService.ValidateAccessToken(authorization);
             if (validation.Ok &&

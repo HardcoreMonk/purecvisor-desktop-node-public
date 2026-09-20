@@ -14,7 +14,9 @@ public sealed record DesktopNodeApiRequest(
     string? Body = null,
     string? RequestId = null,
     string? ClientIdentity = null,
-    string? Authorization = null, bool RemoteIsLoopback = false);
+    string? Authorization = null,
+    bool RemoteIsLoopback = false,
+    bool ServiceBearerAccepted = false);
 
 public sealed record DesktopNodeApiResponse(
     int StatusCode,
@@ -71,6 +73,8 @@ public sealed partial class DesktopNodeApiRequestProcessor
     private readonly DesktopNodeApiJobWorker jobWorker;
     private readonly DesktopNodeApiVmReadRouteHandler vmReadRouteHandler;
     private readonly object sync = new();
+
+    public bool AccountAuthReady => authSessionHandler.Ready;
 
     // Deterministic test seam for the provider-result/serialized-finalization boundary.
     // The tick itself lives on DesktopNodeApiJobWorker now, so this forwards rather than

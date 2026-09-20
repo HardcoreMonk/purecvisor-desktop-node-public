@@ -71,8 +71,8 @@ public sealed class ApiHandlerAdapterContractTests
 
         var contract = ApiHandlerAdapterContract.CreateDefault();
         Assert.Equal(28, featureIds.Count);
-        Assert.Equal(65, ledgerRoutes.Count);
-        Assert.Equal(65, contract.Routes.Count);
+        Assert.Equal(68, ledgerRoutes.Count);
+        Assert.Equal(68, contract.Routes.Count);
         foreach (var route in contract.Routes)
         {
             Assert.Matches("^pcv\\.[a-z0-9._-]+$", route.FeatureId);
@@ -111,8 +111,8 @@ public sealed class ApiHandlerAdapterContractTests
         var contract = ApiHandlerAdapterContract.CreateDefault();
         var routes = contract.Routes.ToDictionary(route => (route.Method, route.RouteTemplate));
 
-        Assert.Equal(65, contract.Routes.Count);
-        Assert.Equal(65, routes.Count);
+        Assert.Equal(68, contract.Routes.Count);
+        Assert.Equal(68, routes.Count);
 
         AssertRoute(routes[("GET", "/api/v1/runtime/policy")], "GET", "RuntimePolicy", MutationStance.ReadOnly);
         AssertRoute(routes[("GET", "/api/v1/host/status")], "GET", "HostStatus", MutationStance.ReadOnly);
@@ -133,6 +133,9 @@ public sealed class ApiHandlerAdapterContractTests
         AssertRoute(routes[("POST", "/api/v1/auth/logout")], "POST", "LogoutAccount", MutationStance.ProductOperation);
         AssertRoute(routes[("GET", "/api/v1/auth/session")], "GET", "GetAccountSession", MutationStance.ReadOnly);
         AssertRoute(routes[("GET", "/api/v1/auth/rbac")], "GET", "GetAccountRbac", MutationStance.ReadOnly);
+        AssertRoute(routes[("GET", "/api/v1/accounts")], "GET", "ListAccounts", MutationStance.ReadOnly);
+        AssertRoute(routes[("POST", "/api/v1/accounts")], "POST", "CreateAccount", MutationStance.ProductOperation);
+        AssertRoute(routes[("POST", "/api/v1/accounts/{username}/disable")], "POST", "DisableAccount", MutationStance.ProductOperation);
         AssertRoute(routes[("GET", "/api/v1/console/capabilities")], "GET", "GetConsoleCapabilities", MutationStance.ReadOnly);
         AssertRoute(routes[("GET", "/api/v1/vms/{vmId}")], "GET", "GetVm", MutationStance.ReadOnly);
         AssertRoute(routes[("GET", "/api/v1/vms/{vmId}/console")], "GET", "GetVmConsoleSession", MutationStance.ReadOnly);
@@ -187,7 +190,7 @@ public sealed class ApiHandlerAdapterContractTests
         AssertRoute(routes[("POST", "/api/v1/vms/{vmId}/set-vcpu")], "POST", "QueueSetVmVcpu", MutationStance.QueuedMutation);
         AssertRoute(routes[("POST", "/api/v1/vms/{vmId}/disk-resize")], "POST", "QueueResizeVmDisk", MutationStance.QueuedMutation);
         AssertRoute(routes[("DELETE", "/api/v1/vms/{vmId}")], "DELETE", "QueueDeleteVm", MutationStance.QueuedMutation);
-        Assert.Equal(14, contract.Routes.Count(route => route.MutationStance == MutationStance.ProductOperation));
+        Assert.Equal(16, contract.Routes.Count(route => route.MutationStance == MutationStance.ProductOperation));
         Assert.Equal(29, contract.Routes.Count(route => route.MutationStance == MutationStance.QueuedMutation));
         Assert.DoesNotContain(contract.Routes, route => route.RouteTemplate == "/api/v1/vms/{vmId}/lifecycle/{action}");
         Assert.DoesNotContain(contract.Routes, route => route.RouteTemplate.Contains("/evidence", StringComparison.OrdinalIgnoreCase));
@@ -215,9 +218,9 @@ public sealed class ApiHandlerAdapterContractTests
                 System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(snapshot)))
             .ToLowerInvariant();
 
-        Assert.Equal("63583b1875264258578011cf43c535d8a288e97a90dddf43495e4e18ec64864b", digest);
-        Assert.Equal(22, routes.Count(route => route.MutationStance == MutationStance.ReadOnly));
-        Assert.Equal(14, routes.Count(route => route.MutationStance == MutationStance.ProductOperation));
+        Assert.Equal("22d762046f18a8b5a47cac0bcdc1f3aa6700b678a8c4fe5ed0eba392829b15d1", digest);
+        Assert.Equal(23, routes.Count(route => route.MutationStance == MutationStance.ReadOnly));
+        Assert.Equal(16, routes.Count(route => route.MutationStance == MutationStance.ProductOperation));
         Assert.Equal(29, routes.Count(route => route.MutationStance == MutationStance.QueuedMutation));
         Assert.Equal(13, routes.Select(route => route.RouteFamily).Distinct(StringComparer.Ordinal).Count());
     }

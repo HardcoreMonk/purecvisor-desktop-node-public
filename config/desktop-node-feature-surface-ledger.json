@@ -483,6 +483,87 @@
               "coverage_id": "auth.rbac"
             }
           }
+        },
+        {
+          "operation_id": "account.list",
+          "method": "GET",
+          "route_template": "/api/v1/accounts",
+          "required_permission": "account.manage",
+          "present_surfaces": [
+            "api",
+            "cli"
+          ],
+          "excluded_surfaces": [
+            {
+              "surface": "web",
+              "reason": "P1-9 slice 3 ships API/CLI account list; Web control is a later slice."
+            }
+          ],
+          "surface_bindings": {
+            "cli": {
+              "command": [
+                "account",
+                "list"
+              ]
+            }
+          }
+        },
+        {
+          "operation_id": "account.create",
+          "method": "POST",
+          "route_template": "/api/v1/accounts",
+          "required_permission": "account.manage",
+          "present_surfaces": [
+            "api",
+            "cli"
+          ],
+          "excluded_surfaces": [
+            {
+              "surface": "web",
+              "reason": "P1-9 slice 3 ships API/CLI account create; Web control is a later slice."
+            }
+          ],
+          "surface_bindings": {
+            "cli": {
+              "command": [
+                "account",
+                "create",
+                "--username",
+                "lab-admin",
+                "--role",
+                "admin",
+                "--password-env",
+                "PCV_ACCOUNT_PASSWORD",
+                "--yes"
+              ]
+            }
+          }
+        },
+        {
+          "operation_id": "account.disable",
+          "method": "POST",
+          "route_template": "/api/v1/accounts/{username}/disable",
+          "required_permission": "account.manage",
+          "present_surfaces": [
+            "api",
+            "cli"
+          ],
+          "excluded_surfaces": [
+            {
+              "surface": "web",
+              "reason": "P1-9 slice 3 ships API/CLI account disable; Web control is a later slice."
+            }
+          ],
+          "surface_bindings": {
+            "cli": {
+              "command": [
+                "account",
+                "disable",
+                "lab-operator",
+                "--yes"
+              ]
+            }
+          }
         }
       ]
     },

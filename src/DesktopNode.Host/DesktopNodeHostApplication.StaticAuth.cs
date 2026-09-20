@@ -88,7 +88,7 @@ public sealed partial class DesktopNodeHostApplication : IDisposable
                 return Json(403, "PCV_LOOPBACK_SESSION_NOT_LOOPBACK", "Loopback session requires a loopback remote address.");
             }
 
-            if (accountAuthReady)
+            if (processor.AccountAuthReady)
             {
                 return Json(409, "PCV_LOOPBACK_SESSION_DISABLED", "Loopback session is disabled because account auth is configured.");
             }
@@ -110,7 +110,7 @@ public sealed partial class DesktopNodeHostApplication : IDisposable
         if (string.IsNullOrWhiteSpace(authorization) ||
             !authorization.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
         {
-            return accountAuthReady ? null : Json(401, "PCV_AUTH_REQUIRED", "Authorization bearer token is required.");
+            return processor.AccountAuthReady ? null : Json(401, "PCV_AUTH_REQUIRED", "Authorization bearer token is required.");
         }
 
         var providedToken = authorization["Bearer ".Length..].Trim();
@@ -122,7 +122,7 @@ public sealed partial class DesktopNodeHostApplication : IDisposable
         var loopback = accountAuthService.ValidateLoopbackAccessToken(authorization);
         if (loopback.Ok)
         {
-            if (accountAuthReady)
+            if (processor.AccountAuthReady)
             {
                 return Json(401, "PCV_LOOPBACK_SESSION_DISABLED", "Loopback session is disabled because account auth is configured.");
             }
@@ -135,7 +135,7 @@ public sealed partial class DesktopNodeHostApplication : IDisposable
             return null;
         }
 
-        if (accountAuthReady)
+        if (processor.AccountAuthReady)
         {
             return null;
         }

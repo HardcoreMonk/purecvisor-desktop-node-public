@@ -40,7 +40,7 @@ feature promotion evidence를 서로 다른 계약으로 유지한다.
 | <a id="pcv-job-lifecycle"></a>`pcv.job.lifecycle` | Job lifecycle | 5 | 5 present / 0 excluded | 5 present / 0 excluded |
 | <a id="pcv-ops-summary"></a>`pcv.ops.summary` | Operations summary | 1 | 1 present / 0 excluded | 1 present / 0 excluded |
 | <a id="pcv-diagnostics-bundle"></a>`pcv.diagnostics.bundle` | Diagnostic bundles | 3 | 3 present / 0 excluded | 3 present / 0 excluded |
-| <a id="pcv-account-session"></a>`pcv.account.session` | Account and RBAC session | 6 | 6 present / 0 excluded | 0 present / 6 excluded |
+| <a id="pcv-account-session"></a>`pcv.account.session` | Account and RBAC session | 9 | 6 present / 3 excluded | 3 present / 6 excluded |
 | <a id="pcv-console-capabilities"></a>`pcv.console.capabilities` | Console capability discovery | 1 | 1 present / 0 excluded | 0 present / 1 excluded |
 | <a id="pcv-network-inventory"></a>`pcv.network.inventory` | Network inventory | 1 | 1 present / 0 excluded | 1 present / 0 excluded |
 | <a id="pcv-vm-delete"></a>`pcv.vm.delete` | VM delete lifecycle | 2 | 2 present / 0 excluded | 2 present / 0 excluded |
@@ -63,7 +63,7 @@ feature promotion evidence를 서로 다른 계약으로 유지한다.
 | <a id="pcv-vm-media-attach"></a>`pcv.vm.media-attach` | VM media attach | 1 | 1 present / 0 excluded | 1 present / 0 excluded |
 | <a id="pcv-vm-resource-limits"></a>`pcv.vm.resource-limits` | VM resource limits | 4 | 3 present / 1 excluded | 4 present / 0 excluded |
 
-## 65-route surface 투영
+## 68-route surface 투영
 
 | Feature ID | Operation ID | Canonical API route | Permission | Web Console | PCVCLI |
 |---|---|---|---|---|---|
@@ -86,6 +86,9 @@ feature promotion evidence를 서로 다른 계약으로 유지한다.
 | `pcv.account.session` | `auth.logout` | `POST /api/v1/auth/logout` | none | present — `auth.logout` | excluded — Account and JWT session lifecycle is Web/API-only; PCVCLI uses protected bearer-token resolution. |
 | `pcv.account.session` | `auth.session` | `GET /api/v1/auth/session` | `read` | present — `auth.session` | excluded — Account and JWT session lifecycle is Web/API-only; PCVCLI uses protected bearer-token resolution. |
 | `pcv.account.session` | `auth.rbac` | `GET /api/v1/auth/rbac` | `read` | present — `auth.rbac` | excluded — Account and JWT session lifecycle is Web/API-only; PCVCLI uses protected bearer-token resolution. |
+| `pcv.account.session` | `account.list` | `GET /api/v1/accounts` | `account.manage` | excluded — Web Console account CRUD is a later slice; this route remains API/CLI-only. | present — `pcvcli account list` |
+| `pcv.account.session` | `account.create` | `POST /api/v1/accounts` | `account.manage` | excluded — Web Console account CRUD is a later slice; this route remains API/CLI-only. | present — `pcvcli account create --username lab-admin --role admin --password-env PCV_ACCOUNT_PASSWORD --yes` |
+| `pcv.account.session` | `account.disable` | `POST /api/v1/accounts/{username}/disable` | `account.manage` | excluded — Web Console account CRUD is a later slice; this route remains API/CLI-only. | present — `pcvcli account disable lab-operator --yes` |
 | `pcv.console.capabilities` | `console.capabilities` | `GET /api/v1/console/capabilities` | `read` | present — `console.capabilities` | excluded — Global console capability discovery is API/Web-only; PCVCLI exposes VM-specific console handoff. |
 | `pcv.network.inventory` | `network.inventory` | `GET /api/v1/network/inventory` | `read` | present — `network.inventory` | present — `pcvcli network list` |
 | `pcv.vm.delete` | `vm.delete-status` | `GET /api/v1/vms/{vmId}/delete-status` | `read` | present — `vm.delete-status` | present — `pcvcli vm delete-status vm-01` |

@@ -803,7 +803,7 @@ public sealed class DesktopNodeCliCommandCatalogTests
             }
         }
 
-        Assert.Equal(58, presentCount);
+        Assert.Equal(61, presentCount);
         Assert.Equal(7, excludedCount);
     }
 
@@ -829,6 +829,9 @@ public sealed class DesktopNodeCliCommandCatalogTests
         Assert.Contains("pcvcli diagnostics bundle list [--limit N] [--offset N]", usage, StringComparison.Ordinal);
         Assert.Contains("pcvcli diagnostics bundle create", usage, StringComparison.Ordinal);
         Assert.Contains("pcvcli diagnostics bundle download <bundle_id> --output <path>", usage, StringComparison.Ordinal);
+        Assert.Contains("pcvcli account list", usage, StringComparison.Ordinal);
+        Assert.Contains("pcvcli account create --username NAME --role ROLE --password-env VAR|--password-stdin --yes", usage, StringComparison.Ordinal);
+        Assert.Contains("pcvcli account disable NAME --yes", usage, StringComparison.Ordinal);
         Assert.DoesNotContain("pcvcli snapshot list|create|rollback|delete", usage, StringComparison.Ordinal);
         Assert.DoesNotContain("pcvcli console capabilities", usage, StringComparison.Ordinal);
         Assert.DoesNotContain("  pcv [--api URL]", usage);

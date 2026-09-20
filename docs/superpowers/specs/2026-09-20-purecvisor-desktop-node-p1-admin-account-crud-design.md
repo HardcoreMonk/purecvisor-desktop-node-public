@@ -2,7 +2,7 @@
 
 - Design-ID: `purecvisor-desktop-node-p1-admin-account-crud-v1`
 - 작성일: `2026-09-20`
-- 문서 상태: `implemented-slice-2`
+- 문서 상태: `implemented-slice-3`
 - 소스 기획: `docs/SERVICE_PLAN.md` §7.1 P1-9
 - 선행: `pcv.account.session` login/refresh/logout/session/rbac, loopback session, `no-default-account` bootstrap
 - host mutation: `false`
@@ -109,10 +109,10 @@ List 항목에 `password_hash` 없음.
 
 ## Slice 3 범위
 
-- 위 3 HTTP route, frozen catalog/digest/`http-transport-contract-v1` `route_count`.
+- 위 3 HTTP route, frozen catalog/digest `22d762046f18a8b5a47cac0bcdc1f3aa6700b678a8c4fe5ed0eba392829b15d1`, `http-transport-contract-v1` `route_count` 68.
 - CLI: `pcvcli account list`, `pcvcli account create --username NAME --role ROLE --password-env VAR|--password-stdin --yes`, `pcvcli account disable NAME --yes`.
 - `--yes` 없는 create/disable은 `PCV_CLI_CONFIRMATION_REQUIRED`.
-- Web은 excluded.
+- Web은 excluded. Routes 65→68, ProductOperation 14→16, ReadOnly 22→23, CLI present 58→61.
 
 ## Slice 4 범위
 

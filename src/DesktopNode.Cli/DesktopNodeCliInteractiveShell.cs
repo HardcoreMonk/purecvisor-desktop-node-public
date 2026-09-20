@@ -72,7 +72,10 @@ public static class DesktopNodeCliInteractiveShell
         "job reconcile ",
         "diagnostics bundle list",
         "diagnostics bundle create",
-        "diagnostics bundle download "
+        "diagnostics bundle download ",
+        "account list",
+        "account create ",
+        "account disable "
     ];
 
     private static readonly HelpCommand[] AvailableCommands =
