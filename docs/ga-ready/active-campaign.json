@@ -8,7 +8,7 @@
   "allowed_lanes": ["0", "1", "2"],
   "mutation_allowed": true,
   "current_write_allowed": false,
-  "next_step": "P1-10 remaining reconcile is in source_head. Next SERVICE_PLAN item is P2. Host mutation is allowed; do not open Hyper-V recovery or write current-evidence unless named.",
+  "next_step": "P2-11 noVNC target design is in source_head. Next is slice 1 NoVncTargetPolicy contract. Host mutation is allowed; do not open Hyper-V recovery or write current-evidence unless named.",
   "stop_on": [
     "same-cause-fail-3",
     "budget",
