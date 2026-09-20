@@ -54,6 +54,19 @@ function buildVmManageConfirmation(vmId: string, vm: any): string {
   ].join('\n');
 }
 
+function buildVmGuestFileConfirmation(vmId: string, payload: any, preview: any): string {
+  const sizeBytes = preview?.size_bytes ?? payload?.size_bytes;
+  const sizeText = sizeBytes === null || sizeBytes === undefined || sizeBytes === '' ? '-' : String(sizeBytes);
+  return [
+    `Copy host file into VM ${vmId}?`,
+    `Host path: ${payload?.host_path || '-'}`,
+    `Guest path: ${payload?.guest_path || '-'}`,
+    `size_bytes: ${sizeText}`,
+    'This queues a host-to-guest copy with a protected credential reference.',
+    'HGFS shared folders are not used. The result will appear in Tracked Jobs.'
+  ].join('\n');
+}
+
 function buildVmTemplateLockConfirmation(vmId: string, vm: any, locked: boolean): string {
   const vmName = getVmName(vm);
   const vmState = getVmState(vm) || 'unknown';

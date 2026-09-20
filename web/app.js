@@ -195,6 +195,8 @@ const DESKTOP_NODE_API_ROUTES = Object.freeze({
     vmGuestAgentStatus: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/guest-agent/status`,
     vmGuestAgentPing: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/guest-agent/ping`,
     vmGuestExec: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/guest/exec`,
+    vmGuestFilePreview: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/guest/file/preview`,
+    vmGuestFile: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/guest/file`,
     vmGuestChannelVerify: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/guest/channel/verify`,
     vmGuestChannelEnsure: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/guest/channel`,
     vmAction: (vmId, action) => `/api/v1/vms/${encodeRouteSegment(vmId)}/${requireRouteAction(action, ['start', 'shutdown', 'poweroff', 'restart', 'save', 'resume-saved', 'eject', 'attach', 'delete-status', 'set-memory', 'set-vcpu', 'disk-resize', 'manage', 'clone', 'template-lock'])}`,
@@ -224,6 +226,8 @@ const DESKTOP_NODE_ROUTE_COVERAGE = Object.freeze([
     { id: 'vm.guest-agent-status', featureId: 'pcv.vm.guest-service-readback', method: 'GET', route: '/api/v1/vms/{vm_id}/guest-agent/status', view: 'vms', mutating: false, tokenRequired: true },
     { id: 'vm.guest-ping', featureId: 'pcv.vm.guest-service-readback', method: 'GET', route: '/api/v1/vms/{vm_id}/guest-agent/ping', view: 'vms', mutating: false, tokenRequired: true },
     { id: 'vm.guest.exec', featureId: 'pcv.vm.guest-execution', method: 'POST', route: '/api/v1/vms/{vm_id}/guest/exec', view: 'vms', mutating: true, tokenRequired: true },
+    { id: 'vm.guest.file.preview', featureId: 'pcv.vm.guest-execution', method: 'POST', route: '/api/v1/vms/{vm_id}/guest/file/preview', view: 'vms', mutating: false, tokenRequired: true },
+    { id: 'vm.guest.file', featureId: 'pcv.vm.guest-execution', method: 'POST', route: '/api/v1/vms/{vm_id}/guest/file', view: 'vms', mutating: true, tokenRequired: true },
     { id: 'vm.guest.channel.verify', featureId: 'pcv.vm.guest-channel', method: 'POST', route: '/api/v1/vms/{vm_id}/guest/channel/verify', view: 'vms', mutating: true, tokenRequired: true },
     { id: 'vm.guest.channel.ensure', featureId: 'pcv.vm.guest-channel', method: 'POST', route: '/api/v1/vms/{vm_id}/guest/channel', view: 'vms', mutating: true, tokenRequired: true },
     { id: 'vm.lifecycle', featureId: 'pcv.vm.power-lifecycle', method: 'POST', route: '/api/v1/vms/{vm_id}/start|shutdown|poweroff|restart', view: 'vms', mutating: true, tokenRequired: true },
@@ -329,6 +333,18 @@ function buildVmManageConfirmation(vmId, vm) {
         'Unmanaged delete refusal remains.',
         'This queues a Hyper-V Notes managed-marker mutation.',
         'The result will appear in Tracked Jobs.'
+    ].join('\n');
+}
+function buildVmGuestFileConfirmation(vmId, payload, preview) {
+    const sizeBytes = preview?.size_bytes ?? payload?.size_bytes;
+    const sizeText = sizeBytes === null || sizeBytes === undefined || sizeBytes === '' ? '-' : String(sizeBytes);
+    return [
+        `Copy host file into VM ${vmId}?`,
+        `Host path: ${payload?.host_path || '-'}`,
+        `Guest path: ${payload?.guest_path || '-'}`,
+        `size_bytes: ${sizeText}`,
+        'This queues a host-to-guest copy with a protected credential reference.',
+        'HGFS shared folders are not used. The result will appear in Tracked Jobs.'
     ].join('\n');
 }
 function buildVmTemplateLockConfirmation(vmId, vm, locked) {
@@ -682,6 +698,14 @@ const desktopApi = Object.freeze({
     getVmGuestAgentStatus: (vmId, options = {}) => apiFetch(DESKTOP_NODE_API_ROUTES.vmGuestAgentStatus(vmId), options),
     getVmGuestAgentPing: (vmId, options = {}) => apiFetch(DESKTOP_NODE_API_ROUTES.vmGuestAgentPing(vmId), options),
     queueVmGuestExec: (vmId, payload) => apiFetch(DESKTOP_NODE_API_ROUTES.vmGuestExec(vmId), {
+        method: 'POST',
+        body: JSON.stringify(payload)
+    }),
+    previewVmGuestFile: (vmId, payload) => apiFetch(DESKTOP_NODE_API_ROUTES.vmGuestFilePreview(vmId), {
+        method: 'POST',
+        body: JSON.stringify(payload)
+    }),
+    queueVmGuestFile: (vmId, payload) => apiFetch(DESKTOP_NODE_API_ROUTES.vmGuestFile(vmId), {
         method: 'POST',
         body: JSON.stringify(payload)
     }),
@@ -1633,8 +1657,18 @@ function renderVmQosDirectControl(vmId) {
           <button type="submit" class="danger-button" data-action="guest-agent-ensure-channel" data-guest-channel-mode="repair"${guestChannelDisabled}>Repair channel</button>
         </div>
       </form>
+      <form class="qos-control-form" data-action="vm-guest-file" data-vm-id="${escapeHtml(vmId)}">
+        <label>Host path<input name="host_path" autocomplete="off" placeholder="C:\\ProgramData\\PureCVisor\\desktop-node\\guest-files\\payload.iso"${guestExecDisabled}></label>
+        <label>Guest path<input name="guest_path" autocomplete="off" placeholder="C:\\Users\\Public\\PureCVisor\\payload.iso"${guestExecDisabled}></label>
+        <label>Credential reference<input name="credential_ref" autocomplete="off" placeholder="wincred:target"${guestExecDisabled}></label>
+        <label>Timeout seconds<input name="timeout_sec" type="number" min="1" max="600" step="1" value="60"${guestExecDisabled}></label>
+        <div class="qos-control-actions">
+          <button type="submit" class="danger-button" data-action="vm-guest-file"${guestExecDisabled}>Copy host file</button>
+        </div>
+      </form>
     </div>
     <p class="muted">Guest command output is reduced to audit digests; raw stdout/stderr and credential values are not rendered.</p>
+    <p class="muted">Guest file copy is host-to-guest only, allowlisted, and does not use HGFS.</p>
     <p class="muted">Account/noVNC target config mutation remains ADR-0010 deferred.</p>
   </section>`;
 }
@@ -3548,6 +3582,15 @@ function readVmGuestExecPayload(formData) {
         ]
     };
 }
+function readVmGuestFilePayload(formData) {
+    return {
+        host_path: readRequiredText(formData, 'host_path', 'PCV_GUEST_FILE_PATH_NOT_ALLOWED', 'Enter an allowlisted host file path before previewing or copying.'),
+        guest_path: readRequiredText(formData, 'guest_path', 'PCV_GUEST_FILE_PATH_NOT_ALLOWED', 'Enter an allowlisted guest file path before previewing or copying.'),
+        credential_ref: readRequiredText(formData, 'credential_ref', 'PCV_GUEST_FILE_CREDENTIAL_REF_REQUIRED', 'Enter a protected credential reference before previewing or copying a guest file.'),
+        timeout_sec: readBoundedInt(formData, 'timeout_sec', 1, 600, 'PCV_GUEST_EXEC_TIMEOUT_INVALID', 'Enter a guest file timeout between 1 and 600 seconds.'),
+        direction: 'host-to-guest'
+    };
+}
 function readVmGuestChannelPayload(formData, mode) {
     if (mode === 'repair') {
         return { yes: true };
@@ -3731,6 +3774,31 @@ async function queueVmManage(vmId) {
     render();
     try {
         const job = await desktopApi.queueVmManage(vmId, vmId);
+        trackJob(job);
+        state.connectionState = 'connected';
+        startPolling();
+    }
+    catch (error) {
+        state.error = normalizeError(error);
+    }
+    finally {
+        state.actionPending = false;
+        clearVmActionPending(vmId);
+        render();
+    }
+}
+async function queueVmGuestFile(vmId, payload) {
+    requireRbac('guest.exec', 'VM guest file');
+    state.actionPending = true;
+    setVmActionPending(vmId, 'guest-file');
+    state.error = null;
+    render();
+    try {
+        const preview = await desktopApi.previewVmGuestFile(vmId, payload);
+        if (!window.confirm(buildVmGuestFileConfirmation(vmId, payload, preview))) {
+            return;
+        }
+        const job = await desktopApi.queueVmGuestFile(vmId, payload);
         trackJob(job);
         state.connectionState = 'connected';
         startPolling();
@@ -4714,6 +4782,9 @@ function bindEvents() {
             else if (submitterAction === 'guest-agent-ensure-channel') {
                 const mode = event.submitter?.dataset?.guestChannelMode === 'repair' ? 'repair' : 'verify';
                 await queueVmGuestExecutionControl(guestForm.dataset.vmId, mode, readVmGuestChannelPayload(data, mode));
+            }
+            else if (form.dataset.action === 'vm-guest-file') {
+                await queueVmGuestFile(form.dataset.vmId, readVmGuestFilePayload(data));
             }
             else if (form.dataset.action === 'checkpoint-create') {
                 await queueCheckpointCreate(form.dataset.vmId, data.get('checkpoint_name'));

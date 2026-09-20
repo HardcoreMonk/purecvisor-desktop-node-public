@@ -164,6 +164,34 @@ function readVmGuestExecPayload(formData) {
   };
 }
 
+function readVmGuestFilePayload(formData) {
+  return {
+    host_path: readRequiredText(
+      formData,
+      'host_path',
+      'PCV_GUEST_FILE_PATH_NOT_ALLOWED',
+      'Enter an allowlisted host file path before previewing or copying.'),
+    guest_path: readRequiredText(
+      formData,
+      'guest_path',
+      'PCV_GUEST_FILE_PATH_NOT_ALLOWED',
+      'Enter an allowlisted guest file path before previewing or copying.'),
+    credential_ref: readRequiredText(
+      formData,
+      'credential_ref',
+      'PCV_GUEST_FILE_CREDENTIAL_REF_REQUIRED',
+      'Enter a protected credential reference before previewing or copying a guest file.'),
+    timeout_sec: readBoundedInt(
+      formData,
+      'timeout_sec',
+      1,
+      600,
+      'PCV_GUEST_EXEC_TIMEOUT_INVALID',
+      'Enter a guest file timeout between 1 and 600 seconds.'),
+    direction: 'host-to-guest'
+  };
+}
+
 function readVmGuestChannelPayload(formData, mode) {
   if (mode === 'repair') {
     return { yes: true };
@@ -364,6 +392,31 @@ async function queueVmManage(vmId) {
   render();
   try {
     const job = await desktopApi.queueVmManage(vmId, vmId);
+    trackJob(job);
+    state.connectionState = 'connected';
+    startPolling();
+  } catch (error) {
+    state.error = normalizeError(error);
+  } finally {
+    state.actionPending = false;
+    clearVmActionPending(vmId);
+    render();
+  }
+}
+
+async function queueVmGuestFile(vmId, payload) {
+  requireRbac('guest.exec', 'VM guest file');
+  state.actionPending = true;
+  setVmActionPending(vmId, 'guest-file');
+  state.error = null;
+  render();
+  try {
+    const preview = await desktopApi.previewVmGuestFile(vmId, payload);
+    if (!window.confirm(buildVmGuestFileConfirmation(vmId, payload, preview))) {
+      return;
+    }
+
+    const job = await desktopApi.queueVmGuestFile(vmId, payload);
     trackJob(job);
     state.connectionState = 'connected';
     startPolling();

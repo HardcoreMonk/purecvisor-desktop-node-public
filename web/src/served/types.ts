@@ -46,6 +46,8 @@ interface PcvRouteRegistry {
   vmGuestAgentStatus(vmId: string): string;
   vmGuestAgentPing(vmId: string): string;
   vmGuestExec(vmId: string): string;
+  vmGuestFilePreview(vmId: string): string;
+  vmGuestFile(vmId: string): string;
   vmGuestChannelVerify(vmId: string): string;
   vmGuestChannelEnsure(vmId: string): string;
   vmAction(vmId: string, action: string): string;
@@ -86,6 +88,8 @@ interface PcvDesktopApi {
   getVmGuestAgentStatus(vmId: string, options?: RequestInit): Promise<any>;
   getVmGuestAgentPing(vmId: string, options?: RequestInit): Promise<any>;
   queueVmGuestExec(vmId: string, payload: Record<string, unknown>): Promise<any>;
+  previewVmGuestFile(vmId: string, payload: Record<string, unknown>): Promise<any>;
+  queueVmGuestFile(vmId: string, payload: Record<string, unknown>): Promise<any>;
   verifyVmGuestChannel(vmId: string, payload: Record<string, unknown>): Promise<any>;
   ensureVmGuestChannel(vmId: string, payload: Record<string, unknown>): Promise<any>;
   getVmDeleteStatus(vmId: string, options?: RequestInit): Promise<any>;

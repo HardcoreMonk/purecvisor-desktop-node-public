@@ -240,6 +240,8 @@ function bindEvents() {
           guestForm.dataset.vmId,
           mode,
           readVmGuestChannelPayload(data, mode));
+      } else if (form.dataset.action === 'vm-guest-file') {
+        await queueVmGuestFile(form.dataset.vmId, readVmGuestFilePayload(data));
       } else if (form.dataset.action === 'checkpoint-create') {
         await queueCheckpointCreate(form.dataset.vmId, data.get('checkpoint_name'));
         form.reset();

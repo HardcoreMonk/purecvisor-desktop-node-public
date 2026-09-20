@@ -88,7 +88,7 @@ PureCVisor Desktop Node는 Windows 10/11 Pro/Enterprise + Hyper-V host를 로컬
 | [ `pcv.vm.telemetry` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-telemetry) | VM CPU·memory telemetry |
 | [ `pcv.vm.qos` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-qos) | Storage·network QoS |
 | [ `pcv.vm.guest-service-readback` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-guest-service-readback) | Guest service 상태와 ping |
-| [ `pcv.vm.guest-execution` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-guest-execution) | Guest command preview·실행 |
+| [ `pcv.vm.guest-execution` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-guest-execution) | Guest command preview·실행과 host-to-guest 파일 copy |
 | [ `pcv.vm.guest-channel` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-guest-channel) | Guest channel preview·verify·ensure |
 | [ `pcv.checkpoint.lifecycle` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-checkpoint-lifecycle) | Checkpoint 목록·생성·삭제 |
 | [ `pcv.vm.create` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-create) | VM 생성 |

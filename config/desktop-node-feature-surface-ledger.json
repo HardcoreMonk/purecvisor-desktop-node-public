@@ -976,15 +976,14 @@
           "required_permission": "guest.exec",
           "present_surfaces": [
             "api",
-            "cli"
+            "cli",
+            "web"
           ],
-          "excluded_surfaces": [
-            {
-              "surface": "web",
-              "reason": "P1-8 slice 3 ships API/CLI guest-file; Web control is a later slice."
-            }
-          ],
+          "excluded_surfaces": [],
           "surface_bindings": {
+            "web": {
+              "coverage_id": "vm.guest.file.preview"
+            },
             "cli": {
               "command": [
                 "vm",
@@ -1008,15 +1007,14 @@
           "required_permission": "guest.exec",
           "present_surfaces": [
             "api",
-            "cli"
+            "cli",
+            "web"
           ],
-          "excluded_surfaces": [
-            {
-              "surface": "web",
-              "reason": "P1-8 slice 3 ships API/CLI guest-file; Web control is a later slice."
-            }
-          ],
+          "excluded_surfaces": [],
           "surface_bindings": {
+            "web": {
+              "coverage_id": "vm.guest.file"
+            },
             "cli": {
               "command": [
                 "vm",

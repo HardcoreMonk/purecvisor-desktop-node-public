@@ -177,8 +177,18 @@ function renderVmQosDirectControl(vmId) {
           <button type="submit" class="danger-button" data-action="guest-agent-ensure-channel" data-guest-channel-mode="repair"${guestChannelDisabled}>Repair channel</button>
         </div>
       </form>
+      <form class="qos-control-form" data-action="vm-guest-file" data-vm-id="${escapeHtml(vmId)}">
+        <label>Host path<input name="host_path" autocomplete="off" placeholder="C:\\ProgramData\\PureCVisor\\desktop-node\\guest-files\\payload.iso"${guestExecDisabled}></label>
+        <label>Guest path<input name="guest_path" autocomplete="off" placeholder="C:\\Users\\Public\\PureCVisor\\payload.iso"${guestExecDisabled}></label>
+        <label>Credential reference<input name="credential_ref" autocomplete="off" placeholder="wincred:target"${guestExecDisabled}></label>
+        <label>Timeout seconds<input name="timeout_sec" type="number" min="1" max="600" step="1" value="60"${guestExecDisabled}></label>
+        <div class="qos-control-actions">
+          <button type="submit" class="danger-button" data-action="vm-guest-file"${guestExecDisabled}>Copy host file</button>
+        </div>
+      </form>
     </div>
     <p class="muted">Guest command output is reduced to audit digests; raw stdout/stderr and credential values are not rendered.</p>
+    <p class="muted">Guest file copy is host-to-guest only, allowlisted, and does not use HGFS.</p>
     <p class="muted">Account/noVNC target config mutation remains ADR-0010 deferred.</p>
   </section>`;
 }

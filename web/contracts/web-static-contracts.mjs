@@ -803,9 +803,13 @@ function verifyQosGuestControl(context) {
     [/\/api\/v1\/vms\/\$\{encodeRouteSegment\(vmId\)\}\/qos\/network\/preview/i, "network-preview-path"],
     [/\/api\/v1\/vms\/\$\{encodeRouteSegment\(vmId\)\}\/qos\/network/i, "network-path"],
     [/vmGuestExec\s*:/i, "guest-exec"],
+    [/vmGuestFilePreview\s*:/i, "guest-file-preview"],
+    [/vmGuestFile\s*:/i, "guest-file"],
     [/vmGuestChannelVerify\s*:/i, "channel-verify"],
     [/vmGuestChannelEnsure\s*:/i, "channel-ensure"],
     [/\/api\/v1\/vms\/\$\{encodeRouteSegment\(vmId\)\}\/guest\/exec/i, "guest-exec-path"],
+    [/\/api\/v1\/vms\/\$\{encodeRouteSegment\(vmId\)\}\/guest\/file\/preview/i, "guest-file-preview-path"],
+    [/\/api\/v1\/vms\/\$\{encodeRouteSegment\(vmId\)\}\/guest\/file/i, "guest-file-path"],
     [/\/api\/v1\/vms\/\$\{encodeRouteSegment\(vmId\)\}\/guest\/channel\/verify/i, "channel-verify-path"],
     [/\/api\/v1\/vms\/\$\{encodeRouteSegment\(vmId\)\}\/guest\/channel/i, "channel-path"]
   ], "qos-guest-control");
@@ -815,6 +819,8 @@ function verifyQosGuestControl(context) {
     [/data-action="vm-qos-network-preview"/i, "network-preview-action"],
     [/data-action="vm-qos-network-apply"/i, "network-apply-action"],
     [/data-action="vm-guest-exec"/i, "guest-exec-action"],
+    [/data-action="vm-guest-file"/i, "guest-file-action"],
+    [/Copy host file/i, "guest-file-label"],
     [/data-action="guest-agent-ensure-channel"/i, "channel-action"],
     [/guest\.exec/i, "guest-exec-rbac"],
     [/guest\.channel\.configure/i, "channel-rbac"]

@@ -162,6 +162,14 @@ const desktopApi: Readonly<PcvDesktopApi> = Object.freeze({
     method: 'POST',
     body: JSON.stringify(payload)
   }),
+  previewVmGuestFile: (vmId: string, payload: Record<string, unknown>) => apiFetch(DESKTOP_NODE_API_ROUTES.vmGuestFilePreview(vmId), {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  }),
+  queueVmGuestFile: (vmId: string, payload: Record<string, unknown>) => apiFetch(DESKTOP_NODE_API_ROUTES.vmGuestFile(vmId), {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  }),
   verifyVmGuestChannel: (vmId: string, payload: Record<string, unknown>) => apiFetch(DESKTOP_NODE_API_ROUTES.vmGuestChannelVerify(vmId), {
     method: 'POST',
     body: JSON.stringify(payload)
