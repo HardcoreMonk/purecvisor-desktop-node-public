@@ -1533,6 +1533,8 @@ function verifyFrontendEdgeCases(context) {
     [/Reconcile create/i, "reconcile-create"],
     [/Reconcile shutdown/i, "reconcile-shutdown"],
     [/Reconcile restart/i, "reconcile-restart"],
+    [/Reconcile storage QoS/i, "reconcile-storage-qos"],
+    [/Reconcile network QoS/i, "reconcile-network-qos"],
     [/reconcileSelectedVm/i, "reconcile-selected-vm"],
     [/PCV_SELECTED_VM_STALE/i, "selected-vm-stale"],
     [/buildCheckpointRestoreConfirmation/i, "checkpoint-restore-confirmation"],

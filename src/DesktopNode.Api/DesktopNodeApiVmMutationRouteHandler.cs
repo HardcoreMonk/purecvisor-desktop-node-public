@@ -435,7 +435,8 @@ internal sealed class DesktopNodeApiVmMutationRouteHandler
                     "minimum_iops",
                     "PCV_VM_QOS_STORAGE_VALUE_REQUIRED",
                     "VM storage QoS requires disk and maximum_iops.",
-                    "Pass a JSON body with disk and numeric maximum_iops.");
+                    "Pass a JSON body with disk and numeric maximum_iops.",
+                    cancellationToken);
 
             case "QueueSetVmNetworkQos":
                 return QueueVmQosMutation(
@@ -447,7 +448,8 @@ internal sealed class DesktopNodeApiVmMutationRouteHandler
                     "minimum_kbps",
                     "PCV_VM_QOS_NETWORK_VALUE_REQUIRED",
                     "VM network QoS requires adapter and maximum_kbps.",
-                    "Pass a JSON body with adapter and numeric maximum_kbps.");
+                    "Pass a JSON body with adapter and numeric maximum_kbps.",
+                    cancellationToken);
 
             case "QueueSetVmMemory":
                 return QueueVmResourceMutation(
@@ -839,7 +841,8 @@ internal sealed class DesktopNodeApiVmMutationRouteHandler
         string optionalValueProperty,
         string missingCode,
         string missingMessage,
-        string missingAction)
+        string missingAction,
+        CancellationToken cancellationToken)
     {
         var routeId = DesktopNodeApiRequestParsing.DecodeRouteId(routeMatch.Parameters["vmId"], operation);
         if (!routeId.Ok)
@@ -871,18 +874,19 @@ internal sealed class DesktopNodeApiVmMutationRouteHandler
             return rangeFailure;
         }
 
-        var parameters = BuildQosParameters(
-            routeId.Value!,
-            targetProperty,
-            target!,
-            requiredValueProperty,
-            maximum.Value,
-            optionalValueProperty,
-            minimum);
-        parameters["rollback_descriptor_required"] = true;
-        parameters["readback_after_apply_required"] = true;
-
-        return DesktopNodeApiResponseFactory.JobCreated(CreateJob(operation, DesktopNodeApiResponseFactory.JsonFromObject(parameters), request.RequestId!));
+        return DesktopNodeApiResponseFactory.JobCreated(CreateJob(
+            operation,
+            reconciliationHandler.BuildVmQosParameters(
+                operation,
+                routeId.Value!,
+                targetProperty,
+                target!,
+                requiredValueProperty,
+                maximum.Value,
+                optionalValueProperty,
+                minimum,
+                cancellationToken),
+            request.RequestId!));
     }
 
     private static DesktopNodeApiResponse? ValidateQosRange(

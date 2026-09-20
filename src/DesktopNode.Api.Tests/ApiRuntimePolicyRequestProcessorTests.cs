@@ -2666,7 +2666,8 @@ public sealed partial class ApiRuntimePolicyRequestProcessorTests
         string expectedPolicyProperty,
         int expectedPolicyValue)
     {
-        var processor = DesktopNodeApiRequestProcessor.CreateDefault();
+        var processor = DesktopNodeApiRequestProcessor.CreateDefault(
+            nativeAdapter: new RecordingNativeHyperVQosMutationAdapter(new List<DesktopNodeHyperVOperationCall>()));
 
         var response = processor.Handle(new DesktopNodeApiRequest("POST", path, body));
 
@@ -2680,6 +2681,13 @@ public sealed partial class ApiRuntimePolicyRequestProcessorTests
         Assert.Equal(expectedPolicyValue, data.GetProperty("params").GetProperty(expectedPolicyProperty).GetInt32());
         Assert.True(data.GetProperty("params").GetProperty("rollback_descriptor_required").GetBoolean());
         Assert.True(data.GetProperty("params").GetProperty("readback_after_apply_required").GetBoolean());
+        var reconciliation = data.GetProperty("params").GetProperty("reconciliation");
+        Assert.Equal(
+            expectedOperation == "vm.qos.storage.set"
+                ? "pcv-vm-qos-storage-reconciliation/v1"
+                : "pcv-vm-qos-network-reconciliation/v1",
+            reconciliation.GetProperty("schema").GetString());
+        Assert.Equal("captured", reconciliation.GetProperty("capture_status").GetString());
     }
 
     [Theory]
@@ -2724,12 +2732,13 @@ public sealed partial class ApiRuntimePolicyRequestProcessorTests
         var create = processor.Handle(new DesktopNodeApiRequest(method, path, body, RequestId: "req-qos-apply"));
 
         Assert.Equal(202, create.StatusCode);
-        Assert.Empty(nativeCalls);
+        var readOperation = expectedOperation == "vm.qos.storage.set" ? "vm.blkio-get" : "vm.bandwidth";
+        Assert.Equal(readOperation, Assert.Single(nativeCalls).Operation);
 
         var tick = processor.ProcessOneQueuedJob();
 
         Assert.True(tick.Processed);
-        var nativeCall = Assert.Single(nativeCalls);
+        var nativeCall = Assert.Single(nativeCalls, call => call.Operation == expectedOperation);
         Assert.Equal(expectedOperation, nativeCall.Operation);
         using var parameters = JsonDocument.Parse(nativeCall.ParamsJson);
         Assert.Equal("lab vm", parameters.RootElement.GetProperty("name").GetString());
@@ -3916,6 +3925,341 @@ public sealed partial class ApiRuntimePolicyRequestProcessorTests
             Assert.Equal(409, response.StatusCode);
             Assert.Contains("PCV_JOB_RECONCILIATION_REQUIRED", response.Body, StringComparison.Ordinal);
             Assert.Contains("timestamp-unavailable", response.Body, StringComparison.Ordinal);
+        }
+        finally
+        {
+            if (File.Exists(jobStorePath))
+            {
+                File.Delete(jobStorePath);
+            }
+        }
+    }
+
+    [Fact]
+    public void VmQosStorageQueueCapturesBlkioReadbackBaselineWithoutMutatingProvider()
+    {
+        var nativeCalls = new List<string>();
+        var processor = DesktopNodeApiRequestProcessor.CreateDefault(
+            nativeAdapter: new RecordingNativeHyperVAdapter(nativeCalls, new Dictionary<string, string>
+            {
+                ["vm.blkio-get"] = """
+                {"ok":true,"operation":"vm.blkio-get","data":{"name":"lab-vm","storage_qos":{"disks":[{"disk":"disk0","path":"disk0","maximum_iops":500,"minimum_iops":0}]}},"error":null}
+                """
+            }));
+
+        var response = processor.Handle(new DesktopNodeApiRequest(
+            "POST",
+            "/api/v1/vms/lab-vm/qos/storage",
+            """{"disk":"disk0","maximum_iops":1200,"minimum_iops":100}"""));
+
+        Assert.Equal(202, response.StatusCode);
+        Assert.Equal(["vm.blkio-get"], nativeCalls);
+        using var document = JsonDocument.Parse(response.Body);
+        var reconciliation = document.RootElement.GetProperty("data").GetProperty("params").GetProperty("reconciliation");
+        Assert.Equal("pcv-vm-qos-storage-reconciliation/v1", reconciliation.GetProperty("schema").GetString());
+        Assert.Equal("captured", reconciliation.GetProperty("capture_status").GetString());
+        Assert.Equal(500, reconciliation.GetProperty("before").GetProperty("maximum_iops").GetInt32());
+        Assert.Equal(0, reconciliation.GetProperty("before").GetProperty("minimum_iops").GetInt32());
+        Assert.Equal(1200, reconciliation.GetProperty("expected_after").GetProperty("maximum_iops").GetInt32());
+        Assert.Equal(100, reconciliation.GetProperty("expected_after").GetProperty("minimum_iops").GetInt32());
+    }
+
+    [Fact]
+    public void VmQosStorageReconcileConfirmsPolicyWithoutCallingSetProvider()
+    {
+        var jobStorePath = Path.Combine(Path.GetTempPath(), "pcv-dotnet-api-vm-qos-storage-reconcile-" + Guid.NewGuid().ToString("N") + ".json");
+        try
+        {
+            File.WriteAllText(jobStorePath, """
+            {
+              "version": 1,
+              "jobs": [
+                {
+                  "job_id": "job-vm-qos-storage-reconcile",
+                  "operation": "vm.qos.storage.set",
+                  "status": "failed",
+                  "params": {
+                    "name": "lab-vm",
+                    "disk": "disk0",
+                    "maximum_iops": 1200,
+                    "minimum_iops": 100,
+                    "reconciliation": {
+                      "schema": "pcv-vm-qos-storage-reconciliation/v1",
+                      "capture_status": "captured",
+                      "before": { "name": "lab-vm", "disk": "disk0", "maximum_iops": 500, "minimum_iops": 0 },
+                      "expected_after": { "name": "lab-vm", "disk": "disk0", "maximum_iops": 1200, "minimum_iops": 100 }
+                    }
+                  },
+                  "result": null,
+                  "error": { "code": "PCV_JOB_INTERRUPTED", "message": "Interrupted.", "detail": "Provider side effect is unresolved.", "retryable": false, "recommended_action": "Reconcile the provider state." },
+                  "retry_of": null,
+                  "request_id": "req-vm-qos-storage-reconcile",
+                  "correlation_id": "corr-vm-qos-storage-reconcile",
+                  "attempt": 1,
+                  "canceled_at": null,
+                  "created_at": "2026-09-20T00:00:00.0000000Z",
+                  "updated_at": "2026-09-20T00:00:01.0000000Z"
+                }
+              ],
+              "queue": []
+            }
+            """);
+
+            var nativeCalls = new List<string>();
+            var processor = DesktopNodeApiRequestProcessor.CreateDefault(
+                jobStorePath: jobStorePath,
+                nativeAdapter: new RecordingNativeHyperVAdapter(nativeCalls, new Dictionary<string, string>
+                {
+                    ["vm.blkio-get"] = """
+                    {"ok":true,"operation":"vm.blkio-get","data":{"name":"lab-vm","storage_qos":{"disks":[{"disk":"disk0","maximum_iops":1200,"minimum_iops":100}]}},"error":null}
+                    """
+                }));
+
+            var response = processor.Handle(new DesktopNodeApiRequest(
+                "POST",
+                "/api/v1/jobs/job-vm-qos-storage-reconcile/reconcile"));
+
+            Assert.Equal(200, response.StatusCode);
+            Assert.Equal(["vm.blkio-get"], nativeCalls);
+            using var document = JsonDocument.Parse(response.Body);
+            var data = document.RootElement.GetProperty("data");
+            Assert.Equal("succeeded", data.GetProperty("status").GetString());
+            Assert.Equal("vm.qos.storage.set", data.GetProperty("result").GetProperty("operation").GetString());
+            Assert.Equal("postcondition-confirmed", data.GetProperty("result").GetProperty("reconciliation").GetProperty("classification").GetString());
+        }
+        finally
+        {
+            if (File.Exists(jobStorePath))
+            {
+                File.Delete(jobStorePath);
+            }
+        }
+    }
+
+    [Fact]
+    public void VmQosStorageReconcileKeepsFailedWhenPolicyUnchanged()
+    {
+        var jobStorePath = Path.Combine(Path.GetTempPath(), "pcv-dotnet-api-vm-qos-storage-unchanged-" + Guid.NewGuid().ToString("N") + ".json");
+        try
+        {
+            File.WriteAllText(jobStorePath, """
+            {
+              "version": 1,
+              "jobs": [
+                {
+                  "job_id": "job-vm-qos-storage-unchanged",
+                  "operation": "vm.qos.storage.set",
+                  "status": "failed",
+                  "params": {
+                    "name": "lab-vm",
+                    "disk": "disk0",
+                    "maximum_iops": 1200,
+                    "minimum_iops": 100,
+                    "reconciliation": {
+                      "schema": "pcv-vm-qos-storage-reconciliation/v1",
+                      "capture_status": "captured",
+                      "before": { "name": "lab-vm", "disk": "disk0", "maximum_iops": 500, "minimum_iops": 0 },
+                      "expected_after": { "name": "lab-vm", "disk": "disk0", "maximum_iops": 1200, "minimum_iops": 100 }
+                    }
+                  },
+                  "result": null,
+                  "error": { "code": "PCV_JOB_INTERRUPTED", "message": "Interrupted.", "detail": "Provider side effect is unresolved.", "retryable": false, "recommended_action": "Reconcile the provider state." },
+                  "retry_of": null,
+                  "request_id": "req-vm-qos-storage-unchanged",
+                  "correlation_id": "corr-vm-qos-storage-unchanged",
+                  "attempt": 1,
+                  "canceled_at": null,
+                  "created_at": "2026-09-20T00:00:00.0000000Z",
+                  "updated_at": "2026-09-20T00:00:01.0000000Z"
+                }
+              ],
+              "queue": []
+            }
+            """);
+
+            var processor = DesktopNodeApiRequestProcessor.CreateDefault(
+                jobStorePath: jobStorePath,
+                nativeAdapter: new RecordingNativeHyperVAdapter(new List<string>(), new Dictionary<string, string>
+                {
+                    ["vm.blkio-get"] = """
+                    {"ok":true,"operation":"vm.blkio-get","data":{"name":"lab-vm","storage_qos":{"disks":[{"disk":"disk0","maximum_iops":500,"minimum_iops":0}]}},"error":null}
+                    """
+                }));
+
+            var response = processor.Handle(new DesktopNodeApiRequest(
+                "POST",
+                "/api/v1/jobs/job-vm-qos-storage-unchanged/reconcile"));
+
+            Assert.Equal(409, response.StatusCode);
+            Assert.Contains("PCV_JOB_RECONCILIATION_REQUIRED", response.Body, StringComparison.Ordinal);
+            Assert.Contains("not-applied", response.Body, StringComparison.Ordinal);
+        }
+        finally
+        {
+            if (File.Exists(jobStorePath))
+            {
+                File.Delete(jobStorePath);
+            }
+        }
+    }
+
+    [Fact]
+    public void VmQosStorageReconcileKeepsFailedWhenPartialPolicy()
+    {
+        var jobStorePath = Path.Combine(Path.GetTempPath(), "pcv-dotnet-api-vm-qos-storage-partial-" + Guid.NewGuid().ToString("N") + ".json");
+        try
+        {
+            File.WriteAllText(jobStorePath, """
+            {
+              "version": 1,
+              "jobs": [
+                {
+                  "job_id": "job-vm-qos-storage-partial",
+                  "operation": "vm.qos.storage.set",
+                  "status": "failed",
+                  "params": {
+                    "name": "lab-vm",
+                    "disk": "disk0",
+                    "maximum_iops": 1200,
+                    "minimum_iops": 100,
+                    "reconciliation": {
+                      "schema": "pcv-vm-qos-storage-reconciliation/v1",
+                      "capture_status": "captured",
+                      "before": { "name": "lab-vm", "disk": "disk0", "maximum_iops": 500, "minimum_iops": 0 },
+                      "expected_after": { "name": "lab-vm", "disk": "disk0", "maximum_iops": 1200, "minimum_iops": 100 }
+                    }
+                  },
+                  "result": null,
+                  "error": { "code": "PCV_JOB_INTERRUPTED", "message": "Interrupted.", "detail": "Provider side effect is unresolved.", "retryable": false, "recommended_action": "Reconcile the provider state." },
+                  "retry_of": null,
+                  "request_id": "req-vm-qos-storage-partial",
+                  "correlation_id": "corr-vm-qos-storage-partial",
+                  "attempt": 1,
+                  "canceled_at": null,
+                  "created_at": "2026-09-20T00:00:00.0000000Z",
+                  "updated_at": "2026-09-20T00:00:01.0000000Z"
+                }
+              ],
+              "queue": []
+            }
+            """);
+
+            var processor = DesktopNodeApiRequestProcessor.CreateDefault(
+                jobStorePath: jobStorePath,
+                nativeAdapter: new RecordingNativeHyperVAdapter(new List<string>(), new Dictionary<string, string>
+                {
+                    ["vm.blkio-get"] = """
+                    {"ok":true,"operation":"vm.blkio-get","data":{"name":"lab-vm","storage_qos":{"disks":[{"disk":"disk0","maximum_iops":1200,"minimum_iops":0}]}},"error":null}
+                    """
+                }));
+
+            var response = processor.Handle(new DesktopNodeApiRequest(
+                "POST",
+                "/api/v1/jobs/job-vm-qos-storage-partial/reconcile"));
+
+            Assert.Equal(409, response.StatusCode);
+            Assert.Contains("PCV_JOB_RECONCILIATION_REQUIRED", response.Body, StringComparison.Ordinal);
+            Assert.Contains("partial-policy", response.Body, StringComparison.Ordinal);
+        }
+        finally
+        {
+            if (File.Exists(jobStorePath))
+            {
+                File.Delete(jobStorePath);
+            }
+        }
+    }
+
+    [Fact]
+    public void VmQosNetworkQueueCapturesBandwidthReadbackBaselineWithoutMutatingProvider()
+    {
+        var nativeCalls = new List<string>();
+        var processor = DesktopNodeApiRequestProcessor.CreateDefault(
+            nativeAdapter: new RecordingNativeHyperVAdapter(nativeCalls, new Dictionary<string, string>
+            {
+                ["vm.bandwidth"] = """
+                {"ok":true,"operation":"vm.bandwidth","data":{"name":"lab-vm","network_qos":{"adapters":[{"adapter":"eth0","switch":"eth0","maximum_kbps":1024,"minimum_kbps":0}]}},"error":null}
+                """
+            }));
+
+        var response = processor.Handle(new DesktopNodeApiRequest(
+            "POST",
+            "/api/v1/vms/lab-vm/qos/network",
+            """{"adapter":"eth0","maximum_kbps":2048,"minimum_kbps":256}"""));
+
+        Assert.Equal(202, response.StatusCode);
+        Assert.Equal(["vm.bandwidth"], nativeCalls);
+        using var document = JsonDocument.Parse(response.Body);
+        var reconciliation = document.RootElement.GetProperty("data").GetProperty("params").GetProperty("reconciliation");
+        Assert.Equal("pcv-vm-qos-network-reconciliation/v1", reconciliation.GetProperty("schema").GetString());
+        Assert.Equal("captured", reconciliation.GetProperty("capture_status").GetString());
+        Assert.Equal(1024, reconciliation.GetProperty("before").GetProperty("maximum_kbps").GetInt32());
+        Assert.Equal(2048, reconciliation.GetProperty("expected_after").GetProperty("maximum_kbps").GetInt32());
+        Assert.Equal(256, reconciliation.GetProperty("expected_after").GetProperty("minimum_kbps").GetInt32());
+    }
+
+    [Fact]
+    public void VmQosNetworkReconcileConfirmsPolicyWithoutCallingSetProvider()
+    {
+        var jobStorePath = Path.Combine(Path.GetTempPath(), "pcv-dotnet-api-vm-qos-network-reconcile-" + Guid.NewGuid().ToString("N") + ".json");
+        try
+        {
+            File.WriteAllText(jobStorePath, """
+            {
+              "version": 1,
+              "jobs": [
+                {
+                  "job_id": "job-vm-qos-network-reconcile",
+                  "operation": "vm.qos.network.set",
+                  "status": "failed",
+                  "params": {
+                    "name": "lab-vm",
+                    "adapter": "eth0",
+                    "maximum_kbps": 2048,
+                    "minimum_kbps": 256,
+                    "reconciliation": {
+                      "schema": "pcv-vm-qos-network-reconciliation/v1",
+                      "capture_status": "captured",
+                      "before": { "name": "lab-vm", "adapter": "eth0", "maximum_kbps": 1024, "minimum_kbps": 0 },
+                      "expected_after": { "name": "lab-vm", "adapter": "eth0", "maximum_kbps": 2048, "minimum_kbps": 256 }
+                    }
+                  },
+                  "result": null,
+                  "error": { "code": "PCV_JOB_INTERRUPTED", "message": "Interrupted.", "detail": "Provider side effect is unresolved.", "retryable": false, "recommended_action": "Reconcile the provider state." },
+                  "retry_of": null,
+                  "request_id": "req-vm-qos-network-reconcile",
+                  "correlation_id": "corr-vm-qos-network-reconcile",
+                  "attempt": 1,
+                  "canceled_at": null,
+                  "created_at": "2026-09-20T00:00:00.0000000Z",
+                  "updated_at": "2026-09-20T00:00:01.0000000Z"
+                }
+              ],
+              "queue": []
+            }
+            """);
+
+            var nativeCalls = new List<string>();
+            var processor = DesktopNodeApiRequestProcessor.CreateDefault(
+                jobStorePath: jobStorePath,
+                nativeAdapter: new RecordingNativeHyperVAdapter(nativeCalls, new Dictionary<string, string>
+                {
+                    ["vm.bandwidth"] = """
+                    {"ok":true,"operation":"vm.bandwidth","data":{"name":"lab-vm","network_qos":{"adapters":[{"adapter":"eth0","maximum_kbps":2048,"minimum_kbps":256}]}},"error":null}
+                    """
+                }));
+
+            var response = processor.Handle(new DesktopNodeApiRequest(
+                "POST",
+                "/api/v1/jobs/job-vm-qos-network-reconcile/reconcile"));
+
+            Assert.Equal(200, response.StatusCode);
+            Assert.Equal(["vm.bandwidth"], nativeCalls);
+            using var document = JsonDocument.Parse(response.Body);
+            var data = document.RootElement.GetProperty("data");
+            Assert.Equal("succeeded", data.GetProperty("status").GetString());
+            Assert.Equal("vm.qos.network.set", data.GetProperty("result").GetProperty("operation").GetString());
+            Assert.Equal("postcondition-confirmed", data.GetProperty("result").GetProperty("reconciliation").GetProperty("classification").GetString());
         }
         finally
         {

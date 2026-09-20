@@ -207,6 +207,7 @@ public sealed class ApiRequestProcessorDecompositionOwnershipTests
             "ReconcileVmCreateJob",
             "ReconcileVmShutdownJob",
             "ReconcileVmRestartJob",
+            "ReconcileVmQosJob",
             "RenderReconciliationResult",
             "ReconciliationRequiredError",
             "BuildVmRenameParameters",
@@ -216,6 +217,7 @@ public sealed class ApiRequestProcessorDecompositionOwnershipTests
             "BuildVmCreateParameters",
             "BuildVmShutdownParameters",
             "BuildVmRestartParameters",
+            "BuildVmQosParameters",
             "CaptureVmRenameBaseline",
             "CaptureVmDeleteBaseline",
             "CaptureCheckpointCreateBaseline",
@@ -223,6 +225,7 @@ public sealed class ApiRequestProcessorDecompositionOwnershipTests
             "CaptureVmCreateBaseline",
             "CaptureVmShutdownBaseline",
             "CaptureVmRestartBaseline",
+            "CaptureVmQosBaseline",
             "BuildVmRenameFingerprint",
             "BuildVmDeleteFingerprint",
             "IsManagedVm",
@@ -234,11 +237,17 @@ public sealed class ApiRequestProcessorDecompositionOwnershipTests
             "TryReadCapturedVmCreateBaseline",
             "TryReadCapturedVmShutdownBaseline",
             "TryReadCapturedVmRestartBaseline",
+            "TryReadCapturedVmQosBaseline",
             "CreateFingerprintMatches",
             "BuildVmShutdownIdentityFingerprint",
             "ShutdownIdentityMatches",
             "NormalizePowerState",
-            "TryReadTimestamp");
+            "TryReadTimestamp",
+            "FindQosTargets",
+            "EnumerateQosDevices",
+            "QosTargetMatches",
+            "ReadQosPolicy",
+            "QosPolicyMatches");
         AssertTypeDeclares(
             "DesktopNodeApiJobReconciliationHandler",
             "TryHandle",
@@ -248,7 +257,8 @@ public sealed class ApiRequestProcessorDecompositionOwnershipTests
             "BuildCheckpointRestoreParameters",
             "BuildVmCreateParameters",
             "BuildVmShutdownParameters",
-            "BuildVmRestartParameters");
+            "BuildVmRestartParameters",
+            "BuildVmQosParameters");
         AssertTypeIsCallbackFreeOwner("DesktopNodeApiJobReconciliationHandler");
     }
 
