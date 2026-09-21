@@ -8,7 +8,7 @@
   "allowed_lanes": ["0", "1", "2"],
   "mutation_allowed": true,
   "current_write_allowed": false,
-  "next_step": "ADR-0010 applied at code-level. Next is Lane 2 installed file-backed noVNC set/clear readback smoke. Do not open P2-12..15, Hyper-V recovery, PathName rewrite smoke, or write current-evidence unless named.",
+  "next_step": "P2-12 slice 1 CheckpointSchedulePolicy is in source_head. Focused test: dotnet test src/DesktopNode.Contracts.Tests/DesktopNode.Contracts.Tests.csproj -c Release --filter FullyQualifiedName~CheckpointSchedulePolicyTests. Next is slice 2 preview HTTP/CLI. Do not open P2-13..15, Hyper-V recovery, PathName rewrite smoke, package-pair, or write current-evidence unless named.",
   "stop_on": [
     "same-cause-fail-3",
     "budget",
