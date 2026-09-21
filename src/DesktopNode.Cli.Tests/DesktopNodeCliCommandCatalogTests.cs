@@ -47,6 +47,7 @@ public sealed class DesktopNodeCliCommandCatalogTests
     [InlineData("console novnc-target preview --host 127.0.0.1 --port 5900", "POST", "/api/v1/console/novnc-target/preview")]
     [InlineData("console novnc-target set --host 127.0.0.1 --port 5900 --yes", "POST", "/api/v1/console/novnc-target")]
     [InlineData("console novnc-target clear --yes", "POST", "/api/v1/console/novnc-target/clear")]
+    [InlineData("vm checkpoint schedule preview ubuntu-lab-01 --interval-minutes 1440 --retention-max 8", "POST", "/api/v1/vms/ubuntu-lab-01/checkpoints/schedule/preview")]
     public void RoutesCommandsToLocalApiRequests(string commandLine, string method, string path)
     {
         var request = DesktopNodeCliCommandCatalog.CreateRequest(Split(commandLine));
@@ -55,7 +56,8 @@ public sealed class DesktopNodeCliCommandCatalogTests
         Assert.Equal(path, request.Path);
         if (path.EndsWith("/attach", StringComparison.Ordinal) ||
             path.EndsWith("/novnc-target/preview", StringComparison.Ordinal) ||
-            path.EndsWith("/novnc-target", StringComparison.Ordinal))
+            path.EndsWith("/novnc-target", StringComparison.Ordinal) ||
+            path.EndsWith("/schedule/preview", StringComparison.Ordinal))
         {
             Assert.NotNull(request.Body);
             return;
@@ -808,7 +810,7 @@ public sealed class DesktopNodeCliCommandCatalogTests
             }
         }
 
-        Assert.Equal(64, presentCount);
+        Assert.Equal(65, presentCount);
         Assert.Equal(7, excludedCount);
     }
 
@@ -923,6 +925,7 @@ public sealed class DesktopNodeCliCommandCatalogTests
         Assert.Contains("pcvcli vm clone <source> --name <target> --dry-run", usage, StringComparison.Ordinal);
         Assert.Contains("pcvcli vm delete <vm> --yes", usage, StringComparison.Ordinal);
         Assert.Contains("pcvcli vm checkpoint list|create|restore|delete", usage, StringComparison.Ordinal);
+        Assert.Contains("pcvcli vm checkpoint schedule preview <vm> --interval-minutes N --retention-max N", usage, StringComparison.Ordinal);
         Assert.Contains("VM delete requires explicit confirmation", error.Message, StringComparison.Ordinal);
         Assert.Contains("vm delete <vm> --yes", error.Message, StringComparison.Ordinal);
         Assert.DoesNotContain("public release", usage + error.Message, StringComparison.OrdinalIgnoreCase);

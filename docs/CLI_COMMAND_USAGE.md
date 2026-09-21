@@ -380,6 +380,7 @@ secret-bearing command option은 `PCV_CLI_CREDENTIAL_REF_REQUIRED`로 거절된�
 | `pcvcli vm checkpoint create <vm> --name <checkpoint>` | `POST /api/v1/vms/{vm}/checkpoints` | Checkpoint 생성 job queue |
 | `pcvcli vm checkpoint restore <vm> <checkpoint>` | `POST /api/v1/vms/{vm}/checkpoints/{checkpoint}/restore` | Checkpoint restore job queue |
 | `pcvcli vm checkpoint delete <vm> <checkpoint>` | `DELETE /api/v1/vms/{vm}/checkpoints/{checkpoint}` | Checkpoint delete job queue |
+| `pcvcli vm checkpoint schedule preview <vm> --interval-minutes N --retention-max N` | `POST /api/v1/vms/{vm}/checkpoints/schedule/preview` | 주기 checkpoint 스케줄 dry-run. persist/tick 없음 |
 | `pcvcli vm snapshot list <vm>` | `GET /api/v1/vms/{vm}/checkpoints` | Linux `vm snapshot list` shape 호환 alias |
 | `pcvcli vm snapshot create <vm> --name <checkpoint>` | `POST /api/v1/vms/{vm}/checkpoints` | Snapshot create alias |
 | `pcvcli vm snapshot rollback <vm> <checkpoint>` | `POST /api/v1/vms/{vm}/checkpoints/{checkpoint}/restore` | Snapshot rollback alias |
@@ -395,6 +396,7 @@ confirmation dialog를 통과해야 job을 queue한다.
 pcvcli vm checkpoint create ubuntu-lab-01 --name before-upgrade
 pcvcli vm checkpoint restore ubuntu-lab-01 before-upgrade
 pcvcli vm checkpoint delete ubuntu-lab-01 before-upgrade
+pcvcli vm checkpoint schedule preview ubuntu-lab-01 --interval-minutes 1440 --retention-max 8
 pcvcli vm snapshot rollback ubuntu-lab-01 before-upgrade
 ```
 

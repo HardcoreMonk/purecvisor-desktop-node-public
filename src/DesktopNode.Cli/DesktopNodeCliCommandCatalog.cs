@@ -838,10 +838,15 @@ public static class DesktopNodeCliCommandCatalog
     {
         if (args.Count < 4)
         {
-            throw Usage("Use: vm checkpoint list|create|restore|delete ...");
+            throw Usage("Use: vm checkpoint list|create|restore|delete|schedule ...");
         }
 
         var action = args[2].ToLowerInvariant();
+        if (action == "schedule")
+        {
+            return CheckpointSchedulePreview(args);
+        }
+
         var vm = Segment(args[3]);
         return action switch
         {
@@ -849,8 +854,29 @@ public static class DesktopNodeCliCommandCatalog
             "create" => CheckpointCreate(args, vm),
             "restore" or "rollback" => CheckpointAction(args, vm, "POST", "restore"),
             "delete" => CheckpointAction(args, vm, "DELETE", null),
-            _ => throw Usage("Use: vm checkpoint list|create|restore|delete ...")
+            _ => throw Usage("Use: vm checkpoint list|create|restore|delete|schedule ...")
         };
+    }
+
+    private static DesktopNodeCliRequest CheckpointSchedulePreview(IReadOnlyList<string> args)
+    {
+        const string usage = "vm checkpoint schedule preview <vm> --interval-minutes N --retention-max N";
+        if (args.Count < 5 || !Is(args[3], "preview"))
+        {
+            throw Usage("Use: " + usage + ".");
+        }
+
+        var vm = Segment(args[4]);
+        var parsed = ParseOptions(args.Skip(5).ToArray(), allowFlags: false);
+        var body = new SortedDictionary<string, object?>
+        {
+            ["interval_minutes"] = RequiredInt(parsed.Options, "--interval-minutes"),
+            ["retention_max"] = RequiredInt(parsed.Options, "--retention-max")
+        };
+        return new DesktopNodeCliRequest(
+            "POST",
+            $"/api/v1/vms/{vm}/checkpoints/schedule/preview",
+            JsonSerializer.Serialize(body, JsonOptions));
     }
 
     private static DesktopNodeCliRequest CheckpointCreate(IReadOnlyList<string> args, string vm)
@@ -1128,6 +1154,7 @@ public static class DesktopNodeCliCommandCatalog
             "  pcvcli vm clone <source> --name <target> --dry-run [--vm-root <path>]",
             "  pcvcli vm delete <vm> --yes",
             "  pcvcli vm checkpoint list|create|restore|delete",
+            "  pcvcli vm checkpoint schedule preview <vm> --interval-minutes N --retention-max N",
             "  pcvcli vm snapshot list|create|rollback|delete",
             "  pcvcli job list|get|cancel|retry|reconcile",
             "  pcvcli diagnostics bundle list [--limit N] [--offset N]",

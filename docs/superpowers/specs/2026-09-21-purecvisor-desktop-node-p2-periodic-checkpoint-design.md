@@ -2,7 +2,7 @@
 
 - Design-ID: `purecvisor-desktop-node-p2-periodic-checkpoint-v1`
 - 작성일: `2026-09-21`
-- 문서 상태: `implemented-slice-1`
+- 문서 상태: `implemented-slice-2`
 - 소스 기획: `docs/SERVICE_PLAN.md` §7.1 P2-12
 - 선행: `pcv.checkpoint.lifecycle` list/create/delete, `pcv.checkpoint.restore` reconcile
 - host mutation: `false`

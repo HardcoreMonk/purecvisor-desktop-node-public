@@ -1338,6 +1338,37 @@
           }
         },
         {
+          "operation_id": "checkpoint.schedule.preview",
+          "method": "POST",
+          "route_template": "/api/v1/vms/{vmId}/checkpoints/schedule/preview",
+          "required_permission": "operate",
+          "present_surfaces": [
+            "api",
+            "cli"
+          ],
+          "excluded_surfaces": [
+            {
+              "surface": "web",
+              "reason": "Periodic checkpoint schedule stays CLI/API; Web Console keeps checkpoint panel without a schedule save form."
+            }
+          ],
+          "surface_bindings": {
+            "cli": {
+              "command": [
+                "vm",
+                "checkpoint",
+                "schedule",
+                "preview",
+                "vm-01",
+                "--interval-minutes",
+                "1440",
+                "--retention-max",
+                "8"
+              ]
+            }
+          }
+        },
+        {
           "operation_id": "checkpoint.delete",
           "method": "DELETE",
           "route_template": "/api/v1/vms/{vmId}/checkpoints/{checkpointId}",

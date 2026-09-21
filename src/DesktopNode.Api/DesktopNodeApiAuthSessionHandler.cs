@@ -222,6 +222,19 @@ internal sealed class DesktopNodeApiAuthSessionHandler
         return "read";
     }
 
+    public CheckpointScheduleAuthContext ResolveCheckpointScheduleAuth(DesktopNodeApiRequest request)
+    {
+        var access = accountAuth.Ready
+            ? accountAuth.ValidateAccessToken(request.Authorization)
+            : new DesktopNodeAuthValidationResult(false, null, null);
+        return new CheckpointScheduleAuthContext(
+            HasOperate: !accountAuth.Ready ||
+                (access.Ok &&
+                    access.Principal is not null &&
+                    accountAuth.HasPermission(access.Principal, CheckpointSchedulePolicy.PermissionOperate)),
+            HasServiceBearer: request.ServiceBearerAccepted);
+    }
+
     public NoVncTargetAuthContext ResolveNoVncAuth(DesktopNodeApiRequest request)
     {
         var access = accountAuth.Ready

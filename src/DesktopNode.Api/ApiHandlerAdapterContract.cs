@@ -114,6 +114,7 @@ public sealed record ApiHandlerAdapterContract(
                 NativeQueuedMutation("/api/v1/vms/{vmId}/guest/channel/verify", "vm.guest.channel.verify", "QueueVerifyVmGuestChannel", "pcv.vm.guest-channel", "guest-execution", requiredPermission: "guest.channel.configure"),
                 NativeQueuedMutation("/api/v1/vms/{vmId}/guest/channel", "vm.guest.channel.ensure", "QueueEnsureVmGuestChannel", "pcv.vm.guest-channel", "guest-execution", requiredPermission: "guest.channel.configure"),
                 NativeReadOnly("/api/v1/vms/{vmId}/checkpoints", "checkpoint.list", "ListVmCheckpoints", "pcv.checkpoint.lifecycle", "hyperv-checkpoint"),
+                NativeProductOperation("/api/v1/vms/{vmId}/checkpoints/schedule/preview", "checkpoint.schedule.preview", "PreviewVmCheckpointSchedule", "pcv.checkpoint.lifecycle", "hyperv-checkpoint"),
                 NativeProductOperation("/api/v1/vms/{vmId}/qos/storage/preview", "vm.qos.storage.preview", "PreviewVmStorageQos", "pcv.vm.qos", "hyperv-vm-qos"),
                 NativeProductOperation("/api/v1/vms/{vmId}/qos/network/preview", "vm.qos.network.preview", "PreviewVmNetworkQos", "pcv.vm.qos", "hyperv-vm-qos"),
                 NativeQueuedMutation("/api/v1/vms", "vm.create", "QueueCreateVm", "pcv.vm.create", "hyperv-vm"),

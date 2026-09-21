@@ -51,6 +51,13 @@ internal sealed class DesktopNodeApiVmMutationRouteHandler
         }
 
         if (method == "POST" &&
+            DesktopNodeApiRuntimeRoutes.TryMatchContract(method, normalizedPath, out var schedulePreviewMatch) &&
+            string.Equals(schedulePreviewMatch.Route.OperationName, "PreviewVmCheckpointSchedule", StringComparison.Ordinal))
+        {
+            return HandleCheckpointSchedulePreview(request, schedulePreviewMatch, cancellationToken);
+        }
+
+        if (method == "POST" &&
             DesktopNodeApiRequestParsing.TryMatch(normalizedPath, "^/api/v1/vms/([^/]*)/qos/(storage|network)/preview$", out var qosPreviewMatch))
         {
             return HandleQosPreviewRoute(request, qosPreviewMatch, cancellationToken);
@@ -768,6 +775,97 @@ internal sealed class DesktopNodeApiVmMutationRouteHandler
         sourceName = routeId.Value!;
         targetName = name;
         return null;
+    }
+
+    private DesktopNodeApiResponse HandleCheckpointSchedulePreview(
+        DesktopNodeApiRequest request,
+        DesktopNodeApiRouteMatch routeMatch,
+        CancellationToken cancellationToken)
+    {
+        const string operation = "checkpoint.schedule.preview";
+        var routeId = DesktopNodeApiRequestParsing.DecodeRouteId(routeMatch.Parameters["vmId"], operation);
+        if (!routeId.Ok)
+        {
+            return routeId.Response!;
+        }
+
+        var parsed = DesktopNodeApiRequestParsing.TryParseBody(request.Body, operation);
+        if (!parsed.Ok)
+        {
+            return parsed.Response!;
+        }
+
+        var inventory = operationInvoker.Invoke(
+            "vm.list",
+            DesktopNodeApiResponseFactory.EmptyObject(),
+            cancellationToken);
+        if (!inventory.Ok)
+        {
+            return DesktopNodeApiResponseFactory.OperationResponse(inventory);
+        }
+
+        var vm = DesktopNodeApiJsonReader.FindVm(inventory.Data, routeId.Value!);
+        if (vm is null)
+        {
+            return DesktopNodeApiResponseFactory.Failure(
+                404,
+                operation,
+                "PCV_VM_NOT_FOUND",
+                $"VM '{routeId.Value}' was not found.",
+                "The VM was not present in the current Hyper-V inventory response.",
+                false);
+        }
+
+        var currentCount = DesktopNodeApiJsonReader.ReadNestedElement(vm.Value, "checkpoints", "count");
+        var evaluation = CheckpointSchedulePolicy.EvaluatePreview(new CheckpointScheduleRequest(
+            routeId.Value,
+            authSessionHandler.ResolveCheckpointScheduleAuth(request),
+            Enabled: true,
+            IntervalMinutes: DesktopNodeApiJsonReader.ReadInt(parsed.Value!.Value, "interval_minutes"),
+            RetentionMax: DesktopNodeApiJsonReader.ReadInt(parsed.Value.Value, "retention_max"),
+            Managed: DesktopNodeApiJsonReader.ReadBool(vm.Value, "managed_by_purecvisor"),
+            TemplateLocked: DesktopNodeApiJsonReader.ReadBool(vm.Value, "template_lock"),
+            CurrentCheckpointCount: currentCount is { } count &&
+                count.ValueKind == JsonValueKind.Number &&
+                count.TryGetInt32(out var parsedCount)
+                ? parsedCount
+                : 0));
+        if (!evaluation.Ok)
+        {
+            return MapCheckpointScheduleError(operation, evaluation.ErrorCode!);
+        }
+
+        return DesktopNodeApiResponseFactory.Json(200, DesktopNodeApiResponseFactory.Body(
+            true,
+            operation,
+            new SortedDictionary<string, object?>
+            {
+                ["action"] = evaluation.Action,
+                ["dry_run"] = true,
+                ["host_mutation_performed"] = false,
+                ["interval_minutes"] = evaluation.IntervalMinutes,
+                ["retention_max"] = evaluation.RetentionMax,
+                ["schema"] = CheckpointSchedulePolicy.Schema,
+                ["vm_name"] = evaluation.VmName
+            },
+            null));
+    }
+
+    private static DesktopNodeApiResponse MapCheckpointScheduleError(string operation, string code)
+    {
+        var forbidden = string.Equals(code, CheckpointScheduleProblemCodes.Forbidden, StringComparison.Ordinal);
+        var conflict = string.Equals(code, CheckpointScheduleProblemCodes.CapacityExceeded, StringComparison.Ordinal);
+        return DesktopNodeApiResponseFactory.Failure(
+            forbidden ? 403 : conflict ? 409 : 400,
+            operation,
+            code,
+            forbidden
+                ? "The current account role is not allowed to configure a checkpoint schedule."
+                : "The checkpoint schedule request was rejected.",
+            forbidden
+                ? "Grant operate or use the service bearer."
+                : "Pass a managed VM, interval 60-10080 minutes, and retention 1-32.",
+            false);
     }
 
     private DesktopNodeApiResponse HandleQosPreviewRoute(

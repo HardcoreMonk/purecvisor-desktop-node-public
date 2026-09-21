@@ -64,7 +64,8 @@ public sealed class DesktopNodeCliProjectContractTests
             "pcvcli account disable NAME --yes",
             "pcvcli console novnc-target preview --host 127.0.0.1 --port 5900 [--allow-lan-target] [--reason TEXT]",
             "pcvcli console novnc-target set --host 127.0.0.1 --port 5900 [--allow-lan-target] [--reason TEXT] --yes",
-            "pcvcli console novnc-target clear --yes"
+            "pcvcli console novnc-target clear --yes",
+            "pcvcli vm checkpoint schedule preview <vm> --interval-minutes N --retention-max N"
         ];
 
         foreach (var commandShape in commandShapes)
@@ -151,7 +152,7 @@ public sealed class DesktopNodeCliProjectContractTests
         }
 
         Assert.Equal(28, featureCount);
-        Assert.Equal(71, routeCount);
+        Assert.Equal(72, routeCount);
         string[] stageLabels =
         [
             "code_tested",
