@@ -1,3 +1,4 @@
+using System.Text.Json.Nodes;
 using DesktopNode.HyperV;
 
 namespace DesktopNode.Api;
@@ -14,13 +15,19 @@ internal sealed class DesktopNodeApiVmReadRouteHandler
     // 분기라 여기로 따라왔고, HandleCore 의 평가 순서를 바꾸지 않으려고 job route 소유자를
     // 옮기는 대신 의존성으로 받는다.
     private readonly DesktopNodeApiJobRouteHandler jobRouteHandler;
+    private readonly DesktopNodeCheckpointScheduleStore checkpointScheduleStore;
+    private readonly DesktopNodeApiHardeningOptions hardeningOptions;
 
     public DesktopNodeApiVmReadRouteHandler(
         DesktopNodeApiHyperVOperationInvoker operationInvoker,
-        DesktopNodeApiJobRouteHandler jobRouteHandler)
+        DesktopNodeApiJobRouteHandler jobRouteHandler,
+        DesktopNodeCheckpointScheduleStore checkpointScheduleStore,
+        DesktopNodeApiHardeningOptions hardeningOptions)
     {
         this.operationInvoker = operationInvoker;
         this.jobRouteHandler = jobRouteHandler;
+        this.checkpointScheduleStore = checkpointScheduleStore;
+        this.hardeningOptions = hardeningOptions;
     }
 
     public DesktopNodeApiResponse Handle(string method, string path, CancellationToken cancellationToken)
@@ -133,7 +140,10 @@ internal sealed class DesktopNodeApiVmReadRouteHandler
                 return DesktopNodeApiResponseFactory.Failure(404, "vm.get", "PCV_VM_NOT_FOUND", $"VM '{routeId.Value}' was not found.", "The VM was not present in the current Hyper-V inventory response.", false);
             }
 
-            return DesktopNodeApiResponseFactory.Json(200, DesktopNodeApiResponseFactory.Body(true, "vm.get", vm.Value, null));
+            var node = JsonNode.Parse(vm.Value.GetRawText()) as JsonObject ?? new JsonObject();
+            node["checkpoint_schedule"] = JsonNode.Parse(
+                checkpointScheduleStore.BuildReadback(routeId.Value!, hardeningOptions.Now()).GetRawText());
+            return DesktopNodeApiResponseFactory.Json(200, DesktopNodeApiResponseFactory.Body(true, "vm.get", node, null));
         }
 
         var operation = path switch

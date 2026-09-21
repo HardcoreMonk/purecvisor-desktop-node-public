@@ -52,6 +52,8 @@ public static class DesktopNodeHyperVDomain
         new("vm.template.lock", DesktopNodeHyperVOperationKind.Mutation, DesktopNodeHyperVOperationDomain.VmLifecycle, "vm-manage-provider"),
         new("vm.clone.preview", DesktopNodeHyperVOperationKind.Read, DesktopNodeHyperVOperationDomain.VmLifecycle, "vm-clone-provider"),
         new("vm.clone", DesktopNodeHyperVOperationKind.Mutation, DesktopNodeHyperVOperationDomain.VmLifecycle, "vm-clone-provider"),
+        new("vm.export", DesktopNodeHyperVOperationKind.Mutation, DesktopNodeHyperVOperationDomain.VmLifecycle, "vm-export-provider"),
+        new("vm.import", DesktopNodeHyperVOperationKind.Mutation, DesktopNodeHyperVOperationDomain.VmLifecycle, "vm-import-provider"),
         new("vm.eject", DesktopNodeHyperVOperationKind.Mutation, DesktopNodeHyperVOperationDomain.VmLifecycle, "vm-media-provider"),
         new("vm.attach", DesktopNodeHyperVOperationKind.Mutation, DesktopNodeHyperVOperationDomain.VmLifecycle, "vm-media-provider"),
         new("vm.limit", DesktopNodeHyperVOperationKind.Mutation, DesktopNodeHyperVOperationDomain.VmLifecycle, "vm-resource-mutation-provider"),

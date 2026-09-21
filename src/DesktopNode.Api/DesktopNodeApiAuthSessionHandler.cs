@@ -222,6 +222,14 @@ internal sealed class DesktopNodeApiAuthSessionHandler
         return "read";
     }
 
+    public VmExportImportAuthContext ResolveVmExportImportAuth(DesktopNodeApiRequest request)
+    {
+        var access = ResolveCheckpointScheduleAuth(request);
+        return new VmExportImportAuthContext(
+            HasOperate: access.HasOperate,
+            HasServiceBearer: access.HasServiceBearer);
+    }
+
     public CheckpointScheduleAuthContext ResolveCheckpointScheduleAuth(DesktopNodeApiRequest request)
     {
         var access = accountAuth.Ready

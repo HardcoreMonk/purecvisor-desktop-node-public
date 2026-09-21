@@ -255,7 +255,7 @@ public static class DesktopNodeCliCommandCatalog
     {
         if (args.Count < 2)
         {
-            throw Usage("Use: vm list|get|create|start|shutdown|poweroff|restart|pause|resume|save|resume-saved|rename|manage|template-lock|template-unlock|clone|guest-file|delete|checkpoint|attach.");
+            throw Usage("Use: vm list|get|create|start|shutdown|poweroff|restart|pause|resume|save|resume-saved|rename|manage|template-lock|template-unlock|clone|export|import|guest-file|delete|checkpoint|attach.");
         }
 
         return args[1].ToLowerInvariant() switch
@@ -273,6 +273,8 @@ public static class DesktopNodeCliCommandCatalog
             "template-lock" => VmTemplateLock(args, locked: true),
             "template-unlock" => VmTemplateLock(args, locked: false),
             "clone" => VmClone(args),
+            "export" => VmExport(args),
+            "import" => VmImport(args),
             "delete" => VmDelete(args),
             "checkpoint" or "snapshot" => CheckpointRequest(args),
             "rename" => VmRename(args),
@@ -308,7 +310,7 @@ public static class DesktopNodeCliCommandCatalog
                 "--maximum-kbps",
                 "minimum_kbps",
                 "--minimum-kbps"),
-            _ => throw Usage("Use: vm list|get|create|start|stop|shutdown|guest-shutdown|poweroff|restart|pause|resume|save|resume-saved|rename|console|vnc|manage|template-lock|template-unlock|clone|guest-file|delete|checkpoint|snapshot|attach.")
+            _ => throw Usage("Use: vm list|get|create|start|stop|shutdown|guest-shutdown|poweroff|restart|pause|resume|save|resume-saved|rename|console|vnc|manage|template-lock|template-unlock|clone|export|import|guest-file|delete|checkpoint|snapshot|attach.")
         };
     }
 
@@ -755,6 +757,119 @@ public static class DesktopNodeCliCommandCatalog
             JsonSerializer.Serialize(body, JsonOptions));
     }
 
+    private static DesktopNodeCliRequest VmExport(IReadOnlyList<string> args)
+    {
+        if (args.Count >= 4 && Is(args[2], "preview"))
+        {
+            var previewVm = Segment(args[3]);
+            var previewParsed = ParseOptions(args.Skip(4).ToArray(), allowFlags: false);
+            var previewBody = new SortedDictionary<string, object?>
+            {
+                ["confirm_name"] = previewVm,
+                ["directory"] = Required(previewParsed.Options, "--directory")
+            };
+            var previewRoot = FirstOption(previewParsed.Options, "--allowed-root");
+            if (!string.IsNullOrWhiteSpace(previewRoot))
+            {
+                previewBody["allowed_root"] = previewRoot;
+            }
+
+            return new DesktopNodeCliRequest(
+                "POST",
+                $"/api/v1/vms/{previewVm}/export/preview",
+                JsonSerializer.Serialize(previewBody, JsonOptions));
+        }
+
+        const string usage = "vm export <vm> --directory PATH --yes";
+        if (args.Count < 3 || args[2].StartsWith("--", StringComparison.Ordinal))
+        {
+            throw Usage("Use: vm export preview <vm> --directory PATH | " + usage + ".");
+        }
+
+        var parsed = ParseOptions(args.Skip(3).ToArray(), allowFlags: true);
+        if (!HasFlag(parsed.Options, "--yes"))
+        {
+            throw new ArgumentException(
+                "PCV_CLI_CONFIRMATION_REQUIRED|" +
+                "VM export requires explicit confirmation.|" +
+                "Use: pcvcli " + usage + ".");
+        }
+
+        var vm = Segment(args[2]);
+        var body = new SortedDictionary<string, object?>
+        {
+            ["confirm_name"] = vm,
+            ["directory"] = Required(parsed.Options, "--directory")
+        };
+        var allowedRoot = FirstOption(parsed.Options, "--allowed-root");
+        if (!string.IsNullOrWhiteSpace(allowedRoot))
+        {
+            body["allowed_root"] = allowedRoot;
+        }
+
+        return new DesktopNodeCliRequest(
+            "POST",
+            $"/api/v1/vms/{vm}/export",
+            JsonSerializer.Serialize(body, JsonOptions));
+    }
+
+    private static DesktopNodeCliRequest VmImport(IReadOnlyList<string> args)
+    {
+        if (args.Count >= 3 && Is(args[2], "preview"))
+        {
+            var previewParsed = ParseOptions(args.Skip(3).ToArray(), allowFlags: true);
+            var previewName = Required(previewParsed.Options, "--name");
+            var previewBody = new SortedDictionary<string, object?>
+            {
+                ["confirm_name"] = previewName,
+                ["directory"] = Required(previewParsed.Options, "--directory"),
+                ["has_vmcx"] = HasFlag(previewParsed.Options, "--has-vmcx"),
+                ["name"] = previewName,
+                ["package_kind"] = FirstOption(previewParsed.Options, "--package-kind") ?? "hyperv-export"
+            };
+            var previewRoot = FirstOption(previewParsed.Options, "--allowed-root");
+            if (!string.IsNullOrWhiteSpace(previewRoot))
+            {
+                previewBody["allowed_root"] = previewRoot;
+            }
+
+            return new DesktopNodeCliRequest(
+                "POST",
+                "/api/v1/vms/import/preview",
+                JsonSerializer.Serialize(previewBody, JsonOptions));
+        }
+
+        const string usage = "vm import --name TARGET --directory PATH --yes";
+        var parsed = ParseOptions(args.Skip(2).ToArray(), allowFlags: true);
+        if (!HasFlag(parsed.Options, "--yes"))
+        {
+            throw new ArgumentException(
+                "PCV_CLI_CONFIRMATION_REQUIRED|" +
+                "VM import requires explicit confirmation.|" +
+                "Use: pcvcli " + usage + ".");
+        }
+
+        var name = Required(parsed.Options, "--name");
+        var body = new SortedDictionary<string, object?>
+        {
+            ["confirm_name"] = name,
+            ["directory"] = Required(parsed.Options, "--directory"),
+            ["has_vmcx"] = true,
+            ["name"] = name,
+            ["package_kind"] = FirstOption(parsed.Options, "--package-kind") ?? "hyperv-export"
+        };
+        var allowedRoot = FirstOption(parsed.Options, "--allowed-root");
+        if (!string.IsNullOrWhiteSpace(allowedRoot))
+        {
+            body["allowed_root"] = allowedRoot;
+        }
+
+        return new DesktopNodeCliRequest(
+            "POST",
+            "/api/v1/vms/import",
+            JsonSerializer.Serialize(body, JsonOptions));
+    }
+
     private static DesktopNodeCliRequest VmClone(IReadOnlyList<string> args)
     {
         if (args.Count < 3 || args[2].StartsWith("--", StringComparison.Ordinal))
@@ -844,7 +959,7 @@ public static class DesktopNodeCliCommandCatalog
         var action = args[2].ToLowerInvariant();
         if (action == "schedule")
         {
-            return CheckpointSchedulePreview(args);
+            return CheckpointSchedule(args);
         }
 
         var vm = Segment(args[3]);
@@ -858,14 +973,24 @@ public static class DesktopNodeCliCommandCatalog
         };
     }
 
-    private static DesktopNodeCliRequest CheckpointSchedulePreview(IReadOnlyList<string> args)
+    private static DesktopNodeCliRequest CheckpointSchedule(IReadOnlyList<string> args)
     {
-        const string usage = "vm checkpoint schedule preview <vm> --interval-minutes N --retention-max N";
-        if (args.Count < 5 || !Is(args[3], "preview"))
+        if (args.Count < 5)
         {
-            throw Usage("Use: " + usage + ".");
+            throw Usage("Use: vm checkpoint schedule preview|set|clear ...");
         }
 
+        return args[3].ToLowerInvariant() switch
+        {
+            "preview" => CheckpointSchedulePreview(args),
+            "set" => CheckpointScheduleSet(args),
+            "clear" => CheckpointScheduleClear(args),
+            _ => throw Usage("Use: vm checkpoint schedule preview|set|clear ...")
+        };
+    }
+
+    private static DesktopNodeCliRequest CheckpointSchedulePreview(IReadOnlyList<string> args)
+    {
         var vm = Segment(args[4]);
         var parsed = ParseOptions(args.Skip(5).ToArray(), allowFlags: false);
         var body = new SortedDictionary<string, object?>
@@ -877,6 +1002,47 @@ public static class DesktopNodeCliCommandCatalog
             "POST",
             $"/api/v1/vms/{vm}/checkpoints/schedule/preview",
             JsonSerializer.Serialize(body, JsonOptions));
+    }
+
+    private static DesktopNodeCliRequest CheckpointScheduleSet(IReadOnlyList<string> args)
+    {
+        const string usage = "vm checkpoint schedule set <vm> --interval-minutes N --retention-max N --yes";
+        var vm = Segment(args[4]);
+        var parsed = ParseOptions(args.Skip(5).ToArray(), allowFlags: true);
+        if (!HasFlag(parsed.Options, "--yes"))
+        {
+            throw new ArgumentException(
+                "PCV_CLI_CONFIRMATION_REQUIRED|" +
+                "Checkpoint schedule set requires explicit confirmation.|" +
+                "Use: pcvcli " + usage + ".");
+        }
+
+        var body = new SortedDictionary<string, object?>
+        {
+            ["interval_minutes"] = RequiredInt(parsed.Options, "--interval-minutes"),
+            ["retention_max"] = RequiredInt(parsed.Options, "--retention-max")
+        };
+        return new DesktopNodeCliRequest(
+            "POST",
+            $"/api/v1/vms/{vm}/checkpoints/schedule",
+            JsonSerializer.Serialize(body, JsonOptions));
+    }
+
+    private static DesktopNodeCliRequest CheckpointScheduleClear(IReadOnlyList<string> args)
+    {
+        const string usage = "vm checkpoint schedule clear <vm> --yes";
+        var parsed = ParseOptions(args.Skip(5).ToArray(), allowFlags: true);
+        if (!HasFlag(parsed.Options, "--yes"))
+        {
+            throw new ArgumentException(
+                "PCV_CLI_CONFIRMATION_REQUIRED|" +
+                "Checkpoint schedule clear requires explicit confirmation.|" +
+                "Use: pcvcli " + usage + ".");
+        }
+
+        return new DesktopNodeCliRequest(
+            "POST",
+            $"/api/v1/vms/{Segment(args[4])}/checkpoints/schedule/clear");
     }
 
     private static DesktopNodeCliRequest CheckpointCreate(IReadOnlyList<string> args, string vm)
@@ -1152,9 +1318,15 @@ public static class DesktopNodeCliCommandCatalog
             "  pcvcli vm template-unlock <vm> --yes",
             "  pcvcli vm clone <source> --name <target> --yes [--vm-root <path>]",
             "  pcvcli vm clone <source> --name <target> --dry-run [--vm-root <path>]",
+            "  pcvcli vm export preview <vm> --directory PATH",
+            "  pcvcli vm export <vm> --directory PATH --yes",
+            "  pcvcli vm import preview --name TARGET --directory PATH [--package-kind hyperv-export] [--has-vmcx]",
+            "  pcvcli vm import --name TARGET --directory PATH --yes",
             "  pcvcli vm delete <vm> --yes",
             "  pcvcli vm checkpoint list|create|restore|delete",
             "  pcvcli vm checkpoint schedule preview <vm> --interval-minutes N --retention-max N",
+            "  pcvcli vm checkpoint schedule set <vm> --interval-minutes N --retention-max N --yes",
+            "  pcvcli vm checkpoint schedule clear <vm> --yes",
             "  pcvcli vm snapshot list|create|rollback|delete",
             "  pcvcli job list|get|cancel|retry|reconcile",
             "  pcvcli diagnostics bundle list [--limit N] [--offset N]",

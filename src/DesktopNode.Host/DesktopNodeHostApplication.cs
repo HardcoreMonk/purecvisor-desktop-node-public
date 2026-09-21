@@ -147,7 +147,8 @@ public sealed partial class DesktopNodeHostApplication : IDisposable
                         options.DiagnosticsRootPath),
                     accountAuthOptions: accountAuthOptions,
                     consoleOptions: consoleOptions,
-                    jobRuntimeEventSink: new DesktopNodeHostJobRuntimeEventSink(options)),
+                    jobRuntimeEventSink: new DesktopNodeHostJobRuntimeEventSink(options),
+                    checkpointScheduleFilePath: DesktopNodeCheckpointScheduleStore.DefaultFilePath),
                 token,
                 allowedWebOrigin,
                 accountAuthService));

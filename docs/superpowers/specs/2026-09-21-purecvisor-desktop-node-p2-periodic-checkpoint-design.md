@@ -2,7 +2,7 @@
 
 - Design-ID: `purecvisor-desktop-node-p2-periodic-checkpoint-v1`
 - 작성일: `2026-09-21`
-- 문서 상태: `implemented-slice-2`
+- 문서 상태: `implemented-slice-5`
 - 소스 기획: `docs/SERVICE_PLAN.md` §7.1 P2-12
 - 선행: `pcv.checkpoint.lifecycle` list/create/delete, `pcv.checkpoint.restore` reconcile
 - host mutation: `false`
@@ -85,6 +85,12 @@ P0 evidence 후보 4개와 catalog feature 28개는 그대로다.
 
 - 만기이면 기존 `checkpoint.create`만 enqueue. Web은 스케줄 상태 readback.
 - 스케줄 on 토글 기본값, 무한 retention UI는 열지 않는다.
+
+### Slice 5 — retention prune 명시 job
+
+- due이고 checkpoint 수가 retention 이상이면 기존 `checkpoint.delete` queued job만 enqueue한다.
+- 대상은 이름 접두사 `pcv-schedule-`인 checkpoint 중 가장 오래된 것 한 개다. 운영자가 만든 이름은 지우지 않는다.
+- native delete를 직접 호출하지 않는다. 자동 retry 금지. 새 HTTP route를 추가하지 않는다.
 
 ## 거절 코드
 

@@ -72,7 +72,9 @@ public sealed partial class DesktopNodeApiRequestProcessor
     private readonly DesktopNodeApiVmMutationRouteHandler vmMutationRouteHandler;
     private readonly DesktopNodeApiJobWorker jobWorker;
     private readonly DesktopNodeApiVmReadRouteHandler vmReadRouteHandler;
+    private readonly DesktopNodeCheckpointScheduleDueWorker checkpointScheduleDueWorker;
     private readonly object sync = new();
+    private DateTimeOffset lastCheckpointScheduleDueScan = DateTimeOffset.MinValue;
 
     public bool AccountAuthReady => authSessionHandler.Ready;
 
@@ -95,7 +97,8 @@ public sealed partial class DesktopNodeApiRequestProcessor
         DesktopNodeDiagnosticBundleOptions? diagnosticBundleOptions,
         DesktopNodeAccountAuthOptions? accountAuthOptions,
         DesktopNodeConsoleOptions? consoleOptions,
-        string? currentEvidencePath)
+        string? currentEvidencePath,
+        string? checkpointScheduleFilePath)
     {
         this.tokenStorage = tokenStorage;
         this.currentExposure = currentExposure;
@@ -129,23 +132,37 @@ public sealed partial class DesktopNodeApiRequestProcessor
         consoleRouteHandler = new DesktopNodeApiConsoleRouteHandler(noVncTargetStore, authSessionHandler, jobRuntime);
         guestExecutionRouteHandler = new DesktopNodeApiGuestExecutionRouteHandler(authSessionHandler);
         jobRouteHandler = new DesktopNodeApiJobRouteHandler(jobRuntime);
-        vmReadRouteHandler = new DesktopNodeApiVmReadRouteHandler(operationInvoker, jobRouteHandler);
+        var checkpointScheduleStore = new DesktopNodeCheckpointScheduleStore(checkpointScheduleFilePath);
+        vmReadRouteHandler = new DesktopNodeApiVmReadRouteHandler(
+            operationInvoker,
+            jobRouteHandler,
+            checkpointScheduleStore,
+            this.hardeningOptions);
         reconciliationHandler = new DesktopNodeApiJobReconciliationHandler(
             jobRuntime,
             operationInvoker,
             this.hardeningOptions,
-            noVncTargetStore);
+            noVncTargetStore,
+            checkpointScheduleStore);
         vmMutationRouteHandler = new DesktopNodeApiVmMutationRouteHandler(
             jobRuntime,
             operationInvoker,
             reconciliationHandler,
-            authSessionHandler);
+            authSessionHandler,
+            checkpointScheduleStore);
         jobWorker = new DesktopNodeApiJobWorker(
             jobRuntime,
             cancellationScopes,
             operationInvoker,
             sync,
-            noVncTargetStore);
+            noVncTargetStore,
+            checkpointScheduleStore);
+        checkpointScheduleDueWorker = new DesktopNodeCheckpointScheduleDueWorker(
+            checkpointScheduleStore,
+            operationInvoker,
+            reconciliationHandler,
+            jobRuntime,
+            checkpointScheduleFilePath);
     }
 
     public DesktopNodeApiResponse Handle(DesktopNodeApiRequest request)
@@ -370,6 +387,23 @@ public sealed partial class DesktopNodeApiRequestProcessor
         return jobWorker.ProcessOneQueuedJobAsync().GetAwaiter().GetResult();
     }
 
+    public IReadOnlyList<DesktopNodeCheckpointScheduleDueResult> ProcessDueCheckpointSchedules(
+        bool force = true,
+        CancellationToken cancellationToken = default)
+    {
+        lock (sync)
+        {
+            var now = hardeningOptions.Now();
+            if (!force && now - lastCheckpointScheduleDueScan < TimeSpan.FromMinutes(1))
+            {
+                return [];
+            }
+
+            lastCheckpointScheduleDueScan = now;
+            return checkpointScheduleDueWorker.Tick(now, cancellationToken);
+        }
+    }
+
     public IReadOnlyList<DesktopNodeApiWorkerTickResult> ProcessWorkerPool(int workerCount = 1)
     {
         var results = new List<DesktopNodeApiWorkerTickResult>();
@@ -440,6 +474,18 @@ public sealed partial class DesktopNodeApiRequestProcessor
             if (processed)
             {
                 continue;
+            }
+
+            try
+            {
+                ProcessDueCheckpointSchedules(force: false, cancellationToken);
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                return;
+            }
+            catch
+            {
             }
 
             try

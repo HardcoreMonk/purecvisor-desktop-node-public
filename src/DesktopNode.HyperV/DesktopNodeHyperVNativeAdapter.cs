@@ -23,6 +23,8 @@ public sealed partial class DesktopNodeHyperVNativeAdapter : IDesktopNodeHyperVN
     private readonly IDesktopNodeHyperVVmRenameProvider vmRenameProvider;
     private readonly IDesktopNodeHyperVVmManageProvider vmManageProvider;
     private readonly IDesktopNodeHyperVVmCloneProvider vmCloneProvider;
+    private readonly IDesktopNodeHyperVVmExportProvider vmExportProvider;
+    private readonly IDesktopNodeHyperVVmImportProvider vmImportProvider;
     private readonly IDesktopNodeHyperVVmMediaProvider vmMediaProvider;
     private readonly IDesktopNodeHyperVVmResourceMutationProvider vmResourceMutationProvider;
     private readonly IDesktopNodeHyperVGuestExecutionProvider guestExecutionProvider;
@@ -43,7 +45,9 @@ public sealed partial class DesktopNodeHyperVNativeAdapter : IDesktopNodeHyperVN
             RequireProviderSet(providerSet).VmCloneProvider,
             RequireProviderSet(providerSet).VmMediaProvider,
             RequireProviderSet(providerSet).VmResourceMutationProvider,
-            RequireProviderSet(providerSet).GuestExecutionProvider)
+            RequireProviderSet(providerSet).GuestExecutionProvider,
+            RequireProviderSet(providerSet).VmExportProvider,
+            RequireProviderSet(providerSet).VmImportProvider)
     {
     }
 
@@ -455,7 +459,9 @@ public sealed partial class DesktopNodeHyperVNativeAdapter : IDesktopNodeHyperVN
         IDesktopNodeHyperVVmCloneProvider vmCloneProvider,
         IDesktopNodeHyperVVmMediaProvider vmMediaProvider,
         IDesktopNodeHyperVVmResourceMutationProvider vmResourceMutationProvider,
-        IDesktopNodeHyperVGuestExecutionProvider? guestExecutionProvider = null)
+        IDesktopNodeHyperVGuestExecutionProvider? guestExecutionProvider = null,
+        IDesktopNodeHyperVVmExportProvider? vmExportProvider = null,
+        IDesktopNodeHyperVVmImportProvider? vmImportProvider = null)
     {
         this.switchProvider = switchProvider;
         this.hostStatusProvider = hostStatusProvider;
@@ -468,6 +474,8 @@ public sealed partial class DesktopNodeHyperVNativeAdapter : IDesktopNodeHyperVN
         this.vmRenameProvider = vmRenameProvider;
         this.vmManageProvider = vmManageProvider;
         this.vmCloneProvider = vmCloneProvider;
+        this.vmExportProvider = vmExportProvider ?? new DesktopNodeHyperVWmiVmExportProvider();
+        this.vmImportProvider = vmImportProvider ?? new DesktopNodeHyperVWmiVmImportProvider();
         this.vmMediaProvider = vmMediaProvider;
         this.vmResourceMutationProvider = vmResourceMutationProvider;
         this.guestExecutionProvider = guestExecutionProvider ?? new DesktopNodeHyperVPowerShellDirectGuestExecutionProvider();
@@ -485,6 +493,8 @@ public sealed partial class DesktopNodeHyperVNativeAdapter : IDesktopNodeHyperVN
             [DesktopNodeHyperVAdapterDispatchHandler.VmManage] = InvokeVmManage,
             [DesktopNodeHyperVAdapterDispatchHandler.VmClonePreview] = InvokeVmClonePreview,
             [DesktopNodeHyperVAdapterDispatchHandler.VmClone] = InvokeVmClone,
+            [DesktopNodeHyperVAdapterDispatchHandler.VmExport] = InvokeVmExport,
+            [DesktopNodeHyperVAdapterDispatchHandler.VmImport] = InvokeVmImport,
             [DesktopNodeHyperVAdapterDispatchHandler.VmMedia] = InvokeVmMedia,
             [DesktopNodeHyperVAdapterDispatchHandler.VmResourceMutation] = InvokeVmResourceMutation,
             [DesktopNodeHyperVAdapterDispatchHandler.GuestExecution] = InvokeGuestExecution
@@ -676,6 +686,16 @@ public sealed partial class DesktopNodeHyperVNativeAdapter : IDesktopNodeHyperVN
     private bool InvokeVmClone(string operation, JsonElement parameters, CancellationToken cancellationToken, out DesktopNodeHyperVOperationResult result)
     {
         return TryInvokeVmClone(operation, parameters, cancellationToken, out result);
+    }
+
+    private bool InvokeVmExport(string operation, JsonElement parameters, CancellationToken cancellationToken, out DesktopNodeHyperVOperationResult result)
+    {
+        return TryInvokeVmExport(operation, parameters, cancellationToken, out result);
+    }
+
+    private bool InvokeVmImport(string operation, JsonElement parameters, CancellationToken cancellationToken, out DesktopNodeHyperVOperationResult result)
+    {
+        return TryInvokeVmImport(operation, parameters, cancellationToken, out result);
     }
 
     private bool InvokeVmMedia(string operation, JsonElement parameters, CancellationToken cancellationToken, out DesktopNodeHyperVOperationResult result)

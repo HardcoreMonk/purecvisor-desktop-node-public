@@ -48,6 +48,12 @@ public sealed class DesktopNodeCliCommandCatalogTests
     [InlineData("console novnc-target set --host 127.0.0.1 --port 5900 --yes", "POST", "/api/v1/console/novnc-target")]
     [InlineData("console novnc-target clear --yes", "POST", "/api/v1/console/novnc-target/clear")]
     [InlineData("vm checkpoint schedule preview ubuntu-lab-01 --interval-minutes 1440 --retention-max 8", "POST", "/api/v1/vms/ubuntu-lab-01/checkpoints/schedule/preview")]
+    [InlineData("vm checkpoint schedule set ubuntu-lab-01 --interval-minutes 1440 --retention-max 8 --yes", "POST", "/api/v1/vms/ubuntu-lab-01/checkpoints/schedule")]
+    [InlineData("vm checkpoint schedule clear ubuntu-lab-01 --yes", "POST", "/api/v1/vms/ubuntu-lab-01/checkpoints/schedule/clear")]
+    [InlineData("vm export preview ubuntu-lab-01 --directory D:\\PureCVisor\\exports\\ubuntu-lab-01", "POST", "/api/v1/vms/ubuntu-lab-01/export/preview")]
+    [InlineData("vm export ubuntu-lab-01 --directory D:\\PureCVisor\\exports\\ubuntu-lab-01 --yes", "POST", "/api/v1/vms/ubuntu-lab-01/export")]
+    [InlineData("vm import preview --name ubuntu-lab-02 --directory D:\\PureCVisor\\exports\\ubuntu-lab-01 --has-vmcx", "POST", "/api/v1/vms/import/preview")]
+    [InlineData("vm import --name ubuntu-lab-02 --directory D:\\PureCVisor\\exports\\ubuntu-lab-01 --yes", "POST", "/api/v1/vms/import")]
     public void RoutesCommandsToLocalApiRequests(string commandLine, string method, string path)
     {
         var request = DesktopNodeCliCommandCatalog.CreateRequest(Split(commandLine));
@@ -57,7 +63,12 @@ public sealed class DesktopNodeCliCommandCatalogTests
         if (path.EndsWith("/attach", StringComparison.Ordinal) ||
             path.EndsWith("/novnc-target/preview", StringComparison.Ordinal) ||
             path.EndsWith("/novnc-target", StringComparison.Ordinal) ||
-            path.EndsWith("/schedule/preview", StringComparison.Ordinal))
+            path.EndsWith("/schedule/preview", StringComparison.Ordinal) ||
+            path.EndsWith("/checkpoints/schedule", StringComparison.Ordinal) ||
+            path.EndsWith("/export/preview", StringComparison.Ordinal) ||
+            path.EndsWith("/export", StringComparison.Ordinal) ||
+            path.EndsWith("/import/preview", StringComparison.Ordinal) ||
+            path.EndsWith("/import", StringComparison.Ordinal))
         {
             Assert.NotNull(request.Body);
             return;
@@ -810,7 +821,7 @@ public sealed class DesktopNodeCliCommandCatalogTests
             }
         }
 
-        Assert.Equal(65, presentCount);
+        Assert.Equal(71, presentCount);
         Assert.Equal(7, excludedCount);
     }
 
@@ -888,6 +899,98 @@ public sealed class DesktopNodeCliCommandCatalogTests
     }
 
     [Fact]
+    public void RequiresExplicitYesForVmExport()
+    {
+        var error = Assert.Throws<ArgumentException>(() =>
+            DesktopNodeCliCommandCatalog.CreateRequest([
+                "vm",
+                "export",
+                "ubuntu-lab-01",
+                "--directory",
+                @"D:\PureCVisor\exports\ubuntu-lab-01"
+            ]));
+
+        Assert.Contains("PCV_CLI_CONFIRMATION_REQUIRED", error.Message, StringComparison.Ordinal);
+        Assert.Contains("vm export <vm> --directory PATH --yes", error.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void RequiresExplicitYesForVmImport()
+    {
+        var error = Assert.Throws<ArgumentException>(() =>
+            DesktopNodeCliCommandCatalog.CreateRequest([
+                "vm",
+                "import",
+                "--name",
+                "ubuntu-lab-02",
+                "--directory",
+                @"D:\PureCVisor\exports\ubuntu-lab-01"
+            ]));
+
+        Assert.Contains("PCV_CLI_CONFIRMATION_REQUIRED", error.Message, StringComparison.Ordinal);
+        Assert.Contains("vm import --name TARGET --directory PATH --yes", error.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void RequiresExplicitYesForCheckpointScheduleSet()
+    {
+        var error = Assert.Throws<ArgumentException>(() =>
+            DesktopNodeCliCommandCatalog.CreateRequest([
+                "vm",
+                "checkpoint",
+                "schedule",
+                "set",
+                "ubuntu-lab-01",
+                "--interval-minutes",
+                "1440",
+                "--retention-max",
+                "8"
+            ]));
+
+        Assert.Contains("PCV_CLI_CONFIRMATION_REQUIRED", error.Message, StringComparison.Ordinal);
+        Assert.Contains("vm checkpoint schedule set", error.Message, StringComparison.Ordinal);
+        Assert.Contains("--yes", error.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void RequiresExplicitYesForCheckpointScheduleClear()
+    {
+        var error = Assert.Throws<ArgumentException>(() =>
+            DesktopNodeCliCommandCatalog.CreateRequest([
+                "vm",
+                "checkpoint",
+                "schedule",
+                "clear",
+                "ubuntu-lab-01"
+            ]));
+
+        Assert.Contains("PCV_CLI_CONFIRMATION_REQUIRED", error.Message, StringComparison.Ordinal);
+        Assert.Contains("vm checkpoint schedule clear <vm> --yes", error.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void RoutesCheckpointScheduleSetBodyWhenExplicitlyConfirmed()
+    {
+        var request = DesktopNodeCliCommandCatalog.CreateRequest([
+            "vm",
+            "checkpoint",
+            "schedule",
+            "set",
+            "ubuntu-lab-01",
+            "--interval-minutes",
+            "1440",
+            "--retention-max",
+            "8",
+            "--yes"
+        ]);
+
+        Assert.Equal("POST", request.Method);
+        Assert.Equal("/api/v1/vms/ubuntu-lab-01/checkpoints/schedule", request.Path);
+        Assert.Contains("\"interval_minutes\":1440", request.Body, StringComparison.Ordinal);
+        Assert.Contains("\"retention_max\":8", request.Body, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void RoutesNoVncTargetSetBodyWhenExplicitlyConfirmed()
     {
         var request = DesktopNodeCliCommandCatalog.CreateRequest([
@@ -926,6 +1029,12 @@ public sealed class DesktopNodeCliCommandCatalogTests
         Assert.Contains("pcvcli vm delete <vm> --yes", usage, StringComparison.Ordinal);
         Assert.Contains("pcvcli vm checkpoint list|create|restore|delete", usage, StringComparison.Ordinal);
         Assert.Contains("pcvcli vm checkpoint schedule preview <vm> --interval-minutes N --retention-max N", usage, StringComparison.Ordinal);
+        Assert.Contains("pcvcli vm checkpoint schedule set <vm> --interval-minutes N --retention-max N --yes", usage, StringComparison.Ordinal);
+        Assert.Contains("pcvcli vm checkpoint schedule clear <vm> --yes", usage, StringComparison.Ordinal);
+        Assert.Contains("pcvcli vm export preview <vm> --directory PATH", usage, StringComparison.Ordinal);
+        Assert.Contains("pcvcli vm export <vm> --directory PATH --yes", usage, StringComparison.Ordinal);
+        Assert.Contains("pcvcli vm import preview --name TARGET --directory PATH [--package-kind hyperv-export] [--has-vmcx]", usage, StringComparison.Ordinal);
+        Assert.Contains("pcvcli vm import --name TARGET --directory PATH --yes", usage, StringComparison.Ordinal);
         Assert.Contains("VM delete requires explicit confirmation", error.Message, StringComparison.Ordinal);
         Assert.Contains("vm delete <vm> --yes", error.Message, StringComparison.Ordinal);
         Assert.DoesNotContain("public release", usage + error.Message, StringComparison.OrdinalIgnoreCase);

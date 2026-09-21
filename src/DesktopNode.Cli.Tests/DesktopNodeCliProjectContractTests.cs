@@ -65,7 +65,13 @@ public sealed class DesktopNodeCliProjectContractTests
             "pcvcli console novnc-target preview --host 127.0.0.1 --port 5900 [--allow-lan-target] [--reason TEXT]",
             "pcvcli console novnc-target set --host 127.0.0.1 --port 5900 [--allow-lan-target] [--reason TEXT] --yes",
             "pcvcli console novnc-target clear --yes",
-            "pcvcli vm checkpoint schedule preview <vm> --interval-minutes N --retention-max N"
+            "pcvcli vm checkpoint schedule preview <vm> --interval-minutes N --retention-max N",
+            "pcvcli vm checkpoint schedule set <vm> --interval-minutes N --retention-max N --yes",
+            "pcvcli vm checkpoint schedule clear <vm> --yes",
+            "pcvcli vm export preview <vm> --directory PATH",
+            "pcvcli vm export <vm> --directory PATH --yes",
+            "pcvcli vm import preview --name TARGET --directory PATH [--package-kind hyperv-export] [--has-vmcx]",
+            "pcvcli vm import --name TARGET --directory PATH --yes"
         ];
 
         foreach (var commandShape in commandShapes)
@@ -152,7 +158,7 @@ public sealed class DesktopNodeCliProjectContractTests
         }
 
         Assert.Equal(28, featureCount);
-        Assert.Equal(72, routeCount);
+        Assert.Equal(78, routeCount);
         string[] stageLabels =
         [
             "code_tested",

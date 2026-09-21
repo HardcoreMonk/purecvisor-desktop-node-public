@@ -19,19 +19,22 @@ internal sealed class DesktopNodeApiJobWorker
     private readonly DesktopNodeApiHyperVOperationInvoker operationInvoker;
     private readonly object sync;
     private readonly DesktopNodeNoVncTargetStore noVncTargetStore;
+    private readonly DesktopNodeCheckpointScheduleStore checkpointScheduleStore;
 
     public DesktopNodeApiJobWorker(
         DesktopNodeJobRuntime jobRuntime,
         IDesktopNodeApiCancellationScopeFactory cancellationScopes,
         DesktopNodeApiHyperVOperationInvoker operationInvoker,
         object sync,
-        DesktopNodeNoVncTargetStore noVncTargetStore)
+        DesktopNodeNoVncTargetStore noVncTargetStore,
+        DesktopNodeCheckpointScheduleStore checkpointScheduleStore)
     {
         this.jobRuntime = jobRuntime;
         this.cancellationScopes = cancellationScopes;
         this.operationInvoker = operationInvoker;
         this.sync = sync;
         this.noVncTargetStore = noVncTargetStore;
+        this.checkpointScheduleStore = checkpointScheduleStore;
     }
 
     // Deterministic test seam for the provider-result/serialized-finalization boundary.
@@ -74,9 +77,7 @@ internal sealed class DesktopNodeApiJobWorker
         try
         {
             result = await Task.Run(
-                () => IsNoVncTargetOperation(started.Operation)
-                    ? noVncTargetStore.Apply(started.Operation, started.Parameters)
-                    : operationInvoker.Invoke(started.Operation, started.Parameters, jobCancellation.Token),
+                () => ApplyQueuedOperation(started, jobCancellation.Token),
                 jobCancellation.Token).ConfigureAwait(false);
         }
         catch (OperationCanceledException) when (jobCancellation.IsCancellationRequested)
@@ -134,9 +135,22 @@ internal sealed class DesktopNodeApiJobWorker
             null);
     }
 
-    private static bool IsNoVncTargetOperation(string operation)
+    private DesktopNodeHyperVOperationResult ApplyQueuedOperation(
+        DesktopNodeStartedJob started,
+        CancellationToken cancellationToken)
     {
-        return string.Equals(operation, "console.novnc-target.set", StringComparison.Ordinal) ||
-            string.Equals(operation, "console.novnc-target.clear", StringComparison.Ordinal);
+        if (string.Equals(started.Operation, "console.novnc-target.set", StringComparison.Ordinal) ||
+            string.Equals(started.Operation, "console.novnc-target.clear", StringComparison.Ordinal))
+        {
+            return noVncTargetStore.Apply(started.Operation, started.Parameters);
+        }
+
+        if (string.Equals(started.Operation, "checkpoint.schedule.set", StringComparison.Ordinal) ||
+            string.Equals(started.Operation, "checkpoint.schedule.clear", StringComparison.Ordinal))
+        {
+            return checkpointScheduleStore.Apply(started.Operation, started.Parameters);
+        }
+
+        return operationInvoker.Invoke(started.Operation, started.Parameters, cancellationToken);
     }
 }

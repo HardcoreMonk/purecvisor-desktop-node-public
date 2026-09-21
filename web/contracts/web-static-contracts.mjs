@@ -1079,7 +1079,12 @@ function verifyVmLifecycleActions(context) {
     [/Unlock template/i, "template-unlock-label"],
     [/data-action="vm-clone"/i, "clone"],
     [/Clone VM/i, "clone-label"],
-    [/data-action="vm-delete"/i, "delete"]
+    [/data-action="vm-delete"/i, "delete"],
+    [/export-import-readback/i, "export-import-readback"],
+    [/no export\/import save form/i, "no-export-import-save-form"],
+    [/CLI\/API export\/import only/i, "export-import-cli-api"],
+    [/no OVF/i, "no-ovf"],
+    [/no TPM key copy/i, "no-tpm-key-copy"]
   ], "vm-lifecycle-actions");
   assertSourceAndGenerated(context, mutateSource, app, [
     [/function\s+queueVmManage\s*\(/i, "queue-manage"],
@@ -1118,6 +1123,9 @@ function verifyCheckpointActions(context) {
   ], "checkpoint-actions");
   assertSourceAndGenerated(context, detailSource, app, [
     [/checkpoint-create/i, "create"],
+    [/checkpoint_schedule/i, "readback-field"],
+    [/no schedule save form/i, "no-save-form"],
+    [/no infinite retention/i, "no-infinite-retention"]
   ], "checkpoint-actions");
   assertSourceAndGenerated(context, qosSource, app, [
     [/data-action="checkpoint-restore"/i, "restore"],

@@ -6,7 +6,7 @@ public static class DesktopNodeHyperVVmTemplateLockGuard
 
     public static bool IsMutationAllowed(string operation)
     {
-        return operation is "vm.start" or "vm.clone" or "vm.create" or "vm.template.lock";
+        return operation is "vm.start" or "vm.clone" or "vm.create" or "vm.template.lock" or "vm.export" or "vm.import";
     }
 
     public static bool TryReject(

@@ -14,6 +14,8 @@ public enum DesktopNodeHyperVAdapterDispatchHandler
     VmManage,
     VmClonePreview,
     VmClone,
+    VmExport,
+    VmImport,
     VmMedia,
     VmResourceMutation,
     GuestExecution
@@ -69,6 +71,8 @@ public static class DesktopNodeHyperVAdapterDispatchCatalog
         new("vm.template.lock", DesktopNodeHyperVOperationKind.Mutation, DesktopNodeHyperVOperationDomain.VmLifecycle, "vm-manage-provider", DesktopNodeHyperVAdapterDispatchHandler.VmManage),
         new("vm.clone.preview", DesktopNodeHyperVOperationKind.Read, DesktopNodeHyperVOperationDomain.VmLifecycle, "vm-clone-provider", DesktopNodeHyperVAdapterDispatchHandler.VmClonePreview),
         new("vm.clone", DesktopNodeHyperVOperationKind.Mutation, DesktopNodeHyperVOperationDomain.VmLifecycle, "vm-clone-provider", DesktopNodeHyperVAdapterDispatchHandler.VmClone),
+        new("vm.export", DesktopNodeHyperVOperationKind.Mutation, DesktopNodeHyperVOperationDomain.VmLifecycle, "vm-export-provider", DesktopNodeHyperVAdapterDispatchHandler.VmExport),
+        new("vm.import", DesktopNodeHyperVOperationKind.Mutation, DesktopNodeHyperVOperationDomain.VmLifecycle, "vm-import-provider", DesktopNodeHyperVAdapterDispatchHandler.VmImport),
         new("vm.eject", DesktopNodeHyperVOperationKind.Mutation, DesktopNodeHyperVOperationDomain.VmLifecycle, "vm-media-provider", DesktopNodeHyperVAdapterDispatchHandler.VmMedia),
         new("vm.attach", DesktopNodeHyperVOperationKind.Mutation, DesktopNodeHyperVOperationDomain.VmLifecycle, "vm-media-provider", DesktopNodeHyperVAdapterDispatchHandler.VmMedia),
         new("vm.limit", DesktopNodeHyperVOperationKind.Mutation, DesktopNodeHyperVOperationDomain.VmLifecycle, "vm-resource-mutation-provider", DesktopNodeHyperVAdapterDispatchHandler.VmResourceMutation),

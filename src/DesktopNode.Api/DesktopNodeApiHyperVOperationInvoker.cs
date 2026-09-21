@@ -67,6 +67,8 @@ internal sealed class DesktopNodeApiHyperVOperationInvoker
             "vm.template.lock" or
             "vm.clone.preview" or
             "vm.clone" or
+            "vm.export" or
+            "vm.import" or
             "vm.eject" or
             "vm.attach" or
             "vm.limit" or

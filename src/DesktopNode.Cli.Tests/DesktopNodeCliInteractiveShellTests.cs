@@ -82,6 +82,10 @@ public sealed class DesktopNodeCliInteractiveShellTests
         Assert.Contains(lines, line => string.Equals(line.Trim(), "vm resume-saved | Resume a VM from Hyper-V Saved state", StringComparison.Ordinal));
         Assert.Contains(lines, line => string.Equals(line.Trim(), "vm manage | Promote an existing VM to PureCVisor managed", StringComparison.Ordinal));
         Assert.Contains(lines, line => string.Equals(line.Trim(), "vm clone | Clone a managed VM to a new independent disk", StringComparison.Ordinal));
+        Assert.Contains(lines, line => string.Equals(line.Trim(), "vm export preview | Dry-run a Hyper-V export without writing files", StringComparison.Ordinal));
+        Assert.Contains(lines, line => string.Equals(line.Trim(), "vm export | Queue a Hyper-V export into the allowlist root", StringComparison.Ordinal));
+        Assert.Contains(lines, line => string.Equals(line.Trim(), "vm import preview | Dry-run a Hyper-V import without defining a VM", StringComparison.Ordinal));
+        Assert.Contains(lines, line => string.Equals(line.Trim(), "vm import | Queue a Hyper-V import with a new identity and managed marker", StringComparison.Ordinal));
         Assert.Contains(lines, line => string.Equals(line.Trim(), "vm attach | Attach ISO media to the virtual DVD", StringComparison.Ordinal));
         Assert.Contains(lines, line => string.Equals(line.Trim(), "vm eject | Eject ISO media from the virtual DVD", StringComparison.Ordinal));
         Assert.Contains(lines, line => string.Equals(line.Trim(), "vm memory-stats | Show VM memory stats", StringComparison.Ordinal));
@@ -89,6 +93,9 @@ public sealed class DesktopNodeCliInteractiveShellTests
         Assert.Contains(lines, line => string.Equals(line.Trim(), "vm blkio-set | Set Hyper-V storage IOPS policy", StringComparison.Ordinal));
         Assert.Contains(lines, line => string.Equals(line.Trim(), "vm bandwidth-set | Set Hyper-V network bandwidth policy", StringComparison.Ordinal));
         Assert.Contains(lines, line => string.Equals(line.Trim(), "vm checkpoint restore | Restore a VM checkpoint", StringComparison.Ordinal));
+        Assert.Contains(lines, line => string.Equals(line.Trim(), "vm checkpoint schedule preview | Dry-run a periodic checkpoint schedule", StringComparison.Ordinal));
+        Assert.Contains(lines, line => string.Equals(line.Trim(), "vm checkpoint schedule set | Queue a durable periodic checkpoint schedule", StringComparison.Ordinal));
+        Assert.Contains(lines, line => string.Equals(line.Trim(), "vm checkpoint schedule clear | Queue a durable checkpoint schedule clear", StringComparison.Ordinal));
         Assert.Contains(lines, line => string.Equals(line.Trim(), "job reconcile | Reconcile an interrupted rename, delete, checkpoint create, or restore", StringComparison.Ordinal));
         Assert.Contains(lines, line => string.Equals(line.Trim(), "diagnostics bundle list | List diagnostic bundles", StringComparison.Ordinal));
         Assert.Contains(lines, line => string.Equals(line.Trim(), "diagnostics bundle download | Download an evidence bundle", StringComparison.Ordinal));

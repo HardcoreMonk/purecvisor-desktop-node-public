@@ -242,6 +242,10 @@ pcvcli account disable lab-operator --yes
 | `pcvcli vm manage <vm> --yes` | `POST /api/v1/vms/{vm}/manage` | existing Hyper-V VM을 PureCVisor managed로 승격. `--yes` 필수. body `confirm_name`은 `<vm>` 인자 그대로 |
 | `pcvcli vm clone <source> --name <target> --dry-run [--vm-root <path>]` | `POST /api/v1/vms/{vm}/clone/preview` | managed VM full clone preview. `--yes` 불필요. body `confirm_name`은 `<source>` 인자 그대로, `name`은 `--name`, `--vm-root`는 `vm_root` |
 | `pcvcli vm clone <source> --name <target> --yes [--vm-root <path>]` | `POST /api/v1/vms/{vm}/clone` | managed VM을 독립 disk로 clone. `--yes` 필수. body `confirm_name`은 `<source>` 인자 그대로, `name`은 `--name`, `--vm-root`는 `vm_root`. 생략 시 기본 `D:\PureCVisor\VMs` |
+| `pcvcli vm export preview <vm> --directory PATH [--allowed-root PATH]` | `POST /api/v1/vms/{vm}/export/preview` | Hyper-V export dry-run. 파일을 쓰지 않음. `--yes` 불필요 |
+| `pcvcli vm export <vm> --directory PATH --yes [--allowed-root PATH]` | `POST /api/v1/vms/{vm}/export` | Hyper-V export queued job. `--yes` 필요. TPM/OVF 없음 |
+| `pcvcli vm import preview --name TARGET --directory PATH [--package-kind hyperv-export] [--has-vmcx]` | `POST /api/v1/vms/import/preview` | Hyper-V import dry-run. VM을 정의하지 않음. OVF 거절 |
+| `pcvcli vm import --name TARGET --directory PATH --yes [--allowed-root PATH] [--package-kind hyperv-export]` | `POST /api/v1/vms/import` | Hyper-V import queued job. 새 identity와 managed marker. `--yes` 필요. OVF/in-place 거절 |
 | `pcvcli vm delete <vm> --yes` | `DELETE /api/v1/vms/{vm}` | Managed VM delete job queue |
 
 VM 생성 예:
@@ -272,6 +276,8 @@ pcvcli vm create ubuntu-lab-01 `
 
 `pcvcli vm clone <source> --name <target> --dry-run [--vm-root <path>]`은 `POST /api/v1/vms/{vm}/clone/preview`로 복사 계획만 조회한다. `--yes`는 필요 없다. `pcvcli vm clone <source> --name <target> --yes [--vm-root <path>]`는 `POST /api/v1/vms/{vm}/clone`로 독립 VHDX full clone job을 queue한다. `--yes`가 없으면 `PCV_CLI_CONFIRMATION_REQUIRED`다. body `confirm_name`은 `<source>` 인자 그대로, `name`은 `--name`이다. `--vm-root`는 body `vm_root`다. 생략하면 native 기본값은 `D:\PureCVisor\VMs`다. 소스는 managed Generation 2, 전원 `Off`, checkpoint 0, 독립 VHDX만 허용한다.
 
+`pcvcli vm import preview --name TARGET --directory PATH [--package-kind hyperv-export] [--has-vmcx]`는 `POST /api/v1/vms/import/preview` dry-run이다. `pcvcli vm import --name TARGET --directory PATH --yes`는 `POST /api/v1/vms/import` queued job이다. `--yes`가 없으면 `PCV_CLI_CONFIRMATION_REQUIRED`다. import는 새 identity와 managed marker만 허용하고 OVF/in-place는 거절한다.
+
 VM delete는 destructive host mutation을 queue하므로 `--yes`가 필수다. API는 PureCVisor managed marker가 없는 VM을 provider mutation 전에 차단한다. unmanaged delete 거절은 manage 이후에도 다른 unmanaged VM에 유지된다.
 
 ```powershell
@@ -279,6 +285,10 @@ pcvcli vm manage ubuntu-lab-01 --yes
 pcvcli vm clone ubuntu-lab-01 --name ubuntu-lab-02 --dry-run
 pcvcli vm clone ubuntu-lab-01 --name ubuntu-lab-02 --yes
 pcvcli vm clone ubuntu-lab-01 --name ubuntu-lab-02 --yes --vm-root D:\data\pcv-p1-clone-04276
+pcvcli vm export preview ubuntu-lab-01 --directory D:\PureCVisor\exports\ubuntu-lab-01
+pcvcli vm export ubuntu-lab-01 --directory D:\PureCVisor\exports\ubuntu-lab-01 --yes
+pcvcli vm import preview --name ubuntu-lab-02 --directory D:\PureCVisor\exports\ubuntu-lab-01 --has-vmcx
+pcvcli vm import --name ubuntu-lab-02 --directory D:\PureCVisor\exports\ubuntu-lab-01 --yes
 pcvcli vm delete ubuntu-lab-01 --yes
 ```
 
@@ -381,6 +391,8 @@ secret-bearing command option은 `PCV_CLI_CREDENTIAL_REF_REQUIRED`로 거절된�
 | `pcvcli vm checkpoint restore <vm> <checkpoint>` | `POST /api/v1/vms/{vm}/checkpoints/{checkpoint}/restore` | Checkpoint restore job queue |
 | `pcvcli vm checkpoint delete <vm> <checkpoint>` | `DELETE /api/v1/vms/{vm}/checkpoints/{checkpoint}` | Checkpoint delete job queue |
 | `pcvcli vm checkpoint schedule preview <vm> --interval-minutes N --retention-max N` | `POST /api/v1/vms/{vm}/checkpoints/schedule/preview` | 주기 checkpoint 스케줄 dry-run. persist/tick 없음 |
+| `pcvcli vm checkpoint schedule set <vm> --interval-minutes N --retention-max N --yes` | `POST /api/v1/vms/{vm}/checkpoints/schedule` | 주기 checkpoint 스케줄 queued persist. `--yes` 필요. Host listen due worker가 만기이면 기존 `checkpoint.create`만 enqueue. retention에 막히면 `pcv-schedule-*` 중 가장 오래된 항목에 기존 `checkpoint.delete` 명시 job만 enqueue |
+| `pcvcli vm checkpoint schedule clear <vm> --yes` | `POST /api/v1/vms/{vm}/checkpoints/schedule/clear` | 스케줄 `{enabled:false}` persist. `--yes` 필요 |
 | `pcvcli vm snapshot list <vm>` | `GET /api/v1/vms/{vm}/checkpoints` | Linux `vm snapshot list` shape 호환 alias |
 | `pcvcli vm snapshot create <vm> --name <checkpoint>` | `POST /api/v1/vms/{vm}/checkpoints` | Snapshot create alias |
 | `pcvcli vm snapshot rollback <vm> <checkpoint>` | `POST /api/v1/vms/{vm}/checkpoints/{checkpoint}/restore` | Snapshot rollback alias |
@@ -397,6 +409,8 @@ pcvcli vm checkpoint create ubuntu-lab-01 --name before-upgrade
 pcvcli vm checkpoint restore ubuntu-lab-01 before-upgrade
 pcvcli vm checkpoint delete ubuntu-lab-01 before-upgrade
 pcvcli vm checkpoint schedule preview ubuntu-lab-01 --interval-minutes 1440 --retention-max 8
+pcvcli vm checkpoint schedule set ubuntu-lab-01 --interval-minutes 1440 --retention-max 8 --yes
+pcvcli vm checkpoint schedule clear ubuntu-lab-01 --yes
 pcvcli vm snapshot rollback ubuntu-lab-01 before-upgrade
 ```
 

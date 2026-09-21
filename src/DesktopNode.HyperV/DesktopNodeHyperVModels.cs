@@ -60,6 +60,20 @@ public interface IDesktopNodeHyperVVmManageProvider
     DesktopNodeHyperVVmManageInfo InvokeTemplateLock(string vmName, bool locked, CancellationToken cancellationToken);
 }
 
+public interface IDesktopNodeHyperVVmExportProvider
+{
+    DesktopNodeHyperVVmExportInfo Invoke(
+        DesktopNodeHyperVVmExportRequest request,
+        CancellationToken cancellationToken);
+}
+
+public interface IDesktopNodeHyperVVmImportProvider
+{
+    DesktopNodeHyperVVmImportInfo Invoke(
+        DesktopNodeHyperVVmImportRequest request,
+        CancellationToken cancellationToken);
+}
+
 public interface IDesktopNodeHyperVVmCloneProvider
 {
     DesktopNodeHyperVVmClonePlan Preview(
@@ -264,6 +278,31 @@ public sealed record DesktopNodeHyperVVmCloneSourceSnapshot(
     int CheckpointCount,
     IReadOnlyList<DesktopNodeHyperVVmCloneDiskSnapshot> Disks,
     bool SecurityFeaturesPresent);
+
+public sealed record DesktopNodeHyperVVmExportRequest(
+    string VmName,
+    string Directory,
+    string AllowedRoot);
+
+public sealed record DesktopNodeHyperVVmExportInfo(
+    [property: JsonPropertyName("action")] string Action,
+    [property: JsonPropertyName("directory")] string Directory,
+    [property: JsonPropertyName("package_kind")] string PackageKind,
+    [property: JsonPropertyName("vm_name")] string VmName);
+
+public sealed record DesktopNodeHyperVVmImportRequest(
+    string TargetName,
+    string Directory,
+    string AllowedRoot,
+    bool GenerateNewId);
+
+public sealed record DesktopNodeHyperVVmImportInfo(
+    [property: JsonPropertyName("action")] string Action,
+    [property: JsonPropertyName("directory")] string Directory,
+    [property: JsonPropertyName("package_kind")] string PackageKind,
+    [property: JsonPropertyName("vm_name")] string VmName,
+    [property: JsonPropertyName("generate_new_id")] bool GenerateNewId,
+    [property: JsonPropertyName("apply_managed_marker")] bool ApplyManagedMarker);
 
 public sealed record DesktopNodeHyperVVmCloneRequest(
     string SourceName,

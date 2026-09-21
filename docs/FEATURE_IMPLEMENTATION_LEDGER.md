@@ -26,7 +26,7 @@ flowchart LR
     I -->|"1 blocker"| J["promotion_eligible=false"]
 ```
 
-API는 모든 72개 route의 backend 경계다. Web Console과 PCVCLI는 각 route에 대해 실제
+API는 모든 77개 route의 backend 경계다. Web Console과 PCVCLI는 각 route에 대해 실제
 binding 또는 이유가 있는 제외 중 하나를 가져야 한다. 이 흐름은 surface 존재 여부와
 feature promotion evidence를 서로 다른 계약으로 유지한다.
 
@@ -50,20 +50,20 @@ feature promotion evidence를 서로 다른 계약으로 유지한다.
 | <a id="pcv-vm-guest-service-readback"></a>`pcv.vm.guest-service-readback` | Guest service readback | 2 | 2 present / 0 excluded | 2 present / 0 excluded |
 | <a id="pcv-vm-guest-execution"></a>`pcv.vm.guest-execution` | Guest execution | 4 | 3 present / 1 excluded | 4 present / 0 excluded |
 | <a id="pcv-vm-guest-channel"></a>`pcv.vm.guest-channel` | Guest channel configuration | 3 | 2 present / 1 excluded | 3 present / 0 excluded |
-| <a id="pcv-checkpoint-lifecycle"></a>`pcv.checkpoint.lifecycle` | Checkpoint lifecycle | 4 | 3 present / 1 excluded | 4 present / 0 excluded |
+| <a id="pcv-checkpoint-lifecycle"></a>`pcv.checkpoint.lifecycle` | Checkpoint lifecycle | 6 | 3 present / 3 excluded | 6 present / 0 excluded |
 | <a id="pcv-vm-create"></a>`pcv.vm.create` | VM creation | 1 | 1 present / 0 excluded | 1 present / 0 excluded |
 | <a id="pcv-checkpoint-restore"></a>`pcv.checkpoint.restore` | Checkpoint restore | 1 | 1 present / 0 excluded | 1 present / 0 excluded |
 | <a id="pcv-vm-power-lifecycle"></a>`pcv.vm.power-lifecycle` | VM power lifecycle | 4 | 4 present / 0 excluded | 4 present / 0 excluded |
 | <a id="pcv-vm-pause-lifecycle"></a>`pcv.vm.pause-lifecycle` | VM pause lifecycle | 2 | 0 present / 2 excluded | 2 present / 0 excluded |
 | <a id="pcv-vm-saved-lifecycle"></a>`pcv.vm.saved-lifecycle` | VM saved lifecycle | 2 | 2 present / 0 excluded | 2 present / 0 excluded |
 | <a id="pcv-vm-rename"></a>`pcv.vm.rename` | VM rename | 1 | 0 present / 1 excluded | 1 present / 0 excluded |
-| <a id="pcv-vm-managed-import"></a>`pcv.vm.managed-import` | Managed VM import | 1 | 1 present / 0 excluded | 1 present / 0 excluded |
+| <a id="pcv-vm-managed-import"></a>`pcv.vm.managed-import` | Managed VM import | 4 | 1 present / 3 excluded | 4 present / 0 excluded |
 | <a id="pcv-vm-clone"></a>`pcv.vm.clone` | Managed VM full clone | 3 | 3 present / 0 excluded | 3 present / 0 excluded |
 | <a id="pcv-vm-media-eject"></a>`pcv.vm.media-eject` | VM media eject | 1 | 1 present / 0 excluded | 1 present / 0 excluded |
 | <a id="pcv-vm-media-attach"></a>`pcv.vm.media-attach` | VM media attach | 1 | 1 present / 0 excluded | 1 present / 0 excluded |
 | <a id="pcv-vm-resource-limits"></a>`pcv.vm.resource-limits` | VM resource limits | 4 | 3 present / 1 excluded | 4 present / 0 excluded |
 
-## 72-route surface 투영
+## 77-route surface 투영
 
 | Feature ID | Operation ID | Canonical API route | Permission | Web Console | PCVCLI |
 |---|---|---|---|---|---|
@@ -116,7 +116,9 @@ feature promotion evidence를 서로 다른 계약으로 유지한다.
 | `pcv.vm.guest-channel` | `vm.guest.channel.ensure` | `POST /api/v1/vms/{vmId}/guest/channel` | `guest.channel.configure` | present — `vm.guest.channel.ensure` | present — `pcvcli vm guest-agent-ensure-channel vm-01 --repair --yes` |
 | `pcv.checkpoint.lifecycle` | `checkpoint.list` | `GET /api/v1/vms/{vmId}/checkpoints` | `read` | present — `checkpoint.list` | present — `pcvcli vm checkpoint list vm-01` |
 | `pcv.checkpoint.lifecycle` | `checkpoint.create` | `POST /api/v1/vms/{vmId}/checkpoints` | `operate` | present — `checkpoint.create` | present — `pcvcli vm checkpoint create vm-01 --name before-upgrade` |
-| `pcv.checkpoint.lifecycle` | `checkpoint.schedule.preview` | `POST /api/v1/vms/{vmId}/checkpoints/schedule/preview` | `operate` | excluded — Periodic checkpoint schedule stays CLI/API; Web Console keeps checkpoint panel without a schedule save form. | present — `pcvcli vm checkpoint schedule preview vm-01 --interval-minutes 1440 --retention-max 8` |
+| `pcv.checkpoint.lifecycle` | `checkpoint.schedule.preview` | `POST /api/v1/vms/{vmId}/checkpoints/schedule/preview` | `operate` | excluded — Periodic checkpoint schedule stays CLI/API; Web Console keeps checkpoint panel readback without a schedule save form. | present — `pcvcli vm checkpoint schedule preview vm-01 --interval-minutes 1440 --retention-max 8` |
+| `pcv.checkpoint.lifecycle` | `checkpoint.schedule.set` | `POST /api/v1/vms/{vmId}/checkpoints/schedule` | `operate` | excluded — Periodic checkpoint schedule stays CLI/API; Web Console keeps checkpoint panel readback without a schedule save form. | present — `pcvcli vm checkpoint schedule set vm-01 --interval-minutes 1440 --retention-max 8 --yes` |
+| `pcv.checkpoint.lifecycle` | `checkpoint.schedule.clear` | `POST /api/v1/vms/{vmId}/checkpoints/schedule/clear` | `operate` | excluded — Periodic checkpoint schedule stays CLI/API; Web Console keeps checkpoint panel readback without a schedule save form. | present — `pcvcli vm checkpoint schedule clear vm-01 --yes` |
 | `pcv.checkpoint.lifecycle` | `checkpoint.delete` | `DELETE /api/v1/vms/{vmId}/checkpoints/{checkpointId}` | `operate` | present — `checkpoint.delete` | present — `pcvcli vm checkpoint delete vm-01 before-upgrade` |
 | `pcv.vm.create` | `vm.create` | `POST /api/v1/vms` | `operate` | present — `vm.create` | present — `pcvcli vm create vm-01 --vcpu 2 --memory_mb 4096 --disk_size_gb 40 --iso_path D:\isos\windows.iso` |
 | `pcv.checkpoint.restore` | `checkpoint.restore` | `POST /api/v1/vms/{vmId}/checkpoints/{checkpointId}/restore` | `operate` | present — `checkpoint.restore` | present — `pcvcli vm checkpoint restore vm-01 before-upgrade` |
@@ -130,6 +132,10 @@ feature promotion evidence를 서로 다른 계약으로 유지한다.
 | `pcv.vm.saved-lifecycle` | `vm.resume-saved` | `POST /api/v1/vms/{vmId}/resume-saved` | `operate` | present — `vm.resume-saved` | present — `pcvcli vm resume-saved vm-01` |
 | `pcv.vm.rename` | `vm.rename` | `POST /api/v1/vms/{vmId}/rename` | `operate` | excluded — Web Console does not expose rename in the current operator flow; this route remains API/CLI-only. | present — `pcvcli vm rename vm-01 vm-02` |
 | `pcv.vm.managed-import` | `vm.manage` | `POST /api/v1/vms/{vmId}/manage` | `operate` | present — `vm.manage` | present — `pcvcli vm manage vm-01 --yes` |
+| `pcv.vm.managed-import` | `vm.export.preview` | `POST /api/v1/vms/{vmId}/export/preview` | `operate` | excluded — Hyper-V export/import stays CLI/API; Web Console shows inventory status readback without an export/import save form. | present — `pcvcli vm export preview vm-01 --directory D:\PureCVisor\exports\vm-01` |
+| `pcv.vm.managed-import` | `vm.export` | `POST /api/v1/vms/{vmId}/export` | `operate` | excluded — Hyper-V export/import stays CLI/API; Web Console shows inventory status readback without an export/import save form. | present — `pcvcli vm export vm-01 --directory D:\PureCVisor\exports\vm-01 --yes` |
+| `pcv.vm.managed-import` | `vm.import.preview` | `POST /api/v1/vms/import/preview` | `operate` | excluded — Hyper-V export/import stays CLI/API; Web Console shows inventory status readback without an export/import save form. | present — `pcvcli vm import preview --name vm-02 --directory D:\PureCVisor\exports\vm-01 --has-vmcx` |
+| `pcv.vm.managed-import` | `vm.import` | `POST /api/v1/vms/import` | `operate` | excluded — Hyper-V export/import stays CLI/API; Web Console shows inventory status readback without an export/import save form. | present — `pcvcli vm import --name vm-02 --directory D:\PureCVisor\exports\vm-01 --yes` |
 | `pcv.vm.clone` | `vm.clone.preview` | `POST /api/v1/vms/{vmId}/clone/preview` | `operate` | present — `vm.clone.preview` | present — `pcvcli vm clone vm-01 --name vm-02 --dry-run` |
 | `pcv.vm.clone` | `vm.clone` | `POST /api/v1/vms/{vmId}/clone` | `operate` | present — `vm.clone` | present — `pcvcli vm clone vm-01 --name vm-02 --yes` |
 | `pcv.vm.clone` | `vm.template.lock` | `POST /api/v1/vms/{vmId}/template-lock` | `operate` | present — `vm.template.lock` | present — `pcvcli vm template-lock vm-01 --yes` |

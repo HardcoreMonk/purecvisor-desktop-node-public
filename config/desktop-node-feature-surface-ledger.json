@@ -1349,7 +1349,7 @@
           "excluded_surfaces": [
             {
               "surface": "web",
-              "reason": "Periodic checkpoint schedule stays CLI/API; Web Console keeps checkpoint panel without a schedule save form."
+              "reason": "Periodic checkpoint schedule stays CLI/API; Web Console keeps checkpoint panel readback without a schedule save form."
             }
           ],
           "surface_bindings": {
@@ -1364,6 +1364,66 @@
                 "1440",
                 "--retention-max",
                 "8"
+              ]
+            }
+          }
+        },
+        {
+          "operation_id": "checkpoint.schedule.set",
+          "method": "POST",
+          "route_template": "/api/v1/vms/{vmId}/checkpoints/schedule",
+          "required_permission": "operate",
+          "present_surfaces": [
+            "api",
+            "cli"
+          ],
+          "excluded_surfaces": [
+            {
+              "surface": "web",
+              "reason": "Periodic checkpoint schedule stays CLI/API; Web Console keeps checkpoint panel readback without a schedule save form."
+            }
+          ],
+          "surface_bindings": {
+            "cli": {
+              "command": [
+                "vm",
+                "checkpoint",
+                "schedule",
+                "set",
+                "vm-01",
+                "--interval-minutes",
+                "1440",
+                "--retention-max",
+                "8",
+                "--yes"
+              ]
+            }
+          }
+        },
+        {
+          "operation_id": "checkpoint.schedule.clear",
+          "method": "POST",
+          "route_template": "/api/v1/vms/{vmId}/checkpoints/schedule/clear",
+          "required_permission": "operate",
+          "present_surfaces": [
+            "api",
+            "cli"
+          ],
+          "excluded_surfaces": [
+            {
+              "surface": "web",
+              "reason": "Periodic checkpoint schedule stays CLI/API; Web Console keeps checkpoint panel readback without a schedule save form."
+            }
+          ],
+          "surface_bindings": {
+            "cli": {
+              "command": [
+                "vm",
+                "checkpoint",
+                "schedule",
+                "clear",
+                "vm-01",
+                "--yes"
               ]
             }
           }
@@ -1734,6 +1794,121 @@
                 "vm",
                 "manage",
                 "vm-01",
+                "--yes"
+              ]
+            }
+          }
+        },
+        {
+          "operation_id": "vm.export.preview",
+          "method": "POST",
+          "route_template": "/api/v1/vms/{vmId}/export/preview",
+          "required_permission": "operate",
+          "present_surfaces": [
+            "api",
+            "cli"
+          ],
+          "excluded_surfaces": [
+            {
+              "surface": "web",
+              "reason": "Hyper-V export/import stays CLI/API; Web Console shows inventory status readback without an export/import save form."
+            }
+          ],
+          "surface_bindings": {
+            "cli": {
+              "command": [
+                "vm",
+                "export",
+                "preview",
+                "vm-01",
+                "--directory",
+                "D:\\PureCVisor\\exports\\vm-01"
+              ]
+            }
+          }
+        },
+        {
+          "operation_id": "vm.export",
+          "method": "POST",
+          "route_template": "/api/v1/vms/{vmId}/export",
+          "required_permission": "operate",
+          "present_surfaces": [
+            "api",
+            "cli"
+          ],
+          "excluded_surfaces": [
+            {
+              "surface": "web",
+              "reason": "Hyper-V export/import stays CLI/API; Web Console shows inventory status readback without an export/import save form."
+            }
+          ],
+          "surface_bindings": {
+            "cli": {
+              "command": [
+                "vm",
+                "export",
+                "vm-01",
+                "--directory",
+                "D:\\PureCVisor\\exports\\vm-01",
+                "--yes"
+              ]
+            }
+          }
+        },
+        {
+          "operation_id": "vm.import.preview",
+          "method": "POST",
+          "route_template": "/api/v1/vms/import/preview",
+          "required_permission": "operate",
+          "present_surfaces": [
+            "api",
+            "cli"
+          ],
+          "excluded_surfaces": [
+            {
+              "surface": "web",
+              "reason": "Hyper-V export/import stays CLI/API; Web Console shows inventory status readback without an export/import save form."
+            }
+          ],
+          "surface_bindings": {
+            "cli": {
+              "command": [
+                "vm",
+                "import",
+                "preview",
+                "--name",
+                "vm-02",
+                "--directory",
+                "D:\\PureCVisor\\exports\\vm-01",
+                "--has-vmcx"
+              ]
+            }
+          }
+        },
+        {
+          "operation_id": "vm.import",
+          "method": "POST",
+          "route_template": "/api/v1/vms/import",
+          "required_permission": "operate",
+          "present_surfaces": [
+            "api",
+            "cli"
+          ],
+          "excluded_surfaces": [
+            {
+              "surface": "web",
+              "reason": "Hyper-V export/import stays CLI/API; Web Console shows inventory status readback without an export/import save form."
+            }
+          ],
+          "surface_bindings": {
+            "cli": {
+              "command": [
+                "vm",
+                "import",
+                "--name",
+                "vm-02",
+                "--directory",
+                "D:\\PureCVisor\\exports\\vm-01",
                 "--yes"
               ]
             }

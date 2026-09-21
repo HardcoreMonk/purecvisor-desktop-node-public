@@ -1804,6 +1804,7 @@ function renderVmDetail() {
     <div class="details-grid detail-grid">
       ${details.map(([label, value]) => `<div class="kv"><span>${escapeHtml(label)}</span><strong>${escapeHtml(formatObjectValue(value))}</strong></div>`).join('')}
     </div>
+    ${renderExportImportReadback(vm)}
     ${renderVmQosGuestReadback(vmId)}
     ${renderVmQosDirectControl(vmId)}
     <div class="checkpoint-panel">
@@ -1814,11 +1815,67 @@ function renderVmDetail() {
         </div>
         <button data-action="checkpoint-refresh" data-vm-id="${escapeHtml(vmId)}"${checkpointRefreshDisabled}>Refresh checkpoints</button>
       </div>
+      ${renderCheckpointScheduleReadback(vm)}
       <form class="checkpoint-form" data-action="checkpoint-create" data-vm-id="${escapeHtml(vmId)}">
         <input name="checkpoint_name" autocomplete="off" placeholder="Checkpoint name" aria-label="checkpoint name"${checkpointMutationDisabled}>
         <button type="submit"${checkpointMutationDisabled}>Create checkpoint</button>
       </form>
       <div class="checkpoint-list">${renderCheckpointList(vmId)}</div>
+    </div>`;
+}
+function renderExportImportReadback(vm) {
+    const managed = vm?.managed_by_purecvisor === true;
+    const generation = Number(vm?.generation);
+    const power = String(vm?.state || vm?.status || '').trim().toLowerCase();
+    const off = power === 'off' || power === 'stopped';
+    const securityPresent = vm?.security_features_present === true;
+    const exportEligible = managed && generation === 2 && off && !securityPresent;
+    const securityLabel = securityPresent ? 'present' : 'not reported';
+    return `<div class="export-import-readback">
+      <div class="mini-section-header">
+        <div>
+          <p class="eyebrow">Hyper-V export/import</p>
+          <h3>Export / Import</h3>
+        </div>
+      </div>
+      <div class="diagnostics-grid">
+        <div class="diagnostics-fact"><span class="muted">export</span><strong>${escapeHtml(exportEligible ? 'eligible' : 'blocked')}</strong></div>
+        <div class="diagnostics-fact"><span class="muted">managed</span><strong>${escapeHtml(managed ? 'yes' : 'no')}</strong></div>
+        <div class="diagnostics-fact"><span class="muted">generation</span><strong>${escapeHtml(formatObjectValue(vm?.generation))}</strong></div>
+        <div class="diagnostics-fact"><span class="muted">power</span><strong>${escapeHtml(formatObjectValue(vm?.state || vm?.status))}</strong></div>
+        <div class="diagnostics-fact"><span class="muted">security features</span><strong>${escapeHtml(securityLabel)}</strong></div>
+        <div class="diagnostics-fact"><span class="muted">import</span><strong>CLI/API only</strong></div>
+      </div>
+      <div class="boundary-chip-row">
+        <span>no export/import save form</span>
+        <span>CLI/API export/import only</span>
+        <span>no OVF</span>
+        <span>no TPM key copy</span>
+      </div>
+    </div>`;
+}
+function renderCheckpointScheduleReadback(vm) {
+    const schedule = asObject(vm?.checkpoint_schedule);
+    const enabled = schedule.enabled === true;
+    const status = schedule.status || (enabled ? 'waiting' : 'disabled');
+    const count = Number(vm?.checkpoints?.count ?? vm?.checkpoints_count ?? 0);
+    const retention = schedule.retention_max;
+    const capacityBlocked = enabled && retention != null && Number.isFinite(Number(retention)) && count >= Number(retention);
+    const statusLabel = capacityBlocked ? 'blocked capacity' : formatObjectValue(status);
+    return `<div class="checkpoint-schedule-readback">
+      <div class="diagnostics-grid">
+        <div class="diagnostics-fact"><span class="muted">schedule</span><strong>${escapeHtml(enabled ? 'enabled' : 'disabled')}</strong></div>
+        <div class="diagnostics-fact"><span class="muted">status</span><strong>${escapeHtml(statusLabel)}</strong></div>
+        <div class="diagnostics-fact"><span class="muted">interval minutes</span><strong>${escapeHtml(formatObjectValue(schedule.interval_minutes))}</strong></div>
+        <div class="diagnostics-fact"><span class="muted">retention max</span><strong>${escapeHtml(formatObjectValue(retention))}</strong></div>
+        <div class="diagnostics-fact"><span class="muted">last enqueued</span><strong>${escapeHtml(formatObjectValue(schedule.last_enqueued_at))}</strong></div>
+        <div class="diagnostics-fact"><span class="muted">next due</span><strong>${escapeHtml(formatObjectValue(schedule.next_due_at))}</strong></div>
+      </div>
+      <div class="boundary-chip-row">
+        <span>no schedule save form</span>
+        <span>CLI/API configure only</span>
+        <span>no infinite retention</span>
+      </div>
     </div>`;
 }
 function renderVmWorkbenchContext() {

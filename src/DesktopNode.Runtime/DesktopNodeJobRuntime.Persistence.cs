@@ -250,7 +250,9 @@ public sealed partial class DesktopNodeJobRuntime
             string.Equals(operation, "vm.qos.storage.set", StringComparison.Ordinal) ||
             string.Equals(operation, "vm.qos.network.set", StringComparison.Ordinal) ||
             string.Equals(operation, "console.novnc-target.set", StringComparison.Ordinal) ||
-            string.Equals(operation, "console.novnc-target.clear", StringComparison.Ordinal);
+            string.Equals(operation, "console.novnc-target.clear", StringComparison.Ordinal) ||
+            string.Equals(operation, "checkpoint.schedule.set", StringComparison.Ordinal) ||
+            string.Equals(operation, "checkpoint.schedule.clear", StringComparison.Ordinal);
     }
 
     private static DesktopNodeJobRuntimeError ReconciliationRequiredError(
@@ -269,6 +271,8 @@ public sealed partial class DesktopNodeJobRuntime
             "vm.qos.network.set" => "network QoS",
             "console.novnc-target.set" => "noVNC target",
             "console.novnc-target.clear" => "noVNC clear",
+            "checkpoint.schedule.set" => "checkpoint schedule",
+            "checkpoint.schedule.clear" => "checkpoint schedule clear",
             "checkpoint.create" => "checkpoint create",
             "checkpoint.restore" => "checkpoint restore",
             _ => "rename"

@@ -71,8 +71,8 @@ public sealed class ApiHandlerAdapterContractTests
 
         var contract = ApiHandlerAdapterContract.CreateDefault();
         Assert.Equal(28, featureIds.Count);
-        Assert.Equal(72, ledgerRoutes.Count);
-        Assert.Equal(72, contract.Routes.Count);
+        Assert.Equal(78, ledgerRoutes.Count);
+        Assert.Equal(78, contract.Routes.Count);
         foreach (var route in contract.Routes)
         {
             Assert.Matches("^pcv\\.[a-z0-9._-]+$", route.FeatureId);
@@ -111,8 +111,8 @@ public sealed class ApiHandlerAdapterContractTests
         var contract = ApiHandlerAdapterContract.CreateDefault();
         var routes = contract.Routes.ToDictionary(route => (route.Method, route.RouteTemplate));
 
-        Assert.Equal(72, contract.Routes.Count);
-        Assert.Equal(72, routes.Count);
+        Assert.Equal(78, contract.Routes.Count);
+        Assert.Equal(78, routes.Count);
 
         AssertRoute(routes[("GET", "/api/v1/runtime/policy")], "GET", "RuntimePolicy", MutationStance.ReadOnly);
         AssertRoute(routes[("GET", "/api/v1/host/status")], "GET", "HostStatus", MutationStance.ReadOnly);
@@ -143,6 +143,12 @@ public sealed class ApiHandlerAdapterContractTests
         AssertRoute(routes[("POST", "/api/v1/console/novnc-target")], "POST", "QueueSetNoVncTarget", MutationStance.QueuedMutation);
         AssertRoute(routes[("POST", "/api/v1/console/novnc-target/clear")], "POST", "QueueClearNoVncTarget", MutationStance.QueuedMutation);
         AssertRoute(routes[("POST", "/api/v1/vms/{vmId}/checkpoints/schedule/preview")], "POST", "PreviewVmCheckpointSchedule", MutationStance.ProductOperation);
+        AssertRoute(routes[("POST", "/api/v1/vms/{vmId}/checkpoints/schedule")], "POST", "QueueSetVmCheckpointSchedule", MutationStance.QueuedMutation);
+        AssertRoute(routes[("POST", "/api/v1/vms/{vmId}/checkpoints/schedule/clear")], "POST", "QueueClearVmCheckpointSchedule", MutationStance.QueuedMutation);
+        AssertRoute(routes[("POST", "/api/v1/vms/{vmId}/export/preview")], "POST", "PreviewVmExport", MutationStance.ProductOperation);
+        AssertRoute(routes[("POST", "/api/v1/vms/{vmId}/export")], "POST", "QueueExportVm", MutationStance.QueuedMutation);
+        AssertRoute(routes[("POST", "/api/v1/vms/import/preview")], "POST", "PreviewVmImport", MutationStance.ProductOperation);
+        AssertRoute(routes[("POST", "/api/v1/vms/import")], "POST", "QueueImportVm", MutationStance.QueuedMutation);
         AssertRoute(routes[("GET", "/api/v1/vms/{vmId}/memory-stats")], "GET", "GetVmMemoryStats", MutationStance.ReadOnly);
         AssertRoute(routes[("GET", "/api/v1/vms/{vmId}/cpu-stats")], "GET", "GetVmCpuStats", MutationStance.ReadOnly);
         AssertRoute(routes[("GET", "/api/v1/vms/{vmId}/blkio")], "GET", "GetVmBlockIoPolicy", MutationStance.ReadOnly);
@@ -194,8 +200,8 @@ public sealed class ApiHandlerAdapterContractTests
         AssertRoute(routes[("POST", "/api/v1/vms/{vmId}/set-vcpu")], "POST", "QueueSetVmVcpu", MutationStance.QueuedMutation);
         AssertRoute(routes[("POST", "/api/v1/vms/{vmId}/disk-resize")], "POST", "QueueResizeVmDisk", MutationStance.QueuedMutation);
         AssertRoute(routes[("DELETE", "/api/v1/vms/{vmId}")], "DELETE", "QueueDeleteVm", MutationStance.QueuedMutation);
-        Assert.Equal(18, contract.Routes.Count(route => route.MutationStance == MutationStance.ProductOperation));
-        Assert.Equal(31, contract.Routes.Count(route => route.MutationStance == MutationStance.QueuedMutation));
+        Assert.Equal(20, contract.Routes.Count(route => route.MutationStance == MutationStance.ProductOperation));
+        Assert.Equal(35, contract.Routes.Count(route => route.MutationStance == MutationStance.QueuedMutation));
         Assert.DoesNotContain(contract.Routes, route => route.RouteTemplate == "/api/v1/vms/{vmId}/lifecycle/{action}");
         Assert.DoesNotContain(contract.Routes, route => route.RouteTemplate.Contains("/evidence", StringComparison.OrdinalIgnoreCase));
     }
@@ -222,11 +228,11 @@ public sealed class ApiHandlerAdapterContractTests
                 System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(snapshot)))
             .ToLowerInvariant();
 
-        Assert.Equal("7625b91544f1cbb9990a4ffcc492e23f610551b7a48f934c06c0e092b5696826", digest);
+        Assert.Equal("e23882baab666a3b0f929ee5b156b19c4de7107325e547261476b18bd2fb37ca", digest);
         Assert.Equal(23, routes.Count(route => route.MutationStance == MutationStance.ReadOnly));
-        Assert.Equal(18, routes.Count(route => route.MutationStance == MutationStance.ProductOperation));
-        Assert.Equal(31, routes.Count(route => route.MutationStance == MutationStance.QueuedMutation));
-        Assert.Equal(13, routes.Select(route => route.RouteFamily).Distinct(StringComparer.Ordinal).Count());
+        Assert.Equal(20, routes.Count(route => route.MutationStance == MutationStance.ProductOperation));
+        Assert.Equal(35, routes.Count(route => route.MutationStance == MutationStance.QueuedMutation));
+        Assert.Equal(14, routes.Select(route => route.RouteFamily).Distinct(StringComparer.Ordinal).Count());
     }
 
     [Fact]
@@ -249,7 +255,7 @@ public sealed class ApiHandlerAdapterContractTests
         Assert.All(
             queuedMutations,
             route => Assert.Equal(
-                string.Equals(route.RouteFamily, "console", StringComparison.Ordinal)
+                route.RouteFamily is "console" or "checkpoint-schedule"
                     ? "dotnet-runtime"
                     : "dotnet-native-adapter",
                 route.DefaultOwner));
@@ -410,7 +416,7 @@ public sealed class ApiHandlerAdapterContractTests
         Assert.All(
             contract.Routes.Where(route => route.MutationStance == MutationStance.QueuedMutation),
             route => Assert.Equal(
-                string.Equals(route.RouteFamily, "console", StringComparison.Ordinal)
+                route.RouteFamily is "console" or "checkpoint-schedule"
                     ? "dotnet-runtime"
                     : "dotnet-native-adapter",
                 route.DefaultOwner));
@@ -508,6 +514,12 @@ public sealed class ApiHandlerAdapterContractTests
         Assert.Equal("jobs", routes[("GET", "/api/v1/vms/{vmId}/delete-status")].RouteFamily);
         Assert.Equal("hyperv-vm", routes[("DELETE", "/api/v1/vms/{vmId}")].RouteFamily);
         Assert.Equal("hyperv-checkpoint", routes[("GET", "/api/v1/vms/{vmId}/checkpoints")].RouteFamily);
+        Assert.Equal("hyperv-checkpoint", routes[("POST", "/api/v1/vms/{vmId}/checkpoints/schedule/preview")].RouteFamily);
+        Assert.Equal("checkpoint-schedule", routes[("POST", "/api/v1/vms/{vmId}/checkpoints/schedule")].RouteFamily);
+        Assert.Equal("checkpoint-schedule", routes[("POST", "/api/v1/vms/{vmId}/checkpoints/schedule/clear")].RouteFamily);
+        Assert.Equal("hyperv-vm", routes[("POST", "/api/v1/vms/{vmId}/export/preview")].RouteFamily);
+        Assert.Equal("hyperv-vm", routes[("POST", "/api/v1/vms/{vmId}/export")].RouteFamily);
+        Assert.Equal("hyperv-vm", routes[("POST", "/api/v1/vms/import/preview")].RouteFamily);
     }
 
     [Fact]
@@ -534,6 +546,12 @@ public sealed class ApiHandlerAdapterContractTests
         Assert.Equal("console.configure", routes[("POST", "/api/v1/console/novnc-target/preview")].RequiredPermission);
         Assert.Equal("console.configure", routes[("POST", "/api/v1/console/novnc-target")].RequiredPermission);
         Assert.Equal("console.configure", routes[("POST", "/api/v1/console/novnc-target/clear")].RequiredPermission);
+        Assert.Equal("operate", routes[("POST", "/api/v1/vms/{vmId}/checkpoints/schedule/preview")].RequiredPermission);
+        Assert.Equal("operate", routes[("POST", "/api/v1/vms/{vmId}/checkpoints/schedule")].RequiredPermission);
+        Assert.Equal("operate", routes[("POST", "/api/v1/vms/{vmId}/checkpoints/schedule/clear")].RequiredPermission);
+        Assert.Equal("operate", routes[("POST", "/api/v1/vms/{vmId}/export/preview")].RequiredPermission);
+        Assert.Equal("operate", routes[("POST", "/api/v1/vms/{vmId}/export")].RequiredPermission);
+        Assert.Equal("operate", routes[("POST", "/api/v1/vms/import/preview")].RequiredPermission);
     }
 
     [Fact]
@@ -695,6 +713,18 @@ public sealed class ApiHandlerAdapterContractTests
         Assert.True(DesktopNodeApiRuntimeRoutes.TryMatchQueuedMutation("POST", "/api/v1/console/novnc-target/clear", out var clearNoVncMatch));
         Assert.Equal("QueueClearNoVncTarget", clearNoVncMatch.Route.OperationName);
         Assert.False(DesktopNodeApiRuntimeRoutes.IsQueuedMutationRoute("POST", "/api/v1/console/novnc-target/preview"));
+        Assert.True(DesktopNodeApiRuntimeRoutes.TryMatchQueuedMutation("POST", "/api/v1/vms/lab%20vm/checkpoints/schedule", out var setScheduleMatch));
+        Assert.Equal("QueueSetVmCheckpointSchedule", setScheduleMatch.Route.OperationName);
+        Assert.Equal("lab vm", setScheduleMatch.Parameters["vmId"]);
+        Assert.True(DesktopNodeApiRuntimeRoutes.TryMatchQueuedMutation("POST", "/api/v1/vms/lab%20vm/checkpoints/schedule/clear", out var clearScheduleMatch));
+        Assert.Equal("QueueClearVmCheckpointSchedule", clearScheduleMatch.Route.OperationName);
+        Assert.False(DesktopNodeApiRuntimeRoutes.IsQueuedMutationRoute("POST", "/api/v1/vms/lab%20vm/checkpoints/schedule/preview"));
+        Assert.True(DesktopNodeApiRuntimeRoutes.TryMatchQueuedMutation("POST", "/api/v1/vms/lab%20vm/export", out var exportMatch));
+        Assert.Equal("QueueExportVm", exportMatch.Route.OperationName);
+        Assert.False(DesktopNodeApiRuntimeRoutes.IsQueuedMutationRoute("POST", "/api/v1/vms/lab%20vm/export/preview"));
+        Assert.True(DesktopNodeApiRuntimeRoutes.TryMatchQueuedMutation("POST", "/api/v1/vms/import", out var importMatch));
+        Assert.Equal("QueueImportVm", importMatch.Route.OperationName);
+        Assert.False(DesktopNodeApiRuntimeRoutes.IsQueuedMutationRoute("POST", "/api/v1/vms/import/preview"));
         Assert.Equal("QueueTemplateLockVm", templateLockMatch.Route.OperationName);
         Assert.Equal("lab vm", templateLockMatch.Parameters["vmId"]);
 
