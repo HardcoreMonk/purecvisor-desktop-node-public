@@ -536,6 +536,13 @@ const defectCases = [
     expectedLabel: "vm-lifecycle-actions:no-export-import-save-form:source"
   },
   {
+    name: "missing network change readback chips",
+    id: "web.static.network-inventory",
+    overrides: () => removeOnce("web/src/served/render-inventory.ts", "no switch create form"),
+    expectedCode: assertionFailed,
+    expectedLabel: "network-inventory:no-switch-create-form:source"
+  },
+  {
     name: "missing browser job history retention authoritative source owner",
     id: "web.static.browser-job-history",
     overrides: () => removeOnce("web/src/served/state.ts", "const JOB_HISTORY_LIMIT = 50;"),

@@ -863,6 +863,7 @@ Describe 'PcvDesktopWeb static console assets' {
         $servedSource = Get-Content -LiteralPath $script:ServedSourcePath -Raw
         $apiTypes = Get-Content -LiteralPath (Join-Path $script:SrcRoot 'api-types.ts') -Raw
         $fixtures = Get-Content -LiteralPath $script:UserVisibleFixturePath -Raw
+        $inventorySource = Get-Content -LiteralPath (Join-Path $script:ServedSourcePartsRoot 'render-inventory.ts') -Raw
 
         $index | Should -Match 'data-view-link="network"'
         $index | Should -Match 'id="network"'
@@ -875,6 +876,12 @@ Describe 'PcvDesktopWeb static console assets' {
         ($app + $servedSource + $fixtures) | Should -Match 'Default Switch'
         ($app + $servedSource + $fixtures) | Should -Match 'fixture-ethernet'
         ($app + $servedSource) | Should -Match 'read-only'
+        ($app + $inventorySource) | Should -Match 'network-change-readback'
+        ($app + $inventorySource) | Should -Match 'no switch create form'
+        ($app + $inventorySource) | Should -Match 'no NAT editor'
+        ($app + $inventorySource) | Should -Match 'no DHCP editor'
+        ($app + $inventorySource) | Should -Match 'CLI/API vm.network.connect only'
+        ($app + $inventorySource) | Should -Not -Match 'data-action="switch-create"|data-action="switch-remove"|data-action="vm-network-connect"|name="nat-network"|name="dhcp-scope"'
         ($app + $servedSource) | Should -Not -Match 'New-VMSwitch|Remove-VMSwitch|New-NetIPAddress|Set-NetFirewallRule'
     }
 

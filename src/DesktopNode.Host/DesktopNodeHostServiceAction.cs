@@ -33,7 +33,8 @@ public sealed record DesktopNodeHostServiceActionPlan(
     string? NativeJobStoreMigrationOperation = null,
     string? NativeCredentialManagerOperation = null,
     string? NativeDataRootLifecycleOperation = null,
-    string? CredentialTarget = null);
+    string? CredentialTarget = null,
+    string? NativeSwitchOperation = null);
 
 public sealed record DesktopNodeHostCommandResult(
     string FileName,
@@ -211,7 +212,8 @@ public sealed record DesktopNodeHostServiceActionResult(
     DesktopNodeHostServiceTokenRotationDescriptor? ServiceTokenRotation = null,
     DesktopNodeHostEventLogHardeningDescriptor? EventLogHardening = null,
     DesktopNodeHostCredentialManagerProofDescriptor? CredentialManagerProof = null,
-    DesktopNodeHostCredentialManagerTransitionDescriptor? CredentialManagerTransition = null);
+    DesktopNodeHostCredentialManagerTransitionDescriptor? CredentialManagerTransition = null,
+    DesktopNodeHyperVSwitchMutationSnapshot? HyperVSwitch = null);
 
 public static partial class DesktopNodeHostServiceAction
 {
@@ -230,6 +232,7 @@ public static partial class DesktopNodeHostServiceAction
         var isNativeJobStoreMigrationAction = IsNativeJobStoreMigrationAction(action);
         var isNativeCredentialManagerAction = IsNativeCredentialManagerAction(action);
         var isNativeDataRootLifecycleAction = IsNativeDataRootLifecycleAction(action);
+        var isNativeSwitchAction = IsNativeSwitchAction(action);
         var dataRoot = RequiresDataRoot(action) ? Require(options.DataRoot, "PCV_HOST_DATA_ROOT_REQUIRED") : null;
         var credentialTarget = string.IsNullOrWhiteSpace(options.CredentialTarget)
             ? "PureCVisor/PureCVisorDesktopNode/api-token"
@@ -316,6 +319,7 @@ public static partial class DesktopNodeHostServiceAction
             "credential-manager-system-proof" or
             "eventlog-register" or "eventlog-remove" or "eventlog-repair" or "eventlog-write-test" or "eventlog-volume-guard" or "eventlog-default-transition" or
             "firewall-enable" or "firewall-remove" or
+            "switch-create" or "switch-remove" or
             "trust-store-install" or "trust-store-remove" or
             "config-migration-apply" or "job-store-migration-apply" => [],
             _ => throw new ArgumentException($"PCV_HOST_SERVICE_ACTION_INVALID|The service action is not supported.|{action}")
@@ -360,7 +364,8 @@ public static partial class DesktopNodeHostServiceAction
             NativeJobStoreMigrationOperation: isNativeJobStoreMigrationAction ? action : null,
             NativeCredentialManagerOperation: isNativeCredentialManagerAction ? action : null,
             NativeDataRootLifecycleOperation: isNativeDataRootLifecycleAction ? action : null,
-            CredentialTarget: (isNativeCredentialManagerAction || string.Equals(action, "credential-manager-default-transition", StringComparison.Ordinal)) ? credentialTarget : null);
+            CredentialTarget: (isNativeCredentialManagerAction || string.Equals(action, "credential-manager-default-transition", StringComparison.Ordinal)) ? credentialTarget : null,
+            NativeSwitchOperation: isNativeSwitchAction ? action : null);
     }
 
     public static async Task<DesktopNodeHostServiceActionResult> ExecuteAsync(
@@ -385,6 +390,24 @@ public static partial class DesktopNodeHostServiceAction
             cancellationToken).ConfigureAwait(false);
     }
 
+    public static Task<DesktopNodeHostServiceActionResult> ExecuteAsync(
+        DesktopNodeHostOptions options,
+        IDesktopNodeHyperVSwitchController switchController,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(switchController);
+        return ExecuteAsync(
+            options,
+            serviceController: null,
+            eventLogController: null,
+            firewallController: null,
+            trustStoreController: null,
+            credentialManagerController: null,
+            DesktopNodeHostFileAclHardener.Instance,
+            switchController,
+            cancellationToken);
+    }
+
     public static async Task<DesktopNodeHostServiceActionResult> ExecuteAsync(
         DesktopNodeHostOptions options,
         IDesktopNodeWindowsServiceController? serviceController,
@@ -402,6 +425,7 @@ public static partial class DesktopNodeHostServiceAction
             trustStoreController,
             credentialManagerController,
             DesktopNodeHostFileAclHardener.Instance,
+            switchController: null,
             cancellationToken).ConfigureAwait(false);
     }
 
@@ -413,6 +437,7 @@ public static partial class DesktopNodeHostServiceAction
         IDesktopNodeWindowsTrustStoreController? trustStoreController,
         IDesktopNodeWindowsCredentialManagerController? credentialManagerController,
         IDesktopNodeHostFileAclHardener fileAclHardener,
+        IDesktopNodeHyperVSwitchController? switchController = null,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(fileAclHardener);
@@ -435,6 +460,14 @@ public static partial class DesktopNodeHostServiceAction
                 options,
                 plan,
                 firewallController ?? new DesktopNodeWindowsFirewallController());
+        }
+
+        if (plan.NativeSwitchOperation is not null)
+        {
+            return Ops.DesktopNodeHyperVSwitchOps.Execute(
+                options,
+                plan,
+                switchController ?? new DesktopNodeHyperVSwitchController());
         }
 
         if (plan.NativeTrustStoreOperation is not null)

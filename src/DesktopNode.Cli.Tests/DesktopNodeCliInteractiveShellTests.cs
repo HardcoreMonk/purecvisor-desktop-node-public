@@ -86,6 +86,8 @@ public sealed class DesktopNodeCliInteractiveShellTests
         Assert.Contains(lines, line => string.Equals(line.Trim(), "vm export | Queue a Hyper-V export into the allowlist root", StringComparison.Ordinal));
         Assert.Contains(lines, line => string.Equals(line.Trim(), "vm import preview | Dry-run a Hyper-V import without defining a VM", StringComparison.Ordinal));
         Assert.Contains(lines, line => string.Equals(line.Trim(), "vm import | Queue a Hyper-V import with a new identity and managed marker", StringComparison.Ordinal));
+        Assert.Contains(lines, line => string.Equals(line.Trim(), "vm network connect | Queue an existing NIC onto an inventory switch", StringComparison.Ordinal));
+        Assert.Contains(lines, line => string.Equals(line.Trim(), "vm device add | Queue one synthetic NIC or one empty DVD drive", StringComparison.Ordinal));
         Assert.Contains(lines, line => string.Equals(line.Trim(), "vm attach | Attach ISO media to the virtual DVD", StringComparison.Ordinal));
         Assert.Contains(lines, line => string.Equals(line.Trim(), "vm eject | Eject ISO media from the virtual DVD", StringComparison.Ordinal));
         Assert.Contains(lines, line => string.Equals(line.Trim(), "vm memory-stats | Show VM memory stats", StringComparison.Ordinal));

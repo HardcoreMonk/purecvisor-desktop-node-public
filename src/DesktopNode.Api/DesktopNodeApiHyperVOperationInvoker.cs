@@ -69,6 +69,9 @@ internal sealed class DesktopNodeApiHyperVOperationInvoker
             "vm.clone" or
             "vm.export" or
             "vm.import" or
+            "vm.network.connect" or
+            "vm.nic.add" or
+            "vm.dvd.add" or
             "vm.eject" or
             "vm.attach" or
             "vm.limit" or

@@ -71,7 +71,10 @@ public sealed class DesktopNodeCliProjectContractTests
             "pcvcli vm export preview <vm> --directory PATH",
             "pcvcli vm export <vm> --directory PATH --yes",
             "pcvcli vm import preview --name TARGET --directory PATH [--package-kind hyperv-export] [--has-vmcx]",
-            "pcvcli vm import --name TARGET --directory PATH --yes"
+            "pcvcli vm import --name TARGET --directory PATH --yes",
+            "pcvcli vm network connect <vm> --switch NAME --yes",
+            "pcvcli vm device add <vm> --kind nic --switch NAME --yes",
+            "pcvcli vm device add <vm> --kind dvd --yes"
         ];
 
         foreach (var commandShape in commandShapes)
@@ -158,7 +161,7 @@ public sealed class DesktopNodeCliProjectContractTests
         }
 
         Assert.Equal(28, featureCount);
-        Assert.Equal(78, routeCount);
+        Assert.Equal(80, routeCount);
         string[] stageLabels =
         [
             "code_tested",

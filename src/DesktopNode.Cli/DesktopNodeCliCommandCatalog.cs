@@ -255,7 +255,7 @@ public static class DesktopNodeCliCommandCatalog
     {
         if (args.Count < 2)
         {
-            throw Usage("Use: vm list|get|create|start|shutdown|poweroff|restart|pause|resume|save|resume-saved|rename|manage|template-lock|template-unlock|clone|export|import|guest-file|delete|checkpoint|attach.");
+            throw Usage("Use: vm list|get|create|start|shutdown|poweroff|restart|pause|resume|save|resume-saved|rename|manage|template-lock|template-unlock|clone|export|import|network|guest-file|delete|checkpoint|attach.");
         }
 
         return args[1].ToLowerInvariant() switch
@@ -275,6 +275,8 @@ public static class DesktopNodeCliCommandCatalog
             "clone" => VmClone(args),
             "export" => VmExport(args),
             "import" => VmImport(args),
+            "network" => VmNetwork(args),
+            "device" => VmDevice(args),
             "delete" => VmDelete(args),
             "checkpoint" or "snapshot" => CheckpointRequest(args),
             "rename" => VmRename(args),
@@ -870,6 +872,68 @@ public static class DesktopNodeCliCommandCatalog
             JsonSerializer.Serialize(body, JsonOptions));
     }
 
+    private static DesktopNodeCliRequest VmNetwork(IReadOnlyList<string> args)
+    {
+        const string usage = "vm network connect <vm> --switch NAME --yes";
+        if (args.Count < 4 || !Is(args[2], "connect") || args[3].StartsWith("--", StringComparison.Ordinal))
+        {
+            throw Usage("Use: " + usage + ".");
+        }
+
+        var parsed = ParseOptions(args.Skip(4).ToArray(), allowFlags: true);
+        if (!HasFlag(parsed.Options, "--yes"))
+        {
+            throw new ArgumentException(
+                "PCV_CLI_CONFIRMATION_REQUIRED|" +
+                "VM network connect requires explicit confirmation.|" +
+                "Use: pcvcli " + usage + ".");
+        }
+
+        var vm = Segment(args[3]);
+        var body = new SortedDictionary<string, object?>
+        {
+            ["switch"] = Required(parsed.Options, "--switch")
+        };
+
+        return new DesktopNodeCliRequest(
+            "POST",
+            $"/api/v1/vms/{vm}/network",
+            JsonSerializer.Serialize(body, JsonOptions));
+    }
+
+    private static DesktopNodeCliRequest VmDevice(IReadOnlyList<string> args)
+    {
+        const string usage = "vm device add <vm> --kind nic --switch NAME --yes | vm device add <vm> --kind dvd --yes";
+        if (args.Count < 4 || !Is(args[2], "add") || args[3].StartsWith("--", StringComparison.Ordinal))
+        {
+            throw Usage("Use: " + usage + ".");
+        }
+
+        var parsed = ParseOptions(args.Skip(4).ToArray(), allowFlags: true);
+        if (!HasFlag(parsed.Options, "--yes"))
+        {
+            throw new ArgumentException(
+                "PCV_CLI_CONFIRMATION_REQUIRED|" +
+                "VM device add requires explicit confirmation.|" +
+                "Use: pcvcli " + usage + ".");
+        }
+
+        var kind = Required(parsed.Options, "--kind");
+        var body = new SortedDictionary<string, object?>
+        {
+            ["device"] = kind
+        };
+        if (string.Equals(kind, "nic", StringComparison.OrdinalIgnoreCase))
+        {
+            body["switch"] = Required(parsed.Options, "--switch");
+        }
+
+        return new DesktopNodeCliRequest(
+            "POST",
+            $"/api/v1/vms/{Segment(args[3])}/devices",
+            JsonSerializer.Serialize(body, JsonOptions));
+    }
+
     private static DesktopNodeCliRequest VmClone(IReadOnlyList<string> args)
     {
         if (args.Count < 3 || args[2].StartsWith("--", StringComparison.Ordinal))
@@ -1322,6 +1386,9 @@ public static class DesktopNodeCliCommandCatalog
             "  pcvcli vm export <vm> --directory PATH --yes",
             "  pcvcli vm import preview --name TARGET --directory PATH [--package-kind hyperv-export] [--has-vmcx]",
             "  pcvcli vm import --name TARGET --directory PATH --yes",
+            "  pcvcli vm network connect <vm> --switch NAME --yes",
+            "  pcvcli vm device add <vm> --kind nic --switch NAME --yes",
+            "  pcvcli vm device add <vm> --kind dvd --yes",
             "  pcvcli vm delete <vm> --yes",
             "  pcvcli vm checkpoint list|create|restore|delete",
             "  pcvcli vm checkpoint schedule preview <vm> --interval-minutes N --retention-max N",

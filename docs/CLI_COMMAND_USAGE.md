@@ -246,6 +246,9 @@ pcvcli account disable lab-operator --yes
 | `pcvcli vm export <vm> --directory PATH --yes [--allowed-root PATH]` | `POST /api/v1/vms/{vm}/export` | Hyper-V export queued job. `--yes` 필요. TPM/OVF 없음 |
 | `pcvcli vm import preview --name TARGET --directory PATH [--package-kind hyperv-export] [--has-vmcx]` | `POST /api/v1/vms/import/preview` | Hyper-V import dry-run. VM을 정의하지 않음. OVF 거절 |
 | `pcvcli vm import --name TARGET --directory PATH --yes [--allowed-root PATH] [--package-kind hyperv-export]` | `POST /api/v1/vms/import` | Hyper-V import queued job. 새 identity와 managed marker. `--yes` 필요. OVF/in-place 거절 |
+| `pcvcli vm network connect <vm> --switch NAME --yes` | `POST /api/v1/vms/{vm}/network` | 기존 NIC를 inventory 스위치에 연결. `--yes` 필요. 새 NIC 추가는 아님. 스위치 생성/삭제는 Host `service-action` |
+| `pcvcli vm device add <vm> --kind nic --switch NAME --yes` | `POST /api/v1/vms/{vm}/devices` | synthetic NIC 하나를 기존 스위치에 추가. `--yes` 필요. NAT/DHCP와 장치 상점은 열지 않음 |
+| `pcvcli vm device add <vm> --kind dvd --yes` | `POST /api/v1/vms/{vm}/devices` | 빈 DVD 드라이브 하나를 추가. ISO는 `vm attach`. `--yes` 필요 |
 | `pcvcli vm delete <vm> --yes` | `DELETE /api/v1/vms/{vm}` | Managed VM delete job queue |
 
 VM 생성 예:
@@ -287,6 +290,7 @@ pcvcli vm clone ubuntu-lab-01 --name ubuntu-lab-02 --yes
 pcvcli vm clone ubuntu-lab-01 --name ubuntu-lab-02 --yes --vm-root D:\data\pcv-p1-clone-04276
 pcvcli vm export preview ubuntu-lab-01 --directory D:\PureCVisor\exports\ubuntu-lab-01
 pcvcli vm export ubuntu-lab-01 --directory D:\PureCVisor\exports\ubuntu-lab-01 --yes
+pcvcli vm network connect ubuntu-lab-01 --switch pcv-lab-internal --yes
 pcvcli vm import preview --name ubuntu-lab-02 --directory D:\PureCVisor\exports\ubuntu-lab-01 --has-vmcx
 pcvcli vm import --name ubuntu-lab-02 --directory D:\PureCVisor\exports\ubuntu-lab-01 --yes
 pcvcli vm delete ubuntu-lab-01 --yes

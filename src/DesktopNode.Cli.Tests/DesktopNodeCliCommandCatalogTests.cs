@@ -54,6 +54,9 @@ public sealed class DesktopNodeCliCommandCatalogTests
     [InlineData("vm export ubuntu-lab-01 --directory D:\\PureCVisor\\exports\\ubuntu-lab-01 --yes", "POST", "/api/v1/vms/ubuntu-lab-01/export")]
     [InlineData("vm import preview --name ubuntu-lab-02 --directory D:\\PureCVisor\\exports\\ubuntu-lab-01 --has-vmcx", "POST", "/api/v1/vms/import/preview")]
     [InlineData("vm import --name ubuntu-lab-02 --directory D:\\PureCVisor\\exports\\ubuntu-lab-01 --yes", "POST", "/api/v1/vms/import")]
+    [InlineData("vm network connect ubuntu-lab-01 --switch pcv-lab-internal --yes", "POST", "/api/v1/vms/ubuntu-lab-01/network")]
+    [InlineData("vm device add ubuntu-lab-01 --kind nic --switch pcv-lab-internal --yes", "POST", "/api/v1/vms/ubuntu-lab-01/devices")]
+    [InlineData("vm device add ubuntu-lab-01 --kind dvd --yes", "POST", "/api/v1/vms/ubuntu-lab-01/devices")]
     public void RoutesCommandsToLocalApiRequests(string commandLine, string method, string path)
     {
         var request = DesktopNodeCliCommandCatalog.CreateRequest(Split(commandLine));
@@ -68,7 +71,9 @@ public sealed class DesktopNodeCliCommandCatalogTests
             path.EndsWith("/export/preview", StringComparison.Ordinal) ||
             path.EndsWith("/export", StringComparison.Ordinal) ||
             path.EndsWith("/import/preview", StringComparison.Ordinal) ||
-            path.EndsWith("/import", StringComparison.Ordinal))
+            path.EndsWith("/import", StringComparison.Ordinal) ||
+            path.EndsWith("/network", StringComparison.Ordinal) ||
+            path.EndsWith("/devices", StringComparison.Ordinal))
         {
             Assert.NotNull(request.Body);
             return;
@@ -821,7 +826,7 @@ public sealed class DesktopNodeCliCommandCatalogTests
             }
         }
 
-        Assert.Equal(71, presentCount);
+        Assert.Equal(73, presentCount);
         Assert.Equal(7, excludedCount);
     }
 
@@ -842,6 +847,7 @@ public sealed class DesktopNodeCliCommandCatalogTests
         Assert.Contains("pcvcli vm manage <vm> --yes", usage, StringComparison.Ordinal);
         Assert.Contains("pcvcli vm clone <source> --name <target> --yes", usage, StringComparison.Ordinal);
         Assert.Contains("pcvcli vm clone <source> --name <target> --dry-run", usage, StringComparison.Ordinal);
+        Assert.Contains("pcvcli vm network connect <vm> --switch NAME --yes", usage, StringComparison.Ordinal);
         Assert.Contains("pcvcli vm guest-file <vm> --host-path PATH --guest-path PATH --credential-ref REF [--timeout-sec N] --dry-run|--yes", usage, StringComparison.Ordinal);
         Assert.Contains("pcvcli vm eject|delete-status", usage, StringComparison.Ordinal);
         Assert.Contains("pcvcli diagnostics bundle list [--limit N] [--offset N]", usage, StringComparison.Ordinal);
@@ -929,6 +935,23 @@ public sealed class DesktopNodeCliCommandCatalogTests
 
         Assert.Contains("PCV_CLI_CONFIRMATION_REQUIRED", error.Message, StringComparison.Ordinal);
         Assert.Contains("vm import --name TARGET --directory PATH --yes", error.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void RequiresExplicitYesForVmNetworkConnect()
+    {
+        var error = Assert.Throws<ArgumentException>(() =>
+            DesktopNodeCliCommandCatalog.CreateRequest([
+                "vm",
+                "network",
+                "connect",
+                "ubuntu-lab-01",
+                "--switch",
+                "pcv-lab-internal"
+            ]));
+
+        Assert.Contains("PCV_CLI_CONFIRMATION_REQUIRED", error.Message, StringComparison.Ordinal);
+        Assert.Contains("vm network connect <vm> --switch NAME --yes", error.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -1035,6 +1058,7 @@ public sealed class DesktopNodeCliCommandCatalogTests
         Assert.Contains("pcvcli vm export <vm> --directory PATH --yes", usage, StringComparison.Ordinal);
         Assert.Contains("pcvcli vm import preview --name TARGET --directory PATH [--package-kind hyperv-export] [--has-vmcx]", usage, StringComparison.Ordinal);
         Assert.Contains("pcvcli vm import --name TARGET --directory PATH --yes", usage, StringComparison.Ordinal);
+        Assert.Contains("pcvcli vm network connect <vm> --switch NAME --yes", usage, StringComparison.Ordinal);
         Assert.Contains("VM delete requires explicit confirmation", error.Message, StringComparison.Ordinal);
         Assert.Contains("vm delete <vm> --yes", error.Message, StringComparison.Ordinal);
         Assert.DoesNotContain("public release", usage + error.Message, StringComparison.OrdinalIgnoreCase);

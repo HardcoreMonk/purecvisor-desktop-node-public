@@ -137,6 +137,8 @@ public sealed record ApiHandlerAdapterContract(
                 NativeQueuedMutation("/api/v1/vms/{vmId}/export", "vm.export", "QueueExportVm", "pcv.vm.managed-import", "hyperv-vm"),
                 NativeProductOperation("/api/v1/vms/import/preview", "vm.import.preview", "PreviewVmImport", "pcv.vm.managed-import", "hyperv-vm"),
                 NativeQueuedMutation("/api/v1/vms/import", "vm.import", "QueueImportVm", "pcv.vm.managed-import", "hyperv-vm"),
+                NativeQueuedMutation("/api/v1/vms/{vmId}/network", "vm.network.connect", "QueueConnectVmNetwork", "pcv.network.inventory", "hyperv-network"),
+                NativeQueuedMutation("/api/v1/vms/{vmId}/devices", "vm.device.add", "QueueAddVmDevice", "pcv.network.inventory", "hyperv-network"),
                 NativeQueuedMutation("/api/v1/vms/{vmId}/template-lock", "vm.template.lock", "QueueTemplateLockVm", "pcv.vm.clone", "hyperv-vm"),
                 NativeProductOperation("/api/v1/vms/{vmId}/clone/preview", "vm.clone.preview", "PreviewCloneVm", "pcv.vm.clone", "hyperv-vm"),
                 NativeQueuedMutation("/api/v1/vms/{vmId}/clone", "vm.clone", "QueueCloneVm", "pcv.vm.clone", "hyperv-vm"),

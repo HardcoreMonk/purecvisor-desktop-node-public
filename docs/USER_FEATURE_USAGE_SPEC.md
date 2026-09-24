@@ -52,7 +52,7 @@ PureCVisor Desktop Node는 Windows 10/11 Pro/Enterprise + Hyper-V host를 로컬
 |------|------------|-------------|-----|----------|
 | Host status | [ `pcv.host.status` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-host-status)<br>[ `pcv.ops.summary` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-ops-summary) | Dashboard/Troubleshooting | `pcvcli host status` | `GET /host/status` |
 | Runtime policy | [ `pcv.runtime.policy` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-runtime-policy) | Dashboard/Troubleshooting | `pcvcli runtime policy` | `GET /runtime/policy` |
-| Network inventory | [ `pcv.network.inventory` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-network-inventory) | Network | `pcvcli network inventory` | `GET /network/inventory` |
+| Network inventory | [ `pcv.network.inventory` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-network-inventory) | Network (inventory read-only; no switch editor) | `pcvcli network inventory`; `pcvcli vm network connect <vm> --switch NAME --yes` | `GET /network/inventory`; `POST /vms/{id}/network` |
 | VM list/detail | [ `pcv.vm.inventory` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-inventory)<br>[ `pcv.vm.telemetry` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-telemetry)<br>[ `pcv.vm.rename` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-rename) | Virtual Machines | `pcvcli vm list/get` | `GET /vms`, `GET /vms/{id}` |
 | VM create | [ `pcv.vm.create` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-create) | VM create dialog | `pcvcli vm create ...` | `POST /vms` |
 | VM power | [ `pcv.vm.power-lifecycle` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-power-lifecycle)<br>[ `pcv.vm.pause-lifecycle` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-pause-lifecycle) | VM detail actions | `pcvcli vm start/shutdown/poweroff/restart` | `POST /vms/{id}/...` |
@@ -82,7 +82,7 @@ PureCVisor Desktop Node는 Windows 10/11 Pro/Enterprise + Hyper-V host를 로컬
 | [ `pcv.diagnostics.bundle` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-diagnostics-bundle) | 진단 bundle 목록·생성·다운로드 |
 | [ `pcv.account.session` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-account-session) | 계정, JWT session, RBAC |
 | [ `pcv.console.capabilities` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-console-capabilities) | Console capability discovery |
-| [ `pcv.network.inventory` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-network-inventory) | 네트워크 inventory |
+| [ `pcv.network.inventory` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-network-inventory) | 네트워크 inventory와 VM 스위치 연결 |
 | [ `pcv.vm.delete` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-delete) | VM 삭제와 삭제 상태 |
 | [ `pcv.vm.console-handoff` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-console-handoff) | VM console/noVNC handoff |
 | [ `pcv.vm.telemetry` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-telemetry) | VM CPU·memory telemetry |
@@ -149,7 +149,9 @@ Host/runtime 화면은 service install/start/stop, Event Log repair, Credential 
 | 실패 처리 | native parity failure는 helper fallback 없이 structured failure로 표시 |
 | 사용자 조치 | VMMS/Hyper-V 상태, Default Switch, network adapter 상태 확인 |
 
-Network 화면은 switch 생성/삭제, IP 변경, firewall 변경을 실행하지 않는다.
+Network 화면은 switch 생성/삭제, IP 변경, firewall 변경, VM 스위치 연결, NIC/DVD 추가를 실행하지 않는다.
+기존 NIC를 inventory 스위치에 붙이는 것은 CLI/API `vm.network.connect`다. 스위치 생성/삭제는 Host
+`service-action`이다. NIC 또는 빈 DVD 하나를 추가하는 것은 CLI/API `vm.device.add`다.
 
 ## 가상 머신 inventory와 상세
 

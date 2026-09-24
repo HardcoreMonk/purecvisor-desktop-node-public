@@ -8,7 +8,7 @@
   "allowed_lanes": ["0", "1", "2"],
   "mutation_allowed": true,
   "current_write_allowed": false,
-  "next_step": "P2-13 slice 5 Web export/import status readback is implemented (commit when named). Catalog stays 78 routes, queued 35, ProductOperation 20, digest e23882baab666a3b0f929ee5b156b19c4de7107325e547261476b18bd2fb37ca, CLI present 71, web present 60 / excluded 18. P2-13 source slices 1-5 are closed. Do not open P2-14..15, Hyper-V recovery, PathName rewrite smoke, package-pair, or write current-evidence unless named.",
+  "next_step": "P2-14 switch service-action and vm.network.connect, and P2-15 queued vm.nic.add/vm.dvd.add, are committed on feat/p1-9-account-crud. Do not open push/PR, package-pair, or current-evidence unless named.",
   "stop_on": [
     "same-cause-fail-3",
     "budget",

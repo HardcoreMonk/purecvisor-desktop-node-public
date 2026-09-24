@@ -95,6 +95,32 @@ function renderNetworkFailureGuidance(error) {
   </div>`;
 }
 
+function renderNetworkChangeReadback(switches) {
+  const rows = asArray(switches);
+  const productCount = rows.filter((item) => String(item?.name || '').toLowerCase().startsWith('pcv-')).length;
+  const reservedCount = rows.filter((item) => {
+    const name = String(item?.name || '').toLowerCase();
+    return name === 'default switch' || name.startsWith('wsl');
+  }).length;
+  const externalCount = rows.filter((item) => String(item?.type || item?.switch_type || '').toLowerCase() === 'external').length;
+  return `<div class="network-change-readback">
+      <div class="diagnostics-grid">
+        <div class="diagnostics-fact"><span class="muted">switch create</span><strong>service-action only</strong></div>
+        <div class="diagnostics-fact"><span class="muted">product switches</span><strong>${escapeHtml(productCount)}</strong></div>
+        <div class="diagnostics-fact"><span class="muted">reserved</span><strong>${escapeHtml(reservedCount)}</strong></div>
+        <div class="diagnostics-fact"><span class="muted">external</span><strong>${escapeHtml(externalCount === 0 ? 'none' : 'present')}</strong></div>
+        <div class="diagnostics-fact"><span class="muted">vm.network.connect</span><strong>CLI/API only</strong></div>
+        <div class="diagnostics-fact"><span class="muted">NAT/DHCP</span><strong>excluded</strong></div>
+      </div>
+      <div class="boundary-chip-row">
+        <span>no switch create form</span>
+        <span>no NAT editor</span>
+        <span>no DHCP editor</span>
+        <span>CLI/API vm.network.connect only</span>
+      </div>
+    </div>`;
+}
+
 function renderNetworkInventory() {
   if (!els.networkInventoryPanel) return;
   const inventory = getNetworkInventory();
@@ -124,6 +150,7 @@ function renderNetworkInventory() {
   els.networkInventoryPanel.innerHTML = `
     ${errorHtml}
     ${renderTableStateSummary('Switches', switches.length, allSwitches.length, state.networkFilter, 'read-only Hyper-V inventory')}
+    ${renderNetworkChangeReadback(allSwitches)}
     <div class="network-summary-grid">
       <div class="network-summary-card"><span class="muted">Source</span><strong>${escapeHtml(source)}</strong></div>
       <div class="network-summary-card"><span class="muted">Mutation</span><strong>${escapeHtml(mutationMode)}</strong></div>

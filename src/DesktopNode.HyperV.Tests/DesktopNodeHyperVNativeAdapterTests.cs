@@ -1530,6 +1530,13 @@ public sealed class DesktopNodeHyperVNativeAdapterTests
             var action = request.Operation == "vm.attach" ? "attach" : "eject";
             return new DesktopNodeHyperVVmMediaInfo(request.VmName, action, request.IsoPath);
         }
+
+        public DesktopNodeHyperVVmDeviceAddInfo AddDvd(
+            DesktopNodeHyperVVmDeviceAddRequest request,
+            CancellationToken cancellationToken)
+        {
+            return new DesktopNodeHyperVVmDeviceAddInfo("dvd-add", request.VmName, "dvd", null);
+        }
     }
 
     private sealed class RecordingHyperVVmResourceMutationProvider : IDesktopNodeHyperVVmResourceMutationProvider

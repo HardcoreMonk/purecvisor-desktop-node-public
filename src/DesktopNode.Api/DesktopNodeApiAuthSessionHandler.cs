@@ -230,6 +230,22 @@ internal sealed class DesktopNodeApiAuthSessionHandler
             HasServiceBearer: access.HasServiceBearer);
     }
 
+    public VmDeviceAddAuthContext ResolveVmDeviceAddAuth(DesktopNodeApiRequest request)
+    {
+        var access = ResolveCheckpointScheduleAuth(request);
+        return new VmDeviceAddAuthContext(
+            HasOperate: access.HasOperate,
+            HasServiceBearer: access.HasServiceBearer);
+    }
+
+    public NetworkChangeAuthContext ResolveNetworkChangeAuth(DesktopNodeApiRequest request)
+    {
+        var access = ResolveCheckpointScheduleAuth(request);
+        return new NetworkChangeAuthContext(
+            HasOperate: access.HasOperate,
+            HasServiceBearer: access.HasServiceBearer);
+    }
+
     public CheckpointScheduleAuthContext ResolveCheckpointScheduleAuth(DesktopNodeApiRequest request)
     {
         var access = accountAuth.Ready

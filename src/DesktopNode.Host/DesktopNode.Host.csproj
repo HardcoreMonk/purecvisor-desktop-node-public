@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\DesktopNode.Api\DesktopNode.Api.csproj" />
+    <ProjectReference Include="..\DesktopNode.HyperV\DesktopNode.HyperV.csproj" />
     <ProjectReference Include="..\DesktopNode.Service\DesktopNode.Service.csproj" />
   </ItemGroup>
 

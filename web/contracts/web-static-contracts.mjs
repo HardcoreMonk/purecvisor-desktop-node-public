@@ -1716,6 +1716,19 @@ function verifyNetworkInventory(context) {
     context.assertMatch(combined + fixtures, pattern, `network-inventory:${label}`);
   }
   context.assertMatch(combined, /read-only/i, "network-inventory:read-only");
+  const inventorySource = context.readText("web/src/served/render-inventory.ts");
+  assertSourceAndGenerated(context, inventorySource, app, [
+    [/network-change-readback/i, "network-change-readback"],
+    [/no switch create form/i, "no-switch-create-form"],
+    [/no NAT editor/i, "no-nat-editor"],
+    [/no DHCP editor/i, "no-dhcp-editor"],
+    [/CLI\/API vm\.network\.connect only/i, "network-connect-cli-api"]
+  ], "network-inventory");
+  context.assertNotMatch(
+    inventorySource + app,
+    /data-action="switch-create"|data-action="switch-remove"|data-action="vm-network-connect"|name="nat-network"|name="dhcp-scope"/i,
+    "network-inventory:no-editor-form"
+  );
   context.assertNotMatch(
     combined,
     /New-VMSwitch|Remove-VMSwitch|New-NetIPAddress|Set-NetFirewallRule/i,

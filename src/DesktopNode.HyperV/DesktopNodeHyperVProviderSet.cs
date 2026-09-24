@@ -16,6 +16,7 @@ public sealed class DesktopNodeHyperVProviderSet
         IDesktopNodeHyperVVmCloneProvider vmCloneProvider,
         IDesktopNodeHyperVVmExportProvider vmExportProvider,
         IDesktopNodeHyperVVmImportProvider vmImportProvider,
+        IDesktopNodeHyperVVmNetworkConnectProvider vmNetworkConnectProvider,
         IDesktopNodeHyperVVmMediaProvider vmMediaProvider,
         IDesktopNodeHyperVVmResourceMutationProvider vmResourceMutationProvider,
         IDesktopNodeHyperVGuestExecutionProvider guestExecutionProvider)
@@ -33,6 +34,7 @@ public sealed class DesktopNodeHyperVProviderSet
         ArgumentNullException.ThrowIfNull(vmCloneProvider);
         ArgumentNullException.ThrowIfNull(vmExportProvider);
         ArgumentNullException.ThrowIfNull(vmImportProvider);
+        ArgumentNullException.ThrowIfNull(vmNetworkConnectProvider);
         ArgumentNullException.ThrowIfNull(vmMediaProvider);
         ArgumentNullException.ThrowIfNull(vmResourceMutationProvider);
         ArgumentNullException.ThrowIfNull(guestExecutionProvider);
@@ -50,6 +52,7 @@ public sealed class DesktopNodeHyperVProviderSet
         VmCloneProvider = vmCloneProvider;
         VmExportProvider = vmExportProvider;
         VmImportProvider = vmImportProvider;
+        VmNetworkConnectProvider = vmNetworkConnectProvider;
         VmMediaProvider = vmMediaProvider;
         VmResourceMutationProvider = vmResourceMutationProvider;
         GuestExecutionProvider = guestExecutionProvider;
@@ -81,6 +84,8 @@ public sealed class DesktopNodeHyperVProviderSet
 
     public IDesktopNodeHyperVVmImportProvider VmImportProvider { get; }
 
+    public IDesktopNodeHyperVVmNetworkConnectProvider VmNetworkConnectProvider { get; }
+
     public IDesktopNodeHyperVVmMediaProvider VmMediaProvider { get; }
 
     public IDesktopNodeHyperVVmResourceMutationProvider VmResourceMutationProvider { get; }
@@ -104,6 +109,7 @@ public sealed class DesktopNodeHyperVProviderSet
             new DesktopNodeHyperVWmiVmCloneProvider(),
             new DesktopNodeHyperVWmiVmExportProvider(),
             new DesktopNodeHyperVWmiVmImportProvider(),
+            new DesktopNodeHyperVWmiVmNetworkConnectProvider(),
             new DesktopNodeHyperVWmiVmMediaProvider(),
             new DesktopNodeHyperVWmiVmResourceMutationProvider(),
             new DesktopNodeHyperVPowerShellDirectGuestExecutionProvider());
@@ -125,6 +131,7 @@ public sealed class DesktopNodeHyperVProviderSet
             ["vm-clone-provider"] = VmCloneProvider,
             ["vm-export-provider"] = VmExportProvider,
             ["vm-import-provider"] = VmImportProvider,
+            ["vm-network-connect-provider"] = VmNetworkConnectProvider,
             ["vm-media-provider"] = VmMediaProvider,
             ["vm-resource-mutation-provider"] = VmResourceMutationProvider,
             ["guest-execution-provider"] = GuestExecutionProvider,

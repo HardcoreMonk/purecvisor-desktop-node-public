@@ -427,6 +427,72 @@ public sealed partial class DesktopNodeHyperVNativeAdapter
         }
     }
 
+    private bool TryInvokeVmNetworkConnect(string operation, JsonElement parameters, CancellationToken cancellationToken, out DesktopNodeHyperVOperationResult result)
+    {
+        var vmName = GetStringProperty(parameters, "vm_name") ?? GetStringProperty(parameters, "name");
+        var switchName = GetStringProperty(parameters, "switch") ?? GetStringProperty(parameters, "switch_name");
+        if (string.IsNullOrWhiteSpace(vmName) || !IsValidHyperVName(vmName))
+        {
+            result = DesktopNodeHyperVOperationResult.Failure(
+                operation,
+                DesktopNode.Contracts.NetworkChangeProblemCodes.VmRequired,
+                $"VM name '{vmName ?? string.Empty}' is invalid.",
+                "Use a non-empty Hyper-V display name.",
+                false);
+            return true;
+        }
+
+        if (string.IsNullOrWhiteSpace(switchName))
+        {
+            result = DesktopNodeHyperVOperationResult.Failure(
+                operation,
+                DesktopNode.Contracts.NetworkChangeProblemCodes.SwitchRequired,
+                "A switch name is required.",
+                "Pass switch as the target Hyper-V switch display name.",
+                false);
+            return true;
+        }
+
+        try
+        {
+            ThrowIfNativeCanceled(cancellationToken, operation);
+            if (string.Equals(operation, "vm.nic.add", StringComparison.Ordinal))
+            {
+                var added = JsonSerializer.SerializeToElement(
+                    vmNetworkConnectProvider.AddNic(new DesktopNodeHyperVVmDeviceAddRequest(vmName, switchName), cancellationToken),
+                    JsonOptions);
+                result = new DesktopNodeHyperVOperationResult(true, operation, added, null);
+                return true;
+            }
+
+            var data = JsonSerializer.SerializeToElement(
+                vmNetworkConnectProvider.Invoke(new DesktopNodeHyperVVmNetworkConnectRequest(vmName, switchName), cancellationToken),
+                JsonOptions);
+            result = new DesktopNodeHyperVOperationResult(true, operation, data, null);
+            return true;
+        }
+        catch (DesktopNodeHyperVNativeOperationException ex)
+        {
+            result = DesktopNodeHyperVOperationResult.Failure(operation, ex.Code, ex.Message, ex.Detail, ex.Retryable);
+            return true;
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            result = CanceledResult(operation);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            result = DesktopNodeHyperVOperationResult.Failure(
+                operation,
+                "PCV_VM_NETWORK_CONNECT_FAILED",
+                $"VM network connect failed for '{vmName}'.",
+                ex.Message,
+                true);
+            return true;
+        }
+    }
+
     private bool TryInvokeVmClone(string operation, JsonElement parameters, CancellationToken cancellationToken, out DesktopNodeHyperVOperationResult result)
     {
         if (!TryReadVmCloneRequest(parameters, out var request, out result, operation))
@@ -537,6 +603,17 @@ public sealed partial class DesktopNodeHyperVNativeAdapter
         try
         {
             ThrowIfNativeCanceled(cancellationToken, operation);
+            if (string.Equals(operation, "vm.dvd.add", StringComparison.Ordinal))
+            {
+                var added = vmMediaProvider.AddDvd(new DesktopNodeHyperVVmDeviceAddRequest(vmName), cancellationToken);
+                result = new DesktopNodeHyperVOperationResult(
+                    true,
+                    operation,
+                    JsonSerializer.SerializeToElement(added, JsonOptions),
+                    null);
+                return true;
+            }
+
             var isoPath = GetStringProperty(parameters, "iso_path");
             if (operation == "vm.attach" && string.IsNullOrWhiteSpace(isoPath))
             {

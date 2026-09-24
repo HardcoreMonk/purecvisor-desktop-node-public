@@ -13,6 +13,19 @@ public interface IDesktopNodeHyperVSwitchProvider
     IReadOnlyList<DesktopNodeHyperVSwitchInfo> GetSwitches(CancellationToken cancellationToken);
 }
 
+public interface IDesktopNodeHyperVSwitchMutationProvider
+{
+    DesktopNodeHyperVSwitchMutationInfo Query(string switchName, CancellationToken cancellationToken);
+
+    DesktopNodeHyperVSwitchMutationInfo Create(
+        string switchName,
+        string switchType,
+        bool allowManagementOs,
+        CancellationToken cancellationToken);
+
+    DesktopNodeHyperVSwitchMutationInfo Remove(string switchName, CancellationToken cancellationToken);
+}
+
 public interface IDesktopNodeHyperVHostStatusProvider
 {
     DesktopNodeHyperVHostStatusData GetStatus(CancellationToken cancellationToken);
@@ -74,6 +87,17 @@ public interface IDesktopNodeHyperVVmImportProvider
         CancellationToken cancellationToken);
 }
 
+public interface IDesktopNodeHyperVVmNetworkConnectProvider
+{
+    DesktopNodeHyperVVmNetworkConnectInfo Invoke(
+        DesktopNodeHyperVVmNetworkConnectRequest request,
+        CancellationToken cancellationToken);
+
+    DesktopNodeHyperVVmDeviceAddInfo AddNic(
+        DesktopNodeHyperVVmDeviceAddRequest request,
+        CancellationToken cancellationToken);
+}
+
 public interface IDesktopNodeHyperVVmCloneProvider
 {
     DesktopNodeHyperVVmClonePlan Preview(
@@ -89,6 +113,10 @@ public interface IDesktopNodeHyperVVmMediaProvider
 {
     DesktopNodeHyperVVmMediaInfo Invoke(
         DesktopNodeHyperVVmMediaRequest request,
+        CancellationToken cancellationToken);
+
+    DesktopNodeHyperVVmDeviceAddInfo AddDvd(
+        DesktopNodeHyperVVmDeviceAddRequest request,
         CancellationToken cancellationToken);
 }
 
@@ -165,6 +193,14 @@ public sealed record DesktopNodeHyperVSwitchInfo(
     [property: JsonPropertyName("is_default")] bool IsDefault,
     [property: JsonPropertyName("allow_management_os")] bool? AllowManagementOs,
     [property: JsonPropertyName("net_adapter_interface_description")] string? NetAdapterInterfaceDescription);
+
+public sealed record DesktopNodeHyperVSwitchMutationInfo(
+    [property: JsonPropertyName("name")] string Name,
+    [property: JsonPropertyName("exists")] bool Exists,
+    [property: JsonPropertyName("type")] string? Type,
+    [property: JsonPropertyName("attached_vm_count")] int AttachedVmCount,
+    [property: JsonPropertyName("product_owned")] bool ProductOwned,
+    [property: JsonPropertyName("allow_management_os")] bool AllowManagementOs);
 
 public sealed record DesktopNodeHyperVVmInfo(
     [property: JsonPropertyName("id")] string Id,
@@ -303,6 +339,25 @@ public sealed record DesktopNodeHyperVVmImportInfo(
     [property: JsonPropertyName("vm_name")] string VmName,
     [property: JsonPropertyName("generate_new_id")] bool GenerateNewId,
     [property: JsonPropertyName("apply_managed_marker")] bool ApplyManagedMarker);
+
+public sealed record DesktopNodeHyperVVmNetworkConnectRequest(
+    string VmName,
+    string SwitchName);
+
+public sealed record DesktopNodeHyperVVmNetworkConnectInfo(
+    [property: JsonPropertyName("action")] string Action,
+    [property: JsonPropertyName("vm_name")] string VmName,
+    [property: JsonPropertyName("switch")] string SwitchName);
+
+public sealed record DesktopNodeHyperVVmDeviceAddRequest(
+    string VmName,
+    string? SwitchName = null);
+
+public sealed record DesktopNodeHyperVVmDeviceAddInfo(
+    [property: JsonPropertyName("action")] string Action,
+    [property: JsonPropertyName("vm_name")] string VmName,
+    [property: JsonPropertyName("device")] string Device,
+    [property: JsonPropertyName("switch")] string? SwitchName);
 
 public sealed record DesktopNodeHyperVVmCloneRequest(
     string SourceName,
