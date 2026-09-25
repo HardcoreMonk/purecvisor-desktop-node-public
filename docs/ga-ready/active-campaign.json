@@ -8,7 +8,7 @@
   "allowed_lanes": ["0", "1", "2"],
   "mutation_allowed": true,
   "current_write_allowed": false,
-  "next_step": "P2-14 switch service-action and vm.network.connect, and P2-15 queued vm.nic.add/vm.dvd.add, are committed on feat/p1-9-account-crud. Do not open push/PR, package-pair, or current-evidence unless named.",
+  "next_step": "fullgate full-admin-host-mutation-gate-20260926-04278 failed at service-msi-hyperv-admin-smoke with PCV_NETWORK_INVENTORY_FAILED. Host status reason PCV_DEFAULT_SWITCH_UNKNOWN. Installed manifest is 0.42.78-admin-smoke and current-evidence stays 0.42.77-admin-smoke. Do not resume fullgate, current-card, or current-evidence until switch enumeration is healthy.",
   "stop_on": [
     "same-cause-fail-3",
     "budget",
