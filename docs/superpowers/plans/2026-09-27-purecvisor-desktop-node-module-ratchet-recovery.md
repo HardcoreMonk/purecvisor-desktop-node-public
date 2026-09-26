@@ -123,9 +123,11 @@ foreach ($m in $r.modules) {
 | `DesktopNodeApiJobReconciliationHandler.CheckpointCapture.cs` | `CaptureCheckpoint*`, `TryReadCapturedCheckpoint*` | `240` |
 | `DesktopNodeApiJobReconciliationHandler.BaselineReaders.cs` | `TryReadCapturedRenameBaseline`, `TryReadCapturedDeleteBaseline`, `TryReadCapturedVmShutdownBaseline`, `TryReadCapturedVmRestartBaseline`, `TryReadCapturedVmCreateBaseline` | `210` |
 
-- [ ] checkpoint 계열 두 파일을 합치면 `500`줄을 넘으므로 나눈 상태를 유지한다.
-- [ ] core 기대 실측은 약 `750`줄이므로 상한 `1139`를 실측값으로 내린다.
-- [ ] `dotnet test src/DesktopNode.Api.Tests`, 실측 스크립트.
+- [x] checkpoint 계열 두 파일을 합치면 `500`줄을 넘으므로 나눈 상태를 유지한다.
+- [x] core 기대 실측은 약 `750`줄이므로 상한 `1139`를 실측값으로 내린다.
+- [x] `dotnet test src/DesktopNode.Api.Tests`, 실측 스크립트.
+
+실행 기록(2026-09-27): `Build*Parameters`(큐 등록 시점 baseline 캡처 진입점)와 fingerprint helper는 core에 남겼다. 각 도메인 전용 helper와 nested baseline record는 해당 파일로 옮겼다(QoS target/policy helper는 `Qos`, checkpoint helper와 `VmCheckpoint*Baseline`은 `CheckpointCapture`, 나머지 `Vm*Baseline` record는 `BaselineReaders`). core `674`줄, `VmReconcile` `429`, `VmCapture` `406`, `Qos` `380`, `CheckpointReconcile` `198`, `CheckpointCapture` `301`, `BaselineReaders` `236`. Api.Tests `408/410`(기존 baseline 실패 `2`건).
 
 ## Task 7: 종료 검증
 

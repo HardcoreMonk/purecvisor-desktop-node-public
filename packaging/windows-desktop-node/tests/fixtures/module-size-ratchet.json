@@ -20,9 +20,9 @@
     },
     {
       "path": "src/DesktopNode.Api/DesktopNodeApiJobReconciliationHandler.cs",
-      "max_lines": 1139,
-      "owner": "job reconciliation routes and durable baseline capture",
-      "note": "2026-08-06 분해가 만들어 낸 모듈이다. 2026-08-20 SERVICE_PLAN P0-2 checkpoint.restore reconcile가 durable baseline capture를 늘려 1139줄이 됐다."
+      "max_lines": 674,
+      "owner": "job reconciliation core: dispatch, schema constants, Build*Parameters, fingerprints, noVNC/schedule reconcile",
+      "note": "2026-08-06 분해가 만들어 낸 모듈이다. 2026-08-20 SERVICE_PLAN P0-2 checkpoint.restore reconcile가 durable baseline capture를 늘려 1139줄이 됐다. 2026-09-27 ratchet recovery Task 6 split it into partial files VmReconcile/VmCapture/Qos/CheckpointReconcile/CheckpointCapture/BaselineReaders (plan: docs/superpowers/plans/2026-09-27-purecvisor-desktop-node-module-ratchet-recovery.md)"
     },
     {
       "path": "src/DesktopNode.Api/DesktopNodeApiVmMutationRouteHandler.cs",
