@@ -76,20 +76,7 @@ function clearCheckpointActionPending(vmId, checkpointId = 'create') {
   delete state.pendingCheckpoints[getCheckpointActionKey(vmId, checkpointId)];
 }
 
-
-function bindListFilterEvents() {
-  els.vmFilter.addEventListener('input', () => {
-    state.vmFilter = els.vmFilter.value;
-    render();
-  });
-  els.vmStateFilter?.addEventListener('change', () => {
-    state.vmStateFilter = els.vmStateFilter.value || 'all';
-    render();
-  });
-  els.vmSort?.addEventListener('change', () => {
-    state.vmSort = els.vmSort.value || 'name';
-    render();
-  });
+function bindJobAndNetworkFilterEvents() {
   els.jobFilter?.addEventListener('input', () => {
     state.jobFilter = els.jobFilter.value;
     render();

@@ -37,6 +37,8 @@
 - `web/src/served-app.ts`를 바꾸면 `npm run build:served --prefix web`으로 `web/app.js`를 다시 만들고 같은 commit에 넣는다.
 - host mutation, 설치본 생성, operational anchor 승격을 하지 않는다. `public_trusted_signing`과 `external_stable_publication`은 범위 밖이며 주장하지 않는다.
 - task 하나가 checkpoint 하나다(30분, tool batch 18회). 캠페인 러너(`pcv-campaign-runner-v1`)로 실행하며, commit은 `docs/ga-ready/active-campaign.json`의 `commit_policy`를 따라 task마다 하나씩 만든다.
+- web 변경 task는 `npm run test:required --prefix web`까지 실행한다. `npm test`와 `verify:parity`는 `web/contracts/web-static-contracts.mjs`의 source contract를 실행하지 않는다.
+- `config/pcv-development-policy-contract-spec-v1.json`의 `source_files`에 있는 파일을 바꾸면 spec의 SHA-256과 `DevelopmentPolicyContractVerifier.ExpectedSpecSha256`을 갱신해야 한다. 이 계획은 `module-size-ratchet.json`과 `docs/AGENT_EXECUTION_CIRCUIT_BREAKER.md`를 바꾸므로 Task 7b에서 한 번에 갱신한다.
 
 ## 실측 스크립트
 
@@ -128,6 +130,28 @@ foreach ($m in $r.modules) {
 - [x] `dotnet test src/DesktopNode.Api.Tests`, 실측 스크립트.
 
 실행 기록(2026-09-27): `Build*Parameters`(큐 등록 시점 baseline 캡처 진입점)와 fingerprint helper는 core에 남겼다. 각 도메인 전용 helper와 nested baseline record는 해당 파일로 옮겼다(QoS target/policy helper는 `Qos`, checkpoint helper와 `VmCheckpoint*Baseline`은 `CheckpointCapture`, 나머지 `Vm*Baseline` record는 `BaselineReaders`). core `674`줄, `VmReconcile` `429`, `VmCapture` `406`, `Qos` `380`, `CheckpointReconcile` `198`, `CheckpointCapture` `301`, `BaselineReaders` `236`. Api.Tests `408/410`(기존 baseline 실패 `2`건).
+
+## Task 7a: web source contract 복구
+
+**수정:** `web/src/served-app.ts`, `web/src/served/table.ts`, `web/app.js`(생성물), fixture `note`
+
+Task 4가 옮긴 binding 중 `els.vmStateFilter?.addEventListener`와 `els.vmSort?.addEventListener`는 `web/contracts/web-static-contracts.mjs`의 `verifyVmDetailMount`가 `served-app.ts`에 있어야 한다고 고정한다. Task 4 검증은 `npm test`와 `verify:parity`만 실행해 이를 놓쳤고, Task 7에서 `test:required`가 `vm-detail-mount:state-filter-binding:source`로 실패했다.
+
+- [x] VM filter/state/sort binding `12`줄을 `bindEvents`로 되돌리고, job/network binding만 `table.ts`의 `bindJobAndNetworkFilterEvents()`에 남긴다.
+- [x] `npm run build:served --prefix web`, `npm run test:required --prefix web`.
+- [x] 실측 스크립트.
+
+실행 기록(2026-09-27): `served-app.ts` `426`줄(상한 `429`), `table.ts` `96`줄. `test:required` 실패 `0`.
+
+## Task 7b: development policy source SHA pin 갱신
+
+**수정:** `config/pcv-development-policy-contract-spec-v1.json`, `src/DesktopNode.Delivery.Tests/Delivery/Verification/DevelopmentPolicyContractVerifier.cs`(`ExpectedSpecSha256`)
+
+spec의 `source_files`는 `docs/AGENT_EXECUTION_CIRCUIT_BREAKER.md`와 `packaging/windows-desktop-node/tests/fixtures/module-size-ratchet.json`의 SHA-256을 고정한다. 캠페인 러너 commit `ecffd76`과 Task 1~6, 7a의 fixture 변경이 두 값을 바꿔 Delivery.Tests `50`건이 `source-sha`로 실패한다. verifier는 SHA 검사를 라쳇 검사보다 먼저 실행한다. 이번 계획 전에는 SHA 검사를 통과하고 라쳇 검사에서 `module-ratchet-exceeded`로 실패했으므로, `source-sha` 실패는 이번 계획이 만든 것이다.
+
+- [ ] 두 파일의 SHA-256을 verifier `Hash` 규칙으로 다시 계산해 spec에 적는다. fixture를 바꾸는 task가 모두 끝난 뒤에 실행한다.
+- [ ] 갱신된 spec의 SHA-256을 `ExpectedSpecSha256`에 적는다.
+- [ ] `dotnet test src/DesktopNode.Delivery.Tests` 실패 `0`.
 
 ## Task 7: 종료 검증
 

@@ -108,7 +108,19 @@ function bindEvents() {
     }
   });
   els.refreshAll.addEventListener('click', refreshAll);
-  bindListFilterEvents();
+  els.vmFilter.addEventListener('input', () => {
+    state.vmFilter = els.vmFilter.value;
+    render();
+  });
+  els.vmStateFilter?.addEventListener('change', () => {
+    state.vmStateFilter = els.vmStateFilter.value || 'all';
+    render();
+  });
+  els.vmSort?.addEventListener('change', () => {
+    state.vmSort = els.vmSort.value || 'name';
+    render();
+  });
+  bindJobAndNetworkFilterEvents();
   els.assetSearchInput?.addEventListener('input', renderVmAssetList);
   document.addEventListener('keydown', (event) => {
     if ((event.ctrlKey || event.metaKey) && String(event.key || '').toLowerCase() === 'k') {
