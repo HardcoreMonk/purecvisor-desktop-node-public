@@ -56,9 +56,9 @@ foreach ($m in $r.modules) {
 **수정:** `DesktopNodeHostServiceAction.cs`, `DesktopNodeHostApplication.cs`, fixture
 **생성:** `src/DesktopNode.Host/DesktopNodeHostServiceActionDescriptors.cs`, `src/DesktopNode.Host/DesktopNodeHostApplication.Lifetime.cs`
 
-- [ ] `DesktopNodeHostServiceAction.cs` 상단의 descriptor record 묶음(`DesktopNodeHostConfigMigrationSource`부터 `DesktopNodeHostCredentialManagerTransitionDescriptor`까지, 약 `140`줄)을 `DesktopNodeHostServiceActionDescriptors.cs`로 옮긴다. 기대 실측은 약 `455`줄이므로 상한 `563`을 실측값으로 내린다.
-- [ ] `DesktopNodeHostApplication.cs`의 `Dispose`(약 `40`줄)를 `DesktopNodeHostApplication.Lifetime.cs` partial로 옮긴다. 기대 실측은 약 `174`줄이고 여유가 `50` 미만이라 상한은 그대로 둔다.
-- [ ] `dotnet test src/DesktopNode.Host.Tests`, 실측 스크립트.
+- [x] `DesktopNodeHostServiceAction.cs` 상단의 descriptor record 묶음(`DesktopNodeHostConfigMigrationSource`부터 `DesktopNodeHostCredentialManagerTransitionDescriptor`까지, 약 `140`줄)을 `DesktopNodeHostServiceActionDescriptors.cs`로 옮긴다. 기대 실측은 약 `455`줄이므로 상한 `563`을 실측값으로 내린다.
+- [x] `DesktopNodeHostApplication.cs`의 `Dispose`(약 `40`줄)를 `DesktopNodeHostApplication.Lifetime.cs` partial로 옮긴다. 기대 실측은 약 `174`줄이고 여유가 `50` 미만이라 상한은 그대로 둔다.
+- [x] `dotnet test src/DesktopNode.Host.Tests`, 실측 스크립트.
 
 ## Task 2: Runtime과 Api request processor (`+18`, `+53`)
 

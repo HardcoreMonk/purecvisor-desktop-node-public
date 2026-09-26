@@ -6,10 +6,10 @@
   "modules": [
     {
       "path": "src/DesktopNode.Host/DesktopNodeHostServiceAction.cs",
-      "max_lines": 563,
+      "max_lines": 455,
       "owner": "DTO records, CreatePlan, ExecuteAsync dispatch to Ops owners",
       "decomposition_plan": "docs/superpowers/plans/2026-08-06-purecvisor-desktop-node-host-service-action-decomposition.md",
-      "note": "2026-08-09 pure static partial split of remaining shared surface. Predecessor ceiling after Ops move was 1174. evidence: docs/ga-ready/evidence/host-service-action-partial-decomposition-2026-08-09.md"
+      "note": "2026-08-09 pure static partial split of remaining shared surface. Predecessor ceiling after Ops move was 1174. evidence: docs/ga-ready/evidence/host-service-action-partial-decomposition-2026-08-09.md. 2026-09-27 ratchet recovery Task 1 moved descriptor records to DesktopNodeHostServiceActionDescriptors.cs (plan: docs/superpowers/plans/2026-09-27-purecvisor-desktop-node-module-ratchet-recovery.md)"
     },
     {
       "path": "src/DesktopNode.Api/DesktopNodeApiRequestProcessor.cs",
@@ -87,7 +87,7 @@
       "path": "src/DesktopNode.Host/DesktopNodeHostApplication.cs",
       "max_lines": 201,
       "owner": "HTTP host core: listener start, dispose, bindings",
-      "note": "2026-08-09 pure partial split of former 859-line file. evidence: docs/ga-ready/evidence/batch-evidence-host-app-test-fixture-decomposition-2026-08-09.md"
+      "note": "2026-08-09 pure partial split of former 859-line file. evidence: docs/ga-ready/evidence/batch-evidence-host-app-test-fixture-decomposition-2026-08-09.md. 2026-09-27 ratchet recovery Task 1 moved Dispose to DesktopNodeHostApplication.Lifetime.cs (plan: docs/superpowers/plans/2026-09-27-purecvisor-desktop-node-module-ratchet-recovery.md)"
     }
   ]
 }
