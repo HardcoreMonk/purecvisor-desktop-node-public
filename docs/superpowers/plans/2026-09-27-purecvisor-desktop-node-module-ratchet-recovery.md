@@ -10,7 +10,7 @@
 
 ## 현재 상태
 
-기준: public `main` HEAD `d5d1a47` (2026-09-27). 라인 수는 verifier의 `CountLines`와 같은 규칙(`\n` 개수, 마지막 줄에 개행이 없으면 `+1`)으로 쟀다.
+기준: public 저장소 `feat/p1-9-account-crud` HEAD `d5d1a47` (2026-09-27). 라인 수는 verifier의 `CountLines`와 같은 규칙(`\n` 개수, 마지막 줄에 개행이 없으면 `+1`)으로 쟀다.
 
 | 모듈 | 실측 | 상한 | 초과 |
 | --- | ---: | ---: | ---: |
@@ -65,9 +65,9 @@ foreach ($m in $r.modules) {
 **수정:** `DesktopNodeJobRuntime.Persistence.cs`, `DesktopNodeApiRequestProcessor.cs`, fixture
 **생성:** `src/DesktopNode.Runtime/DesktopNodeJobRuntime.Load.cs`, `src/DesktopNode.Api/DesktopNodeApiRequestProcessor.Worker.cs`
 
-- [ ] `DesktopNodeJobRuntime.Persistence.cs`의 `LoadUnsafe`(약 `158`줄)를 `DesktopNodeJobRuntime.Load.cs`로 옮긴다. 기대 실측은 약 `505`줄이므로 상한 `645`를 실측값으로 내린다.
-- [ ] `DesktopNodeApiRequestProcessor.cs`의 `RunWorkerLoopAsync`(약 `72`줄)를 `DesktopNodeApiRequestProcessor.Worker.cs`로 옮긴다. 기대 실측은 약 `430`줄이고 여유가 `50` 미만이다. 기존 `decomposition_plan`(2026-08-06)은 유지하고 `note`에 이 계획을 덧붙인다.
-- [ ] `dotnet test src/DesktopNode.Runtime.Tests`, `dotnet test src/DesktopNode.Api.Tests`, 실측 스크립트.
+- [x] `DesktopNodeJobRuntime.Persistence.cs`의 `LoadUnsafe`(약 `158`줄)를 `DesktopNodeJobRuntime.Load.cs`로 옮긴다. 기대 실측은 약 `505`줄이므로 상한 `645`를 실측값으로 내린다.
+- [x] `DesktopNodeApiRequestProcessor.cs`의 `RunWorkerLoopAsync`(약 `72`줄)를 `DesktopNodeApiRequestProcessor.Worker.cs`로 옮긴다. 기대 실측은 약 `430`줄이고 여유가 `50` 미만이다. 기존 `decomposition_plan`(2026-08-06)은 유지하고 `note`에 이 계획을 덧붙인다.
+- [x] `dotnet test src/DesktopNode.Runtime.Tests`, `dotnet test src/DesktopNode.Api.Tests`, 실측 스크립트.
 
 ## Task 3: HyperV native adapter (`+246`, `+88`)
 
