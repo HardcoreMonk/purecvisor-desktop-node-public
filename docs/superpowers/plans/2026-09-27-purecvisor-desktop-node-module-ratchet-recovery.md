@@ -74,9 +74,11 @@ foreach ($m in $r.modules) {
 **수정:** `DesktopNodeHyperVNativeAdapter.Mutations.cs`, `DesktopNodeHyperVNativeAdapter.cs`, fixture
 **생성:** `src/DesktopNode.HyperV/DesktopNodeHyperVNativeAdapter.ResourceMutations.cs`, `src/DesktopNode.HyperV/DesktopNodeHyperVNativeAdapter.Construction.cs`
 
-- [ ] `Mutations.cs`의 `TryInvokeVmResourceMutation`(약 `290`줄)과 `ResourceMutationParamFailure`(약 `14`줄)를 `ResourceMutations.cs`로 옮긴다. 기대 실측은 약 `867`줄이므로 상한 `925`를 실측값으로 내린다.
-- [ ] `DesktopNodeHyperVNativeAdapter.cs`의 연속된 생성자 overload `4`개(현재 `L357`~`L508`, 약 `152`줄)를 `Construction.cs`로 옮긴다. 기대 실측은 약 `579`줄이므로 상한 `643`을 실측값으로 내린다.
-- [ ] `dotnet test src/DesktopNode.HyperV.Tests`, 실측 스크립트.
+- [x] `Mutations.cs`의 `TryInvokeVmResourceMutation`(약 `290`줄)과 `ResourceMutationParamFailure`(약 `14`줄)를 `ResourceMutations.cs`로 옮긴다. 기대 실측은 약 `867`줄이므로 상한 `925`를 실측값으로 내린다.
+- [x] `DesktopNodeHyperVNativeAdapter.cs`의 연속된 생성자 overload `4`개(현재 `L357`~`L508`, 약 `152`줄)를 `Construction.cs`로 옮긴다. 기대 실측은 약 `579`줄이므로 상한 `643`을 실측값으로 내린다.
+- [x] `dotnet test src/DesktopNode.HyperV.Tests`, 실측 스크립트.
+
+실행 기록(2026-09-27): 연속 생성자 `4`개 대신, primary 생성자(필드 대입과 dispatch table)는 core에 남기고 `: this(...)` delegating overload `19`개 전부를 `Construction.cs`로 옮겼다. core 실측 `315`줄, `Construction.cs` `424`줄, `Mutations.cs` `867`줄, `ResourceMutations.cs` `312`줄. HyperV.Tests `220/220`.
 
 ## Task 4: Web served app (`+12`)
 
