@@ -229,7 +229,7 @@ public sealed class ApiHandlerAdapterContractTests
                 System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(snapshot)))
             .ToLowerInvariant();
 
-        Assert.Fail(digest);
+        Assert.Equal("40fb6cd685c3f1d8fb8afd6f75677a8ec7054b7072347bc09a7ea6930b966b89", digest);
         Assert.Equal(23, routes.Count(route => route.MutationStance == MutationStance.ReadOnly));
         Assert.Equal(20, routes.Count(route => route.MutationStance == MutationStance.ProductOperation));
         Assert.Equal(37, routes.Count(route => route.MutationStance == MutationStance.QueuedMutation));
@@ -730,7 +730,8 @@ public sealed class ApiHandlerAdapterContractTests
         Assert.True(DesktopNodeApiRuntimeRoutes.TryMatchQueuedMutation("POST", "/api/v1/vms/lab%20vm/network", out var networkMatch));
         Assert.Equal("QueueConnectVmNetwork", networkMatch.Route.OperationName);
         Assert.Equal("lab vm", networkMatch.Parameters["vmId"]);
-        Assert.False(DesktopNodeApiRuntimeRoutes.IsQueuedMutationRoute("POST", "/api/v1/vms/lab%20vm/qos/network"));
+        Assert.True(DesktopNodeApiRuntimeRoutes.TryMatchQueuedMutation("POST", "/api/v1/vms/lab%20vm/qos/network", out var networkQosMatch));
+        Assert.Equal("QueueSetVmNetworkQos", networkQosMatch.Route.OperationName);
         Assert.Equal("QueueTemplateLockVm", templateLockMatch.Route.OperationName);
         Assert.Equal("lab vm", templateLockMatch.Parameters["vmId"]);
 

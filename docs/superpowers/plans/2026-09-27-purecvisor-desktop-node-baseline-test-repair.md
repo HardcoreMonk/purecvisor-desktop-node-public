@@ -32,9 +32,11 @@
 
 **수정:** `src/DesktopNode.Api.Tests/ApiHandlerAdapterContractTests.cs`
 
-- [ ] L232 `Assert.Fail(digest);`를 현재 계약 digest pin `Assert.Equal("40fb6cd685c3f1d8fb8afd6f75677a8ec7054b7072347bc09a7ea6930b966b89", digest);`로 바꾼다. 착수 시 `e098e0a` diff에서 추가된 route와 `80` route / queued `37` 기록을 확인한다.
-- [ ] L733을 새 `/network` 경로가 `/qos/network`를 가로채지 않는지 확인하는 단언으로 바꾼다: `TryMatchQueuedMutation("POST", "/api/v1/vms/lab%20vm/qos/network", ...)`가 `QueueSetVmNetworkQos`로 매칭된다.
-- [ ] `dotnet test src/DesktopNode.Api.Tests` 실패 `0`.
+- [x] L232 `Assert.Fail(digest);`를 현재 계약 digest pin `Assert.Equal("40fb6cd685c3f1d8fb8afd6f75677a8ec7054b7072347bc09a7ea6930b966b89", digest);`로 바꾼다. 착수 시 `e098e0a` diff에서 추가된 route와 `80` route / queued `37` 기록을 확인한다.
+- [x] L733을 새 `/network` 경로가 `/qos/network`를 가로채지 않는지 확인하는 단언으로 바꾼다: `TryMatchQueuedMutation("POST", "/api/v1/vms/lab%20vm/qos/network", ...)`가 `QueueSetVmNetworkQos`로 매칭된다.
+- [x] `dotnet test src/DesktopNode.Api.Tests` 실패 `0`.
+
+실행 기록(2026-09-27): `e098e0a`는 `NativeQueuedMutation` `/api/v1/vms/{vmId}/network`(`QueueConnectVmNetwork`)와 `/api/v1/vms/{vmId}/devices`(`QueueAddVmDevice`) 두 route를 추가했고 commit 본문이 `Catalog 80 routes, queued 37`을 기록한다. digest pin 뒤의 개수 단언(ReadOnly `23`, ProductOperation `20`, QueuedMutation `37`)이 처음으로 실행되어 통과했다. Api.Tests `410/410`.
 
 ## Task 2: current evidence 기대 버전 갱신
 
