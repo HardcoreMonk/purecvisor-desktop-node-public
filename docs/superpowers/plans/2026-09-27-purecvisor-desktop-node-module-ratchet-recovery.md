@@ -103,9 +103,11 @@ foreach ($m in $r.modules) {
 | `DesktopNodeApiVmMutationRouteHandler.Devices.cs` | `HandleVmDeviceAdd`, `CountDvd`, `HandleVmNetworkConnect`, `SwitchExists` | `230` |
 | `DesktopNodeApiVmMutationRouteHandler.GuestQueue.cs` | `QueueVmGuestExec`, `QueueVmGuestChannelVerify`, `QueueVmGuestChannelEnsure`, `QueueVmGuestFile`, `HandleGuest*` | `255` |
 
-- [ ] 파일 하나씩 옮기고 매번 build한다. `QueuedRoute.cs`는 `500`줄에 가까우므로 생성 직후 실측한다.
-- [ ] core 기대 실측은 약 `815`줄이므로 상한 `989`를 실측값으로 내린다.
-- [ ] `dotnet test src/DesktopNode.Api.Tests`(ownership guard 포함), 실측 스크립트.
+- [x] 파일 하나씩 옮기고 매번 build한다. `QueuedRoute.cs`는 `500`줄에 가까우므로 생성 직후 실측한다.
+- [x] core 기대 실측은 약 `815`줄이므로 상한 `989`를 실측값으로 내린다.
+- [x] `dotnet test src/DesktopNode.Api.Tests`(ownership guard 포함), 실측 스크립트.
+
+실행 기록(2026-09-27): 표의 멤버에 각 도메인 전용 helper(`MapVmExportImportError`, `ReadDeviceQuantity`, `ReadGeneration`, `CountArray`, `CountDvdDrives`, `MapVmDeviceAddError`, `MapNetworkChangeError`, `HandleGuestFilePreviewRoute`, `TryReadGuestFileRequest`)를 함께 옮겼다. core `657`줄, `QueuedRoute` `466`, `ExportImport` `299`, `Devices` `295`, `GuestQueue` `323`. Api.Tests `408/410`이며 실패 `2`건(`ApiHandlerAdapterContractTests`)은 clean baseline `5ec4f23`에서도 재현되는 기존 실패다.
 
 ## Task 6: `DesktopNodeApiJobReconciliationHandler` (`+1431`)
 

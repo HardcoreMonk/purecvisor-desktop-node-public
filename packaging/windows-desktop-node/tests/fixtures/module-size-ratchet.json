@@ -26,9 +26,9 @@
     },
     {
       "path": "src/DesktopNode.Api/DesktopNodeApiVmMutationRouteHandler.cs",
-      "max_lines": 989,
-      "owner": "queued VM mutation routes and QoS validation",
-      "note": "2026-08-06 분해가 만들어 낸 모듈이다. 2026-08-27 SERVICE_PLAN P1-5 clone preview/queue routes가 970줄로 늘렸고, 2026-08-29 P1 clone disk/Off/vm-root 보정이 989줄로 늘렸다."
+      "max_lines": 657,
+      "owner": "queued VM mutation core: construction, QoS preview/queue, clone, checkpoint schedule, resource mutation",
+      "note": "2026-08-06 분해가 만들어 낸 모듈이다. 2026-08-27 SERVICE_PLAN P1-5 clone preview/queue routes가 970줄로 늘렸고, 2026-08-29 P1 clone disk/Off/vm-root 보정이 989줄로 늘렸다. 2026-09-27 ratchet recovery Task 5 split it into partial files QueuedRoute/ExportImport/Devices/GuestQueue (plan: docs/superpowers/plans/2026-09-27-purecvisor-desktop-node-module-ratchet-recovery.md)"
     },
     {
       "path": "src/DesktopNode.HyperV/DesktopNodeHyperVNativeAdapter.cs",
