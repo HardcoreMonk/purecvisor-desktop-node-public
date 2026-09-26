@@ -85,9 +85,11 @@ foreach ($m in $r.modules) {
 **수정:** `web/src/served-app.ts`, `web/app.js`(생성물)
 **생성:** `web/src/served/` 아래 binding 모듈 `1`개
 
-- [ ] `bindEvents`(`L13`~`L364`, 약 `352`줄)에서 한 도메인의 event binding 묶음(`12`줄 이상)을 `web/src/served/`의 새 모듈로 옮기고 `bindEvents`에서 호출한다. 기존 served 모듈의 import/export 형태를 따른다.
-- [ ] `npm run build:served --prefix web`, `npm test --prefix web`, `npm run verify:parity --prefix web`. `web/app.js` diff가 이동에 해당하는 부분뿐인지 확인한다.
-- [ ] 실측 스크립트. 여유가 `50` 이상이면 상한을 내린다.
+- [x] `bindEvents`(`L13`~`L364`, 약 `352`줄)에서 한 도메인의 event binding 묶음(`12`줄 이상)을 `web/src/served/`의 새 모듈로 옮기고 `bindEvents`에서 호출한다. 기존 served 모듈의 import/export 형태를 따른다.
+- [x] `npm run build:served --prefix web`, `npm test --prefix web`, `npm run verify:parity --prefix web`. `web/app.js` diff가 이동에 해당하는 부분뿐인지 확인한다.
+- [x] 실측 스크립트. 여유가 `50` 이상이면 상한을 내린다.
+
+실행 기록(2026-09-27): part는 ES module이 아니라 `build-served-asset.mjs`가 연결하는 한 스코프라서, 새 part를 만들지 않고(part 목록 두 곳 수정 회피) 목록 filter/sort binding `28`줄을 기존 `src/served/table.ts`의 `bindListFilterEvents()`로 옮겼다. `served-app.ts` `414`줄(상한 `429`), `table.ts` `109`줄. `npm test`, `verify:parity`, web Pester `50/50` 통과.
 
 ## Task 5: `DesktopNodeApiVmMutationRouteHandler` (`+1015`)
 

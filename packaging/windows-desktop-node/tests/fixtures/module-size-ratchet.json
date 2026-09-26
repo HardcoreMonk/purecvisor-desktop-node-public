@@ -58,7 +58,7 @@
       "path": "web/src/served-app.ts",
       "max_lines": 429,
       "owner": "Web Console event binding and initialization",
-      "note": "2026-08-08 분해로 4005줄에서 413줄이 됐다. 2026-08-27 managed clone confirmation이 429줄로 늘렸다. UI layer는 src/served/*.ts 18개 part로 옮겼고 가장 큰 것이 mutate.ts 422줄이라 신규 등록 대상(500줄 초과)은 없다. evidence: docs/ga-ready/evidence/served-app-decomposition-2026-08-08.md"
+      "note": "2026-08-08 분해로 4005줄에서 413줄이 됐다. 2026-08-27 managed clone confirmation이 429줄로 늘렸다. UI layer는 src/served/*.ts 18개 part로 옮겼고 가장 큰 것이 mutate.ts 422줄이라 신규 등록 대상(500줄 초과)은 없다. evidence: docs/ga-ready/evidence/served-app-decomposition-2026-08-08.md. 2026-09-27 ratchet recovery Task 4 moved the list filter/sort bindings to bindListFilterEvents() in src/served/table.ts (plan: docs/superpowers/plans/2026-09-27-purecvisor-desktop-node-module-ratchet-recovery.md)"
     },
     {
       "path": "src/DesktopNode.Runtime/DesktopNodeJobRuntime.cs",
