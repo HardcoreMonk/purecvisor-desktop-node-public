@@ -42,8 +42,10 @@
 
 **수정:** `src/DesktopNode.Verification.Tests/CurrentEvidenceVerifierTests.cs`
 
-- [ ] 기대 버전을 `docs/ga-ready/current-evidence.json`의 현재 값 `0.42.77-admin-smoke`로 바꾼다. 같은 테스트의 target 개수와 상태 단언이 통과하는지 확인한다.
-- [ ] `dotnet test src/DesktopNode.Verification.Tests` 실패 `0`.
+- [x] 기대 버전을 `docs/ga-ready/current-evidence.json`의 현재 값 `0.42.77-admin-smoke`로 바꾼다. 같은 테스트의 target 개수와 상태 단언이 통과하는지 확인한다.
+- [x] `dotnet test src/DesktopNode.Verification.Tests` 실패 `0`.
+
+실행 기록(2026-09-27): `current-evidence.json`의 `current.version`은 `a842ede`(2026-09-20) 이후 `0.42.77-admin-smoke`다. 기대값만 바꿨고 target `8`개 `current` 단언은 그대로 통과한다. `policy-boundaries` suite는 clean committed HEAD를 요구하므로(AGENTS.md) 변경 중에는 `CurrentEvidenceVerifierTests`만 돌리고, commit 뒤 clean HEAD에서 Verification.Tests 전체를 확인한다.
 
 ## Task 3: C# architecture gap registry 개수 갱신
 
