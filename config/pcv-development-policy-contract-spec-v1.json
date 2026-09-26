@@ -10,7 +10,7 @@
     },
     {
       "path": "docs/AGENT_EXECUTION_CIRCUIT_BREAKER.md",
-      "sha256": "d4154bc7fa247c9685c80c09f37618679328b515ef5e9573767c48813414fca8"
+      "sha256": "1d576eb774b4d732ed0c9cc4e271a24913d628bf15d8ea9574412b0ec090cd2a"
     },
     {
       "path": "AGENTS.md",
@@ -66,7 +66,7 @@
     },
     {
       "path": "packaging/windows-desktop-node/tests/fixtures/module-size-ratchet.json",
-      "sha256": "d5550e520027e4cc9589adb211ce00ed9ee45b869c502e7426c9e5652c768daa"
+      "sha256": "101074c1928797471a2723d57b6d558a643c399679aff4b825430fd60e1f363d"
     },
     {
       "path": "packaging/windows-desktop-node/tools/PcvStrictCollection.psm1",

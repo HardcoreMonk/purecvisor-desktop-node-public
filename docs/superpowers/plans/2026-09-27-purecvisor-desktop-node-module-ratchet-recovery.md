@@ -149,9 +149,11 @@ Task 4가 옮긴 binding 중 `els.vmStateFilter?.addEventListener`와 `els.vmSor
 
 spec의 `source_files`는 `docs/AGENT_EXECUTION_CIRCUIT_BREAKER.md`와 `packaging/windows-desktop-node/tests/fixtures/module-size-ratchet.json`의 SHA-256을 고정한다. 캠페인 러너 commit `ecffd76`과 Task 1~6, 7a의 fixture 변경이 두 값을 바꿔 Delivery.Tests `50`건이 `source-sha`로 실패한다. verifier는 SHA 검사를 라쳇 검사보다 먼저 실행한다. 이번 계획 전에는 SHA 검사를 통과하고 라쳇 검사에서 `module-ratchet-exceeded`로 실패했으므로, `source-sha` 실패는 이번 계획이 만든 것이다.
 
-- [ ] 두 파일의 SHA-256을 verifier `Hash` 규칙으로 다시 계산해 spec에 적는다. fixture를 바꾸는 task가 모두 끝난 뒤에 실행한다.
-- [ ] 갱신된 spec의 SHA-256을 `ExpectedSpecSha256`에 적는다.
-- [ ] `dotnet test src/DesktopNode.Delivery.Tests` 실패 `0`.
+- [x] 두 파일의 SHA-256을 verifier `Hash` 규칙으로 다시 계산해 spec에 적는다. fixture를 바꾸는 task가 모두 끝난 뒤에 실행한다.
+- [x] 갱신된 spec의 SHA-256을 `ExpectedSpecSha256`에 적는다.
+- [x] `dotnet test src/DesktopNode.Delivery.Tests` 실패 `0`.
+
+실행 기록(2026-09-27): `AGENT_EXECUTION_CIRCUIT_BREAKER.md` `d4154bc7…` → `1d576eb7…`, `module-size-ratchet.json` `d5550e52…` → `101074c1…`, `ExpectedSpecSha256` `00fcc127…` → `f943225b…`. Delivery.Tests `705/705`.
 
 ## Task 7: 종료 검증
 
