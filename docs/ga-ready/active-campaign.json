@@ -8,7 +8,7 @@
   "allowed_lanes": ["0", "1", "2"],
   "mutation_allowed": true,
   "current_write_allowed": false,
-  "next_step": "fullgate full-admin-host-mutation-gate-20260927-04278 PASS after the dev-host vmswitch driver start-type fix, but installed Host/CLI stay the e098e0a build because two stale 0.42.78 ProductCodes from 20260926 kept shared components (equal-version no overwrite, uninstall blocked by another client). Current-card capture stopped. Current-evidence stays 0.42.77-admin-smoke. next_approval_required: msiexec removal of the stale 0.42.78 ProductCodes, then fullgate rerun.",
+  "next_step": "fullgate full-admin-host-mutation-gate-20260927-04278-r2 PASS after removing the three stale 0.42.78 ProductCodes; installed Host/CLI match the 0de176f gate build and ARP has one entry. Installed current-card 20260927-04278 PASS, not promoted. Current-evidence stays 0.42.77-admin-smoke. Do not open Lane 3 promotion, current-evidence, or push/PR unless named.",
   "stop_on": [
     "same-cause-fail-3",
     "budget",
