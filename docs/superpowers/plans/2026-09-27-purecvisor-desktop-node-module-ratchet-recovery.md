@@ -157,12 +157,21 @@ spec의 `source_files`는 `docs/AGENT_EXECUTION_CIRCUIT_BREAKER.md`와 `packagin
 
 ## Task 7: 종료 검증
 
-- [ ] 실측 스크립트에서 `14`종 모두 `0 <= gap < 50`.
+- [x] 실측 스크립트에서 `14`종 모두 `0 <= gap < 50`.
 - [ ] `dotnet test src/DesktopNode.sln` 전체 통과. `DesktopNode.Delivery.Tests` 실패 `0`.
-- [ ] `Invoke-Pester -Path packaging/windows-desktop-node/tests/PcvModuleSizeRatchet.Tests.ps1`.
-- [ ] Task 4를 포함하면 `npm run test:required --prefix web`.
+- [x] `Invoke-Pester -Path packaging/windows-desktop-node/tests/PcvModuleSizeRatchet.Tests.ps1`.
+- [x] Task 4를 포함하면 `npm run test:required --prefix web`.
 - [ ] `git diff --check`, commit 후 AGENTS.md의 Required CI 네 shard.
 
+실행 기록(2026-09-27, HEAD `70e097f`):
+
+- 라쳇 `14`종 위반 `0`. 이번 계획이 만든 신규 partial은 모두 `500`줄 미만이다.
+- `dotnet test src/DesktopNode.sln`: Delivery `705/705`, Host `216/216`, Runtime `128/128`, HyperV `220/220`, Cli `178/178`, Contracts `178/178`, Service `11/11`. 남은 실패 `3`건은 계획 전부터 있던 것이라 전체 통과 항목은 체크하지 않는다.
+  - Api `ApiHandlerAdapterContractTests` `2`건: clean `5ec4f23`에서 재현.
+  - Verification `CurrentEvidenceVerifierTests.CanonicalRepositoryPassesWithoutWritingOwnedFiles`: current `0.42.75`를 기대하지만 2026-09-20 승격 뒤 `0.42.77`이다.
+- Pester `PcvModuleSizeRatchet`, `PcvCSharpArchitectureGapRegistry`, `PcvAdminSmokeEvidenceDocs`: `101/103`. 실패 `2`건(architecture gap registry의 ownership 개수 기대값)은 계획 전 `d5d1a47`에서도 실패한다. 그 baseline은 라쳇 실패까지 `3`건이었다.
+- `npm run test:required --prefix web`: pass `236`, fail `0`, static parity와 browser fixture 통과.
+- `git diff --check` 통과. Required CI 네 shard는 실행하지 않았다(dotnet shard는 위 기존 실패로 실패한다).
 ## Nonclaims
 
 - 이 문서는 계획이며 코드 변경을 포함하지 않는다.
