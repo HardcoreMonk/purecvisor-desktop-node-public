@@ -1,3 +1,4 @@
+using DesktopNode.Contracts;
 using DesktopNode.HyperV;
 
 namespace DesktopNode.HyperV.Tests;
@@ -347,6 +348,56 @@ public sealed class DesktopNodeHyperVWmiProviderTests
         Assert.False(info.IsDefault);
         Assert.True(info.AllowManagementOs);
         Assert.Null(info.NetAdapterInterfaceDescription);
+    }
+
+    [Fact]
+    public void WmiSwitchProviderMapsSwitchWithoutManagementPortOrExternalBindingAsPrivate()
+    {
+        var info = DesktopNodeHyperVWmiSwitchProvider.MapSwitch("pcv-lab-private");
+
+        Assert.Equal("pcv-lab-private", info.Name);
+        Assert.Equal("private", info.Type);
+        Assert.False(info.IsDefault);
+        Assert.False(info.AllowManagementOs);
+        Assert.Null(info.NetAdapterInterfaceDescription);
+    }
+
+    [Fact]
+    public void ImportPackageValidationAcceptsGenerationTwoGuestStateFile()
+    {
+        var directory = Directory.CreateTempSubdirectory("pcv-import-package-").FullName;
+        try
+        {
+            var virtualMachines = Directory.CreateDirectory(Path.Combine(directory, "Virtual Machines")).FullName;
+            File.WriteAllText(Path.Combine(virtualMachines, "vm.vmcx"), string.Empty);
+            File.WriteAllText(Path.Combine(virtualMachines, "vm.vmgs"), string.Empty);
+
+            DesktopNodeHyperVWmiVmImportProvider.ValidatePackageContent(directory);
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+
+    [Theory]
+    [InlineData("package.ovf")]
+    [InlineData("package.ova")]
+    public void ImportPackageValidationRejectsOvfAndOva(string fileName)
+    {
+        var directory = Directory.CreateTempSubdirectory("pcv-import-package-").FullName;
+        try
+        {
+            File.WriteAllText(Path.Combine(directory, fileName), string.Empty);
+
+            var error = Assert.Throws<DesktopNodeHyperVNativeOperationException>(
+                () => DesktopNodeHyperVWmiVmImportProvider.ValidatePackageContent(directory));
+            Assert.Equal(VmExportImportProblemCodes.OvfForbidden, error.Code);
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
     }
 
     [Fact]

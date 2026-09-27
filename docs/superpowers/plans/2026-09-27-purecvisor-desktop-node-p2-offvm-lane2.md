@@ -106,9 +106,11 @@ PCVCLI가 아니라 `DesktopNode.Host.exe service-action switch-create|switch-re
 
 **수정:** `src/DesktopNode.HyperV/DesktopNodeHyperVWmiVmImportProvider.cs`, `src/DesktopNode.HyperV/DesktopNodeHyperVWmiSwitchProvider.cs`, 해당 테스트, export/import 설계 문서 결정 문장
 
-- [ ] import provider에서 `.vmgs` 파일 존재 거절을 없앤다. planned VM의 `Msvm_SecuritySettingData` 검사(TPM, shielding, key protector 있으면 거절하고 planned VM 삭제)는 그대로 둔다.
-- [ ] `MapSwitch`가 management port와 external binding이 없는 switch를 `private`, `AllowManagementOs=false`로 분류한다. External 분류는 이 task 밖이다(report-only).
-- [ ] 회귀 테스트, `dotnet test src/DesktopNode.HyperV.Tests`, 마무리 솔루션 전체.
+- [x] import provider에서 `.vmgs` 파일 존재 거절을 없앤다. planned VM의 `Msvm_SecuritySettingData` 검사(TPM, shielding, key protector 있으면 거절하고 planned VM 삭제)는 그대로 둔다.
+- [x] `MapSwitch`가 management port와 external binding이 없는 switch를 `private`, `AllowManagementOs=false`로 분류한다. External 분류는 이 task 밖이다(report-only).
+- [x] 회귀 테스트, `dotnet test src/DesktopNode.HyperV.Tests`, 마무리 솔루션 전체.
+
+실행 기록(2026-09-28): package 검사를 `ValidatePackageContent`(OVF/OVA만 거절)로 분리해 temp 디렉터리로 테스트한다(`.vmcx`+`.vmgs` 허용, `.ovf`/`.ova` 거절). `MapSwitch("pcv-lab-private")`는 `private`/`AllowManagementOs=false`이고 native `network.inventory`가 Default+Private 조합에서 `Ok`다. export/import 설계 문서에 2026-09-28 결정 문장을 더했다. HyperV.Tests `225/225`.
 
 ## Task 10: 0.42.80 probe-vehicle package와 설치
 

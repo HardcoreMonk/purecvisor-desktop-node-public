@@ -38,24 +38,7 @@ public sealed class DesktopNodeHyperVWmiVmImportProvider : IDesktopNodeHyperVVmI
                 false);
         }
 
-        if (HasPackageExtension(directory, ".ovf") || HasPackageExtension(directory, ".ova"))
-        {
-            throw new DesktopNodeHyperVNativeOperationException(
-                VmExportImportProblemCodes.OvfForbidden,
-                "OVF/OVA packages are not allowed.",
-                "Import only a Hyper-V export folder that contains a .vmcx definition.",
-                false);
-        }
-
-        if (HasPackageExtension(directory, ".vmgs"))
-        {
-            throw new DesktopNodeHyperVNativeOperationException(
-                VmExportImportProblemCodes.ImportSecurityFeaturesUnsupported,
-                "The export package includes VM guest-state security material.",
-                "This import path does not copy TPM or key-protector material.",
-                false);
-        }
-
+        ValidatePackageContent(directory);
         var vmcxPath = FindVmcx(directory);
         var snapshotFolder = Path.Combine(directory, "Snapshots");
         if (!Directory.Exists(snapshotFolder))
@@ -145,6 +128,20 @@ public sealed class DesktopNodeHyperVWmiVmImportProvider : IDesktopNodeHyperVVmI
             request.TargetName,
             true,
             true);
+    }
+
+    // Generation 2 exports always carry a .vmgs guest-state file, so the file itself is not a rejection
+    // signal. TPM, shielding, and key-protector material is rejected from the planned VM security settings.
+    public static void ValidatePackageContent(string directory)
+    {
+        if (HasPackageExtension(directory, ".ovf") || HasPackageExtension(directory, ".ova"))
+        {
+            throw new DesktopNodeHyperVNativeOperationException(
+                VmExportImportProblemCodes.OvfForbidden,
+                "OVF/OVA packages are not allowed.",
+                "Import only a Hyper-V export folder that contains a .vmcx definition.",
+                false);
+        }
     }
 
     private static string FindVmcx(string directory)
