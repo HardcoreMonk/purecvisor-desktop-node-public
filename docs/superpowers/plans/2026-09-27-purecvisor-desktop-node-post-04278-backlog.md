@@ -38,10 +38,12 @@
 
 **수정:** `docs/FEATURE_IMPLEMENTATION_LEDGER.md`(생성물이면 그 원천)
 
-- [ ] 착수 시 stage 표가 손으로 쓰는 표인지 생성물인지 확인한다.
-- [ ] repo에 PASS evidence가 있는 stage만 기록한다(예: `pcv.vm.clone` actual-VM `service-plan-p1-clone-actual-vm-2026-08-29-04277-r2`). 근거가 없는 stage는 `not-assessed`로 둔다.
-- [ ] `pcv.vm.clone` non-claim 문장을 evidence에 맞게 고친다.
-- [ ] 관련 Pester와 Delivery 테스트.
+- [x] 착수 시 stage 표가 손으로 쓰는 표인지 생성물인지 확인한다.
+- [x] repo에 PASS evidence가 있는 stage만 기록한다(예: `pcv.vm.clone` actual-VM `service-plan-p1-clone-actual-vm-2026-08-29-04277-r2`). 근거가 없는 stage는 `not-assessed`로 둔다.
+- [x] `pcv.vm.clone` non-claim 문장을 evidence에 맞게 고친다.
+- [x] 관련 Pester와 Delivery 테스트.
+
+실행 기록(2026-09-27): stage 표는 생성물이 아니지만 문서 첫 절이 `config/desktop-node-feature-evidence-ledger.json` 투영이라고 정한다. 그 JSON은 feature마다 `current.verdict` 하나만 두어 stage별 부분 evidence를 담을 수 없다. 사용자 결정(`candidate_required` 불변) 안에서 표는 투영 규칙대로 `not-assessed`로 두고, 사실과 다르던 `pcv.vm.clone` 설명 두 곳(첫 절과 non-claim)을 0.42.77 설치본 actual-VM clone PASS(`service-plan-p1-clone-actual-vm-2026-08-29-04277-r2`)에 맞게 고쳤다. stage별 기록에는 feature evidence ledger 모델 확장이 필요하다(report-only). Cli.Tests `178/178`, Delivery `706/706`, Pester `90/90`, web feature surface parity PASS.
 
 ## Task 3: 같은 version 재빌드 installer 설계
 
