@@ -54,14 +54,34 @@
 
 실행 기록(2026-09-27): 생성기는 `OwnedRelativePaths` `7`개와 `packaging/windows-desktop-node/README.md`까지 `8`개 target의 generated block을 갱신했고 `-Check`에서 모두 `current`다. `CurrentEvidenceVerifierTests` `13/13`. `AGENTS.md`가 spec에 pin되어 있어 Delivery.Tests의 `source-sha`는 Task 3 pin 갱신 전까지 red다.
 
-## Task 3: 수기 문서, spec, 계약 테스트
+## Task 3 분할
 
-**수정:** `docs/ga-ready/MANUAL_ADMIN_NEXT_CAMPAIGN_DESCRIPTOR.md`, `packaging/windows-desktop-node/README.md`, `docs/DOCUMENTATION_INDEX.md`, `docs/FEATURE_IMPLEMENTATION_LEDGER.md`, `src/DesktopNode.Delivery.Tests/Delivery/Evidence/D2EvidenceContractVerifier.cs`, 관련 config spec, development policy spec pin
-**생성:** `src/DesktopNode.Delivery.Tests/Delivery/Evidence/Pcv04278PromotionEvidenceContractTests.cs`
+Task 3 착수 중 `a842ede`를 다시 읽고 범위를 셋으로 나눴다. 0.42.77 승격은 descriptor 외에 single-root consume evidence(`manual-admin-campaign-2026-09-20-04275-04277`)와 main push public-boundary evidence를 두고, `MANUAL_ADMIN_NEXT_CAMPAIGN_DESCRIPTOR.md`의 `current_*` 약 `40`개를 `previous_04275_*`로 옮겼다. Task 2 뒤 Delivery.Tests는 `127`건 red다(spec pin `126`, 04277 current 단언 `1`).
 
-- [ ] 착수 시 `a842ede`의 spec/test 변경을 다시 읽고 같은 항목을 `0.42.78`로 옮긴다.
-- [ ] `Pcv04277PromotionEvidenceContractTests`와 같은 형태로 `0.42.78` 승격 계약 테스트를 추가한다.
-- [ ] pin된 파일이 바뀌었으면 spec SHA와 `ExpectedSpecSha256`을 갱신한다.
+## Task 3a: manual-admin consume과 main push evidence
+
+**생성:** `artifacts/manual-admin-campaign-20260927-04277-04278/**`(gitignored), `docs/ga-ready/evidence/manual-admin-campaign-2026-09-27-04277-04278.md`, `docs/ga-ready/evidence/public-boundary-ci-main-push-2026-09-27-04278-pr11-postmerge-pass.md`
+**수정:** `docs/ga-ready/current-evidence.json`(`latest_closed_descriptor`), 생성 문서
+
+- [ ] 09-25 descriptor가 읽은 여섯 runner summary의 JSON만 0.42.77과 같은 single-root 배치로 복사하고 `consume-manifest.json`(`pcv-manual-admin-single-root-descriptor-consume-v1`)을 쓴다.
+- [ ] `New-PcvManualAdminCampaignDescriptor -PlanOnly`를 single root에 실행해 `overall_status=pass`를 확인한다. descriptor batch는 `manual-admin-campaign-descriptor-20260927-04277-04278`이다.
+- [ ] consume evidence 문서와 PR #11 merge(`3c677a4`) 뒤 main push evidence 문서를 쓴다.
+- [ ] `current-evidence.json`의 `latest_closed_descriptor`를 consume descriptor로 바꾸고 생성 문서를 다시 만든다.
+
+## Task 3b: manual-admin descriptor chain
+
+**수정:** `docs/ga-ready/MANUAL_ADMIN_NEXT_CAMPAIGN_DESCRIPTOR.md`, `docs/DOCUMENTATION_INDEX.md`, `docs/FEATURE_IMPLEMENTATION_LEDGER.md`
+
+- [ ] `a842ede`와 같은 방식으로 `current_*`/`latest_*`/`next_*` 값을 `previous_04277_*`로 옮기고 0.42.78 값을 쓴다.
+- [ ] 나머지 수기 문서의 current 표기를 맞춘다.
+
+## Task 3c: 계약 테스트와 pin
+
+**수정:** `D2EvidenceContractVerifier.cs`, spec `3`종(development policy, installed smoke, manual-admin readiness)과 각 verifier의 spec SHA 상수
+**생성:** `Pcv04278PromotionEvidenceContractTests.cs`
+
+- [ ] `Verify04277Current`를 previous current 검증으로 바꾸고 `Verify04278Current`와 04278 테스트를 추가한다.
+- [ ] 바뀐 pin 파일의 SHA와 spec SHA 상수를 갱신한다.
 - [ ] `dotnet test src/DesktopNode.Delivery.Tests` 실패 `0`.
 
 ## Task 4: 종료 검증
@@ -75,7 +95,7 @@
 ## Task 5: push와 PR
 
 - [ ] branch를 push하고 `main` 대상 PR을 만든다. PR 본문 끝에 Claude Code 표기를 붙인다.
-- [ ] CI 결과를 확인한다. merge는 사용자 권한 뒤에만 한다.
+- [ ] CI 결과를 확인하고, green이면 merge한다(사용자 결정 2026-09-27). 허용 분류기가 막으면 멈추고 보고한다.
 
 ## Nonclaims
 
