@@ -121,3 +121,5 @@ PCVCLI가 아니라 `DesktopNode.Host.exe service-action switch-create|switch-re
 ## Task 11: Lane 2 `export-import`, `network-connect` 재실행 (0.42.80)
 
 - [ ] 기능군마다 한 run(각각 checkpoint 하나). evidence 문서 새 파일.
+
+실행 기록(2026-09-28, export-import): `.vmgs` 수정은 동작해 import job이 succeeded다. 그러나 import VM이 구성을 Hyper-V 기본 위치에 두고 **소스 VM의 VHDX**를 가리킨다(package 디스크 미사용). runner는 예약 root 밖 VM을 정리하지 않았고 identity 확인 뒤 제품 delete로 수동 정리했다(잔여 `0`). `docs/ga-ready/evidence/service-plan-p2-offvm-export-import-actual-vm-2026-09-28-04280.md`. import 저장소 처리 설계 결정 대기(`new-design-required`). network-connect 재실행은 아직이다(checkpoint 한도).
