@@ -156,4 +156,19 @@ PCVCLI가 아니라 `DesktopNode.Host.exe service-action switch-create|switch-re
 
 ## Task 16: Lane 2 `network-connect` 재실행 (0.42.81)
 
-- [ ] 한 run, evidence 문서 새 파일.
+- [x] 한 run, evidence 문서 새 파일.
+
+실행 기록(2026-09-28): 첫 run PASS. 없는 switch는 `PCV_NETWORK_SWITCH_NOT_FOUND`, connect 뒤 WMI·제품 모두 전용 Private switch, cleanup에서 VM 삭제 뒤 switch 제거, 잔여 VM·switch `0`. `docs/ga-ready/evidence/service-plan-p2-offvm-network-connect-actual-vm-2026-09-28-04281.md`.
+
+## 종료 상태 (2026-09-28)
+
+| 기능군 | Lane 2 결과 | 설치본 |
+| --- | --- | --- |
+| P2-15 NIC/DVD 추가 | PASS (`...device-add-actual-vm-2026-09-27-04278-r2`) | `0.42.78` |
+| P2-12 checkpoint schedule | PASS (`...checkpoint-schedule-actual-vm-2026-09-27-04278`) | `0.42.78` |
+| P2-13 export/import | PASS (`...export-import-actual-vm-2026-09-28-04281`) | `0.42.81` probe |
+| P2-14 network connect | PASS (`...network-connect-actual-vm-2026-09-28-04281`) | `0.42.81` probe |
+
+찾아 고친 제품 결함 4건: Off 어휘(`stopped`), import `.vmgs` 거절, Private switch inventory 분류, import 소스 디스크 공유.
+설치본은 probe `0.42.81-admin-smoke`이고 operational current는 `0.42.78-admin-smoke`다. current 승격(Lane 3: fullgate,
+pair, current-card)은 별도 승인 대상이다.
