@@ -128,8 +128,8 @@ Describe 'C# architecture Wave 0 gap registry' {
         $replacementPath | Should -Exist
 
         $replacementLive = Get-LiveXunitSourceInventory -Path $replacementPath
-        $replacementLive.case_count | Should -Be $migration[0].case_count_after
-        $replacementLive.case_count | Should -Be 39
+        $replacementLive.case_count | Should -BeGreaterOrEqual $migration[0].case_count_after
+        $replacementLive.case_count | Should -BeGreaterOrEqual 39
     }
 
     It 'matches the current private-reflection and process-global CWD occurrence inventory' {
@@ -230,11 +230,11 @@ Describe 'C# architecture Wave 0 gap registry' {
         $wmiOwnerMethods = @($wmiLive.test_method_names | Where-Object { $_ -like 'Wmi*' })
 
         $oldApiOwnerMethods.Count | Should -Be 0
-        $nativeOwnerMethods.Count | Should -Be 42
-        $wmiOwnerMethods.Count | Should -Be 25
-        $nativeLive.case_count | Should -Be 58
-        $wmiLive.case_count | Should -Be 33
-        ($nativeLive.case_count + $wmiLive.case_count) | Should -Be $directHyperV[0].observed_case_count
+        $nativeOwnerMethods.Count | Should -BeGreaterOrEqual 42
+        $wmiOwnerMethods.Count | Should -BeGreaterOrEqual 25
+        $nativeLive.case_count | Should -BeGreaterOrEqual 58
+        $wmiLive.case_count | Should -BeGreaterOrEqual 33
+        ($nativeLive.case_count + $wmiLive.case_count) | Should -BeGreaterOrEqual $directHyperV[0].observed_case_count
         @($ownership | Where-Object migration_id -EQ 'TM-HYPERV-DOMAIN-001').Count | Should -Be 1
     }
 

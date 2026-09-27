@@ -6,34 +6,35 @@
   "modules": [
     {
       "path": "src/DesktopNode.Host/DesktopNodeHostServiceAction.cs",
-      "max_lines": 563,
+      "max_lines": 455,
       "owner": "DTO records, CreatePlan, ExecuteAsync dispatch to Ops owners",
       "decomposition_plan": "docs/superpowers/plans/2026-08-06-purecvisor-desktop-node-host-service-action-decomposition.md",
-      "note": "2026-08-09 pure static partial split of remaining shared surface. Predecessor ceiling after Ops move was 1174. evidence: docs/ga-ready/evidence/host-service-action-partial-decomposition-2026-08-09.md"
+      "note": "2026-08-09 pure static partial split of remaining shared surface. Predecessor ceiling after Ops move was 1174. evidence: docs/ga-ready/evidence/host-service-action-partial-decomposition-2026-08-09.md. 2026-09-27 ratchet recovery Task 1 moved descriptor records to DesktopNodeHostServiceActionDescriptors.cs (plan: docs/superpowers/plans/2026-09-27-purecvisor-desktop-node-module-ratchet-recovery.md)"
     },
     {
       "path": "src/DesktopNode.Api/DesktopNodeApiRequestProcessor.cs",
       "max_lines": 449,
       "owner": "public API surface, request entry, HandleCore dispatch to route owners",
-      "decomposition_plan": "docs/superpowers/plans/2026-08-06-purecvisor-desktop-node-api-request-processor-decomposition.md"
+      "decomposition_plan": "docs/superpowers/plans/2026-08-06-purecvisor-desktop-node-api-request-processor-decomposition.md",
+      "note": "2026-09-27 ratchet recovery Task 2 moved RunWorkerLoopAsync to DesktopNodeApiRequestProcessor.Worker.cs (plan: docs/superpowers/plans/2026-09-27-purecvisor-desktop-node-module-ratchet-recovery.md)"
     },
     {
       "path": "src/DesktopNode.Api/DesktopNodeApiJobReconciliationHandler.cs",
-      "max_lines": 1139,
-      "owner": "job reconciliation routes and durable baseline capture",
-      "note": "2026-08-06 분해가 만들어 낸 모듈이다. 2026-08-20 SERVICE_PLAN P0-2 checkpoint.restore reconcile가 durable baseline capture를 늘려 1139줄이 됐다."
+      "max_lines": 674,
+      "owner": "job reconciliation core: dispatch, schema constants, Build*Parameters, fingerprints, noVNC/schedule reconcile",
+      "note": "2026-08-06 분해가 만들어 낸 모듈이다. 2026-08-20 SERVICE_PLAN P0-2 checkpoint.restore reconcile가 durable baseline capture를 늘려 1139줄이 됐다. 2026-09-27 ratchet recovery Task 6 split it into partial files VmReconcile/VmCapture/Qos/CheckpointReconcile/CheckpointCapture/BaselineReaders (plan: docs/superpowers/plans/2026-09-27-purecvisor-desktop-node-module-ratchet-recovery.md)"
     },
     {
       "path": "src/DesktopNode.Api/DesktopNodeApiVmMutationRouteHandler.cs",
-      "max_lines": 989,
-      "owner": "queued VM mutation routes and QoS validation",
-      "note": "2026-08-06 분해가 만들어 낸 모듈이다. 2026-08-27 SERVICE_PLAN P1-5 clone preview/queue routes가 970줄로 늘렸고, 2026-08-29 P1 clone disk/Off/vm-root 보정이 989줄로 늘렸다."
+      "max_lines": 657,
+      "owner": "queued VM mutation core: construction, QoS preview/queue, clone, checkpoint schedule, resource mutation",
+      "note": "2026-08-06 분해가 만들어 낸 모듈이다. 2026-08-27 SERVICE_PLAN P1-5 clone preview/queue routes가 970줄로 늘렸고, 2026-08-29 P1 clone disk/Off/vm-root 보정이 989줄로 늘렸다. 2026-09-27 ratchet recovery Task 5 split it into partial files QueuedRoute/ExportImport/Devices/GuestQueue (plan: docs/superpowers/plans/2026-09-27-purecvisor-desktop-node-module-ratchet-recovery.md)"
     },
     {
       "path": "src/DesktopNode.HyperV/DesktopNodeHyperVNativeAdapter.cs",
-      "max_lines": 643,
-      "owner": "provider domain orchestration core: construction, dispatch table, TryInvoke entry",
-      "note": "2026-08-09 pure partial split. Predecessor single-file ceiling was 2038. 2026-08-27 vm.clone preview/clone dispatch가 643줄로 늘렸다. evidence: docs/ga-ready/evidence/hyperv-native-adapter-partial-decomposition-2026-08-09.md"
+      "max_lines": 315,
+      "owner": "provider domain orchestration core: fields, primary constructor with dispatch table, TryInvoke entry",
+      "note": "2026-08-09 pure partial split. Predecessor single-file ceiling was 2038. 2026-08-27 vm.clone preview/clone dispatch가 643줄로 늘렸다. evidence: docs/ga-ready/evidence/hyperv-native-adapter-partial-decomposition-2026-08-09.md. 2026-09-27 ratchet recovery Task 3 moved the 19 delegating constructor overloads to DesktopNodeHyperVNativeAdapter.Construction.cs (plan: docs/superpowers/plans/2026-09-27-purecvisor-desktop-node-module-ratchet-recovery.md)"
     },
     {
       "path": "src/DesktopNode.HyperV/DesktopNodeHyperVNativeAdapter.Reads.cs",
@@ -43,9 +44,9 @@
     },
     {
       "path": "src/DesktopNode.HyperV/DesktopNodeHyperVNativeAdapter.Mutations.cs",
-      "max_lines": 925,
-      "owner": "checkpoint mutation, power state, create/delete/rename, media, resource/qos mutation",
-      "note": "2026-08-09 pure partial split from DesktopNodeHyperVNativeAdapter.cs. 2026-08-27 vm.clone queued mutation wiring이 925줄로 늘렸다. Registered at creation so the large module is not renamed away from the ratchet."
+      "max_lines": 867,
+      "owner": "checkpoint mutation, power state, create/delete/rename, media, export/import, network connect",
+      "note": "2026-08-09 pure partial split from DesktopNodeHyperVNativeAdapter.cs. 2026-08-27 vm.clone queued mutation wiring이 925줄로 늘렸다. Registered at creation so the large module is not renamed away from the ratchet. 2026-09-27 ratchet recovery Task 3 moved TryInvokeVmResourceMutation and ResourceMutationParamFailure to DesktopNodeHyperVNativeAdapter.ResourceMutations.cs (plan: docs/superpowers/plans/2026-09-27-purecvisor-desktop-node-module-ratchet-recovery.md)"
     },
     {
       "path": "src/DesktopNode.HyperV/DesktopNodeHyperVWmiVmCloneProvider.cs",
@@ -57,7 +58,7 @@
       "path": "web/src/served-app.ts",
       "max_lines": 429,
       "owner": "Web Console event binding and initialization",
-      "note": "2026-08-08 분해로 4005줄에서 413줄이 됐다. 2026-08-27 managed clone confirmation이 429줄로 늘렸다. UI layer는 src/served/*.ts 18개 part로 옮겼고 가장 큰 것이 mutate.ts 422줄이라 신규 등록 대상(500줄 초과)은 없다. evidence: docs/ga-ready/evidence/served-app-decomposition-2026-08-08.md"
+      "note": "2026-08-08 분해로 4005줄에서 413줄이 됐다. 2026-08-27 managed clone confirmation이 429줄로 늘렸다. UI layer는 src/served/*.ts 18개 part로 옮겼고 가장 큰 것이 mutate.ts 422줄이라 신규 등록 대상(500줄 초과)은 없다. evidence: docs/ga-ready/evidence/served-app-decomposition-2026-08-08.md. 2026-09-27 ratchet recovery moved the job/network filter bindings to bindJobAndNetworkFilterEvents() in src/served/table.ts; the VM filter/sort bindings stay here because web-static-contracts pins them to this file (Task 4, Task 7a; plan: docs/superpowers/plans/2026-09-27-purecvisor-desktop-node-module-ratchet-recovery.md)"
     },
     {
       "path": "src/DesktopNode.Runtime/DesktopNodeJobRuntime.cs",
@@ -67,9 +68,9 @@
     },
     {
       "path": "src/DesktopNode.Runtime/DesktopNodeJobRuntime.Persistence.cs",
-      "max_lines": 645,
+      "max_lines": 505,
       "owner": "job store snapshot write/load, retention, recovery",
-      "note": "2026-08-09 pure partial split from DesktopNodeJobRuntime.cs. Registered at creation so the large module is not renamed away from the ratchet."
+      "note": "2026-08-09 pure partial split from DesktopNodeJobRuntime.cs. Registered at creation so the large module is not renamed away from the ratchet. 2026-09-27 ratchet recovery Task 2 moved LoadUnsafe to DesktopNodeJobRuntime.Load.cs (plan: docs/superpowers/plans/2026-09-27-purecvisor-desktop-node-module-ratchet-recovery.md)"
     },
     {
       "path": "src/DesktopNode.Api/BatchEvidenceSummaryReader.cs",
@@ -87,7 +88,7 @@
       "path": "src/DesktopNode.Host/DesktopNodeHostApplication.cs",
       "max_lines": 201,
       "owner": "HTTP host core: listener start, dispose, bindings",
-      "note": "2026-08-09 pure partial split of former 859-line file. evidence: docs/ga-ready/evidence/batch-evidence-host-app-test-fixture-decomposition-2026-08-09.md"
+      "note": "2026-08-09 pure partial split of former 859-line file. evidence: docs/ga-ready/evidence/batch-evidence-host-app-test-fixture-decomposition-2026-08-09.md. 2026-09-27 ratchet recovery Task 1 moved Dispose to DesktopNodeHostApplication.Lifetime.cs (plan: docs/superpowers/plans/2026-09-27-purecvisor-desktop-node-module-ratchet-recovery.md)"
     }
   ]
 }

@@ -20,8 +20,8 @@ provenance_commit: `9f051b5a9cca80634e8ad7c4d15267a414c79d66`
 iso_path: `D:/Downloads/ubuntu-26.04-live-server-amd64.iso`
 lan_prefix: `http://[redacted-private-endpoint]:7777/`
 host_mutation_performed: `true`
-canonical_current_evidence: `0.42.75-admin-smoke`
-canonical_current_changed: `false`
+canonical_current_evidence: `0.42.77-admin-smoke`
+canonical_current_changed: `true`
 public_trusted_signing: `excluded`
 external_stable_publication: `not-claimed`
 
@@ -81,6 +81,6 @@ hash가 다르다. product wrapper SHA-256은 04275/04277 clean package와 같�
 - public trusted signing, trusted timestamp, external stable publication을 주장하지 않는다.
 - manual-admin package-pair, installed current-card, Lane 3 current 승격은 이 문서가
   소유하지 않는다.
-- `docs/ga-ready/current-evidence.json`은 `0.42.75-admin-smoke`로 유지한다.
+- 2026-09-20 Lane 3가 `docs/ga-ready/current-evidence.json`을 `0.42.77-admin-smoke`로 승격했다.
 - 호스트에 남은 `pcv-guest-installed-04253-r1`는 이 gate가 만들지 않았고 지우지 않았다.
   report-only다.

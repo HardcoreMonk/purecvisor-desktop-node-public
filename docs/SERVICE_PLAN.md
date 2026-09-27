@@ -219,7 +219,7 @@ Workstation 이름을 가져오지 않는다. 같은 운영 공백을 PCV 계약
 
 | # | 기획 이름 | 열기 전 조건 | 열면 안 되는 형태 |
 | ---: | --- | --- | --- |
-| 11 | noVNC target 설정 | ADR-0010: audit, rollback, loopback 기본, reload | 화면에서 target 저장, LAN 기본 on |
+| 11 | noVNC target 설정 | ADR-0010 적용. audit, rollback, loopback 기본, in-process reload | 화면에서 target 저장, LAN 기본 on |
 | 12 | 주기 checkpoint | retention, 용량 가드 | 무한 AutoProtect |
 | 13 | Hyper-V export/import | managed marker 유지 | 만능 OVF, vTPM 키 노출 |
 | 14 | 네트워크 변경 | admin runbook / service-action만 | Web switch/NAT/DHCP 에디터 |
@@ -261,7 +261,7 @@ P0–P1을 열면 그때 **새 product payload**가 생기고, 그때만 `0.42.7
 #### 지금은 열지 않음
 
 - linked clone / 차이 디스크 트리
-- noVNC target self-service (ADR-0010 전)
+- Web에서 noVNC target 저장 폼 / LAN 기본 on
 - 브라우저에서 firewall/trust-store/MSI
 - 설치 시 기본 계정 생성
 - Hyper-V exactly-once, mixed-version 동시 writer (ADR-0013 비주장)
@@ -321,7 +321,7 @@ P0-1 media attach
 | `docs/service-core-backend-frontend-implementation-evaluation-2026-07-16.md` | 04265 구현 평가 (선행) |
 | `docs/adr/0006-internal-private-network-distribution.md` | 내부 사설망 |
 | `docs/adr/0009-guest-execution-security-boundary.md` | guest exec |
-| `docs/adr/0010-account-novnc-target-config-security-policy-candidate.md` | noVNC target 보류 |
+| `docs/adr/0010-novnc-target-config-security-policy.md` | noVNC target 적용 (code-level) |
 | `docs/adr/0011-cli-web-only-operator-surface.md` | CLI/Web-only |
 | `docs/adr/0013-job-store-single-writer-transaction-lease.md` | job store 비주장 |
 | `docs/ga-ready/EVIDENCE_INDEX.md` | 04273 evidence |

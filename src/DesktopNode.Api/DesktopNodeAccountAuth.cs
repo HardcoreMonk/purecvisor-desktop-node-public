@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using DesktopNode.Contracts;
 
@@ -14,7 +15,9 @@ public sealed record DesktopNodeAccountAuthOptions(
     IReadOnlyList<DesktopNodeAccountUser>? Accounts = null,
     TimeSpan? AccessTokenLifetime = null,
     TimeSpan? RefreshTokenLifetime = null,
-    Func<DateTimeOffset>? Clock = null)
+    Func<DateTimeOffset>? Clock = null,
+    string? AccountFilePath = null,
+    Action<string>? HardenAccountFile = null)
 {
     public static DesktopNodeAccountAuthOptions Disabled { get; } = new();
 
@@ -62,7 +65,8 @@ public sealed record DesktopNodeAccountAuthOptions(
             Issuer: string.IsNullOrWhiteSpace(config.Issuer) ? "purecvisor-desktop-node" : config.Issuer!,
             Audience: string.IsNullOrWhiteSpace(config.Audience) ? "desktop-node-local-api" : config.Audience!,
             SigningKey: signingKey,
-            Accounts: config.Accounts ?? []);
+            Accounts: config.Accounts ?? [],
+            AccountFilePath: accountFile);
     }
 }
 
@@ -72,18 +76,26 @@ public sealed record DesktopNodeAccountUser(
     [property: JsonPropertyName("password_hash")] string PasswordHash,
     [property: JsonPropertyName("role")] string Role,
     [property: JsonPropertyName("display_name")] string? DisplayName = null,
-    [property: JsonPropertyName("permissions")] IReadOnlyList<string>? Permissions = null);
+    [property: JsonPropertyName("permissions")] IReadOnlyList<string>? Permissions = null,
+    [property: JsonPropertyName("enabled")] bool Enabled = true,
+    [property: JsonPropertyName("disabled_at")]
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    DateTimeOffset? DisabledAt = null);
 
 public sealed record DesktopNodeAccountAuthFile(
     [property: JsonPropertyName("issuer")] string? Issuer,
     [property: JsonPropertyName("audience")] string? Audience,
-    [property: JsonPropertyName("accounts")] IReadOnlyList<DesktopNodeAccountUser>? Accounts);
+    [property: JsonPropertyName("accounts")] IReadOnlyList<DesktopNodeAccountUser>? Accounts,
+    [property: JsonPropertyName("schema_version")] int? SchemaVersion = 1,
+    [property: JsonPropertyName("bootstrap_state")] string? BootstrapState = null);
 
 public sealed record DesktopNodeConsoleOptions(
     bool Enabled = true,
     bool NoVncEnabled = false,
     string? NoVncWebSocketPath = null,
-    string NoVncBridgeMode = "disabled");
+    string NoVncBridgeMode = "disabled",
+    bool AllowLan = false,
+    string? NoVncTargetFilePath = null);
 
 public static class DesktopNodeAccountPassword
 {
@@ -178,8 +190,16 @@ public sealed record DesktopNodeAuthValidationResult(
 
 public sealed class DesktopNodeAccountAuthService
 {
+    private static readonly JsonSerializerOptions AccountFileJsonOptions = new()
+    {
+        PropertyNamingPolicy = null,
+        WriteIndented = true,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+    };
+
     private readonly DesktopNodeAccountAuthOptions options;
-    private readonly Dictionary<string, DesktopNodeAccountUser> accounts;
+    private readonly object gate = new();
+    private Dictionary<string, DesktopNodeAccountUser> accounts;
     private readonly HashSet<string> revokedRefreshTokenIds = new(StringComparer.Ordinal);
 
     public DesktopNodeAccountAuthService(DesktopNodeAccountAuthOptions? options)
@@ -193,9 +213,13 @@ public sealed class DesktopNodeAccountAuthService
 
     public bool Enabled => options.Enabled;
 
-    public bool Ready => options.Ready;
+    public bool Ready => options.Enabled &&
+        !string.IsNullOrWhiteSpace(options.SigningKey) &&
+        accounts.Count > 0;
 
-    public bool CanIssueLoopbackSession => options.CanIssueLoopbackSession;
+    public bool CanIssueLoopbackSession => options.Enabled &&
+        !string.IsNullOrWhiteSpace(options.SigningKey) &&
+        !Ready;
 
     public RuntimePolicyAuthPolicy CreateRuntimePolicy(string tokenStorage)
     {
@@ -208,7 +232,7 @@ public sealed class DesktopNodeAccountAuthService
                 TokenStorage: tokenStorage);
         }
 
-        if (!options.Ready)
+        if (!Ready)
         {
             return new RuntimePolicyAuthPolicy(
                 Mode: "account_rbac_jwt_not_configured",
@@ -240,7 +264,7 @@ public sealed class DesktopNodeAccountAuthService
 
     public DesktopNodeAuthActionResult Login(JsonElement body)
     {
-        if (!options.Ready)
+        if (!Ready)
         {
             return Error(409, "auth.login", "PCV_ACCOUNT_AUTH_NOT_CONFIGURED", "Account auth is not configured.", "Configure account file and JWT signing key before using account login.");
         }
@@ -253,6 +277,7 @@ public sealed class DesktopNodeAccountAuthService
         }
 
         if (!accounts.TryGetValue(username.Trim(), out var account) ||
+            !account.Enabled ||
             !DesktopNodeAccountPassword.Verify(password, account.PasswordHash))
         {
             return Error(401, "auth.login", "PCV_LOGIN_FAILED", "Login failed.", "Username or password was rejected.");
@@ -263,7 +288,7 @@ public sealed class DesktopNodeAccountAuthService
 
     public DesktopNodeAuthActionResult CreateLoopbackSession(bool remoteIsLoopback)
     {
-        if (options.Ready)
+        if (Ready)
         {
             return Error(409, "auth.loopback-session", "PCV_LOOPBACK_SESSION_DISABLED",
                 "Loopback session is disabled because account auth is configured.",
@@ -302,7 +327,7 @@ public sealed class DesktopNodeAccountAuthService
 
         if (string.Equals(ReadTokenType(refreshToken), "loopback_refresh", StringComparison.Ordinal))
         {
-            if (options.Ready)
+            if (Ready)
             {
                 return Error(409, "auth.refresh", "PCV_LOOPBACK_SESSION_DISABLED",
                     "Loopback session is disabled because account auth is configured.",
@@ -330,7 +355,7 @@ public sealed class DesktopNodeAccountAuthService
             return Success("auth.refresh", BuildLoopbackTokenPair());
         }
 
-        if (!options.Ready)
+        if (!Ready)
         {
             return Error(409, "auth.refresh", "PCV_ACCOUNT_AUTH_NOT_CONFIGURED", "Account auth is not configured.", "Configure account file and JWT signing key before refreshing account tokens.");
         }
@@ -346,7 +371,7 @@ public sealed class DesktopNodeAccountAuthService
             revokedRefreshTokenIds.Add(validation.Jwt.JwtId);
         }
 
-        if (!accounts.TryGetValue(validation.Jwt.Username, out var account))
+        if (!accounts.TryGetValue(validation.Jwt.Username, out var account) || !account.Enabled)
         {
             return Error(401, "auth.refresh", "PCV_REFRESH_ACCOUNT_NOT_FOUND", "Refresh token account no longer exists.", "Login again with an active account.");
         }
@@ -373,9 +398,152 @@ public sealed class DesktopNodeAccountAuthService
         });
     }
 
+    public DesktopNodeAuthActionResult CreateAccount(
+        string? username,
+        string? password,
+        string? role,
+        AccountMutationAuthContext auth,
+        string? displayName = null)
+    {
+        lock (gate)
+        {
+            var evaluation = AccountMutationContract.EvaluateCreate(new AccountCreateRequest(
+                username,
+                password,
+                role,
+                SnapshotExisting(),
+                auth,
+                displayName));
+            if (!evaluation.Ok)
+            {
+                return MutationError("account.create", evaluation.ErrorCode!);
+            }
+
+            if (string.IsNullOrWhiteSpace(options.AccountFilePath))
+            {
+                return Error(
+                    409,
+                    "account.create",
+                    "PCV_ACCOUNT_AUTH_CONFIG_INCOMPLETE",
+                    "Account file path is required.",
+                    "Pass --account-file before creating an account.");
+            }
+
+            var created = new DesktopNodeAccountUser(
+                Id: Guid.NewGuid().ToString("N"),
+                Username: evaluation.Username!,
+                PasswordHash: DesktopNodeAccountPassword.HashPassword(password!),
+                Role: evaluation.Role!,
+                DisplayName: evaluation.DisplayName,
+                Enabled: true);
+            var next = CloneAccounts();
+            next[created.Username] = created;
+            var persist = TryPersist(next.Values.ToArray(), evaluation.BootstrapState!);
+            if (persist is not null)
+            {
+                return persist;
+            }
+
+            accounts = next;
+            return Success("account.create", new SortedDictionary<string, object?>
+            {
+                ["bootstrap_state"] = evaluation.BootstrapState,
+                ["display_name"] = created.DisplayName,
+                ["enabled"] = true,
+                ["id"] = created.Id,
+                ["role"] = created.Role,
+                ["username"] = created.Username
+            });
+        }
+    }
+
+    public DesktopNodeAuthActionResult DisableAccount(
+        string? username,
+        string? confirmUsername,
+        AccountMutationAuthContext auth)
+    {
+        lock (gate)
+        {
+            var evaluation = AccountMutationContract.EvaluateDisable(new AccountDisableRequest(
+                username,
+                confirmUsername,
+                SnapshotExisting(),
+                auth));
+            if (!evaluation.Ok)
+            {
+                return MutationError("account.disable", evaluation.ErrorCode!);
+            }
+
+            if (string.IsNullOrWhiteSpace(options.AccountFilePath))
+            {
+                return Error(
+                    409,
+                    "account.disable",
+                    "PCV_ACCOUNT_AUTH_CONFIG_INCOMPLETE",
+                    "Account file path is required.",
+                    "Pass --account-file before disabling an account.");
+            }
+
+            if (!accounts.TryGetValue(evaluation.Username!, out var account))
+            {
+                return MutationError("account.disable", AccountMutationProblemCodes.NotFound);
+            }
+
+            if (string.Equals(evaluation.Action, AccountMutationContract.ActionAlreadyDisabled, StringComparison.Ordinal))
+            {
+                return Success("account.disable", DisablePayload(account.Username, AccountMutationContract.ActionAlreadyDisabled));
+            }
+
+            var next = CloneAccounts();
+            next[account.Username] = account with
+            {
+                Enabled = false,
+                DisabledAt = options.Now().ToUniversalTime()
+            };
+            var persist = TryPersist(next.Values.ToArray(), AccountMutationContract.BootstrapAccountsConfigured);
+            if (persist is not null)
+            {
+                return persist;
+            }
+
+            accounts = next;
+            return Success("account.disable", DisablePayload(account.Username, AccountMutationContract.ActionDisable));
+        }
+    }
+
+    public DesktopNodeAuthActionResult ListAccounts(AccountMutationAuthContext auth)
+    {
+        var authError = AccountMutationContract.EvaluateListAuth(SnapshotExisting(), auth);
+        if (authError is not null)
+        {
+            return MutationError("account.list", authError);
+        }
+
+        var items = accounts.Values
+            .OrderBy(account => account.Username, StringComparer.OrdinalIgnoreCase)
+            .Select(account => new SortedDictionary<string, object?>
+            {
+                ["disabled_at"] = account.DisabledAt?.ToUniversalTime().ToString("o"),
+                ["display_name"] = account.DisplayName,
+                ["enabled"] = account.Enabled,
+                ["id"] = account.Id,
+                ["role"] = NormalizeRole(account.Role),
+                ["username"] = account.Username
+            })
+            .ToArray();
+
+        return Success("account.list", new SortedDictionary<string, object?>
+        {
+            ["accounts"] = items,
+            ["bootstrap_state"] = accounts.Count == 0
+                ? AccountMutationContract.BootstrapNoDefaultAccount
+                : AccountMutationContract.BootstrapAccountsConfigured
+        });
+    }
+
     public DesktopNodeAuthValidationResult ValidateAccessToken(string? authorization)
     {
-        if (!options.Ready)
+        if (!Ready)
         {
             return new DesktopNodeAuthValidationResult(
                 false,
@@ -434,7 +602,7 @@ public sealed class DesktopNodeAccountAuthService
 
     public DesktopNodeAuthValidationResult ValidateSessionAccessToken(string? authorization)
     {
-        if (options.Ready)
+        if (Ready)
         {
             return ValidateAccessToken(authorization);
         }
@@ -504,6 +672,7 @@ public sealed class DesktopNodeAccountAuthService
                 ["operate"] = "operator",
                 ["diagnostics.create"] = "operator",
                 ["console.view"] = "operator",
+                ["console.configure"] = "admin",
                 ["account.manage"] = "admin"
             }
         };
@@ -682,7 +851,7 @@ public sealed class DesktopNodeAccountAuthService
     {
         return NormalizeRole(role) switch
         {
-            "admin" => ["*", "read", "operate", "job.control", "diagnostics.read", "diagnostics.create", "console.view", "account.manage"],
+            "admin" => ["*", "read", "operate", "job.control", "diagnostics.read", "diagnostics.create", "console.view", "console.configure", "account.manage"],
             "operator" => ["read", "operate", "job.control", "diagnostics.read", "diagnostics.create", "console.view"],
             _ => ["read"]
         };
@@ -692,6 +861,104 @@ public sealed class DesktopNodeAccountAuthService
     {
         var normalized = string.IsNullOrWhiteSpace(role) ? "viewer" : role.Trim().ToLowerInvariant();
         return normalized is "admin" or "operator" or "viewer" ? normalized : "viewer";
+    }
+
+    private IReadOnlyList<AccountMutationExistingAccount> SnapshotExisting()
+    {
+        return accounts.Values
+            .Select(account => new AccountMutationExistingAccount(account.Username, account.Role, account.Enabled))
+            .ToArray();
+    }
+
+    private Dictionary<string, DesktopNodeAccountUser> CloneAccounts()
+    {
+        return new Dictionary<string, DesktopNodeAccountUser>(accounts, StringComparer.OrdinalIgnoreCase);
+    }
+
+    private DesktopNodeAuthActionResult? TryPersist(
+        IReadOnlyList<DesktopNodeAccountUser> users,
+        string bootstrapState)
+    {
+        var path = options.AccountFilePath!;
+        try
+        {
+            JsonObject document;
+            if (File.Exists(path))
+            {
+                document = JsonNode.Parse(File.ReadAllText(path)) as JsonObject ?? new JsonObject();
+            }
+            else
+            {
+                document = new JsonObject();
+            }
+
+            document["schema_version"] ??= 1;
+            document["issuer"] ??= options.Issuer;
+            document["audience"] ??= options.Audience;
+            document["accounts"] = JsonSerializer.SerializeToNode(users, AccountFileJsonOptions);
+            document["bootstrap_state"] = bootstrapState;
+
+            var directory = Path.GetDirectoryName(path);
+            if (!string.IsNullOrWhiteSpace(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+
+            var tempPath = path + ".tmp";
+            File.WriteAllText(tempPath, document.ToJsonString(AccountFileJsonOptions), new UTF8Encoding(false));
+            File.Move(tempPath, path, overwrite: true);
+            options.HardenAccountFile?.Invoke(path);
+            return null;
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or JsonException)
+        {
+            return Error(
+                500,
+                "account.store",
+                "PCV_ACCOUNT_STORE_WRITE_FAILED",
+                "The account file could not be written.",
+                exception.Message);
+        }
+    }
+
+    private static SortedDictionary<string, object?> DisablePayload(string username, string action)
+    {
+        return new SortedDictionary<string, object?>
+        {
+            ["action"] = action,
+            ["enabled"] = false,
+            ["username"] = username
+        };
+    }
+
+    private static DesktopNodeAuthActionResult MutationError(string operation, string code)
+    {
+        var (status, message, detail) = code switch
+        {
+            AccountMutationProblemCodes.UsernameInvalid =>
+                (400, "Account username is invalid.", "Use 3-32 ASCII letters, digits, dot, underscore, or hyphen; do not use loopback-session."),
+            AccountMutationProblemCodes.PasswordInvalid =>
+                (400, "Account password is invalid.", "Use at least 12 characters and do not reuse the username."),
+            AccountMutationProblemCodes.RoleInvalid =>
+                (400, "Account role is invalid.", "Role must be viewer, operator, or admin."),
+            AccountMutationProblemCodes.ConfirmationMismatch =>
+                (400, "Account confirmation did not match.", "confirm_username must match the account username."),
+            AccountMutationProblemCodes.UsernameConflict =>
+                (409, "Account username already exists.", "Choose a different username."),
+            AccountMutationProblemCodes.BootstrapAdminRequired =>
+                (409, "The first account must be admin.", "Create an admin account before other roles."),
+            AccountMutationProblemCodes.BootstrapNotAvailable =>
+                (409, "Account bootstrap is not available.", "Use a loopback session or service bearer for the first admin, then account.manage."),
+            AccountMutationProblemCodes.LastAdmin =>
+                (409, "The last enabled admin cannot be disabled.", "Create another admin before disabling this account."),
+            AccountMutationProblemCodes.NotFound =>
+                (404, "Account was not found.", "The username does not exist in the account file."),
+            AccountMutationProblemCodes.ManageForbidden =>
+                (403, "Account manage permission is required.", "Use an admin JWT or the service bearer token."),
+            _ =>
+                (400, "Account mutation was rejected.", code)
+        };
+        return Error(status, operation, code, message, detail);
     }
 
     private static DesktopNodeAuthActionResult Success(string operation, object data)

@@ -35,6 +35,8 @@ public sealed partial class DesktopNodeHostServiceActionTests
     [InlineData("eventlog-default-transition", "event-log")]
     [InlineData("firewall-enable", "firewall")]
     [InlineData("firewall-remove", "firewall")]
+    [InlineData("switch-create", "hyperv-switch")]
+    [InlineData("switch-remove", "hyperv-switch")]
     [InlineData("trust-store-install", "trust-store")]
     [InlineData("trust-store-remove", "trust-store")]
     public void ServiceActionPlansDeclareStableOperationFamilies(string action, string family)
@@ -74,10 +76,10 @@ public sealed partial class DesktopNodeHostServiceActionTests
     {
         var catalog = DesktopNodeHostOpsCatalog.Entries.ToDictionary(entry => entry.OperationFamily);
 
-        Assert.Equal(9, catalog.Count);
-        Assert.Equal(22, catalog.Values.Sum(entry => entry.Operations.Count));
+        Assert.Equal(10, catalog.Count);
+        Assert.Equal(24, catalog.Values.Sum(entry => entry.Operations.Count));
         Assert.Equal(
-            22,
+            24,
             catalog.Values
                 .SelectMany(entry => entry.Operations)
                 .Distinct(StringComparer.Ordinal)
@@ -90,6 +92,7 @@ public sealed partial class DesktopNodeHostServiceActionTests
         Assert.Equal("DesktopNodeServiceTokenOps", catalog["service-token"].Owner);
         Assert.Equal("DesktopNodeEventLogOps", catalog["event-log"].Owner);
         Assert.Equal("DesktopNodeFirewallOps", catalog["firewall"].Owner);
+        Assert.Equal("DesktopNodeHyperVSwitchOps", catalog["hyperv-switch"].Owner);
         Assert.Equal("DesktopNodeTrustStoreOps", catalog["trust-store"].Owner);
         Assert.Equal("DesktopNodeCredentialManagerOps", catalog["credential-manager"].Owner);
         Assert.Contains("data-root-remove", catalog["data-root"].Operations);
@@ -128,6 +131,7 @@ public sealed partial class DesktopNodeHostServiceActionTests
         Assert.DoesNotContain("eventlog-repair", catalog["service-lifecycle"].Operations);
         Assert.Contains("eventlog-repair", catalog["event-log"].Operations);
         Assert.Contains("firewall-enable", catalog["firewall"].Operations);
+        Assert.Contains("switch-create", catalog["hyperv-switch"].Operations);
         Assert.Contains("trust-store-install", catalog["trust-store"].Operations);
 
         Assert.True(DesktopNodeHostOpsCatalog.TryGetOperation("repair-installed", out var serviceAction));
@@ -149,6 +153,7 @@ public sealed partial class DesktopNodeHostServiceActionTests
         Assert.Equal("windows-service-control-manager", catalog["service-lifecycle"].MutationBoundary);
         Assert.Equal("windows-event-log-provider", catalog["event-log"].MutationBoundary);
         Assert.Equal("windows-firewall-rule", catalog["firewall"].MutationBoundary);
+        Assert.Equal("hyperv-virtual-ethernet-switch", catalog["hyperv-switch"].MutationBoundary);
         Assert.Equal("windows-x509-store", catalog["trust-store"].MutationBoundary);
         Assert.Equal("allowlisted-programdata-root", catalog["data-root"].MutationBoundary);
         Assert.Equal("windows-credential-manager", catalog["credential-manager"].MutationBoundary);
@@ -259,12 +264,14 @@ public sealed partial class DesktopNodeHostServiceActionTests
         Assert.Equal("service-lifecycle", DesktopNodeServiceLifecycleOps.OperationFamily);
         Assert.Equal("event-log", DesktopNodeEventLogOps.OperationFamily);
         Assert.Equal("firewall", DesktopNodeFirewallOps.OperationFamily);
+        Assert.Equal("hyperv-switch", DesktopNodeHyperVSwitchOps.OperationFamily);
         Assert.Equal("trust-store", DesktopNodeTrustStoreOps.OperationFamily);
         Assert.Equal("data-root", DesktopNodeDataRootLifecycleOps.OperationFamily);
 
         Assert.True(DesktopNodeServiceLifecycleOps.Owns("repair-installed"));
         Assert.True(DesktopNodeEventLogOps.Owns("eventlog-default-transition"));
         Assert.True(DesktopNodeFirewallOps.Owns("firewall-enable"));
+        Assert.True(DesktopNodeHyperVSwitchOps.Owns("switch-create"));
         Assert.True(DesktopNodeTrustStoreOps.Owns("trust-store-install"));
         Assert.True(DesktopNodeDataRootLifecycleOps.Owns("data-root-remove"));
         Assert.False(DesktopNodeServiceLifecycleOps.Owns("data-root-remove"));

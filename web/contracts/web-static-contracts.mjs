@@ -803,9 +803,13 @@ function verifyQosGuestControl(context) {
     [/\/api\/v1\/vms\/\$\{encodeRouteSegment\(vmId\)\}\/qos\/network\/preview/i, "network-preview-path"],
     [/\/api\/v1\/vms\/\$\{encodeRouteSegment\(vmId\)\}\/qos\/network/i, "network-path"],
     [/vmGuestExec\s*:/i, "guest-exec"],
+    [/vmGuestFilePreview\s*:/i, "guest-file-preview"],
+    [/vmGuestFile\s*:/i, "guest-file"],
     [/vmGuestChannelVerify\s*:/i, "channel-verify"],
     [/vmGuestChannelEnsure\s*:/i, "channel-ensure"],
     [/\/api\/v1\/vms\/\$\{encodeRouteSegment\(vmId\)\}\/guest\/exec/i, "guest-exec-path"],
+    [/\/api\/v1\/vms\/\$\{encodeRouteSegment\(vmId\)\}\/guest\/file\/preview/i, "guest-file-preview-path"],
+    [/\/api\/v1\/vms\/\$\{encodeRouteSegment\(vmId\)\}\/guest\/file/i, "guest-file-path"],
     [/\/api\/v1\/vms\/\$\{encodeRouteSegment\(vmId\)\}\/guest\/channel\/verify/i, "channel-verify-path"],
     [/\/api\/v1\/vms\/\$\{encodeRouteSegment\(vmId\)\}\/guest\/channel/i, "channel-path"]
   ], "qos-guest-control");
@@ -815,6 +819,8 @@ function verifyQosGuestControl(context) {
     [/data-action="vm-qos-network-preview"/i, "network-preview-action"],
     [/data-action="vm-qos-network-apply"/i, "network-apply-action"],
     [/data-action="vm-guest-exec"/i, "guest-exec-action"],
+    [/data-action="vm-guest-file"/i, "guest-file-action"],
+    [/Copy host file/i, "guest-file-label"],
     [/data-action="guest-agent-ensure-channel"/i, "channel-action"],
     [/guest\.exec/i, "guest-exec-rbac"],
     [/guest\.channel\.configure/i, "channel-rbac"]
@@ -937,7 +943,12 @@ function verifyAccountRbacConsole(context) {
     [/\/api\/v1\/auth\/rbac/i, "rbac-route"],
     [/\/api\/v1\/console\/capabilities/i, "console-capabilities"],
     [/\/api\/v1\/vms\/\$\{encodeRouteSegment\(vmId\)\}\/console/i, "vm-console-route"],
-    [/id:\s*['"]auth\.logout['"]/i, "logout-action"]
+    [/id:\s*['"]auth\.logout['"]/i, "logout-action"],
+    [/id:\s*['"]account\.list['"]/i, "account-list-coverage"],
+    [/id:\s*['"]account\.create['"]/i, "account-create-coverage"],
+    [/id:\s*['"]account\.disable['"]/i, "account-disable-coverage"],
+    [/\/api\/v1\/accounts/i, "accounts-route"],
+    [/\/api\/v1\/accounts\/\$\{encodeRouteSegment\(username\)\}\/disable/i, "account-disable-route"]
   ], "account-rbac-console");
   assertSourceAndGenerated(context, actionsSource, app, [
     [/function\s+ensureLoopbackSession\s*\(/i, "ensure-loopback-session"],
@@ -951,16 +962,28 @@ function verifyAccountRbacConsole(context) {
     [/function\s+rbacAllows\s*\(/i, "rbac-allows"]
   ], "account-rbac-console");
   assertSourceAndGenerated(context, panelsSource, app, [
-    [/function\s+renderAccountSession\s*\(/i, "render-session"]
+    [/function\s+renderAccountSession\s*\(/i, "render-session"],
+    [/id="account-create-form"/i, "create-form"],
+    [/data-action="account-disable"/i, "disable-action"],
+    [/Create first admin/i, "bootstrap-label"]
   ], "account-rbac-console");
   assertSourceAndGenerated(context, consoleSource, app, [
     [/function\s+renderConsolePanel\s*\(/i, "render-console"],
     [/noVNC/i, "novnc"],
-    [/vmconnect/i, "vmconnect"]
+    [/vmconnect/i, "vmconnect"],
+    [/noVNC enabled/i, "novnc-enabled"],
+    [/noVNC status/i, "novnc-status"],
+    [/noVNC reason_code/i, "novnc-reason-code"],
+    [/no target save form/i, "no-save-form"],
+    [/CLI\/API configure only/i, "cli-api-configure"]
   ], "account-rbac-console");
   context.assertNotMatch(index, /access_token\s*[:=]/i, "account-rbac-console:no-literal-access-token");
   context.assertNotMatch(servedSource, /\/auth\/token|\/ws\/events/i, "account-rbac-console:no-forbidden-auth-routes:source");
   context.assertNotMatch(app, /\/auth\/token|\/ws\/events/i, "account-rbac-console:no-forbidden-auth-routes:generated");
+  context.assertNotMatch(servedSource, /\/api\/v1\/console\/novnc-target/i, "account-rbac-console:no-novnc-target-route:source");
+  context.assertNotMatch(app, /\/api\/v1\/console\/novnc-target/i, "account-rbac-console:no-novnc-target-route:generated");
+  context.assertNotMatch(servedSource, /name="novnc-host"|name="novnc-port"|allow_lan_target/i, "account-rbac-console:no-novnc-target-fields:source");
+  context.assertNotMatch(app, /name="novnc-host"|name="novnc-port"|allow_lan_target/i, "account-rbac-console:no-novnc-target-fields:generated");
 }
 
 function verifyListenerApiBase(context) {
@@ -1002,7 +1025,8 @@ function verifyVmLifecycleRoutes(context) {
     [/\/api\/v1\/vms\/\{vm_id\}\/attach/i, "attach"],
     [/\/api\/v1\/vms\/\{vm_id\}\/save/i, "save"],
     [/\/api\/v1\/vms\/\{vm_id\}\/resume-saved/i, "resume-saved"],
-    [/\/api\/v1\/vms\/\{vm_id\}\/manage/i, "manage"]
+    [/\/api\/v1\/vms\/\{vm_id\}\/manage/i, "manage"],
+    [/\/api\/v1\/vms\/\{vm_id\}\/template-lock/i, "template-lock"]
   ], "vm-lifecycle-routes");
 }
 
@@ -1049,12 +1073,22 @@ function verifyVmLifecycleActions(context) {
     [/Resume saved/i, "resume-saved-label"],
     [/data-action="vm-manage"/i, "manage"],
     [/Manage VM/i, "manage-label"],
+    [/data-action="vm-template-lock"/i, "template-lock"],
+    [/Lock template/i, "template-lock-label"],
+    [/data-action="vm-template-unlock"/i, "template-unlock"],
+    [/Unlock template/i, "template-unlock-label"],
     [/data-action="vm-clone"/i, "clone"],
     [/Clone VM/i, "clone-label"],
-    [/data-action="vm-delete"/i, "delete"]
+    [/data-action="vm-delete"/i, "delete"],
+    [/export-import-readback/i, "export-import-readback"],
+    [/no export\/import save form/i, "no-export-import-save-form"],
+    [/CLI\/API export\/import only/i, "export-import-cli-api"],
+    [/no OVF/i, "no-ovf"],
+    [/no TPM key copy/i, "no-tpm-key-copy"]
   ], "vm-lifecycle-actions");
   assertSourceAndGenerated(context, mutateSource, app, [
     [/function\s+queueVmManage\s*\(/i, "queue-manage"],
+    [/function\s+queueVmTemplateLock\s*\(/i, "queue-template-lock"],
     [/function\s+queueVmClone\s*\(/i, "queue-clone"],
     [/desktopApi\.previewVmClone\s*\(/i, "clone-preview"],
     [/PCV_VM_DELETE_RUNNING_BLOCKED/i, "running-delete-guard"],
@@ -1063,14 +1097,17 @@ function verifyVmLifecycleActions(context) {
   assertSourceAndGenerated(context, errorsSource, app, [
     [/PCV_VM_NOT_MANAGED_BY_PURECVISOR/i, "unmanaged-delete-guard"],
     [/Unmanaged delete refusal remains/i, "unmanaged-delete-refusal"],
+    [/function\s+buildVmTemplateLockConfirmation\s*\(/i, "template-lock-confirmation"],
     [/function\s+buildVmCloneConfirmation\s*\(/i, "clone-confirmation"],
     [/planned_copy_bytes/i, "clone-planned-copy-bytes"]
   ], "vm-lifecycle-actions");
   assertSourceAndGenerated(context, clientSource, app, [
     [/queueVmManage:\s*\(vmId/i, "manage-client"],
+    [/queueVmTemplateLock:\s*\(vmId/i, "template-lock-client"],
     [/previewVmClone:\s*\(vmId/i, "clone-preview-client"],
     [/queueVmClone:\s*\(vmId/i, "clone-client"],
-    [/confirm_name:\s*confirmName/i, "confirm-name"]
+    [/JSON\.stringify\(\{\s*confirm_name:\s*confirmName\s*\}\)/i, "confirm-name"],
+    [/JSON\.stringify\(\{\s*confirm_name:\s*confirmName,\s*locked\s*\}\)/i, "template-lock-body"]
   ], "vm-lifecycle-actions");
 }
 
@@ -1086,6 +1123,9 @@ function verifyCheckpointActions(context) {
   ], "checkpoint-actions");
   assertSourceAndGenerated(context, detailSource, app, [
     [/checkpoint-create/i, "create"],
+    [/checkpoint_schedule/i, "readback-field"],
+    [/no schedule save form/i, "no-save-form"],
+    [/no infinite retention/i, "no-infinite-retention"]
   ], "checkpoint-actions");
   assertSourceAndGenerated(context, qosSource, app, [
     [/data-action="checkpoint-restore"/i, "restore"],
@@ -1507,6 +1547,11 @@ function verifyFrontendEdgeCases(context) {
     [/Reconcile checkpoint/i, "reconcile-checkpoint"],
     [/checkpoint\.restore/i, "checkpoint-restore"],
     [/Reconcile restore/i, "reconcile-restore"],
+    [/Reconcile create/i, "reconcile-create"],
+    [/Reconcile shutdown/i, "reconcile-shutdown"],
+    [/Reconcile restart/i, "reconcile-restart"],
+    [/Reconcile storage QoS/i, "reconcile-storage-qos"],
+    [/Reconcile network QoS/i, "reconcile-network-qos"],
     [/reconcileSelectedVm/i, "reconcile-selected-vm"],
     [/PCV_SELECTED_VM_STALE/i, "selected-vm-stale"],
     [/buildCheckpointRestoreConfirmation/i, "checkpoint-restore-confirmation"],
@@ -1671,6 +1716,19 @@ function verifyNetworkInventory(context) {
     context.assertMatch(combined + fixtures, pattern, `network-inventory:${label}`);
   }
   context.assertMatch(combined, /read-only/i, "network-inventory:read-only");
+  const inventorySource = context.readText("web/src/served/render-inventory.ts");
+  assertSourceAndGenerated(context, inventorySource, app, [
+    [/network-change-readback/i, "network-change-readback"],
+    [/no switch create form/i, "no-switch-create-form"],
+    [/no NAT editor/i, "no-nat-editor"],
+    [/no DHCP editor/i, "no-dhcp-editor"],
+    [/CLI\/API vm\.network\.connect only/i, "network-connect-cli-api"]
+  ], "network-inventory");
+  context.assertNotMatch(
+    inventorySource + app,
+    /data-action="switch-create"|data-action="switch-remove"|data-action="vm-network-connect"|name="nat-network"|name="dhcp-scope"/i,
+    "network-inventory:no-editor-form"
+  );
   context.assertNotMatch(
     combined,
     /New-VMSwitch|Remove-VMSwitch|New-NetIPAddress|Set-NetFirewallRule/i,

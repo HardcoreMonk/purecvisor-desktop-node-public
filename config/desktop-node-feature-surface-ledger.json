@@ -483,6 +483,84 @@
               "coverage_id": "auth.rbac"
             }
           }
+        },
+        {
+          "operation_id": "account.list",
+          "method": "GET",
+          "route_template": "/api/v1/accounts",
+          "required_permission": "account.manage",
+          "present_surfaces": [
+            "api",
+            "cli",
+            "web"
+          ],
+          "excluded_surfaces": [],
+          "surface_bindings": {
+            "cli": {
+              "command": [
+                "account",
+                "list"
+              ]
+            },
+            "web": {
+              "coverage_id": "account.list"
+            }
+          }
+        },
+        {
+          "operation_id": "account.create",
+          "method": "POST",
+          "route_template": "/api/v1/accounts",
+          "required_permission": "account.manage",
+          "present_surfaces": [
+            "api",
+            "cli",
+            "web"
+          ],
+          "excluded_surfaces": [],
+          "surface_bindings": {
+            "cli": {
+              "command": [
+                "account",
+                "create",
+                "--username",
+                "lab-admin",
+                "--role",
+                "admin",
+                "--password-env",
+                "PCV_ACCOUNT_PASSWORD",
+                "--yes"
+              ]
+            },
+            "web": {
+              "coverage_id": "account.create"
+            }
+          }
+        },
+        {
+          "operation_id": "account.disable",
+          "method": "POST",
+          "route_template": "/api/v1/accounts/{username}/disable",
+          "required_permission": "account.manage",
+          "present_surfaces": [
+            "api",
+            "cli",
+            "web"
+          ],
+          "excluded_surfaces": [],
+          "surface_bindings": {
+            "cli": {
+              "command": [
+                "account",
+                "disable",
+                "lab-operator",
+                "--yes"
+              ]
+            },
+            "web": {
+              "coverage_id": "account.disable"
+            }
+          }
         }
       ]
     },
@@ -536,6 +614,66 @@
               "command": [
                 "network",
                 "list"
+              ]
+            }
+          }
+        },
+        {
+          "operation_id": "vm.network.connect",
+          "method": "POST",
+          "route_template": "/api/v1/vms/{vmId}/network",
+          "required_permission": "operate",
+          "present_surfaces": [
+            "api",
+            "cli"
+          ],
+          "excluded_surfaces": [
+            {
+              "surface": "web",
+              "reason": "VM switch attach stays CLI/API; Web Console Network view remains inventory read-only without a switch/NAT/DHCP editor."
+            }
+          ],
+          "surface_bindings": {
+            "cli": {
+              "command": [
+                "vm",
+                "network",
+                "connect",
+                "vm-01",
+                "--switch",
+                "pcv-lab-internal",
+                "--yes"
+              ]
+            }
+          }
+        },
+        {
+          "operation_id": "vm.device.add",
+          "method": "POST",
+          "route_template": "/api/v1/vms/{vmId}/devices",
+          "required_permission": "operate",
+          "present_surfaces": [
+            "api",
+            "cli"
+          ],
+          "excluded_surfaces": [
+            {
+              "surface": "web",
+              "reason": "NIC/DVD add stays CLI/API; Web Console does not open a device shop or NAT/DHCP editor."
+            }
+          ],
+          "surface_bindings": {
+            "cli": {
+              "command": [
+                "vm",
+                "device",
+                "add",
+                "vm-01",
+                "--kind",
+                "nic",
+                "--switch",
+                "Default Switch",
+                "--yes"
               ]
             }
           }
@@ -621,6 +759,91 @@
                 "vm",
                 "console",
                 "vm-01"
+              ]
+            }
+          }
+        },
+        {
+          "operation_id": "console.novnc-target.preview",
+          "method": "POST",
+          "route_template": "/api/v1/console/novnc-target/preview",
+          "required_permission": "console.configure",
+          "present_surfaces": [
+            "api",
+            "cli"
+          ],
+          "excluded_surfaces": [
+            {
+              "surface": "web",
+              "reason": "noVNC target configuration stays CLI/API; Web Console keeps Console Access Card readback without a save form."
+            }
+          ],
+          "surface_bindings": {
+            "cli": {
+              "command": [
+                "console",
+                "novnc-target",
+                "preview",
+                "--host",
+                "127.0.0.1",
+                "--port",
+                "5900"
+              ]
+            }
+          }
+        },
+        {
+          "operation_id": "console.novnc-target.set",
+          "method": "POST",
+          "route_template": "/api/v1/console/novnc-target",
+          "required_permission": "console.configure",
+          "present_surfaces": [
+            "api",
+            "cli"
+          ],
+          "excluded_surfaces": [
+            {
+              "surface": "web",
+              "reason": "noVNC target configuration stays CLI/API; Web Console keeps Console Access Card readback without a save form."
+            }
+          ],
+          "surface_bindings": {
+            "cli": {
+              "command": [
+                "console",
+                "novnc-target",
+                "set",
+                "--host",
+                "127.0.0.1",
+                "--port",
+                "5900",
+                "--yes"
+              ]
+            }
+          }
+        },
+        {
+          "operation_id": "console.novnc-target.clear",
+          "method": "POST",
+          "route_template": "/api/v1/console/novnc-target/clear",
+          "required_permission": "console.configure",
+          "present_surfaces": [
+            "api",
+            "cli"
+          ],
+          "excluded_surfaces": [
+            {
+              "surface": "web",
+              "reason": "noVNC target configuration stays CLI/API; Web Console keeps Console Access Card readback without a save form."
+            }
+          ],
+          "surface_bindings": {
+            "cli": {
+              "command": [
+                "console",
+                "novnc-target",
+                "clear",
+                "--yes"
               ]
             }
           }
@@ -968,6 +1191,68 @@
               ]
             }
           }
+        },
+        {
+          "operation_id": "vm.guest.file.preview",
+          "method": "POST",
+          "route_template": "/api/v1/vms/{vmId}/guest/file/preview",
+          "required_permission": "guest.exec",
+          "present_surfaces": [
+            "api",
+            "cli",
+            "web"
+          ],
+          "excluded_surfaces": [],
+          "surface_bindings": {
+            "web": {
+              "coverage_id": "vm.guest.file.preview"
+            },
+            "cli": {
+              "command": [
+                "vm",
+                "guest-file",
+                "vm-01",
+                "--host-path",
+                "C:\\ProgramData\\PureCVisor\\desktop-node\\guest-files\\payload.iso",
+                "--guest-path",
+                "C:\\Users\\Public\\PureCVisor\\payload.iso",
+                "--credential-ref",
+                "wincred:PureCVisor/guest/admin",
+                "--dry-run"
+              ]
+            }
+          }
+        },
+        {
+          "operation_id": "vm.guest.file",
+          "method": "POST",
+          "route_template": "/api/v1/vms/{vmId}/guest/file",
+          "required_permission": "guest.exec",
+          "present_surfaces": [
+            "api",
+            "cli",
+            "web"
+          ],
+          "excluded_surfaces": [],
+          "surface_bindings": {
+            "web": {
+              "coverage_id": "vm.guest.file"
+            },
+            "cli": {
+              "command": [
+                "vm",
+                "guest-file",
+                "vm-01",
+                "--host-path",
+                "C:\\ProgramData\\PureCVisor\\desktop-node\\guest-files\\payload.iso",
+                "--guest-path",
+                "C:\\Users\\Public\\PureCVisor\\payload.iso",
+                "--credential-ref",
+                "wincred:PureCVisor/guest/admin",
+                "--yes"
+              ]
+            }
+          }
         }
       ]
     },
@@ -1108,6 +1393,97 @@
                 "vm-01",
                 "--name",
                 "before-upgrade"
+              ]
+            }
+          }
+        },
+        {
+          "operation_id": "checkpoint.schedule.preview",
+          "method": "POST",
+          "route_template": "/api/v1/vms/{vmId}/checkpoints/schedule/preview",
+          "required_permission": "operate",
+          "present_surfaces": [
+            "api",
+            "cli"
+          ],
+          "excluded_surfaces": [
+            {
+              "surface": "web",
+              "reason": "Periodic checkpoint schedule stays CLI/API; Web Console keeps checkpoint panel readback without a schedule save form."
+            }
+          ],
+          "surface_bindings": {
+            "cli": {
+              "command": [
+                "vm",
+                "checkpoint",
+                "schedule",
+                "preview",
+                "vm-01",
+                "--interval-minutes",
+                "1440",
+                "--retention-max",
+                "8"
+              ]
+            }
+          }
+        },
+        {
+          "operation_id": "checkpoint.schedule.set",
+          "method": "POST",
+          "route_template": "/api/v1/vms/{vmId}/checkpoints/schedule",
+          "required_permission": "operate",
+          "present_surfaces": [
+            "api",
+            "cli"
+          ],
+          "excluded_surfaces": [
+            {
+              "surface": "web",
+              "reason": "Periodic checkpoint schedule stays CLI/API; Web Console keeps checkpoint panel readback without a schedule save form."
+            }
+          ],
+          "surface_bindings": {
+            "cli": {
+              "command": [
+                "vm",
+                "checkpoint",
+                "schedule",
+                "set",
+                "vm-01",
+                "--interval-minutes",
+                "1440",
+                "--retention-max",
+                "8",
+                "--yes"
+              ]
+            }
+          }
+        },
+        {
+          "operation_id": "checkpoint.schedule.clear",
+          "method": "POST",
+          "route_template": "/api/v1/vms/{vmId}/checkpoints/schedule/clear",
+          "required_permission": "operate",
+          "present_surfaces": [
+            "api",
+            "cli"
+          ],
+          "excluded_surfaces": [
+            {
+              "surface": "web",
+              "reason": "Periodic checkpoint schedule stays CLI/API; Web Console keeps checkpoint panel readback without a schedule save form."
+            }
+          ],
+          "surface_bindings": {
+            "cli": {
+              "command": [
+                "vm",
+                "checkpoint",
+                "schedule",
+                "clear",
+                "vm-01",
+                "--yes"
               ]
             }
           }
@@ -1482,6 +1858,121 @@
               ]
             }
           }
+        },
+        {
+          "operation_id": "vm.export.preview",
+          "method": "POST",
+          "route_template": "/api/v1/vms/{vmId}/export/preview",
+          "required_permission": "operate",
+          "present_surfaces": [
+            "api",
+            "cli"
+          ],
+          "excluded_surfaces": [
+            {
+              "surface": "web",
+              "reason": "Hyper-V export/import stays CLI/API; Web Console shows inventory status readback without an export/import save form."
+            }
+          ],
+          "surface_bindings": {
+            "cli": {
+              "command": [
+                "vm",
+                "export",
+                "preview",
+                "vm-01",
+                "--directory",
+                "D:\\PureCVisor\\exports\\vm-01"
+              ]
+            }
+          }
+        },
+        {
+          "operation_id": "vm.export",
+          "method": "POST",
+          "route_template": "/api/v1/vms/{vmId}/export",
+          "required_permission": "operate",
+          "present_surfaces": [
+            "api",
+            "cli"
+          ],
+          "excluded_surfaces": [
+            {
+              "surface": "web",
+              "reason": "Hyper-V export/import stays CLI/API; Web Console shows inventory status readback without an export/import save form."
+            }
+          ],
+          "surface_bindings": {
+            "cli": {
+              "command": [
+                "vm",
+                "export",
+                "vm-01",
+                "--directory",
+                "D:\\PureCVisor\\exports\\vm-01",
+                "--yes"
+              ]
+            }
+          }
+        },
+        {
+          "operation_id": "vm.import.preview",
+          "method": "POST",
+          "route_template": "/api/v1/vms/import/preview",
+          "required_permission": "operate",
+          "present_surfaces": [
+            "api",
+            "cli"
+          ],
+          "excluded_surfaces": [
+            {
+              "surface": "web",
+              "reason": "Hyper-V export/import stays CLI/API; Web Console shows inventory status readback without an export/import save form."
+            }
+          ],
+          "surface_bindings": {
+            "cli": {
+              "command": [
+                "vm",
+                "import",
+                "preview",
+                "--name",
+                "vm-02",
+                "--directory",
+                "D:\\PureCVisor\\exports\\vm-01",
+                "--has-vmcx"
+              ]
+            }
+          }
+        },
+        {
+          "operation_id": "vm.import",
+          "method": "POST",
+          "route_template": "/api/v1/vms/import",
+          "required_permission": "operate",
+          "present_surfaces": [
+            "api",
+            "cli"
+          ],
+          "excluded_surfaces": [
+            {
+              "surface": "web",
+              "reason": "Hyper-V export/import stays CLI/API; Web Console shows inventory status readback without an export/import save form."
+            }
+          ],
+          "surface_bindings": {
+            "cli": {
+              "command": [
+                "vm",
+                "import",
+                "--name",
+                "vm-02",
+                "--directory",
+                "D:\\PureCVisor\\exports\\vm-01",
+                "--yes"
+              ]
+            }
+          }
         }
       ]
     },
@@ -1538,6 +2029,31 @@
                 "vm-01",
                 "--name",
                 "vm-02",
+                "--yes"
+              ]
+            }
+          }
+        },
+        {
+          "operation_id": "vm.template.lock",
+          "method": "POST",
+          "route_template": "/api/v1/vms/{vmId}/template-lock",
+          "required_permission": "operate",
+          "present_surfaces": [
+            "api",
+            "cli",
+            "web"
+          ],
+          "excluded_surfaces": [],
+          "surface_bindings": {
+            "web": {
+              "coverage_id": "vm.template.lock"
+            },
+            "cli": {
+              "command": [
+                "vm",
+                "template-lock",
+                "vm-01",
                 "--yes"
               ]
             }

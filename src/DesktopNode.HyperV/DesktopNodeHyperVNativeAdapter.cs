@@ -23,423 +23,13 @@ public sealed partial class DesktopNodeHyperVNativeAdapter : IDesktopNodeHyperVN
     private readonly IDesktopNodeHyperVVmRenameProvider vmRenameProvider;
     private readonly IDesktopNodeHyperVVmManageProvider vmManageProvider;
     private readonly IDesktopNodeHyperVVmCloneProvider vmCloneProvider;
+    private readonly IDesktopNodeHyperVVmExportProvider vmExportProvider;
+    private readonly IDesktopNodeHyperVVmImportProvider vmImportProvider;
+    private readonly IDesktopNodeHyperVVmNetworkConnectProvider vmNetworkConnectProvider;
     private readonly IDesktopNodeHyperVVmMediaProvider vmMediaProvider;
     private readonly IDesktopNodeHyperVVmResourceMutationProvider vmResourceMutationProvider;
     private readonly IDesktopNodeHyperVGuestExecutionProvider guestExecutionProvider;
     private readonly IReadOnlyDictionary<DesktopNodeHyperVAdapterDispatchHandler, HyperVAdapterDispatchInvoker> dispatchHandlers;
-
-    public DesktopNodeHyperVNativeAdapter(DesktopNodeHyperVProviderSet providerSet)
-        : this(
-            RequireProviderSet(providerSet).SwitchProvider,
-            RequireProviderSet(providerSet).HostStatusProvider,
-            RequireProviderSet(providerSet).VmProvider,
-            RequireProviderSet(providerSet).CheckpointProvider,
-            RequireProviderSet(providerSet).CheckpointMutationProvider,
-            RequireProviderSet(providerSet).VmPowerStateProvider,
-            RequireProviderSet(providerSet).VmCreateProvider,
-            RequireProviderSet(providerSet).VmDeleteProvider,
-            RequireProviderSet(providerSet).VmRenameProvider,
-            RequireProviderSet(providerSet).VmManageProvider,
-            RequireProviderSet(providerSet).VmCloneProvider,
-            RequireProviderSet(providerSet).VmMediaProvider,
-            RequireProviderSet(providerSet).VmResourceMutationProvider,
-            RequireProviderSet(providerSet).GuestExecutionProvider)
-    {
-    }
-
-    public DesktopNodeHyperVNativeAdapter(IDesktopNodeHyperVSwitchProvider switchProvider)
-        : this(
-            switchProvider,
-            new DesktopNodeHyperVNativeHostStatusProvider(switchProvider),
-            new DesktopNodeHyperVWmiVmProvider(),
-            new DesktopNodeHyperVWmiCheckpointProvider(),
-            new DesktopNodeHyperVWmiCheckpointMutationProvider(),
-            new DesktopNodeHyperVWmiVmPowerStateProvider(),
-            new DesktopNodeHyperVWmiVmCreateProvider(),
-            new DesktopNodeHyperVWmiVmDeleteProvider(),
-            new DesktopNodeHyperVWmiVmRenameProvider())
-    {
-    }
-
-    public DesktopNodeHyperVNativeAdapter(
-        IDesktopNodeHyperVSwitchProvider switchProvider,
-        IDesktopNodeHyperVVmProvider vmProvider)
-        : this(
-            switchProvider,
-            new DesktopNodeHyperVNativeHostStatusProvider(switchProvider),
-            vmProvider,
-            new DesktopNodeHyperVWmiCheckpointProvider(),
-            new DesktopNodeHyperVWmiCheckpointMutationProvider(),
-            new DesktopNodeHyperVWmiVmPowerStateProvider(),
-            new DesktopNodeHyperVWmiVmCreateProvider(),
-            new DesktopNodeHyperVWmiVmDeleteProvider(),
-            new DesktopNodeHyperVWmiVmRenameProvider())
-    {
-    }
-
-    public DesktopNodeHyperVNativeAdapter(
-        IDesktopNodeHyperVSwitchProvider switchProvider,
-        IDesktopNodeHyperVVmProvider vmProvider,
-        IDesktopNodeHyperVCheckpointProvider checkpointProvider)
-        : this(
-            switchProvider,
-            new DesktopNodeHyperVNativeHostStatusProvider(switchProvider),
-            vmProvider,
-            checkpointProvider,
-            new DesktopNodeHyperVWmiCheckpointMutationProvider(),
-            new DesktopNodeHyperVWmiVmPowerStateProvider(),
-            new DesktopNodeHyperVWmiVmCreateProvider(),
-            new DesktopNodeHyperVWmiVmDeleteProvider(),
-            new DesktopNodeHyperVWmiVmRenameProvider())
-    {
-    }
-
-    public DesktopNodeHyperVNativeAdapter(
-        IDesktopNodeHyperVSwitchProvider switchProvider,
-        IDesktopNodeHyperVVmProvider vmProvider,
-        IDesktopNodeHyperVCheckpointProvider checkpointProvider,
-        IDesktopNodeHyperVCheckpointMutationProvider checkpointMutationProvider)
-        : this(
-            switchProvider,
-            new DesktopNodeHyperVNativeHostStatusProvider(switchProvider),
-            vmProvider,
-            checkpointProvider,
-            checkpointMutationProvider,
-            new DesktopNodeHyperVWmiVmPowerStateProvider(),
-            new DesktopNodeHyperVWmiVmCreateProvider(),
-            new DesktopNodeHyperVWmiVmDeleteProvider(),
-            new DesktopNodeHyperVWmiVmRenameProvider())
-    {
-    }
-
-    public DesktopNodeHyperVNativeAdapter(
-        IDesktopNodeHyperVSwitchProvider switchProvider,
-        IDesktopNodeHyperVVmProvider vmProvider,
-        IDesktopNodeHyperVCheckpointProvider checkpointProvider,
-        IDesktopNodeHyperVCheckpointMutationProvider checkpointMutationProvider,
-        IDesktopNodeHyperVVmPowerStateProvider vmPowerStateProvider)
-        : this(
-            switchProvider,
-            new DesktopNodeHyperVNativeHostStatusProvider(switchProvider),
-            vmProvider,
-            checkpointProvider,
-            checkpointMutationProvider,
-            vmPowerStateProvider,
-            new DesktopNodeHyperVWmiVmCreateProvider(),
-            new DesktopNodeHyperVWmiVmDeleteProvider(),
-            new DesktopNodeHyperVWmiVmRenameProvider())
-    {
-    }
-
-    public DesktopNodeHyperVNativeAdapter(
-        IDesktopNodeHyperVSwitchProvider switchProvider,
-        IDesktopNodeHyperVVmProvider vmProvider,
-        IDesktopNodeHyperVCheckpointProvider checkpointProvider,
-        IDesktopNodeHyperVCheckpointMutationProvider checkpointMutationProvider,
-        IDesktopNodeHyperVVmPowerStateProvider vmPowerStateProvider,
-        IDesktopNodeHyperVVmCreateProvider vmCreateProvider)
-        : this(
-            switchProvider,
-            new DesktopNodeHyperVNativeHostStatusProvider(switchProvider),
-            vmProvider,
-            checkpointProvider,
-            checkpointMutationProvider,
-            vmPowerStateProvider,
-            vmCreateProvider,
-            new DesktopNodeHyperVWmiVmDeleteProvider(),
-            new DesktopNodeHyperVWmiVmRenameProvider())
-    {
-    }
-
-    public DesktopNodeHyperVNativeAdapter(
-        IDesktopNodeHyperVSwitchProvider switchProvider,
-        IDesktopNodeHyperVVmProvider vmProvider,
-        IDesktopNodeHyperVCheckpointProvider checkpointProvider,
-        IDesktopNodeHyperVCheckpointMutationProvider checkpointMutationProvider,
-        IDesktopNodeHyperVVmPowerStateProvider vmPowerStateProvider,
-        IDesktopNodeHyperVVmCreateProvider vmCreateProvider,
-        IDesktopNodeHyperVVmDeleteProvider vmDeleteProvider)
-        : this(
-            switchProvider,
-            new DesktopNodeHyperVNativeHostStatusProvider(switchProvider),
-            vmProvider,
-            checkpointProvider,
-            checkpointMutationProvider,
-            vmPowerStateProvider,
-            vmCreateProvider,
-            vmDeleteProvider,
-            new DesktopNodeHyperVWmiVmRenameProvider())
-    {
-    }
-
-    public DesktopNodeHyperVNativeAdapter(
-        IDesktopNodeHyperVSwitchProvider switchProvider,
-        IDesktopNodeHyperVVmProvider vmProvider,
-        IDesktopNodeHyperVCheckpointProvider checkpointProvider,
-        IDesktopNodeHyperVCheckpointMutationProvider checkpointMutationProvider,
-        IDesktopNodeHyperVVmPowerStateProvider vmPowerStateProvider,
-        IDesktopNodeHyperVVmCreateProvider vmCreateProvider,
-        IDesktopNodeHyperVVmDeleteProvider vmDeleteProvider,
-        IDesktopNodeHyperVVmRenameProvider vmRenameProvider)
-        : this(
-            switchProvider,
-            new DesktopNodeHyperVNativeHostStatusProvider(switchProvider),
-            vmProvider,
-            checkpointProvider,
-            checkpointMutationProvider,
-            vmPowerStateProvider,
-            vmCreateProvider,
-            vmDeleteProvider,
-            vmRenameProvider)
-    {
-    }
-
-    public DesktopNodeHyperVNativeAdapter(
-        IDesktopNodeHyperVSwitchProvider switchProvider,
-        IDesktopNodeHyperVVmProvider vmProvider,
-        IDesktopNodeHyperVCheckpointProvider checkpointProvider,
-        IDesktopNodeHyperVCheckpointMutationProvider checkpointMutationProvider,
-        IDesktopNodeHyperVVmPowerStateProvider vmPowerStateProvider,
-        IDesktopNodeHyperVVmCreateProvider vmCreateProvider,
-        IDesktopNodeHyperVVmDeleteProvider vmDeleteProvider,
-        IDesktopNodeHyperVVmRenameProvider vmRenameProvider,
-        IDesktopNodeHyperVVmManageProvider vmManageProvider)
-        : this(
-            switchProvider,
-            new DesktopNodeHyperVNativeHostStatusProvider(switchProvider),
-            vmProvider,
-            checkpointProvider,
-            checkpointMutationProvider,
-            vmPowerStateProvider,
-            vmCreateProvider,
-            vmDeleteProvider,
-            vmRenameProvider,
-            vmManageProvider)
-    {
-    }
-
-    public DesktopNodeHyperVNativeAdapter(
-        IDesktopNodeHyperVSwitchProvider switchProvider,
-        IDesktopNodeHyperVVmProvider vmProvider,
-        IDesktopNodeHyperVCheckpointProvider checkpointProvider,
-        IDesktopNodeHyperVCheckpointMutationProvider checkpointMutationProvider,
-        IDesktopNodeHyperVVmPowerStateProvider vmPowerStateProvider,
-        IDesktopNodeHyperVVmCreateProvider vmCreateProvider,
-        IDesktopNodeHyperVVmDeleteProvider vmDeleteProvider,
-        IDesktopNodeHyperVVmRenameProvider vmRenameProvider,
-        IDesktopNodeHyperVVmManageProvider vmManageProvider,
-        IDesktopNodeHyperVVmCloneProvider vmCloneProvider)
-        : this(
-            switchProvider,
-            new DesktopNodeHyperVNativeHostStatusProvider(switchProvider),
-            vmProvider,
-            checkpointProvider,
-            checkpointMutationProvider,
-            vmPowerStateProvider,
-            vmCreateProvider,
-            vmDeleteProvider,
-            vmRenameProvider,
-            vmManageProvider,
-            vmCloneProvider)
-    {
-    }
-
-    public DesktopNodeHyperVNativeAdapter(
-        IDesktopNodeHyperVSwitchProvider switchProvider,
-        IDesktopNodeHyperVHostStatusProvider hostStatusProvider)
-        : this(
-            switchProvider,
-            hostStatusProvider,
-            new DesktopNodeHyperVWmiVmProvider(),
-            new DesktopNodeHyperVWmiCheckpointProvider(),
-            new DesktopNodeHyperVWmiCheckpointMutationProvider(),
-            new DesktopNodeHyperVWmiVmPowerStateProvider(),
-            new DesktopNodeHyperVWmiVmCreateProvider(),
-            new DesktopNodeHyperVWmiVmDeleteProvider(),
-            new DesktopNodeHyperVWmiVmRenameProvider())
-    {
-    }
-
-    public DesktopNodeHyperVNativeAdapter(
-        IDesktopNodeHyperVSwitchProvider switchProvider,
-        IDesktopNodeHyperVHostStatusProvider hostStatusProvider,
-        IDesktopNodeHyperVVmProvider vmProvider)
-        : this(
-            switchProvider,
-            hostStatusProvider,
-            vmProvider,
-            new DesktopNodeHyperVWmiCheckpointProvider(),
-            new DesktopNodeHyperVWmiCheckpointMutationProvider(),
-            new DesktopNodeHyperVWmiVmPowerStateProvider(),
-            new DesktopNodeHyperVWmiVmCreateProvider(),
-            new DesktopNodeHyperVWmiVmDeleteProvider(),
-            new DesktopNodeHyperVWmiVmRenameProvider())
-    {
-    }
-
-    public DesktopNodeHyperVNativeAdapter(
-        IDesktopNodeHyperVSwitchProvider switchProvider,
-        IDesktopNodeHyperVHostStatusProvider hostStatusProvider,
-        IDesktopNodeHyperVVmProvider vmProvider,
-        IDesktopNodeHyperVCheckpointProvider checkpointProvider,
-        IDesktopNodeHyperVCheckpointMutationProvider checkpointMutationProvider,
-        IDesktopNodeHyperVVmPowerStateProvider vmPowerStateProvider,
-        IDesktopNodeHyperVVmCreateProvider vmCreateProvider)
-        : this(
-            switchProvider,
-            hostStatusProvider,
-            vmProvider,
-            checkpointProvider,
-            checkpointMutationProvider,
-            vmPowerStateProvider,
-            vmCreateProvider,
-            new DesktopNodeHyperVWmiVmDeleteProvider(),
-            new DesktopNodeHyperVWmiVmRenameProvider())
-    {
-    }
-
-    public DesktopNodeHyperVNativeAdapter(
-        IDesktopNodeHyperVSwitchProvider switchProvider,
-        IDesktopNodeHyperVHostStatusProvider hostStatusProvider,
-        IDesktopNodeHyperVVmProvider vmProvider,
-        IDesktopNodeHyperVCheckpointProvider checkpointProvider,
-        IDesktopNodeHyperVCheckpointMutationProvider checkpointMutationProvider,
-        IDesktopNodeHyperVVmPowerStateProvider vmPowerStateProvider,
-        IDesktopNodeHyperVVmCreateProvider vmCreateProvider,
-        IDesktopNodeHyperVVmDeleteProvider vmDeleteProvider,
-        IDesktopNodeHyperVVmRenameProvider vmRenameProvider)
-        : this(
-            switchProvider,
-            hostStatusProvider,
-            vmProvider,
-            checkpointProvider,
-            checkpointMutationProvider,
-            vmPowerStateProvider,
-            vmCreateProvider,
-            vmDeleteProvider,
-            vmRenameProvider,
-            new DesktopNodeHyperVWmiVmManageProvider())
-    {
-    }
-
-    public DesktopNodeHyperVNativeAdapter(
-        IDesktopNodeHyperVSwitchProvider switchProvider,
-        IDesktopNodeHyperVHostStatusProvider hostStatusProvider,
-        IDesktopNodeHyperVVmProvider vmProvider,
-        IDesktopNodeHyperVCheckpointProvider checkpointProvider,
-        IDesktopNodeHyperVCheckpointMutationProvider checkpointMutationProvider,
-        IDesktopNodeHyperVVmPowerStateProvider vmPowerStateProvider,
-        IDesktopNodeHyperVVmCreateProvider vmCreateProvider,
-        IDesktopNodeHyperVVmDeleteProvider vmDeleteProvider,
-        IDesktopNodeHyperVVmRenameProvider vmRenameProvider,
-        IDesktopNodeHyperVVmManageProvider vmManageProvider)
-        : this(
-            switchProvider,
-            hostStatusProvider,
-            vmProvider,
-            checkpointProvider,
-            checkpointMutationProvider,
-            vmPowerStateProvider,
-            vmCreateProvider,
-            vmDeleteProvider,
-            vmRenameProvider,
-            vmManageProvider,
-            new DesktopNodeHyperVWmiVmCloneProvider())
-    {
-    }
-
-    public DesktopNodeHyperVNativeAdapter(
-        IDesktopNodeHyperVSwitchProvider switchProvider,
-        IDesktopNodeHyperVHostStatusProvider hostStatusProvider,
-        IDesktopNodeHyperVVmProvider vmProvider,
-        IDesktopNodeHyperVCheckpointProvider checkpointProvider,
-        IDesktopNodeHyperVCheckpointMutationProvider checkpointMutationProvider,
-        IDesktopNodeHyperVVmPowerStateProvider vmPowerStateProvider,
-        IDesktopNodeHyperVVmCreateProvider vmCreateProvider,
-        IDesktopNodeHyperVVmDeleteProvider vmDeleteProvider,
-        IDesktopNodeHyperVVmRenameProvider vmRenameProvider,
-        IDesktopNodeHyperVVmManageProvider vmManageProvider,
-        IDesktopNodeHyperVVmCloneProvider vmCloneProvider)
-        : this(
-            switchProvider,
-            hostStatusProvider,
-            vmProvider,
-            checkpointProvider,
-            checkpointMutationProvider,
-            vmPowerStateProvider,
-            vmCreateProvider,
-            vmDeleteProvider,
-            vmRenameProvider,
-            vmManageProvider,
-            vmCloneProvider,
-            new DesktopNodeHyperVWmiVmMediaProvider(),
-            new DesktopNodeHyperVWmiVmResourceMutationProvider(),
-            new DesktopNodeHyperVPowerShellDirectGuestExecutionProvider())
-    {
-    }
-
-    public DesktopNodeHyperVNativeAdapter(
-        IDesktopNodeHyperVSwitchProvider switchProvider,
-        IDesktopNodeHyperVHostStatusProvider hostStatusProvider,
-        IDesktopNodeHyperVVmProvider vmProvider,
-        IDesktopNodeHyperVCheckpointProvider checkpointProvider,
-        IDesktopNodeHyperVCheckpointMutationProvider checkpointMutationProvider,
-        IDesktopNodeHyperVVmPowerStateProvider vmPowerStateProvider,
-        IDesktopNodeHyperVVmCreateProvider vmCreateProvider,
-        IDesktopNodeHyperVVmDeleteProvider vmDeleteProvider,
-        IDesktopNodeHyperVVmRenameProvider vmRenameProvider,
-        IDesktopNodeHyperVVmMediaProvider vmMediaProvider,
-        IDesktopNodeHyperVVmResourceMutationProvider vmResourceMutationProvider,
-        IDesktopNodeHyperVGuestExecutionProvider? guestExecutionProvider = null)
-        : this(
-            switchProvider,
-            hostStatusProvider,
-            vmProvider,
-            checkpointProvider,
-            checkpointMutationProvider,
-            vmPowerStateProvider,
-            vmCreateProvider,
-            vmDeleteProvider,
-            vmRenameProvider,
-            new DesktopNodeHyperVWmiVmManageProvider(),
-            new DesktopNodeHyperVWmiVmCloneProvider(),
-            vmMediaProvider,
-            vmResourceMutationProvider,
-            guestExecutionProvider)
-    {
-    }
-
-    public DesktopNodeHyperVNativeAdapter(
-        IDesktopNodeHyperVSwitchProvider switchProvider,
-        IDesktopNodeHyperVHostStatusProvider hostStatusProvider,
-        IDesktopNodeHyperVVmProvider vmProvider,
-        IDesktopNodeHyperVCheckpointProvider checkpointProvider,
-        IDesktopNodeHyperVCheckpointMutationProvider checkpointMutationProvider,
-        IDesktopNodeHyperVVmPowerStateProvider vmPowerStateProvider,
-        IDesktopNodeHyperVVmCreateProvider vmCreateProvider,
-        IDesktopNodeHyperVVmDeleteProvider vmDeleteProvider,
-        IDesktopNodeHyperVVmRenameProvider vmRenameProvider,
-        IDesktopNodeHyperVVmManageProvider vmManageProvider,
-        IDesktopNodeHyperVVmMediaProvider vmMediaProvider,
-        IDesktopNodeHyperVVmResourceMutationProvider vmResourceMutationProvider,
-        IDesktopNodeHyperVGuestExecutionProvider? guestExecutionProvider = null)
-        : this(
-            switchProvider,
-            hostStatusProvider,
-            vmProvider,
-            checkpointProvider,
-            checkpointMutationProvider,
-            vmPowerStateProvider,
-            vmCreateProvider,
-            vmDeleteProvider,
-            vmRenameProvider,
-            vmManageProvider,
-            new DesktopNodeHyperVWmiVmCloneProvider(),
-            vmMediaProvider,
-            vmResourceMutationProvider,
-            guestExecutionProvider)
-    {
-    }
 
     public DesktopNodeHyperVNativeAdapter(
         IDesktopNodeHyperVSwitchProvider switchProvider,
@@ -455,7 +45,10 @@ public sealed partial class DesktopNodeHyperVNativeAdapter : IDesktopNodeHyperVN
         IDesktopNodeHyperVVmCloneProvider vmCloneProvider,
         IDesktopNodeHyperVVmMediaProvider vmMediaProvider,
         IDesktopNodeHyperVVmResourceMutationProvider vmResourceMutationProvider,
-        IDesktopNodeHyperVGuestExecutionProvider? guestExecutionProvider = null)
+        IDesktopNodeHyperVGuestExecutionProvider? guestExecutionProvider = null,
+        IDesktopNodeHyperVVmExportProvider? vmExportProvider = null,
+        IDesktopNodeHyperVVmImportProvider? vmImportProvider = null,
+        IDesktopNodeHyperVVmNetworkConnectProvider? vmNetworkConnectProvider = null)
     {
         this.switchProvider = switchProvider;
         this.hostStatusProvider = hostStatusProvider;
@@ -468,6 +61,9 @@ public sealed partial class DesktopNodeHyperVNativeAdapter : IDesktopNodeHyperVN
         this.vmRenameProvider = vmRenameProvider;
         this.vmManageProvider = vmManageProvider;
         this.vmCloneProvider = vmCloneProvider;
+        this.vmExportProvider = vmExportProvider ?? new DesktopNodeHyperVWmiVmExportProvider();
+        this.vmImportProvider = vmImportProvider ?? new DesktopNodeHyperVWmiVmImportProvider();
+        this.vmNetworkConnectProvider = vmNetworkConnectProvider ?? new DesktopNodeHyperVWmiVmNetworkConnectProvider();
         this.vmMediaProvider = vmMediaProvider;
         this.vmResourceMutationProvider = vmResourceMutationProvider;
         this.guestExecutionProvider = guestExecutionProvider ?? new DesktopNodeHyperVPowerShellDirectGuestExecutionProvider();
@@ -485,6 +81,9 @@ public sealed partial class DesktopNodeHyperVNativeAdapter : IDesktopNodeHyperVN
             [DesktopNodeHyperVAdapterDispatchHandler.VmManage] = InvokeVmManage,
             [DesktopNodeHyperVAdapterDispatchHandler.VmClonePreview] = InvokeVmClonePreview,
             [DesktopNodeHyperVAdapterDispatchHandler.VmClone] = InvokeVmClone,
+            [DesktopNodeHyperVAdapterDispatchHandler.VmExport] = InvokeVmExport,
+            [DesktopNodeHyperVAdapterDispatchHandler.VmImport] = InvokeVmImport,
+            [DesktopNodeHyperVAdapterDispatchHandler.VmNetworkConnect] = InvokeVmNetworkConnect,
             [DesktopNodeHyperVAdapterDispatchHandler.VmMedia] = InvokeVmMedia,
             [DesktopNodeHyperVAdapterDispatchHandler.VmResourceMutation] = InvokeVmResourceMutation,
             [DesktopNodeHyperVAdapterDispatchHandler.GuestExecution] = InvokeGuestExecution
@@ -540,7 +139,63 @@ public sealed partial class DesktopNodeHyperVNativeAdapter : IDesktopNodeHyperVN
             throw new InvalidOperationException($"Unsupported Hyper-V adapter dispatch handler '{dispatch.Handler}'.");
         }
 
+        if (TryRejectTemplateLockedMutation(operation, domainOperation, parameters, cancellationToken, out result))
+        {
+            return true;
+        }
+
         return handler(operation, parameters, cancellationToken, out result);
+    }
+
+    private bool TryRejectTemplateLockedMutation(
+        string operation,
+        DesktopNodeHyperVDomainOperation domainOperation,
+        JsonElement parameters,
+        CancellationToken cancellationToken,
+        out DesktopNodeHyperVOperationResult result)
+    {
+        result = default!;
+        if (domainOperation.Kind != DesktopNodeHyperVOperationKind.Mutation ||
+            DesktopNodeHyperVVmTemplateLockGuard.IsMutationAllowed(operation))
+        {
+            return false;
+        }
+
+        var vmName = GetStringProperty(parameters, "name") ??
+            GetStringProperty(parameters, "vm_name") ??
+            GetStringProperty(parameters, "source");
+        if (string.IsNullOrWhiteSpace(vmName))
+        {
+            return false;
+        }
+
+        IReadOnlyList<DesktopNodeHyperVVmInfo> vms;
+        try
+        {
+            vms = vmProvider.GetVms(cancellationToken);
+        }
+        catch (Exception)
+        {
+            return false;
+        }
+
+        var vm = vms.FirstOrDefault(candidate =>
+            string.Equals(candidate.Name, vmName, StringComparison.Ordinal) ||
+            string.Equals(candidate.Id, vmName, StringComparison.Ordinal));
+        if (vm is null ||
+            !DesktopNodeHyperVVmTemplateLockGuard.TryReject(operation, vm.TemplateLock, vm.Name, out var error) ||
+            error is null)
+        {
+            return false;
+        }
+
+        result = DesktopNodeHyperVOperationResult.Failure(
+            operation,
+            error.Code,
+            error.Message,
+            error.Detail,
+            error.Retryable);
+        return true;
     }
 
     private delegate bool HyperVAdapterDispatchInvoker(
@@ -607,7 +262,9 @@ public sealed partial class DesktopNodeHyperVNativeAdapter : IDesktopNodeHyperVN
 
     private bool InvokeVmManage(string operation, JsonElement parameters, CancellationToken cancellationToken, out DesktopNodeHyperVOperationResult result)
     {
-        return TryInvokeVmManage(operation, parameters, cancellationToken, out result);
+        return operation == "vm.template.lock"
+            ? TryInvokeVmTemplateLock(operation, parameters, cancellationToken, out result)
+            : TryInvokeVmManage(operation, parameters, cancellationToken, out result);
     }
 
     private bool InvokeVmClonePreview(string operation, JsonElement parameters, CancellationToken cancellationToken, out DesktopNodeHyperVOperationResult result)
@@ -618,6 +275,21 @@ public sealed partial class DesktopNodeHyperVNativeAdapter : IDesktopNodeHyperVN
     private bool InvokeVmClone(string operation, JsonElement parameters, CancellationToken cancellationToken, out DesktopNodeHyperVOperationResult result)
     {
         return TryInvokeVmClone(operation, parameters, cancellationToken, out result);
+    }
+
+    private bool InvokeVmExport(string operation, JsonElement parameters, CancellationToken cancellationToken, out DesktopNodeHyperVOperationResult result)
+    {
+        return TryInvokeVmExport(operation, parameters, cancellationToken, out result);
+    }
+
+    private bool InvokeVmImport(string operation, JsonElement parameters, CancellationToken cancellationToken, out DesktopNodeHyperVOperationResult result)
+    {
+        return TryInvokeVmImport(operation, parameters, cancellationToken, out result);
+    }
+
+    private bool InvokeVmNetworkConnect(string operation, JsonElement parameters, CancellationToken cancellationToken, out DesktopNodeHyperVOperationResult result)
+    {
+        return TryInvokeVmNetworkConnect(operation, parameters, cancellationToken, out result);
     }
 
     private bool InvokeVmMedia(string operation, JsonElement parameters, CancellationToken cancellationToken, out DesktopNodeHyperVOperationResult result)

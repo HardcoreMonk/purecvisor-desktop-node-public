@@ -52,23 +52,23 @@ PureCVisor Desktop Node는 Windows 10/11 Pro/Enterprise + Hyper-V host를 로컬
 |------|------------|-------------|-----|----------|
 | Host status | [ `pcv.host.status` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-host-status)<br>[ `pcv.ops.summary` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-ops-summary) | Dashboard/Troubleshooting | `pcvcli host status` | `GET /host/status` |
 | Runtime policy | [ `pcv.runtime.policy` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-runtime-policy) | Dashboard/Troubleshooting | `pcvcli runtime policy` | `GET /runtime/policy` |
-| Network inventory | [ `pcv.network.inventory` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-network-inventory) | Network | `pcvcli network inventory` | `GET /network/inventory` |
+| Network inventory | [ `pcv.network.inventory` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-network-inventory) | Network (inventory read-only; no switch editor) | `pcvcli network inventory`; `pcvcli vm network connect <vm> --switch NAME --yes` | `GET /network/inventory`; `POST /vms/{id}/network` |
 | VM list/detail | [ `pcv.vm.inventory` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-inventory)<br>[ `pcv.vm.telemetry` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-telemetry)<br>[ `pcv.vm.rename` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-rename) | Virtual Machines | `pcvcli vm list/get` | `GET /vms`, `GET /vms/{id}` |
 | VM create | [ `pcv.vm.create` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-create) | VM create dialog | `pcvcli vm create ...` | `POST /vms` |
 | VM power | [ `pcv.vm.power-lifecycle` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-power-lifecycle)<br>[ `pcv.vm.pause-lifecycle` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-pause-lifecycle) | VM detail actions | `pcvcli vm start/shutdown/poweroff/restart` | `POST /vms/{id}/...` |
 | VM Hyper-V Saved | [ `pcv.vm.saved-lifecycle` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-saved-lifecycle) | VM detail `Save` / `Resume saved` | `pcvcli vm save` / `pcvcli vm resume-saved` | `POST /vms/{id}/save`, `POST /vms/{id}/resume-saved` |
 | VM QoS/readback | [ `pcv.vm.qos` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-qos)<br>[ `pcv.vm.guest-service-readback` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-guest-service-readback)<br>[ `pcv.vm.guest-execution` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-guest-execution)<br>[ `pcv.vm.guest-channel` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-guest-channel)<br>[ `pcv.vm.resource-limits` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-resource-limits) | 선택 VM detail `QoS / Guest Readback` panel | `pcvcli vm limit/blkio-get/bandwidth/guest-agent-status/guest-ping` | `/vms/{id}/limit`, `/vms/{id}/blkio`, `/vms/{id}/bandwidth`, `/vms/{id}/guest-agent/...` |
-| VM manage | [ `pcv.vm.managed-import` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-managed-import) | VM detail `Manage VM` | `pcvcli vm manage --yes` | `POST /vms/{id}/manage` |
-| VM clone | [ `pcv.vm.clone` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-clone) | VM detail `Clone VM` | `pcvcli vm clone <source> --name <target> --yes` / `--dry-run` | `POST /vms/{id}/clone/preview`, `POST /vms/{id}/clone` |
+| VM manage | [ `pcv.vm.managed-import` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-managed-import) | VM detail `Manage VM` and export/import status readback (no save form) | `pcvcli vm manage --yes`; `pcvcli vm export preview <vm> --directory PATH`; `pcvcli vm export <vm> --directory PATH --yes`; `pcvcli vm import preview --name TARGET --directory PATH --has-vmcx`; `pcvcli vm import --name TARGET --directory PATH --yes` | `POST /vms/{id}/manage`; `POST /vms/{id}/export/preview`; `POST /vms/{id}/export`; `POST /vms/import/preview`; `POST /vms/import` |
+| VM clone | [ `pcv.vm.clone` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-clone) | VM detail `Clone VM` / `Lock template` / `Unlock template` | `pcvcli vm clone <source> --name <target> --yes` / `--dry-run`<br>`pcvcli vm template-lock <vm> --yes` / `template-unlock` | `POST /vms/{id}/clone/preview`, `POST /vms/{id}/clone`, `POST /vms/{id}/template-lock` |
 | VM delete | [ `pcv.vm.delete` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-delete) | VM detail confirmation | `pcvcli vm delete --yes` | `DELETE /vms/{id}` |
 | VM media attach/eject | [ `pcv.vm.media-attach` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-media-attach)<br>[ `pcv.vm.media-eject` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-media-eject) | Web form | `pcvcli vm attach/eject` | `POST /vms/{id}/attach`, `POST /vms/{id}/eject` |
-| Checkpoints | [ `pcv.checkpoint.lifecycle` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-checkpoint-lifecycle)<br>[ `pcv.checkpoint.restore` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-checkpoint-restore) | VM checkpoint panel | `pcvcli vm checkpoint ...` | `/vms/{id}/checkpoints` |
+| Checkpoints | [ `pcv.checkpoint.lifecycle` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-checkpoint-lifecycle)<br>[ `pcv.checkpoint.restore` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-checkpoint-restore) | VM checkpoint panel (schedule readback, no save form) | `pcvcli vm checkpoint ...`; `pcvcli vm checkpoint schedule preview <vm> --interval-minutes 1440 --retention-max 8`; `pcvcli vm checkpoint schedule set <vm> --interval-minutes 1440 --retention-max 8 --yes`; `pcvcli vm checkpoint schedule clear <vm> --yes` | `/vms/{id}/checkpoints`; `POST /vms/{id}/checkpoints/schedule/preview`; `POST /vms/{id}/checkpoints/schedule`; `POST /vms/{id}/checkpoints/schedule/clear` |
 | Jobs | [ `pcv.job.lifecycle` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-job-lifecycle) | Jobs/Activity | `pcvcli job ...` | `/jobs` |
 | Diagnostics list | [ `pcv.diagnostics.bundle` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-diagnostics-bundle) | Troubleshooting bundle 목록/pagination | `pcvcli diagnostics bundle list [--limit <n>] [--offset <n>]` | `GET /diagnostics/bundles?limit=&offset=` |
 | Diagnostics create/download | [ `pcv.diagnostics.bundle` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-diagnostics-bundle) | Troubleshooting create/download | `pcvcli diagnostics bundle create/download` | `POST /diagnostics/bundles`, `GET /diagnostics/bundles/{id}/download` |
-| Account/RBAC/JWT | [ `pcv.account.session` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-account-session) | Account panel | API/Web Console auth only | `/auth/...` |
+| Account/RBAC/JWT | [ `pcv.account.session` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-account-session) | Account login과 create/disable | `pcvcli account list/create/disable` | `/auth/...`, `/accounts` |
 | Console capability discovery | [ `pcv.console.capabilities` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-console-capabilities) | Console/Troubleshooting capability card | API/Web Console 전용 | `GET /console/capabilities` |
-| VM console/noVNC handoff | [ `pcv.vm.console-handoff` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-console-handoff) | 선택 VM Console panel | `pcvcli vm console/vnc <vm>` | `GET /vms/{id}/console` |
+| VM console/noVNC handoff | [ `pcv.vm.console-handoff` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-console-handoff) | 선택 VM Console panel (readback, no save form) | `pcvcli vm console/vnc <vm>`; `pcvcli console novnc-target preview --host 127.0.0.1 --port 5900`; `pcvcli console novnc-target set --host 127.0.0.1 --port 5900 --yes`; `pcvcli console novnc-target clear --yes` | `GET /vms/{id}/console`; `POST /console/novnc-target/preview`; `POST /console/novnc-target`; `POST /console/novnc-target/clear` |
 
 ## Feature ID 추적
 
@@ -82,13 +82,13 @@ PureCVisor Desktop Node는 Windows 10/11 Pro/Enterprise + Hyper-V host를 로컬
 | [ `pcv.diagnostics.bundle` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-diagnostics-bundle) | 진단 bundle 목록·생성·다운로드 |
 | [ `pcv.account.session` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-account-session) | 계정, JWT session, RBAC |
 | [ `pcv.console.capabilities` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-console-capabilities) | Console capability discovery |
-| [ `pcv.network.inventory` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-network-inventory) | 네트워크 inventory |
+| [ `pcv.network.inventory` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-network-inventory) | 네트워크 inventory와 VM 스위치 연결 |
 | [ `pcv.vm.delete` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-delete) | VM 삭제와 삭제 상태 |
 | [ `pcv.vm.console-handoff` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-console-handoff) | VM console/noVNC handoff |
 | [ `pcv.vm.telemetry` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-telemetry) | VM CPU·memory telemetry |
 | [ `pcv.vm.qos` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-qos) | Storage·network QoS |
 | [ `pcv.vm.guest-service-readback` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-guest-service-readback) | Guest service 상태와 ping |
-| [ `pcv.vm.guest-execution` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-guest-execution) | Guest command preview·실행 |
+| [ `pcv.vm.guest-execution` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-guest-execution) | Guest command preview·실행과 host-to-guest 파일 copy |
 | [ `pcv.vm.guest-channel` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-guest-channel) | Guest channel preview·verify·ensure |
 | [ `pcv.checkpoint.lifecycle` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-checkpoint-lifecycle) | Checkpoint 목록·생성·삭제 |
 | [ `pcv.vm.create` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-create) | VM 생성 |
@@ -98,7 +98,7 @@ PureCVisor Desktop Node는 Windows 10/11 Pro/Enterprise + Hyper-V host를 로컬
 | [ `pcv.vm.saved-lifecycle` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-saved-lifecycle) | 가상 머신 전원 작업 — Saved/Resume saved |
 | [ `pcv.vm.rename` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-rename) | VM 이름 변경 |
 | [ `pcv.vm.managed-import` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-managed-import) | 기존 VM 관리 편입 |
-| [ `pcv.vm.clone` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-clone) | managed VM 독립 VHDX full clone |
+| [ `pcv.vm.clone` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-clone) | managed VM 독립 VHDX full clone과 template lock |
 | [ `pcv.vm.media-eject` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-media-eject) | VM media 제거 |
 | [ `pcv.vm.media-attach` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-media-attach) | VM media 연결 |
 | [ `pcv.vm.resource-limits` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-resource-limits) | VM CPU·memory·disk resource 변경 |
@@ -149,7 +149,9 @@ Host/runtime 화면은 service install/start/stop, Event Log repair, Credential 
 | 실패 처리 | native parity failure는 helper fallback 없이 structured failure로 표시 |
 | 사용자 조치 | VMMS/Hyper-V 상태, Default Switch, network adapter 상태 확인 |
 
-Network 화면은 switch 생성/삭제, IP 변경, firewall 변경을 실행하지 않는다.
+Network 화면은 switch 생성/삭제, IP 변경, firewall 변경, VM 스위치 연결, NIC/DVD 추가를 실행하지 않는다.
+기존 NIC를 inventory 스위치에 붙이는 것은 CLI/API `vm.network.connect`다. 스위치 생성/삭제는 Host
+`service-action`이다. NIC 또는 빈 DVD 하나를 추가하는 것은 CLI/API `vm.device.add`다.
 
 ## 가상 머신 inventory와 상세
 
@@ -284,6 +286,20 @@ Action blocked: VM clone requires explicit confirmation.
 Use: vm clone <source> --name <target> --yes.
 code=PCV_CLI_CONFIRMATION_REQUIRED
 ```
+
+## 가상 머신 template lock
+
+목적: managed VM을 start/clone만 허용하는 template로 잠근다. 직접 mutate(save/rename/delete/attach 등)는 `PCV_VM_TEMPLATE_LOCKED`로 거절한다.
+
+| 항목 | 명세 |
+|------|------|
+| 전제조건 | operator 이상, 명시 confirmation. lock은 managed VM만 |
+| Web Console | 선택 VM detail `Lock template` / `Unlock template`. 잠긴 VM은 Start, Clone, Unlock만 활성. Template 행은 `locked` |
+| CLI | `pcvcli vm template-lock <vm> --yes`, `pcvcli vm template-unlock <vm> --yes` |
+| Guard | `--yes`/`confirm` 없음, `confirm_name`과 `{vmId}` Ordinal 불일치, unmanaged lock |
+| 성공 결과 | template-lock job id는 Activity에서 추적. 이미 locked/unlocked면 `already-locked` / `already-unlocked` |
+
+Web POST `confirm_name`은 다른 lifecycle 버튼과 같은 URL path identifier다. `locked`는 lock이면 true, unlock이면 false다. 클론 대상 Notes는 managed marker만 가지므로 클론은 template이 아니다.
 
 ## 가상 머신 delete
 

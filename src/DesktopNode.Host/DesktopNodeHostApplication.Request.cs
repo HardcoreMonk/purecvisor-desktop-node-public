@@ -133,14 +133,20 @@ public sealed partial class DesktopNodeHostApplication : IDisposable
             admissionLease = bodyAdmission.Lease;
 
             var body = await ReadRequestBodyAsync(request, options.MaxRequestBodyBytes, requestToken).ConfigureAwait(false);
+            var authorization = request.Headers["Authorization"];
+            var serviceBearerAccepted = !string.IsNullOrWhiteSpace(token.Value) &&
+                !string.IsNullOrWhiteSpace(authorization) &&
+                authorization.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(authorization["Bearer ".Length..].Trim(), token.Value, StringComparison.Ordinal);
             var response = processor.Handle(new DesktopNodeApiRequest(
                 request.HttpMethod,
                 path.TrimEnd('/'),
                 body,
                 RequestId: ResolveRequestId(request),
                 ClientIdentity: request.RemoteEndPoint?.Address.ToString(),
-                Authorization: request.Headers["Authorization"],
-                RemoteIsLoopback: IsLoopbackRemote(request.RemoteEndPoint)));
+                Authorization: authorization,
+                RemoteIsLoopback: IsLoopbackRemote(request.RemoteEndPoint),
+                ServiceBearerAccepted: serviceBearerAccepted));
             await WriteTextAsync(context.Response, response.StatusCode, response.ContentType, response.Body, MergeHeaders(response.Headers, CorsHeaders(request))).ConfigureAwait(false);
         }
         catch (DesktopNodeHostRequestBodyTooLargeException ex)

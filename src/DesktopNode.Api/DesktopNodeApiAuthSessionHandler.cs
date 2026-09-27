@@ -11,6 +11,8 @@ internal sealed class DesktopNodeApiAuthSessionHandler
         accountAuth = new DesktopNodeAccountAuthService(options);
     }
 
+    internal bool Ready => accountAuth.Ready;
+
     public DesktopNodeApiResponse? TryHandle(
         DesktopNodeApiRequest request,
         string method,
@@ -72,6 +74,45 @@ internal sealed class DesktopNodeApiAuthSessionHandler
                 DesktopNodeApiResponseFactory.Body(true, "auth.rbac", accountAuth.BuildRbacData(), null));
         }
 
+        if (method == "GET" && path == "/api/v1/accounts")
+        {
+            return AuthResult(accountAuth.ListAccounts(ResolveMutationAuth(request)));
+        }
+
+        if (method == "POST" && path == "/api/v1/accounts")
+        {
+            var parsed = DesktopNodeApiRequestParsing.TryParseBody(request.Body, "account.create");
+            if (!parsed.Ok)
+            {
+                return parsed.Response!;
+            }
+
+            var body = parsed.Value!.Value;
+            return AuthResult(accountAuth.CreateAccount(
+                ReadJsonString(body, "username"),
+                ReadJsonString(body, "password"),
+                ReadJsonString(body, "role"),
+                ResolveMutationAuth(request),
+                ReadJsonString(body, "display_name")));
+        }
+
+        if (method == "POST" &&
+            DesktopNodeApiRuntimeRoutes.TryMatchContract(method, path, out var disableMatch) &&
+            string.Equals(disableMatch.Route.OperationName, "DisableAccount", StringComparison.Ordinal))
+        {
+            var parsed = string.IsNullOrWhiteSpace(request.Body)
+                ? DesktopNodeApiRequestParsing.ParsedJson.Success(DesktopNodeApiResponseFactory.EmptyObject())
+                : DesktopNodeApiRequestParsing.TryParseBody(request.Body, "account.disable");
+            if (!parsed.Ok)
+            {
+                return parsed.Response!;
+            }
+
+            var username = disableMatch.Parameters["username"];
+            var confirm = ReadJsonString(parsed.Value!.Value, "confirm_username") ?? username;
+            return AuthResult(accountAuth.DisableAccount(username, confirm, ResolveMutationAuth(request)));
+        }
+
         return DesktopNodeApiResponseFactory.Failure(
             404,
             "api.route",
@@ -86,6 +127,11 @@ internal sealed class DesktopNodeApiAuthSessionHandler
         string method,
         string path)
     {
+        if (request.ServiceBearerAccepted)
+        {
+            return null;
+        }
+
         if (!accountAuth.Ready)
         {
             return null;
@@ -119,6 +165,21 @@ internal sealed class DesktopNodeApiAuthSessionHandler
                 $"Required guest execution permission: {requiredPermission}. Current role: {validation.Principal!.Role}.",
                 false,
                 "Grant the explicit ADR-0009 guest execution capability before opening this route.");
+        }
+
+        if (string.Equals(requiredPermission, NoVncTargetPolicy.PermissionConfigure, StringComparison.Ordinal))
+        {
+            var operationId = DesktopNodeApiRuntimeRoutes.TryMatchContract(method, path, out var configureMatch)
+                ? configureMatch.Route.OperationId
+                : "console.novnc-target.preview";
+            return DesktopNodeApiResponseFactory.Failure(
+                403,
+                operationId,
+                NoVncTargetProblemCodes.ConfigureForbidden,
+                "The current account role is not allowed to configure the noVNC target.",
+                $"Required permission: {requiredPermission}. Current role: {validation.Principal!.Role}.",
+                false,
+                "Grant console.configure or use the service bearer.");
         }
 
         return DesktopNodeApiResponseFactory.Failure(
@@ -161,12 +222,87 @@ internal sealed class DesktopNodeApiAuthSessionHandler
         return "read";
     }
 
+    public VmExportImportAuthContext ResolveVmExportImportAuth(DesktopNodeApiRequest request)
+    {
+        var access = ResolveCheckpointScheduleAuth(request);
+        return new VmExportImportAuthContext(
+            HasOperate: access.HasOperate,
+            HasServiceBearer: access.HasServiceBearer);
+    }
+
+    public VmDeviceAddAuthContext ResolveVmDeviceAddAuth(DesktopNodeApiRequest request)
+    {
+        var access = ResolveCheckpointScheduleAuth(request);
+        return new VmDeviceAddAuthContext(
+            HasOperate: access.HasOperate,
+            HasServiceBearer: access.HasServiceBearer);
+    }
+
+    public NetworkChangeAuthContext ResolveNetworkChangeAuth(DesktopNodeApiRequest request)
+    {
+        var access = ResolveCheckpointScheduleAuth(request);
+        return new NetworkChangeAuthContext(
+            HasOperate: access.HasOperate,
+            HasServiceBearer: access.HasServiceBearer);
+    }
+
+    public CheckpointScheduleAuthContext ResolveCheckpointScheduleAuth(DesktopNodeApiRequest request)
+    {
+        var access = accountAuth.Ready
+            ? accountAuth.ValidateAccessToken(request.Authorization)
+            : new DesktopNodeAuthValidationResult(false, null, null);
+        return new CheckpointScheduleAuthContext(
+            HasOperate: !accountAuth.Ready ||
+                (access.Ok &&
+                    access.Principal is not null &&
+                    accountAuth.HasPermission(access.Principal, CheckpointSchedulePolicy.PermissionOperate)),
+            HasServiceBearer: request.ServiceBearerAccepted);
+    }
+
+    public NoVncTargetAuthContext ResolveNoVncAuth(DesktopNodeApiRequest request)
+    {
+        var access = accountAuth.Ready
+            ? accountAuth.ValidateAccessToken(request.Authorization)
+            : new DesktopNodeAuthValidationResult(false, null, null);
+        return new NoVncTargetAuthContext(
+            HasConsoleConfigure: access.Ok &&
+                access.Principal is not null &&
+                accountAuth.HasPermission(access.Principal, NoVncTargetPolicy.PermissionConfigure),
+            HasServiceBearer: request.ServiceBearerAccepted);
+    }
+
+    private AccountMutationAuthContext ResolveMutationAuth(DesktopNodeApiRequest request)
+    {
+        var loopback = accountAuth.ValidateLoopbackAccessToken(request.Authorization);
+        var access = accountAuth.Ready
+            ? accountAuth.ValidateAccessToken(request.Authorization)
+            : new DesktopNodeAuthValidationResult(false, null, null);
+        return new AccountMutationAuthContext(
+            RemoteIsLoopback: request.RemoteIsLoopback,
+            HasServiceBearer: request.ServiceBearerAccepted,
+            HasAccountManage: access.Ok &&
+                access.Principal is not null &&
+                accountAuth.HasPermission(access.Principal, "account.manage"),
+            IsLoopbackSession: loopback.Ok);
+    }
+
+    private static string? ReadJsonString(System.Text.Json.JsonElement body, string name)
+    {
+        return body.ValueKind == System.Text.Json.JsonValueKind.Object &&
+            body.TryGetProperty(name, out var value) &&
+            value.ValueKind == System.Text.Json.JsonValueKind.String
+            ? value.GetString()
+            : null;
+    }
+
     private static string GuestExecutionOperationFor(string routeOperationName)
     {
         return routeOperationName switch
         {
             "PreviewVmGuestExec" => "vm.guest.exec.preview",
             "QueueVmGuestExec" => "vm.guest.exec",
+            "PreviewVmGuestFile" => "vm.guest.file.preview",
+            "QueueVmGuestFile" => "vm.guest.file",
             "PreviewVmGuestChannel" => "vm.guest.channel.preview",
             "QueueVerifyVmGuestChannel" or "VerifyVmGuestChannel" => "vm.guest.channel.verify",
             "QueueEnsureVmGuestChannel" or "EnsureVmGuestChannel" => "vm.guest.channel.ensure",

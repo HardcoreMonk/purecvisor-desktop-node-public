@@ -31,7 +31,8 @@
       -> 모든 PASS와 별도 승인 후 Lane 3 promotion
       -> 상태와 잔여 작업 보고
 
-한 checkpoint는 정확히 하나의 lane만 소유한다.
+한 checkpoint는 정확히 하나의 lane만 소유한다. 연속 실행의 단위는 campaign이다.
+열린 campaign은 `docs/ga-ready/active-campaign.json`이 소유한다.
 
 ## 1. 2분 시작
 
@@ -97,6 +98,24 @@ origin/main보다 앞서 있어도 remote-integrated로 표현하지 않는다.
 
 기본 Lane 1 예산은 회로 차단기 canonical owner에서 읽는다. 예산이나 checkpoint 확대는
 사용자의 명시적 승인 없이는 수행하지 않는다.
+
+### 1.4 캠페인
+
+`docs/ga-ready/active-campaign.json`을 읽는다. `status=open`이면
+`campaign_resume_policy` `continue-open-campaign`이다. 이번 작업의 `next_step`,
+`allowed_lanes`, `mutation_allowed`, `current_write_allowed`는 그 파일이 정한다. 사용자는
+campaign을 한 번 연다. 허용된 lane의 `next_step`은 재승인하지 않는다.
+
+- 기획 추가 게이트는 campaign이 이미 준 범위에 붙이지 않는다. 설계는 같은 턴에서 공개하고
+  첫 구현 slice를 바로 시작한다.
+- 범위 밖 발견은 report-only이며 `next_step`으로 승격하지 않는다.
+- 파일이 없거나 `status=closed`이면 `vague_resume_policy` `one-bounded-checkpoint`다.
+- 기본 제품 개발 campaign intent는 `lane1-continuous-development`다. ledger/install/HEAD
+  불일치는 상태가며 Lane 1을 멈추는 이유가 아니다.
+- campaign에 `plan`, `task_queue`, `next_task`가 있으면 캠페인 러너
+  (`docs/superpowers/specs/2026-09-27-purecvisor-desktop-node-campaign-runner-design.md`)를 따른다.
+  task 하나가 Lane 1 checkpoint 하나이고, green이면 `commit_policy`에 따라 로컬 commit한 뒤
+  같은 턴에서 다음 task로 이어 간다.
 
 ## 2. 변경 등급 결정
 
@@ -267,4 +286,18 @@ operator surface current-card와 feature qualification이 모두 PASS이고 별�
     next_approval_required:
 
 성공 보고도 실행하지 않은 검증을 명시한다. current evidence를 쓰지 않았다면 false로 기록하고,
-package나 설치본 상태를 operational current로 표현하지 않는다.
+package나 설치본 상태를 operational current로 표현하지 않는다. 열린 campaign이 있으면
+`campaign_id`와 `next_step`을 보고에 포함한다.
+
+## 9. 캠페인 next_step
+
+| 방금 끝난 일 | campaign intent | 다음에 실행 | 하지 말 것 |
+| --- | --- | --- | --- |
+| Lane 1 GREEN, dirty tree | `lane1-continuous-development` | 같은 Lane 1에서 다음 제품 결함. commit은 remaining | Lane 2 current-card, Hyper-V 복구 |
+| Lane 3 PASS | `align-install` | 이미 승인된 product Update | 이름 없는 current-card 재캡처 |
+| Lane 2 install PASS | `align-install` | campaign을 닫고 기본 `lane1-continuous-development`를 연다 | FAIL 프로브를 이어서 열기 |
+| Lane 2 FAIL | 모두 | STOP. `next_approval_required`만 보고 | FAIL를 current에 쓰기, 다른 family 프로브 |
+| 범위 밖 발견 | 모두 | report-only | 그것을 다음 checkpoint로 승격 |
+
+Git commit, push/PR, host mutation, current-evidence write는 각 승인 표가 그대로 적용된다.
+campaign은 이미 받은 승인을 되묻지 않을 뿐, 없는 승인을 만들지 않는다.

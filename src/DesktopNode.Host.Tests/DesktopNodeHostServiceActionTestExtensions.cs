@@ -39,7 +39,52 @@ internal static class DesktopNodeHostServiceActionTestExtensions
             MigrationPlanId = options.MigrationPlanId,
             MigrationPlanVersion = options.MigrationPlanVersion,
             CredentialTarget = options.CredentialTarget,
-            EventLogDefaultTransitionTimeoutSeconds = options.EventLogDefaultTransitionTimeoutSeconds
+            EventLogDefaultTransitionTimeoutSeconds = options.EventLogDefaultTransitionTimeoutSeconds,
+            SwitchName = options.SwitchName,
+            SwitchType = options.SwitchType,
+            AllowManagementOs = options.AllowManagementOs
+        };
+    }
+
+    public static DesktopNodeHostOptions WithSwitch(
+        this DesktopNodeHostOptions options,
+        string switchName,
+        string? switchType = null,
+        bool? allowManagementOs = null,
+        bool dryRun = false)
+    {
+        return new DesktopNodeHostOptions
+        {
+            Mode = options.Mode,
+            Prefix = options.Prefix,
+            WebRootPath = options.WebRootPath,
+            JobStorePath = options.JobStorePath,
+            EventLogPath = options.EventLogPath,
+            ApiTokenFile = options.ApiTokenFile,
+            ApiTokenProtectedFile = options.ApiTokenProtectedFile,
+            ApiTokenCredentialTarget = options.ApiTokenCredentialTarget,
+            AllowLan = options.AllowLan,
+            ServiceAction = options.ServiceAction,
+            ProductRoot = options.ProductRoot,
+            DataRoot = options.DataRoot,
+            ServiceExecutablePath = options.ServiceExecutablePath,
+            RemoveData = options.RemoveData,
+            DryRun = dryRun,
+            ReleaseApproved = options.ReleaseApproved,
+            FirewallRuleName = options.FirewallRuleName,
+            FirewallLocalPort = options.FirewallLocalPort,
+            FirewallProfile = options.FirewallProfile,
+            FirewallRemoteAddress = options.FirewallRemoteAddress,
+            TrustRootCertificatePath = options.TrustRootCertificatePath,
+            TrustRootCertificateThumbprint = options.TrustRootCertificateThumbprint,
+            TrustPublisherCertificatePath = options.TrustPublisherCertificatePath,
+            TrustPublisherCertificateThumbprint = options.TrustPublisherCertificateThumbprint,
+            MigrationPlanId = options.MigrationPlanId,
+            MigrationPlanVersion = options.MigrationPlanVersion,
+            CredentialTarget = options.CredentialTarget,
+            SwitchName = switchName,
+            SwitchType = switchType,
+            AllowManagementOs = allowManagementOs
         };
     }
 

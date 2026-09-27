@@ -50,6 +50,8 @@ internal sealed class DesktopNodeApiHyperVOperationInvoker
             "vm.guest.exec" or
             "vm.guest.channel.verify" or
             "vm.guest.channel.ensure" or
+            "vm.guest.file.preview" or
+            "vm.guest.file" or
             "checkpoint.list" or
             "vm.create" or
             "vm.start" or
@@ -62,8 +64,14 @@ internal sealed class DesktopNodeApiHyperVOperationInvoker
             "vm.resume-saved" or
             "vm.rename" or
             "vm.manage" or
+            "vm.template.lock" or
             "vm.clone.preview" or
             "vm.clone" or
+            "vm.export" or
+            "vm.import" or
+            "vm.network.connect" or
+            "vm.nic.add" or
+            "vm.dvd.add" or
             "vm.eject" or
             "vm.attach" or
             "vm.limit" or

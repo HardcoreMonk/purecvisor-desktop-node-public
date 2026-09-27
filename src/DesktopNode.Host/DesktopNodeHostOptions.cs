@@ -71,6 +71,9 @@ public sealed class DesktopNodeHostOptions
     public string? MigrationPlanId { get; init; }
     public int? MigrationPlanVersion { get; init; }
     public string? CredentialTarget { get; init; }
+    public string? SwitchName { get; init; }
+    public string? SwitchType { get; init; }
+    public bool? AllowManagementOs { get; init; }
 
     public static DesktopNodeHostOptions Parse(IReadOnlyList<string> args)
     {
@@ -224,6 +227,9 @@ public sealed class DesktopNodeHostOptions
                 MigrationPlanId = GetValue(values, "--migration-plan-id"),
                 MigrationPlanVersion = ParseOptionalInt(values, "--migration-plan-version"),
                 CredentialTarget = GetValue(values, "--credential-target"),
+                SwitchName = GetValue(values, "--switch-name"),
+                SwitchType = GetValue(values, "--switch-type"),
+                AllowManagementOs = values.ContainsKey("--allow-management-os") ? true : null,
                 BatchEvidenceRootPath = NormalizeOptionalPath(GetValue(values, "--batch-evidence-root")),
                 RouteTimeoutSeconds = ParseRangedInt(values, "--route-timeout-seconds", 30, 1, 3600),
                 RequestLimitPerMinute = ParseRangedInt(values, "--request-limit-per-minute", 120, 1, 100000),
@@ -254,7 +260,7 @@ public sealed class DesktopNodeHostOptions
                 throw new ArgumentException($"PCV_HOST_ARGUMENT_INVALID|Unexpected argument '{name}'.|Arguments must use --name value format.");
             }
 
-            if (name is "--allow-lan" or "--remove-data" or "--dry-run" or "--release-approved")
+            if (name is "--allow-lan" or "--remove-data" or "--dry-run" or "--release-approved" or "--allow-management-os")
             {
                 values[name] = "true";
                 continue;

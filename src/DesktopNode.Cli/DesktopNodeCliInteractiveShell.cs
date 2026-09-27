@@ -40,7 +40,15 @@ public static class DesktopNodeCliInteractiveShell
         "vm save ",
         "vm resume-saved ",
         "vm manage ",
+        "vm template-lock ",
+        "vm template-unlock ",
         "vm clone ",
+        "vm export preview ",
+        "vm export ",
+        "vm import preview ",
+        "vm import ",
+        "vm network connect ",
+        "vm device add ",
         "vm attach ",
         "vm eject ",
         "vm console ",
@@ -59,6 +67,9 @@ public static class DesktopNodeCliInteractiveShell
         "vm checkpoint create ",
         "vm checkpoint restore ",
         "vm checkpoint delete ",
+        "vm checkpoint schedule preview ",
+        "vm checkpoint schedule set ",
+        "vm checkpoint schedule clear ",
         "vm snapshot list ",
         "vm snapshot create ",
         "vm snapshot rollback ",
@@ -70,7 +81,13 @@ public static class DesktopNodeCliInteractiveShell
         "job reconcile ",
         "diagnostics bundle list",
         "diagnostics bundle create",
-        "diagnostics bundle download "
+        "diagnostics bundle download ",
+        "account list",
+        "account create ",
+        "account disable ",
+        "console novnc-target preview ",
+        "console novnc-target set ",
+        "console novnc-target clear "
     ];
 
     private static readonly HelpCommand[] AvailableCommands =
@@ -95,7 +112,15 @@ public static class DesktopNodeCliInteractiveShell
         new("vm save", "Save VM to Hyper-V Saved state"),
         new("vm resume-saved", "Resume a VM from Hyper-V Saved state"),
         new("vm manage", "Promote an existing VM to PureCVisor managed"),
+        new("vm template-lock", "Lock a managed VM as a start/clone template"),
+        new("vm template-unlock", "Remove template lock from a VM"),
         new("vm clone", "Clone a managed VM to a new independent disk"),
+        new("vm export preview", "Dry-run a Hyper-V export without writing files"),
+        new("vm export", "Queue a Hyper-V export into the allowlist root"),
+        new("vm import preview", "Dry-run a Hyper-V import without defining a VM"),
+        new("vm import", "Queue a Hyper-V import with a new identity and managed marker"),
+        new("vm network connect", "Queue an existing NIC onto an inventory switch"),
+        new("vm device add", "Queue one synthetic NIC or one empty DVD drive"),
         new("vm attach", "Attach ISO media to the virtual DVD"),
         new("vm eject", "Eject ISO media from the virtual DVD"),
         new("vm console", "Get console handoff details"),
@@ -114,6 +139,9 @@ public static class DesktopNodeCliInteractiveShell
         new("vm checkpoint create", "Create a VM checkpoint"),
         new("vm checkpoint restore", "Restore a VM checkpoint"),
         new("vm checkpoint delete", "Delete a VM checkpoint"),
+        new("vm checkpoint schedule preview", "Dry-run a periodic checkpoint schedule"),
+        new("vm checkpoint schedule set", "Queue a durable periodic checkpoint schedule"),
+        new("vm checkpoint schedule clear", "Queue a durable checkpoint schedule clear"),
         new("vm snapshot list", "List VM checkpoints"),
         new("vm snapshot create", "Create a VM checkpoint"),
         new("vm snapshot rollback", "Restore a VM checkpoint"),
@@ -125,7 +153,10 @@ public static class DesktopNodeCliInteractiveShell
         new("job reconcile", "Reconcile an interrupted rename, delete, checkpoint create, or restore"),
         new("diagnostics bundle list", "List diagnostic bundles"),
         new("diagnostics bundle create", "Create an evidence bundle"),
-        new("diagnostics bundle download", "Download an evidence bundle")
+        new("diagnostics bundle download", "Download an evidence bundle"),
+        new("console novnc-target preview", "Dry-run a noVNC target without writing PathName"),
+        new("console novnc-target set", "Queue a durable noVNC target and reload in-process"),
+        new("console novnc-target clear", "Queue a durable noVNC target clear so PathName cannot resurrect")
     ];
 
     private const string Banner = """

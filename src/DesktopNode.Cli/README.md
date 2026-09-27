@@ -66,6 +66,9 @@ pcvcli job list|get|cancel|retry|reconcile
 pcvcli diagnostics bundle list [--limit N] [--offset N]
 pcvcli diagnostics bundle create
 pcvcli diagnostics bundle download <bundle_id> --output <path>
+pcvcli console novnc-target preview --host 127.0.0.1 --port 5900 [--allow-lan-target] [--reason TEXT]
+pcvcli console novnc-target set --host 127.0.0.1 --port 5900 [--allow-lan-target] [--reason TEXT] --yes
+pcvcli console novnc-target clear --yes
 ```
 
 Linux `pcvctl` 호환 alias 중 Desktop Node backend가 가진 Hyper-V API에 대응되는 항목은 `network list`, `vm create <name> --vcpu --memory_mb --disk_size_gb --iso_path`, `vm stop`, `vm guest-shutdown`, `vm pause`, `vm resume`, `vm rename`, `vm vnc`, `vm memory-stats`, `vm cpu-stats`, `vm limit`, `vm blkio-get`, `vm blkio-set`, `vm bandwidth`, `vm bandwidth-set`, `vm guest-agent-status`, `vm guest-ping`, `vm eject`, `vm delete-status`, `vm set-memory`, `vm set-vcpu`, `vm disk-resize`, `vm snapshot list|create|rollback|delete`로 연결한다. 최상위 `snapshot list|create|rollback|delete` command group은 PCVCLI surface에서 제거했다. `vm manage`, `vm delete`와 QoS apply는 `--yes`를 요구한다. CLI는 KVM/libvirt/LXC/ZFS/OVN 같은 Linux `purecvisor-single` runtime object를 추가하지 않는다.

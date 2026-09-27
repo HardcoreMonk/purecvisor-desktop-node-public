@@ -214,6 +214,55 @@ public sealed partial class DesktopNodeHostServiceActionTests
         }
     }
 
+    private sealed class FakeHyperVSwitchController : IDesktopNodeHyperVSwitchController
+    {
+        public DesktopNodeHyperVSwitchMutationSnapshot Snapshot { get; set; } = new(
+            Name: "pcv-lab-internal",
+            Exists: false,
+            Type: null,
+            AttachedVmCount: 0,
+            ProductOwned: true,
+            AllowManagementOs: false);
+
+        public DesktopNodeHyperVSwitchMutationSnapshot? MutatedSnapshot { get; init; }
+
+        public List<string> Calls { get; } = [];
+
+        public DesktopNodeHyperVSwitchMutationSnapshot Query(string switchName, CancellationToken cancellationToken = default)
+        {
+            Calls.Add("query");
+            return Snapshot with { Name = switchName };
+        }
+
+        public DesktopNodeHyperVSwitchMutationSnapshot Create(
+            string switchName,
+            string switchType,
+            bool allowManagementOs,
+            CancellationToken cancellationToken = default)
+        {
+            Calls.Add("create");
+            return MutatedSnapshot ?? new DesktopNodeHyperVSwitchMutationSnapshot(
+                switchName,
+                true,
+                switchType,
+                0,
+                true,
+                allowManagementOs);
+        }
+
+        public DesktopNodeHyperVSwitchMutationSnapshot Remove(string switchName, CancellationToken cancellationToken = default)
+        {
+            Calls.Add("remove");
+            return MutatedSnapshot ?? new DesktopNodeHyperVSwitchMutationSnapshot(
+                switchName,
+                false,
+                null,
+                0,
+                true,
+                false);
+        }
+    }
+
     private sealed class FakeWindowsTrustStoreController : IDesktopNodeWindowsTrustStoreController
     {
         public IReadOnlyList<DesktopNodeWindowsTrustStoreCertificateSnapshot> Snapshots { get; init; } =

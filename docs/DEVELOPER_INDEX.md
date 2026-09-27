@@ -3,20 +3,71 @@
 <!-- BEGIN GENERATED CURRENT EVIDENCE -->
 ## Current operational evidence (generated)
 
-- Version: `0.42.75-admin-smoke`
+- Version: `0.42.77-admin-smoke`
 - Active operator surfaces: Web Console and PCVCLI; `tui_present=false`.
-- Package evidence: `docs/ga-ready/evidence/admin-smoke-package-2026-08-21-04275.md`.
-- Full admin host mutation: `full-admin-host-mutation-gate-20260821-04275` / `docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-08-21-04275-hostmutation.md`.
-- Actual-VM functional evidence: `docs/ga-ready/evidence/functional-correctness-actual-host-validation-2026-08-27-04275.md`.
+- Package evidence: `docs/ga-ready/evidence/admin-smoke-package-2026-08-29-04277.md`.
+- Full admin host mutation: `full-admin-host-mutation-gate-20260830-04277` / `docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-08-30-04277-hostmutation.md`.
+- Actual-VM functional evidence: `docs/ga-ready/evidence/functional-correctness-actual-host-validation-2026-09-20-04277-carryforward.md`.
 - Feature qualification: `contract=pcv-feature-promotion-decision-v1`; `promotion_eligible=true`; `blocker_count=0`; `blockers=none`.
-- Installed CLI/Web current-card: `docs/ga-ready/evidence/installed-operator-surface-current-card-2026-08-27-04275.md`; CLI exit 0, Web HTTP 200, service Running/Automatic, TUI absent.
-- Clean MSI SHA-256: `3d3ee255f7a16c90715da27c436a9ebce479b5ae91f1f4a7067a47dc6dbc0fb6`.
-- Operational MSI SHA-256: `d5afd8774ca5c33b84b10faa771703dcdba37c96d816be4dbb8f9a886f7c967b`.
-- Operational payload aggregate SHA-256: `b6882c9ab40dffc2a9a15785841a097140c23fef6eba26dc76bc892107c2c9b7`.
-- Provenance commit: `dbe1b48cf8bfc45fe7c431fac30ff498dfc9bbe4`.
-- Latest closed manual-admin pair: `0.42.74-admin-smoke -> 0.42.75-admin-smoke` / `manual-admin-campaign-descriptor-20260827-04274-04275`.
+- Installed CLI/Web current-card: `docs/ga-ready/evidence/installed-operator-surface-current-card-2026-08-30-04277.md`; CLI exit 0, Web HTTP 200, service Running/Automatic, TUI absent.
+- Clean MSI SHA-256: `d03eedaf12d344ccd2d74c87237aa8d920ea3474be498c7fe91bfa4394984957`.
+- Operational MSI SHA-256: `d4ebba77adcd7af92275509a65809c926f5bc6fb6bf8f61c49a610943998000f`.
+- Operational payload aggregate SHA-256: `d16e498a3d14ed67e361bef26a26feb87839490425e2101453f28742839d84a1`.
+- Provenance commit: `9f051b5a9cca80634e8ad7c4d15267a414c79d66`.
+- Latest closed manual-admin pair: `0.42.75-admin-smoke -> 0.42.77-admin-smoke` / `manual-admin-campaign-descriptor-20260920-04275-04277`.
 - Claims: `public_trusted_signing=false`; `external_stable_publication=false`.
 <!-- END GENERATED CURRENT EVIDENCE -->
+
+## 2026-09-20 캠페인 연속 실행
+
+- 실행 단위는 checkpoint가 아니라 campaign이다. 열린 상태는
+  `docs/ga-ready/active-campaign.json`이다. 지금 intent는
+  `lane1-continuous-development`다.
+- 설계: `docs/superpowers/specs/2026-09-20-purecvisor-desktop-node-campaign-continuity-design.md`.
+
+## 2026-09-20 Lane 3 `0.42.77` 승격
+
+- `docs/ga-ready/current-evidence.json` current는 `0.42.77-admin-smoke`다. 닫힌 pair는
+  `0.42.75-admin-smoke -> 0.42.77-admin-smoke` /
+  `manual-admin-campaign-descriptor-20260920-04275-04277`다.
+- pair target은 clean MSI `d03eedaf…`다. operational fullgate MSI `d4ebba77…` /
+  provenance `9f051b5`는 fullgate tuple이다.
+- 이 호스트 `installed_current`는 product Update 뒤 `0.42.77-admin-smoke`다. P0 feature
+  ledger는 `0.42.75-admin-smoke` evidence를 유지한다. clone은 `not-assessed`다.
+- 2026-09-20 current-card 재캡처는 `PCV_NETWORK_INVENTORY_FAILED`로 FAIL이며 current가
+  아니다. Default Switch 복구는 열린 campaign의 `next_step`이 아니다.
+
+## 2026-09-20 프로젝트 진행 상황 현행화
+
+- 2026-09-06 감사 이후 14일, 마지막 origin/main 커밋 이후 21일의 권위 재확인은
+  `docs/project-status-audit-2026-09-20.md`가 소유한다. operational current는 계속
+  `0.42.75-admin-smoke`다. 이 현행화는 `current-evidence.json`을 바꾸지 않는다.
+- 세 권위: `ledger_current=0.42.75-admin-smoke`, `source_head=2e63bd5`,
+  `installed_current=0.42.75-admin-smoke`. 09-06의 이 호스트 `absent`는 당시 snapshot이다.
+  오늘 설치본 manifest/DisplayVersion `0.42.75`, service `Running/Automatic`을 읽었다.
+- 소스 HEAD의 `0.42.77` probe와 `0.42.75 -> 0.42.77` pair `not-opened`는 유지된다.
+  clone feature evidence는 계속 `not-assessed`다. 열린 PR은 `#5`.
+- Required CI 네 shard 재실행과 host mutation은 이 현행화 범위가 아니다. `origin/main`
+  최신 Development Gates run `33312234285`와 Public Boundary run `33312234278`이
+  2026-08-30 이후 추가 run 없이 마지막 성공이다.
+- 2026-09-20 B1: `0.42.75 -> 0.42.77` 여섯 bucket PASS를 한 root로 모아 descriptor
+  `manual-admin-campaign-descriptor-20260920-04275-04277`가 `pass`다. current는 유지.
+  증거는 `docs/ga-ready/evidence/manual-admin-campaign-2026-09-20-04275-04277.md`다.
+
+## 2026-09-06 프로젝트 진행 상황 현행화
+
+- 2026-08-05 감사 이후 32일 간격의 권위 재확인은
+  `docs/project-status-audit-2026-09-06.md`가 소유한다. operational current는 계속
+  `0.42.75-admin-smoke`다. 이 현행화는 `current-evidence.json`을 바꾸지 않는다.
+- 08-05의 프론트엔드 가짜 상태 P0, `main`/`origin/main` 양방향 분기, untracked 감사 문서,
+  68일 manual-admin 정체는 닫힌 것으로 읽는다. 닫힌 pair는
+  `0.42.74-admin-smoke -> 0.42.75-admin-smoke`다.
+- 소스 HEAD `2e63bd5`는 P1 clone과 `0.42.77-admin-smoke` probe package/fullgate/current-card/
+  clone actual-VM r2 PASS를 가지지만 current가 아니다. `0.42.75 -> 0.42.77` pair는
+  `not-opened`다. clone feature evidence 단계는 `not-assessed`다.
+- 이 워크스테이션의 `installed_current`는 `absent`다. Required CI 네 shard 재실행과 host
+  mutation은 이 현행화 범위가 아니다. `origin/main` 최신 Development Gates run
+  `33312234285`와 Public Boundary run `33312234278`이 2026-08-30에 성공했다.
 
 ## 2026-08-25 Required CI cutover closure
 
@@ -373,7 +424,8 @@ Web/TUI cancel affordance와 actual credentialed guest-exec를 설치본 current
 04250→04254 manual-admin readiness는 baseline mismatch로 blocked
 기록만 남겼다.
 noVNC target config mutation은 `docs/adr/0010-account-novnc-target-config-security-policy-candidate.md`가
-보류 경계를 소유한다. Guest Execution docs-contract evidence는
+보류 경계를 소유한다. 현재 적용 문서는
+`docs/adr/0010-novnc-target-config-security-policy.md`다. Guest Execution docs-contract evidence는
 `docs/ga-ready/evidence/guest-execution-security-boundary-2026-05-26.md`다.
 
 설치본 TUI row projection fix는 실제 VM `pcv-ux-qos-04241` 기반
@@ -487,7 +539,7 @@ manual-admin descriptor schema v2(`descriptor_schema_version=2`,
 | CLI 명령어 사용 설명서 확인 | `docs/CLI_COMMAND_USAGE.md`, `src/DesktopNode.Cli/README.md` |
 | Phase 2 Hyper-V QoS mutation 설치본 승격 | `docs/adr/0008-hyperv-qos-mutation-policy.md`, `docs/ga-ready/evidence/hyperv-qos-mutation-code-level-2026-05-26.md`, `docs/ga-ready/evidence/hyperv-qos-mutation-installed-2026-05-26-04247.md`, `docs/superpowers/specs/2026-05-26-purecvisor-desktop-node-phase2-hyperv-qos-mutation-design.md`, `docs/superpowers/plans/2026-05-26-purecvisor-desktop-node-phase2-hyperv-qos-mutation.md` |
 | Guest Execution 보안 경계 확인 | `docs/adr/0009-guest-execution-security-boundary.md`, `docs/ga-ready/evidence/guest-execution-security-boundary-2026-05-26.md` |
-| noVNC target config mutation 보안 정책 확인 | `docs/adr/0010-account-novnc-target-config-security-policy-candidate.md` |
+| noVNC target config mutation 보안 정책 확인 | `docs/adr/0010-novnc-target-config-security-policy.md`, `docs/adr/0010-account-novnc-target-config-security-policy-candidate.md` |
 | 설치본 운영/runbook 확인 | `docs/OPERATIONS_GUIDE.md`, `docs/PUBLIC_RELEASE_BOUNDARY.md`, `packaging/windows-desktop-node/README.md` |
 | 저장소 경계 확인 | `docs/PUBLIC_RELEASE_BOUNDARY.md` |
 | 현재 적용 ADR 확인 | `docs/ADR_INDEX.md` |

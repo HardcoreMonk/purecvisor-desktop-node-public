@@ -53,6 +53,9 @@ public sealed class EfficientDevelopmentProcedureDocumentationTests
         Assert.Contains("push/PR 승인", procedure, StringComparison.Ordinal);
         Assert.Contains("public_trusted_signing=false", procedure, StringComparison.Ordinal);
         Assert.Contains("external_stable_publication=false", procedure, StringComparison.Ordinal);
+        Assert.Contains("docs/ga-ready/active-campaign.json", procedure, StringComparison.Ordinal);
+        Assert.Contains("continue-open-campaign", procedure, StringComparison.Ordinal);
+        Assert.Contains("## 9. 캠페인 next_step", procedure, StringComparison.Ordinal);
         foreach (var state in new[]
         {
             "code_complete",

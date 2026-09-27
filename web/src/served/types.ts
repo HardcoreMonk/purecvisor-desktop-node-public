@@ -33,6 +33,8 @@ interface PcvRouteRegistry {
   authLogout: string;
   authSession: string;
   authRbac: string;
+  accounts: string;
+  accountDisable(username: string): string;
   consoleCapabilities: string;
   jobsPage(limit?: number, offset?: number): string;
   diagnosticBundlesPage(limit?: number, offset?: number): string;
@@ -46,6 +48,8 @@ interface PcvRouteRegistry {
   vmGuestAgentStatus(vmId: string): string;
   vmGuestAgentPing(vmId: string): string;
   vmGuestExec(vmId: string): string;
+  vmGuestFilePreview(vmId: string): string;
+  vmGuestFile(vmId: string): string;
   vmGuestChannelVerify(vmId: string): string;
   vmGuestChannelEnsure(vmId: string): string;
   vmAction(vmId: string, action: string): string;
@@ -86,6 +90,8 @@ interface PcvDesktopApi {
   getVmGuestAgentStatus(vmId: string, options?: RequestInit): Promise<any>;
   getVmGuestAgentPing(vmId: string, options?: RequestInit): Promise<any>;
   queueVmGuestExec(vmId: string, payload: Record<string, unknown>): Promise<any>;
+  previewVmGuestFile(vmId: string, payload: Record<string, unknown>): Promise<any>;
+  queueVmGuestFile(vmId: string, payload: Record<string, unknown>): Promise<any>;
   verifyVmGuestChannel(vmId: string, payload: Record<string, unknown>): Promise<any>;
   ensureVmGuestChannel(vmId: string, payload: Record<string, unknown>): Promise<any>;
   getVmDeleteStatus(vmId: string, options?: RequestInit): Promise<any>;
@@ -93,6 +99,7 @@ interface PcvDesktopApi {
   queueVmAction(vmId: string, action: string): Promise<any>;
   queueVmAttach(vmId: string, isoPath: string): Promise<any>;
   queueVmManage(vmId: string, confirmName: string): Promise<any>;
+  queueVmTemplateLock(vmId: string, confirmName: string, locked: boolean): Promise<any>;
   previewVmClone(vmId: string, payload: Record<string, unknown>): Promise<any>;
   queueVmClone(vmId: string, payload: Record<string, unknown>): Promise<any>;
   queueVmResourceMutation(vmId: string, action: string, payload: Record<string, unknown>): Promise<any>;
@@ -114,6 +121,9 @@ interface PcvDesktopApi {
   logoutAccount(payload?: Record<string, unknown>): Promise<any>;
   getAccountSession(options?: RequestInit): Promise<any>;
   getAccountRbac(options?: RequestInit): Promise<any>;
+  listAccounts(options?: RequestInit): Promise<any>;
+  createAccount(payload: Record<string, unknown>): Promise<any>;
+  disableAccount(username: string, payload: Record<string, unknown>): Promise<any>;
   getConsoleCapabilities(options?: RequestInit): Promise<any>;
   getVmConsole(vmId: string, options?: RequestInit): Promise<any>;
 }
@@ -133,6 +143,9 @@ interface PcvState {
   authRbac: any;
   authError: PcvNormalizedError | null;
   authPending: boolean;
+  accountDirectory: any;
+  accountDirectoryError: PcvNormalizedError | null;
+  accountManagePending: boolean;
   activeView: PcvView;
   host: any;
   vms: any[];

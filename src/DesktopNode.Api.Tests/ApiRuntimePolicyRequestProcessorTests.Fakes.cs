@@ -108,6 +108,16 @@ public sealed partial class ApiRuntimePolicyRequestProcessorTests
         public bool TryInvoke(string operation, JsonElement parameters, CancellationToken cancellationToken, out DesktopNodeHyperVOperationResult result)
         {
             calls.Add(new DesktopNodeHyperVOperationCall(operation, parameters.GetRawText()));
+            if (string.Equals(operation, "vm.list", StringComparison.Ordinal))
+            {
+                result = new DesktopNodeHyperVOperationResult(
+                    Ok: true,
+                    Operation: operation,
+                    Data: JsonSerializer.SerializeToElement(Array.Empty<object>()),
+                    Error: null);
+                return true;
+            }
+
             var action = operation switch
             {
                 "vm.start" => "start",
@@ -287,6 +297,54 @@ public sealed partial class ApiRuntimePolicyRequestProcessorTests
         public bool TryInvoke(string operation, JsonElement parameters, CancellationToken cancellationToken, out DesktopNodeHyperVOperationResult result)
         {
             calls.Add(new DesktopNodeHyperVOperationCall(operation, parameters.GetRawText()));
+            if (string.Equals(operation, "vm.blkio-get", StringComparison.Ordinal) ||
+                string.Equals(operation, "vm.bandwidth", StringComparison.Ordinal))
+            {
+                var readVmName = parameters.TryGetProperty("vm_name", out var vmNameElement)
+                    ? vmNameElement.GetString()
+                    : parameters.TryGetProperty("name", out var nameElement)
+                        ? nameElement.GetString()
+                        : "lab vm";
+                var isStorage = string.Equals(operation, "vm.blkio-get", StringComparison.Ordinal);
+                var data = isStorage
+                    ? new SortedDictionary<string, object?>
+                    {
+                        ["name"] = readVmName,
+                        ["storage_qos"] = new SortedDictionary<string, object?>
+                        {
+                            ["disks"] = new object[]
+                            {
+                                new SortedDictionary<string, object?>
+                                {
+                                    ["disk"] = "disk0",
+                                    ["path"] = "disk0",
+                                    ["maximum_iops"] = 500,
+                                    ["minimum_iops"] = 0
+                                }
+                            }
+                        }
+                    }
+                    : new SortedDictionary<string, object?>
+                    {
+                        ["name"] = readVmName,
+                        ["network_qos"] = new SortedDictionary<string, object?>
+                        {
+                            ["adapters"] = new object[]
+                            {
+                                new SortedDictionary<string, object?>
+                                {
+                                    ["adapter"] = "eth0",
+                                    ["switch"] = "eth0",
+                                    ["maximum_kbps"] = 1024,
+                                    ["minimum_kbps"] = 0
+                                }
+                            }
+                        }
+                    };
+                result = new DesktopNodeHyperVOperationResult(true, operation, JsonSerializer.SerializeToElement(data), null);
+                return true;
+            }
+
             var vmName = parameters.GetProperty("name").GetString()!;
             var target = parameters.TryGetProperty("disk", out var disk)
                 ? disk.GetString()!
@@ -430,6 +488,16 @@ public sealed partial class ApiRuntimePolicyRequestProcessorTests
         public bool TryInvoke(string operation, JsonElement parameters, CancellationToken cancellationToken, out DesktopNodeHyperVOperationResult result)
         {
             calls.Add(new DesktopNodeHyperVOperationCall(operation, parameters.GetRawText()));
+            if (string.Equals(operation, "vm.list", StringComparison.Ordinal))
+            {
+                result = new DesktopNodeHyperVOperationResult(
+                    Ok: true,
+                    Operation: operation,
+                    Data: JsonSerializer.SerializeToElement(Array.Empty<object>()),
+                    Error: null);
+                return true;
+            }
+
             var name = parameters.GetProperty("name").GetString()!;
             var vmRoot = parameters.GetProperty("vm_root").GetString()!;
             var data = new SortedDictionary<string, object?>

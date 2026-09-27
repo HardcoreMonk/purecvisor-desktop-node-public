@@ -34,6 +34,23 @@ public sealed class CutoverGitBoundaryTests
     }
 
     [Fact]
+    public async Task AcceptsHistoryLongerThanProcessOutputLimit()
+    {
+        // 111 rev-list lines of about 82 characters exceed the 8192-character process
+        // output cap that used to truncate the history and fail the boundary.
+        using var repository = await CutoverRepository.CreateAsync();
+        var head = await repository.CommitEmptySeriesAsync(110);
+
+        var result = await new CutoverGitBoundary(new SystemProcessRunner()).ValidateAsync(
+            repository.Root,
+            head,
+            repository.ShadowSha,
+            CancellationToken.None);
+
+        Assert.Equal(repository.CutoverSha, result.CutoverSha);
+    }
+
+    [Fact]
     public async Task RejectsZeroOrMultipleDirectChildren()
     {
         using var repository = await CutoverRepository.CreateAsync();
@@ -302,6 +319,18 @@ internal sealed class CutoverRepository : IDisposable
     {
         Write(PolicyPath, "post merge documentation\n");
         await CommitAsync("documentation");
+        return await ShaAsync("HEAD");
+    }
+
+    internal async Task<string> CommitEmptySeriesAsync(int count)
+    {
+        for (var index = 0; index < count; index++)
+        {
+            await GitAsync(
+                "-c", "user.name=PCV Test", "-c", "user.email=41898282+github-actions[bot]@users.noreply.github.com",
+                "commit", "--allow-empty", "-m", $"documentation {index}");
+        }
+
         return await ShaAsync("HEAD");
     }
 

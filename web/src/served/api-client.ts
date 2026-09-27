@@ -162,6 +162,14 @@ const desktopApi: Readonly<PcvDesktopApi> = Object.freeze({
     method: 'POST',
     body: JSON.stringify(payload)
   }),
+  previewVmGuestFile: (vmId: string, payload: Record<string, unknown>) => apiFetch(DESKTOP_NODE_API_ROUTES.vmGuestFilePreview(vmId), {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  }),
+  queueVmGuestFile: (vmId: string, payload: Record<string, unknown>) => apiFetch(DESKTOP_NODE_API_ROUTES.vmGuestFile(vmId), {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  }),
   verifyVmGuestChannel: (vmId: string, payload: Record<string, unknown>) => apiFetch(DESKTOP_NODE_API_ROUTES.vmGuestChannelVerify(vmId), {
     method: 'POST',
     body: JSON.stringify(payload)
@@ -180,6 +188,10 @@ const desktopApi: Readonly<PcvDesktopApi> = Object.freeze({
   queueVmManage: (vmId: string, confirmName: string) => apiFetch(DESKTOP_NODE_API_ROUTES.vmAction(vmId, 'manage'), {
     method: 'POST',
     body: JSON.stringify({ confirm_name: confirmName })
+  }),
+  queueVmTemplateLock: (vmId: string, confirmName: string, locked: boolean) => apiFetch(DESKTOP_NODE_API_ROUTES.vmAction(vmId, 'template-lock'), {
+    method: 'POST',
+    body: JSON.stringify({ confirm_name: confirmName, locked })
   }),
   previewVmClone: (vmId: string, payload: Record<string, unknown>) => apiFetch(DESKTOP_NODE_API_ROUTES.vmClonePreview(vmId), {
     method: 'POST',
@@ -232,6 +244,15 @@ const desktopApi: Readonly<PcvDesktopApi> = Object.freeze({
   } as RequestInit & { skipAuth: boolean }),
   getAccountSession: (options = {}) => apiFetch(DESKTOP_NODE_API_ROUTES.authSession, options),
   getAccountRbac: (options = {}) => apiFetch(DESKTOP_NODE_API_ROUTES.authRbac, options),
+  listAccounts: (options = {}) => apiFetch(DESKTOP_NODE_API_ROUTES.accounts, options),
+  createAccount: (payload: Record<string, unknown>) => apiFetch(DESKTOP_NODE_API_ROUTES.accounts, {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  }),
+  disableAccount: (username: string, payload: Record<string, unknown>) => apiFetch(DESKTOP_NODE_API_ROUTES.accountDisable(username), {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  }),
   getConsoleCapabilities: (options = {}) => apiFetch(DESKTOP_NODE_API_ROUTES.consoleCapabilities, options),
   getVmConsole: (vmId: string, options = {}) => apiFetch(DESKTOP_NODE_API_ROUTES.vmConsole(vmId), options)
 });

@@ -1,14 +1,19 @@
 # 문서 통합 인덱스
 
-> 2026-08-26 현재 기준. 공개 저장소 Required CI 전환 이후 다시 생성했으며, 이 인덱스를
-> 포함한 Markdown 문서 779개 전체를 수록한다.
+> 2026-08-26에 공개 저장소 Required CI 전환 이후 전체 카탈로그를 다시 생성했다. 아래 현재 기준
+> 블록과 핵심 문서 목록은 2026-09-20에 HEAD `2e63bd5` 기준으로 현행화했다. 전체 파일 재생성은
+> 이 현행화가 수행하지 않는다.
 
 ## 현재 기준
 
-- 공개 소스 권위: `HardcoreMonk/purecvisor-desktop-node-public`, final main `6e2bdb93ce308b632c929e2c17f5550ac3845401`.
-- Required CI 권위: Development Gates run `32904006595`; 보호 context는 정확히 `dotnet`, `web`, `delivery`, `installer-policy`다.
-- PowerShell/Pester 경계: invocation 0은 위 Required CI 네 context에만 적용한다. 별도 Public Boundary workflow는 비필수 legacy residue로 보존한다(run `32904006619`, job `97983888524`).
-- 운영 제품 권위: `0.42.75-admin-smoke`; Web Console과 PCVCLI가 active이고 TUI는 absent다. Feature promotion은 `promotion_eligible=true`, blockers `none`이다.
+- 공개 소스 권위: `HardcoreMonk/purecvisor-desktop-node-public`, HEAD `2e63bd5e5e760a2a625f8d3e617f05eb2d64b3ed`.
+- Required CI 권위: Development Gates run `33312234285`; 보호 context는 정확히 `dotnet`, `web`, `delivery`, `installer-policy`다.
+- PowerShell/Pester 경계: invocation 0은 위 Required CI 네 context에만 적용한다. 별도 Public Boundary workflow는 비필수 legacy residue로 보존한다(run `33312234278`).
+- 운영 제품 권위: `0.42.77-admin-smoke`; Web Console과 PCVCLI가 active이고 TUI는 absent다. Feature promotion은 `promotion_eligible=true`, blockers `none`이다. P0 feature ledger는 `0.42.75-admin-smoke` evidence를 유지한다.
+- 이 호스트 설치본(2026-09-20 Lane 2 Update): `0.42.77-admin-smoke`, service `Running/Automatic`. ARP `DisplayVersion`은 `0.42.75`.
+- 열린 개발 campaign: `docs/ga-ready/active-campaign.json` intent `lane1-continuous-development`.
+- 진행 상황 현행화: `docs/project-status-audit-2026-09-20.md`. 직전 snapshot은 `docs/project-status-audit-2026-09-06.md`.
+- `0.42.75 -> 0.42.77` descriptor consume: `docs/ga-ready/evidence/manual-admin-campaign-2026-09-20-04275-04277.md` (`pass`, current 유지).
 - 릴리스 주장 경계: `public_trusted_signing=false`, `external_stable_publication=false`.
 
 ## 관례적 진입점 매핑
@@ -17,7 +22,7 @@
 
 - 기여자 온보딩: `docs/DEVELOPMENT_PROCEDURE.md`, `docs/DEVELOPER_INDEX.md`, `docs/CODING_GUIDE.md`, `docs/DEVELOPMENT_VERIFICATION_POLICY.md`
 - 아키텍처: `docs/ADR_INDEX.md`, `docs/adr/`, `docs/service-core-backend-frontend-implementation-evaluation-2026-07-16.md`
-- 현재 작업과 상태: `docs/FEATURE_IMPLEMENTATION_LEDGER.md`, `docs/ga-ready/CURRENT_EVIDENCE_LEDGER.md`, `docs/ga-ready/EVIDENCE_INDEX.md`
+- 현재 작업과 상태: `docs/project-status-audit-2026-09-20.md`, `docs/FEATURE_IMPLEMENTATION_LEDGER.md`, `docs/ga-ready/CURRENT_EVIDENCE_LEDGER.md`, `docs/ga-ready/EVIDENCE_INDEX.md`
 - 버전·릴리스 증거: [docs/ga-ready/current-evidence.json](ga-ready/current-evidence.json)과 위 evidence index
 - 역사 변경 기록: Git 이력과 아래 날짜별 계획·명세·증거
 
@@ -53,6 +58,8 @@
 - [docs/OPERATOR_SURFACE_TERMS.md](OPERATOR_SURFACE_TERMS.md)
 - [docs/project-status-audit-2026-07-13.md](project-status-audit-2026-07-13.md)
 - [docs/project-status-audit-2026-08-05.md](project-status-audit-2026-08-05.md)
+- [docs/project-status-audit-2026-09-06.md](project-status-audit-2026-09-06.md)
+- [docs/project-status-audit-2026-09-20.md](project-status-audit-2026-09-20.md)
 - [docs/PUBLIC_RELEASE_BOUNDARY.md](PUBLIC_RELEASE_BOUNDARY.md)
 - [docs/PUBLIC_SOURCE_AUTHORITY.md](PUBLIC_SOURCE_AUTHORITY.md)
 - [docs/SERVICE_PLAN.md](SERVICE_PLAN.md)
@@ -74,6 +81,7 @@
 - [docs/adr/0009-guest-execution-security-boundary-candidate.md](adr/0009-guest-execution-security-boundary-candidate.md)
 - [docs/adr/0009-guest-execution-security-boundary.md](adr/0009-guest-execution-security-boundary.md)
 - [docs/adr/0010-account-novnc-target-config-security-policy-candidate.md](adr/0010-account-novnc-target-config-security-policy-candidate.md)
+- [docs/adr/0010-novnc-target-config-security-policy.md](adr/0010-novnc-target-config-security-policy.md)
 - [docs/adr/0011-cli-web-only-operator-surface.md](adr/0011-cli-web-only-operator-surface.md)
 - [docs/adr/0012-api-read-concurrency-policy.md](adr/0012-api-read-concurrency-policy.md)
 - [docs/adr/0013-job-store-single-writer-transaction-lease.md](adr/0013-job-store-single-writer-transaction-lease.md)
@@ -822,6 +830,10 @@
 - [docs/superpowers/specs/2026-08-27-purecvisor-desktop-node-lane-separated-development-procedure-design.md](superpowers/specs/2026-08-27-purecvisor-desktop-node-lane-separated-development-procedure-design.md)
 - [docs/superpowers/specs/2026-08-27-purecvisor-desktop-node-p1-managed-full-clone-design.md](superpowers/specs/2026-08-27-purecvisor-desktop-node-p1-managed-full-clone-design.md)
 - [docs/superpowers/specs/2026-08-29-purecvisor-desktop-node-efficient-development-procedure-design.md](superpowers/specs/2026-08-29-purecvisor-desktop-node-efficient-development-procedure-design.md)
+- [docs/superpowers/specs/2026-09-20-purecvisor-desktop-node-campaign-continuity-design.md](superpowers/specs/2026-09-20-purecvisor-desktop-node-campaign-continuity-design.md)
+- [docs/superpowers/specs/2026-09-20-purecvisor-desktop-node-p1-inventory-timestamps-design.md](superpowers/specs/2026-09-20-purecvisor-desktop-node-p1-inventory-timestamps-design.md)
+- [docs/superpowers/specs/2026-09-20-purecvisor-desktop-node-p1-template-lock-design.md](superpowers/specs/2026-09-20-purecvisor-desktop-node-p1-template-lock-design.md)
+- [docs/superpowers/specs/2026-09-20-purecvisor-desktop-node-p1-guest-file-job-design.md](superpowers/specs/2026-09-20-purecvisor-desktop-node-p1-guest-file-job-design.md)
 
 ## 패키징 문서
 

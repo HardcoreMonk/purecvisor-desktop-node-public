@@ -5,10 +5,12 @@
 - Product payload change: `false`
 - Host/VM/service/package mutation authorization: `false`
 
-이 문서는 저장소 에이전트 후속 작업의 실행 한도와 종료 동작의 단일 진실이다. 사용자의
-명시적 지시가 없는 `재개`, `계속`, `후속 작업`은 다음 bounded checkpoint 하나만 뜻한다.
-이 정책 변경 commit 이후 새로 시작한 checkpoint에만 새 기본값을 적용한다. 이미 시작하면서
-공개한 예산은 소급하여 확장하지 않는다.
+이 문서는 저장소 에이전트 후속 작업의 실행 한도와 종료 동작의 단일 진실이다. 열린
+campaign(`docs/ga-ready/active-campaign.json` `status=open`)이 있으면 `재개`, `계속`,
+`후속 작업`은 그 campaign의 `next_step`을 이어서 실행한다(`continue-open-campaign`).
+열린 campaign이 없으면 다음 bounded checkpoint 하나만 뜻한다. 이 정책 변경 commit 이후
+새로 시작한 checkpoint에만 새 기본값을 적용한다. 이미 시작하면서 공개한 예산은 소급하여
+확장하지 않는다.
 
 ## 시작 계약
 
@@ -25,9 +27,28 @@ write, 외부 mutation 또는 하위 에이전트 시작 전에 commentary에 �
 도구 작업 묶음은 하나의 목적을 위한 단일 tool call이다. 호출을 불필요하게 쪼개 한도를
 우회하지 않는다. 시간과 작업 묶음 중 먼저 도달한 한도가 우선한다.
 
+## 캠페인 연속 실행
+
+연속 개발의 단위는 checkpoint가 아니라 campaign이다. checkpoint는 한 차선의 권한 경계다.
+
+- `docs/ga-ready/active-campaign.json` `status=open`이면 허용된 lane의 `next_step`을 사용자
+  재승인 없이 실행한다. 차선을 바꾸면 새 시작 계약을 공개한다. 같은 checkpoint에서 예산을
+  소급하여 확장하지 않는다.
+- campaign이 이미 준 범위에 기획 추가 게이트(별도 설계 승인 대기)를 붙이지 않는다.
+- `next_step`만 실행한다. 범위 밖 발견은 `report-only`이며 `next_step`이 되지 않는다.
+- FAIL 프로브, Hyper-V 복구, current-card 재캡처, commit/push는 campaign이 그 일을
+  `next_step`으로 적거나 사용자가 이름을 불렀을 때만 연다.
+- 열린 campaign이 없으면 모호한 `재개`는 다음 한 checkpoint이며, 그 checkpoint는 정확히
+  한 차선에 속한다.
+- campaign에 `task_queue`가 있으면 캠페인 러너(`pcv-campaign-runner-v1`)가 checkpoint를
+  연쇄한다. checkpoint가 green으로 끝나면 같은 턴에서 새 시작 계약으로 다음 task를 연다.
+  checkpoint마다 예산이 새로 시작하며 같은 checkpoint의 소급 확장이 아니다. 연쇄 상한은
+  campaign `checkpoint_limit`이고, 한도·실패·승인 밖 작업·권한 거부에서 멈춘다.
+
 ## 작업 차선
 
-모호한 `재개`는 다음 한 checkpoint이며, 그 checkpoint는 정확히 한 차선에 속한다.
+모호한 `재개`는 열린 campaign이 없을 때 다음 한 checkpoint이며, 그 checkpoint는 정확히
+한 차선에 속한다.
 
 | 차선 | elapsed | tool batch | review | mutation |
 | --- | ---: | ---: | --- | --- |

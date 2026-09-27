@@ -118,8 +118,8 @@ for (const key of actual.keys()) {
   }
 }
 
-if (expected.size !== 54 || excludedCount !== 8) {
-  fail(`count mismatch|present=${expected.size}|excluded=${excludedCount}|expected_present=54|expected_excluded=8`);
+if (expected.size !== 60 || excludedCount !== 20) {
+  fail(`count mismatch|present=${expected.size}|excluded=${excludedCount}|expected_present=60|expected_excluded=20`);
 }
 
 process.stdout.write(`Feature surface parity PASS: web=${expected.size} excluded=${excludedCount}\n`);

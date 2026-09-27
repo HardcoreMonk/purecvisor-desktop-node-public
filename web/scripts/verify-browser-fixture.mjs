@@ -237,7 +237,13 @@ const fixtureVm = {
   checkpoints: { count: 0 },
   network: [{ name: "fixture-nic", switch: "Default Switch", mode: "nat" }],
   storage: [{ path: "D:\\PureCVisor\\VMs\\pcv-browser-fixture.vhdx", size_gb: 40 }],
-  managed_by_purecvisor: true
+  managed_by_purecvisor: true,
+  checkpoint_schedule: {
+    schema: "pcv-checkpoint-schedule-v1",
+    enabled: false,
+    status: "disabled",
+    configure_via: "cli-api"
+  }
 };
 
 const fixtureNetworkInventory = {
@@ -612,6 +618,7 @@ function createFixtureFetch({
           novnc: {
             enabled: false,
             status: "not_configured",
+            reason_code: "not_configured",
             bridge_mode: "websocket-to-vnc-tcp",
             websocket_path_template: null,
             websocket_path: null,
@@ -850,6 +857,7 @@ function createFixtureFetch({
           novnc: {
             enabled: true,
             status: "available",
+            reason_code: "available",
             bridge_mode: "websocket-to-vnc-tcp",
             websocket_path_template: "/api/v1/console/novnc/{vm_id}",
             websocket_path: "/api/v1/console/novnc/pcv-browser-fixture",
@@ -1173,10 +1181,26 @@ const renderedText = [...document.elements.values()]
   .join("\n");
 const combinedText = `${indexText}\n${renderedText}`;
 
-for (const value of ["Ops Cockpit", "Ready", "Network Inventory", "Default Switch", "fixture-ethernet", "read-only", "pcv-browser-fixture", "Delete VM", "QoS / Guest Readback", "linux_blkio_compatible=false", "linux_bandwidth_compatible=false", "qemu_guest_agent=false", "guest_heartbeat_verified=false", "job-browser-fixture", "req-browser-fixture", "Operator Activity", "Pagination", "next_offset", "max_terminal_jobs", "Job edge cases", "active running jobs", "failed job retry", "retained terminal jobs", "Monitoring", "Token policy", "Checkpoint warnings", "Route timeout", "30s", "Request limit", "120/min", "Burst limit", "20", "Retry-After", "15s", "Incident Command", "Failed jobs", "Token Rotation", "rotation handoff", "Clear browser token", "no service token mutation", "browser token empty", "Token-required route status", "%ProgramData%\\PureCVisor\\desktop-node\\api-token.dpapi.json", "Diagnostic Bundle", "CollectDiagnostics", "API action", "Create bundle", "Download latest", "Account/Console", "account permission", "current role", "Windows console", "noVNC status", "noVNC path/reason", "/api/v1/console/novnc/pcv-browser-fixture", "Open selected console", "Open the noVNC browser session for this VM, or use vmconnect from the host console.", "Current evidence", "runtime-api-current-evidence-rollup-v1", "0.42.22-admin-smoke -&gt; 0.42.23-admin-smoke", "Manual admin next", "0.42.55-admin-smoke -&gt; next-admin-smoke-required", "not-opened-no-next-product-payload-target", "Runtime/API registry bridge", "runtime-api-diagnostics-ops-summary-registry-bridge-v2", "DesktopNodeApiRuntimeRoutes", "4 routes", "GET /api/v1/ops/summary -&gt; OpsSummary", "GET /api/v1/diagnostics/bundles", "POST /api/v1/diagnostics/bundles -&gt; CreateDiagnosticBundle", "route detail metadata only", "Host Ops lifecycle buckets", "service-action-eventlog-firewall-truststore-credential-manager-data-root-separated", "service-action", "DesktopNodeServiceLifecycleOps", "windows-service-control-manager", "credential-manager-system-proof", "allowlisted-programdata-root", "Host mutation: not performed by diagnostics view", "Retained bundles", "Load more bundles", "next_offset=none", "max_bundle_count=50", "pcv-diag-20260509T010101Z-abcdef12", "served-by-download-route", "application/vnd.purecvisor.diagnostic-bundle+json", "no host mutation", "token values", "Authorization headers", "%ProgramData%\\PureCVisor\\desktop-node\\diagnostics", "Installed listener QA automation", "service token revoke handoff", "diagnostic retention pagination", "VM delete guarded", "ops cockpit P0/P1/P2", "public distribution bundle", "host mutation not started from browser", "PCV_JOB_STORE_SCHEMA_UNSUPPORTED", "Asset", "app.js"]) {
+for (const value of ["Ops Cockpit", "Ready", "Network Inventory", "Default Switch", "fixture-ethernet", "read-only", "pcv-browser-fixture", "Delete VM", "QoS / Guest Readback", "linux_blkio_compatible=false", "linux_bandwidth_compatible=false", "qemu_guest_agent=false", "guest_heartbeat_verified=false", "job-browser-fixture", "req-browser-fixture", "Operator Activity", "Pagination", "next_offset", "max_terminal_jobs", "Job edge cases", "active running jobs", "failed job retry", "retained terminal jobs", "Monitoring", "Token policy", "Checkpoint warnings", "Route timeout", "30s", "Request limit", "120/min", "Burst limit", "20", "Retry-After", "15s", "Incident Command", "Failed jobs", "Token Rotation", "rotation handoff", "Clear browser token", "no service token mutation", "browser token empty", "Token-required route status", "%ProgramData%\\PureCVisor\\desktop-node\\api-token.dpapi.json", "Diagnostic Bundle", "CollectDiagnostics", "API action", "Create bundle", "Download latest", "Account/Console", "account permission", "current role", "Windows console", "noVNC enabled", "noVNC status", "noVNC reason_code", "noVNC path/reason", "no target save form", "CLI/API configure only", "no schedule save form", "no infinite retention", "no export/import save form", "CLI/API export/import only", "no OVF", "no TPM key copy", "network-change-readback", "no switch create form", "no NAT editor", "no DHCP editor", "CLI/API vm.network.connect only", "Hyper-V export/import", "/api/v1/console/novnc/pcv-browser-fixture", "Open selected console", "Open the noVNC browser session for this VM, or use vmconnect from the host console.", "Current evidence", "runtime-api-current-evidence-rollup-v1", "0.42.22-admin-smoke -&gt; 0.42.23-admin-smoke", "Manual admin next", "0.42.55-admin-smoke -&gt; next-admin-smoke-required", "not-opened-no-next-product-payload-target", "Runtime/API registry bridge", "runtime-api-diagnostics-ops-summary-registry-bridge-v2", "DesktopNodeApiRuntimeRoutes", "4 routes", "GET /api/v1/ops/summary -&gt; OpsSummary", "GET /api/v1/diagnostics/bundles", "POST /api/v1/diagnostics/bundles -&gt; CreateDiagnosticBundle", "route detail metadata only", "Host Ops lifecycle buckets", "service-action-eventlog-firewall-truststore-credential-manager-data-root-separated", "service-action", "DesktopNodeServiceLifecycleOps", "windows-service-control-manager", "credential-manager-system-proof", "allowlisted-programdata-root", "Host mutation: not performed by diagnostics view", "Retained bundles", "Load more bundles", "next_offset=none", "max_bundle_count=50", "pcv-diag-20260509T010101Z-abcdef12", "served-by-download-route", "application/vnd.purecvisor.diagnostic-bundle+json", "no host mutation", "token values", "Authorization headers", "%ProgramData%\\PureCVisor\\desktop-node\\diagnostics", "Installed listener QA automation", "service token revoke handoff", "diagnostic retention pagination", "VM delete guarded", "ops cockpit P0/P1/P2", "public distribution bundle", "host mutation not started from browser", "PCV_JOB_STORE_SCHEMA_UNSUPPORTED", "Asset", "app.js"]) {
   requireIncludes(combinedText, value, "browser fixture rendered output");
 }
 
+requireNotIncludes(document.getElementById("account-console-panel").innerHTML, "novnc-target-apply", "console panel");
+requireNotIncludes(document.getElementById("account-console-panel").innerHTML, "allow_lan_target", "console panel");
+requireNotIncludes(document.getElementById("vm-detail-panel").innerHTML, "name=\"interval-minutes\"", "checkpoint schedule save form");
+requireNotIncludes(document.getElementById("vm-detail-panel").innerHTML, "name=\"retention-max\"", "checkpoint schedule save form");
+requireNotIncludes(document.getElementById("vm-detail-panel").innerHTML, "schedule-enable", "checkpoint schedule save form");
+requireNotIncludes(document.getElementById("network-inventory-panel").innerHTML, "data-action=\"switch-create\"", "switch create form");
+requireNotIncludes(document.getElementById("network-inventory-panel").innerHTML, "data-action=\"switch-remove\"", "switch remove form");
+requireNotIncludes(document.getElementById("network-inventory-panel").innerHTML, "data-action=\"vm-network-connect\"", "vm network connect form");
+requireNotIncludes(document.getElementById("network-inventory-panel").innerHTML, "name=\"nat-network\"", "NAT editor");
+requireNotIncludes(document.getElementById("network-inventory-panel").innerHTML, "name=\"dhcp-scope\"", "DHCP editor");
+requireNotIncludes(document.getElementById("vm-detail-panel").innerHTML, "data-action=\"vm-export\"", "export save form");
+requireNotIncludes(document.getElementById("vm-detail-panel").innerHTML, "data-action=\"vm-import\"", "import save form");
+requireNotIncludes(document.getElementById("vm-detail-panel").innerHTML, "name=\"export-directory\"", "export save form");
+requireNotIncludes(document.getElementById("vm-detail-panel").innerHTML, "name=\"import-directory\"", "import save form");
+requireNotIncludes(document.getElementById("vm-detail-panel").innerHTML, "/api/v1/vms/import", "import save form");
+requireNotIncludes(document.getElementById("account-console-panel").innerHTML, "name=\"novnc-host\"", "console panel");
 requireNotIncludes(document.getElementById("priority-panel").innerHTML, "High priority", "priority panel");
 requireIncludes(document.getElementById("dashboard-activity-panel").innerHTML, "job-summary-recent-fixture", "dashboard activity panel");
 requireIncludes(document.getElementById("dashboard-activity-panel").innerHTML, "vm.restart", "dashboard activity panel");

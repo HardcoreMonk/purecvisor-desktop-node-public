@@ -222,6 +222,67 @@ async function logoutAccount() {
   }
 }
 
+async function createAccountFromForm(event) {
+  event.preventDefault();
+  const form = event.target.closest('form#account-create-form') || event.currentTarget;
+  const data = new FormData(form);
+  const username = String(data.get('username') || '').trim();
+  const password = String(data.get('password') || '');
+  const role = String(data.get('role') || 'admin').trim() || 'admin';
+  const displayName = String(data.get('display_name') || '').trim();
+  const bootstrap = isAccountBootstrapOpen();
+  if (!window.confirm(buildAccountCreateConfirmation(username, role, bootstrap))) {
+    return;
+  }
+
+  state.accountManagePending = true;
+  state.accountDirectoryError = null;
+  render();
+  try {
+    const payload = {
+      username,
+      password,
+      role: bootstrap ? 'admin' : role,
+      display_name: displayName || undefined
+    };
+    await desktopApi.createAccount(payload);
+    const passwordInput = form.querySelector('input[name="password"]');
+    if (passwordInput) passwordInput.value = '';
+    if (bootstrap) {
+      const result = await desktopApi.loginAccount({ username, password });
+      applyAccountSessionPayload(result);
+      state.connectionState = 'connected';
+    }
+    await refreshAll();
+  } catch (error) {
+    state.accountDirectoryError = normalizeError(error);
+  } finally {
+    state.accountManagePending = false;
+    render();
+  }
+}
+
+async function disableAccountFromButton(username) {
+  const name = String(username || '').trim();
+  if (!name) return;
+  if (!window.confirm(buildAccountDisableConfirmation(name))) {
+    return;
+  }
+
+  state.accountManagePending = true;
+  state.accountDirectoryError = null;
+  render();
+  try {
+    await desktopApi.disableAccount(name, { confirm_username: name });
+    await refreshAll();
+  } catch (error) {
+    state.accountDirectoryError = normalizeError(error);
+  } finally {
+    state.accountManagePending = false;
+    render();
+  }
+}
+
 async function openSelectedConsole() {
   const vmId = state.selectedVmId;
   requireRbac('console.view', 'console view');

@@ -24,9 +24,15 @@ service_uses_credential_manager: `true`
 remaining_test_vm_count: `0`
 secret_observed: `false`
 host_mutation_performed: `false`
-promotion_ledger_status: `not-promoted`
-canonical_current_evidence: `0.42.75-admin-smoke`
-canonical_current_changed: `false`
+latest_manual_admin_package_pair: `0.42.75-admin-smoke -> 0.42.77-admin-smoke`
+latest_manual_admin_descriptor: `manual-admin-campaign-descriptor-20260920-04275-04277`
+token_rotation_evidence: `docs/ga-ready/evidence/installed-token-rotation-smoke-2026-08-09-04272.md`
+token_rotation_r4_summary: `artifacts/installed-token-rotation-smoke-reconciliation-r4-20260810-04272/summary.json`
+token_rotation_r4_summary_sha256: `285661fe50ade63169b6cfc85ff1dcf754a679e30152bd04d166581b4d762136`
+token_rotation_status: `carry-forward-no-token-payload-change-after-04272`
+promotion_ledger_status: `promoted-current`
+canonical_current_evidence: `0.42.77-admin-smoke`
+canonical_current_changed: `true`
 public_trusted_signing: `not-claimed`
 external_stable_publication: `not-claimed`
 
@@ -50,17 +56,17 @@ Service argv는 credential-manager target을 사용하고 raw/protected token fl
 
 | 평면 | readback |
 | --- | --- |
-| package | clean MSI `d03eedaf…` PASS, current 아님 |
+| package | clean MSI `d03eedaf…` PASS |
 | fullgate | 2 steps, exit `0`, attempt `1` |
 | clone actual-VM | `service-plan-p1-clone-actual-vm-2026-08-29-04277-r2` PASS |
-| manual-admin pair | `0.42.75 -> 0.42.77` not-opened |
+| manual-admin pair | `0.42.75 -> 0.42.77` descriptor `20260920` PASS |
 | cleanup | `pcv-spike-*` 잔여 `0` |
 
 ## 승격 경계
 
-이 current-card의 promotion 판정은 `not-promoted`다. Canonical current-evidence는
-`0.42.75-admin-smoke`로 유지한다. Lane 3 ledger update와 package-pair는 별도 승인이
-필요하다.
+2026-09-20 Lane 3가 이 current-card를 `promoted-current`로 승격했다. Canonical
+current-evidence는 `0.42.77-admin-smoke`다. pair target은 clean MSI `d03eedaf…`이며
+operational fullgate MSI `d4ebba77…`와는 다른 identity다.
 
 ## Nonclaims
 

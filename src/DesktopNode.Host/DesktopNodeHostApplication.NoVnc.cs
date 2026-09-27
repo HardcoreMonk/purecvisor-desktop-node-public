@@ -32,9 +32,13 @@ public sealed partial class DesktopNodeHostApplication : IDisposable
         string vmId,
         CancellationToken requestToken)
     {
-        if (!options.NoVncBridgeEnabled ||
-            string.IsNullOrWhiteSpace(options.NoVncTargetHost) ||
-            !options.NoVncTargetPort.HasValue)
+        var bridge = DesktopNodeNoVncTargetStore.ResolveBridgeTarget(
+            DesktopNodeNoVncTargetStore.DefaultFilePath,
+            options.NoVncTargetHost,
+            options.NoVncTargetPort);
+        if (!bridge.Enabled ||
+            string.IsNullOrWhiteSpace(bridge.Host) ||
+            !bridge.Port.HasValue)
         {
             await WriteTextAsync(
                 context.Response,
@@ -61,7 +65,7 @@ public sealed partial class DesktopNodeHostApplication : IDisposable
         using var admissionLease = admission.Lease;
 
         using var tcpClient = new TcpClient();
-        await tcpClient.ConnectAsync(options.NoVncTargetHost!, options.NoVncTargetPort.Value)
+        await tcpClient.ConnectAsync(bridge.Host!, bridge.Port.Value)
             .WaitAsync(TimeSpan.FromSeconds(10), requestToken)
             .ConfigureAwait(false);
 
@@ -109,7 +113,7 @@ public sealed partial class DesktopNodeHostApplication : IDisposable
             return null;
         }
 
-        if (accountAuthReady)
+        if (processor.AccountAuthReady)
         {
             var validation = accountAuthService.ValidateAccessToken(authorization);
             if (validation.Ok &&

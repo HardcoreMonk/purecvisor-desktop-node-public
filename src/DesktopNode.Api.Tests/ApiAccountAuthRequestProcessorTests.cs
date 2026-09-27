@@ -106,6 +106,11 @@ public sealed class ApiAccountAuthRequestProcessorTests
         Assert.Equal("redacted", card.GetProperty("account").GetProperty("token_output").GetString());
         Assert.Equal("vmconnect", card.GetProperty("windows_console").GetProperty("type").GetString());
         Assert.Equal("not_configured", card.GetProperty("novnc").GetProperty("status").GetString());
+        Assert.Equal("not_configured", card.GetProperty("novnc").GetProperty("reason_code").GetString());
+        Assert.False(card.GetProperty("novnc").GetProperty("enabled").GetBoolean());
+        Assert.False(card.GetProperty("novnc").TryGetProperty("host", out _));
+        Assert.False(card.GetProperty("novnc").TryGetProperty("port", out _));
+        Assert.False(card.GetProperty("novnc").TryGetProperty("allow_lan_target", out _));
         Assert.Equal("Use local vmconnect handoff; configure noVNC bridge only when browser streaming is required.", card.GetProperty("next_action").GetString());
         Assert.False(card.GetProperty("host_mutation_performed").GetBoolean());
         Assert.DoesNotContain("correct horse battery staple", response.Body, StringComparison.OrdinalIgnoreCase);
@@ -206,6 +211,10 @@ public sealed class ApiAccountAuthRequestProcessorTests
         Assert.Equal("service-token-or-account-jwt", card.GetProperty("account").GetProperty("auth_surface").GetString());
         Assert.Equal("redacted", card.GetProperty("account").GetProperty("token_output").GetString());
         Assert.Equal("available", card.GetProperty("novnc").GetProperty("status").GetString());
+        Assert.Equal("available", card.GetProperty("novnc").GetProperty("reason_code").GetString());
+        Assert.True(card.GetProperty("novnc").GetProperty("enabled").GetBoolean());
+        Assert.False(card.GetProperty("novnc").TryGetProperty("host", out _));
+        Assert.False(card.GetProperty("novnc").TryGetProperty("port", out _));
         Assert.Equal("/api/v1/console/novnc/alpha", card.GetProperty("novnc").GetProperty("websocket_path").GetString());
         Assert.Equal("Open the noVNC browser session for this VM, or use vmconnect from the host console.", card.GetProperty("next_action").GetString());
         Assert.False(card.GetProperty("host_mutation_performed").GetBoolean());

@@ -140,6 +140,11 @@ public static partial class DesktopNodeHostServiceAction
         return Ops.DesktopNodeFirewallOps.Owns(action);
     }
 
+    private static bool IsNativeSwitchAction(string? action)
+    {
+        return Ops.DesktopNodeHyperVSwitchOps.Owns(action);
+    }
+
     private static bool IsNativeTrustStoreAction(string? action)
     {
         return Ops.DesktopNodeTrustStoreOps.Owns(action);

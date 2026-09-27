@@ -29,7 +29,6 @@ public sealed partial class DesktopNodeHostApplication : IDisposable
     private readonly DesktopNodeApiRequestProcessor processor;
     private readonly DesktopNodeHostResolvedToken token;
     private readonly string? allowedWebOrigin;
-    private readonly bool accountAuthReady;
     private readonly DesktopNodeAccountAuthService accountAuthService;
     private readonly DesktopNodeRequestAdmission? requestAdmission;
     private readonly ConcurrentDictionary<int, Task> requestTasks = new();
@@ -44,7 +43,6 @@ public sealed partial class DesktopNodeHostApplication : IDisposable
         DesktopNodeApiRequestProcessor processor,
         DesktopNodeHostResolvedToken token,
         string? allowedWebOrigin,
-        bool accountAuthReady,
         DesktopNodeAccountAuthService accountAuthService)
     {
         this.listeners = listeners;
@@ -52,7 +50,6 @@ public sealed partial class DesktopNodeHostApplication : IDisposable
         this.processor = processor;
         this.token = token;
         this.allowedWebOrigin = allowedWebOrigin;
-        this.accountAuthReady = accountAuthReady;
         this.accountAuthService = accountAuthService;
         requestAdmission = options.RequestLifetimeMode == DesktopNodeRequestLifetimeMode.TrackedAsyncSerialized
             ? new DesktopNodeRequestAdmission(
@@ -108,11 +105,27 @@ public sealed partial class DesktopNodeHostApplication : IDisposable
                 : null;
             var accountAuthOptions = options.AccountAuthOptions ??
                 DesktopNodeAccountAuthOptions.FromFiles(options.AccountFilePath, options.JwtSigningKeyFilePath);
+            if (string.IsNullOrWhiteSpace(accountAuthOptions.AccountFilePath) &&
+                !string.IsNullOrWhiteSpace(options.AccountFilePath))
+            {
+                accountAuthOptions = accountAuthOptions with { AccountFilePath = options.AccountFilePath };
+            }
+
+            if (accountAuthOptions.HardenAccountFile is null)
+            {
+                accountAuthOptions = accountAuthOptions with
+                {
+                    HardenAccountFile = DesktopNodeHostFileAclHardener.Instance.Harden
+                };
+            }
+
             var accountAuthService = new DesktopNodeAccountAuthService(accountAuthOptions);
             var consoleOptions = new DesktopNodeConsoleOptions(
                 NoVncEnabled: options.NoVncBridgeEnabled,
                 NoVncWebSocketPath: options.NoVncWebSocketPath,
-                NoVncBridgeMode: options.NoVncBridgeEnabled ? "websocket-to-vnc-tcp" : "disabled");
+                NoVncBridgeMode: options.NoVncBridgeEnabled ? "websocket-to-vnc-tcp" : "disabled",
+                AllowLan: options.AllowLan,
+                NoVncTargetFilePath: DesktopNodeNoVncTargetStore.DefaultFilePath);
 
             return Task.FromResult(new DesktopNodeHostApplication(
                 bindings,
@@ -134,10 +147,10 @@ public sealed partial class DesktopNodeHostApplication : IDisposable
                         options.DiagnosticsRootPath),
                     accountAuthOptions: accountAuthOptions,
                     consoleOptions: consoleOptions,
-                    jobRuntimeEventSink: new DesktopNodeHostJobRuntimeEventSink(options)),
+                    jobRuntimeEventSink: new DesktopNodeHostJobRuntimeEventSink(options),
+                    checkpointScheduleFilePath: DesktopNodeCheckpointScheduleStore.DefaultFilePath),
                 token,
                 allowedWebOrigin,
-                accountAuthOptions.Ready,
                 accountAuthService));
         }
         catch
@@ -158,44 +171,4 @@ public sealed partial class DesktopNodeHostApplication : IDisposable
             throw;
         }
     }
-
-    public void Dispose()
-    {
-        if (Interlocked.Exchange(ref disposed, 1) != 0)
-        {
-            return;
-        }
-
-        cancellation.Cancel();
-        foreach (var binding in listeners)
-        {
-            if (binding.Listener.IsListening)
-            {
-                binding.Listener.Stop();
-            }
-
-            binding.Listener.Close();
-        }
-
-        try
-        {
-            Task.WaitAll(loopTasks.ToArray(), TimeSpan.FromSeconds(5));
-        }
-        catch (AggregateException)
-        {
-        }
-
-        var requestSnapshot = requestTasks.Values.ToArray();
-        try
-        {
-            Task.WaitAll(requestSnapshot, TimeSpan.FromSeconds(5));
-        }
-        catch (AggregateException)
-        {
-        }
-
-        requestAdmission?.Dispose();
-        cancellation.Dispose();
-    }
-
 }

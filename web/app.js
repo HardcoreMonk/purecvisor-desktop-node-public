@@ -17,6 +17,9 @@ const state = {
     authRbac: null,
     authError: null,
     authPending: false,
+    accountDirectory: null,
+    accountDirectoryError: null,
+    accountManagePending: false,
     activeView: 'dashboard',
     host: null,
     vms: [],
@@ -182,6 +185,8 @@ const DESKTOP_NODE_API_ROUTES = Object.freeze({
     authLogout: '/api/v1/auth/logout',
     authSession: '/api/v1/auth/session',
     authRbac: '/api/v1/auth/rbac',
+    accounts: '/api/v1/accounts',
+    accountDisable: (username) => `/api/v1/accounts/${encodeRouteSegment(username)}/disable`,
     consoleCapabilities: '/api/v1/console/capabilities',
     jobsPage: (limit = 50, offset = 0) => `/api/v1/jobs?limit=${encodeRouteQueryValue(limit)}&offset=${encodeRouteQueryValue(offset)}`,
     diagnosticBundlesPage: (limit = 10, offset = 0) => `/api/v1/diagnostics/bundles?limit=${encodeRouteQueryValue(limit)}&offset=${encodeRouteQueryValue(offset)}`,
@@ -195,9 +200,11 @@ const DESKTOP_NODE_API_ROUTES = Object.freeze({
     vmGuestAgentStatus: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/guest-agent/status`,
     vmGuestAgentPing: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/guest-agent/ping`,
     vmGuestExec: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/guest/exec`,
+    vmGuestFilePreview: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/guest/file/preview`,
+    vmGuestFile: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/guest/file`,
     vmGuestChannelVerify: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/guest/channel/verify`,
     vmGuestChannelEnsure: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/guest/channel`,
-    vmAction: (vmId, action) => `/api/v1/vms/${encodeRouteSegment(vmId)}/${requireRouteAction(action, ['start', 'shutdown', 'poweroff', 'restart', 'save', 'resume-saved', 'eject', 'attach', 'delete-status', 'set-memory', 'set-vcpu', 'disk-resize', 'manage', 'clone'])}`,
+    vmAction: (vmId, action) => `/api/v1/vms/${encodeRouteSegment(vmId)}/${requireRouteAction(action, ['start', 'shutdown', 'poweroff', 'restart', 'save', 'resume-saved', 'eject', 'attach', 'delete-status', 'set-memory', 'set-vcpu', 'disk-resize', 'manage', 'clone', 'template-lock'])}`,
     vmClonePreview: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/clone/preview`,
     vmCheckpoints: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/checkpoints`,
     checkpointDetail: (vmId, checkpointId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/checkpoints/${encodeRouteSegment(checkpointId)}`,
@@ -224,6 +231,8 @@ const DESKTOP_NODE_ROUTE_COVERAGE = Object.freeze([
     { id: 'vm.guest-agent-status', featureId: 'pcv.vm.guest-service-readback', method: 'GET', route: '/api/v1/vms/{vm_id}/guest-agent/status', view: 'vms', mutating: false, tokenRequired: true },
     { id: 'vm.guest-ping', featureId: 'pcv.vm.guest-service-readback', method: 'GET', route: '/api/v1/vms/{vm_id}/guest-agent/ping', view: 'vms', mutating: false, tokenRequired: true },
     { id: 'vm.guest.exec', featureId: 'pcv.vm.guest-execution', method: 'POST', route: '/api/v1/vms/{vm_id}/guest/exec', view: 'vms', mutating: true, tokenRequired: true },
+    { id: 'vm.guest.file.preview', featureId: 'pcv.vm.guest-execution', method: 'POST', route: '/api/v1/vms/{vm_id}/guest/file/preview', view: 'vms', mutating: false, tokenRequired: true },
+    { id: 'vm.guest.file', featureId: 'pcv.vm.guest-execution', method: 'POST', route: '/api/v1/vms/{vm_id}/guest/file', view: 'vms', mutating: true, tokenRequired: true },
     { id: 'vm.guest.channel.verify', featureId: 'pcv.vm.guest-channel', method: 'POST', route: '/api/v1/vms/{vm_id}/guest/channel/verify', view: 'vms', mutating: true, tokenRequired: true },
     { id: 'vm.guest.channel.ensure', featureId: 'pcv.vm.guest-channel', method: 'POST', route: '/api/v1/vms/{vm_id}/guest/channel', view: 'vms', mutating: true, tokenRequired: true },
     { id: 'vm.lifecycle', featureId: 'pcv.vm.power-lifecycle', method: 'POST', route: '/api/v1/vms/{vm_id}/start|shutdown|poweroff|restart', view: 'vms', mutating: true, tokenRequired: true },
@@ -236,6 +245,7 @@ const DESKTOP_NODE_ROUTE_COVERAGE = Object.freeze([
     { id: 'vm.manage', featureId: 'pcv.vm.managed-import', method: 'POST', route: '/api/v1/vms/{vm_id}/manage', view: 'vms', mutating: true, tokenRequired: true },
     { id: 'vm.clone.preview', featureId: 'pcv.vm.clone', method: 'POST', route: '/api/v1/vms/{vm_id}/clone/preview', view: 'vms', mutating: false, tokenRequired: true },
     { id: 'vm.clone', featureId: 'pcv.vm.clone', method: 'POST', route: '/api/v1/vms/{vm_id}/clone', view: 'vms', mutating: true, tokenRequired: true },
+    { id: 'vm.template.lock', featureId: 'pcv.vm.clone', method: 'POST', route: '/api/v1/vms/{vm_id}/template-lock', view: 'vms', mutating: true, tokenRequired: true },
     { id: 'vm.delete', featureId: 'pcv.vm.delete', method: 'DELETE', route: '/api/v1/vms/{vm_id}', view: 'vms', mutating: true, tokenRequired: true },
     { id: 'checkpoint.list', featureId: 'pcv.checkpoint.lifecycle', method: 'GET', route: '/api/v1/vms/{vm_id}/checkpoints', view: 'vms', mutating: false, tokenRequired: true },
     { id: 'checkpoint.create', featureId: 'pcv.checkpoint.lifecycle', method: 'POST', route: '/api/v1/vms/{vm_id}/checkpoints', view: 'vms', mutating: true, tokenRequired: true },
@@ -255,6 +265,9 @@ const DESKTOP_NODE_ROUTE_COVERAGE = Object.freeze([
     { id: 'auth.logout', featureId: 'pcv.account.session', method: 'POST', route: DESKTOP_NODE_API_ROUTES.authLogout, view: 'troubleshooting', mutating: false, tokenRequired: false },
     { id: 'auth.session', featureId: 'pcv.account.session', method: 'GET', route: DESKTOP_NODE_API_ROUTES.authSession, view: 'troubleshooting', mutating: false, tokenRequired: true },
     { id: 'auth.rbac', featureId: 'pcv.account.session', method: 'GET', route: DESKTOP_NODE_API_ROUTES.authRbac, view: 'troubleshooting', mutating: false, tokenRequired: true },
+    { id: 'account.list', featureId: 'pcv.account.session', method: 'GET', route: DESKTOP_NODE_API_ROUTES.accounts, view: 'troubleshooting', mutating: false, tokenRequired: true },
+    { id: 'account.create', featureId: 'pcv.account.session', method: 'POST', route: DESKTOP_NODE_API_ROUTES.accounts, view: 'troubleshooting', mutating: true, tokenRequired: true },
+    { id: 'account.disable', featureId: 'pcv.account.session', method: 'POST', route: '/api/v1/accounts/{username}/disable', view: 'troubleshooting', mutating: true, tokenRequired: true },
     { id: 'console.capabilities', featureId: 'pcv.console.capabilities', method: 'GET', route: DESKTOP_NODE_API_ROUTES.consoleCapabilities, view: 'troubleshooting', mutating: false, tokenRequired: true },
     { id: 'console.session', featureId: 'pcv.vm.console-handoff', method: 'GET', route: '/api/v1/vms/{vm_id}/console', view: 'vms', mutating: false, tokenRequired: true }
 ]);
@@ -297,6 +310,8 @@ function asArray(value) {
         return value.checkpoints;
     if (Array.isArray(value?.jobs))
         return value.jobs;
+    if (Array.isArray(value?.accounts))
+        return value.accounts;
     if (value && typeof value === 'object') {
         return Object.values(value).filter((item) => item && typeof item === 'object');
     }
@@ -311,6 +326,9 @@ function getVmName(vm) {
 function getVmState(vm) {
     return String(vm?.state || vm?.status || '').trim();
 }
+function isTemplateLockedVm(vm) {
+    return Boolean(vm?.template_lock);
+}
 function isRunningVmState(value) {
     return String(value || '').toLowerCase().includes('running');
 }
@@ -324,6 +342,50 @@ function buildVmManageConfirmation(vmId, vm) {
         'After success this VM will pass PureCVisor managed delete.',
         'Unmanaged delete refusal remains.',
         'This queues a Hyper-V Notes managed-marker mutation.',
+        'The result will appear in Tracked Jobs.'
+    ].join('\n');
+}
+function buildAccountCreateConfirmation(username, role, bootstrap) {
+    return [
+        bootstrap ? `Create the first admin account ${username}?` : `Create account ${username}?`,
+        `Role: ${role}`,
+        bootstrap
+            ? 'After success loopback session is closed. Login with this admin account.'
+            : 'The account is stored in accounts.json. Password is not shown again.',
+        'No default password is generated.'
+    ].join('\n');
+}
+function buildAccountDisableConfirmation(username) {
+    return [
+        `Disable account ${username}?`,
+        'The last enabled admin cannot be disabled.',
+        'Login for this username will fail after success.',
+        'This does not delete the account record.'
+    ].join('\n');
+}
+function buildVmGuestFileConfirmation(vmId, payload, preview) {
+    const sizeBytes = preview?.size_bytes ?? payload?.size_bytes;
+    const sizeText = sizeBytes === null || sizeBytes === undefined || sizeBytes === '' ? '-' : String(sizeBytes);
+    return [
+        `Copy host file into VM ${vmId}?`,
+        `Host path: ${payload?.host_path || '-'}`,
+        `Guest path: ${payload?.guest_path || '-'}`,
+        `size_bytes: ${sizeText}`,
+        'This queues a host-to-guest copy with a protected credential reference.',
+        'HGFS shared folders are not used. The result will appear in Tracked Jobs.'
+    ].join('\n');
+}
+function buildVmTemplateLockConfirmation(vmId, vm, locked) {
+    const vmName = getVmName(vm);
+    const vmState = getVmState(vm) || 'unknown';
+    return [
+        locked ? `Lock VM ${vmName} as a template?` : `Unlock template lock on VM ${vmName}?`,
+        `VM id: ${vmId}`,
+        `Current state: ${vmState}`,
+        locked
+            ? 'After success this managed VM allows start and clone only. Unmanaged lock is blocked by PCV_VM_NOT_MANAGED_BY_PURECVISOR.'
+            : 'After success this VM is no longer a start/clone-only template.',
+        'This queues a Hyper-V Notes template-lock mutation.',
         'The result will appear in Tracked Jobs.'
     ].join('\n');
 }
@@ -667,6 +729,14 @@ const desktopApi = Object.freeze({
         method: 'POST',
         body: JSON.stringify(payload)
     }),
+    previewVmGuestFile: (vmId, payload) => apiFetch(DESKTOP_NODE_API_ROUTES.vmGuestFilePreview(vmId), {
+        method: 'POST',
+        body: JSON.stringify(payload)
+    }),
+    queueVmGuestFile: (vmId, payload) => apiFetch(DESKTOP_NODE_API_ROUTES.vmGuestFile(vmId), {
+        method: 'POST',
+        body: JSON.stringify(payload)
+    }),
     verifyVmGuestChannel: (vmId, payload) => apiFetch(DESKTOP_NODE_API_ROUTES.vmGuestChannelVerify(vmId), {
         method: 'POST',
         body: JSON.stringify(payload)
@@ -685,6 +755,10 @@ const desktopApi = Object.freeze({
     queueVmManage: (vmId, confirmName) => apiFetch(DESKTOP_NODE_API_ROUTES.vmAction(vmId, 'manage'), {
         method: 'POST',
         body: JSON.stringify({ confirm_name: confirmName })
+    }),
+    queueVmTemplateLock: (vmId, confirmName, locked) => apiFetch(DESKTOP_NODE_API_ROUTES.vmAction(vmId, 'template-lock'), {
+        method: 'POST',
+        body: JSON.stringify({ confirm_name: confirmName, locked })
     }),
     previewVmClone: (vmId, payload) => apiFetch(DESKTOP_NODE_API_ROUTES.vmClonePreview(vmId), {
         method: 'POST',
@@ -737,6 +811,15 @@ const desktopApi = Object.freeze({
     }),
     getAccountSession: (options = {}) => apiFetch(DESKTOP_NODE_API_ROUTES.authSession, options),
     getAccountRbac: (options = {}) => apiFetch(DESKTOP_NODE_API_ROUTES.authRbac, options),
+    listAccounts: (options = {}) => apiFetch(DESKTOP_NODE_API_ROUTES.accounts, options),
+    createAccount: (payload) => apiFetch(DESKTOP_NODE_API_ROUTES.accounts, {
+        method: 'POST',
+        body: JSON.stringify(payload)
+    }),
+    disableAccount: (username, payload) => apiFetch(DESKTOP_NODE_API_ROUTES.accountDisable(username), {
+        method: 'POST',
+        body: JSON.stringify(payload)
+    }),
     getConsoleCapabilities: (options = {}) => apiFetch(DESKTOP_NODE_API_ROUTES.consoleCapabilities, options),
     getVmConsole: (vmId, options = {}) => apiFetch(DESKTOP_NODE_API_ROUTES.vmConsole(vmId), options)
 });
@@ -1079,6 +1162,24 @@ function setCheckpointActionPending(vmId, checkpointId, action) {
 function clearCheckpointActionPending(vmId, checkpointId = 'create') {
     delete state.pendingCheckpoints[getCheckpointActionKey(vmId, checkpointId)];
 }
+function bindJobAndNetworkFilterEvents() {
+    els.jobFilter?.addEventListener('input', () => {
+        state.jobFilter = els.jobFilter.value;
+        render();
+    });
+    els.jobStatusFilter?.addEventListener('change', () => {
+        state.jobStatusFilter = els.jobStatusFilter.value || 'all';
+        render();
+    });
+    els.jobSort?.addEventListener('change', () => {
+        state.jobSort = els.jobSort.value || 'updated:desc';
+        render();
+    });
+    els.networkFilter?.addEventListener('input', () => {
+        state.networkFilter = els.networkFilter.value;
+        render();
+    });
+}
 // --- src/served/rbac.ts ---
 // @ts-nocheck
 function isAuthError(error) {
@@ -1114,6 +1215,14 @@ function rbacAllows(permission) {
         return true;
     const permissions = getAccountPermissions();
     return permissions.includes('*') || permissions.includes(permission);
+}
+function isAccountBootstrapOpen() {
+    const mode = String(readNested(state.runtimePolicy || {}, ['auth', 'mode']) || '').toLowerCase();
+    return mode.includes('not_configured') ||
+        String(state.accountDirectory?.bootstrap_state || '') === 'no-default-account';
+}
+function canManageAccounts() {
+    return rbacAllows('account.manage');
 }
 function requireRbac(permission, actionLabel = 'this action') {
     if (rbacAllows(permission))
@@ -1398,6 +1507,31 @@ function renderNetworkFailureGuidance(error) {
     <p>${escapeHtml(detail)}</p>
   </div>`;
 }
+function renderNetworkChangeReadback(switches) {
+    const rows = asArray(switches);
+    const productCount = rows.filter((item) => String(item?.name || '').toLowerCase().startsWith('pcv-')).length;
+    const reservedCount = rows.filter((item) => {
+        const name = String(item?.name || '').toLowerCase();
+        return name === 'default switch' || name.startsWith('wsl');
+    }).length;
+    const externalCount = rows.filter((item) => String(item?.type || item?.switch_type || '').toLowerCase() === 'external').length;
+    return `<div class="network-change-readback">
+      <div class="diagnostics-grid">
+        <div class="diagnostics-fact"><span class="muted">switch create</span><strong>service-action only</strong></div>
+        <div class="diagnostics-fact"><span class="muted">product switches</span><strong>${escapeHtml(productCount)}</strong></div>
+        <div class="diagnostics-fact"><span class="muted">reserved</span><strong>${escapeHtml(reservedCount)}</strong></div>
+        <div class="diagnostics-fact"><span class="muted">external</span><strong>${escapeHtml(externalCount === 0 ? 'none' : 'present')}</strong></div>
+        <div class="diagnostics-fact"><span class="muted">vm.network.connect</span><strong>CLI/API only</strong></div>
+        <div class="diagnostics-fact"><span class="muted">NAT/DHCP</span><strong>excluded</strong></div>
+      </div>
+      <div class="boundary-chip-row">
+        <span>no switch create form</span>
+        <span>no NAT editor</span>
+        <span>no DHCP editor</span>
+        <span>CLI/API vm.network.connect only</span>
+      </div>
+    </div>`;
+}
 function renderNetworkInventory() {
     if (!els.networkInventoryPanel)
         return;
@@ -1427,6 +1561,7 @@ function renderNetworkInventory() {
     els.networkInventoryPanel.innerHTML = `
     ${errorHtml}
     ${renderTableStateSummary('Switches', switches.length, allSwitches.length, state.networkFilter, 'read-only Hyper-V inventory')}
+    ${renderNetworkChangeReadback(allSwitches)}
     <div class="network-summary-grid">
       <div class="network-summary-card"><span class="muted">Source</span><strong>${escapeHtml(source)}</strong></div>
       <div class="network-summary-card"><span class="muted">Mutation</span><strong>${escapeHtml(mutationMode)}</strong></div>
@@ -1447,12 +1582,13 @@ function renderNetworkInventory() {
 function renderCheckpointList(vmId) {
     const checkpoints = asArray(state.selectedVmCheckpoints);
     const canOperate = rbacAllows('operate');
+    const templateLocked = isTemplateLockedVm(state.selectedVm);
     if (checkpoints.length === 0) {
         return '<p class="muted">No checkpoints returned for this VM.</p>';
     }
     return checkpoints.map((checkpoint) => {
         const checkpointId = getCheckpointId(checkpoint);
-        const checkpointDisabled = isCheckpointActionPending(vmId, checkpointId) || !canOperate ? ' disabled' : '';
+        const checkpointDisabled = isCheckpointActionPending(vmId, checkpointId) || !canOperate || templateLocked ? ' disabled' : '';
         return `<div class="checkpoint-row">
       <div>
         <strong>${escapeHtml(getCheckpointName(checkpoint))}</strong>
@@ -1552,9 +1688,10 @@ function renderVmQosDirectControl(vmId) {
     const canOperate = rbacAllows('operate');
     const canGuestExec = rbacAllows('guest.exec');
     const canGuestChannel = rbacAllows('guest.channel.configure');
-    const actionDisabled = isVmActionPending(vmId) || !canOperate ? ' disabled' : '';
-    const guestExecDisabled = isVmActionPending(vmId) || !canGuestExec ? ' disabled' : '';
-    const guestChannelDisabled = isVmActionPending(vmId) || !canGuestChannel ? ' disabled' : '';
+    const templateLocked = isTemplateLockedVm(state.selectedVm);
+    const actionDisabled = isVmActionPending(vmId) || !canOperate || templateLocked ? ' disabled' : '';
+    const guestExecDisabled = isVmActionPending(vmId) || !canGuestExec || templateLocked ? ' disabled' : '';
+    const guestChannelDisabled = isVmActionPending(vmId) || !canGuestChannel || templateLocked ? ' disabled' : '';
     const control = getSelectedVmQosControl(vmId);
     return `<section class="qos-control-panel">
     <div class="mini-section-header">
@@ -1609,8 +1746,18 @@ function renderVmQosDirectControl(vmId) {
           <button type="submit" class="danger-button" data-action="guest-agent-ensure-channel" data-guest-channel-mode="repair"${guestChannelDisabled}>Repair channel</button>
         </div>
       </form>
+      <form class="qos-control-form" data-action="vm-guest-file" data-vm-id="${escapeHtml(vmId)}">
+        <label>Host path<input name="host_path" autocomplete="off" placeholder="C:\\ProgramData\\PureCVisor\\desktop-node\\guest-files\\payload.iso"${guestExecDisabled}></label>
+        <label>Guest path<input name="guest_path" autocomplete="off" placeholder="C:\\Users\\Public\\PureCVisor\\payload.iso"${guestExecDisabled}></label>
+        <label>Credential reference<input name="credential_ref" autocomplete="off" placeholder="wincred:target"${guestExecDisabled}></label>
+        <label>Timeout seconds<input name="timeout_sec" type="number" min="1" max="600" step="1" value="60"${guestExecDisabled}></label>
+        <div class="qos-control-actions">
+          <button type="submit" class="danger-button" data-action="vm-guest-file"${guestExecDisabled}>Copy host file</button>
+        </div>
+      </form>
     </div>
     <p class="muted">Guest command output is reduced to audit digests; raw stdout/stderr and credential values are not rendered.</p>
+    <p class="muted">Guest file copy is host-to-guest only, allowlisted, and does not use HGFS.</p>
     <p class="muted">Account/noVNC target config mutation remains ADR-0010 deferred.</p>
   </section>`;
 }
@@ -1630,8 +1777,11 @@ function renderVmDetail() {
     const vmId = getVmId(vm);
     const canOperate = rbacAllows('operate');
     const canViewConsole = rbacAllows('console.view');
+    const templateLocked = isTemplateLockedVm(vm);
     const actionDisabled = isVmActionPending(vmId) || !canOperate ? ' disabled' : '';
-    const checkpointDisabled = isCheckpointActionPending(vmId, 'create') || !canOperate ? ' disabled' : '';
+    const lockedMutationDisabled = isVmActionPending(vmId) || !canOperate || templateLocked ? ' disabled' : '';
+    const checkpointRefreshDisabled = isCheckpointActionPending(vmId, 'create') || !canOperate ? ' disabled' : '';
+    const checkpointMutationDisabled = isCheckpointActionPending(vmId, 'create') || !canOperate || templateLocked ? ' disabled' : '';
     const consoleDisabled = canViewConsole ? '' : ' disabled';
     const pendingVmAction = state.pendingVmActions[getVmActionKey(vmId)];
     const storage = flattenNamedList(vm.storage, ['path', 'size_gb', 'attached']);
@@ -1648,41 +1798,47 @@ function renderVmDetail() {
         ['Checkpoints', vm.checkpoints?.count ?? vm.checkpoints_count],
         ['Console', formatConsoleValue(vm.console)],
         ['Managed', vm.managed_by_purecvisor],
+        ['Template', templateLocked ? 'locked' : 'no'],
         ['Notes', vm.error?.message || vm.notes]
     ];
+    const templateLockButton = templateLocked
+        ? `<button data-action="vm-template-unlock" data-vm-id="${escapeHtml(vmId)}"${actionDisabled}>Unlock template</button>`
+        : `<button data-action="vm-template-lock" data-vm-id="${escapeHtml(vmId)}"${actionDisabled}>Lock template</button>`;
     els.vmDetailContent.innerHTML = `
     <div class="lifecycle-actions">
       <button data-action="vm-start" data-vm-id="${escapeHtml(vmId)}"${actionDisabled}>Start</button>
-      <button data-action="vm-shutdown" data-vm-id="${escapeHtml(vmId)}"${actionDisabled}>Shutdown</button>
-      <button class="danger-button" data-action="vm-poweroff" data-vm-id="${escapeHtml(vmId)}"${actionDisabled}>Power off</button>
-      <button class="danger-button" data-action="vm-restart" data-vm-id="${escapeHtml(vmId)}"${actionDisabled}>Restart</button>
-      <button data-action="vm-save" data-vm-id="${escapeHtml(vmId)}"${actionDisabled}>Save</button>
-      <button data-action="vm-resume-saved" data-vm-id="${escapeHtml(vmId)}"${actionDisabled}>Resume saved</button>
-      <button data-action="vm-eject" data-vm-id="${escapeHtml(vmId)}"${actionDisabled}>Eject media</button>
+      <button data-action="vm-shutdown" data-vm-id="${escapeHtml(vmId)}"${lockedMutationDisabled}>Shutdown</button>
+      <button class="danger-button" data-action="vm-poweroff" data-vm-id="${escapeHtml(vmId)}"${lockedMutationDisabled}>Power off</button>
+      <button class="danger-button" data-action="vm-restart" data-vm-id="${escapeHtml(vmId)}"${lockedMutationDisabled}>Restart</button>
+      <button data-action="vm-save" data-vm-id="${escapeHtml(vmId)}"${lockedMutationDisabled}>Save</button>
+      <button data-action="vm-resume-saved" data-vm-id="${escapeHtml(vmId)}"${lockedMutationDisabled}>Resume saved</button>
+      <button data-action="vm-eject" data-vm-id="${escapeHtml(vmId)}"${lockedMutationDisabled}>Eject media</button>
       <button data-action="vm-delete-status" data-vm-id="${escapeHtml(vmId)}"${actionDisabled}>Delete status</button>
-      <button data-action="vm-manage" data-vm-id="${escapeHtml(vmId)}"${actionDisabled}>Manage VM</button>
+      <button data-action="vm-manage" data-vm-id="${escapeHtml(vmId)}"${lockedMutationDisabled}>Manage VM</button>
+      ${templateLockButton}
       <button data-action="vm-clone" data-vm-id="${escapeHtml(vmId)}"${actionDisabled}>Clone VM</button>
-      <button class="danger-button" data-action="vm-delete" data-vm-id="${escapeHtml(vmId)}"${actionDisabled}>Delete VM</button>
+      <button class="danger-button" data-action="vm-delete" data-vm-id="${escapeHtml(vmId)}"${lockedMutationDisabled}>Delete VM</button>
       <button data-action="vm-console" data-vm-id="${escapeHtml(vmId)}"${consoleDisabled}>Console</button>
       ${pendingVmAction ? `<span class="muted">Pending action: ${escapeHtml(pendingVmAction)}</span>` : ''}
+      ${templateLocked ? '<span class="muted">Template lock: start, clone, and unlock only.</span>' : ''}
       ${!canOperate ? '<span class="muted">RBAC: operate permission required for lifecycle actions.</span>' : ''}
     </div>
     <div class="vm-resource-grid">
       <form class="vm-resource-form" data-action="vm-attach" data-vm-id="${escapeHtml(vmId)}">
-        <input name="iso_path" type="text" placeholder="ISO path" aria-label="ISO path"${actionDisabled}>
-        <button type="submit"${actionDisabled}>Attach media</button>
+        <input name="iso_path" type="text" placeholder="ISO path" aria-label="ISO path"${lockedMutationDisabled}>
+        <button type="submit"${lockedMutationDisabled}>Attach media</button>
       </form>
       <form class="vm-resource-form" data-action="vm-set-memory" data-vm-id="${escapeHtml(vmId)}">
-        <input name="memory_mb" type="number" min="512" max="262144" step="128" placeholder="Memory MB" aria-label="memory MB"${actionDisabled}>
-        <button type="submit"${actionDisabled}>Set memory</button>
+        <input name="memory_mb" type="number" min="512" max="262144" step="128" placeholder="Memory MB" aria-label="memory MB"${lockedMutationDisabled}>
+        <button type="submit"${lockedMutationDisabled}>Set memory</button>
       </form>
       <form class="vm-resource-form" data-action="vm-set-vcpu" data-vm-id="${escapeHtml(vmId)}">
-        <input name="cpu" type="number" min="1" max="32" step="1" placeholder="vCPU" aria-label="vCPU"${actionDisabled}>
-        <button type="submit"${actionDisabled}>Set vCPU</button>
+        <input name="cpu" type="number" min="1" max="32" step="1" placeholder="vCPU" aria-label="vCPU"${lockedMutationDisabled}>
+        <button type="submit"${lockedMutationDisabled}>Set vCPU</button>
       </form>
       <form class="vm-resource-form" data-action="vm-disk-resize" data-vm-id="${escapeHtml(vmId)}">
-        <input name="disk_gb" type="number" min="8" max="4096" step="1" placeholder="Disk GB" aria-label="disk GB"${actionDisabled}>
-        <button type="submit"${actionDisabled}>Resize disk</button>
+        <input name="disk_gb" type="number" min="8" max="4096" step="1" placeholder="Disk GB" aria-label="disk GB"${lockedMutationDisabled}>
+        <button type="submit"${lockedMutationDisabled}>Resize disk</button>
       </form>
       <form class="vm-resource-form" data-action="vm-clone" data-vm-id="${escapeHtml(vmId)}">
         <input name="name" autocomplete="off" placeholder="Target VM name" aria-label="clone target name"${actionDisabled}>
@@ -1692,6 +1848,7 @@ function renderVmDetail() {
     <div class="details-grid detail-grid">
       ${details.map(([label, value]) => `<div class="kv"><span>${escapeHtml(label)}</span><strong>${escapeHtml(formatObjectValue(value))}</strong></div>`).join('')}
     </div>
+    ${renderExportImportReadback(vm)}
     ${renderVmQosGuestReadback(vmId)}
     ${renderVmQosDirectControl(vmId)}
     <div class="checkpoint-panel">
@@ -1700,13 +1857,69 @@ function renderVmDetail() {
           <p class="eyebrow">Checkpoints</p>
           <h3>VM Checkpoints</h3>
         </div>
-        <button data-action="checkpoint-refresh" data-vm-id="${escapeHtml(vmId)}"${checkpointDisabled}>Refresh checkpoints</button>
+        <button data-action="checkpoint-refresh" data-vm-id="${escapeHtml(vmId)}"${checkpointRefreshDisabled}>Refresh checkpoints</button>
       </div>
+      ${renderCheckpointScheduleReadback(vm)}
       <form class="checkpoint-form" data-action="checkpoint-create" data-vm-id="${escapeHtml(vmId)}">
-        <input name="checkpoint_name" autocomplete="off" placeholder="Checkpoint name" aria-label="checkpoint name"${checkpointDisabled}>
-        <button type="submit"${checkpointDisabled}>Create checkpoint</button>
+        <input name="checkpoint_name" autocomplete="off" placeholder="Checkpoint name" aria-label="checkpoint name"${checkpointMutationDisabled}>
+        <button type="submit"${checkpointMutationDisabled}>Create checkpoint</button>
       </form>
       <div class="checkpoint-list">${renderCheckpointList(vmId)}</div>
+    </div>`;
+}
+function renderExportImportReadback(vm) {
+    const managed = vm?.managed_by_purecvisor === true;
+    const generation = Number(vm?.generation);
+    const power = String(vm?.state || vm?.status || '').trim().toLowerCase();
+    const off = power === 'off' || power === 'stopped';
+    const securityPresent = vm?.security_features_present === true;
+    const exportEligible = managed && generation === 2 && off && !securityPresent;
+    const securityLabel = securityPresent ? 'present' : 'not reported';
+    return `<div class="export-import-readback">
+      <div class="mini-section-header">
+        <div>
+          <p class="eyebrow">Hyper-V export/import</p>
+          <h3>Export / Import</h3>
+        </div>
+      </div>
+      <div class="diagnostics-grid">
+        <div class="diagnostics-fact"><span class="muted">export</span><strong>${escapeHtml(exportEligible ? 'eligible' : 'blocked')}</strong></div>
+        <div class="diagnostics-fact"><span class="muted">managed</span><strong>${escapeHtml(managed ? 'yes' : 'no')}</strong></div>
+        <div class="diagnostics-fact"><span class="muted">generation</span><strong>${escapeHtml(formatObjectValue(vm?.generation))}</strong></div>
+        <div class="diagnostics-fact"><span class="muted">power</span><strong>${escapeHtml(formatObjectValue(vm?.state || vm?.status))}</strong></div>
+        <div class="diagnostics-fact"><span class="muted">security features</span><strong>${escapeHtml(securityLabel)}</strong></div>
+        <div class="diagnostics-fact"><span class="muted">import</span><strong>CLI/API only</strong></div>
+      </div>
+      <div class="boundary-chip-row">
+        <span>no export/import save form</span>
+        <span>CLI/API export/import only</span>
+        <span>no OVF</span>
+        <span>no TPM key copy</span>
+      </div>
+    </div>`;
+}
+function renderCheckpointScheduleReadback(vm) {
+    const schedule = asObject(vm?.checkpoint_schedule);
+    const enabled = schedule.enabled === true;
+    const status = schedule.status || (enabled ? 'waiting' : 'disabled');
+    const count = Number(vm?.checkpoints?.count ?? vm?.checkpoints_count ?? 0);
+    const retention = schedule.retention_max;
+    const capacityBlocked = enabled && retention != null && Number.isFinite(Number(retention)) && count >= Number(retention);
+    const statusLabel = capacityBlocked ? 'blocked capacity' : formatObjectValue(status);
+    return `<div class="checkpoint-schedule-readback">
+      <div class="diagnostics-grid">
+        <div class="diagnostics-fact"><span class="muted">schedule</span><strong>${escapeHtml(enabled ? 'enabled' : 'disabled')}</strong></div>
+        <div class="diagnostics-fact"><span class="muted">status</span><strong>${escapeHtml(statusLabel)}</strong></div>
+        <div class="diagnostics-fact"><span class="muted">interval minutes</span><strong>${escapeHtml(formatObjectValue(schedule.interval_minutes))}</strong></div>
+        <div class="diagnostics-fact"><span class="muted">retention max</span><strong>${escapeHtml(formatObjectValue(retention))}</strong></div>
+        <div class="diagnostics-fact"><span class="muted">last enqueued</span><strong>${escapeHtml(formatObjectValue(schedule.last_enqueued_at))}</strong></div>
+        <div class="diagnostics-fact"><span class="muted">next due</span><strong>${escapeHtml(formatObjectValue(schedule.next_due_at))}</strong></div>
+      </div>
+      <div class="boundary-chip-row">
+        <span>no schedule save form</span>
+        <span>CLI/API configure only</span>
+        <span>no infinite retention</span>
+      </div>
     </div>`;
 }
 function renderVmWorkbenchContext() {
@@ -1798,7 +2011,7 @@ function formatJobCancelLabel(job) {
 function canReconcileVmMutation(job) {
     const operation = String(job?.operation || '').toLowerCase();
     return String(job?.status || '').toLowerCase() === 'failed' &&
-        ['vm.rename', 'vm.delete', 'checkpoint.create', 'checkpoint.restore'].includes(operation) &&
+        ['vm.rename', 'vm.delete', 'checkpoint.create', 'checkpoint.restore', 'vm.create', 'vm.shutdown', 'vm.restart', 'vm.qos.storage.set', 'vm.qos.network.set'].includes(operation) &&
         String(job?.error?.code || '').toUpperCase() === 'PCV_JOB_INTERRUPTED';
 }
 function renderJobReconcileButton(job, canOperate) {
@@ -1811,7 +2024,17 @@ function renderJobReconcileButton(job, canOperate) {
             ? 'Reconcile checkpoint'
             : operation === 'checkpoint.restore'
                 ? 'Reconcile restore'
-                : 'Reconcile rename';
+                : operation === 'vm.create'
+                    ? 'Reconcile create'
+                    : operation === 'vm.shutdown'
+                        ? 'Reconcile shutdown'
+                        : operation === 'vm.restart'
+                            ? 'Reconcile restart'
+                            : operation === 'vm.qos.storage.set'
+                                ? 'Reconcile storage QoS'
+                                : operation === 'vm.qos.network.set'
+                                    ? 'Reconcile network QoS'
+                                    : 'Reconcile rename';
     return `<button data-action="reconcile-job" data-job-id="${escapeHtml(job.job_id)}"${canOperate ? '' : ' disabled'}>${label}</button>`;
 }
 function renderJobCancelButton(job, canOperate) {
@@ -2276,6 +2499,86 @@ function renderAccountSession() {
       <span>RBAC gates destructive actions</span>
     </div>
     ${errorHtml}
+  </div>
+  ${renderAccountDirectory()}`;
+}
+function renderAccountDirectory() {
+    const bootstrap = isAccountBootstrapOpen();
+    const canManage = canManageAccounts();
+    const pending = state.accountManagePending || state.authPending;
+    const disabledAttr = pending ? ' disabled' : '';
+    const directoryError = state.accountDirectoryError
+        ? `<div class="diagnostics-result error"><span class="muted">Accounts</span><strong>${escapeHtml(state.accountDirectoryError.code)}</strong><p>${escapeHtml(state.accountDirectoryError.message)} ${escapeHtml(state.accountDirectoryError.detail)}</p></div>`
+        : '';
+    if (bootstrap) {
+        return `<div class="token-rotation-card account-directory-card">
+    <div class="diagnostics-header">
+      <div>
+        <span class="muted">Accounts</span>
+        <strong>Create first admin</strong>
+      </div>
+      <span class="status-badge warn">no-default-account</span>
+    </div>
+    <form id="account-create-form" class="account-login-form" autocomplete="off">
+      <label>Username<input name="username" type="text" autocomplete="off" aria-label="new account username"${disabledAttr}></label>
+      <label>Password<input name="password" type="password" autocomplete="new-password" aria-label="new account password"${disabledAttr}></label>
+      <label>Display name<input name="display_name" type="text" autocomplete="off" aria-label="new account display name"${disabledAttr}></label>
+      <input type="hidden" name="role" value="admin">
+      <button type="submit"${disabledAttr}>Create first admin</button>
+    </form>
+    <div class="boundary-chip-row">
+      <span>loopback bootstrap only</span>
+      <span>password stays out of the DOM after submit</span>
+      <span>no default account</span>
+    </div>
+    ${directoryError}
+  </div>`;
+    }
+    if (!canManage) {
+        return '';
+    }
+    const accounts = asArray(state.accountDirectory);
+    const rows = accounts.length
+        ? accounts.map((account) => {
+            const username = String(account?.username || '');
+            const enabled = account?.enabled !== false;
+            return `<tr>
+        <td>${escapeHtml(username)}</td>
+        <td>${escapeHtml(account?.role || '-')}</td>
+        <td>${escapeHtml(enabled ? 'enabled' : 'disabled')}</td>
+        <td><button type="button" class="danger-button" data-action="account-disable" data-username="${escapeHtml(username)}"${pending || !enabled ? ' disabled' : ''}>Disable</button></td>
+      </tr>`;
+        }).join('')
+        : '<tr><td colspan="4">No accounts listed.</td></tr>';
+    return `<div class="token-rotation-card account-directory-card">
+    <div class="diagnostics-header">
+      <div>
+        <span class="muted">Accounts</span>
+        <strong>Create / disable</strong>
+      </div>
+      <span class="status-badge ok">${escapeHtml(state.accountDirectory?.bootstrap_state || 'accounts-configured')}</span>
+    </div>
+    <table class="data-table account-directory-table">
+      <thead><tr><th>Username</th><th>Role</th><th>State</th><th></th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <form id="account-create-form" class="account-login-form" autocomplete="off">
+      <label>Username<input name="username" type="text" autocomplete="off" aria-label="new account username"${disabledAttr}></label>
+      <label>Password<input name="password" type="password" autocomplete="new-password" aria-label="new account password"${disabledAttr}></label>
+      <label>Role<select name="role" aria-label="new account role"${disabledAttr}>
+        <option value="admin">admin</option>
+        <option value="operator">operator</option>
+        <option value="viewer">viewer</option>
+      </select></label>
+      <label>Display name<input name="display_name" type="text" autocomplete="off" aria-label="new account display name"${disabledAttr}></label>
+      <button type="submit"${disabledAttr}>Create account</button>
+    </form>
+    <div class="boundary-chip-row">
+      <span>account.manage required</span>
+      <span>last enabled admin cannot be disabled</span>
+      <span>password stays out of the DOM after submit</span>
+    </div>
+    ${directoryError}
   </div>`;
 }
 // --- src/served/render-console.ts ---
@@ -2307,6 +2610,7 @@ function getConsoleAccessProjection(source, fallbackSource = {}) {
         fallbackObject.novnc);
     const noVncStatus = noVnc.status || (noVnc.enabled ? 'available' : 'not_configured');
     const noVncEnabled = noVnc.enabled === true || String(noVncStatus).toLowerCase() === 'available';
+    const noVncReasonCode = noVnc.reason_code || noVncStatus;
     const noVncPathOrReason = noVnc.websocket_path ||
         noVnc.path ||
         noVnc.reason ||
@@ -2331,6 +2635,7 @@ function getConsoleAccessProjection(source, fallbackSource = {}) {
             (windowsConsole.available === false ? 'unavailable' : 'local-handoff'),
         noVncStatus,
         noVncEnabled,
+        noVncReasonCode,
         noVncPathOrReason,
         nextAction
     };
@@ -2364,7 +2669,9 @@ function renderConsolePanel() {
       <div class="diagnostics-fact"><span class="muted">account permission</span><strong>${escapeHtml(projection.accountPermission)}</strong></div>
       <div class="diagnostics-fact"><span class="muted">current role</span><strong>${escapeHtml(currentRole)}</strong></div>
       <div class="diagnostics-fact"><span class="muted">Windows console</span><strong>${escapeHtml(`${projection.windowsType} / ${projection.windowsTransport}`)}</strong></div>
+      <div class="diagnostics-fact"><span class="muted">noVNC enabled</span><strong>${escapeHtml(formatConsoleLabel(projection.noVncEnabled))}</strong></div>
       <div class="diagnostics-fact"><span class="muted">noVNC status</span><strong>${escapeHtml(formatConsoleLabel(projection.noVncStatus))}</strong></div>
+      <div class="diagnostics-fact"><span class="muted">noVNC reason_code</span><strong>${escapeHtml(formatConsoleLabel(projection.noVncReasonCode))}</strong></div>
       <div class="diagnostics-fact"><span class="muted">noVNC path/reason</span><strong>${escapeHtml(projection.noVncPathOrReason)}</strong></div>
       <div class="diagnostics-fact"><span class="muted">Selected VM</span><strong>${escapeHtml(selectedVm || '-')}</strong></div>
     </div>
@@ -2377,6 +2684,8 @@ function renderConsolePanel() {
     <div class="boundary-chip-row">
       <span>no Linux console backend</span>
       <span>no host mutation</span>
+      <span>no target save form</span>
+      <span>CLI/API configure only</span>
       <span>contract: ${escapeHtml(projection.contract)}</span>
     </div>
   </div>`;
@@ -3162,6 +3471,21 @@ async function loadAccountSession(options = {}) {
         }
     }
 }
+async function loadAccountDirectory(options = {}) {
+    if (!state.authAccessToken.trim() && !state.apiToken.trim()) {
+        state.accountDirectory = null;
+        state.accountDirectoryError = null;
+        return;
+    }
+    try {
+        state.accountDirectory = await desktopApi.listAccounts(options);
+        state.accountDirectoryError = null;
+    }
+    catch (error) {
+        state.accountDirectoryError = normalizeError(error);
+        state.accountDirectory = null;
+    }
+}
 async function loadConsoleCapabilities(options = {}) {
     state.consoleError = null;
     try {
@@ -3515,6 +3839,15 @@ function readVmGuestExecPayload(formData) {
         ]
     };
 }
+function readVmGuestFilePayload(formData) {
+    return {
+        host_path: readRequiredText(formData, 'host_path', 'PCV_GUEST_FILE_PATH_NOT_ALLOWED', 'Enter an allowlisted host file path before previewing or copying.'),
+        guest_path: readRequiredText(formData, 'guest_path', 'PCV_GUEST_FILE_PATH_NOT_ALLOWED', 'Enter an allowlisted guest file path before previewing or copying.'),
+        credential_ref: readRequiredText(formData, 'credential_ref', 'PCV_GUEST_FILE_CREDENTIAL_REF_REQUIRED', 'Enter a protected credential reference before previewing or copying a guest file.'),
+        timeout_sec: readBoundedInt(formData, 'timeout_sec', 1, 600, 'PCV_GUEST_EXEC_TIMEOUT_INVALID', 'Enter a guest file timeout between 1 and 600 seconds.'),
+        direction: 'host-to-guest'
+    };
+}
 function readVmGuestChannelPayload(formData, mode) {
     if (mode === 'repair') {
         return { yes: true };
@@ -3711,6 +4044,56 @@ async function queueVmManage(vmId) {
         render();
     }
 }
+async function queueVmGuestFile(vmId, payload) {
+    requireRbac('guest.exec', 'VM guest file');
+    state.actionPending = true;
+    setVmActionPending(vmId, 'guest-file');
+    state.error = null;
+    render();
+    try {
+        const preview = await desktopApi.previewVmGuestFile(vmId, payload);
+        if (!window.confirm(buildVmGuestFileConfirmation(vmId, payload, preview))) {
+            return;
+        }
+        const job = await desktopApi.queueVmGuestFile(vmId, payload);
+        trackJob(job);
+        state.connectionState = 'connected';
+        startPolling();
+    }
+    catch (error) {
+        state.error = normalizeError(error);
+    }
+    finally {
+        state.actionPending = false;
+        clearVmActionPending(vmId);
+        render();
+    }
+}
+async function queueVmTemplateLock(vmId, locked) {
+    requireRbac('operate', 'VM template lock');
+    const vm = state.selectedVm || findCachedVm(vmId);
+    if (!window.confirm(buildVmTemplateLockConfirmation(vmId, vm, locked))) {
+        return;
+    }
+    state.actionPending = true;
+    setVmActionPending(vmId, locked ? 'template-lock' : 'template-unlock');
+    state.error = null;
+    render();
+    try {
+        const job = await desktopApi.queueVmTemplateLock(vmId, vmId, locked);
+        trackJob(job);
+        state.connectionState = 'connected';
+        startPolling();
+    }
+    catch (error) {
+        state.error = normalizeError(error);
+    }
+    finally {
+        state.actionPending = false;
+        clearVmActionPending(vmId);
+        render();
+    }
+}
 async function queueVmClone(vmId, rawName) {
     requireRbac('operate', 'VM clone');
     const name = String(rawName || '').trim();
@@ -3880,6 +4263,7 @@ async function refreshAll() {
             { label: 'network.inventory', run: () => loadNetworkInventory(requestOptions) },
             { label: 'runtime.policy', run: () => loadRuntimePolicy(requestOptions) },
             { label: 'auth.session', run: () => loadAccountSession(requestOptions) },
+            { label: 'account.list', run: () => loadAccountDirectory(requestOptions) },
             { label: 'console.capabilities', run: () => loadConsoleCapabilities(requestOptions) },
             { label: 'job.list', run: () => loadServerJobs(requestOptions) },
             { label: 'diagnostic.bundle.list', run: () => loadDiagnosticBundleList(requestOptions) },
@@ -4319,6 +4703,69 @@ async function logoutAccount() {
         render();
     }
 }
+async function createAccountFromForm(event) {
+    event.preventDefault();
+    const form = event.target.closest('form#account-create-form') || event.currentTarget;
+    const data = new FormData(form);
+    const username = String(data.get('username') || '').trim();
+    const password = String(data.get('password') || '');
+    const role = String(data.get('role') || 'admin').trim() || 'admin';
+    const displayName = String(data.get('display_name') || '').trim();
+    const bootstrap = isAccountBootstrapOpen();
+    if (!window.confirm(buildAccountCreateConfirmation(username, role, bootstrap))) {
+        return;
+    }
+    state.accountManagePending = true;
+    state.accountDirectoryError = null;
+    render();
+    try {
+        const payload = {
+            username,
+            password,
+            role: bootstrap ? 'admin' : role,
+            display_name: displayName || undefined
+        };
+        await desktopApi.createAccount(payload);
+        const passwordInput = form.querySelector('input[name="password"]');
+        if (passwordInput)
+            passwordInput.value = '';
+        if (bootstrap) {
+            const result = await desktopApi.loginAccount({ username, password });
+            applyAccountSessionPayload(result);
+            state.connectionState = 'connected';
+        }
+        await refreshAll();
+    }
+    catch (error) {
+        state.accountDirectoryError = normalizeError(error);
+    }
+    finally {
+        state.accountManagePending = false;
+        render();
+    }
+}
+async function disableAccountFromButton(username) {
+    const name = String(username || '').trim();
+    if (!name)
+        return;
+    if (!window.confirm(buildAccountDisableConfirmation(name))) {
+        return;
+    }
+    state.accountManagePending = true;
+    state.accountDirectoryError = null;
+    render();
+    try {
+        await desktopApi.disableAccount(name, { confirm_username: name });
+        await refreshAll();
+    }
+    catch (error) {
+        state.accountDirectoryError = normalizeError(error);
+    }
+    finally {
+        state.accountManagePending = false;
+        render();
+    }
+}
 async function openSelectedConsole() {
     const vmId = state.selectedVmId;
     requireRbac('console.view', 'console view');
@@ -4456,10 +4903,13 @@ function bindEvents() {
         }
     });
     els.accountSessionPanel?.addEventListener('submit', async (event) => {
-        const form = event.target.closest('form#account-login-form');
-        if (!form)
+        if (event.target.closest('form#account-login-form')) {
+            await loginAccountFromForm(event);
             return;
-        await loginAccountFromForm(event);
+        }
+        if (event.target.closest('form#account-create-form')) {
+            await createAccountFromForm(event);
+        }
     });
     els.accountSessionPanel?.addEventListener('click', async (event) => {
         const button = event.target.closest('button[data-action]');
@@ -4471,6 +4921,9 @@ function bindEvents() {
             }
             else if (button.dataset.action === 'account-logout') {
                 await logoutAccount();
+            }
+            else if (button.dataset.action === 'account-disable') {
+                await disableAccountFromButton(button.dataset.username);
             }
         }
         catch (error) {
@@ -4536,22 +4989,7 @@ function bindEvents() {
         state.vmSort = els.vmSort.value || 'name';
         render();
     });
-    els.jobFilter?.addEventListener('input', () => {
-        state.jobFilter = els.jobFilter.value;
-        render();
-    });
-    els.jobStatusFilter?.addEventListener('change', () => {
-        state.jobStatusFilter = els.jobStatusFilter.value || 'all';
-        render();
-    });
-    els.jobSort?.addEventListener('change', () => {
-        state.jobSort = els.jobSort.value || 'updated:desc';
-        render();
-    });
-    els.networkFilter?.addEventListener('input', () => {
-        state.networkFilter = els.networkFilter.value;
-        render();
-    });
+    bindJobAndNetworkFilterEvents();
     els.assetSearchInput?.addEventListener('input', renderVmAssetList);
     document.addEventListener('keydown', (event) => {
         if ((event.ctrlKey || event.metaKey) && String(event.key || '').toLowerCase() === 'k') {
@@ -4657,6 +5095,9 @@ function bindEvents() {
                 const mode = event.submitter?.dataset?.guestChannelMode === 'repair' ? 'repair' : 'verify';
                 await queueVmGuestExecutionControl(guestForm.dataset.vmId, mode, readVmGuestChannelPayload(data, mode));
             }
+            else if (form.dataset.action === 'vm-guest-file') {
+                await queueVmGuestFile(form.dataset.vmId, readVmGuestFilePayload(data));
+            }
             else if (form.dataset.action === 'checkpoint-create') {
                 await queueCheckpointCreate(form.dataset.vmId, data.get('checkpoint_name'));
                 form.reset();
@@ -4711,6 +5152,12 @@ function bindEvents() {
             }
             else if (button.dataset.action === 'vm-manage') {
                 await queueVmManage(button.dataset.vmId);
+            }
+            else if (button.dataset.action === 'vm-template-lock') {
+                await queueVmTemplateLock(button.dataset.vmId, true);
+            }
+            else if (button.dataset.action === 'vm-template-unlock') {
+                await queueVmTemplateLock(button.dataset.vmId, false);
             }
             else if (button.dataset.action === 'vm-clone') {
                 if (button.closest('form[data-action="vm-clone"]')) {

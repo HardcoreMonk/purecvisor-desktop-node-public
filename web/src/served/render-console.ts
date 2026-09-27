@@ -28,6 +28,7 @@ function getConsoleAccessProjection(source, fallbackSource = {}) {
   );
   const noVncStatus = noVnc.status || (noVnc.enabled ? 'available' : 'not_configured');
   const noVncEnabled = noVnc.enabled === true || String(noVncStatus).toLowerCase() === 'available';
+  const noVncReasonCode = noVnc.reason_code || noVncStatus;
   const noVncPathOrReason =
     noVnc.websocket_path ||
     noVnc.path ||
@@ -57,6 +58,7 @@ function getConsoleAccessProjection(source, fallbackSource = {}) {
       (windowsConsole.available === false ? 'unavailable' : 'local-handoff'),
     noVncStatus,
     noVncEnabled,
+    noVncReasonCode,
     noVncPathOrReason,
     nextAction
   };
@@ -91,7 +93,9 @@ function renderConsolePanel() {
       <div class="diagnostics-fact"><span class="muted">account permission</span><strong>${escapeHtml(projection.accountPermission)}</strong></div>
       <div class="diagnostics-fact"><span class="muted">current role</span><strong>${escapeHtml(currentRole)}</strong></div>
       <div class="diagnostics-fact"><span class="muted">Windows console</span><strong>${escapeHtml(`${projection.windowsType} / ${projection.windowsTransport}`)}</strong></div>
+      <div class="diagnostics-fact"><span class="muted">noVNC enabled</span><strong>${escapeHtml(formatConsoleLabel(projection.noVncEnabled))}</strong></div>
       <div class="diagnostics-fact"><span class="muted">noVNC status</span><strong>${escapeHtml(formatConsoleLabel(projection.noVncStatus))}</strong></div>
+      <div class="diagnostics-fact"><span class="muted">noVNC reason_code</span><strong>${escapeHtml(formatConsoleLabel(projection.noVncReasonCode))}</strong></div>
       <div class="diagnostics-fact"><span class="muted">noVNC path/reason</span><strong>${escapeHtml(projection.noVncPathOrReason)}</strong></div>
       <div class="diagnostics-fact"><span class="muted">Selected VM</span><strong>${escapeHtml(selectedVm || '-')}</strong></div>
     </div>
@@ -104,6 +108,8 @@ function renderConsolePanel() {
     <div class="boundary-chip-row">
       <span>no Linux console backend</span>
       <span>no host mutation</span>
+      <span>no target save form</span>
+      <span>CLI/API configure only</span>
       <span>contract: ${escapeHtml(projection.contract)}</span>
     </div>
   </div>`;

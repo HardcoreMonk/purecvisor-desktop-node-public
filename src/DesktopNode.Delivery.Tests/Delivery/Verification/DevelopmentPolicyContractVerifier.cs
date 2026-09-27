@@ -13,7 +13,7 @@ internal sealed class DevelopmentPolicyContractVerifier
     internal const string SpecPath = "config/pcv-development-policy-contract-spec-v1.json";
 
     private const string ExpectedSpecSha256 =
-        "f19b1b91dd4ec47a0031c870ec3538e27084869009eb752a2823e83a396a78ab";
+        "0467c6c30380a9bf8e8af1b93b754d4932bdba11189a1a2f0fe4d71b41f91e02";
 
     private static readonly string[] ExpectedKeys =
     [
@@ -423,7 +423,7 @@ internal sealed class DevelopmentPolicyContractVerifier
             "config/agent-execution-circuit-breaker.json",
             Source("config/agent-execution-circuit-breaker.json"));
         var root = json.Root;
-        if (root.EnumerateObject().Count() != 10 ||
+        if (root.EnumerateObject().Count() != 12 ||
             root.GetProperty("schema_version").GetInt32() != 1 ||
             root.GetProperty("contract").GetString() !=
                 "pcv-agent-execution-circuit-breaker-v1" ||
@@ -433,7 +433,11 @@ internal sealed class DevelopmentPolicyContractVerifier
             root.GetProperty("review_pass_limit").GetInt32() != 1 ||
             root.GetProperty("narrow_rereview_pass_limit").GetInt32() != 2 ||
             root.GetProperty("same_failure_limit").GetInt32() != 3 ||
-            root.GetProperty("progress_warning_percent").GetInt32() != 70)
+            root.GetProperty("progress_warning_percent").GetInt32() != 70 ||
+            root.GetProperty("campaign_resume_policy").GetString() !=
+                "continue-open-campaign" ||
+            root.GetProperty("vague_resume_policy").GetString() !=
+                "one-bounded-checkpoint")
         {
             throw Invalid("circuit-breaker-contract");
         }
@@ -475,6 +479,8 @@ internal sealed class DevelopmentPolicyContractVerifier
             "Lane 3",
             "45분",
             "current_evidence_written",
+            "continue-open-campaign",
+            "next_step",
             "추가 patch는 금지",
             "새 테스트도 금지",
             "Add-Type",
@@ -485,6 +491,7 @@ internal sealed class DevelopmentPolicyContractVerifier
             "agents-policy-link",
             "docs/AGENT_EXECUTION_CIRCUIT_BREAKER.md",
             "config/agent-execution-circuit-breaker.json",
+            "`campaign_resume_policy`: `continue-open-campaign`",
             "`vague_resume_policy`: `one-bounded-checkpoint`",
             "`out_of_scope_findings`: `report-only`",
             "Lane 0",

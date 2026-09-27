@@ -44,13 +44,36 @@ public sealed class DesktopNodeCliCommandCatalogTests
     [InlineData("job reconcile job-123", "POST", "/api/v1/jobs/job-123/reconcile")]
     [InlineData("diagnostics bundle list", "GET", "/api/v1/diagnostics/bundles")]
     [InlineData("diagnostics bundle create", "POST", "/api/v1/diagnostics/bundles")]
+    [InlineData("console novnc-target preview --host 127.0.0.1 --port 5900", "POST", "/api/v1/console/novnc-target/preview")]
+    [InlineData("console novnc-target set --host 127.0.0.1 --port 5900 --yes", "POST", "/api/v1/console/novnc-target")]
+    [InlineData("console novnc-target clear --yes", "POST", "/api/v1/console/novnc-target/clear")]
+    [InlineData("vm checkpoint schedule preview ubuntu-lab-01 --interval-minutes 1440 --retention-max 8", "POST", "/api/v1/vms/ubuntu-lab-01/checkpoints/schedule/preview")]
+    [InlineData("vm checkpoint schedule set ubuntu-lab-01 --interval-minutes 1440 --retention-max 8 --yes", "POST", "/api/v1/vms/ubuntu-lab-01/checkpoints/schedule")]
+    [InlineData("vm checkpoint schedule clear ubuntu-lab-01 --yes", "POST", "/api/v1/vms/ubuntu-lab-01/checkpoints/schedule/clear")]
+    [InlineData("vm export preview ubuntu-lab-01 --directory D:\\PureCVisor\\exports\\ubuntu-lab-01", "POST", "/api/v1/vms/ubuntu-lab-01/export/preview")]
+    [InlineData("vm export ubuntu-lab-01 --directory D:\\PureCVisor\\exports\\ubuntu-lab-01 --yes", "POST", "/api/v1/vms/ubuntu-lab-01/export")]
+    [InlineData("vm import preview --name ubuntu-lab-02 --directory D:\\PureCVisor\\exports\\ubuntu-lab-01 --has-vmcx", "POST", "/api/v1/vms/import/preview")]
+    [InlineData("vm import --name ubuntu-lab-02 --directory D:\\PureCVisor\\exports\\ubuntu-lab-01 --yes", "POST", "/api/v1/vms/import")]
+    [InlineData("vm network connect ubuntu-lab-01 --switch pcv-lab-internal --yes", "POST", "/api/v1/vms/ubuntu-lab-01/network")]
+    [InlineData("vm device add ubuntu-lab-01 --kind nic --switch pcv-lab-internal --yes", "POST", "/api/v1/vms/ubuntu-lab-01/devices")]
+    [InlineData("vm device add ubuntu-lab-01 --kind dvd --yes", "POST", "/api/v1/vms/ubuntu-lab-01/devices")]
     public void RoutesCommandsToLocalApiRequests(string commandLine, string method, string path)
     {
         var request = DesktopNodeCliCommandCatalog.CreateRequest(Split(commandLine));
 
         Assert.Equal(method, request.Method);
         Assert.Equal(path, request.Path);
-        if (path.EndsWith("/attach", StringComparison.Ordinal))
+        if (path.EndsWith("/attach", StringComparison.Ordinal) ||
+            path.EndsWith("/novnc-target/preview", StringComparison.Ordinal) ||
+            path.EndsWith("/novnc-target", StringComparison.Ordinal) ||
+            path.EndsWith("/schedule/preview", StringComparison.Ordinal) ||
+            path.EndsWith("/checkpoints/schedule", StringComparison.Ordinal) ||
+            path.EndsWith("/export/preview", StringComparison.Ordinal) ||
+            path.EndsWith("/export", StringComparison.Ordinal) ||
+            path.EndsWith("/import/preview", StringComparison.Ordinal) ||
+            path.EndsWith("/import", StringComparison.Ordinal) ||
+            path.EndsWith("/network", StringComparison.Ordinal) ||
+            path.EndsWith("/devices", StringComparison.Ordinal))
         {
             Assert.NotNull(request.Body);
             return;
@@ -261,6 +284,94 @@ public sealed class DesktopNodeCliCommandCatalogTests
         Assert.Equal("/api/v1/vms/ubuntu%20lab/manage", request.Path);
         using var document = JsonDocument.Parse(request.Body!);
         Assert.Equal("ubuntu lab", document.RootElement.GetProperty("confirm_name").GetString());
+    }
+
+    [Fact]
+    public void RoutesVmTemplateLockWhenExplicitlyConfirmed()
+    {
+        var request = DesktopNodeCliCommandCatalog.CreateRequest(["vm", "template-lock", "gold", "--yes"]);
+
+        Assert.Equal("POST", request.Method);
+        Assert.Equal("/api/v1/vms/gold/template-lock", request.Path);
+        using var document = JsonDocument.Parse(request.Body!);
+        Assert.Equal("gold", document.RootElement.GetProperty("confirm_name").GetString());
+        Assert.True(document.RootElement.GetProperty("locked").GetBoolean());
+    }
+
+    [Fact]
+    public void RoutesVmGuestFilePreviewOnDryRun()
+    {
+        var request = DesktopNodeCliCommandCatalog.CreateRequest([
+            "vm",
+            "guest-file",
+            "gold",
+            "--host-path",
+            @"C:\ProgramData\PureCVisor\desktop-node\guest-files\payload.iso",
+            "--guest-path",
+            @"C:\Users\Public\PureCVisor\payload.iso",
+            "--credential-ref",
+            "wincred:PureCVisor/guest/admin",
+            "--dry-run"
+        ]);
+
+        Assert.Equal("POST", request.Method);
+        Assert.Equal("/api/v1/vms/gold/guest/file/preview", request.Path);
+        using var document = JsonDocument.Parse(request.Body!);
+        Assert.Equal(@"C:\ProgramData\PureCVisor\desktop-node\guest-files\payload.iso", document.RootElement.GetProperty("host_path").GetString());
+        Assert.Equal(@"C:\Users\Public\PureCVisor\payload.iso", document.RootElement.GetProperty("guest_path").GetString());
+        Assert.Equal("wincred:PureCVisor/guest/admin", document.RootElement.GetProperty("credential_ref").GetString());
+        Assert.Equal("host-to-guest", document.RootElement.GetProperty("direction").GetString());
+    }
+
+    [Fact]
+    public void RoutesVmGuestFileCopyWhenExplicitlyConfirmed()
+    {
+        var request = DesktopNodeCliCommandCatalog.CreateRequest([
+            "vm",
+            "guest-file",
+            "gold",
+            "--host-path",
+            @"C:\ProgramData\PureCVisor\desktop-node\guest-files\payload.iso",
+            "--guest-path",
+            @"C:\Users\Public\PureCVisor\payload.iso",
+            "--credential-ref",
+            "wincred:PureCVisor/guest/admin",
+            "--yes"
+        ]);
+
+        Assert.Equal("POST", request.Method);
+        Assert.Equal("/api/v1/vms/gold/guest/file", request.Path);
+    }
+
+    [Fact]
+    public void RequiresDryRunOrYesForVmGuestFile()
+    {
+        var error = Assert.Throws<ArgumentException>(() =>
+            DesktopNodeCliCommandCatalog.CreateRequest([
+                "vm",
+                "guest-file",
+                "gold",
+                "--host-path",
+                @"C:\ProgramData\PureCVisor\desktop-node\guest-files\payload.iso",
+                "--guest-path",
+                @"C:\Users\Public\PureCVisor\payload.iso",
+                "--credential-ref",
+                "wincred:PureCVisor/guest/admin"
+            ]));
+
+        Assert.Contains("PCV_CLI_CONFIRMATION_REQUIRED", error.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void RoutesVmTemplateUnlockWhenExplicitlyConfirmed()
+    {
+        var request = DesktopNodeCliCommandCatalog.CreateRequest(["vm", "template-unlock", "gold", "--yes"]);
+
+        Assert.Equal("POST", request.Method);
+        Assert.Equal("/api/v1/vms/gold/template-lock", request.Path);
+        using var document = JsonDocument.Parse(request.Body!);
+        Assert.Equal("gold", document.RootElement.GetProperty("confirm_name").GetString());
+        Assert.False(document.RootElement.GetProperty("locked").GetBoolean());
     }
 
     [Fact]
@@ -715,7 +826,7 @@ public sealed class DesktopNodeCliCommandCatalogTests
             }
         }
 
-        Assert.Equal(55, presentCount);
+        Assert.Equal(73, presentCount);
         Assert.Equal(7, excludedCount);
     }
 
@@ -736,10 +847,18 @@ public sealed class DesktopNodeCliCommandCatalogTests
         Assert.Contains("pcvcli vm manage <vm> --yes", usage, StringComparison.Ordinal);
         Assert.Contains("pcvcli vm clone <source> --name <target> --yes", usage, StringComparison.Ordinal);
         Assert.Contains("pcvcli vm clone <source> --name <target> --dry-run", usage, StringComparison.Ordinal);
+        Assert.Contains("pcvcli vm network connect <vm> --switch NAME --yes", usage, StringComparison.Ordinal);
+        Assert.Contains("pcvcli vm guest-file <vm> --host-path PATH --guest-path PATH --credential-ref REF [--timeout-sec N] --dry-run|--yes", usage, StringComparison.Ordinal);
         Assert.Contains("pcvcli vm eject|delete-status", usage, StringComparison.Ordinal);
         Assert.Contains("pcvcli diagnostics bundle list [--limit N] [--offset N]", usage, StringComparison.Ordinal);
         Assert.Contains("pcvcli diagnostics bundle create", usage, StringComparison.Ordinal);
         Assert.Contains("pcvcli diagnostics bundle download <bundle_id> --output <path>", usage, StringComparison.Ordinal);
+        Assert.Contains("pcvcli account list", usage, StringComparison.Ordinal);
+        Assert.Contains("pcvcli account create --username NAME --role ROLE --password-env VAR|--password-stdin --yes", usage, StringComparison.Ordinal);
+        Assert.Contains("pcvcli account disable NAME --yes", usage, StringComparison.Ordinal);
+        Assert.Contains("pcvcli console novnc-target preview --host 127.0.0.1 --port 5900", usage, StringComparison.Ordinal);
+        Assert.Contains("pcvcli console novnc-target set --host 127.0.0.1 --port 5900", usage, StringComparison.Ordinal);
+        Assert.Contains("pcvcli console novnc-target clear --yes", usage, StringComparison.Ordinal);
         Assert.DoesNotContain("pcvcli snapshot list|create|rollback|delete", usage, StringComparison.Ordinal);
         Assert.DoesNotContain("pcvcli console capabilities", usage, StringComparison.Ordinal);
         Assert.DoesNotContain("  pcv [--api URL]", usage);
@@ -752,7 +871,168 @@ public sealed class DesktopNodeCliCommandCatalogTests
             DesktopNodeCliCommandCatalog.CreateRequest(["console", "capabilities"]));
 
         Assert.Contains("PCV_CLI_USAGE", error.Message, StringComparison.Ordinal);
-        Assert.Contains("Unknown command group 'console'", error.Message, StringComparison.Ordinal);
+        Assert.Contains("console novnc-target preview", error.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain("Unknown command group 'console'", error.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void RequiresExplicitYesForNoVncTargetSet()
+    {
+        var error = Assert.Throws<ArgumentException>(() =>
+            DesktopNodeCliCommandCatalog.CreateRequest([
+                "console",
+                "novnc-target",
+                "set",
+                "--host",
+                "127.0.0.1",
+                "--port",
+                "5900"
+            ]));
+
+        Assert.Contains("PCV_CLI_CONFIRMATION_REQUIRED", error.Message, StringComparison.Ordinal);
+        Assert.Contains("console novnc-target set", error.Message, StringComparison.Ordinal);
+        Assert.Contains("--yes", error.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void RequiresExplicitYesForNoVncTargetClear()
+    {
+        var error = Assert.Throws<ArgumentException>(() =>
+            DesktopNodeCliCommandCatalog.CreateRequest(["console", "novnc-target", "clear"]));
+
+        Assert.Contains("PCV_CLI_CONFIRMATION_REQUIRED", error.Message, StringComparison.Ordinal);
+        Assert.Contains("console novnc-target clear --yes", error.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void RequiresExplicitYesForVmExport()
+    {
+        var error = Assert.Throws<ArgumentException>(() =>
+            DesktopNodeCliCommandCatalog.CreateRequest([
+                "vm",
+                "export",
+                "ubuntu-lab-01",
+                "--directory",
+                @"D:\PureCVisor\exports\ubuntu-lab-01"
+            ]));
+
+        Assert.Contains("PCV_CLI_CONFIRMATION_REQUIRED", error.Message, StringComparison.Ordinal);
+        Assert.Contains("vm export <vm> --directory PATH --yes", error.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void RequiresExplicitYesForVmImport()
+    {
+        var error = Assert.Throws<ArgumentException>(() =>
+            DesktopNodeCliCommandCatalog.CreateRequest([
+                "vm",
+                "import",
+                "--name",
+                "ubuntu-lab-02",
+                "--directory",
+                @"D:\PureCVisor\exports\ubuntu-lab-01"
+            ]));
+
+        Assert.Contains("PCV_CLI_CONFIRMATION_REQUIRED", error.Message, StringComparison.Ordinal);
+        Assert.Contains("vm import --name TARGET --directory PATH --yes", error.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void RequiresExplicitYesForVmNetworkConnect()
+    {
+        var error = Assert.Throws<ArgumentException>(() =>
+            DesktopNodeCliCommandCatalog.CreateRequest([
+                "vm",
+                "network",
+                "connect",
+                "ubuntu-lab-01",
+                "--switch",
+                "pcv-lab-internal"
+            ]));
+
+        Assert.Contains("PCV_CLI_CONFIRMATION_REQUIRED", error.Message, StringComparison.Ordinal);
+        Assert.Contains("vm network connect <vm> --switch NAME --yes", error.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void RequiresExplicitYesForCheckpointScheduleSet()
+    {
+        var error = Assert.Throws<ArgumentException>(() =>
+            DesktopNodeCliCommandCatalog.CreateRequest([
+                "vm",
+                "checkpoint",
+                "schedule",
+                "set",
+                "ubuntu-lab-01",
+                "--interval-minutes",
+                "1440",
+                "--retention-max",
+                "8"
+            ]));
+
+        Assert.Contains("PCV_CLI_CONFIRMATION_REQUIRED", error.Message, StringComparison.Ordinal);
+        Assert.Contains("vm checkpoint schedule set", error.Message, StringComparison.Ordinal);
+        Assert.Contains("--yes", error.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void RequiresExplicitYesForCheckpointScheduleClear()
+    {
+        var error = Assert.Throws<ArgumentException>(() =>
+            DesktopNodeCliCommandCatalog.CreateRequest([
+                "vm",
+                "checkpoint",
+                "schedule",
+                "clear",
+                "ubuntu-lab-01"
+            ]));
+
+        Assert.Contains("PCV_CLI_CONFIRMATION_REQUIRED", error.Message, StringComparison.Ordinal);
+        Assert.Contains("vm checkpoint schedule clear <vm> --yes", error.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void RoutesCheckpointScheduleSetBodyWhenExplicitlyConfirmed()
+    {
+        var request = DesktopNodeCliCommandCatalog.CreateRequest([
+            "vm",
+            "checkpoint",
+            "schedule",
+            "set",
+            "ubuntu-lab-01",
+            "--interval-minutes",
+            "1440",
+            "--retention-max",
+            "8",
+            "--yes"
+        ]);
+
+        Assert.Equal("POST", request.Method);
+        Assert.Equal("/api/v1/vms/ubuntu-lab-01/checkpoints/schedule", request.Path);
+        Assert.Contains("\"interval_minutes\":1440", request.Body, StringComparison.Ordinal);
+        Assert.Contains("\"retention_max\":8", request.Body, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void RoutesNoVncTargetSetBodyWhenExplicitlyConfirmed()
+    {
+        var request = DesktopNodeCliCommandCatalog.CreateRequest([
+            "console",
+            "novnc-target",
+            "set",
+            "--host",
+            "127.0.0.1",
+            "--port",
+            "5900",
+            "--yes"
+        ]);
+
+        Assert.Equal("POST", request.Method);
+        Assert.Equal("/api/v1/console/novnc-target", request.Path);
+        using var document = JsonDocument.Parse(request.Body!);
+        Assert.Equal("127.0.0.1", document.RootElement.GetProperty("host").GetString());
+        Assert.Equal(5900, document.RootElement.GetProperty("port").GetInt32());
+        Assert.False(document.RootElement.GetProperty("allow_lan_target").GetBoolean());
     }
 
     [Fact]
@@ -771,6 +1051,14 @@ public sealed class DesktopNodeCliCommandCatalogTests
         Assert.Contains("pcvcli vm clone <source> --name <target> --dry-run", usage, StringComparison.Ordinal);
         Assert.Contains("pcvcli vm delete <vm> --yes", usage, StringComparison.Ordinal);
         Assert.Contains("pcvcli vm checkpoint list|create|restore|delete", usage, StringComparison.Ordinal);
+        Assert.Contains("pcvcli vm checkpoint schedule preview <vm> --interval-minutes N --retention-max N", usage, StringComparison.Ordinal);
+        Assert.Contains("pcvcli vm checkpoint schedule set <vm> --interval-minutes N --retention-max N --yes", usage, StringComparison.Ordinal);
+        Assert.Contains("pcvcli vm checkpoint schedule clear <vm> --yes", usage, StringComparison.Ordinal);
+        Assert.Contains("pcvcli vm export preview <vm> --directory PATH", usage, StringComparison.Ordinal);
+        Assert.Contains("pcvcli vm export <vm> --directory PATH --yes", usage, StringComparison.Ordinal);
+        Assert.Contains("pcvcli vm import preview --name TARGET --directory PATH [--package-kind hyperv-export] [--has-vmcx]", usage, StringComparison.Ordinal);
+        Assert.Contains("pcvcli vm import --name TARGET --directory PATH --yes", usage, StringComparison.Ordinal);
+        Assert.Contains("pcvcli vm network connect <vm> --switch NAME --yes", usage, StringComparison.Ordinal);
         Assert.Contains("VM delete requires explicit confirmation", error.Message, StringComparison.Ordinal);
         Assert.Contains("vm delete <vm> --yes", error.Message, StringComparison.Ordinal);
         Assert.DoesNotContain("public release", usage + error.Message, StringComparison.OrdinalIgnoreCase);

@@ -13,6 +13,19 @@ public interface IDesktopNodeHyperVSwitchProvider
     IReadOnlyList<DesktopNodeHyperVSwitchInfo> GetSwitches(CancellationToken cancellationToken);
 }
 
+public interface IDesktopNodeHyperVSwitchMutationProvider
+{
+    DesktopNodeHyperVSwitchMutationInfo Query(string switchName, CancellationToken cancellationToken);
+
+    DesktopNodeHyperVSwitchMutationInfo Create(
+        string switchName,
+        string switchType,
+        bool allowManagementOs,
+        CancellationToken cancellationToken);
+
+    DesktopNodeHyperVSwitchMutationInfo Remove(string switchName, CancellationToken cancellationToken);
+}
+
 public interface IDesktopNodeHyperVHostStatusProvider
 {
     DesktopNodeHyperVHostStatusData GetStatus(CancellationToken cancellationToken);
@@ -56,6 +69,33 @@ public interface IDesktopNodeHyperVVmRenameProvider
 public interface IDesktopNodeHyperVVmManageProvider
 {
     DesktopNodeHyperVVmManageInfo Invoke(string vmName, CancellationToken cancellationToken);
+
+    DesktopNodeHyperVVmManageInfo InvokeTemplateLock(string vmName, bool locked, CancellationToken cancellationToken);
+}
+
+public interface IDesktopNodeHyperVVmExportProvider
+{
+    DesktopNodeHyperVVmExportInfo Invoke(
+        DesktopNodeHyperVVmExportRequest request,
+        CancellationToken cancellationToken);
+}
+
+public interface IDesktopNodeHyperVVmImportProvider
+{
+    DesktopNodeHyperVVmImportInfo Invoke(
+        DesktopNodeHyperVVmImportRequest request,
+        CancellationToken cancellationToken);
+}
+
+public interface IDesktopNodeHyperVVmNetworkConnectProvider
+{
+    DesktopNodeHyperVVmNetworkConnectInfo Invoke(
+        DesktopNodeHyperVVmNetworkConnectRequest request,
+        CancellationToken cancellationToken);
+
+    DesktopNodeHyperVVmDeviceAddInfo AddNic(
+        DesktopNodeHyperVVmDeviceAddRequest request,
+        CancellationToken cancellationToken);
 }
 
 public interface IDesktopNodeHyperVVmCloneProvider
@@ -74,6 +114,10 @@ public interface IDesktopNodeHyperVVmMediaProvider
     DesktopNodeHyperVVmMediaInfo Invoke(
         DesktopNodeHyperVVmMediaRequest request,
         CancellationToken cancellationToken);
+
+    DesktopNodeHyperVVmDeviceAddInfo AddDvd(
+        DesktopNodeHyperVVmDeviceAddRequest request,
+        CancellationToken cancellationToken);
 }
 
 public interface IDesktopNodeHyperVVmResourceMutationProvider
@@ -84,6 +128,8 @@ public interface IDesktopNodeHyperVVmResourceMutationProvider
 public interface IDesktopNodeHyperVGuestExecutionProvider
 {
     DesktopNodeHyperVGuestExecutionInfo Invoke(DesktopNodeHyperVGuestExecutionRequest request, CancellationToken cancellationToken);
+
+    DesktopNodeHyperVGuestFileInfo InvokeFile(DesktopNodeHyperVGuestFileRequest request, CancellationToken cancellationToken);
 }
 
 public sealed record DesktopNodeHyperVOperationResult(
@@ -148,6 +194,14 @@ public sealed record DesktopNodeHyperVSwitchInfo(
     [property: JsonPropertyName("allow_management_os")] bool? AllowManagementOs,
     [property: JsonPropertyName("net_adapter_interface_description")] string? NetAdapterInterfaceDescription);
 
+public sealed record DesktopNodeHyperVSwitchMutationInfo(
+    [property: JsonPropertyName("name")] string Name,
+    [property: JsonPropertyName("exists")] bool Exists,
+    [property: JsonPropertyName("type")] string? Type,
+    [property: JsonPropertyName("attached_vm_count")] int AttachedVmCount,
+    [property: JsonPropertyName("product_owned")] bool ProductOwned,
+    [property: JsonPropertyName("allow_management_os")] bool AllowManagementOs);
+
 public sealed record DesktopNodeHyperVVmInfo(
     [property: JsonPropertyName("id")] string Id,
     [property: JsonPropertyName("name")] string Name,
@@ -161,7 +215,19 @@ public sealed record DesktopNodeHyperVVmInfo(
     [property: JsonPropertyName("network")] IReadOnlyList<DesktopNodeHyperVVmNetworkInfo> Network,
     [property: JsonPropertyName("checkpoints")] DesktopNodeHyperVVmCheckpointInfo Checkpoints,
     [property: JsonPropertyName("console")] DesktopNodeHyperVVmConsoleInfo Console,
-    [property: JsonPropertyName("managed_by_purecvisor")] bool ManagedByPurecvisor);
+    [property: JsonPropertyName("managed_by_purecvisor")] bool ManagedByPurecvisor,
+    [property: JsonPropertyName("created_at")]
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    string? CreatedAt = null,
+    [property: JsonPropertyName("last_powered_on")]
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    string? LastPoweredOn = null,
+    [property: JsonPropertyName("notes")]
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    string? Notes = null,
+    [property: JsonPropertyName("template_lock")]
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    bool TemplateLock = false);
 
 public sealed record DesktopNodeHyperVVmCpuInfo(
     [property: JsonPropertyName("count")] int? Count);
@@ -248,6 +314,50 @@ public sealed record DesktopNodeHyperVVmCloneSourceSnapshot(
     int CheckpointCount,
     IReadOnlyList<DesktopNodeHyperVVmCloneDiskSnapshot> Disks,
     bool SecurityFeaturesPresent);
+
+public sealed record DesktopNodeHyperVVmExportRequest(
+    string VmName,
+    string Directory,
+    string AllowedRoot);
+
+public sealed record DesktopNodeHyperVVmExportInfo(
+    [property: JsonPropertyName("action")] string Action,
+    [property: JsonPropertyName("directory")] string Directory,
+    [property: JsonPropertyName("package_kind")] string PackageKind,
+    [property: JsonPropertyName("vm_name")] string VmName);
+
+public sealed record DesktopNodeHyperVVmImportRequest(
+    string TargetName,
+    string Directory,
+    string AllowedRoot,
+    bool GenerateNewId);
+
+public sealed record DesktopNodeHyperVVmImportInfo(
+    [property: JsonPropertyName("action")] string Action,
+    [property: JsonPropertyName("directory")] string Directory,
+    [property: JsonPropertyName("package_kind")] string PackageKind,
+    [property: JsonPropertyName("vm_name")] string VmName,
+    [property: JsonPropertyName("generate_new_id")] bool GenerateNewId,
+    [property: JsonPropertyName("apply_managed_marker")] bool ApplyManagedMarker);
+
+public sealed record DesktopNodeHyperVVmNetworkConnectRequest(
+    string VmName,
+    string SwitchName);
+
+public sealed record DesktopNodeHyperVVmNetworkConnectInfo(
+    [property: JsonPropertyName("action")] string Action,
+    [property: JsonPropertyName("vm_name")] string VmName,
+    [property: JsonPropertyName("switch")] string SwitchName);
+
+public sealed record DesktopNodeHyperVVmDeviceAddRequest(
+    string VmName,
+    string? SwitchName = null);
+
+public sealed record DesktopNodeHyperVVmDeviceAddInfo(
+    [property: JsonPropertyName("action")] string Action,
+    [property: JsonPropertyName("vm_name")] string VmName,
+    [property: JsonPropertyName("device")] string Device,
+    [property: JsonPropertyName("switch")] string? SwitchName);
 
 public sealed record DesktopNodeHyperVVmCloneRequest(
     string SourceName,
@@ -362,6 +472,27 @@ public sealed record DesktopNodeHyperVGuestExecutionInfo(
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     IReadOnlyDictionary<string, object?>? Evidence = null);
 
+public sealed record DesktopNodeHyperVGuestFileRequest(
+    string Operation,
+    string Name,
+    string? CredentialRef,
+    string? HostPath,
+    string? GuestPath,
+    long? SizeBytes,
+    string? Direction,
+    string? SharedFolder,
+    int TimeoutSeconds);
+
+public sealed record DesktopNodeHyperVGuestFileInfo(
+    [property: JsonPropertyName("name")] string Name,
+    [property: JsonPropertyName("operation")] string Operation,
+    [property: JsonPropertyName("direction")] string Direction,
+    [property: JsonPropertyName("host_path")] string HostPath,
+    [property: JsonPropertyName("guest_path")] string GuestPath,
+    [property: JsonPropertyName("size_bytes")] long SizeBytes,
+    [property: JsonPropertyName("copied")] bool Copied,
+    [property: JsonPropertyName("host_mutation_performed")] bool HostMutationPerformed);
+
 public sealed record DesktopNodeHyperVWmiVmSummary(
     string Id,
     string Name,
@@ -373,7 +504,9 @@ public sealed record DesktopNodeHyperVWmiVmSummary(
     int? CheckpointCount,
     string? Notes,
     IReadOnlyList<DesktopNodeHyperVWmiVmStorageSummary>? Storage = null,
-    IReadOnlyList<DesktopNodeHyperVWmiVmNetworkSummary>? Network = null);
+    IReadOnlyList<DesktopNodeHyperVWmiVmNetworkSummary>? Network = null,
+    string? CreationTime = null,
+    string? TimeOfLastStateChange = null);
 
 public sealed record DesktopNodeHyperVWmiVmStorageSummary(string? Path, bool Attached);
 
