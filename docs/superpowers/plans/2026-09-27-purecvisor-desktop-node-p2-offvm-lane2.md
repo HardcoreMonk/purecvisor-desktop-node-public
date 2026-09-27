@@ -90,7 +90,9 @@ PCVCLI가 아니라 `DesktopNode.Host.exe service-action switch-create|switch-re
 
 ## Task 7: 수정 package와 설치 (별도 승인)
 
-- [ ] Task 1 수정이 든 probe-vehicle package를 빌드하고 설치한다. MSI 설치 승인 없이는 시작하지 않는다.
+- [x] Task 1 수정이 든 probe-vehicle package를 빌드하고 설치한다. MSI 설치 승인 없이는 시작하지 않는다.
+
+실행 기록(2026-09-28): 승인 `빌드 + 설치 승인`. HEAD `424b515`에서 `0.42.79-admin-smoke`(MSI `0.42.79`, `AllowUnsignedDev`/`LocalTest`) 빌드, MSI `1cc71d5b…`. msiexec 업그레이드 exit `0`, ARP `0.42.79` 1개, manifest `0.42.79-admin-smoke`, 설치본 CLI/Host hash가 build와 같고 log에 `Won't Overwrite`·`another client` 없음, Web `200`, API `401`. `docs/ga-ready/evidence/admin-smoke-package-2026-09-28-04279.md`. current는 `0.42.78` 유지.
 
 ## Task 8: Lane 2 `export-import`, `network-connect` (수정 설치본)
 
