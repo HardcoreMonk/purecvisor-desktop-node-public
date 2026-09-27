@@ -63,10 +63,12 @@
 
 ## Task 5: 종료 검증
 
-- [ ] `dotnet test src/DesktopNode.sln` 실패 `0`(clean HEAD).
-- [ ] Pester `PcvModuleSizeRatchet`, `PcvCSharpArchitectureGapRegistry`, `PcvAdminSmokeEvidenceDocs`.
-- [ ] `npm run test:required --prefix web`.
-- [ ] clean HEAD에서 Required CI 네 shard.
+- [x] `dotnet test src/DesktopNode.sln` 실패 `0`(clean HEAD).
+- [x] Pester `PcvModuleSizeRatchet`, `PcvCSharpArchitectureGapRegistry`, `PcvAdminSmokeEvidenceDocs`.
+- [x] `npm run test:required --prefix web`.
+- [x] clean HEAD에서 Required CI 네 shard.
+
+실행 기록(2026-09-27, clean HEAD `0d05971`): `dotnet test src/DesktopNode.sln` 실패 `0`(Delivery `706`, Verification `557`, Api `410` 등). Pester 세 종 `103/103`. `npm run test:required` pass `236`/fail `0`. Release build 뒤 Required CI 네 shard(`dotnet` `51`초, `web` `25`초, `delivery` `4`초, `installer-policy` `3`초) exit `0`. 실행 전후 working tree clean.
 
 ## 계획 밖 (승인 필요)
 
