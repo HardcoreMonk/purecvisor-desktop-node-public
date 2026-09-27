@@ -452,6 +452,37 @@ public sealed class DesktopNodeHyperVWmiProviderTests
         }
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void WmiSwitchProviderMapsNamedExternalBindingAsExternal(bool hasInternalManagementPort)
+    {
+        var info = DesktopNodeHyperVWmiSwitchProvider.MapSwitch(
+            "corp-uplink",
+            hasInternalManagementPort: hasInternalManagementPort,
+            hasExternalBinding: true,
+            externalAdapterDescription: "Intel(R) Ethernet Controller");
+
+        Assert.Equal("external", info.Type);
+        Assert.False(info.IsDefault);
+        Assert.Equal(hasInternalManagementPort, info.AllowManagementOs);
+        Assert.Equal("Intel(R) Ethernet Controller", info.NetAdapterInterfaceDescription);
+    }
+
+    [Fact]
+    public void WmiSwitchProviderSelectsOnlyExternalPortHostResources()
+    {
+        Assert.Equal(
+            [@"\\HOST\root\virtualization\v2:Msvm_ExternalEthernetPort.CreationClassName=""x"""],
+            DesktopNodeHyperVWmiSwitchProvider.ExternalPortPaths(new[]
+            {
+                @"\\HOST\root\virtualization\v2:Msvm_InternalEthernetPort.Name=""y""",
+                @"\\HOST\root\virtualization\v2:Msvm_ExternalEthernetPort.CreationClassName=""x""",
+                string.Empty
+            }));
+        Assert.Empty(DesktopNodeHyperVWmiSwitchProvider.ExternalPortPaths(null));
+    }
+
     [Fact]
     public void WmiSwitchProviderDoesNotClassifyExternallyBoundSwitchAsInternal()
     {

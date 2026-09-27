@@ -35,8 +35,10 @@
 
 **수정:** `src/DesktopNode.HyperV/DesktopNodeHyperVWmiSwitchProvider.cs`, `src/DesktopNode.HyperV.Tests`
 
-- [ ] external binding이 있는 switch는 `external`, `AllowManagementOs`는 management port 유무, `NetAdapterInterfaceDescription`은 `Msvm_ExternalEthernetPort` 이름으로 채운다. 이름을 못 읽으면 지금처럼 `unknown`(topology 불완전)으로 둔다.
-- [ ] 단위 테스트. 이 호스트에 External switch를 만들지 않는다(host network 변경 금지, nonclaim).
+- [x] external binding이 있는 switch는 `external`, `AllowManagementOs`는 management port 유무, `NetAdapterInterfaceDescription`은 `Msvm_ExternalEthernetPort` 이름으로 채운다. 이름을 못 읽으면 지금처럼 `unknown`(topology 불완전)으로 둔다.
+- [x] 단위 테스트. 이 호스트에 External switch를 만들지 않는다(host network 변경 금지, nonclaim).
+
+실행 기록(2026-09-28): provider가 allocation `HostResource`의 `Msvm_ExternalEthernetPort` 경로(`ExternalPortPaths`)를 골라 그 port의 `ElementName`을 adapter 설명으로 읽는다(WMI 오류는 `null`). `MapSwitch`는 이름이 있는 external binding만 `external`로 올리고, 이름 없는 external은 기존 테스트대로 `unknown`이다. native `network.inventory`가 provider가 만든 external switch를 받는 테스트를 더했다. 이 호스트 switch는 `Default Switch`뿐이라 실제 External 관측은 nonclaim이다. HyperV.Tests `231/231`.
 
 ## Task 3: route DVD guard
 
