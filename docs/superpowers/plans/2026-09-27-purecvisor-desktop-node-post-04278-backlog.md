@@ -49,9 +49,11 @@
 
 **생성:** `docs/superpowers/specs/2026-09-27-purecvisor-desktop-node-same-version-rebuild-installer-design.md`
 
-- [ ] 원인(같은 version의 새 ProductCode 공존, equal-version file no-overwrite, uninstall 시 다른 client)과 09-27 관측을 적는다.
-- [ ] 선택지(WiX `AllowSameVersionUpgrades`, gate build 고유 version, fullgate 전 잔여 ProductCode preflight)의 장단점과 권고안을 적는다.
-- [ ] 구현은 하지 않는다.
+- [x] 원인(같은 version의 새 ProductCode 공존, equal-version file no-overwrite, uninstall 시 다른 client)과 09-27 관측을 적는다.
+- [x] 선택지(WiX `AllowSameVersionUpgrades`, gate build 고유 version, fullgate 전 잔여 ProductCode preflight)의 장단점과 권고안을 적는다.
+- [x] 구현은 하지 않는다.
+
+실행 기록(2026-09-27): `Product.wxs`는 ProductCode를 지정하지 않아 build마다 새로 생기고 `MajorUpgrade`는 `AllowSameVersionUpgrades` 기본값(no)이다. 설계는 C(fullgate 전 읽기 전용 preflight)를 먼저, A(`AllowSameVersionUpgrades=yes`)는 별도 L checkpoint 결정, B(gate build version 증가)는 비권고로 정리했다. 구현하지 않았다.
 
 ## Task 4: Ubuntu 26 runner 영향 점검
 
