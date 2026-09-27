@@ -245,7 +245,7 @@ pcvcli account disable lab-operator --yes
 | `pcvcli vm export preview <vm> --directory PATH [--allowed-root PATH]` | `POST /api/v1/vms/{vm}/export/preview` | Hyper-V export dry-run. 파일을 쓰지 않음. `--yes` 불필요 |
 | `pcvcli vm export <vm> --directory PATH --yes [--allowed-root PATH]` | `POST /api/v1/vms/{vm}/export` | Hyper-V export queued job. `--yes` 필요. TPM/OVF 없음 |
 | `pcvcli vm import preview --name TARGET --directory PATH [--package-kind hyperv-export] [--has-vmcx]` | `POST /api/v1/vms/import/preview` | Hyper-V import dry-run. VM을 정의하지 않음. OVF 거절 |
-| `pcvcli vm import --name TARGET --directory PATH --yes [--allowed-root PATH] [--package-kind hyperv-export]` | `POST /api/v1/vms/import` | Hyper-V import queued job. 새 identity와 managed marker. `--yes` 필요. OVF/in-place 거절 |
+| `pcvcli vm import --name TARGET --directory PATH --yes [--allowed-root PATH] [--package-kind hyperv-export] [--vm-root PATH]` | `POST /api/v1/vms/import` | Hyper-V import queued job. 새 identity와 managed marker. package 디스크를 `VM root\TARGET`으로 복사. `--yes` 필요. OVF/in-place 거절 |
 | `pcvcli vm network connect <vm> --switch NAME --yes` | `POST /api/v1/vms/{vm}/network` | 기존 NIC를 inventory 스위치에 연결. `--yes` 필요. 새 NIC 추가는 아님. 스위치 생성/삭제는 Host `service-action` |
 | `pcvcli vm device add <vm> --kind nic --switch NAME --yes` | `POST /api/v1/vms/{vm}/devices` | synthetic NIC 하나를 기존 스위치에 추가. `--yes` 필요. NAT/DHCP와 장치 상점은 열지 않음 |
 | `pcvcli vm device add <vm> --kind dvd --yes` | `POST /api/v1/vms/{vm}/devices` | 빈 DVD 드라이브 하나를 추가. ISO는 `vm attach`. `--yes` 필요 |
@@ -279,7 +279,7 @@ pcvcli vm create ubuntu-lab-01 `
 
 `pcvcli vm clone <source> --name <target> --dry-run [--vm-root <path>]`은 `POST /api/v1/vms/{vm}/clone/preview`로 복사 계획만 조회한다. `--yes`는 필요 없다. `pcvcli vm clone <source> --name <target> --yes [--vm-root <path>]`는 `POST /api/v1/vms/{vm}/clone`로 독립 VHDX full clone job을 queue한다. `--yes`가 없으면 `PCV_CLI_CONFIRMATION_REQUIRED`다. body `confirm_name`은 `<source>` 인자 그대로, `name`은 `--name`이다. `--vm-root`는 body `vm_root`다. 생략하면 native 기본값은 `D:\PureCVisor\VMs`다. 소스는 managed Generation 2, 전원 `Off`, checkpoint 0, 독립 VHDX만 허용한다.
 
-`pcvcli vm import preview --name TARGET --directory PATH [--package-kind hyperv-export] [--has-vmcx]`는 `POST /api/v1/vms/import/preview` dry-run이다. `pcvcli vm import --name TARGET --directory PATH --yes`는 `POST /api/v1/vms/import` queued job이다. `--yes`가 없으면 `PCV_CLI_CONFIRMATION_REQUIRED`다. import는 새 identity와 managed marker만 허용하고 OVF/in-place는 거절한다.
+`pcvcli vm import preview --name TARGET --directory PATH [--package-kind hyperv-export] [--has-vmcx]`는 `POST /api/v1/vms/import/preview` dry-run이다. `pcvcli vm import --name TARGET --directory PATH --yes`는 `POST /api/v1/vms/import` queued job이다. `--yes`가 없으면 `PCV_CLI_CONFIRMATION_REQUIRED`다. import는 새 identity와 managed marker만 허용하고 OVF/in-place는 거절한다. import는 package의 `Virtual Hard Disks` 디스크를 `--vm-root`(body `vm_root`, 생략 시 native 기본값 `D:\PureCVisor\VMs`) 아래 `TARGET` 디렉터리로 복사하고 VM 구성·checkpoint·디스크를 그 디렉터리에 둔다. package는 바뀌지 않아 다시 import할 수 있다. 대상 디렉터리가 이미 있으면 `PCV_VM_ALREADY_EXISTS`다.
 
 VM delete는 destructive host mutation을 queue하므로 `--yes`가 필수다. API는 PureCVisor managed marker가 없는 VM을 provider mutation 전에 차단한다. unmanaged delete 거절은 manage 이후에도 다른 unmanaged VM에 유지된다.
 

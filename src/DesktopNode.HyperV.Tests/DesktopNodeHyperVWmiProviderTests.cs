@@ -1,3 +1,4 @@
+using DesktopNode.Contracts;
 using DesktopNode.HyperV;
 
 namespace DesktopNode.HyperV.Tests;
@@ -347,6 +348,108 @@ public sealed class DesktopNodeHyperVWmiProviderTests
         Assert.False(info.IsDefault);
         Assert.True(info.AllowManagementOs);
         Assert.Null(info.NetAdapterInterfaceDescription);
+    }
+
+    [Fact]
+    public void WmiSwitchProviderMapsSwitchWithoutManagementPortOrExternalBindingAsPrivate()
+    {
+        var info = DesktopNodeHyperVWmiSwitchProvider.MapSwitch("pcv-lab-private");
+
+        Assert.Equal("pcv-lab-private", info.Name);
+        Assert.Equal("private", info.Type);
+        Assert.False(info.IsDefault);
+        Assert.False(info.AllowManagementOs);
+        Assert.Null(info.NetAdapterInterfaceDescription);
+    }
+
+    [Fact]
+    public void ImportPackageValidationAcceptsGenerationTwoGuestStateFile()
+    {
+        var directory = Directory.CreateTempSubdirectory("pcv-import-package-").FullName;
+        try
+        {
+            var virtualMachines = Directory.CreateDirectory(Path.Combine(directory, "Virtual Machines")).FullName;
+            File.WriteAllText(Path.Combine(virtualMachines, "vm.vmcx"), string.Empty);
+            File.WriteAllText(Path.Combine(virtualMachines, "vm.vmgs"), string.Empty);
+
+            DesktopNodeHyperVWmiVmImportProvider.ValidatePackageContent(directory);
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+
+    [Fact]
+    public void ImportDiskPlanCopiesPackageDisksInsteadOfSourcePaths()
+    {
+        var package = Directory.CreateTempSubdirectory("pcv-import-package-").FullName;
+        try
+        {
+            var disks = Directory.CreateDirectory(Path.Combine(package, "Virtual Hard Disks")).FullName;
+            File.WriteAllText(Path.Combine(disks, "disk0.vhdx"), string.Empty);
+            var target = Path.Combine(Path.GetTempPath(), "pcv-vms", "lab-vm-restored");
+
+            var plans = DesktopNodeHyperVWmiVmImportProvider.PlanDiskCopies(
+                package,
+                target,
+                [@"D:\PureCVisor\VMs\lab-vm\disk0.vhdx"]);
+
+            var plan = Assert.Single(plans);
+            Assert.Equal(Path.Combine(disks, "disk0.vhdx"), plan.PackageSource);
+            Assert.Equal(Path.Combine(target, "disk0.vhdx"), plan.Target);
+        }
+        finally
+        {
+            Directory.Delete(package, recursive: true);
+        }
+    }
+
+    [Fact]
+    public void ImportDiskPlanRejectsMissingPackageDiskAndDuplicateNames()
+    {
+        var package = Directory.CreateTempSubdirectory("pcv-import-package-").FullName;
+        try
+        {
+            var disks = Directory.CreateDirectory(Path.Combine(package, "Virtual Hard Disks")).FullName;
+            File.WriteAllText(Path.Combine(disks, "disk0.vhdx"), string.Empty);
+            var target = Path.Combine(Path.GetTempPath(), "pcv-vms", "lab-vm-restored");
+
+            var missing = Assert.Throws<DesktopNodeHyperVNativeOperationException>(() =>
+                DesktopNodeHyperVWmiVmImportProvider.PlanDiskCopies(package, target, [@"D:\PureCVisor\VMs\lab-vm\disk1.vhdx"]));
+            Assert.Equal(VmExportImportProblemCodes.PackageInvalid, missing.Code);
+
+            var duplicate = Assert.Throws<DesktopNodeHyperVNativeOperationException>(() =>
+                DesktopNodeHyperVWmiVmImportProvider.PlanDiskCopies(
+                    package,
+                    target,
+                    [@"D:\a\disk0.vhdx", @"E:\b\disk0.vhdx"]));
+            Assert.Equal(VmExportImportProblemCodes.PackageInvalid, duplicate.Code);
+        }
+        finally
+        {
+            Directory.Delete(package, recursive: true);
+        }
+    }
+
+    [Theory]
+    [InlineData("package.ovf")]
+    [InlineData("package.ova")]
+    public void ImportPackageValidationRejectsOvfAndOva(string fileName)
+    {
+        var directory = Directory.CreateTempSubdirectory("pcv-import-package-").FullName;
+        try
+        {
+            File.WriteAllText(Path.Combine(directory, fileName), string.Empty);
+
+            var error = Assert.Throws<DesktopNodeHyperVNativeOperationException>(
+                () => DesktopNodeHyperVWmiVmImportProvider.ValidatePackageContent(directory));
+            Assert.Equal(VmExportImportProblemCodes.OvfForbidden, error.Code);
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
     }
 
     [Fact]

@@ -35,6 +35,13 @@ P0 evidence 후보 4개와 catalog feature 28개는 그대로다.
 - export 대상은 managed Generation 2, 전원 `Off`만. unmanaged·Gen1은 거절한다.
 - TPM, key protector, shielded가 있으면 export와 import 모두 거절한다. vTPM 키를 복사하거나
   `.vmgs` 키 자료를 제품 경로 밖으로 내보내지 않는다.
+- (2026-09-28 결정) Generation 2 export에는 TPM이 없어도 guest state `.vmgs` 파일이 들어간다. `.vmgs` 파일
+  존재는 import 거절 근거가 아니다. import는 planned VM의 `Msvm_SecuritySettingData`(TPM, shielding, key
+  protector)로 거절하고 planned VM을 지운다. 근거: `docs/ga-ready/evidence/service-plan-p2-offvm-export-import-actual-vm-2026-09-28-04279-r2.md`.
+- (2026-09-28 결정) import는 package 디스크를 전용 VM root(`vm_root\<대상 이름>`, 기본 `D:\PureCVisor\VMs`)로
+  복사하고 planned VM의 디스크, 구성, checkpoint, swap 위치를 그 디렉터리로 바꾼 뒤 realize한다. planned VM은
+  export 당시 소스 디스크 경로를 가리키므로 그대로 realize하면 소스와 같은 VHDX를 공유한다. 실패하면 planned VM을
+  지우고 복사본을 되돌린다. 근거: `docs/ga-ready/evidence/service-plan-p2-offvm-export-import-actual-vm-2026-09-28-04280.md`.
 - 패키지 종류는 Hyper-V export 폴더만. OVF/OVA는 `PCV_VM_IMPORT_OVF_FORBIDDEN`.
 - 경로는 allowlist 루트 아래 하위 디렉터리만. UNC·드라이브 루트·루트 자체는 거절한다.
   기본 루트는 `%ProgramData%\PureCVisor\desktop-node\exports`.

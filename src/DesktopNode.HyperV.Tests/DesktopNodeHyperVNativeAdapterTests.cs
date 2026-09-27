@@ -546,6 +546,26 @@ public sealed class DesktopNodeHyperVNativeAdapterTests
     }
 
     [Fact]
+    public void NativeNetworkInventoryAdapterAcceptsPrivateSwitchTopology()
+    {
+        using var parameters = JsonDocument.Parse("{}");
+        var adapter = new DesktopNodeHyperVNativeAdapter(new RecordingHyperVSwitchProvider(
+        [
+            DesktopNodeHyperVWmiSwitchProvider.MapSwitch("Default Switch"),
+            DesktopNodeHyperVWmiSwitchProvider.MapSwitch("pcv-lab-private")
+        ]));
+
+        var handled = adapter.TryInvoke("network.inventory", parameters.RootElement, CancellationToken.None, out var result);
+
+        Assert.True(handled);
+        Assert.True(result.Ok);
+        var switches = result.Data!.Value.GetProperty("switches");
+        Assert.Equal("pcv-lab-private", switches[1].GetProperty("name").GetString());
+        Assert.Equal("private", switches[1].GetProperty("type").GetString());
+        Assert.False(switches[1].GetProperty("allow_management_os").GetBoolean());
+    }
+
+    [Fact]
     public void NativeNetworkInventoryAdapterReturnsStructuredFailureForMissingManagementOsParityField()
     {
         using var parameters = JsonDocument.Parse("{}");

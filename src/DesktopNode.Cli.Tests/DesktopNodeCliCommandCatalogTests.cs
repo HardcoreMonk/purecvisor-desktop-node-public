@@ -405,6 +405,26 @@ public sealed class DesktopNodeCliCommandCatalogTests
     }
 
     [Fact]
+    public void RoutesVmImportVmRootIntoBody()
+    {
+        var request = DesktopNodeCliCommandCatalog.CreateRequest([
+            "vm",
+            "import",
+            "--name",
+            "ubuntu-lab-02",
+            "--directory",
+            "D:\\PureCVisor\\exports\\ubuntu-lab-01",
+            "--vm-root",
+            "D:\\PureCVisor\\VMs",
+            "--yes"
+        ]);
+
+        Assert.Equal("/api/v1/vms/import", request.Path);
+        using var document = JsonDocument.Parse(request.Body!);
+        Assert.Equal("D:\\PureCVisor\\VMs", document.RootElement.GetProperty("vm_root").GetString());
+    }
+
+    [Fact]
     public void RoutesVmCloneVmRootIntoBody()
     {
         var request = DesktopNodeCliCommandCatalog.CreateRequest([

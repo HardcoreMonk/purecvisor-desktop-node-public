@@ -106,11 +106,13 @@ public sealed class DesktopNodeHyperVWmiSwitchProvider : IDesktopNodeHyperVSwitc
         var switchName = string.IsNullOrWhiteSpace(name) ? "unknown" : name;
         var isDefault = string.Equals(switchName, "Default Switch", StringComparison.OrdinalIgnoreCase);
         var isInternal = isDefault || (hasInternalManagementPort && !hasExternalBinding);
+        // A switch with neither a management-OS port nor an external binding is a private switch.
+        var isPrivate = !isDefault && !hasInternalManagementPort && !hasExternalBinding;
         return new DesktopNodeHyperVSwitchInfo(
             Name: switchName,
-            Type: isInternal ? "internal" : "unknown",
+            Type: isInternal ? "internal" : isPrivate ? "private" : "unknown",
             IsDefault: isDefault,
-            AllowManagementOs: isInternal ? true : null,
+            AllowManagementOs: isInternal ? true : isPrivate ? false : null,
             NetAdapterInterfaceDescription: null);
     }
 }

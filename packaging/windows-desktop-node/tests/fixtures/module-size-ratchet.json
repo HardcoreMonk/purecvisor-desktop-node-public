@@ -44,9 +44,9 @@
     },
     {
       "path": "src/DesktopNode.HyperV/DesktopNodeHyperVNativeAdapter.Mutations.cs",
-      "max_lines": 867,
-      "owner": "checkpoint mutation, power state, create/delete/rename, media, export/import, network connect",
-      "note": "2026-08-09 pure partial split from DesktopNodeHyperVNativeAdapter.cs. 2026-08-27 vm.clone queued mutation wiring이 925줄로 늘렸다. Registered at creation so the large module is not renamed away from the ratchet. 2026-09-27 ratchet recovery Task 3 moved TryInvokeVmResourceMutation and ResourceMutationParamFailure to DesktopNodeHyperVNativeAdapter.ResourceMutations.cs (plan: docs/superpowers/plans/2026-09-27-purecvisor-desktop-node-module-ratchet-recovery.md)"
+      "max_lines": 763,
+      "owner": "checkpoint mutation, power state, create/delete/rename, media, network connect",
+      "note": "2026-08-09 pure partial split from DesktopNodeHyperVNativeAdapter.cs. 2026-08-27 vm.clone queued mutation wiring이 925줄로 늘렸다. Registered at creation so the large module is not renamed away from the ratchet. 2026-09-27 ratchet recovery Task 3 moved TryInvokeVmResourceMutation and ResourceMutationParamFailure to DesktopNodeHyperVNativeAdapter.ResourceMutations.cs (plan: docs/superpowers/plans/2026-09-27-purecvisor-desktop-node-module-ratchet-recovery.md). 2026-09-28 P2 Off-VM Task 12 moved TryInvokeVmExport and TryInvokeVmImport to DesktopNodeHyperVNativeAdapter.ExportImport.cs and lowered the ceiling to the new size (plan: docs/superpowers/plans/2026-09-27-purecvisor-desktop-node-p2-offvm-lane2.md)"
     },
     {
       "path": "src/DesktopNode.HyperV/DesktopNodeHyperVWmiVmCloneProvider.cs",
@@ -92,9 +92,9 @@
     },
     {
       "path": "src/DesktopNode.Cli/DesktopNodeCliCommandCatalog.cs",
-      "max_lines": 1412,
+      "max_lines": 1299,
       "owner": "PCVCLI command catalog and argument parsing",
-      "note": "2026-09-27 registered at its current size by the post-0.42.78 backlog Task 1. Registration freezes growth and is not a split. plan: docs/superpowers/plans/2026-09-27-purecvisor-desktop-node-post-04278-backlog.md"
+      "note": "2026-09-27 registered at its current size by the post-0.42.78 backlog Task 1. Registration freezes growth and is not a split. plan: docs/superpowers/plans/2026-09-27-purecvisor-desktop-node-post-04278-backlog.md. 2026-09-28 P2 Off-VM Task 12 moved VmExport and VmImport to DesktopNodeCliCommandCatalog.ExportImport.cs and lowered the ceiling to the new size (plan: docs/superpowers/plans/2026-09-27-purecvisor-desktop-node-p2-offvm-lane2.md)"
     },
     {
       "path": "src/DesktopNode.Api/DesktopNodeAccountAuth.cs",

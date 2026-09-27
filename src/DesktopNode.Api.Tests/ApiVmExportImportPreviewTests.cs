@@ -40,6 +40,18 @@ public sealed class ApiVmExportImportPreviewTests
     }
 
     [Fact]
+    public void ExportPreviewAcceptsNativeInventoryStoppedState()
+    {
+        using var root = new TempExportRoot();
+        var processor = CreateProcessor([], state: "stopped");
+
+        var response = processor.Handle(ExportRequest(root));
+
+        Assert.Equal(200, response.StatusCode);
+        Assert.DoesNotContain(VmExportImportProblemCodes.SourceNotOff, response.Body, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void ExportPreviewRejectsUnmanagedAndTpmWithoutNativeExport()
     {
         using var root = new TempExportRoot();

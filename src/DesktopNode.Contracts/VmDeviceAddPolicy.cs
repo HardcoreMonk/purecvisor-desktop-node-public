@@ -105,7 +105,7 @@ public static class VmDeviceAddPolicy
             return Reject(VmDeviceAddProblemCodes.TemplateLocked);
         }
 
-        if (!IsPoweredOff(request.PowerState))
+        if (!VmPowerStates.IsOff(request.PowerState))
         {
             return Reject(VmDeviceAddProblemCodes.SourceNotOff);
         }
@@ -167,13 +167,6 @@ public static class VmDeviceAddPolicy
         }
 
         return Accept(vmName, KindDvd, null, action);
-    }
-
-    private static bool IsPoweredOff(string? powerState)
-    {
-        var power = Normalize(powerState);
-        return string.Equals(power, RequiredPowerState, StringComparison.OrdinalIgnoreCase) ||
-            string.Equals(power, "stopped", StringComparison.OrdinalIgnoreCase);
     }
 
     private static string? Normalize(string? value)
