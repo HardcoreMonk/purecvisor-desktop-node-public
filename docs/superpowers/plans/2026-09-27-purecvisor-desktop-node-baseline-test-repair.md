@@ -20,9 +20,11 @@
 | 4 | Pester `records the completed Hyper-V domain ownership move without losing its 35 cases` | `Expected 39, but got 49` | `a842ede`, `e622f44`, `7e24c75`, `e098e0a` | 기능 commit이 `HyperVDomainContractTests` case를 늘렸지만 registry manifest와 Pester 기대값을 갱신하지 않았다. |
 | 5 | Pester `inventories source-text checks and remaining ownership candidates with migration links` | `Expected 42, but got 49` | 같은 계열 | native adapter test의 `Native*` method 수가 늘었다. 뒤따르는 wmi/case 개수 단언도 같은 이유로 확인이 필요하다. |
 
+추가 발견(Task 2 실행 중): `ManagedSuiteRunnerTests.PolicyBoundaryMatchesCanonicalActivationState`가 clean HEAD에서도 실패한다. `CutoverGitBoundary`는 `git rev-list --parents <shadow>..HEAD` 출력을 파싱하는데, verification process 출력 상한이 `8192`자이고 출력은 commit마다 약 `82`자씩 는다. `e5ef657`(`8159`자)까지는 통과했고 `3a0f979`(`8241`자)부터 잘려 `cutover-history=invalid-output`이 된다. 이 branch에 commit이 한두 개만 더 쌓여도 터질 시한폭탄이었다. Task 3b가 다룬다.
+
 ## Global Constraints
 
-- 제품 코드(`src/DesktopNode.*` 비테스트 프로젝트, `web/src`)를 바꾸지 않는다.
+- 제품 코드(`src/DesktopNode.*` 비테스트 프로젝트, `web/src`)를 바꾸지 않는다. 예외: Task 3b는 사용자 승인(2026-09-27)으로 `src/DesktopNode.Verification`의 cutover history 조회 출력 상한만 바꾼다.
 - 기대값을 현재 값으로 바꿀 때는 그 값이 기능 commit의 의도된 결과임을 commit 메시지나 diff로 확인하고 plan 실행 기록에 남긴다. 확인되지 않으면 `new-design-required`로 멈춘다.
 - `config/pcv-development-policy-contract-spec-v1.json`의 `source_files`에 있는 파일(`packaging/windows-desktop-node/tests/fixtures/csharp-architecture-test-migration.json` 등)을 바꾸면 spec SHA-256과 `DevelopmentPolicyContractVerifier.ExpectedSpecSha256`을 같은 task에서 갱신한다.
 - task 하나가 checkpoint 하나다(30분, tool batch 18회). 캠페인 러너(`pcv-campaign-runner-v1`)로 실행하며 commit은 `docs/ga-ready/active-campaign.json`의 `commit_policy`를 따른다.
@@ -47,14 +49,26 @@
 
 실행 기록(2026-09-27): `current-evidence.json`의 `current.version`은 `a842ede`(2026-09-20) 이후 `0.42.77-admin-smoke`다. 기대값만 바꿨고 target `8`개 `current` 단언은 그대로 통과한다. `policy-boundaries` suite는 clean committed HEAD를 요구하므로(AGENTS.md) 변경 중에는 `CurrentEvidenceVerifierTests`만 돌리고, commit 뒤 clean HEAD에서 Verification.Tests 전체를 확인한다.
 
-## Task 3: C# architecture gap registry 개수 갱신
+## Task 3: C# architecture gap registry 개수 단언을 감소 금지로 전환
 
-**수정:** `packaging/windows-desktop-node/tests/fixtures/csharp-architecture-test-migration.json`, `packaging/windows-desktop-node/tests/PcvCSharpArchitectureGapRegistry.Tests.ps1`, `config/pcv-development-policy-contract-spec-v1.json`, `src/DesktopNode.Delivery.Tests/Delivery/Verification/DevelopmentPolicyContractVerifier.cs`
+**수정:** `packaging/windows-desktop-node/tests/PcvCSharpArchitectureGapRegistry.Tests.ps1`, `config/pcv-development-policy-contract-spec-v1.json`(`legacy_files` SHA), `DevelopmentPolicyContractVerifier.ExpectedSpecSha256`
 
-- [ ] `Get-LiveXunitSourceInventory`로 `HyperVDomainContractTests.cs`, `DesktopNodeHyperVNativeAdapterTests.cs`, `DesktopNodeHyperVWmiProviderTests.cs`의 현재 case/method 수를 잰다.
-- [ ] manifest의 개수 필드와 Pester의 고정 기대값을 현재 값으로 갱신한다. 착수 시 manifest 이력에서 기존 case 추가 때 같은 필드를 갱신한 전례를 확인하고 그 방식을 따른다.
-- [ ] manifest가 spec에 pin되어 있으므로 spec SHA와 `ExpectedSpecSha256`을 갱신한다.
-- [ ] `Invoke-Pester packaging/windows-desktop-node/tests/PcvCSharpArchitectureGapRegistry.Tests.ps1`, `dotnet test src/DesktopNode.Delivery.Tests` 실패 `0`.
+manifest 이력에는 case 추가 때 개수를 갱신한 전례가 없다(초기 snapshot `c76a831` 이후 무변경). `case_count_before/after`는 이관 당시 기록이고, Pester가 live 개수를 그 값과 정확히 같다고 단언해 기능 commit이 test를 추가할 때마다 깨진다. 사용자 결정(2026-09-27)에 따라 이관 기록은 두고, live 개수 단언을 "줄지 않음"(`-BeGreaterOrEqual`)으로 바꾼다. 테스트 이름("without losing its 35 cases")의 의도와 같다.
+
+- [x] live 개수 단언 `7`개(`HyperVDomainContractTests` case, `Native*`/`Wmi*` method, native/wmi case, 합계 대 `observed_case_count`)를 `Should -BeGreaterOrEqual`로 바꾼다. `oldApiOwnerMethods` `0`과 manifest 필드 단언은 정확 일치로 둔다.
+- [x] 이 Pester 파일은 spec `legacy_files`에 SHA로 고정되어 있으므로 SHA와 `ExpectedSpecSha256`을 갱신한다. `Should` site 수 `168`과 required literal은 바뀌지 않는다.
+- [x] `Invoke-Pester`로 `PcvCSharpArchitectureGapRegistry.Tests.ps1` 실행, `dotnet test src/DesktopNode.Delivery.Tests` 실패 `0`.
+
+실행 기록(2026-09-27): live 개수는 `HyperVDomainContractTests` `49`(기록 `39`), native `66`/`Native*` `49`(기록 `58`/`42`), wmi `37`/`Wmi*` `29`(기록 `33`/`25`)다. legacy SHA `2a41b2ad…` → `0dc4db02…`, `ExpectedSpecSha256` `f943225b…` → `0467c6c3…`. registry Pester `10/10`, Delivery.Tests `705/705`.
+
+## Task 3b: cutover history 조회 출력 상한
+
+**수정:** `src/DesktopNode.Verification/CutoverGitBoundary.cs`, `src/DesktopNode.Verification.Tests`의 관련 테스트
+
+- [ ] `rev-list --parents <shadow>..HEAD` 호출에만 명시적 출력 상한(예: `1 MiB`)을 준다. 다른 git 호출과 기본 `8192`자 상한은 그대로 둔다. 출력이 상한을 넘으면 지금처럼 fail-closed다.
+- [ ] 상한이 기본값보다 큰 것을 고정하는 단위 테스트를 추가한다(fake process runner로 invocation의 `OutputLimitCharacters` 확인).
+- [ ] `DesktopNode.Verification` 코드가 spec `source_files`(`VerificationCatalog.cs` 등)나 `StructuredTransitionSources`에 걸리는지 확인하고 필요한 pin을 갱신한다.
+- [ ] commit 뒤 clean HEAD에서 `dotnet test src/DesktopNode.Verification.Tests` 실패 `0`.
 
 ## Task 4: 종료 검증
 

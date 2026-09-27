@@ -84,7 +84,7 @@
     {
       "key": "architecture-gap",
       "path": "packaging/windows-desktop-node/tests/PcvCSharpArchitectureGapRegistry.Tests.ps1",
-      "sha256": "2a41b2ad1e4eb37807c1eb9d9fc4ea8e914567c130afded4001f138cfe109581",
+      "sha256": "0dc4db02c16ba61d65e24507089b385629331e537687915dfd8580504e602dd6",
       "contract_count": 10,
       "should_site_count": 168
     },
