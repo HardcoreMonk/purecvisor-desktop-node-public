@@ -92,12 +92,13 @@ Task 3 착수 중 `a842ede`를 다시 읽고 범위를 셋으로 나눴다. 0.42
 
 ## Task 4: 종료 검증
 
-- [ ] `Update-PcvCurrentEvidenceDocs.ps1 -Check`.
-- [ ] `dotnet test src/DesktopNode.sln` 실패 `0`(clean HEAD).
-- [ ] Pester `PcvModuleSizeRatchet`, `PcvCSharpArchitectureGapRegistry`, `PcvAdminSmokeEvidenceDocs`.
-- [ ] `npm run test:required --prefix web`.
-- [ ] clean HEAD에서 Required CI 네 shard.
+- [x] `Update-PcvCurrentEvidenceDocs.ps1 -Check`.
+- [x] `dotnet test src/DesktopNode.sln` 실패 `0`(clean HEAD).
+- [x] Pester `PcvModuleSizeRatchet`, `PcvCSharpArchitectureGapRegistry`, `PcvAdminSmokeEvidenceDocs`.
+- [x] `npm run test:required --prefix web`.
+- [x] clean HEAD에서 Required CI 네 shard.
 
+실행 기록(2026-09-27, clean HEAD `ab88076`): 생성 문서 `-Check` current. `dotnet test src/DesktopNode.sln` 실패 `0`(Delivery `706`, Verification `557`, Api `410`, Host `216`, HyperV `220`, Runtime `128`, Cli `178`, Contracts `178`, Service `11`). Pester `PcvModuleSizeRatchet`, `PcvCSharpArchitectureGapRegistry`, `PcvAdminSmokeEvidenceDocs`, `PcvManualAdminDescriptorCurrency`, `PcvManualAdminCampaignDescriptor` `114/114`. `npm run test:required` pass `236`/fail `0`. Release build 뒤 Required CI 네 shard(`dotnet` `50`초, `web` `25`초, `delivery` `5`초, `installer-policy` `3`초) exit `0`. 실행 전후 working tree clean.
 ## Task 5: push와 PR
 
 - [ ] branch를 push하고 `main` 대상 PR을 만든다. PR 본문 끝에 Claude Code 표기를 붙인다.
