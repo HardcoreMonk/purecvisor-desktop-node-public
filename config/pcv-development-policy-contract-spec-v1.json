@@ -91,7 +91,7 @@
     {
       "key": "gate-workflow",
       "path": "packaging/windows-desktop-node/tests/PcvDevelopmentGateWorkflow.Tests.ps1",
-      "sha256": "46084abbb67a69229559825cb63c3b05e810b8f91950fedc1194bb41d12879da",
+      "sha256": "e204a79bdb7e8af55d2834eea24aebf8d787197aba797a0954ca8b2cbc582af2",
       "contract_count": 1,
       "should_site_count": 51
     },
