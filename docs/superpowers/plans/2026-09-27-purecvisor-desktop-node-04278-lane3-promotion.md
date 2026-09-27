@@ -74,8 +74,10 @@ Task 3 착수 중 `a842ede`를 다시 읽고 범위를 셋으로 나눴다. 0.42
 
 **수정:** `docs/ga-ready/MANUAL_ADMIN_NEXT_CAMPAIGN_DESCRIPTOR.md`, `docs/DOCUMENTATION_INDEX.md`, `docs/FEATURE_IMPLEMENTATION_LEDGER.md`
 
-- [ ] `a842ede`와 같은 방식으로 `current_*`/`latest_*`/`next_*` 값을 `previous_04277_*`로 옮기고 0.42.78 값을 쓴다.
-- [ ] 나머지 수기 문서(`CURRENT_EVIDENCE_LEDGER.md`의 수기 ledger 행 포함)의 current 표기를 맞춘다.
+- [x] `a842ede`와 같은 방식으로 `current_*`/`latest_*`/`next_*` 값을 `previous_04277_*`로 옮기고 0.42.78 값을 쓴다.
+- [x] 나머지 수기 문서(`CURRENT_EVIDENCE_LEDGER.md`의 수기 ledger 행 포함)의 current 표기를 맞춘다.
+
+실행 기록(2026-09-27): `MANUAL_ADMIN_NEXT_CAMPAIGN_DESCRIPTOR.md` key `45`개(current/latest는 `previous_04277_*`, next는 `previous_04278_*`)를 옮겼다. `latest_full_admin_gate_batch`는 L943 historical block에도 있어 `a842ede`처럼 current block의 첫 항목만 바꿨다. next package pair 범위는 04278 build source `0de176f`부터이고 그 뒤 제품 source 변경 파일은 `27`개(라쳇 순수 이동)다. `CURRENT_EVIDENCE_LEDGER.md`는 ledger 행 `5`개를 predecessor+신규로, `3`개를 교체했고 metadata key `4`개를 chain으로 옮겼다. `DOCUMENTATION_INDEX.md`와 `FEATURE_IMPLEMENTATION_LEDGER.md`의 current 표기를 맞췄다. `PcvAdminSmokeEvidenceDocs` `90/90`, 생성 문서 `-Check` current.
 
 ## Task 3c: 계약 테스트와 pin
 
