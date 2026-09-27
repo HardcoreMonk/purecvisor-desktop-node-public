@@ -150,7 +150,9 @@ PCVCLI가 아니라 `DesktopNode.Host.exe service-action switch-create|switch-re
 
 ## Task 15: Lane 2 `export-import` 재실행 (0.42.81)
 
-- [ ] 한 run, evidence 문서 새 파일.
+- [x] 한 run, evidence 문서 새 파일.
+
+실행 기록(2026-09-28): 첫 run PASS. import VM 구성·디스크가 `VmRoot\<import>`에 있고 소스 디스크 공유 `0`, package VHDX 유지, cleanup PASS, 잔여 VM `0`. `docs/ga-ready/evidence/service-plan-p2-offvm-export-import-actual-vm-2026-09-28-04281.md`.
 
 ## Task 16: Lane 2 `network-connect` 재실행 (0.42.81)
 
