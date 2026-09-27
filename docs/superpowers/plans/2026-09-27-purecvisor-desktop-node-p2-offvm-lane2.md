@@ -66,13 +66,22 @@ source_head=986ea3d
 
 ## Task 4: Lane 2 `checkpoint-schedule` (설치본 0.42.78)
 
-- [ ] `-Family checkpoint-schedule` 한 run. due tick은 최소 주기 `60`분이라 관측하지 않는다(nonclaim).
+- [x] `-Family checkpoint-schedule` 한 run. due tick은 최소 주기 `60`분이라 관측하지 않는다(nonclaim).
 
-## Task 5: 수정 package와 설치 (별도 승인)
+실행 기록(2026-09-27): 첫 run PASS. `docs/ga-ready/evidence/service-plan-p2-offvm-checkpoint-schedule-actual-vm-2026-09-27-04278.md`. set 뒤 readback `status=waiting`, clear 뒤 `disabled`, Hyper-V checkpoint `0`. 잔여 VM `0`.
+
+## Task 5: runner `export-import`, `network-connect` 기능군 (Lane 1)
+
+순서 조정(2026-09-27): 승인이 필요 없는 runner 확장을 package/설치 승인 task보다 앞에 둔다.
+
+- [ ] runner `-Family`에 `export-import`, `network-connect`를 더한다. export 디렉터리는 전용 VmRoot 아래 allowlist root를 쓰고, import VM은 새 identity로 따로 기록해 정리한다.
+- [ ] network-connect의 대상 switch를 정한다(제품 switch 생성 경로가 있으면 전용 `pcv-` switch, 없으면 설계 결정으로 멈춤).
+- [ ] Pester와 C# 계약 테스트.
+
+## Task 6: 수정 package와 설치 (별도 승인)
 
 - [ ] Task 1 수정이 든 probe-vehicle package를 빌드하고 설치한다. MSI 설치 승인 없이는 시작하지 않는다.
 
-## Task 6: Lane 2 `export-import`, `network-connect` (수정 설치본)
+## Task 7: Lane 2 `export-import`, `network-connect` (수정 설치본)
 
-- [ ] runner `-Family`에 `export-import`, `network-connect`를 더한다(Lane 1, Pester와 C# 계약 포함).
 - [ ] 기능군마다 한 run. evidence 문서 새 파일.
