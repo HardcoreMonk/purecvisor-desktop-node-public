@@ -150,7 +150,7 @@ feature promotion evidence를 서로 다른 계약으로 유지한다.
 
 ## Evidence stage 투영
 
-Operational current package/service anchor는 `0.42.77-admin-smoke`다. 이것은 별도의
+Operational current package/service anchor는 `0.42.78-admin-smoke`다. 이것은 별도의
 feature promotion 결정과 동일하지 않다. 현재 feature promotion은
 `promotion_eligible=true`, `blocker_count=0`이다.
 
@@ -202,7 +202,7 @@ manual-admin 관측은 `0.42.75-admin-smoke`에서 모두 pass다.
 
 - 이 문서는 public trusted signing을 증명하지 않는다.
 - 이 문서는 external stable publication을 증명하지 않는다.
-- `0.42.77-admin-smoke` operational current 상태가 28개 feature의 promotion 완료를 뜻하지 않는다.
+- `0.42.78-admin-smoke` operational current 상태가 28개 feature의 promotion 완료를 뜻하지 않는다.
 - `pcv.vm.clone` code-level 표면은 packaged/installed/actual-VM/manual-admin evidence가 없으므로 승격 후보가 아니다.
 - `not-assessed`는 pass도 fail도 아니며, 실제 VM 또는 manual-admin evidence를 추정하지 않는다.
 - 이 문서 생성 과정에서 host, VM, service, package mutation을 수행하지 않았다.
