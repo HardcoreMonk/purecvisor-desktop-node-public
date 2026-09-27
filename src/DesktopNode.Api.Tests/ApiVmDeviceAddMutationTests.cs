@@ -70,6 +70,23 @@ public sealed class ApiVmDeviceAddMutationTests
     }
 
     [Fact]
+    public void DvdAddRejectsDriveReportedByNativeInventoryWithoutQueuing()
+    {
+        var nativeCalls = new List<string>();
+        var processor = CreateProcessor(nativeCalls, dvdDriveCount: 1);
+        var response = processor.Handle(new DesktopNodeApiRequest(
+            "POST",
+            "/api/v1/vms/lab-vm/devices",
+            JsonSerializer.Serialize(new { device = "dvd" }),
+            ServiceBearerAccepted: true));
+
+        Assert.Equal(400, response.StatusCode);
+        Assert.Contains(VmDeviceAddProblemCodes.AlreadyPresent, response.Body, StringComparison.Ordinal);
+        Assert.False(processor.ProcessOneQueuedJob().Processed);
+        Assert.DoesNotContain("vm.dvd.add", nativeCalls);
+    }
+
+    [Fact]
     public void NicAddRejectsNatAndAThirdNicWithoutQueuing()
     {
         var nat = CreateProcessor([]);
@@ -95,15 +112,17 @@ public sealed class ApiVmDeviceAddMutationTests
     private static DesktopNodeApiRequestProcessor CreateProcessor(
         List<string> nativeCalls,
         int nicCount = 1,
-        bool dvdPresent = false)
+        bool dvdPresent = false,
+        int? dvdDriveCount = null)
     {
+        var dvdDrives = dvdDriveCount is { } count ? $$""","dvd_drives":{"count":{{count}}}""" : string.Empty;
         var nics = string.Join(",", Enumerable.Range(0, nicCount).Select(index =>
             $$"""{"name":"nic-{{index}}","switch":"Default Switch"}"""));
         var storage = dvdPresent
             ? """[{"type":"dvd","path":""},{"type":"vhdx","path":"D:\\\\lab.vhdx"}]"""
             : """[{"type":"vhdx","path":"D:\\\\lab.vhdx"}]""";
         var vmJson = $$"""
-        {"ok":true,"operation":"vm.list","data":[{"id":"vm-id","name":"lab-vm","platform":"hyperv","guest_family":"windows","state":"off","cpu":{"count":2},"memory":{"startup_mb":4096},"generation":2,"checkpoints":{"count":0},"managed_by_purecvisor":true,"network":[{{nics}}],"storage":{{storage}}}],"error":null}
+        {"ok":true,"operation":"vm.list","data":[{"id":"vm-id","name":"lab-vm","platform":"hyperv","guest_family":"windows","state":"off","cpu":{"count":2},"memory":{"startup_mb":4096},"generation":2,"checkpoints":{"count":0},"managed_by_purecvisor":true,"network":[{{nics}}],"storage":{{storage}}{{dvdDrives}}}],"error":null}
         """;
         var inventoryJson = """
         {"ok":true,"operation":"network.inventory","data":{"source":"native-csharp","mutating":false,"switches":[{"name":"Default Switch"}]},"error":null}

@@ -227,7 +227,13 @@ public sealed record DesktopNodeHyperVVmInfo(
     string? Notes = null,
     [property: JsonPropertyName("template_lock")]
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-    bool TemplateLock = false);
+    bool TemplateLock = false,
+    [property: JsonPropertyName("dvd_drives")]
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    DesktopNodeHyperVVmDvdDriveInfo? DvdDrives = null);
+
+public sealed record DesktopNodeHyperVVmDvdDriveInfo(
+    [property: JsonPropertyName("count")] int Count);
 
 public sealed record DesktopNodeHyperVVmCpuInfo(
     [property: JsonPropertyName("count")] int? Count);
@@ -481,7 +487,8 @@ public sealed record DesktopNodeHyperVWmiVmSummary(
     IReadOnlyList<DesktopNodeHyperVWmiVmStorageSummary>? Storage = null,
     IReadOnlyList<DesktopNodeHyperVWmiVmNetworkSummary>? Network = null,
     string? CreationTime = null,
-    string? TimeOfLastStateChange = null);
+    string? TimeOfLastStateChange = null,
+    int? DvdDriveCount = null);
 
 public sealed record DesktopNodeHyperVWmiVmStorageSummary(string? Path, bool Attached);
 

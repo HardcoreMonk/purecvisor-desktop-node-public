@@ -44,9 +44,11 @@
 
 **수정:** inventory VM 정보(HyperV provider/models), `DesktopNodeApiVmMutationRouteHandler.Devices.cs`, 테스트
 
-- [ ] 착수 시 `vm.list` 응답 필드를 고정하는 계약·fixture·Web parity를 확인한다.
-- [ ] inventory가 DVD drive 수를 내고 route guard가 그 값을 쓴다. 제품 VM의 DVD 추가 요청이 job 대신 route에서 `PCV_VM_DEVICE_ALREADY_PRESENT`로 거절된다.
-- [ ] Api/HyperV 테스트.
+- [x] 착수 시 `vm.list` 응답 필드를 고정하는 계약·fixture·Web parity를 확인한다.
+- [x] inventory가 DVD drive 수를 내고 route guard가 그 값을 쓴다. 제품 VM의 DVD 추가 요청이 job 대신 route에서 `PCV_VM_DEVICE_ALREADY_PRESENT`로 거절된다.
+- [x] Api/HyperV 테스트.
+
+실행 기록(2026-09-28): `vm.list` 필드 집합을 고정하는 계약은 없고 Web은 `storage`를 디스크 경로 목록으로 그린다. 그래서 `storage`에 DVD를 섞지 않고 VM 수준 `dvd_drives: {count}`(읽지 못하면 생략)를 더했다. provider는 설정의 `Msvm_ResourceAllocationSettingData` 중 `Synthetic DVD Drive`를 센다(기존 VM으로 읽기 전용 확인: `13`개 중 DVD `1`). route guard는 `dvd_drives.count`를 먼저 보고 없으면 기존 storage 스캔으로 돌아간다. 기존 Api fixture는 `storage`에 `"type":"dvd"`를 넣는 비현실적 모양이라 결함을 가렸다. native 모양 inventory로 route `400` `PCV_VM_DEVICE_ALREADY_PRESENT`, job 없음을 보는 테스트를 더했고 route 수정 없이 실패함을 확인했다. VM provider가 ratchet 상한(`573`)을 넘어(`619`) network/DVD resource 읽기를 `DesktopNodeHyperVWmiVmProvider.Resources.cs` partial로 옮겼다(`539`, 상한 그대로). HyperV.Tests `232/232`, Api.Tests `414/414`, Delivery `712/712`.
 
 ## Task 4: 종료 검증
 
