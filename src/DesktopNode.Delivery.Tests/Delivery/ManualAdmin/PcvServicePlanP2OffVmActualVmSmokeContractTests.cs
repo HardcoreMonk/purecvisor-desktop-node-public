@@ -89,6 +89,23 @@ public sealed class PcvServicePlanP2OffVmActualVmSmokeContractTests
     }
 
     [Fact]
+    public void ReadsHyperVDevicesFromWmiInsteadOfProcessCachedCmdlets()
+    {
+        var source = Source();
+        RequireTokens(
+            source,
+            "root\\virtualization\\v2",
+            "Msvm_SyntheticEthernetPortSettingData",
+            "Msvm_EthernetPortAllocationSettingData",
+            "Microsoft:Hyper-V:Synthetic DVD Drive",
+            "Msvm_SnapshotOfVirtualSystem",
+            "hyperv-wmi-root-virtualization-v2");
+        Assert.DoesNotContain("Get-VMNetworkAdapter", source, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("Get-VMDvdDrive", source, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("Get-VMSnapshot", source, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
     public void PinsSummaryAtomicityCleanupAndDoesNotWriteCurrentEvidence()
     {
         var source = Source();

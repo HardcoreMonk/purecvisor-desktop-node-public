@@ -671,14 +671,43 @@ function Get-HyperVDeviceReadback {
             name = $VmName
         }
     }
-    $vm = Get-VM -Id $Id -ErrorAction Stop
-    $adapters = @(Get-VMNetworkAdapter -VM $vm)
-    return [pscustomobject][ordered]@{
-        nic_count = $adapters.Count
-        nic_switches = @($adapters | ForEach-Object { [string]$_.SwitchName })
-        dvd_count = @(Get-VMDvdDrive -VM $vm).Count
-        checkpoint_count = @(Get-VMSnapshot -VM $vm).Count
+    # Hyper-V PowerShell cmdlets cache VM devices per process and miss devices the service adds,
+    # so device readback queries the Hyper-V WMI provider directly.
+    $namespace = 'root\virtualization\v2'
+    $vm = Get-CimInstance -Namespace $namespace -ClassName Msvm_ComputerSystem -Filter "Name='$($Id.ToString('D'))'"
+    if ($null -eq $vm) {
+        throw "PCV_P2_OFFVM_STATE_MISMATCH|hyperv-vm-missing|$($Id.ToString('D'))"
     }
+    $realized = @(Get-CimAssociatedInstance -InputObject $vm -ResultClassName Msvm_VirtualSystemSettingData |
+        Where-Object { [string](Get-CimPropertyValue -Instance $_ -Name 'VirtualSystemType') -eq 'Microsoft:Hyper-V:System:Realized' })
+    if ($realized.Count -ne 1) {
+        throw "PCV_P2_OFFVM_STATE_MISMATCH|hyperv-realized-settings=$($realized.Count)"
+    }
+    $parts = @(Get-CimAssociatedInstance -InputObject $realized[0] -Association Msvm_VirtualSystemSettingDataComponent)
+    $ports = @($parts | Where-Object { $_.CimClass.CimClassName -eq 'Msvm_SyntheticEthernetPortSettingData' })
+    $connections = @($parts | Where-Object { $_.CimClass.CimClassName -eq 'Msvm_EthernetPortAllocationSettingData' })
+    $dvdDrives = @($parts | Where-Object {
+        [string](Get-CimPropertyValue -Instance $_ -Name 'ResourceSubType') -eq 'Microsoft:Hyper-V:Synthetic DVD Drive'
+    })
+    $snapshots = @(Get-CimAssociatedInstance -InputObject $vm -Association Msvm_SnapshotOfVirtualSystem)
+    return [pscustomobject][ordered]@{
+        readback_source = 'hyperv-wmi-root-virtualization-v2'
+        nic_count = $ports.Count
+        nic_switches = @($connections | ForEach-Object { [string](Get-CimPropertyValue -Instance $_ -Name 'LastKnownSwitchName') })
+        dvd_count = $dvdDrives.Count
+        checkpoint_count = $snapshots.Count
+    }
+}
+
+function Get-CimPropertyValue {
+    param(
+        [Parameter(Mandatory)]$Instance,
+        [Parameter(Mandatory)][string]$Name
+    )
+
+    $property = $Instance.CimInstanceProperties[$Name]
+    if ($null -eq $property) { return $null }
+    return $property.Value
 }
 
 function Get-ProductVmData {

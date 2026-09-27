@@ -60,7 +60,9 @@ source_head=986ea3d
 
 ## Task 3: Lane 2 `device-add` (설치본 0.42.78)
 
-- [ ] `-Family device-add` 한 run. evidence 문서 새 파일. `overall_verdict`, `cleanup.verdict`, `secret_observed` 기록.
+- [x] `-Family device-add` 한 run. evidence 문서 새 파일. `overall_verdict`, `cleanup.verdict`, `secret_observed` 기록.
+
+실행 기록(2026-09-27): r1은 `nic_add`에서 runner readback 결함(Hyper-V cmdlet의 process 안 device cache)으로 FAIL, cleanup PASS. 일회용 VM 두 대 진단으로 제품 NIC 추가가 정상임을 확인하고 runner device readback을 `root\virtualization\v2` WMI 직접 조회로 바꿨다(계약 테스트가 cmdlet 재사용을 막음). r2 PASS: `docs/ga-ready/evidence/service-plan-p2-offvm-device-add-actual-vm-2026-09-27-04278-r2.md`. 잔여 VM `0`.
 
 ## Task 4: Lane 2 `checkpoint-schedule` (설치본 0.42.78)
 
