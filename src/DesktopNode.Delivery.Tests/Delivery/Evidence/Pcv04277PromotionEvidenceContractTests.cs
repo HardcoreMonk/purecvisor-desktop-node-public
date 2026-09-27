@@ -6,8 +6,8 @@ namespace DesktopNode.Delivery.Tests.Delivery.Evidence;
 public sealed class Pcv04277PromotionEvidenceContractTests
 {
     [Fact]
-    public void PinsCanonicalCurrentTo04277()
+    public void PinsPreviousCurrent04277()
     {
-        D2EvidenceContractVerifier.Verify04277Current();
+        D2EvidenceContractVerifier.Verify04277PreviousCurrent();
     }
 }

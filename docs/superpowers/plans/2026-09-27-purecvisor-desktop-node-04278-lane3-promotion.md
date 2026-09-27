@@ -84,9 +84,11 @@ Task 3 착수 중 `a842ede`를 다시 읽고 범위를 셋으로 나눴다. 0.42
 **수정:** `D2EvidenceContractVerifier.cs`, spec `3`종(development policy, installed smoke, manual-admin readiness)과 각 verifier의 spec SHA 상수
 **생성:** `Pcv04278PromotionEvidenceContractTests.cs`
 
-- [ ] `Verify04277Current`를 previous current 검증으로 바꾸고 `Verify04278Current`와 04278 테스트를 추가한다.
-- [ ] 바뀐 pin 파일의 SHA와 spec SHA 상수를 갱신한다.
-- [ ] `dotnet test src/DesktopNode.Delivery.Tests` 실패 `0`.
+- [x] `Verify04277Current`를 previous current 검증으로 바꾸고 `Verify04278Current`와 04278 테스트를 추가한다.
+- [x] 바뀐 pin 파일의 SHA와 spec SHA 상수를 갱신한다.
+- [x] `dotnet test src/DesktopNode.Delivery.Tests` 실패 `0`.
+
+실행 기록(2026-09-27): `Verify04278Current`를 추가하고 `Verify04277Current`는 `Verify04277PreviousCurrent`(current가 0.42.77이 아니고 `previous_04277_*` metadata와 predecessor ledger 행이 남는지)로 바꿨다. 04278 계약이 요구하는 `EVIDENCE_INDEX`/`CONTROL_PLANE_INDEX`의 0.42.78 승격 절을 0.42.77 형식으로 추가했고 `CONTROL_PLANE_INDEX`의 0.42.77 절 제목은 predecessor로 바꿨다. 이 branch가 바꾼 pin 파일 `4`개(`AGENTS.md`, `packaging/windows-desktop-node/README.md`, `MANUAL_ADMIN_NEXT_CAMPAIGN_DESCRIPTOR.md`, `current-evidence.json`)와 spec SHA 상수 `3`개를 갱신했다. `StructuredTransitionSources` 예외 `4`개는 그대로다. Delivery.Tests `706/706`.
 
 ## Task 4: 종료 검증
 

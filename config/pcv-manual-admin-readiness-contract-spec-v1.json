@@ -14,11 +14,11 @@
     },
     {
       "path": "docs/ga-ready/MANUAL_ADMIN_NEXT_CAMPAIGN_DESCRIPTOR.md",
-      "sha256": "86ba689175eb22eb968a9bd46cce6758cb22cbfc8665bffcbe013a014918c990"
+      "sha256": "816839496efb0b171ed56bca91f10c42bd9657fb65beda1caabfe8826bb9c750"
     },
     {
       "path": "docs/ga-ready/current-evidence.json",
-      "sha256": "7b8c7e70dbfd5cfe4cbef1ffc5942a0613304029fac2189d5cccaa915cd9929e"
+      "sha256": "ce74ac1b75194b7910ccc93eb556b07aeb4bd880038f5522c3abf066ccb1fcd3"
     },
     {
       "path": "packaging/windows-desktop-node/tools/New-PcvManualAdminRebaselineReadiness.ps1",

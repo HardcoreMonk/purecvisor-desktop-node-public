@@ -35,8 +35,33 @@
 - This documentation/CI closure did not open a package candidate. 당시 operational authority는
   `0.42.74-admin-smoke`였고, 이후 2026-08-27 Lane 3가 `0.42.75-admin-smoke`로 승격했다.
   2026-09-20 Lane 3가 `0.42.77-admin-smoke`로 다시 승격했다.
+  2026-09-27 Lane 3가 `0.42.78-admin-smoke`로 다시 승격했다.
 
-## 2026-09-20 `0.42.77` current promotion
+## 2026-09-27 `0.42.78` current promotion
+
+- 최신 product payload package는 `0.42.78-admin-smoke`이며
+  `docs/ga-ready/evidence/admin-smoke-package-2026-09-25-04278.md`가 기록한다. Clean MSI
+  SHA-256은 `c3390c1e06f77ccb77dc30bd1354c846d09602c28900e3e9e3782d08cc8f5a6d`다.
+- full admin host mutation current는
+  `docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-09-27-04278-r2-hostmutation.md` /
+  `full-admin-host-mutation-gate-20260927-04278-r2`다. Operational MSI SHA-256은
+  `0856d07ee7576a1cd44ca18061e2c9351ddef95271adca0b7b0b319a02d278b6`, payload aggregate
+  SHA-256은 `2dfabb939317e4fd6a29b557d98a2d0f35a4197201b8173698737ff8f68ea4bb`, provenance
+  commit은 `0de176f12cbfe2bc8f842396159e3c81dfbd3b9b`다. pair target은 clean MSI이며
+  operational fullgate MSI와 다른 identity다.
+- installed current-card는
+  `docs/ga-ready/evidence/installed-operator-surface-current-card-2026-09-27-04278.md`다.
+- actual-VM functional은
+  `docs/ga-ready/evidence/functional-correctness-actual-host-validation-2026-09-27-04278-carryforward.md`
+  로 04275 PASS를 04277에 이어 carry-forward한다. SERVICE_PLAN P0 actual-VM은 04275 evidence를 유지한다.
+- `0.42.77-admin-smoke -> 0.42.78-admin-smoke` package-pair는
+  `docs/ga-ready/evidence/manual-admin-campaign-2026-09-27-04277-04278.md` /
+  `manual-admin-campaign-descriptor-20260927-04277-04278`로 PASS다.
+- operational current는 `0.42.78-admin-smoke`다. `promotion_eligible=true`, blockers는
+  없다. 이 Lane 3 호스트 설치본은 `0.42.78-admin-smoke`다. public trusted signing과
+  external stable publication은 주장하지 않는다.
+
+## 2026-09-20 `0.42.77` predecessor promotion
 
 - 최신 product payload package는 `0.42.77-admin-smoke`이며
   `docs/ga-ready/evidence/admin-smoke-package-2026-08-29-04277.md`가 기록한다. Clean MSI
