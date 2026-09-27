@@ -78,9 +78,13 @@ guest OS 없이 Off VM으로 검증할 수 있는 P2 기능군을 설치본 CLI�
 | `import` | import `--yes` | job succeeded, 새 identity(소스 id와 다름), managed, Off, 소스 Off |
 | `cleanup` | import VM 먼저 제품 delete, 다음 소스, export root와 VM 디렉터리 삭제 | 둘 다 없음, 디렉터리 없음 |
 
-제품 import는 `ImportSystemDefinition`으로 export package를 제자리 등록하므로 import VM 소유 root를
-`VmRoot\exports`로 예약한다. import VM 구성 경로가 그 밖이면 identity blocker로 멈추고 정리하지 않는다(수동 정리,
-fail-safe). 제품 `vm delete`는 파일을 지우지 않으므로 디렉터리는 runner가 identity 확인 뒤 지운다.
+(2026-09-28 갱신) 제품 import는 package 디스크를 `--vm-root` 아래 `<import 이름>` 디렉터리로 복사하고 그
+디렉터리가 이미 있으면 거절하므로, runner는 import VM root를 `VmRoot\<import 이름>`으로 예약하되 만들지 않는다.
+`import` slice는 WMI로 import VM 디스크가 그 root 아래이고 소스 디스크와 겹치지 않으며 package 디스크가 남아 있는지
+확인한다. import VM 구성 경로가 예약 root 밖이면 identity blocker로 멈추고 정리하지 않는다(fail-safe). 제품
+`vm delete`는 파일을 지우지 않으므로 디렉터리는 runner가 identity 확인 뒤 지운다. 어떤 디렉터리든 지우기 전에
+host의 VHD 참조(`Msvm_StorageAllocationSettingData`)가 그 아래를 가리키면 지우지 않는다
+(`PCV_P2_OFFVM_CLEANUP_ROOT_REFERENCED`). export root는 VM 정리 뒤 같은 검사로 지운다.
 
 ### `network-connect`
 

@@ -113,11 +113,17 @@ public sealed class PcvServicePlanP2OffVmActualVmSmokeContractTests
             "'vm', 'export', $VmName, '--directory', $exportDirFull, '--allowed-root', $exportRootFull, '--yes')",
             "'vm', 'import', 'preview', '--name', $ImportVmName, '--directory', $exportDirFull,",
             "'vm', 'import', '--name', $ImportVmName, '--directory', $exportDirFull,",
+            "'--allowed-root', $exportRootFull, '--vm-root', $vmRootFull, '--yes')",
             "'vm', 'get', $ImportVmName",
             "PCV_VM_EXPORT_PATH_NOT_ALLOWED",
-            "New-VmOwnershipRecord -Kind 'import' -Name $ImportVmName -ExpectedRoot $exportRootFull",
+            "New-VmOwnershipRecord -Kind 'import' -Name $ImportVmName -ExpectedRoot $importVmRootFull",
             "'vm-delete-import'",
-            "vmgs_count");
+            "vmgs_count",
+            "disks_in_import_root",
+            "shared_with_source",
+            "PCV_P2_OFFVM_CLEANUP_ROOT_REFERENCED",
+            "Msvm_StorageAllocationSettingData");
+        Assert.DoesNotContain("Remove-PcvDirectory -Path $record.root", source, StringComparison.Ordinal);
         AssertOrdered(
             source,
             "$ordered = @($script:VmRecords | Where-Object { $_.kind -eq 'import' })",

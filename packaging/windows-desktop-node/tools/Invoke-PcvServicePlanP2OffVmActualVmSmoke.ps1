@@ -129,6 +129,7 @@ Assert-VmName -Name $ImportVmName -VersionTag $versionTag
 if ($ImportVmName -eq $VmName) {
     throw 'PCV_P2_OFFVM_VM_NAME_INVALID|source-and-import-must-differ'
 }
+$importVmRootFull = Assert-ValidatedChildPath -Root $vmRootFull -Candidate (Join-Path $vmRootFull $ImportVmName)
 $exportRootFull = Assert-ValidatedChildPath -Root $vmRootFull -Candidate (Join-Path $vmRootFull 'exports')
 $exportDirFull = Assert-ValidatedChildPath -Root $exportRootFull -Candidate (Join-Path $exportRootFull $VmName)
 $outsideDirFull = Assert-ValidatedChildPath -Root $vmRootFull -Candidate (Join-Path $vmRootFull "outside-$VmName")
@@ -760,13 +761,55 @@ function Get-HyperVDeviceReadback {
         [string](Get-CimPropertyValue -Instance $_ -Name 'ResourceSubType') -eq 'Microsoft:Hyper-V:Synthetic DVD Drive'
     })
     $snapshots = @(Get-CimAssociatedInstance -InputObject $vm -Association Msvm_SnapshotOfVirtualSystem)
+    $diskPaths = @($parts | Where-Object {
+        [string](Get-CimPropertyValue -Instance $_ -Name 'ResourceSubType') -eq 'Microsoft:Hyper-V:Virtual Hard Disk'
+    } | ForEach-Object { @(Get-CimPropertyValue -Instance $_ -Name 'HostResource')[0] } | Where-Object { $_ })
     return [pscustomobject][ordered]@{
         readback_source = 'hyperv-wmi-root-virtualization-v2'
         nic_count = $ports.Count
         nic_switches = @($connections | ForEach-Object { [string](Get-CimPropertyValue -Instance $_ -Name 'LastKnownSwitchName') })
         dvd_count = $dvdDrives.Count
         checkpoint_count = $snapshots.Count
+        disk_paths = @($diskPaths | ForEach-Object { [string]$_ })
     }
+}
+
+function Test-PathUnderRoot {
+    param(
+        [AllowNull()][string]$Path,
+        [Parameter(Mandatory)][string]$Root
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Path)) { return $false }
+    $full = Get-AbsolutePath -Path $Path
+    $rootFull = (Get-AbsolutePath -Path $Root).TrimEnd([System.IO.Path]::DirectorySeparatorChar)
+    $comparison = Get-PathComparison
+    return $full.Equals($rootFull, $comparison) -or
+        $full.StartsWith($rootFull + [System.IO.Path]::DirectorySeparatorChar, $comparison)
+}
+
+function Get-RootDiskReferenceCount {
+    param([Parameter(Mandatory)][string]$Root)
+
+    if ($null -ne $RuntimeAdapter) {
+        return [int](Invoke-RuntimeOperation -Operation 'root-disk-references' -Input @{ root = $Root })
+    }
+    $disks = @(Get-CimInstance -Namespace 'root\virtualization\v2' -ClassName Msvm_StorageAllocationSettingData `
+        -Filter "ResourceSubType='Microsoft:Hyper-V:Virtual Hard Disk'")
+    return @($disks | Where-Object {
+        Test-PathUnderRoot -Path ([string]@(Get-CimPropertyValue -Instance $_ -Name 'HostResource')[0]) -Root $Root
+    }).Count
+}
+
+function Remove-UnreferencedRoot {
+    param([Parameter(Mandatory)][string]$Root)
+
+    # A VM that the run could not identify may still point at disks under this root; never pull them away.
+    $references = Get-RootDiskReferenceCount -Root $Root
+    if ($references -gt 0) {
+        throw "PCV_P2_OFFVM_CLEANUP_ROOT_REFERENCED|root=$Root|references=$references"
+    }
+    Remove-PcvDirectory -Path $Root
 }
 
 function Get-CimPropertyValue {
@@ -1284,7 +1327,7 @@ function Invoke-ImportPreviewSlice {
 function Invoke-ImportSlice {
     $import = Start-PcvCliJob -StepName 'vm-import' -Arguments @(
         'vm', 'import', '--name', $ImportVmName, '--directory', $exportDirFull,
-        '--allowed-root', $exportRootFull, '--yes') -DeferTerminalSummaryWrite
+        '--allowed-root', $exportRootFull, '--vm-root', $vmRootFull, '--yes') -DeferTerminalSummaryWrite
     if ([string](Get-ObjectPropertyValue -InputObject $import -Name 'status') -ne 'succeeded') {
         throw 'PCV_P2_OFFVM_STATE_MISMATCH|import'
     }
@@ -1298,10 +1341,24 @@ function Invoke-ImportSlice {
     $managed = [bool](Get-ObjectPropertyValue -InputObject $importData -Name 'managed_by_purecvisor')
     $sourceHyperV = Wait-HyperVState -Id $sourceId -Expected 'Off' -Phase 'after-import-source'
     $sourceProduct = Get-ProductState -Data (Get-ProductVmData -Phase 'after-import-source')
+    $importDisks = @((Get-HyperVDeviceReadback -Id $importId).disk_paths | ForEach-Object { [string]$_ })
+    $sourceDisks = @((Get-HyperVDeviceReadback -Id $sourceId).disk_paths | ForEach-Object { [string]$_ })
+    $comparison = Get-PathComparison
+    $sharedDisks = @($importDisks | Where-Object {
+        $candidate = $_
+        @($sourceDisks | Where-Object { $_.Equals($candidate, $comparison) }).Count -gt 0
+    })
+    $disksInImportRoot = $importDisks.Count -gt 0 -and
+        @($importDisks | Where-Object { -not (Test-PathUnderRoot -Path $_ -Root $importVmRootFull) }).Count -eq 0
+    $package = Get-ExportPackageReadback -Path $exportDirFull
     $summary.readbacks.import = [ordered]@{
         import_vm_id = $record.id
         new_identity = ($importId -ne $sourceId)
         import_path = $record.observed_path
+        import_disks = $importDisks
+        disks_in_import_root = $disksInImportRoot
+        shared_with_source = $sharedDisks.Count
+        package_vhdx_after_import = [int]$package.vhdx_count
         import_hyperv = $importHyperV
         import_product = $importProduct
         managed = $managed
@@ -1310,8 +1367,9 @@ function Invoke-ImportSlice {
     }
     Write-AtomicSummary
     if ($importId -eq $sourceId -or $importHyperV -ne 'Off' -or -not (Test-PcvProductOff $importProduct) -or
-        -not $managed -or $sourceHyperV -ne 'Off' -or -not (Test-PcvProductOff $sourceProduct)) {
-        throw "PCV_P2_OFFVM_STATE_MISMATCH|import|new_identity=$($importId -ne $sourceId)|managed=$managed"
+        -not $managed -or $sourceHyperV -ne 'Off' -or -not (Test-PcvProductOff $sourceProduct) -or
+        -not $disksInImportRoot -or $sharedDisks.Count -ne 0 -or [int]$package.vhdx_count -lt 1) {
+        throw "PCV_P2_OFFVM_STATE_MISMATCH|import|new_identity=$($importId -ne $sourceId)|disks_in_root=$disksInImportRoot|shared=$($sharedDisks.Count)"
     }
 }
 
@@ -1575,7 +1633,7 @@ function Invoke-ExactCleanup {
             if ([string]::IsNullOrWhiteSpace([string]$record.id)) {
                 if ($sameName.Count -eq 0) {
                     if ($record.root_owned_by_run -and (Test-PcvPath -Path $record.root)) {
-                        Remove-PcvDirectory -Path $record.root
+                        Remove-UnreferencedRoot -Root $record.root
                     }
                     $record.removed = $true
                     $record.root_removed = -not (Test-PcvPath -Path $record.root)
@@ -1624,7 +1682,7 @@ function Invoke-ExactCleanup {
                 if ($null -ne $beforeRootRemoval) {
                     throw 'PCV_P2_OFFVM_CLEANUP_IDENTITY_DRIFT|phase=before-root-removal|recorded-id-present'
                 }
-                Remove-PcvDirectory -Path $record.root
+                Remove-UnreferencedRoot -Root $record.root
             }
             $record.root_removed = -not (Test-PcvPath -Path $record.root)
             if (-not $record.root_removed) {
@@ -1642,11 +1700,13 @@ function Invoke-ExactCleanup {
         }
     }
     if ($Family -eq 'export-import') {
-        try {
-            if (Test-PcvPath -Path $outsideDirFull) { Remove-PcvDirectory -Path $outsideDirFull }
-        }
-        catch {
-            $cleanupErrors.Add('PCV_P2_OFFVM_CLEANUP_ROOT_INVALID') | Out-Null
+        foreach ($runRoot in @($exportRootFull, $outsideDirFull)) {
+            try {
+                if (Test-PcvPath -Path $runRoot) { Remove-UnreferencedRoot -Root $runRoot }
+            }
+            catch {
+                $cleanupErrors.Add((Get-SafeFailureCode -Message $_.Exception.Message)) | Out-Null
+            }
         }
     }
     Invoke-SwitchCleanup -CleanupErrors $cleanupErrors
@@ -1691,6 +1751,7 @@ try {
     Assert-PcvPathAbsent -Path $vmOwnRootFull -Kind 'vm'
     if ($Family -eq 'export-import') {
         Assert-VmAbsent -Name $ImportVmName
+        Assert-PcvPathAbsent -Path $importVmRootFull -Kind 'import'
         Assert-PcvPathAbsent -Path $exportRootFull -Kind 'export'
         Assert-PcvPathAbsent -Path $outsideDirFull -Kind 'outside'
     }
@@ -1705,8 +1766,9 @@ try {
 
     $script:VmRecord = New-VmOwnershipRecord -Name $VmName -ExpectedRoot $vmOwnRootFull
     if ($Family -eq 'export-import') {
-        # Hyper-V import registers the exported package in place, so the imported VM lives under the export root.
-        $script:ImportRecord = New-VmOwnershipRecord -Kind 'import' -Name $ImportVmName -ExpectedRoot $exportRootFull
+        # Product import copies the package disks into VmRoot\<import name> and refuses an existing directory,
+        # so the run reserves that root without creating it.
+        $script:ImportRecord = New-VmOwnershipRecord -Kind 'import' -Name $ImportVmName -ExpectedRoot $importVmRootFull
     }
     $summary.host_mutation_performed = $true
     $summary.actual_execution = 'installed-cli-and-hyperv'
@@ -1714,7 +1776,6 @@ try {
     New-PcvDirectory -Path $script:VmRecord.root
     $script:VmRecord.root_owned_by_run = $true
     if ($null -ne $script:ImportRecord) {
-        New-PcvDirectory -Path $script:ImportRecord.root
         $script:ImportRecord.root_owned_by_run = $true
     }
     Write-AtomicSummary

@@ -136,9 +136,11 @@ PCVCLI가 아니라 `DesktopNode.Host.exe service-action switch-create|switch-re
 
 ## Task 13: runner import 검증 갱신 (Lane 1)
 
-- [ ] import에 `--vm-root`를 넘기고 import VM 예약 root를 `VmRoot\<import 이름>`으로 둔다. import VM 디스크가 그 root 아래이고 소스 디스크와 다르며 package 디스크가 남아 있는지 WMI로 확인한다.
-- [ ] 소스 root 삭제 전 다른 VM이 그 아래 디스크를 참조하지 않는지 확인한다.
-- [ ] Pester와 C# 계약 테스트.
+- [x] import에 `--vm-root`를 넘기고 import VM 예약 root를 `VmRoot\<import 이름>`으로 둔다. import VM 디스크가 그 root 아래이고 소스 디스크와 다르며 package 디스크가 남아 있는지 WMI로 확인한다.
+- [x] 소스 root 삭제 전 다른 VM이 그 아래 디스크를 참조하지 않는지 확인한다.
+- [x] Pester와 C# 계약 테스트.
+
+실행 기록(2026-09-28): 제품 import가 대상 디렉터리를 새로 만들어야 하므로 runner는 import root를 만들지 않고 예약만 한다. 디렉터리 삭제는 모두 `Remove-UnreferencedRoot`(host 전체 `Msvm_StorageAllocationSettingData` 참조 검사)를 거친다. 0.42.80 형태(import VM이 Hyper-V 기본 위치에 있고 소스 디스크를 가리킴)를 흉내 낸 Pester에서 cleanup이 `PCV_P2_OFFVM_CLEANUP_ROOT_REFERENCED`로 소스 root를 남긴다. 기존 VM으로 CIM 디스크 readback과 참조 수를 읽기 전용 확인했다. Pester `15/15`, 계약 `6/6`.
 
 ## Task 14: 0.42.81 probe-vehicle package와 설치
 

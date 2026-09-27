@@ -27,6 +27,7 @@ function New-P2OffVmBehaviorRuntime {
         Switches = @{}
         SwitchCreateFails = $false
         PendingSwitch = $null
+        ImportMode = 'copy'
         Schedule = [ordered]@{ enabled = $false; interval_minutes = $null; retention_max = $null }
         Vms = @{}
         ExistingRoots = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
@@ -125,12 +126,20 @@ function New-P2OffVmBehaviorRuntime {
                 }
             }
             'vm-devices' {
+                $owner = @($state.Vms.Values | Where-Object { [guid]$_.Id -eq [guid]$Payload.id }) | Select-Object -First 1
                 return [pscustomobject]@{
                     nic_count = $state.NicSwitches.Count
                     nic_switches = @($state.NicSwitches)
                     dvd_count = $state.DvdCount
                     checkpoint_count = $state.CheckpointCount
+                    disk_paths = if ($null -eq $owner) { @() } else { @($owner.DiskPaths) }
                 }
+            }
+            'root-disk-references' {
+                $root = ([string]$Payload.root).TrimEnd('\')
+                return @($state.Vms.Values | ForEach-Object { @($_.DiskPaths) } | Where-Object {
+                    ([string]$_).StartsWith($root + '\', [System.StringComparison]::OrdinalIgnoreCase)
+                }).Count
             }
             'invoke-cli' {
                 $step = [string]$Payload.step
@@ -238,6 +247,7 @@ function New-P2OffVmBehaviorRuntime {
                             Name = $state.VmName
                             Path = $root
                             State = 'Off'
+                            DiskPaths = @(Join-Path $root 'disk0.vhdx')
                         }
                         $state.NicSwitches.Add('Default Switch') | Out-Null
                         return [pscustomobject]@{ status = 'succeeded'; vm_id = $state.VmId.ToString('D') }
@@ -272,15 +282,21 @@ function New-P2OffVmBehaviorRuntime {
                     }
                     'vm-export' {
                         $state.Exported = $true
+                        $state.ExistingRoots.Add((Split-Path -Parent ([string]$state.ExportDir))) | Out-Null
                         $state.ExistingRoots.Add([string]$state.ExportDir) | Out-Null
                         return [pscustomobject]@{ status = 'succeeded' }
                     }
                     'vm-import' {
+                        $importRoot = Join-Path $state.VmRoot $state.ImportName
+                        $sourceDisk = Join-Path (Join-Path $state.VmRoot $state.VmName) 'disk0.vhdx'
+                        $legacy = $state.ImportMode -eq 'legacy-shared-source'
+                        if (-not $legacy) { $state.ExistingRoots.Add($importRoot) | Out-Null }
                         $state.Vms[$state.ImportName] = [pscustomobject]@{
                             Id = $state.ImportId
                             Name = $state.ImportName
-                            Path = [string]$state.ExportDir
+                            Path = if ($legacy) { 'C:\ProgramData\Microsoft\Windows\Hyper-V' } else { $importRoot }
                             State = 'Off'
+                            DiskPaths = if ($legacy) { @($sourceDisk) } else { @(Join-Path $importRoot 'disk0.vhdx') }
                         }
                         return [pscustomobject]@{ status = 'succeeded' }
                     }
@@ -456,7 +472,12 @@ Describe 'SERVICE_PLAN P2 Off-VM actual-VM runner contract' {
         $run.Summary.readbacks.export.vmcx_count | Should -Be 1
         $run.Summary.readbacks.import_preview.target_absent | Should -BeTrue
         $run.Summary.readbacks.import.new_identity | Should -BeTrue
+        $run.Summary.readbacks.import.disks_in_import_root | Should -BeTrue
+        $run.Summary.readbacks.import.shared_with_source | Should -Be 0
         $run.Summary.import_vm_id | Should -Be 'dddddddd-dddd-dddd-dddd-dddddddddddd'
+        $importArgs = @((Get-CliStep $run 'vm-import')[0].input.arguments)
+        $importArgs[[array]::IndexOf($importArgs, '--vm-root') + 1] | Should -Be $run.Summary.vm_root_resolved
+        $run.State.ExistingRoots.Contains((Join-Path $run.Summary.vm_root_resolved $run.Summary.import_vm_name)) | Should -BeFalse
         $run.Summary.cleanup.verdict | Should -Be 'PASS'
         $run.State.Vms.Count | Should -Be 0
         $run.State.ExistingRoots.Contains((Join-Path $run.Summary.vm_root_resolved 'exports')) | Should -BeFalse
@@ -469,6 +490,20 @@ Describe 'SERVICE_PLAN P2 Off-VM actual-VM runner contract' {
             $arguments[[array]::IndexOf($arguments, '--allowed-root') + 1] | Should -Be (Join-Path $run.Summary.vm_root_resolved 'exports')
         }
         @((Get-CliStep $run 'vm-export-unconfirmed')[0].input.arguments) | Should -Not -Contain '--yes'
+    }
+
+    It 'keeps the source root when an unidentified import VM still points at the source disk' {
+        $run = Invoke-P2OffVmBehaviorScenario -Name 'import-legacy-shared-source' -Family 'export-import' -Configure {
+            param($state)
+            $state.ImportMode = 'legacy-shared-source'
+        }
+
+        $run.Summary.overall_verdict | Should -Be 'FAIL'
+        $run.Summary.slice_verdicts.import | Should -Be 'FAIL'
+        $run.Summary.cleanup.verdict | Should -Be 'FAIL'
+        $run.Summary.cleanup.error | Should -Match 'PCV_P2_OFFVM_CLEANUP_ROOT_REFERENCED'
+        $run.State.ExistingRoots.Contains((Join-Path $run.Summary.vm_root_resolved $run.Summary.vm_name)) | Should -BeTrue
+        $run.State.Vms.ContainsKey([string]$run.Summary.import_vm_name) | Should -BeTrue
     }
 
     It 'fails export when the package has no single vmcx and still cleans up' {
