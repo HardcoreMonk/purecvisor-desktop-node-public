@@ -1,3 +1,4 @@
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace DesktopNode.Verification;
@@ -88,12 +89,7 @@ internal sealed partial class CutoverGitBoundary(IProcessRunner processRunner)
             throw Invalid("cutover-history=shadow-not-ancestor");
         }
 
-        var history = await RunRequiredAsync(
-            root,
-            "history",
-            ["rev-list", "--parents", $"{shadow}..{head}"],
-            cancellationToken);
-        var commits = ParseHistory(history);
+        var commits = ParseHistory(await ReadHistoryAsync(root, shadow, head, cancellationToken));
         var directChildren = commits
             .Where(commit => commit.Parents.Contains(shadow, StringComparer.Ordinal))
             .ToArray();
@@ -181,6 +177,48 @@ internal sealed partial class CutoverGitBoundary(IProcessRunner processRunner)
             ["rev-parse", "--verify", "HEAD^{commit}"],
             cancellationToken);
         return SingleSha(output, "cutover-head=missing");
+    }
+
+    // Each rev-list line is about 82 characters and VerificationProcess caps captured output
+    // at 8192 characters, so a single call breaks once the branch grows past ~100 commits.
+    // Page the history instead of widening the cap; a page that still truncates (for example
+    // an octopus merge line) keeps failing closed in ParseHistory.
+    private const int HistoryPageSize = 32;
+    private const int HistoryPageLimit = 4096;
+
+    private async Task<string> ReadHistoryAsync(
+        string root,
+        string shadow,
+        string head,
+        CancellationToken cancellationToken)
+    {
+        var history = new StringBuilder();
+        for (var page = 0; page < HistoryPageLimit; page++)
+        {
+            var output = await RunRequiredAsync(
+                root,
+                "history",
+                [
+                    "rev-list",
+                    "--parents",
+                    $"--skip={page * HistoryPageSize}",
+                    $"--max-count={HistoryPageSize}",
+                    $"{shadow}..{head}"
+                ],
+                cancellationToken);
+            history.Append(output);
+            if (!output.EndsWith('\n'))
+            {
+                history.Append('\n');
+            }
+
+            if (Lines(output).Count() < HistoryPageSize)
+            {
+                return history.ToString();
+            }
+        }
+
+        throw Invalid("cutover-history=too-long");
     }
 
     private async Task<string> RunRequiredAsync(

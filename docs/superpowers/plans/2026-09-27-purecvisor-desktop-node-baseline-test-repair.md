@@ -65,10 +65,12 @@ manifest 이력에는 case 추가 때 개수를 갱신한 전례가 없다(초�
 
 **수정:** `src/DesktopNode.Verification/CutoverGitBoundary.cs`, `src/DesktopNode.Verification.Tests`의 관련 테스트
 
-- [ ] `rev-list --parents <shadow>..HEAD` 호출에만 명시적 출력 상한(예: `1 MiB`)을 준다. 다른 git 호출과 기본 `8192`자 상한은 그대로 둔다. 출력이 상한을 넘으면 지금처럼 fail-closed다.
-- [ ] 상한이 기본값보다 큰 것을 고정하는 단위 테스트를 추가한다(fake process runner로 invocation의 `OutputLimitCharacters` 확인).
-- [ ] `DesktopNode.Verification` 코드가 spec `source_files`(`VerificationCatalog.cs` 등)나 `StructuredTransitionSources`에 걸리는지 확인하고 필요한 pin을 갱신한다.
+- [x] `rev-list --parents <shadow>..HEAD` 호출에만 명시적 출력 상한(예: `1 MiB`)을 준다. 다른 git 호출과 기본 `8192`자 상한은 그대로 둔다. 출력이 상한을 넘으면 지금처럼 fail-closed다.
+- [x] 상한이 기본값보다 큰 것을 고정하는 단위 테스트를 추가한다(fake process runner로 invocation의 `OutputLimitCharacters` 확인).
+- [x] `DesktopNode.Verification` 코드가 spec `source_files`(`VerificationCatalog.cs` 등)나 `StructuredTransitionSources`에 걸리는지 확인하고 필요한 pin을 갱신한다.
 - [ ] commit 뒤 clean HEAD에서 `dotnet test src/DesktopNode.Verification.Tests` 실패 `0`.
+
+실행 기록(2026-09-27): 승인한 방식(이 호출에만 큰 출력 상한)은 쓸 수 없었다. `VerificationProcess`가 모든 호출의 캡처 출력을 `Math.Min(OutputLimitCharacters, MaximumOutputCharacters=8192)`로 자른다. 전역 상한을 바꾸지 않고 같은 목표(이 조회만 고침, fail-closed 유지)를 이루도록 history 조회를 `rev-list --parents --skip=N --max-count=32` 페이지로 나눴다. 한 페이지는 최대 `32`줄이라 상한보다 훨씬 작고, 잘린 페이지(예: octopus merge)는 여전히 `ParseHistory`에서 실패한다. 단위 테스트는 fake runner 대신 commit `110`개를 쌓는 실제 저장소 테스트 `AcceptsHistoryLongerThanProcessOutputLimit`로 썼고, 변경 전 `cutover-history=invalid-output`으로 RED, 변경 후 GREEN이다. `CutoverGitBoundary.cs`는 spec pin 대상이 아니다. `CutoverGitBoundaryTests` `16/16`, Delivery.Tests `705/705`. clean HEAD 확인은 commit 뒤 Task 4에서 기록한다.
 
 ## Task 4: 종료 검증
 
