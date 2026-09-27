@@ -28,9 +28,13 @@ secret_observed: `false`
 host_mutation_performed: `false`
 latest_manual_admin_package_pair: `0.42.77-admin-smoke -> 0.42.78-admin-smoke`
 latest_manual_admin_descriptor: `manual-admin-campaign-descriptor-20260925-04277-04278`
-promotion_ledger_status: `not-promoted`
-canonical_current_evidence: `0.42.77-admin-smoke`
-canonical_current_changed: `false`
+token_rotation_evidence: `docs/ga-ready/evidence/installed-token-rotation-smoke-2026-08-09-04272.md`
+token_rotation_r4_summary: `artifacts/installed-token-rotation-smoke-reconciliation-r4-20260810-04272/summary.json`
+token_rotation_r4_summary_sha256: `285661fe50ade63169b6cfc85ff1dcf754a679e30152bd04d166581b4d762136`
+token_rotation_status: `carry-forward-no-token-payload-change-after-04272`
+promotion_ledger_status: `promoted-current`
+canonical_current_evidence: `0.42.78-admin-smoke`
+canonical_current_changed: `true`
 public_trusted_signing: `not-claimed`
 external_stable_publication: `not-claimed`
 
@@ -65,12 +69,15 @@ artifact는 덮어쓰지 않고 보존한다.
 | package | clean MSI `c3390c1e…` PASS (`admin-smoke-package-2026-09-25-04278`) |
 | fullgate | r2 2 steps, exit `0`, attempt `1` (`full-admin-host-mutation-gate-2026-09-27-04278-r2-hostmutation`) |
 | manual-admin pair | `0.42.77 -> 0.42.78` descriptor `20260925` PASS, plan-only |
+| functional | `functional-correctness-actual-host-validation-2026-09-27-04278-carryforward` (`0.42.75` PASS carry-forward) |
 | cleanup | `pcv-spike-*` 잔여 `0` |
 
 ## 승격 경계
 
-이 current-card는 `not-promoted`다. Canonical current-evidence는 `0.42.77-admin-smoke`로
-유지한다. Lane 3 승격은 별도 승인 대상이다. pair target은 clean MSI `c3390c1e…`이며
+2026-09-27 Lane 3가 이 current-card를 `promoted-current`로 승격했다. Canonical
+current-evidence는 `0.42.78-admin-smoke`다. token 관련 source(`src/*Token*`, `src/*Credential*`
+비테스트 파일 `6`개)는 `0.42.77` 승격(`a842ede`) 뒤로 바뀌지 않아 token rotation evidence를
+carry-forward한다. pair target은 clean MSI `c3390c1e…`이며
 operational fullgate MSI `0856d07e…`와는 다른 identity다.
 
 ## Nonclaims

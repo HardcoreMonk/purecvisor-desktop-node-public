@@ -37,9 +37,11 @@
 **생성:** `docs/ga-ready/evidence/functional-correctness-actual-host-validation-2026-09-27-04278-carryforward.md`
 **수정:** `docs/ga-ready/evidence/installed-operator-surface-current-card-2026-09-27-04278.md`
 
-- [ ] `0.42.77` carry-forward 문서 형식으로 `0.42.78` functional carry-forward 문서를 쓴다. 원본 체인과 P0 candidate `4`개, 새 기능의 비주장을 적는다.
-- [ ] current-card를 `promotion_ledger_status: promoted-current`, `canonical_current_evidence: 0.42.78-admin-smoke`, `canonical_current_changed: true`로 바꾸고 승격 경계 절을 갱신한다(``a842ede``가 04277 current-card에 한 방식).
-- [ ] `Invoke-Pester packaging/windows-desktop-node/tests/PcvAdminSmokeEvidenceDocs.Tests.ps1`.
+- [x] `0.42.77` carry-forward 문서 형식으로 `0.42.78` functional carry-forward 문서를 쓴다. 원본 체인과 P0 candidate `4`개, 새 기능의 비주장을 적는다.
+- [x] current-card를 `promotion_ledger_status: promoted-current`, `canonical_current_evidence: 0.42.78-admin-smoke`, `canonical_current_changed: true`로 바꾸고 승격 경계 절을 갱신한다(`a842ede`가 04277 current-card에 한 방식).
+- [x] `Invoke-Pester packaging/windows-desktop-node/tests/PcvAdminSmokeEvidenceDocs.Tests.ps1`.
+
+실행 기록(2026-09-27): carry-forward 원본 artifact summary SHA `a907535a…`를 다시 확인했다. token 관련 비테스트 source `6`개는 `a842ede` 뒤로 commit이 없고 `DesktopNodeHostServiceTokenRotationDescriptor`는 Task 1(라쳇)에서 내용 변화 없이 이동만 했으므로 token rotation evidence를 current-card에 carry-forward했다. `PcvAdminSmokeEvidenceDocs` `90/90`.
 
 ## Task 2: current-evidence 기록과 생성 문서
 
