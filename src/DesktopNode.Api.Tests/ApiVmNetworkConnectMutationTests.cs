@@ -36,6 +36,21 @@ public sealed class ApiVmNetworkConnectMutationTests
     }
 
     [Fact]
+    public void ConnectQueuesJobForNativeInventoryStoppedState()
+    {
+        var processor = CreateProcessor([], state: "stopped");
+
+        var queued = processor.Handle(new DesktopNodeApiRequest(
+            "POST",
+            "/api/v1/vms/lab-vm/network",
+            JsonSerializer.Serialize(new { @switch = "pcv-lab-internal" }),
+            ServiceBearerAccepted: true));
+
+        Assert.Equal(202, queued.StatusCode);
+        Assert.DoesNotContain(NetworkChangeProblemCodes.SourceNotOff, queued.Body, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void ConnectRejectsUnmanagedWithoutQueuing()
     {
         var processor = CreateProcessor([], managed: false);
@@ -68,10 +83,11 @@ public sealed class ApiVmNetworkConnectMutationTests
     private static DesktopNodeApiRequestProcessor CreateProcessor(
         List<string> nativeCalls,
         bool managed = true,
-        string switchName = "pcv-lab-internal")
+        string switchName = "pcv-lab-internal",
+        string state = "off")
     {
         var vmJson = $$"""
-        {"ok":true,"operation":"vm.list","data":[{"id":"vm-id","name":"lab-vm","platform":"hyperv","guest_family":"windows","state":"off","cpu":{"count":2},"memory":{"startup_mb":4096},"generation":2,"checkpoints":{"count":0},"managed_by_purecvisor":{{managed.ToString().ToLowerInvariant()}},"security_features_present":false}],"error":null}
+        {"ok":true,"operation":"vm.list","data":[{"id":"vm-id","name":"lab-vm","platform":"hyperv","guest_family":"windows","state":"{{state}}","cpu":{"count":2},"memory":{"startup_mb":4096},"generation":2,"checkpoints":{"count":0},"managed_by_purecvisor":{{managed.ToString().ToLowerInvariant()}},"security_features_present":false}],"error":null}
         """;
         var inventoryJson = $$"""
         {"ok":true,"operation":"network.inventory","data":{"source":"native-csharp","mutating":false,"switches":[{"name":{{JsonSerializer.Serialize(switchName)}}}]},"error":null}

@@ -226,7 +226,7 @@ public static class NetworkChangePolicy
             return Reject(NetworkChangeProblemCodes.TemplateLocked);
         }
 
-        if (!string.Equals(request.PowerState, RequiredPowerState, StringComparison.OrdinalIgnoreCase))
+        if (!VmPowerStates.IsOff(request.PowerState))
         {
             return Reject(NetworkChangeProblemCodes.SourceNotOff);
         }

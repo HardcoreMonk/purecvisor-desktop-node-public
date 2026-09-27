@@ -128,7 +128,7 @@ public static class VmExportImportPolicy
             return Reject(VmExportImportProblemCodes.GenerationUnsupported);
         }
 
-        if (!string.Equals(request.PowerState, RequiredPowerState, StringComparison.OrdinalIgnoreCase))
+        if (!VmPowerStates.IsOff(request.PowerState))
         {
             return Reject(VmExportImportProblemCodes.SourceNotOff);
         }

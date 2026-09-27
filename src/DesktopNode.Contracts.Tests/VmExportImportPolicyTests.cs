@@ -112,10 +112,24 @@ public sealed class VmExportImportPolicyTests
     }
 
     [Theory]
+    [InlineData("export-preview", "stopped")]
+    [InlineData("export", "stopped")]
+    [InlineData("export", " Stopped ")]
+    public void ExportAcceptsInventoryStoppedPowerState(string operation, string powerState)
+    {
+        var result = EvaluateExport(operation, ValidExport() with { PowerState = powerState });
+
+        Assert.True(result.Ok);
+        Assert.Null(result.ErrorCode);
+    }
+
+    [Theory]
     [InlineData("Running")]
     [InlineData("Saved")]
     [InlineData("Paused")]
-    public void ExportRejectsNonOffPowerState(string powerState)
+    [InlineData("stopping")]
+    [InlineData(null)]
+    public void ExportRejectsNonOffPowerState(string? powerState)
     {
         var result = VmExportImportPolicy.EvaluateExport(ValidExport() with { PowerState = powerState });
 

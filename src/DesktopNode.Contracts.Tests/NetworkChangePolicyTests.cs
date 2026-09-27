@@ -156,6 +156,29 @@ public sealed class NetworkChangePolicyTests
         Assert.Equal(NetworkChangePolicy.ActionVmConnect, result.Action);
     }
 
+    [Theory]
+    [InlineData("stopped")]
+    [InlineData("Stopped")]
+    [InlineData("off")]
+    public void VmConnectAcceptsInventoryOffVocabulary(string powerState)
+    {
+        var result = NetworkChangePolicy.EvaluateVmConnect(ValidConnect() with { PowerState = powerState });
+
+        Assert.True(result.Ok);
+        Assert.Null(result.ErrorCode);
+    }
+
+    [Theory]
+    [InlineData("stopping")]
+    [InlineData("saved")]
+    [InlineData(null)]
+    public void VmConnectRejectsNonOffVocabulary(string? powerState)
+    {
+        Assert.Equal(
+            NetworkChangeProblemCodes.SourceNotOff,
+            NetworkChangePolicy.EvaluateVmConnect(ValidConnect() with { PowerState = powerState }).ErrorCode);
+    }
+
     [Fact]
     public void VmConnectRejectsAuthUnmanagedLockRunningAndMissingSwitch()
     {
