@@ -96,6 +96,24 @@ PCVCLI가 아니라 `DesktopNode.Host.exe service-action switch-create|switch-re
 
 ## Task 8: Lane 2 `export-import`, `network-connect` (수정 설치본)
 
-- [ ] 기능군마다 한 run. evidence 문서 새 파일.
+- [x] 기능군마다 한 run. evidence 문서 새 파일.
 
-실행 기록(2026-09-28, export-import): 설치본 `0.42.79`에서 Off 어휘 수정은 동작한다(export 확인·거절·preview·job PASS). r1은 runner의 `.vmgs` `0` 가정으로 FAIL, r2는 import job이 `PCV_VM_IMPORT_SECURITY_FEATURES_UNSUPPORTED`로 FAIL이다. import provider가 `.vmgs` 파일 존재를 TPM 신호로 써서 제품이 자기 Gen2 export를 import하지 못한다. `docs/ga-ready/evidence/service-plan-p2-offvm-export-import-actual-vm-2026-09-28-04279-r2.md`. 수정은 보안 guard 변경이라 설계 결정 대기(`new-design-required`). network-connect run은 아직 하지 않았다.
+실행 기록(2026-09-28, network-connect): 승인 `지금 실행`. Host service-action Private switch 생성·삭제는 정상이지만 Private switch가 있으면 `network.inventory`가 `PCV_NATIVE_NETWORK_INVENTORY_TOPOLOGY_INCOMPLETE`로 실패해 `connect_switch_missing`에서 FAIL. cleanup PASS, 잔여 VM·switch `0`. `docs/ga-ready/evidence/service-plan-p2-offvm-network-connect-actual-vm-2026-09-28-04279.md`.
+
+실행 기록(2026-09-28, export-import): 설치본 `0.42.79`에서 Off 어휘 수정은 동작한다(export 확인·거절·preview·job PASS). r1은 runner의 `.vmgs` `0` 가정으로 FAIL, r2는 import job이 `PCV_VM_IMPORT_SECURITY_FEATURES_UNSUPPORTED`로 FAIL이다. import provider가 `.vmgs` 파일 존재를 TPM 신호로 써서 제품이 자기 Gen2 export를 import하지 못한다. `docs/ga-ready/evidence/service-plan-p2-offvm-export-import-actual-vm-2026-09-28-04279-r2.md`. 수정은 보안 guard 변경이라 설계 결정 대기(`new-design-required`). 사용자 결정(2026-09-28): `.vmgs` 파일 검사 제거, planned VM TPM/shielding/key protector 검사 유지, 0.42.80 probe 빌드·설치 뒤 재실행.
+
+## Task 9: import `.vmgs` guard와 Private switch 분류 수정 (Lane 1)
+
+**수정:** `src/DesktopNode.HyperV/DesktopNodeHyperVWmiVmImportProvider.cs`, `src/DesktopNode.HyperV/DesktopNodeHyperVWmiSwitchProvider.cs`, 해당 테스트, export/import 설계 문서 결정 문장
+
+- [ ] import provider에서 `.vmgs` 파일 존재 거절을 없앤다. planned VM의 `Msvm_SecuritySettingData` 검사(TPM, shielding, key protector 있으면 거절하고 planned VM 삭제)는 그대로 둔다.
+- [ ] `MapSwitch`가 management port와 external binding이 없는 switch를 `private`, `AllowManagementOs=false`로 분류한다. External 분류는 이 task 밖이다(report-only).
+- [ ] 회귀 테스트, `dotnet test src/DesktopNode.HyperV.Tests`, 마무리 솔루션 전체.
+
+## Task 10: 0.42.80 probe-vehicle package와 설치
+
+- [ ] Task 9가 든 HEAD에서 `0.42.80-admin-smoke` 빌드, msiexec 업그레이드, package evidence. 승인: 2026-09-28 사용자 결정(0.42.80 probe 빌드·설치).
+
+## Task 11: Lane 2 `export-import`, `network-connect` 재실행 (0.42.80)
+
+- [ ] 기능군마다 한 run(각각 checkpoint 하나). evidence 문서 새 파일.
