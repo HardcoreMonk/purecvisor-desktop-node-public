@@ -172,6 +172,22 @@ ledger `not-assessed`, 같은 version 재빌드)를 줄이는 것이다.
 공개 release 경계는 변함없다. 이 evidence는 internal admin-smoke 범위이며 public trusted
 signing과 외부 stable publication을 주장하지 않는다.
 
+## 12. Ubuntu 26 runner 점검 (backlog Task 4)
+
+GitHub `ubuntu-latest`는 2026-10-19부터 Ubuntu 26으로 옮겨 간다(09-27 run annotation). 읽기 전용
+점검 결과다. workflow는 바꾸지 않았다.
+
+| workflow / job | runner | 의존성 | 영향 |
+| --- | --- | --- | --- |
+| Development Gates `dotnet`, `delivery`, `installer-policy` | `windows-latest` | setup-dotnet `10.0.x`, `cmd` | 없음 |
+| Development Gates `web` | `ubuntu-latest` | setup-dotnet `10.0.x`, setup-node `24`, `npm ci`, TypeScript만 devDependency. browser fixture는 실제 browser를 띄우지 않는다 | 낮음. toolchain을 action이 설치한다 |
+| Public Boundary `public-boundary-ci-required` | `ubuntu-latest` | `shell: pwsh` | 중간. image에 PowerShell이 없거나 버전이 바뀌면 실패한다 |
+
+권고: 2026-10-19 전에 Public Boundary를 Ubuntu 26 image에서 한 번 돌려 확인한다. 실패하면
+`ubuntu-24.04`로 임시 pin하거나 `pwsh` 설치 step을 넣는다. `development-gates.yml`은
+cutover 허용 경로이자 structured transition source이므로 바꾸면 검증 정책 영향을 함께 본다.
+이 결정과 변경은 이 backlog 밖이다.
+
 ## 부록 A. 이 checkpoint에서 실행한 명령
 
 ```powershell

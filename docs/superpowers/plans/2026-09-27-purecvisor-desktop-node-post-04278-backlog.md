@@ -57,7 +57,9 @@
 
 ## Task 4: Ubuntu 26 runner 영향 점검
 
-- [ ] `.github/workflows/*.yml`의 `runs-on`과 web/public-boundary job 의존성을 읽고 영향과 권고를 감사 문서 후속 절이나 설계 메모로 기록한다. workflow는 바꾸지 않는다.
+- [x] `.github/workflows/*.yml`의 `runs-on`과 web/public-boundary job 의존성을 읽고 영향과 권고를 감사 문서 후속 절이나 설계 메모로 기록한다. workflow는 바꾸지 않는다.
+
+실행 기록(2026-09-27): `ubuntu-latest`를 쓰는 job은 Development Gates `web`과 Public Boundary 둘이다. web은 action이 toolchain을 설치하고 browser를 띄우지 않아 영향이 낮고, Public Boundary는 `pwsh` 의존이라 10-19 전 확인을 권고했다. 감사 문서 §12에 기록했고 workflow는 바꾸지 않았다.
 
 ## Task 5: 종료 검증
 
