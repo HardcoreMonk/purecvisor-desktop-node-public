@@ -7,7 +7,7 @@ param(
     [string]$Version,
 
     [Parameter(Mandatory)]
-    [ValidateSet('device-add', 'checkpoint-schedule', 'export-import')]
+    [ValidateSet('device-add', 'checkpoint-schedule', 'export-import', 'network-connect')]
     [string]$Family,
 
     [string]$ArtifactRoot = '',
@@ -17,6 +17,7 @@ param(
     [string]$VmName = '',
     [string]$ImportVmName = '',
     [string]$SwitchName = 'Default Switch',
+    [string]$NetSwitchName = '',
 
     [ValidateRange(1, 3600)]
     [int]$JobTimeoutSeconds = 180,
@@ -113,6 +114,7 @@ $campaignKey = Get-ShortHash -Value "$Version|$Family|$artifactRootFull"
 $familyTag = switch ($Family) {
     'device-add' { 'dev' }
     'checkpoint-schedule' { 'sched' }
+    'network-connect' { 'net' }
     default { 'exp' }
 }
 if ([string]::IsNullOrWhiteSpace($VmName)) {
@@ -130,6 +132,18 @@ if ($ImportVmName -eq $VmName) {
 $exportRootFull = Assert-ValidatedChildPath -Root $vmRootFull -Candidate (Join-Path $vmRootFull 'exports')
 $exportDirFull = Assert-ValidatedChildPath -Root $exportRootFull -Candidate (Join-Path $exportRootFull $VmName)
 $outsideDirFull = Assert-ValidatedChildPath -Root $vmRootFull -Candidate (Join-Path $vmRootFull "outside-$VmName")
+if ([string]::IsNullOrWhiteSpace($NetSwitchName)) {
+    $NetSwitchName = "pcv-p2-offvm-$versionTag-$campaignKey-sw"
+}
+$MissingSwitchName = "pcv-p2-offvm-$versionTag-$campaignKey-absent"
+foreach ($candidateSwitch in @($NetSwitchName, $MissingSwitchName)) {
+    if ($candidateSwitch -notmatch '^pcv-p2-offvm-[A-Za-z0-9][A-Za-z0-9._-]{5,60}$') {
+        throw "PCV_P2_OFFVM_SWITCH_NAME_INVALID|$candidateSwitch"
+    }
+}
+if ($NetSwitchName -eq $MissingSwitchName) {
+    throw 'PCV_P2_OFFVM_SWITCH_NAME_INVALID|switch-and-missing-must-differ'
+}
 
 $ScheduleIntervalMinutes = 60
 $ScheduleRetentionMax = 2
@@ -139,11 +153,13 @@ $familySlices = [ordered]@{
     'device-add' = @('source_create', 'nic_confirm_required', 'nic_add', 'nic_limit', 'dvd_guard', 'cleanup')
     'checkpoint-schedule' = @('source_create', 'schedule_preview', 'schedule_interval_invalid', 'schedule_set', 'schedule_clear', 'cleanup')
     'export-import' = @('source_create', 'export_confirm_required', 'export_path_not_allowed', 'export_preview', 'export', 'import_preview', 'import', 'cleanup')
+    'network-connect' = @('source_create', 'switch_create', 'connect_confirm_required', 'connect_switch_missing', 'connect', 'cleanup')
 }
 $familyNonclaims = [ordered]@{
     'device-add' = @('dvd-positive-add-not-reachable-product-create-attaches-dvd', 'nic-guest-link-not-observed')
     'checkpoint-schedule' = @('due-tick-not-observed-min-interval-60-minutes', 'retention-delete-not-observed')
     'export-import' = @('imported-vm-guest-boot-not-observed', 'ovf-and-tpm-rejection-not-exercised')
+    'network-connect' = @('guest-traffic-on-private-switch-not-observed', 'internal-and-external-switch-types-not-exercised')
 }
 $plannedSlices = @($familySlices[$Family])
 
@@ -157,6 +173,7 @@ $script:VmRecord = $null
 $script:ImportRecord = $null
 $script:ScheduleEnabled = $false
 $script:PcvCli = Join-Path (Get-AbsolutePath -Path $ProductRoot) 'pcvcli.exe'
+$script:PcvHost = Join-Path (Get-AbsolutePath -Path $ProductRoot) 'DesktopNode.Host.exe'
 
 $sliceVerdicts = [ordered]@{}
 foreach ($slice in $plannedSlices) { $sliceVerdicts[$slice] = 'NOT_RUN' }
@@ -180,6 +197,19 @@ $summary = [ordered]@{
     import_vm_name = if ($Family -eq 'export-import') { $ImportVmName } else { $null }
     import_vm_id = $null
     export_directory = if ($Family -eq 'export-import') { $exportDirFull } else { $null }
+    network_switch = if ($Family -eq 'network-connect') {
+        [ordered]@{
+            name = $NetSwitchName
+            type = 'private'
+            missing_name = $MissingSwitchName
+            create_attempted = $false
+            created = $false
+            id = $null
+            removed = $null
+            error = $null
+        }
+    }
+    else { $null }
     slice_verdicts = $sliceVerdicts
     queued_jobs = [ordered]@{}
     readbacks = [ordered]@{}
@@ -363,6 +393,7 @@ function Assert-InstalledProduct {
         $summary.installed_manifest_version = [string]$installed.version
         $summary.installed_cli_sha256 = [string]$installed.cli_sha256
         $script:PcvCli = [string]$installed.cli_path
+        if ($null -ne $installed.PSObject.Properties['host_path']) { $script:PcvHost = [string]$installed.host_path }
         if ([string]$installed.version -cne $Version) {
             throw "PCV_P2_OFFVM_INSTALLED_VERSION_MISMATCH|expected=$Version|actual=$($installed.version)"
         }
@@ -390,6 +421,9 @@ function Assert-InstalledProduct {
         throw "PCV_P2_OFFVM_CLI_NOT_FOUND|$script:PcvCli"
     }
     $summary.installed_cli_sha256 = (Get-FileHash -LiteralPath $script:PcvCli -Algorithm SHA256).Hash.ToLowerInvariant()
+    if ($Family -eq 'network-connect' -and -not (Test-Path -LiteralPath $script:PcvHost -PathType Leaf)) {
+        throw "PCV_P2_OFFVM_HOST_NOT_FOUND|$script:PcvHost"
+    }
     if ([string]::IsNullOrWhiteSpace($summary.iso_path_resolved) -or
         -not (Test-Path -LiteralPath $summary.iso_path_resolved -PathType Leaf)) {
         throw "PCV_P2_OFFVM_ISO_NOT_FOUND|$($summary.iso_path_resolved)"
@@ -470,6 +504,38 @@ function Get-CliProblemCode {
     return $null
 }
 
+function Invoke-PcvProcess {
+    param(
+        [Parameter(Mandatory)][string]$StepName,
+        [Parameter(Mandatory)][string]$FilePath,
+        [Parameter(Mandatory)][string[]]$Arguments
+    )
+
+    $startInfo = [System.Diagnostics.ProcessStartInfo]::new()
+    $startInfo.FileName = $FilePath
+    $startInfo.UseShellExecute = $false
+    $startInfo.RedirectStandardOutput = $true
+    $startInfo.RedirectStandardError = $true
+    foreach ($argument in $Arguments) {
+        $startInfo.ArgumentList.Add($argument)
+    }
+    $process = [System.Diagnostics.Process]::Start($startInfo)
+    if ($null -eq $process) {
+        throw "PCV_P2_OFFVM_COMMAND_START_FAILED|$StepName"
+    }
+    $stdoutTask = $process.StandardOutput.ReadToEndAsync()
+    $stderrTask = $process.StandardError.ReadToEndAsync()
+    if (-not $process.WaitForExit($CommandTimeoutSeconds * 1000)) {
+        try { $process.Kill($true) } catch { }
+        throw "PCV_P2_OFFVM_COMMAND_TIMEOUT|$StepName"
+    }
+    return [pscustomobject]@{
+        ExitCode = [int]$process.ExitCode
+        Stdout = $stdoutTask.GetAwaiter().GetResult()
+        Stderr = $stderrTask.GetAwaiter().GetResult()
+    }
+}
+
 function Invoke-PcvCliJson {
     param(
         [Parameter(Mandatory)][string]$StepName,
@@ -490,28 +556,10 @@ function Invoke-PcvCliJson {
         $stderr = [string](Get-ObjectPropertyValue -InputObject $external -Name 'stderr')
     }
     else {
-        $startInfo = [System.Diagnostics.ProcessStartInfo]::new()
-        $startInfo.FileName = $script:PcvCli
-        $startInfo.UseShellExecute = $false
-        $startInfo.RedirectStandardOutput = $true
-        $startInfo.RedirectStandardError = $true
-        $startInfo.ArgumentList.Add('--json')
-        foreach ($argument in $Arguments) {
-            $startInfo.ArgumentList.Add($argument)
-        }
-        $process = [System.Diagnostics.Process]::Start($startInfo)
-        if ($null -eq $process) {
-            throw "PCV_P2_OFFVM_COMMAND_START_FAILED|$StepName"
-        }
-        $stdoutTask = $process.StandardOutput.ReadToEndAsync()
-        $stderrTask = $process.StandardError.ReadToEndAsync()
-        if (-not $process.WaitForExit($CommandTimeoutSeconds * 1000)) {
-            try { $process.Kill($true) } catch { }
-            throw "PCV_P2_OFFVM_COMMAND_TIMEOUT|$StepName"
-        }
-        $stdout = $stdoutTask.GetAwaiter().GetResult()
-        $stderr = $stderrTask.GetAwaiter().GetResult()
-        $exitCode = [int]$process.ExitCode
+        $native = Invoke-PcvProcess -StepName $StepName -FilePath $script:PcvCli -Arguments (@('--json') + $Arguments)
+        $exitCode = $native.ExitCode
+        $stdout = $native.Stdout
+        $stderr = $native.Stderr
     }
     $secretObserved = (Test-SecretMaterial -Text $stdout) -or (Test-SecretMaterial -Text $stderr)
     $payload = $null
@@ -1266,6 +1314,197 @@ function Invoke-ImportSlice {
     }
 }
 
+function Get-HyperVSwitchReadback {
+    param([Parameter(Mandatory)][string]$Name)
+
+    if ($null -ne $RuntimeAdapter) {
+        return Invoke-RuntimeOperation -Operation 'switch-readback' -Input @{ name = $Name }
+    }
+    $rows = @(Get-CimInstance -Namespace 'root\virtualization\v2' -ClassName Msvm_VirtualEthernetSwitch -Filter "ElementName='$Name'")
+    return [pscustomobject][ordered]@{
+        count = $rows.Count
+        id = if ($rows.Count -eq 1) { [string]$rows[0].Name } else { $null }
+    }
+}
+
+function Invoke-PcvHostSwitchAction {
+    param(
+        [Parameter(Mandatory)][string]$StepName,
+        [Parameter(Mandatory)][ValidateSet('switch-create', 'switch-remove')][string]$Action
+    )
+
+    Assert-ServiceAvailable
+    $arguments = @('service-action', $Action, '--product-root', $summary.product_root_resolved,
+        '--service-exe', $script:PcvHost, '--switch-name', $NetSwitchName)
+    if ($Action -eq 'switch-create') {
+        $arguments += @('--switch-type', 'private')
+    }
+    $external = if ($null -ne $RuntimeAdapter) {
+        Invoke-RuntimeOperation -Operation 'invoke-host' -Input @{
+            step = $StepName
+            arguments = @($arguments)
+            timeout_seconds = $CommandTimeoutSeconds
+        }
+    }
+    else {
+        $native = Invoke-PcvProcess -StepName $StepName -FilePath $script:PcvHost -Arguments $arguments
+        [pscustomobject]@{ exit_code = $native.ExitCode; stdout = $native.Stdout; stderr = $native.Stderr }
+    }
+    $exitCode = [int](Get-ObjectPropertyValue -InputObject $external -Name 'exit_code')
+    $stdout = [string](Get-ObjectPropertyValue -InputObject $external -Name 'stdout')
+    $stderr = [string](Get-ObjectPropertyValue -InputObject $external -Name 'stderr')
+    $secretObserved = (Test-SecretMaterial -Text $stdout) -or (Test-SecretMaterial -Text $stderr)
+    $payload = $null
+    if (-not $secretObserved -and -not [string]::IsNullOrWhiteSpace($stdout)) {
+        try { $payload = $stdout | ConvertFrom-Json -Depth 64 } catch { }
+    }
+    $script:Steps.Add([pscustomobject][ordered]@{
+        step = $StepName
+        exit_code = $exitCode
+        status = if ($exitCode -eq 0) { 'completed' } else { 'failed' }
+        at = (Get-Date).ToUniversalTime().ToString('o')
+    }) | Out-Null
+    if ($secretObserved) { Set-SecretObserved }
+    $errorCode = [string](Get-ObjectPropertyValue -InputObject $payload -Name 'ErrorCode')
+    if ([string]::IsNullOrWhiteSpace($errorCode) -and $stderr -match '\b(PCV_[A-Z0-9_]+)\b') {
+        $errorCode = $Matches[1]
+    }
+    if (-not [string]::IsNullOrEmpty($errorCode) -and $errorCode -notmatch '^PCV_[A-Z0-9_]+$') {
+        $errorCode = 'PCV_P2_OFFVM_REMOTE_ERROR_REDACTED'
+    }
+    return [pscustomobject]@{
+        ExitCode = $exitCode
+        Ok = ($exitCode -eq 0 -and [bool](Get-ObjectPropertyValue -InputObject $payload -Name 'Ok'))
+        ErrorCode = $errorCode
+        Switch = Get-ObjectPropertyValue -InputObject $payload -Name 'HyperVSwitch'
+    }
+}
+
+function Invoke-SwitchCreateSlice {
+    $summary.network_switch.create_attempted = $true
+    Write-AtomicSummary
+    $created = Invoke-PcvHostSwitchAction -StepName 'host-switch-create' -Action 'switch-create'
+    $readback = Get-HyperVSwitchReadback -Name $NetSwitchName
+    if ([int]$readback.count -eq 1) {
+        $summary.network_switch.id = [string]$readback.id
+        $summary.network_switch.created = $true
+    }
+    $summary.readbacks.switch_create = [ordered]@{
+        exit_code = $created.ExitCode
+        ok = $created.Ok
+        code = $created.ErrorCode
+        product_owned = Get-ObjectPropertyValue -InputObject $created.Switch -Name 'ProductOwned'
+        allow_management_os = Get-ObjectPropertyValue -InputObject $created.Switch -Name 'AllowManagementOs'
+        hyperv_count = [int]$readback.count
+        id = $readback.id
+    }
+    Write-AtomicSummary
+    if (-not $created.Ok -or [int]$readback.count -ne 1) {
+        throw "PCV_P2_OFFVM_STATE_MISMATCH|switch-create|ok=$($created.Ok)|code=$($created.ErrorCode)"
+    }
+}
+
+function Invoke-ConnectConfirmRequiredSlice {
+    $unconfirmed = Invoke-PcvCliJson -StepName 'vm-network-connect-unconfirmed' -AllowFailure -Arguments @(
+        'vm', 'network', 'connect', $VmName, '--switch', $NetSwitchName)
+    $code = Get-CliProblemCode -Payload $unconfirmed.Json -Stderr $unconfirmed.Stderr
+    $jobId = Get-CliJobId -Created $unconfirmed
+    $devices = Get-HyperVDeviceReadback -Id ([Guid]$script:VmRecord.id)
+    $connected = @($devices.nic_switches) -contains $NetSwitchName
+    $summary.readbacks.connect_confirm_required = [ordered]@{
+        exit_code = $unconfirmed.ExitCode
+        code = $code
+        job_id = $jobId
+        nic_switches = @($devices.nic_switches)
+    }
+    Write-AtomicSummary
+    if ($unconfirmed.ExitCode -eq 0 -or $null -ne $jobId -or $code -ne 'PCV_CLI_CONFIRMATION_REQUIRED' -or
+        $connected -or [int]$devices.nic_count -ne 1) {
+        throw "PCV_P2_OFFVM_STATE_MISMATCH|connect-confirm-required|exit=$($unconfirmed.ExitCode)|code=$code"
+    }
+}
+
+function Invoke-ConnectSwitchMissingSlice {
+    $missing = Invoke-PcvCliJson -StepName 'vm-network-connect-missing' -AllowFailure -Arguments @(
+        'vm', 'network', 'connect', $VmName, '--switch', $MissingSwitchName, '--yes')
+    $code = Get-CliProblemCode -Payload $missing.Json -Stderr $missing.Stderr
+    $jobId = Get-CliJobId -Created $missing
+    if ($missing.ExitCode -eq 0 -and $null -ne $jobId) {
+        $null = Complete-PcvCliJob -StepName 'vm-network-connect-missing' -Created $missing -AllowFailure
+    }
+    $devices = Get-HyperVDeviceReadback -Id ([Guid]$script:VmRecord.id)
+    $summary.readbacks.connect_switch_missing = [ordered]@{
+        exit_code = $missing.ExitCode
+        code = $code
+        job_id = $jobId
+        nic_switches = @($devices.nic_switches)
+    }
+    Write-AtomicSummary
+    if ($missing.ExitCode -eq 0 -or $null -ne $jobId -or $code -ne 'PCV_NETWORK_SWITCH_NOT_FOUND' -or
+        (@($devices.nic_switches) -contains $MissingSwitchName)) {
+        throw "PCV_P2_OFFVM_STATE_MISMATCH|connect-switch-missing|exit=$($missing.ExitCode)|code=$code"
+    }
+}
+
+function Invoke-ConnectSlice {
+    $connect = Start-PcvCliJob -StepName 'vm-network-connect' -Arguments @(
+        'vm', 'network', 'connect', $VmName, '--switch', $NetSwitchName, '--yes')
+    if ([string](Get-ObjectPropertyValue -InputObject $connect -Name 'status') -ne 'succeeded') {
+        throw 'PCV_P2_OFFVM_STATE_MISMATCH|connect'
+    }
+    $id = [Guid]$script:VmRecord.id
+    $hyperv = Wait-HyperVState -Id $id -Expected 'Off' -Phase 'after-connect'
+    $devices = Get-HyperVDeviceReadback -Id $id
+    $data = Get-ProductVmData -Phase 'after-connect'
+    $productState = Get-ProductState -Data $data
+    $network = Get-ObjectPropertyValue -InputObject $data -Name 'network'
+    $productSwitches = @(if ($null -ne $network) {
+        $network | ForEach-Object { [string](Get-ObjectPropertyValue -InputObject $_ -Name 'switch') }
+    })
+    $hypervSwitches = @($devices.nic_switches | ForEach-Object { [string]$_ })
+    $summary.readbacks.connect = [ordered]@{
+        hyperv = $hyperv
+        product = $productState
+        hyperv_nic_count = [int]$devices.nic_count
+        hyperv_switches = $hypervSwitches
+        product_switches = $productSwitches
+    }
+    Write-AtomicSummary
+    if ($hyperv -ne 'Off' -or -not (Test-PcvProductOff $productState) -or [int]$devices.nic_count -ne 1 -or
+        $hypervSwitches.Count -ne 1 -or $hypervSwitches[0] -ne $NetSwitchName -or
+        $productSwitches.Count -ne 1 -or $productSwitches[0] -ne $NetSwitchName) {
+        throw "PCV_P2_OFFVM_STATE_MISMATCH|connect|hyperv=$($hypervSwitches -join ',')|product=$($productSwitches -join ',')"
+    }
+}
+
+function Invoke-SwitchCleanup {
+    param([Parameter(Mandatory)][AllowEmptyCollection()][System.Collections.Generic.List[string]]$CleanupErrors)
+
+    if ($Family -ne 'network-connect' -or -not [bool]$summary.network_switch.create_attempted) { return }
+    try {
+        $readback = Get-HyperVSwitchReadback -Name $NetSwitchName
+        if ([int]$readback.count -eq 0) {
+            $summary.network_switch.removed = $true
+            return
+        }
+        if ([string]::IsNullOrWhiteSpace([string]$summary.network_switch.id) -or [int]$readback.count -ne 1 -or
+            [string]$readback.id -ne [string]$summary.network_switch.id) {
+            throw 'PCV_P2_OFFVM_CLEANUP_SWITCH_ID_MISMATCH'
+        }
+        $removed = Invoke-PcvHostSwitchAction -StepName 'host-switch-remove' -Action 'switch-remove'
+        $after = Get-HyperVSwitchReadback -Name $NetSwitchName
+        $summary.network_switch.removed = [int]$after.count -eq 0
+        if (-not $summary.network_switch.removed) {
+            throw "PCV_P2_OFFVM_CLEANUP_SWITCH_NOT_REMOVED|$($removed.ErrorCode)"
+        }
+    }
+    catch {
+        $code = Get-SafeFailureCode -Message $_.Exception.Message
+        $summary.network_switch.error = $code
+        $CleanupErrors.Add($code) | Out-Null
+    }
+}
+
 function Get-ValidatedCleanupVm {
     param(
         [Parameter(Mandatory)]$Record,
@@ -1409,6 +1648,7 @@ function Invoke-ExactCleanup {
             $cleanupErrors.Add('PCV_P2_OFFVM_CLEANUP_ROOT_INVALID') | Out-Null
         }
     }
+    Invoke-SwitchCleanup -CleanupErrors $cleanupErrors
     $summary.cleanup.records = @($script:VmRecords)
     if ($cleanupErrors.Count -gt 0) {
         $summary.cleanup.verdict = 'FAIL'
@@ -1435,6 +1675,10 @@ $sliceActions = @{
     export = { Invoke-ExportSlice }
     import_preview = { Invoke-ImportPreviewSlice }
     import = { Invoke-ImportSlice }
+    switch_create = { Invoke-SwitchCreateSlice }
+    connect_confirm_required = { Invoke-ConnectConfirmRequiredSlice }
+    connect_switch_missing = { Invoke-ConnectSwitchMissingSlice }
+    connect = { Invoke-ConnectSlice }
 }
 
 $runError = $null
@@ -1448,6 +1692,13 @@ try {
         Assert-VmAbsent -Name $ImportVmName
         Assert-PcvPathAbsent -Path $exportRootFull -Kind 'export'
         Assert-PcvPathAbsent -Path $outsideDirFull -Kind 'outside'
+    }
+    if ($Family -eq 'network-connect') {
+        foreach ($switchCandidate in @($NetSwitchName, $MissingSwitchName)) {
+            if ([int](Get-HyperVSwitchReadback -Name $switchCandidate).count -ne 0) {
+                throw "PCV_P2_OFFVM_SWITCH_ALREADY_EXISTS|$switchCandidate"
+            }
+        }
     }
     Write-AtomicSummary
 

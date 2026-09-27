@@ -19,7 +19,7 @@ guest OS 없이 Off VM으로 검증할 수 있는 P2 기능군을 설치본 CLI�
 | P2-15 NIC/DVD 추가 | `device-add` | 가능 |
 | P2-12 checkpoint schedule | `checkpoint-schedule` | 가능 |
 | P2-13 export/import | `export-import` | 불가. Off 어휘 결함 수정 package 필요 |
-| P2-14 network connect | 후속 task에서 추가 | 불가. 같은 이유 |
+| P2-14 network connect | `network-connect` | 불가. 같은 이유(정책이 switch 확인보다 전원 확인을 먼저 한다) |
 
 ## 2. runner
 
@@ -82,6 +82,23 @@ guest OS 없이 Off VM으로 검증할 수 있는 P2 기능군을 설치본 CLI�
 `VmRoot\exports`로 예약한다. import VM 구성 경로가 그 밖이면 identity blocker로 멈추고 정리하지 않는다(수동 정리,
 fail-safe). 제품 `vm delete`는 파일을 지우지 않으므로 디렉터리는 runner가 identity 확인 뒤 지운다.
 
+### `network-connect`
+
+대상 switch는 run이 만드는 전용 Private switch `pcv-p2-offvm-<tag>-<8hex>-sw`다. 제품 경로
+`DesktopNode.Host.exe service-action switch-create --product-root --service-exe --switch-name --switch-type private`로
+만들고, cleanup에서 VM 삭제 뒤 `switch-remove`로 지운다. Private는 management OS host vNIC를 만들지 않는다.
+switch는 `Msvm_VirtualEthernetSwitch` id를 기록하고, 같은 이름·같은 id일 때만 지운다. native `New-VMSwitch`/
+`Remove-VMSwitch`는 쓰지 않는다.
+
+| slice | 동작 | PASS |
+| --- | --- | --- |
+| `source_create` | 위와 같음, NIC `1`(Default Switch) | 위와 같음 |
+| `switch_create` | Host service-action switch-create | `Ok=true`, WMI switch `1`개, id 기록 |
+| `connect_confirm_required` | `--yes` 없이 connect | `PCV_CLI_CONFIRMATION_REQUIRED`, job 없음, 연결 불변 |
+| `connect_switch_missing` | 없는 `...-absent` switch로 connect `--yes` | `PCV_NETWORK_SWITCH_NOT_FOUND`, job 없음 |
+| `connect` | 전용 switch로 connect `--yes` | job succeeded, WMI 연결과 제품 network 모두 전용 switch 하나, VM Off |
+| `cleanup` | 제품 delete, 디렉터리 삭제, 그 뒤 switch-remove | VM·디렉터리·switch 없음 |
+
 ## 4. PASS / FAIL
 
 Lane 2 PASS 입력은 `overall_verdict=PASS`, `cleanup.verdict=PASS`, `secret_observed=false`,
@@ -91,5 +108,5 @@ installed non-promoted candidate이며 feature ledger와 current-evidence를 바
 ## 5. 비주장
 
 - 이 문서는 Hyper-V/MSI/service mutation을 실행하지 않는다.
-- network connect는 이 runner 버전에 없다(plan Task 6).
+- Internal/External switch, guest 트래픽은 검증하지 않는다.
 - public trusted signing / external stable publication `not-claimed`

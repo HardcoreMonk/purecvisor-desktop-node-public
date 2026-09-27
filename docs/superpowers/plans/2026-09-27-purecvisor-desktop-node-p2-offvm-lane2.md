@@ -82,9 +82,11 @@ PCVCLI가 아니라 `DesktopNode.Host.exe service-action switch-create|switch-re
 
 ## Task 6: runner `network-connect` 기능군 (Lane 1)
 
-- [ ] 전용 Private `pcv-` switch를 `DesktopNode.Host.exe service-action switch-create --switch-type private`로 만들고 cleanup에서 VM 삭제 뒤 `switch-remove`로 지운다. switch도 identity를 기록한다.
-- [ ] slice: 확인 없는 connect 거절, 없는 switch 거절, connect 뒤 WMI 연결 switch 이름과 제품 network 일치.
-- [ ] Pester와 C# 계약 테스트.
+- [x] 전용 Private `pcv-` switch를 `DesktopNode.Host.exe service-action switch-create --switch-type private`로 만들고 cleanup에서 VM 삭제 뒤 `switch-remove`로 지운다. switch도 identity를 기록한다.
+- [x] slice: 확인 없는 connect 거절, 없는 switch 거절, connect 뒤 WMI 연결 switch 이름과 제품 network 일치.
+- [x] Pester와 C# 계약 테스트.
+
+실행 기록(2026-09-27): 설치본 Host.exe로 `switch-create --dry-run`을 돌려 명령 모양을 확인했다. switch 계열도 `--product-root`, `--service-exe`가 필요하고(없으면 `PCV_HOST_PRODUCT_ROOT_REQUIRED`), 결과 JSON은 `Ok`, `ErrorCode`, `HyperVSwitch{Name, Exists, ProductOwned, AllowManagementOs}`다. dry-run은 switch를 만들지 않았다. PCVCLI와 Host.exe 실행은 `Invoke-PcvProcess` 하나를 쓴다. 설치본 `0.42.78`에서는 VM connect 정책이 switch보다 전원을 먼저 확인해 `connect_switch_missing`부터 `PCV_VM_NETWORK_SOURCE_NOT_OFF`로 막히므로 실행은 Task 8이다. Pester `14/14`.
 
 ## Task 7: 수정 package와 설치 (별도 승인)
 

@@ -24,6 +24,9 @@ function New-P2OffVmBehaviorRuntime {
         ExportVmcxCount = 1
         Exported = $false
         PendingDeleteName = $null
+        Switches = @{}
+        SwitchCreateFails = $false
+        PendingSwitch = $null
         Schedule = [ordered]@{ enabled = $false; interval_minutes = $null; retention_max = $null }
         Vms = @{}
         ExistingRoots = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
@@ -55,6 +58,7 @@ function New-P2OffVmBehaviorRuntime {
                 return [pscustomobject]@{
                     version = $state.InstalledVersion
                     cli_path = 'C:\Program Files\PureCVisor\DesktopNode\pcvcli.exe'
+                    host_path = 'C:\Program Files\PureCVisor\DesktopNode\DesktopNode.Host.exe'
                     cli_sha256 = ('a' * 64)
                     iso_exists = $true
                 }
@@ -82,6 +86,35 @@ function New-P2OffVmBehaviorRuntime {
                     if ([guid]$vm.Id -eq [guid]$Payload.id) { return $vm }
                 }
                 return $null
+            }
+            'switch-readback' {
+                $name = [string]$Payload.name
+                if ($state.Switches.ContainsKey($name)) {
+                    return [pscustomobject]@{ count = 1; id = $state.Switches[$name] }
+                }
+                return [pscustomobject]@{ count = 0; id = $null }
+            }
+            'invoke-host' {
+                $arguments = @($Payload.arguments)
+                $name = [string]$arguments[[array]::IndexOf($arguments, '--switch-name') + 1]
+                if ([string]$Payload.step -eq 'host-switch-create') {
+                    if ($state.SwitchCreateFails) {
+                        return [pscustomobject]@{
+                            exit_code = 1
+                            stdout = (@{ Ok = $false; ErrorCode = 'PCV_NETWORK_SWITCH_CREATE_FAILED' } | ConvertTo-Json -Compress)
+                            stderr = ''
+                        }
+                    }
+                    $state.Switches[$name] = 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee'
+                }
+                else {
+                    $state.Switches.Remove($name)
+                }
+                return [pscustomobject]@{
+                    exit_code = 0
+                    stdout = (@{ Ok = $true; ErrorCode = $null; HyperVSwitch = @{ Name = $name; ProductOwned = $true; AllowManagementOs = $false } } | ConvertTo-Json -Compress)
+                    stderr = ''
+                }
             }
             'export-package' {
                 return [pscustomobject]@{
@@ -112,6 +145,7 @@ function New-P2OffVmBehaviorRuntime {
                 for ($index = 0; $index -lt $arguments.Count - 1; $index++) {
                     if ($arguments[$index] -eq '--directory' -and $step -eq 'vm-export') { $state.ExportDir = [string]$arguments[$index + 1] }
                     if ($arguments[$index] -eq '--name' -and $step -eq 'vm-import') { $state.ImportName = [string]$arguments[$index + 1] }
+                    if ($arguments[$index] -eq '--switch' -and $step -eq 'vm-network-connect') { $state.PendingSwitch = [string]$arguments[$index + 1] }
                 }
                 if ($step -like 'vm-delete*') {
                     $state.PendingDeleteName = [string]$arguments[2]
@@ -165,6 +199,14 @@ function New-P2OffVmBehaviorRuntime {
                         }
                     }
                     'vm-export-preview-outside' { return & $rejected 'PCV_VM_EXPORT_PATH_NOT_ALLOWED' }
+                    'vm-network-connect-unconfirmed' {
+                        return [pscustomobject]@{
+                            exit_code = 2
+                            stdout = ''
+                            stderr = "code=PCV_CLI_CONFIRMATION_REQUIRED`nmessage=confirmation required"
+                        }
+                    }
+                    'vm-network-connect-missing' { return & $rejected 'PCV_NETWORK_SWITCH_NOT_FOUND' }
                     'vm-export-preview' {
                         return [pscustomobject]@{
                             exit_code = 0
@@ -222,6 +264,10 @@ function New-P2OffVmBehaviorRuntime {
                     }
                     'vm-checkpoint-schedule-clear-cleanup' {
                         $state.Schedule = [ordered]@{ enabled = $false; interval_minutes = $null; retention_max = $null }
+                        return [pscustomobject]@{ status = 'succeeded' }
+                    }
+                    'vm-network-connect' {
+                        $state.NicSwitches[0] = [string]$state.PendingSwitch
                         return [pscustomobject]@{ status = 'succeeded' }
                     }
                     'vm-export' {
@@ -307,6 +353,7 @@ Describe 'SERVICE_PLAN P2 Off-VM actual-VM runner contract' {
         @{ family = 'device-add'; slices = @('source_create', 'nic_confirm_required', 'nic_add', 'nic_limit', 'dvd_guard', 'cleanup') }
         @{ family = 'checkpoint-schedule'; slices = @('source_create', 'schedule_preview', 'schedule_interval_invalid', 'schedule_set', 'schedule_clear', 'cleanup') }
         @{ family = 'export-import'; slices = @('source_create', 'export_confirm_required', 'export_path_not_allowed', 'export_preview', 'export', 'import_preview', 'import', 'cleanup') }
+        @{ family = 'network-connect'; slices = @('source_create', 'switch_create', 'connect_confirm_required', 'connect_switch_missing', 'connect', 'cleanup') }
     ) {
         $artifactRoot = Join-Path $TestDrive "plan-$family"
         $result = & $script:RunnerPath `
@@ -436,6 +483,47 @@ Describe 'SERVICE_PLAN P2 Off-VM actual-VM runner contract' {
         $run.Summary.cleanup.verdict | Should -Be 'PASS'
         $run.State.Vms.Count | Should -Be 0
         @(Get-CliStep $run 'vm-delete-import').Count | Should -Be 0
+    }
+
+    It 'passes network-connect on a run-owned private switch and removes the switch after the VM' {
+        $run = Invoke-P2OffVmBehaviorScenario -Name 'network-connect-pass' -Family 'network-connect'
+
+        $run.Error | Should -BeNullOrEmpty
+        $run.Summary.overall_verdict | Should -Be 'PASS'
+        $switchName = [string]$run.Summary.network_switch.name
+        $switchName | Should -Match '^pcv-p2-offvm-04278-[0-9a-f]{8}-sw$'
+        $run.Summary.readbacks.switch_create.ok | Should -BeTrue
+        $run.Summary.readbacks.connect_confirm_required.code | Should -Be 'PCV_CLI_CONFIRMATION_REQUIRED'
+        $run.Summary.readbacks.connect_switch_missing.code | Should -Be 'PCV_NETWORK_SWITCH_NOT_FOUND'
+        @($run.Summary.readbacks.connect.hyperv_switches) | Should -Be @($switchName)
+        @($run.Summary.readbacks.connect.product_switches) | Should -Be @($switchName)
+        $run.Summary.network_switch.removed | Should -BeTrue
+        $run.Summary.cleanup.verdict | Should -Be 'PASS'
+        $run.State.Switches.Count | Should -Be 0
+        $run.State.Vms.Count | Should -Be 0
+        $create = @($run.State.Operations | Where-Object { $_.operation -eq 'invoke-host' -and [string]$_.input.step -eq 'host-switch-create' })
+        $createArgs = @($create[0].input.arguments)
+        $createArgs[0..1] | Should -Be @('service-action', 'switch-create')
+        $createArgs[[array]::IndexOf($createArgs, '--switch-type') + 1] | Should -Be 'private'
+        $createArgs | Should -Contain '--product-root'
+        $createArgs | Should -Contain '--service-exe'
+        $operations = @($run.State.Operations | ForEach-Object { if ($_.operation -eq 'invoke-cli' -or $_.operation -eq 'invoke-host') { [string]$_.input.step } })
+        [array]::IndexOf($operations, 'vm-delete') | Should -BeLessThan ([array]::IndexOf($operations, 'host-switch-remove'))
+    }
+
+    It 'fails a switch create error without removing anything it does not own' {
+        $run = Invoke-P2OffVmBehaviorScenario -Name 'network-switch-create-fails' -Family 'network-connect' -Configure {
+            param($state)
+            $state.SwitchCreateFails = $true
+        }
+
+        $run.Summary.overall_verdict | Should -Be 'FAIL'
+        $run.Summary.slice_verdicts.switch_create | Should -Be 'FAIL'
+        $run.Summary.readbacks.switch_create.code | Should -Be 'PCV_NETWORK_SWITCH_CREATE_FAILED'
+        $run.Summary.cleanup.verdict | Should -Be 'PASS'
+        $run.Summary.network_switch.removed | Should -BeTrue
+        @($run.State.Operations | Where-Object { $_.operation -eq 'invoke-host' -and [string]$_.input.step -eq 'host-switch-remove' }).Count | Should -Be 0
+        $run.State.Vms.Count | Should -Be 0
     }
 
     It 'clears a left-over schedule during cleanup when the clear slice fails' {

@@ -17,7 +17,8 @@ public sealed class PcvServicePlanP2OffVmActualVmSmokeContractTests
             source,
             "[Parameter(Mandatory)]",
             "[string]$Version",
-            "[ValidateSet('device-add', 'checkpoint-schedule', 'export-import')]",
+            "[ValidateSet('device-add', 'checkpoint-schedule', 'export-import', 'network-connect')]",
+            "$NetSwitchName",
             "[string]$Family",
             "$ArtifactRoot",
             "$ProductRoot",
@@ -123,6 +124,43 @@ public sealed class PcvServicePlanP2OffVmActualVmSmokeContractTests
             "@($script:VmRecords | Where-Object { $_.kind -ne 'import' })");
         Assert.DoesNotContain("Import-VM", source, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("Export-VM", source, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void PinsNetworkConnectRunOwnedPrivateSwitchLifecycle()
+    {
+        var source = Source();
+        RequireTokens(
+            source,
+            "'service-action', $Action, '--product-root', $summary.product_root_resolved,",
+            "'--service-exe', $script:PcvHost, '--switch-name', $NetSwitchName)",
+            "'--switch-type', 'private'",
+            "'vm', 'network', 'connect', $VmName, '--switch', $NetSwitchName)",
+            "'vm', 'network', 'connect', $VmName, '--switch', $MissingSwitchName, '--yes')",
+            "'vm', 'network', 'connect', $VmName, '--switch', $NetSwitchName, '--yes')",
+            "PCV_NETWORK_SWITCH_NOT_FOUND",
+            "PCV_P2_OFFVM_SWITCH_ALREADY_EXISTS",
+            "PCV_P2_OFFVM_CLEANUP_SWITCH_ID_MISMATCH",
+            "Msvm_VirtualEthernetSwitch");
+        AssertOrdered(
+            source,
+            "'network-connect' = @(",
+            "'source_create'",
+            "'switch_create'",
+            "'connect_confirm_required'",
+            "'connect_switch_missing'",
+            "'connect'",
+            "'cleanup'");
+        AssertOrdered(
+            source,
+            "function Invoke-ExactCleanup",
+            "'vm', 'delete'",
+            "Invoke-SwitchCleanup -CleanupErrors $cleanupErrors");
+        Assert.DoesNotContain("New-VMSwitch", source, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("Remove-VMSwitch", source, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("Connect-VMNetworkAdapter", source, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("'--switch-type', 'internal'", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("'--switch-type', 'external'", source, StringComparison.Ordinal);
     }
 
     [Fact]
