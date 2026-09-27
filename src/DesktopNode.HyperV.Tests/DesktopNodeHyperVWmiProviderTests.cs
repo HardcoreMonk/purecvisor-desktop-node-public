@@ -380,6 +380,58 @@ public sealed class DesktopNodeHyperVWmiProviderTests
         }
     }
 
+    [Fact]
+    public void ImportDiskPlanCopiesPackageDisksInsteadOfSourcePaths()
+    {
+        var package = Directory.CreateTempSubdirectory("pcv-import-package-").FullName;
+        try
+        {
+            var disks = Directory.CreateDirectory(Path.Combine(package, "Virtual Hard Disks")).FullName;
+            File.WriteAllText(Path.Combine(disks, "disk0.vhdx"), string.Empty);
+            var target = Path.Combine(Path.GetTempPath(), "pcv-vms", "lab-vm-restored");
+
+            var plans = DesktopNodeHyperVWmiVmImportProvider.PlanDiskCopies(
+                package,
+                target,
+                [@"D:\PureCVisor\VMs\lab-vm\disk0.vhdx"]);
+
+            var plan = Assert.Single(plans);
+            Assert.Equal(Path.Combine(disks, "disk0.vhdx"), plan.PackageSource);
+            Assert.Equal(Path.Combine(target, "disk0.vhdx"), plan.Target);
+        }
+        finally
+        {
+            Directory.Delete(package, recursive: true);
+        }
+    }
+
+    [Fact]
+    public void ImportDiskPlanRejectsMissingPackageDiskAndDuplicateNames()
+    {
+        var package = Directory.CreateTempSubdirectory("pcv-import-package-").FullName;
+        try
+        {
+            var disks = Directory.CreateDirectory(Path.Combine(package, "Virtual Hard Disks")).FullName;
+            File.WriteAllText(Path.Combine(disks, "disk0.vhdx"), string.Empty);
+            var target = Path.Combine(Path.GetTempPath(), "pcv-vms", "lab-vm-restored");
+
+            var missing = Assert.Throws<DesktopNodeHyperVNativeOperationException>(() =>
+                DesktopNodeHyperVWmiVmImportProvider.PlanDiskCopies(package, target, [@"D:\PureCVisor\VMs\lab-vm\disk1.vhdx"]));
+            Assert.Equal(VmExportImportProblemCodes.PackageInvalid, missing.Code);
+
+            var duplicate = Assert.Throws<DesktopNodeHyperVNativeOperationException>(() =>
+                DesktopNodeHyperVWmiVmImportProvider.PlanDiskCopies(
+                    package,
+                    target,
+                    [@"D:\a\disk0.vhdx", @"E:\b\disk0.vhdx"]));
+            Assert.Equal(VmExportImportProblemCodes.PackageInvalid, duplicate.Code);
+        }
+        finally
+        {
+            Directory.Delete(package, recursive: true);
+        }
+    }
+
     [Theory]
     [InlineData("package.ovf")]
     [InlineData("package.ova")]

@@ -123,19 +123,26 @@ internal sealed partial class DesktopNodeApiVmMutationRouteHandler
             return MapVmExportImportError(operation, evaluation.ErrorCode!);
         }
 
+        var jobParameters = new SortedDictionary<string, object?>
+        {
+            ["allowed_root"] = allowedRoot,
+            ["apply_managed_marker"] = evaluation.ApplyManagedMarker,
+            ["directory"] = evaluation.Directory,
+            ["generate_new_id"] = evaluation.GenerateNewId,
+            ["has_vmcx"] = true,
+            ["name"] = evaluation.VmName,
+            ["package_kind"] = evaluation.PackageKind,
+            ["vm_name"] = evaluation.VmName
+        };
+        var vmRoot = DesktopNodeApiJsonReader.GetStringProperty(parsed.Value.Value, "vm_root");
+        if (!string.IsNullOrWhiteSpace(vmRoot))
+        {
+            jobParameters["vm_root"] = vmRoot;
+        }
+
         return DesktopNodeApiResponseFactory.JobCreated(CreateJob(
             operation,
-            DesktopNodeApiResponseFactory.JsonFromObject(new SortedDictionary<string, object?>
-            {
-                ["allowed_root"] = allowedRoot,
-                ["apply_managed_marker"] = evaluation.ApplyManagedMarker,
-                ["directory"] = evaluation.Directory,
-                ["generate_new_id"] = evaluation.GenerateNewId,
-                ["has_vmcx"] = true,
-                ["name"] = evaluation.VmName,
-                ["package_kind"] = evaluation.PackageKind,
-                ["vm_name"] = evaluation.VmName
-            }),
+            DesktopNodeApiResponseFactory.JsonFromObject(jobParameters),
             request.RequestId!));
     }
 

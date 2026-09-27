@@ -14,6 +14,9 @@ public sealed class DesktopNodeHyperVWmiVmImportProvider : IDesktopNodeHyperVVmI
     public const string RealizePlannedSystemMethod = "RealizePlannedSystem";
     public const string ModifySystemSettingsMethod = "ModifySystemSettings";
     public const string DestroySystemMethod = "DestroySystem";
+    public const string ModifyResourceSettingsMethod = "ModifyResourceSettings";
+    public const string VirtualHardDiskSubtype = "Microsoft:Hyper-V:Virtual Hard Disk";
+    public const string PackageDiskDirectory = "Virtual Hard Disks";
 
     public DesktopNodeHyperVVmImportInfo Invoke(
         DesktopNodeHyperVVmImportRequest request,
@@ -46,6 +49,20 @@ public sealed class DesktopNodeHyperVWmiVmImportProvider : IDesktopNodeHyperVVmI
             snapshotFolder = string.Empty;
         }
 
+        if (!DesktopNodeHyperVVmCloneGuard.TryResolveContainedCloneDirectory(request.VmRoot, request.TargetName, out var targetDirectory))
+        {
+            throw DesktopNodeHyperVVmCloneGuard.InvalidCloneTargetName(request.TargetName);
+        }
+
+        if (Directory.Exists(targetDirectory))
+        {
+            throw new DesktopNodeHyperVNativeOperationException(
+                VmExportImportProblemCodes.AlreadyExists,
+                $"Import VM directory '{targetDirectory}' already exists.",
+                "Import copies the package disks into a new VM directory. Choose a new display name or VM root.",
+                false);
+        }
+
         var scope = CreateScope();
         if (FindVm(scope, request.TargetName, cancellationToken) is { } existing)
         {
@@ -66,6 +83,7 @@ public sealed class DesktopNodeHyperVWmiVmImportProvider : IDesktopNodeHyperVVmI
         using var importOut = service.InvokeMethod(ImportSystemDefinitionMethod, importIn, null);
         WaitForMethodResult(importOut, "vm.import", cancellationToken);
         using var planned = RequireOutputObject(importOut, "ImportedSystem", "vm.import");
+        var copied = new List<string>();
         try
         {
             using var plannedSettings = FindCurrentSettings(planned, cancellationToken)
@@ -84,8 +102,34 @@ public sealed class DesktopNodeHyperVWmiVmImportProvider : IDesktopNodeHyperVVmI
                     false);
             }
 
+            // The planned VM still references the source VM disk paths recorded in the export, so every disk is
+            // copied from the package into the new VM directory and the planned disk is pointed at the copy.
+            var disks = ReadPlannedDisks(plannedSettings, cancellationToken);
+            try
+            {
+                var plans = PlanDiskCopies(directory, targetDirectory, disks.Select(static disk => disk.Path).ToArray());
+                Directory.CreateDirectory(targetDirectory);
+                for (var index = 0; index < plans.Count; index++)
+                {
+                    DesktopNodeHyperVWmiVmCloneProvider.CopyVhdx(plans[index].PackageSource, plans[index].Target, cancellationToken);
+                    copied.Add(plans[index].Target);
+                    disks[index].Resource["HostResource"] = new[] { plans[index].Target };
+                    ModifyResource(service, disks[index].Resource, cancellationToken);
+                }
+            }
+            finally
+            {
+                foreach (var disk in disks)
+                {
+                    disk.Resource.Dispose();
+                }
+            }
+
             plannedSettings["ElementName"] = request.TargetName;
             plannedSettings["Notes"] = new[] { DesktopNodeHyperVManagedNotes.Marker };
+            plannedSettings["ConfigurationDataRoot"] = targetDirectory;
+            plannedSettings["SnapshotDataRoot"] = targetDirectory;
+            plannedSettings["SwapFileDataRoot"] = targetDirectory;
             ApplySystemSettings(service, plannedSettings, "vm.import.rename", cancellationToken);
 
             using var realizeIn = service.GetMethodParameters(RealizePlannedSystemMethod);
@@ -97,6 +141,7 @@ public sealed class DesktopNodeHyperVWmiVmImportProvider : IDesktopNodeHyperVVmI
         catch
         {
             TryDestroy(service, planned, CancellationToken.None);
+            DesktopNodeHyperVWmiVmCloneProvider.TryRollbackCloneArtifacts(request.VmRoot, targetDirectory, false, copied);
             throw;
         }
 
@@ -127,7 +172,84 @@ public sealed class DesktopNodeHyperVWmiVmImportProvider : IDesktopNodeHyperVVmI
             VmExportImportPolicy.PackageHyperVExport,
             request.TargetName,
             true,
-            true);
+            true,
+            targetDirectory);
+    }
+
+    public static IReadOnlyList<DesktopNodeHyperVVmImportDiskPlan> PlanDiskCopies(
+        string packageDirectory,
+        string targetDirectory,
+        IReadOnlyList<string> plannedDiskPaths)
+    {
+        var packageDisks = Path.Combine(packageDirectory, PackageDiskDirectory);
+        var fileNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var plans = new List<DesktopNodeHyperVVmImportDiskPlan>(plannedDiskPaths.Count);
+        foreach (var plannedPath in plannedDiskPaths)
+        {
+            var fileName = Path.GetFileName(plannedPath ?? string.Empty);
+            var source = Path.Combine(packageDisks, fileName);
+            if (string.IsNullOrWhiteSpace(fileName) || !fileNames.Add(fileName) || !File.Exists(source))
+            {
+                throw new DesktopNodeHyperVNativeOperationException(
+                    VmExportImportProblemCodes.PackageInvalid,
+                    $"The export package does not hold every VM disk under '{PackageDiskDirectory}'.",
+                    "Import only a complete Hyper-V export folder whose disk file names are unique.",
+                    false);
+            }
+
+            plans.Add(new DesktopNodeHyperVVmImportDiskPlan(source, Path.Combine(targetDirectory, fileName)));
+        }
+
+        return plans;
+    }
+
+    private readonly record struct PlannedDisk(ManagementObject Resource, string Path);
+
+    private static List<PlannedDisk> ReadPlannedDisks(ManagementObject settings, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        var disks = new List<PlannedDisk>();
+        using var resources = settings.GetRelated(
+            null,
+            "Msvm_VirtualSystemSettingDataComponent",
+            null,
+            null,
+            "PartComponent",
+            "GroupComponent",
+            false,
+            null);
+        foreach (ManagementObject item in resources)
+        {
+            if (!string.Equals(GetStringProperty(item, "ResourceSubType"), VirtualHardDiskSubtype, StringComparison.OrdinalIgnoreCase))
+            {
+                item.Dispose();
+                continue;
+            }
+
+            disks.Add(new PlannedDisk(item, GetFirstHostResource(item) ?? string.Empty));
+        }
+
+        return disks;
+    }
+
+    private static string? GetFirstHostResource(ManagementBaseObject item)
+    {
+        var value = item.Properties["HostResource"]?.Value;
+        if (value is string[] values)
+        {
+            return values.FirstOrDefault(candidate => !string.IsNullOrWhiteSpace(candidate));
+        }
+
+        return value as string;
+    }
+
+    private static void ModifyResource(ManagementObject service, ManagementObject resource, CancellationToken cancellationToken)
+    {
+        using var inParams = service.GetMethodParameters(ModifyResourceSettingsMethod);
+        inParams["ResourceSettings"] = new[] { resource.GetText(TextFormat.WmiDtd20) };
+        cancellationToken.ThrowIfCancellationRequested();
+        using var outParams = service.InvokeMethod(ModifyResourceSettingsMethod, inParams, null);
+        WaitForMethodResult(outParams, "vm.import.disk", cancellationToken);
     }
 
     // Generation 2 exports always carry a .vmgs guest-state file, so the file itself is not a rejection

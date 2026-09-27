@@ -120,6 +120,34 @@ PCVCLI가 아니라 `DesktopNode.Host.exe service-action switch-create|switch-re
 
 ## Task 11: Lane 2 `export-import`, `network-connect` 재실행 (0.42.80)
 
-- [ ] 기능군마다 한 run(각각 checkpoint 하나). evidence 문서 새 파일.
+- [x] 기능군마다 한 run(각각 checkpoint 하나). evidence 문서 새 파일. (network-connect는 Task 16으로 옮김)
 
-실행 기록(2026-09-28, export-import): `.vmgs` 수정은 동작해 import job이 succeeded다. 그러나 import VM이 구성을 Hyper-V 기본 위치에 두고 **소스 VM의 VHDX**를 가리킨다(package 디스크 미사용). runner는 예약 root 밖 VM을 정리하지 않았고 identity 확인 뒤 제품 delete로 수동 정리했다(잔여 `0`). `docs/ga-ready/evidence/service-plan-p2-offvm-export-import-actual-vm-2026-09-28-04280.md`. import 저장소 처리 설계 결정 대기(`new-design-required`). network-connect 재실행은 아직이다(checkpoint 한도).
+실행 기록(2026-09-28, export-import): `.vmgs` 수정은 동작해 import job이 succeeded다. 그러나 import VM이 구성을 Hyper-V 기본 위치에 두고 **소스 VM의 VHDX**를 가리킨다(package 디스크 미사용). runner는 예약 root 밖 VM을 정리하지 않았고 identity 확인 뒤 제품 delete로 수동 정리했다(잔여 `0`). `docs/ga-ready/evidence/service-plan-p2-offvm-export-import-actual-vm-2026-09-28-04280.md`. import 저장소 처리 설계 결정 대기(`new-design-required`). network-connect 재실행은 아직이다(checkpoint 한도). 사용자 결정(2026-09-28): 전용 root로 복사, 0.42.81 probe 빌드·설치와 재실행 포함. Task 11의 남은 run은 Task 15, 16으로 옮긴다.
+
+## Task 12: import를 전용 VM root 복사로 수정 (Lane 1)
+
+**수정:** `DesktopNodeHyperVWmiVmImportProvider.cs`, `DesktopNodeHyperVModels.cs`, native adapter import, API import route, CLI `vm import`, 테스트, CLI 문서, export/import 설계 결정 문장, module ratchet
+
+- [x] import가 planned VM 디스크를 package `Virtual Hard Disks`에서 `vm_root\<대상>`으로 복사하고 HostResource, 구성·checkpoint·swap 위치를 그 디렉터리로 바꾼다. 실패 시 planned VM 삭제와 복사본 rollback.
+- [x] API `vm_root`, CLI `--vm-root`, native 기본값 `D:\PureCVisor\VMs`.
+- [x] 테스트와 ratchet.
+
+실행 기록(2026-09-28): 디스크 대응은 순수 함수 `PlanDiskCopies`(package 파일 없음·파일 이름 중복은 `PCV_VM_IMPORT_PACKAGE_INVALID`)로 두고 temp 디렉터리로 테스트했다. 대상 디렉터리가 이미 있으면 `PCV_VM_ALREADY_EXISTS`. 복사와 rollback은 clone의 `CopyVhdx`, `TryRollbackCloneArtifacts`, 경계 검사는 clone guard를 쓴다. 바뀐 세 파일이 ratchet 상한을 넘어(CLI catalog `1418/1412`, models `542/533`, adapter mutations `870/867`) export/import 부분을 partial 파일(`DesktopNodeCliCommandCatalog.ExportImport.cs`, `DesktopNodeHyperVNativeAdapter.ExportImport.cs`, `DesktopNodeHyperVExportImportModels.cs`)로 옮겼고, 50줄 이상 여유가 생긴 두 상한을 새 크기로 낮췄다(`1299`, `763`). fixture pin `8d1da12b` → `f280fe43`, `ExpectedSpecSha256` `0485756a` → `4ec4eec3`.
+
+## Task 13: runner import 검증 갱신 (Lane 1)
+
+- [ ] import에 `--vm-root`를 넘기고 import VM 예약 root를 `VmRoot\<import 이름>`으로 둔다. import VM 디스크가 그 root 아래이고 소스 디스크와 다르며 package 디스크가 남아 있는지 WMI로 확인한다.
+- [ ] 소스 root 삭제 전 다른 VM이 그 아래 디스크를 참조하지 않는지 확인한다.
+- [ ] Pester와 C# 계약 테스트.
+
+## Task 14: 0.42.81 probe-vehicle package와 설치
+
+- [ ] Task 12, 13이 든 HEAD에서 `0.42.81-admin-smoke` 빌드, msiexec 업그레이드, package evidence. 승인: 2026-09-28 사용자 결정(전용 root 복사, 0.42.81 빌드·설치).
+
+## Task 15: Lane 2 `export-import` 재실행 (0.42.81)
+
+- [ ] 한 run, evidence 문서 새 파일.
+
+## Task 16: Lane 2 `network-connect` 재실행 (0.42.81)
+
+- [ ] 한 run, evidence 문서 새 파일.

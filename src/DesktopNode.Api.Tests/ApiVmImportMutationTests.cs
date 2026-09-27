@@ -48,6 +48,34 @@ public sealed class ApiVmImportMutationTests
     }
 
     [Fact]
+    public void ImportPassesVmRootToQueuedJob()
+    {
+        using var root = new TempExportRoot();
+        var processor = CreateProcessor(root, []);
+
+        var queued = processor.Handle(new DesktopNodeApiRequest(
+            "POST",
+            "/api/v1/vms/import",
+            JsonSerializer.Serialize(new
+            {
+                name = "lab-vm-restored",
+                confirm_name = "lab-vm-restored",
+                directory = Path.Combine(root.Directory, "lab-vm"),
+                allowed_root = root.Directory,
+                package_kind = "hyperv-export",
+                has_vmcx = true,
+                vm_root = @"D:\PureCVisor\VMs-import"
+            }),
+            ServiceBearerAccepted: true));
+
+        Assert.Equal(202, queued.StatusCode);
+        using var document = JsonDocument.Parse(queued.Body);
+        Assert.Equal(
+            @"D:\PureCVisor\VMs-import",
+            document.RootElement.GetProperty("data").GetProperty("params").GetProperty("vm_root").GetString());
+    }
+
+    [Fact]
     public void ImportRejectsExistingTargetAndOvfWithoutQueuing()
     {
         using var root = new TempExportRoot();
