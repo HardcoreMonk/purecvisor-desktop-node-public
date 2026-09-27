@@ -52,9 +52,11 @@ source_head=986ea3d
 
 **생성:** `packaging/windows-desktop-node/tools/Invoke-PcvServicePlanP2OffVmActualVmSmoke.ps1`, `packaging/windows-desktop-node/manual-admin-tests/PcvServicePlanP2OffVmActualVmSmoke.Tests.ps1`, `src/DesktopNode.Delivery.Tests/Delivery/ManualAdmin/PcvServicePlanP2OffVmActualVmSmokeContractTests.cs`, 설계 문서
 
-- [ ] P1 clone runner 구조(설치본 확인, 이름·경로 가드, atomic summary, RuntimeAdapter, 정확한 identity cleanup)를 따르고 `-Family`로 기능군 하나만 고른다.
-- [ ] 기능군별 slice를 고정 순서, fail-stop으로 둔다. preview/거절 slice가 mutation slice보다 앞선다.
-- [ ] DryRun과 RuntimeAdapter Pester, C# 계약 테스트.
+- [x] P1 clone runner 구조(설치본 확인, 이름·경로 가드, atomic summary, RuntimeAdapter, 정확한 identity cleanup)를 따르고 `-Family`로 기능군 하나만 고른다.
+- [x] 기능군별 slice를 고정 순서, fail-stop으로 둔다. preview/거절 slice가 mutation slice보다 앞선다.
+- [x] DryRun과 RuntimeAdapter Pester, C# 계약 테스트.
+
+실행 기록(2026-09-27): 설계 `docs/superpowers/specs/2026-09-27-purecvisor-desktop-node-p2-offvm-lane2-probe-design.md`. 이 checkpoint 크기에 맞춰 runner `-Family`는 설치본 `0.42.78`에서 돌 수 있는 `device-add`, `checkpoint-schedule` 둘만 연다. export-import, network-connect는 Task 6에서 더한다. 착수 확인: 제품 create는 NIC `1`(Default Switch)과 ISO DVD `1`을 붙이고, inventory `storage`에는 DVD가 없어 route DVD guard가 `0`으로 본다. native `AddDvd`가 `PCV_VM_DEVICE_ALREADY_PRESENT`로 job을 실패시키므로 `dvd_guard`는 route 거절과 job 거절을 모두 받는다(route guard 사각은 report-only). schedule set/clear는 queued job이고 readback은 `vm get`의 `checkpoint_schedule`이다. Pester `8/8`, Delivery.Tests `709/709`. `packaging/windows-desktop-node/tests` 전체에서 `PcvCurrentEvidenceGeneration`(case-only blocked candidate)과 `PcvDevelopmentGateWorkflow`(installer-policy shard step 이름) 두 건이 실패하며, Task 2 파일을 치운 HEAD `9402774`에서도 같은 두 건이 실패하는 기존 baseline 실패다(report-only).
 
 ## Task 3: Lane 2 `device-add` (설치본 0.42.78)
 
@@ -70,4 +72,5 @@ source_head=986ea3d
 
 ## Task 6: Lane 2 `export-import`, `network-connect` (수정 설치본)
 
+- [ ] runner `-Family`에 `export-import`, `network-connect`를 더한다(Lane 1, Pester와 C# 계약 포함).
 - [ ] 기능군마다 한 run. evidence 문서 새 파일.
