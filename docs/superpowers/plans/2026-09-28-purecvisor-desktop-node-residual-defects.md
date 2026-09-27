@@ -52,6 +52,8 @@
 
 ## Task 4: 종료 검증
 
-- [ ] `dotnet test src/DesktopNode.sln` 실패 `0`(clean HEAD).
-- [ ] Pester `packaging/windows-desktop-node/tests`, `manual-admin-tests`.
-- [ ] `git diff --check`.
+- [x] `dotnet test src/DesktopNode.sln` 실패 `0`(clean HEAD).
+- [x] Pester `packaging/windows-desktop-node/tests`, `manual-admin-tests`.
+- [x] `git diff --check`.
+
+실행 기록(2026-09-28): clean HEAD `3945f88`. 솔루션 전체 실패 `0`(Verification `557/557` 포함), Pester `packaging/windows-desktop-node/tests`+`manual-admin-tests` `568/568`(이 campaign 전 실패 2건 해소), `git diff --check` 통과. host·설치본·current-evidence 변경 없음.
