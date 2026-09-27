@@ -27,7 +27,7 @@ remaining_test_vm_count: `0`
 secret_observed: `false`
 host_mutation_performed: `false`
 latest_manual_admin_package_pair: `0.42.77-admin-smoke -> 0.42.78-admin-smoke`
-latest_manual_admin_descriptor: `manual-admin-campaign-descriptor-20260925-04277-04278`
+latest_manual_admin_descriptor: `manual-admin-campaign-descriptor-20260927-04277-04278`
 token_rotation_evidence: `docs/ga-ready/evidence/installed-token-rotation-smoke-2026-08-09-04272.md`
 token_rotation_r4_summary: `artifacts/installed-token-rotation-smoke-reconciliation-r4-20260810-04272/summary.json`
 token_rotation_r4_summary_sha256: `285661fe50ade63169b6cfc85ff1dcf754a679e30152bd04d166581b4d762136`
@@ -68,7 +68,7 @@ artifact는 덮어쓰지 않고 보존한다.
 | --- | --- |
 | package | clean MSI `c3390c1e…` PASS (`admin-smoke-package-2026-09-25-04278`) |
 | fullgate | r2 2 steps, exit `0`, attempt `1` (`full-admin-host-mutation-gate-2026-09-27-04278-r2-hostmutation`) |
-| manual-admin pair | `0.42.77 -> 0.42.78` descriptor `20260925` PASS, plan-only |
+| manual-admin pair | `0.42.77 -> 0.42.78` consume descriptor `20260927` PASS (원본 `20260925`, plan-only) |
 | functional | `functional-correctness-actual-host-validation-2026-09-27-04278-carryforward` (`0.42.75` PASS carry-forward) |
 | cleanup | `pcv-spike-*` 잔여 `0` |
 

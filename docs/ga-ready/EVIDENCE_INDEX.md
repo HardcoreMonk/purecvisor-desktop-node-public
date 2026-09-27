@@ -791,7 +791,7 @@
 - Operational MSI SHA-256: `0856d07ee7576a1cd44ca18061e2c9351ddef95271adca0b7b0b319a02d278b6`.
 - Operational payload aggregate SHA-256: `2dfabb939317e4fd6a29b557d98a2d0f35a4197201b8173698737ff8f68ea4bb`.
 - Provenance commit: `0de176f12cbfe2bc8f842396159e3c81dfbd3b9b`.
-- Latest closed manual-admin pair: `0.42.77-admin-smoke -> 0.42.78-admin-smoke` / `manual-admin-campaign-descriptor-20260925-04277-04278`.
+- Latest closed manual-admin pair: `0.42.77-admin-smoke -> 0.42.78-admin-smoke` / `manual-admin-campaign-descriptor-20260927-04277-04278`.
 - Claims: `public_trusted_signing=false`; `external_stable_publication=false`.
 <!-- END GENERATED CURRENT EVIDENCE -->
 

@@ -63,17 +63,19 @@ Task 3 착수 중 `a842ede`를 다시 읽고 범위를 셋으로 나눴다. 0.42
 **생성:** `artifacts/manual-admin-campaign-20260927-04277-04278/**`(gitignored), `docs/ga-ready/evidence/manual-admin-campaign-2026-09-27-04277-04278.md`, `docs/ga-ready/evidence/public-boundary-ci-main-push-2026-09-27-04278-pr11-postmerge-pass.md`
 **수정:** `docs/ga-ready/current-evidence.json`(`latest_closed_descriptor`), 생성 문서
 
-- [ ] 09-25 descriptor가 읽은 여섯 runner summary의 JSON만 0.42.77과 같은 single-root 배치로 복사하고 `consume-manifest.json`(`pcv-manual-admin-single-root-descriptor-consume-v1`)을 쓴다.
-- [ ] `New-PcvManualAdminCampaignDescriptor -PlanOnly`를 single root에 실행해 `overall_status=pass`를 확인한다. descriptor batch는 `manual-admin-campaign-descriptor-20260927-04277-04278`이다.
-- [ ] consume evidence 문서와 PR #11 merge(`3c677a4`) 뒤 main push evidence 문서를 쓴다.
-- [ ] `current-evidence.json`의 `latest_closed_descriptor`를 consume descriptor로 바꾸고 생성 문서를 다시 만든다.
+- [x] 09-25 descriptor가 읽은 여섯 runner summary의 JSON만 0.42.77과 같은 single-root 배치로 복사하고 `consume-manifest.json`(`pcv-manual-admin-single-root-descriptor-consume-v1`)을 쓴다.
+- [x] `New-PcvManualAdminCampaignDescriptor -PlanOnly`를 single root에 실행해 `overall_status=pass`를 확인한다. descriptor batch는 `manual-admin-campaign-descriptor-20260927-04277-04278`이다.
+- [x] consume evidence 문서와 PR #11 merge(`3c677a4`) 뒤 main push evidence 문서를 쓴다.
+- [x] `current-evidence.json`의 `latest_closed_descriptor`를 consume descriptor로 바꾸고 생성 문서를 다시 만든다.
+
+실행 기록(2026-09-27): 여섯 원본 root의 JSON `18`개를 single root로 복사했고 `-PlanOnly` descriptor는 runner `6/6` pass, `actual_execution=not-run`이다. consume manifest SHA `67c6e58d…`, descriptor summary `e0347afd…`. update zip `6cb31a6b…`는 package artifact 파일 hash와 clean-host evidence가 같다. PR #11 merge `3c677a4`의 Public Boundary run `36299263811`(job `108563752427`)과 Development Gates run `36299263803`은 success다. `0de176f..3c677a4` 제품 경로 commit은 라쳇 복구 순수 이동 `7`개뿐이다. 생성 문서 `-Check` current. `PcvAdminSmokeEvidenceDocs`는 `CURRENT_EVIDENCE_LEDGER.md`의 수기 ledger 행 `2`건 때문에 red이며 Task 3b에서 고친다.
 
 ## Task 3b: manual-admin descriptor chain
 
 **수정:** `docs/ga-ready/MANUAL_ADMIN_NEXT_CAMPAIGN_DESCRIPTOR.md`, `docs/DOCUMENTATION_INDEX.md`, `docs/FEATURE_IMPLEMENTATION_LEDGER.md`
 
 - [ ] `a842ede`와 같은 방식으로 `current_*`/`latest_*`/`next_*` 값을 `previous_04277_*`로 옮기고 0.42.78 값을 쓴다.
-- [ ] 나머지 수기 문서의 current 표기를 맞춘다.
+- [ ] 나머지 수기 문서(`CURRENT_EVIDENCE_LEDGER.md`의 수기 ledger 행 포함)의 current 표기를 맞춘다.
 
 ## Task 3c: 계약 테스트와 pin
 

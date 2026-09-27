@@ -24,7 +24,7 @@
   "manual_admin": {
     "latest_closed_baseline": "0.42.77-admin-smoke",
     "latest_closed_target": "0.42.78-admin-smoke",
-    "latest_closed_descriptor": "manual-admin-campaign-descriptor-20260925-04277-04278"
+    "latest_closed_descriptor": "manual-admin-campaign-descriptor-20260927-04277-04278"
   },
   "claims": {
     "public_trusted_signing": false,
