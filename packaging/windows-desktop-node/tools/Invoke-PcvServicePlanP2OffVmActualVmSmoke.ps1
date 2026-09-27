@@ -7,7 +7,7 @@ param(
     [string]$Version,
 
     [Parameter(Mandatory)]
-    [ValidateSet('device-add', 'checkpoint-schedule')]
+    [ValidateSet('device-add', 'checkpoint-schedule', 'export-import')]
     [string]$Family,
 
     [string]$ArtifactRoot = '',
@@ -15,6 +15,7 @@ param(
     [string]$IsoPath = '',
     [string]$VmRoot = '',
     [string]$VmName = '',
+    [string]$ImportVmName = '',
     [string]$SwitchName = 'Default Switch',
 
     [ValidateRange(1, 3600)]
@@ -109,12 +110,26 @@ if ([string]::IsNullOrWhiteSpace($VmRoot)) {
 $artifactRootFull = Get-AbsolutePath -Path $ArtifactRoot
 $vmRootFull = Assert-DedicatedVmRoot -Path $VmRoot
 $campaignKey = Get-ShortHash -Value "$Version|$Family|$artifactRootFull"
-$familyTag = if ($Family -eq 'device-add') { 'dev' } else { 'sched' }
+$familyTag = switch ($Family) {
+    'device-add' { 'dev' }
+    'checkpoint-schedule' { 'sched' }
+    default { 'exp' }
+}
 if ([string]::IsNullOrWhiteSpace($VmName)) {
     $VmName = "pcv-p2-offvm-$versionTag-$campaignKey-$familyTag"
 }
 Assert-VmName -Name $VmName -VersionTag $versionTag
 $vmOwnRootFull = Assert-ValidatedChildPath -Root $vmRootFull -Candidate (Join-Path $vmRootFull $VmName)
+if ([string]::IsNullOrWhiteSpace($ImportVmName)) {
+    $ImportVmName = "pcv-p2-offvm-$versionTag-$campaignKey-imp"
+}
+Assert-VmName -Name $ImportVmName -VersionTag $versionTag
+if ($ImportVmName -eq $VmName) {
+    throw 'PCV_P2_OFFVM_VM_NAME_INVALID|source-and-import-must-differ'
+}
+$exportRootFull = Assert-ValidatedChildPath -Root $vmRootFull -Candidate (Join-Path $vmRootFull 'exports')
+$exportDirFull = Assert-ValidatedChildPath -Root $exportRootFull -Candidate (Join-Path $exportRootFull $VmName)
+$outsideDirFull = Assert-ValidatedChildPath -Root $vmRootFull -Candidate (Join-Path $vmRootFull "outside-$VmName")
 
 $ScheduleIntervalMinutes = 60
 $ScheduleRetentionMax = 2
@@ -123,10 +138,12 @@ $InvalidIntervalMinutes = 30
 $familySlices = [ordered]@{
     'device-add' = @('source_create', 'nic_confirm_required', 'nic_add', 'nic_limit', 'dvd_guard', 'cleanup')
     'checkpoint-schedule' = @('source_create', 'schedule_preview', 'schedule_interval_invalid', 'schedule_set', 'schedule_clear', 'cleanup')
+    'export-import' = @('source_create', 'export_confirm_required', 'export_path_not_allowed', 'export_preview', 'export', 'import_preview', 'import', 'cleanup')
 }
 $familyNonclaims = [ordered]@{
     'device-add' = @('dvd-positive-add-not-reachable-product-create-attaches-dvd', 'nic-guest-link-not-observed')
     'checkpoint-schedule' = @('due-tick-not-observed-min-interval-60-minutes', 'retention-delete-not-observed')
+    'export-import' = @('imported-vm-guest-boot-not-observed', 'ovf-and-tpm-rejection-not-exercised')
 }
 $plannedSlices = @($familySlices[$Family])
 
@@ -137,6 +154,7 @@ $startedAt = (Get-Date).ToUniversalTime()
 $script:Steps = [System.Collections.Generic.List[object]]::new()
 $script:VmRecords = [System.Collections.Generic.List[object]]::new()
 $script:VmRecord = $null
+$script:ImportRecord = $null
 $script:ScheduleEnabled = $false
 $script:PcvCli = Join-Path (Get-AbsolutePath -Path $ProductRoot) 'pcvcli.exe'
 
@@ -159,6 +177,9 @@ $summary = [ordered]@{
     installed_cli_sha256 = $null
     vm_name = $VmName
     vm_id = $null
+    import_vm_name = if ($Family -eq 'export-import') { $ImportVmName } else { $null }
+    import_vm_id = $null
+    export_directory = if ($Family -eq 'export-import') { $exportDirFull } else { $null }
     slice_verdicts = $sliceVerdicts
     queued_jobs = [ordered]@{}
     readbacks = [ordered]@{}
@@ -638,7 +659,8 @@ function Wait-HyperVState {
         [Parameter(Mandatory)][Guid]$Id,
         [Parameter(Mandatory)][string]$Expected,
         [Parameter(Mandatory)][string]$Phase,
-        [int]$TimeoutSeconds = 60
+        [int]$TimeoutSeconds = 60,
+        $Record = $script:VmRecord
     )
 
     if ($null -ne $RuntimeAdapter) {
@@ -651,13 +673,13 @@ function Wait-HyperVState {
     }
     $deadline = (Get-Date).AddSeconds($TimeoutSeconds)
     do {
-        $vm = Get-PcvVmById -Id $Id -Record $script:VmRecord
+        $vm = Get-PcvVmById -Id $Id -Record $Record
         if ($null -ne $vm -and [string]$vm.State -eq $Expected) {
             return [string]$vm.State
         }
         Start-Sleep -Seconds 2
     } while ((Get-Date) -lt $deadline)
-    $final = Get-PcvVmById -Id $Id -Record $script:VmRecord
+    $final = Get-PcvVmById -Id $Id -Record $Record
     if ($null -eq $final) { return $null }
     return [string]$final.State
 }
@@ -736,12 +758,13 @@ function Test-PcvProductOff {
 function New-VmOwnershipRecord {
     param(
         [Parameter(Mandatory)][string]$Name,
-        [Parameter(Mandatory)][string]$ExpectedRoot
+        [Parameter(Mandatory)][string]$ExpectedRoot,
+        [ValidateSet('vm', 'import')][string]$Kind = 'vm'
     )
 
     $recordedRoot = Assert-ValidatedChildPath -Root $vmRootFull -Candidate $ExpectedRoot
     $record = [pscustomobject][ordered]@{
-        kind = 'vm'
+        kind = $Kind
         name = $Name
         id = $null
         root = $recordedRoot
@@ -789,7 +812,8 @@ function Set-VmAuthoritativeIdentity {
         throw
     }
     $Record.id = $observedId
-    $summary.vm_id = $Record.id
+    if ($Record.kind -eq 'import') { $summary.import_vm_id = $Record.id }
+    else { $summary.vm_id = $Record.id }
     $Record.identity_status = 'authoritative'
     $Record.identity_blocker = $false
     Write-AtomicSummary
@@ -799,7 +823,8 @@ function Set-VmAuthoritativeIdentity {
 function Resolve-CreatedVm {
     param(
         [Parameter(Mandatory)]$Record,
-        [Parameter(Mandatory)]$Job
+        [Parameter(Mandatory)]$Job,
+        [Parameter(Mandatory)][string]$Name
     )
 
     $createdVm = $null
@@ -813,13 +838,13 @@ function Resolve-CreatedVm {
         $createdVm = Get-PcvVmById -Id $jobVmId -Record $Record
     }
     if ($null -eq $createdVm) {
-        $createdRows = @(Get-PcvVmByName -Name $VmName -Purpose 'authoritative-create')
+        $createdRows = @(Get-PcvVmByName -Name $Name -Purpose 'authoritative-create')
         if ($createdRows.Count -eq 1) { $createdVm = $createdRows[0] }
         else {
             $Record.identity_status = 'orphan-blocker'
             $Record.identity_blocker = $true
             Write-AtomicSummary
-            throw "PCV_P2_OFFVM_STATE_MISMATCH|created-vm-cardinality=$($createdRows.Count)|name=$VmName"
+            throw "PCV_P2_OFFVM_STATE_MISMATCH|created-vm-cardinality=$($createdRows.Count)|name=$Name"
         }
     }
     return Set-VmAuthoritativeIdentity -Record $Record -Vm $createdVm
@@ -860,7 +885,7 @@ function Invoke-SourceCreateSlice {
     if ([string](Get-ObjectPropertyValue -InputObject $create -Name 'status') -ne 'succeeded') {
         throw 'PCV_P2_OFFVM_STATE_MISMATCH|create'
     }
-    $record = Resolve-CreatedVm -Record $script:VmRecord -Job $create
+    $record = Resolve-CreatedVm -Record $script:VmRecord -Job $create -Name $VmName
     $id = [Guid]$record.id
     $hypervOff = Wait-HyperVState -Id $id -Expected 'Off' -Phase 'after-create'
     $data = Get-ProductVmData -Phase 'after-create'
@@ -1084,6 +1109,163 @@ function Invoke-ScheduleClearSlice {
     $script:ScheduleEnabled = $false
 }
 
+function Get-ExportPackageReadback {
+    param([Parameter(Mandatory)][string]$Path)
+
+    if ($null -ne $RuntimeAdapter) {
+        return Invoke-RuntimeOperation -Operation 'export-package' -Input @{ path = $Path }
+    }
+    if (-not (Test-Path -LiteralPath $Path -PathType Container)) {
+        return [pscustomobject][ordered]@{ exists = $false; vmcx_count = 0; vhdx_count = 0; vmgs_count = 0 }
+    }
+    $vmcx = @(Get-ChildItem -LiteralPath $Path -File -Filter '*.vmcx')
+    $virtualMachines = Join-Path $Path 'Virtual Machines'
+    if (Test-Path -LiteralPath $virtualMachines -PathType Container) {
+        $vmcx += @(Get-ChildItem -LiteralPath $virtualMachines -File -Filter '*.vmcx')
+    }
+    $files = @(Get-ChildItem -LiteralPath $Path -File -Recurse)
+    return [pscustomobject][ordered]@{
+        exists = $true
+        vmcx_count = $vmcx.Count
+        vhdx_count = @($files | Where-Object { $_.Extension -in @('.vhdx', '.vhd') }).Count
+        vmgs_count = @($files | Where-Object { $_.Extension -eq '.vmgs' }).Count
+    }
+}
+
+function Invoke-ExportConfirmRequiredSlice {
+    $unconfirmed = Invoke-PcvCliJson -StepName 'vm-export-unconfirmed' -AllowFailure -Arguments @(
+        'vm', 'export', $VmName, '--directory', $exportDirFull, '--allowed-root', $exportRootFull)
+    $code = Get-CliProblemCode -Payload $unconfirmed.Json -Stderr $unconfirmed.Stderr
+    $jobId = Get-CliJobId -Created $unconfirmed
+    $exportDirPresent = Test-PcvPath -Path $exportDirFull
+    $summary.readbacks.export_confirm_required = [ordered]@{
+        exit_code = $unconfirmed.ExitCode
+        code = $code
+        job_id = $jobId
+        export_dir_absent = (-not $exportDirPresent)
+    }
+    Write-AtomicSummary
+    if ($unconfirmed.ExitCode -eq 0 -or $null -ne $jobId -or $code -ne 'PCV_CLI_CONFIRMATION_REQUIRED' -or $exportDirPresent) {
+        throw "PCV_P2_OFFVM_STATE_MISMATCH|export-confirm-required|exit=$($unconfirmed.ExitCode)|code=$code"
+    }
+}
+
+function Invoke-ExportPathNotAllowedSlice {
+    $outside = Invoke-PcvCliJson -StepName 'vm-export-preview-outside' -AllowFailure -Arguments @(
+        'vm', 'export', 'preview', $VmName, '--directory', $outsideDirFull, '--allowed-root', $exportRootFull)
+    $code = Get-CliProblemCode -Payload $outside.Json -Stderr $outside.Stderr
+    $outsidePresent = Test-PcvPath -Path $outsideDirFull
+    $summary.readbacks.export_path_not_allowed = [ordered]@{
+        exit_code = $outside.ExitCode
+        code = $code
+        outside_dir_absent = (-not $outsidePresent)
+    }
+    Write-AtomicSummary
+    if ($outside.ExitCode -eq 0 -or $code -ne 'PCV_VM_EXPORT_PATH_NOT_ALLOWED' -or $outsidePresent) {
+        throw "PCV_P2_OFFVM_STATE_MISMATCH|export-path-not-allowed|exit=$($outside.ExitCode)|code=$code"
+    }
+}
+
+function Invoke-ExportPreviewSlice {
+    $preview = Invoke-PcvCliJson -StepName 'vm-export-preview' -Arguments @(
+        'vm', 'export', 'preview', $VmName, '--directory', $exportDirFull, '--allowed-root', $exportRootFull)
+    $data = Get-ObjectPropertyValue -InputObject $preview.Json -Name 'data'
+    $jobId = Get-CliJobId -Created $preview
+    $exportDirPresent = Test-PcvPath -Path $exportDirFull
+    $summary.readbacks.export_preview = [ordered]@{
+        dry_run = Get-ObjectPropertyValue -InputObject $data -Name 'dry_run'
+        host_mutation_performed = Get-ObjectPropertyValue -InputObject $data -Name 'host_mutation_performed'
+        job_id = $jobId
+        export_dir_absent = (-not $exportDirPresent)
+    }
+    Write-AtomicSummary
+    if ($null -ne $jobId -or -not [bool](Get-ObjectPropertyValue -InputObject $data -Name 'dry_run') -or
+        [bool](Get-ObjectPropertyValue -InputObject $data -Name 'host_mutation_performed') -or $exportDirPresent) {
+        throw 'PCV_P2_OFFVM_STATE_MISMATCH|export-preview'
+    }
+}
+
+function Invoke-ExportSlice {
+    $export = Start-PcvCliJob -StepName 'vm-export' -Arguments @(
+        'vm', 'export', $VmName, '--directory', $exportDirFull, '--allowed-root', $exportRootFull, '--yes')
+    if ([string](Get-ObjectPropertyValue -InputObject $export -Name 'status') -ne 'succeeded') {
+        throw 'PCV_P2_OFFVM_STATE_MISMATCH|export'
+    }
+    $package = Get-ExportPackageReadback -Path $exportDirFull
+    $sourceHyperV = Wait-HyperVState -Id ([Guid]$script:VmRecord.id) -Expected 'Off' -Phase 'after-export'
+    $sourceProduct = Get-ProductState -Data (Get-ProductVmData -Phase 'after-export')
+    $summary.readbacks.export = [ordered]@{
+        package_exists = [bool]$package.exists
+        vmcx_count = [int]$package.vmcx_count
+        vhdx_count = [int]$package.vhdx_count
+        vmgs_count = [int]$package.vmgs_count
+        source_hyperv = $sourceHyperV
+        source_product = $sourceProduct
+    }
+    Write-AtomicSummary
+    if (-not [bool]$package.exists -or [int]$package.vmcx_count -ne 1 -or [int]$package.vhdx_count -lt 1 -or
+        [int]$package.vmgs_count -ne 0 -or $sourceHyperV -ne 'Off' -or -not (Test-PcvProductOff $sourceProduct)) {
+        throw "PCV_P2_OFFVM_STATE_MISMATCH|export|vmcx=$($package.vmcx_count)|vhdx=$($package.vhdx_count)"
+    }
+}
+
+function Invoke-ImportPreviewSlice {
+    $preview = Invoke-PcvCliJson -StepName 'vm-import-preview' -Arguments @(
+        'vm', 'import', 'preview', '--name', $ImportVmName, '--directory', $exportDirFull,
+        '--allowed-root', $exportRootFull, '--has-vmcx')
+    $data = Get-ObjectPropertyValue -InputObject $preview.Json -Name 'data'
+    $jobId = Get-CliJobId -Created $preview
+    $targetPresent = @(Get-PcvVmByName -Name $ImportVmName -Purpose 'import-preview').Count -ne 0
+    $summary.readbacks.import_preview = [ordered]@{
+        dry_run = Get-ObjectPropertyValue -InputObject $data -Name 'dry_run'
+        generate_new_id = Get-ObjectPropertyValue -InputObject $data -Name 'generate_new_id'
+        apply_managed_marker = Get-ObjectPropertyValue -InputObject $data -Name 'apply_managed_marker'
+        job_id = $jobId
+        target_absent = (-not $targetPresent)
+    }
+    Write-AtomicSummary
+    if ($null -ne $jobId -or $targetPresent -or
+        -not [bool](Get-ObjectPropertyValue -InputObject $data -Name 'dry_run') -or
+        -not [bool](Get-ObjectPropertyValue -InputObject $data -Name 'generate_new_id') -or
+        -not [bool](Get-ObjectPropertyValue -InputObject $data -Name 'apply_managed_marker')) {
+        throw 'PCV_P2_OFFVM_STATE_MISMATCH|import-preview'
+    }
+}
+
+function Invoke-ImportSlice {
+    $import = Start-PcvCliJob -StepName 'vm-import' -Arguments @(
+        'vm', 'import', '--name', $ImportVmName, '--directory', $exportDirFull,
+        '--allowed-root', $exportRootFull, '--yes') -DeferTerminalSummaryWrite
+    if ([string](Get-ObjectPropertyValue -InputObject $import -Name 'status') -ne 'succeeded') {
+        throw 'PCV_P2_OFFVM_STATE_MISMATCH|import'
+    }
+    $record = Resolve-CreatedVm -Record $script:ImportRecord -Job $import -Name $ImportVmName
+    $importId = [Guid]$record.id
+    $sourceId = [Guid]$script:VmRecord.id
+    $importHyperV = Wait-HyperVState -Id $importId -Expected 'Off' -Phase 'after-import' -Record $record
+    $importGet = Invoke-PcvCliJson -StepName 'vm-get-import' -Arguments @('vm', 'get', $ImportVmName)
+    $importData = Get-ObjectPropertyValue -InputObject $importGet.Json -Name 'data'
+    $importProduct = Get-ProductState -Data $importData
+    $managed = [bool](Get-ObjectPropertyValue -InputObject $importData -Name 'managed_by_purecvisor')
+    $sourceHyperV = Wait-HyperVState -Id $sourceId -Expected 'Off' -Phase 'after-import-source'
+    $sourceProduct = Get-ProductState -Data (Get-ProductVmData -Phase 'after-import-source')
+    $summary.readbacks.import = [ordered]@{
+        import_vm_id = $record.id
+        new_identity = ($importId -ne $sourceId)
+        import_path = $record.observed_path
+        import_hyperv = $importHyperV
+        import_product = $importProduct
+        managed = $managed
+        source_hyperv = $sourceHyperV
+        source_product = $sourceProduct
+    }
+    Write-AtomicSummary
+    if ($importId -eq $sourceId -or $importHyperV -ne 'Off' -or -not (Test-PcvProductOff $importProduct) -or
+        -not $managed -or $sourceHyperV -ne 'Off' -or -not (Test-PcvProductOff $sourceProduct)) {
+        throw "PCV_P2_OFFVM_STATE_MISMATCH|import|new_identity=$($importId -ne $sourceId)|managed=$managed"
+    }
+}
+
 function Get-ValidatedCleanupVm {
     param(
         [Parameter(Mandatory)]$Record,
@@ -1144,7 +1326,9 @@ function Invoke-ExactCleanup {
     if ($script:ScheduleEnabled) {
         $cleanupErrors.Add('PCV_P2_OFFVM_CLEANUP_SCHEDULE_NOT_CLEARED') | Out-Null
     }
-    foreach ($record in $script:VmRecords) {
+    $ordered = @($script:VmRecords | Where-Object { $_.kind -eq 'import' }) +
+        @($script:VmRecords | Where-Object { $_.kind -ne 'import' })
+    foreach ($record in $ordered) {
         try {
             $record.root = Assert-ValidatedChildPath -Root $vmRootFull -Candidate $record.root
             $sameName = @(Get-PcvVmByName -Name $record.name -Purpose 'cleanup-observation')
@@ -1175,8 +1359,9 @@ function Invoke-ExactCleanup {
             $current = Get-ValidatedCleanupVm -Record $record -RecordedId $recordedId -Phase 'before-product-delete' -AllowAbsent
             if ($null -ne $current) {
                 $record.product_delete_attempted = $true
+                $deleteStep = if ($record.kind -eq 'import') { 'vm-delete-import' } else { 'vm-delete' }
                 try {
-                    $delete = Start-PcvCliJob -StepName 'vm-delete' -AllowFailure -Arguments @(
+                    $delete = Start-PcvCliJob -StepName $deleteStep -AllowFailure -Arguments @(
                         'vm', 'delete', $record.name, '--yes')
                     if ([string](Get-ObjectPropertyValue -InputObject $delete -Name 'status') -ne 'succeeded') {
                         throw 'product-delete-failed'
@@ -1216,6 +1401,14 @@ function Invoke-ExactCleanup {
             $cleanupErrors.Add($safeCode) | Out-Null
         }
     }
+    if ($Family -eq 'export-import') {
+        try {
+            if (Test-PcvPath -Path $outsideDirFull) { Remove-PcvDirectory -Path $outsideDirFull }
+        }
+        catch {
+            $cleanupErrors.Add('PCV_P2_OFFVM_CLEANUP_ROOT_INVALID') | Out-Null
+        }
+    }
     $summary.cleanup.records = @($script:VmRecords)
     if ($cleanupErrors.Count -gt 0) {
         $summary.cleanup.verdict = 'FAIL'
@@ -1236,6 +1429,12 @@ $sliceActions = @{
     schedule_interval_invalid = { Invoke-ScheduleIntervalInvalidSlice }
     schedule_set = { Invoke-ScheduleSetSlice }
     schedule_clear = { Invoke-ScheduleClearSlice }
+    export_confirm_required = { Invoke-ExportConfirmRequiredSlice }
+    export_path_not_allowed = { Invoke-ExportPathNotAllowedSlice }
+    export_preview = { Invoke-ExportPreviewSlice }
+    export = { Invoke-ExportSlice }
+    import_preview = { Invoke-ImportPreviewSlice }
+    import = { Invoke-ImportSlice }
 }
 
 $runError = $null
@@ -1245,14 +1444,27 @@ try {
     if ($Family -eq 'device-add') { Assert-SwitchPresent }
     Assert-VmAbsent -Name $VmName
     Assert-PcvPathAbsent -Path $vmOwnRootFull -Kind 'vm'
+    if ($Family -eq 'export-import') {
+        Assert-VmAbsent -Name $ImportVmName
+        Assert-PcvPathAbsent -Path $exportRootFull -Kind 'export'
+        Assert-PcvPathAbsent -Path $outsideDirFull -Kind 'outside'
+    }
     Write-AtomicSummary
 
     $script:VmRecord = New-VmOwnershipRecord -Name $VmName -ExpectedRoot $vmOwnRootFull
+    if ($Family -eq 'export-import') {
+        # Hyper-V import registers the exported package in place, so the imported VM lives under the export root.
+        $script:ImportRecord = New-VmOwnershipRecord -Kind 'import' -Name $ImportVmName -ExpectedRoot $exportRootFull
+    }
     $summary.host_mutation_performed = $true
     $summary.actual_execution = 'installed-cli-and-hyperv'
     if (-not (Test-PcvPath -Path $vmRootFull)) { New-PcvDirectory -Path $vmRootFull }
     New-PcvDirectory -Path $script:VmRecord.root
     $script:VmRecord.root_owned_by_run = $true
+    if ($null -ne $script:ImportRecord) {
+        New-PcvDirectory -Path $script:ImportRecord.root
+        $script:ImportRecord.root_owned_by_run = $true
+    }
     Write-AtomicSummary
     foreach ($slice in $plannedSlices) {
         if ($slice -eq 'cleanup') { continue }

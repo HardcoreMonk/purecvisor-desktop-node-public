@@ -18,7 +18,7 @@ guest OS 없이 Off VM으로 검증할 수 있는 P2 기능군을 설치본 CLI�
 | --- | --- | --- |
 | P2-15 NIC/DVD 추가 | `device-add` | 가능 |
 | P2-12 checkpoint schedule | `checkpoint-schedule` | 가능 |
-| P2-13 export/import | 후속 task에서 추가 | 불가. Off 어휘 결함 수정 package 필요 |
+| P2-13 export/import | `export-import` | 불가. Off 어휘 결함 수정 package 필요 |
 | P2-14 network connect | 후속 task에서 추가 | 불가. 같은 이유 |
 
 ## 2. runner
@@ -62,6 +62,26 @@ guest OS 없이 Off VM으로 검증할 수 있는 P2 기능군을 설치본 CLI�
 
 최소 주기가 `60`분이라 due worker tick과 retention delete는 관측하지 않는다(nonclaim).
 
+### `export-import`
+
+경로: allowlist root는 `VmRoot\exports`, export 디렉터리는 `VmRoot\exports\<source>`, 거절 확인용 바깥 경로는
+`VmRoot\outside-<source>`다. 모든 export/import 호출에 `--allowed-root VmRoot\exports`를 넘긴다.
+
+| slice | 동작 | PASS |
+| --- | --- | --- |
+| `source_create` | 위와 같음 | checkpoint `0` |
+| `export_confirm_required` | `--yes` 없이 export | `PCV_CLI_CONFIRMATION_REQUIRED`, job 없음, export 디렉터리 없음 |
+| `export_path_not_allowed` | allowlist 밖 디렉터리로 export preview | `PCV_VM_EXPORT_PATH_NOT_ALLOWED`, 바깥 디렉터리 없음 |
+| `export_preview` | export preview | `dry_run=true`, `host_mutation_performed=false`, job 없음, 디렉터리 없음 |
+| `export` | export `--yes` | job succeeded, `.vmcx` `1`, `.vhdx` `1`개 이상, `.vmgs` `0`, 소스 Off |
+| `import_preview` | import preview `--has-vmcx` | `dry_run`, `generate_new_id`, `apply_managed_marker` 모두 true, 대상 없음 |
+| `import` | import `--yes` | job succeeded, 새 identity(소스 id와 다름), managed, Off, 소스 Off |
+| `cleanup` | import VM 먼저 제품 delete, 다음 소스, export root와 VM 디렉터리 삭제 | 둘 다 없음, 디렉터리 없음 |
+
+제품 import는 `ImportSystemDefinition`으로 export package를 제자리 등록하므로 import VM 소유 root를
+`VmRoot\exports`로 예약한다. import VM 구성 경로가 그 밖이면 identity blocker로 멈추고 정리하지 않는다(수동 정리,
+fail-safe). 제품 `vm delete`는 파일을 지우지 않으므로 디렉터리는 runner가 identity 확인 뒤 지운다.
+
 ## 4. PASS / FAIL
 
 Lane 2 PASS 입력은 `overall_verdict=PASS`, `cleanup.verdict=PASS`, `secret_observed=false`,
@@ -71,5 +91,5 @@ installed non-promoted candidate이며 feature ledger와 current-evidence를 바
 ## 5. 비주장
 
 - 이 문서는 Hyper-V/MSI/service mutation을 실행하지 않는다.
-- export/import, network connect는 이 runner 버전에 없다.
+- network connect는 이 runner 버전에 없다(plan Task 6).
 - public trusted signing / external stable publication `not-claimed`

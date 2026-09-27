@@ -70,18 +70,26 @@ source_head=986ea3d
 
 실행 기록(2026-09-27): 첫 run PASS. `docs/ga-ready/evidence/service-plan-p2-offvm-checkpoint-schedule-actual-vm-2026-09-27-04278.md`. set 뒤 readback `status=waiting`, clear 뒤 `disabled`, Hyper-V checkpoint `0`. 잔여 VM `0`.
 
-## Task 5: runner `export-import`, `network-connect` 기능군 (Lane 1)
+## Task 5: runner `export-import` 기능군 (Lane 1)
 
-순서 조정(2026-09-27): 승인이 필요 없는 runner 확장을 package/설치 승인 task보다 앞에 둔다.
+순서 조정(2026-09-27): 승인이 필요 없는 runner 확장을 package/설치 승인 task보다 앞에 둔다. switch 생성이
+PCVCLI가 아니라 `DesktopNode.Host.exe service-action switch-create|switch-remove`여서 network-connect는 Task 6으로 나눈다.
 
-- [ ] runner `-Family`에 `export-import`, `network-connect`를 더한다. export 디렉터리는 전용 VmRoot 아래 allowlist root를 쓰고, import VM은 새 identity로 따로 기록해 정리한다.
-- [ ] network-connect의 대상 switch를 정한다(제품 switch 생성 경로가 있으면 전용 `pcv-` switch, 없으면 설계 결정으로 멈춤).
+- [x] runner `-Family`에 `export-import`를 더한다. export 디렉터리는 전용 VmRoot 아래 allowlist root를 쓰고, import VM은 새 identity로 따로 기록해 정리한다.
+- [x] Pester와 C# 계약 테스트.
+
+실행 기록(2026-09-27): slice는 `source_create`, `export_confirm_required`, `export_path_not_allowed`, `export_preview`, `export`, `import_preview`, `import`, `cleanup`. 제품 import가 package를 제자리 등록하므로 import VM 예약 root는 `VmRoot\exports`이고 cleanup은 import VM을 소스보다 먼저 지운다. 제품 `vm delete`는 파일을 지우지 않아(`DestroySystem`만) 디렉터리는 runner가 지운다. Pester `11/11`, 계약 테스트 `5/5`. 설치본 `0.42.78`에서는 `export_preview`가 Task 1 결함으로 막히므로 실행은 Task 8이다.
+
+## Task 6: runner `network-connect` 기능군 (Lane 1)
+
+- [ ] 전용 Private `pcv-` switch를 `DesktopNode.Host.exe service-action switch-create --switch-type private`로 만들고 cleanup에서 VM 삭제 뒤 `switch-remove`로 지운다. switch도 identity를 기록한다.
+- [ ] slice: 확인 없는 connect 거절, 없는 switch 거절, connect 뒤 WMI 연결 switch 이름과 제품 network 일치.
 - [ ] Pester와 C# 계약 테스트.
 
-## Task 6: 수정 package와 설치 (별도 승인)
+## Task 7: 수정 package와 설치 (별도 승인)
 
 - [ ] Task 1 수정이 든 probe-vehicle package를 빌드하고 설치한다. MSI 설치 승인 없이는 시작하지 않는다.
 
-## Task 7: Lane 2 `export-import`, `network-connect` (수정 설치본)
+## Task 8: Lane 2 `export-import`, `network-connect` (수정 설치본)
 
 - [ ] 기능군마다 한 run. evidence 문서 새 파일.

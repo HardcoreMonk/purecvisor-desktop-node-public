@@ -17,13 +17,14 @@ public sealed class PcvServicePlanP2OffVmActualVmSmokeContractTests
             source,
             "[Parameter(Mandatory)]",
             "[string]$Version",
-            "[ValidateSet('device-add', 'checkpoint-schedule')]",
+            "[ValidateSet('device-add', 'checkpoint-schedule', 'export-import')]",
             "[string]$Family",
             "$ArtifactRoot",
             "$ProductRoot",
             "$IsoPath",
             "$VmRoot",
             "$VmName",
+            "$ImportVmName",
             "$SwitchName",
             "$JobTimeoutSeconds",
             "$CommandTimeoutSeconds",
@@ -82,10 +83,46 @@ public sealed class PcvServicePlanP2OffVmActualVmSmokeContractTests
             "'schedule_set'",
             "'schedule_clear'",
             "'cleanup'");
+        AssertOrdered(
+            source,
+            "'export-import' = @(",
+            "'source_create'",
+            "'export_confirm_required'",
+            "'export_path_not_allowed'",
+            "'export_preview'",
+            "'export'",
+            "'import_preview'",
+            "'import'",
+            "'cleanup'");
         Assert.DoesNotContain("'vm', 'delete', $record.id", source, StringComparison.Ordinal);
         Assert.DoesNotContain("'vm', 'get', $Id", source, StringComparison.Ordinal);
         Assert.DoesNotContain("'vm', 'start'", source, StringComparison.Ordinal);
         Assert.DoesNotContain("'--iso-path'", source, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void PinsExportImportAllowlistRootAndImportBeforeSourceCleanup()
+    {
+        var source = Source();
+        RequireTokens(
+            source,
+            "'vm', 'export', $VmName, '--directory', $exportDirFull, '--allowed-root', $exportRootFull)",
+            "'vm', 'export', 'preview', $VmName, '--directory', $outsideDirFull, '--allowed-root', $exportRootFull)",
+            "'vm', 'export', 'preview', $VmName, '--directory', $exportDirFull, '--allowed-root', $exportRootFull)",
+            "'vm', 'export', $VmName, '--directory', $exportDirFull, '--allowed-root', $exportRootFull, '--yes')",
+            "'vm', 'import', 'preview', '--name', $ImportVmName, '--directory', $exportDirFull,",
+            "'vm', 'import', '--name', $ImportVmName, '--directory', $exportDirFull,",
+            "'vm', 'get', $ImportVmName",
+            "PCV_VM_EXPORT_PATH_NOT_ALLOWED",
+            "New-VmOwnershipRecord -Kind 'import' -Name $ImportVmName -ExpectedRoot $exportRootFull",
+            "'vm-delete-import'",
+            "vmgs_count");
+        AssertOrdered(
+            source,
+            "$ordered = @($script:VmRecords | Where-Object { $_.kind -eq 'import' })",
+            "@($script:VmRecords | Where-Object { $_.kind -ne 'import' })");
+        Assert.DoesNotContain("Import-VM", source, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("Export-VM", source, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]

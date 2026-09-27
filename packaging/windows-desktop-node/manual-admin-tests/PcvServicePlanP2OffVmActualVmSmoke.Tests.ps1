@@ -18,6 +18,12 @@ function New-P2OffVmBehaviorRuntime {
         CheckpointCount = 0
         DvdMode = 'job'
         ClearFails = $false
+        ImportId = [guid]'dddddddd-dddd-dddd-dddd-dddddddddddd'
+        ImportName = $null
+        ExportDir = $null
+        ExportVmcxCount = 1
+        Exported = $false
+        PendingDeleteName = $null
         Schedule = [ordered]@{ enabled = $false; interval_minutes = $null; retention_max = $null }
         Vms = @{}
         ExistingRoots = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
@@ -77,6 +83,14 @@ function New-P2OffVmBehaviorRuntime {
                 }
                 return $null
             }
+            'export-package' {
+                return [pscustomobject]@{
+                    exists = [bool]$state.Exported
+                    vmcx_count = if ($state.Exported) { $state.ExportVmcxCount } else { 0 }
+                    vhdx_count = if ($state.Exported) { 1 } else { 0 }
+                    vmgs_count = 0
+                }
+            }
             'vm-devices' {
                 return [pscustomobject]@{
                     nic_count = $state.NicSwitches.Count
@@ -93,6 +107,14 @@ function New-P2OffVmBehaviorRuntime {
                         if ($arguments[$index] -eq '--name') { $state.VmName = [string]$arguments[$index + 1] }
                         if ($arguments[$index] -eq '--vm-root') { $state.VmRoot = [string]$arguments[$index + 1] }
                     }
+                    return & $queued $step
+                }
+                for ($index = 0; $index -lt $arguments.Count - 1; $index++) {
+                    if ($arguments[$index] -eq '--directory' -and $step -eq 'vm-export') { $state.ExportDir = [string]$arguments[$index + 1] }
+                    if ($arguments[$index] -eq '--name' -and $step -eq 'vm-import') { $state.ImportName = [string]$arguments[$index + 1] }
+                }
+                if ($step -like 'vm-delete*') {
+                    $state.PendingDeleteName = [string]$arguments[2]
                     return & $queued $step
                 }
                 if ($step -like 'vm-get-*') {
@@ -135,6 +157,28 @@ function New-P2OffVmBehaviorRuntime {
                         }
                     }
                     'vm-checkpoint-schedule-set-invalid' { return & $rejected 'PCV_CHECKPOINT_SCHEDULE_INTERVAL_INVALID' }
+                    'vm-export-unconfirmed' {
+                        return [pscustomobject]@{
+                            exit_code = 2
+                            stdout = ''
+                            stderr = "code=PCV_CLI_CONFIRMATION_REQUIRED`nmessage=confirmation required"
+                        }
+                    }
+                    'vm-export-preview-outside' { return & $rejected 'PCV_VM_EXPORT_PATH_NOT_ALLOWED' }
+                    'vm-export-preview' {
+                        return [pscustomobject]@{
+                            exit_code = 0
+                            stdout = (@{ data = @{ dry_run = $true; host_mutation_performed = $false } } | ConvertTo-Json -Compress)
+                            stderr = ''
+                        }
+                    }
+                    'vm-import-preview' {
+                        return [pscustomobject]@{
+                            exit_code = 0
+                            stdout = (@{ data = @{ dry_run = $true; generate_new_id = $true; apply_managed_marker = $true } } | ConvertTo-Json -Compress)
+                            stderr = ''
+                        }
+                    }
                     'vm-checkpoint-schedule-set' {
                         $state.Schedule.pending_interval = [int]$arguments[6]
                         $state.Schedule.pending_retention = [int]$arguments[8]
@@ -180,9 +224,23 @@ function New-P2OffVmBehaviorRuntime {
                         $state.Schedule = [ordered]@{ enabled = $false; interval_minutes = $null; retention_max = $null }
                         return [pscustomobject]@{ status = 'succeeded' }
                     }
-                    'vm-delete' {
-                        if ($state.Vms.ContainsKey([string]$state.VmName)) { $state.Vms.Remove([string]$state.VmName) }
-                        $state.ExistingRoots.Remove((Join-Path $state.VmRoot $state.VmName)) | Out-Null
+                    'vm-export' {
+                        $state.Exported = $true
+                        $state.ExistingRoots.Add([string]$state.ExportDir) | Out-Null
+                        return [pscustomobject]@{ status = 'succeeded' }
+                    }
+                    'vm-import' {
+                        $state.Vms[$state.ImportName] = [pscustomobject]@{
+                            Id = $state.ImportId
+                            Name = $state.ImportName
+                            Path = [string]$state.ExportDir
+                            State = 'Off'
+                        }
+                        return [pscustomobject]@{ status = 'succeeded' }
+                    }
+                    { $_ -like 'vm-delete*' } {
+                        $name = [string]$state.PendingDeleteName
+                        if ($state.Vms.ContainsKey($name)) { $state.Vms.Remove($name) }
                         return [pscustomobject]@{ status = 'succeeded' }
                     }
                     default { return [pscustomobject]@{ status = 'succeeded' } }
@@ -248,6 +306,7 @@ Describe 'SERVICE_PLAN P2 Off-VM actual-VM runner contract' {
     It 'emits a non-mutating dry-run plan for <family>' -ForEach @(
         @{ family = 'device-add'; slices = @('source_create', 'nic_confirm_required', 'nic_add', 'nic_limit', 'dvd_guard', 'cleanup') }
         @{ family = 'checkpoint-schedule'; slices = @('source_create', 'schedule_preview', 'schedule_interval_invalid', 'schedule_set', 'schedule_clear', 'cleanup') }
+        @{ family = 'export-import'; slices = @('source_create', 'export_confirm_required', 'export_path_not_allowed', 'export_preview', 'export', 'import_preview', 'import', 'cleanup') }
     ) {
         $artifactRoot = Join-Path $TestDrive "plan-$family"
         $result = & $script:RunnerPath `
@@ -337,6 +396,46 @@ Describe 'SERVICE_PLAN P2 Off-VM actual-VM runner contract' {
         $run.Summary.cleanup.schedule_cleared | Should -BeNullOrEmpty
         $run.Summary.cleanup.verdict | Should -Be 'PASS'
         @(Get-CliStep $run 'vm-device-add-nic').Count | Should -Be 0
+    }
+
+    It 'passes export-import with a new identity and deletes the import before the source' {
+        $run = Invoke-P2OffVmBehaviorScenario -Name 'export-import-pass' -Family 'export-import'
+
+        $run.Error | Should -BeNullOrEmpty
+        $run.Summary.overall_verdict | Should -Be 'PASS'
+        $run.Summary.readbacks.export_confirm_required.code | Should -Be 'PCV_CLI_CONFIRMATION_REQUIRED'
+        $run.Summary.readbacks.export_path_not_allowed.code | Should -Be 'PCV_VM_EXPORT_PATH_NOT_ALLOWED'
+        $run.Summary.readbacks.export_preview.export_dir_absent | Should -BeTrue
+        $run.Summary.readbacks.export.vmcx_count | Should -Be 1
+        $run.Summary.readbacks.import_preview.target_absent | Should -BeTrue
+        $run.Summary.readbacks.import.new_identity | Should -BeTrue
+        $run.Summary.import_vm_id | Should -Be 'dddddddd-dddd-dddd-dddd-dddddddddddd'
+        $run.Summary.cleanup.verdict | Should -Be 'PASS'
+        $run.State.Vms.Count | Should -Be 0
+        $run.State.ExistingRoots.Contains((Join-Path $run.Summary.vm_root_resolved 'exports')) | Should -BeFalse
+        $deletes = @($run.State.Operations | Where-Object {
+            $_.operation -eq 'invoke-cli' -and [string]$_.input.step -like 'vm-delete*'
+        } | ForEach-Object { [string]$_.input.step })
+        $deletes | Should -Be @('vm-delete-import', 'vm-delete')
+        foreach ($step in @('vm-export', 'vm-export-preview', 'vm-import', 'vm-import-preview')) {
+            $arguments = @((Get-CliStep $run $step)[0].input.arguments)
+            $arguments[[array]::IndexOf($arguments, '--allowed-root') + 1] | Should -Be (Join-Path $run.Summary.vm_root_resolved 'exports')
+        }
+        @((Get-CliStep $run 'vm-export-unconfirmed')[0].input.arguments) | Should -Not -Contain '--yes'
+    }
+
+    It 'fails export when the package has no single vmcx and still cleans up' {
+        $run = Invoke-P2OffVmBehaviorScenario -Name 'export-no-vmcx' -Family 'export-import' -Configure {
+            param($state)
+            $state.ExportVmcxCount = 0
+        }
+
+        $run.Summary.overall_verdict | Should -Be 'FAIL'
+        $run.Summary.slice_verdicts.export | Should -Be 'FAIL'
+        $run.Summary.slice_verdicts.import | Should -Be 'NOT_RUN'
+        $run.Summary.cleanup.verdict | Should -Be 'PASS'
+        $run.State.Vms.Count | Should -Be 0
+        @(Get-CliStep $run 'vm-delete-import').Count | Should -Be 0
     }
 
     It 'clears a left-over schedule during cleanup when the clear slice fails' {
