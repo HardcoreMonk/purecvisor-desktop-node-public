@@ -144,7 +144,9 @@ PCVCLI가 아니라 `DesktopNode.Host.exe service-action switch-create|switch-re
 
 ## Task 14: 0.42.81 probe-vehicle package와 설치
 
-- [ ] Task 12, 13이 든 HEAD에서 `0.42.81-admin-smoke` 빌드, msiexec 업그레이드, package evidence. 승인: 2026-09-28 사용자 결정(전용 root 복사, 0.42.81 빌드·설치).
+- [x] Task 12, 13이 든 HEAD에서 `0.42.81-admin-smoke` 빌드, msiexec 업그레이드, package evidence. 승인: 2026-09-28 사용자 결정(전용 root 복사, 0.42.81 빌드·설치).
+
+실행 기록(2026-09-28): HEAD `0c2f84b`, MSI `abf50b21…`. msiexec exit `0`, ARP `0.42.81` 1개, manifest `0.42.81-admin-smoke`, 설치본 CLI/Host hash가 build와 같음, log skip `0`, Web `200`, API `401`. `docs/ga-ready/evidence/admin-smoke-package-2026-09-28-04281.md`.
 
 ## Task 15: Lane 2 `export-import` 재실행 (0.42.81)
 
