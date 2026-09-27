@@ -89,6 +89,108 @@
       "max_lines": 201,
       "owner": "HTTP host core: listener start, dispose, bindings",
       "note": "2026-08-09 pure partial split of former 859-line file. evidence: docs/ga-ready/evidence/batch-evidence-host-app-test-fixture-decomposition-2026-08-09.md. 2026-09-27 ratchet recovery Task 1 moved Dispose to DesktopNodeHostApplication.Lifetime.cs (plan: docs/superpowers/plans/2026-09-27-purecvisor-desktop-node-module-ratchet-recovery.md)"
+    },
+    {
+      "path": "src/DesktopNode.Cli/DesktopNodeCliCommandCatalog.cs",
+      "max_lines": 1412,
+      "owner": "PCVCLI command catalog and argument parsing",
+      "note": "2026-09-27 registered at its current size by the post-0.42.78 backlog Task 1. Registration freezes growth and is not a split. plan: docs/superpowers/plans/2026-09-27-purecvisor-desktop-node-post-04278-backlog.md"
+    },
+    {
+      "path": "src/DesktopNode.Api/DesktopNodeAccountAuth.cs",
+      "max_lines": 1066,
+      "owner": "account store, JWT session, and RBAC authorization",
+      "note": "2026-09-27 registered at its current size by the post-0.42.78 backlog Task 1. Registration freezes growth and is not a split. plan: docs/superpowers/plans/2026-09-27-purecvisor-desktop-node-post-04278-backlog.md"
+    },
+    {
+      "path": "src/DesktopNode.Runtime/JsonFileDesktopNodeJobStore.cs",
+      "max_lines": 947,
+      "owner": "durable JSON job store",
+      "note": "2026-09-27 registered at its current size by the post-0.42.78 backlog Task 1. Registration freezes growth and is not a split. plan: docs/superpowers/plans/2026-09-27-purecvisor-desktop-node-post-04278-backlog.md"
+    },
+    {
+      "path": "src/DesktopNode.Cli/DesktopNodeCliFormatter.cs",
+      "max_lines": 924,
+      "owner": "PCVCLI output formatting",
+      "note": "2026-09-27 registered at its current size by the post-0.42.78 backlog Task 1. Registration freezes growth and is not a split. plan: docs/superpowers/plans/2026-09-27-purecvisor-desktop-node-post-04278-backlog.md"
+    },
+    {
+      "path": "src/DesktopNode.Verification/CurrentEvidenceVerifier.cs",
+      "max_lines": 907,
+      "owner": "current-evidence record and generated document verifier",
+      "note": "2026-09-27 registered at its current size by the post-0.42.78 backlog Task 1. Registration freezes growth and is not a split. plan: docs/superpowers/plans/2026-09-27-purecvisor-desktop-node-post-04278-backlog.md"
+    },
+    {
+      "path": "src/DesktopNode.Verification/VerificationSummaryWriter.cs",
+      "max_lines": 788,
+      "owner": "verification summary artifact writer",
+      "note": "2026-09-27 registered at its current size by the post-0.42.78 backlog Task 1. Registration freezes growth and is not a split. plan: docs/superpowers/plans/2026-09-27-purecvisor-desktop-node-post-04278-backlog.md"
+    },
+    {
+      "path": "src/DesktopNode.HyperV/DesktopNodeHyperVPowerShellDirectGuestExecutionProvider.cs",
+      "max_lines": 702,
+      "owner": "PowerShell Direct guest execution provider",
+      "note": "2026-09-27 registered at its current size by the post-0.42.78 backlog Task 1. Registration freezes growth and is not a split. plan: docs/superpowers/plans/2026-09-27-purecvisor-desktop-node-post-04278-backlog.md"
+    },
+    {
+      "path": "src/DesktopNode.HyperV/DesktopNodeHyperVWmiVmCreateProvider.cs",
+      "max_lines": 675,
+      "owner": "WMI VM create provider",
+      "note": "2026-09-27 registered at its current size by the post-0.42.78 backlog Task 1. Registration freezes growth and is not a split. plan: docs/superpowers/plans/2026-09-27-purecvisor-desktop-node-post-04278-backlog.md"
+    },
+    {
+      "path": "src/DesktopNode.HyperV/DesktopNodeHyperVWmiVmResourceMutationProvider.cs",
+      "max_lines": 665,
+      "owner": "WMI VM resource and QoS mutation provider",
+      "note": "2026-09-27 registered at its current size by the post-0.42.78 backlog Task 1. Registration freezes growth and is not a split. plan: docs/superpowers/plans/2026-09-27-purecvisor-desktop-node-post-04278-backlog.md"
+    },
+    {
+      "path": "src/DesktopNode.Host/Ops/DesktopNodeCredentialManagerOps.cs",
+      "max_lines": 664,
+      "owner": "Windows Credential Manager operations",
+      "note": "2026-09-27 registered at its current size by the post-0.42.78 backlog Task 1. Registration freezes growth and is not a split. plan: docs/superpowers/plans/2026-09-27-purecvisor-desktop-node-post-04278-backlog.md"
+    },
+    {
+      "path": "src/DesktopNode.Verification/VerificationProcess.cs",
+      "max_lines": 644,
+      "owner": "verification process runner and output sanitizer",
+      "note": "2026-09-27 registered at its current size by the post-0.42.78 backlog Task 1. Registration freezes growth and is not a split. plan: docs/superpowers/plans/2026-09-27-purecvisor-desktop-node-post-04278-backlog.md"
+    },
+    {
+      "path": "web/src/served/mutate.ts",
+      "max_lines": 594,
+      "owner": "Web Console mutation actions",
+      "note": "2026-09-27 registered at its current size by the post-0.42.78 backlog Task 1. Registration freezes growth and is not a split. plan: docs/superpowers/plans/2026-09-27-purecvisor-desktop-node-post-04278-backlog.md"
+    },
+    {
+      "path": "src/DesktopNode.HyperV/DesktopNodeHyperVWmiVmProvider.cs",
+      "max_lines": 573,
+      "owner": "WMI VM inventory and detail provider",
+      "note": "2026-09-27 registered at its current size by the post-0.42.78 backlog Task 1. Registration freezes growth and is not a split. plan: docs/superpowers/plans/2026-09-27-purecvisor-desktop-node-post-04278-backlog.md"
+    },
+    {
+      "path": "src/DesktopNode.Api/DesktopNodeApiOpsSummaryBuilder.cs",
+      "max_lines": 547,
+      "owner": "ops summary projection builder",
+      "note": "2026-09-27 registered at its current size by the post-0.42.78 backlog Task 1. Registration freezes growth and is not a split. plan: docs/superpowers/plans/2026-09-27-purecvisor-desktop-node-post-04278-backlog.md"
+    },
+    {
+      "path": "src/DesktopNode.Verification/VerificationPolicy.cs",
+      "max_lines": 535,
+      "owner": "verification lane, tier, and suite selection policy",
+      "note": "2026-09-27 registered at its current size by the post-0.42.78 backlog Task 1. Registration freezes growth and is not a split. plan: docs/superpowers/plans/2026-09-27-purecvisor-desktop-node-post-04278-backlog.md"
+    },
+    {
+      "path": "src/DesktopNode.HyperV/DesktopNodeHyperVModels.cs",
+      "max_lines": 533,
+      "owner": "Hyper-V domain models and result records",
+      "note": "2026-09-27 registered at its current size by the post-0.42.78 backlog Task 1. Registration freezes growth and is not a split. plan: docs/superpowers/plans/2026-09-27-purecvisor-desktop-node-post-04278-backlog.md"
+    },
+    {
+      "path": "src/DesktopNode.Api/DesktopNodeApiDiagnosticsHandler.cs",
+      "max_lines": 523,
+      "owner": "diagnostic bundle routes",
+      "note": "2026-09-27 registered at its current size by the post-0.42.78 backlog Task 1. Registration freezes growth and is not a split. plan: docs/superpowers/plans/2026-09-27-purecvisor-desktop-node-post-04278-backlog.md"
     }
   ]
 }

@@ -13,7 +13,7 @@ internal sealed class DevelopmentPolicyContractVerifier
     internal const string SpecPath = "config/pcv-development-policy-contract-spec-v1.json";
 
     private const string ExpectedSpecSha256 =
-        "5f1a98aaf49041d710ba3f30914fd4963c9e110c9a7c0abc57e27350232270ef";
+        "0485756a24b8eb504aba47b3f0f3b5966d001223a1d94f855a0601606887453d";
 
     private static readonly string[] ExpectedKeys =
     [
@@ -679,7 +679,7 @@ internal sealed class DevelopmentPolicyContractVerifier
         var modules = root.GetProperty("modules").EnumerateArray().ToArray();
         if (root.GetProperty("contract").GetString() != "pcv-module-size-ratchet-v1" ||
             slack != 50 ||
-            modules.Length != 14)
+            modules.Length != 31)
         {
             throw Invalid("module-ratchet-contract");
         }

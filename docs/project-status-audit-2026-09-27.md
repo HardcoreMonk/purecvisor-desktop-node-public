@@ -94,7 +94,7 @@ docs `18`, refactor `6`, test `4`, fix `3`이다.
 `DesktopNodeApiJobReconciliationHandler.cs` `674`, `DesktopNodeApiVmMutationRouteHandler.cs`
 `657`이다.
 
-라쳇에 등록되지 않은 비테스트 source 중 `500`줄을 넘는 파일이 `12`개 있다. 라쳇은 등록된
+라쳇에 등록되지 않은 비테스트 source 중 `500`줄을 넘는 파일이 `17`개 있다. (처음 작성 때 목록을 앞 `12`개로 잘라 `12`개로 적었다가 backlog Task 1에서 바로잡았다.) 라쳇은 등록된
 모듈만 막으므로 이 파일들은 증가를 막는 장치가 없다.
 
 | 줄 | 파일 |
@@ -111,6 +111,11 @@ docs `18`, refactor `6`, test `4`, fix `3`이다.
 | 664 | `src/DesktopNode.Host/Ops/DesktopNodeCredentialManagerOps.cs` |
 | 644 | `src/DesktopNode.Verification/VerificationProcess.cs` |
 | 594 | `web/src/served/mutate.ts` |
+| 573 | `src/DesktopNode.HyperV/DesktopNodeHyperVWmiVmProvider.cs` |
+| 547 | `src/DesktopNode.Api/DesktopNodeApiOpsSummaryBuilder.cs` |
+| 535 | `src/DesktopNode.Verification/VerificationPolicy.cs` |
+| 533 | `src/DesktopNode.HyperV/DesktopNodeHyperVModels.cs` |
+| 523 | `src/DesktopNode.Api/DesktopNodeApiDiagnosticsHandler.cs` |
 
 ## 8. 저장소 위생
 
@@ -137,7 +142,7 @@ SERVICE_PLAN의 P0~P2 기획 항목은 모두 소스에 들어왔다. 공백은 
 | P1-8~P2-15 actual-VM | code/CLI/API 계약만 있음 | Lane 2 actual-VM 검증(host mutation 승인 필요) |
 | 다음 package pair | 04278 build 뒤 순수 이동 `27`개 파일 | 다음 제품 변경과 함께 package pair를 연다 |
 | 같은 version 재빌드 | fullgate 재실행마다 새 ProductCode가 공존해 설치본 교체와 uninstall 증명을 막는다 | installer 설계 결정(WiX same-version upgrade 정책 또는 gate build version 규칙) |
-| 대형 모듈 | 미등록 `500`줄 초과 `12`개 | 라쳇 등록(동결) 또는 분해 결정 |
+| 대형 모듈 | 미등록 `500`줄 초과 `17`개 | 라쳇 등록(동결) 또는 분해 결정 |
 | CI runner | GitHub `ubuntu-latest`가 2026-10-19부터 Ubuntu 26으로 이동 | web job 영향 확인 |
 
 ## 10. 권고 실행 순서
@@ -147,7 +152,7 @@ SERVICE_PLAN의 P0~P2 기획 항목은 모두 소스에 들어왔다. 공백은 
 
 | 순위 | 항목 | 완료 조건 |
 | ---: | --- | --- |
-| 1 | 미등록 대형 모듈 `12`개 처리 방식 결정과 적용 | 라쳇이 `500`줄 초과 비테스트 source를 모두 덮음 |
+| 1 | 미등록 대형 모듈 `17`개 처리 방식 결정과 적용 | 라쳇이 `500`줄 초과 비테스트 source를 모두 덮음 |
 | 2 | feature evidence ledger 현행화 | `pcv.vm.clone` 등 evidence가 있는 feature의 stage를 기록하거나 `not-assessed` 유지 사유를 명시 |
 | 3 | 같은 version 재빌드 installer 정책 설계 | 설계 문서와 결정 |
 | 4 | Ubuntu 26 runner 영향 점검 | web/public-boundary job이 새 runner에서 통과하거나 pin 결정 |
@@ -161,7 +166,7 @@ current-card, manual-admin pair consume, functional carry-forward, feature quali
 버전에 모였고, 이 호스트 설치본과 소스 HEAD도 그 버전에 정렬돼 있다. `main`의 Development
 Gates와 Public Boundary도 green이다.
 
-다음 일은 기능을 더 쌓기보다 evidence 폭과 검증 장치의 사각지대(미등록 대형 모듈, feature
+다음 일은 기능을 더 쌓기보다 evidence 폭과 검증 장치의 사각지대(미등록 대형 모듈 `17`개, feature
 ledger `not-assessed`, 같은 version 재빌드)를 줄이는 것이다.
 
 공개 release 경계는 변함없다. 이 evidence는 internal admin-smoke 범위이며 public trusted

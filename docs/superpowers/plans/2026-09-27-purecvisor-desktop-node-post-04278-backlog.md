@@ -12,7 +12,7 @@
 
 | 항목 | 결정 |
 | --- | --- |
-| 미등록 `500`줄 초과 비테스트 source `12`개 | 현재 크기로 라쳇에 등록(동결). 분해는 각자 나중 |
+| 미등록 `500`줄 초과 비테스트 source(`17`개, 처음 `12`개로 잘못 셈) | 현재 크기로 라쳇에 등록(동결). 분해는 각자 나중 |
 | feature evidence | 이미 있는 evidence stage만 `FEATURE_IMPLEMENTATION_LEDGER.md`에 기록하고 틀린 clone note를 고친다. feature evidence ledger의 `candidate_required`는 바꾸지 않는다 |
 | 같은 version 재빌드 installer 문제 | 설계 문서만 먼저 쓴다. 구현은 결정 뒤 |
 
@@ -27,10 +27,12 @@
 
 **수정:** `packaging/windows-desktop-node/tests/fixtures/module-size-ratchet.json`, `DevelopmentPolicyContractVerifier.cs`(모듈 수 고정값), 필요하면 `PcvModuleSizeRatchet.Tests.ps1`, spec pin
 
-- [ ] 착수 시 `500`줄 초과 비테스트 `.cs`/`.ts` 목록을 다시 재고, 각 파일을 현재 줄 수 `max_lines`와 `owner`, `note`로 등록한다.
-- [ ] verifier의 `modules.Length` 고정값과 Pester의 모듈 수 단언을 새 개수로 맞춘다.
-- [ ] 바뀐 pin 파일의 spec SHA와 `ExpectedSpecSha256`을 갱신한다.
-- [ ] `dotnet test src/DesktopNode.Delivery.Tests` 실패 `0`, `Invoke-Pester PcvModuleSizeRatchet.Tests.ps1`.
+- [x] 착수 시 `500`줄 초과 비테스트 `.cs`/`.ts` 목록을 다시 재고, 각 파일을 현재 줄 수 `max_lines`와 `owner`, `note`로 등록한다.
+- [x] verifier의 `modules.Length` 고정값과 Pester의 모듈 수 단언을 새 개수로 맞춘다.
+- [x] 바뀐 pin 파일의 spec SHA와 `ExpectedSpecSha256`을 갱신한다.
+- [x] `dotnet test src/DesktopNode.Delivery.Tests` 실패 `0`, `Invoke-Pester PcvModuleSizeRatchet.Tests.ps1`.
+
+실행 기록(2026-09-27): verifier 줄 수 규칙으로 다시 재니 미등록 `500`줄 초과 비테스트 source는 `17`개였다(감사 초안은 목록을 앞 `12`개로 잘라 적었고 이 task에서 바로잡았다). `17`개를 현재 줄 수 상한으로 등록해 fixture는 `31`개 모듈이다. verifier 모듈 수 고정값 `14` → `31`. Pester 라쳇 테스트는 모듈 수를 단언하지 않아 바꾸지 않았다. fixture pin `101074c1` → `8d1da12b`, `ExpectedSpecSha256` `5f1a98aa` → `0485756a`. Delivery.Tests `706/706`, Pester `PcvModuleSizeRatchet`+`PcvAdminSmokeEvidenceDocs` `93/93`.
 
 ## Task 2: feature evidence stage 기록
 
