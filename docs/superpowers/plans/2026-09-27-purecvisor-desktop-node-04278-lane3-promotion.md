@@ -47,10 +47,12 @@
 
 **수정:** `docs/ga-ready/current-evidence.json`, 생성 문서 `7`개, `src/DesktopNode.Verification.Tests/CurrentEvidenceVerifierTests.cs`
 
-- [ ] `current`의 version, evidence 경로, MSI/payload SHA, provenance와 `manual_admin`의 closed baseline/target/descriptor를 `0.42.78` 값으로 바꾼다.
-- [ ] `Update-PcvCurrentEvidenceDocs.ps1`로 생성 문서를 갱신하고 `-Check`로 확인한다.
-- [ ] `CurrentEvidenceVerifierTests`의 기대 버전을 `0.42.78-admin-smoke`로 바꾼다.
-- [ ] `dotnet test src/DesktopNode.Verification.Tests --filter CurrentEvidenceVerifierTests`.
+- [x] `current`의 version, evidence 경로, MSI/payload SHA, provenance와 `manual_admin`의 closed baseline/target/descriptor를 `0.42.78` 값으로 바꾼다.
+- [x] `Update-PcvCurrentEvidenceDocs.ps1`로 생성 문서를 갱신하고 `-Check`로 확인한다.
+- [x] `CurrentEvidenceVerifierTests`의 기대 버전을 `0.42.78-admin-smoke`로 바꾼다.
+- [x] `dotnet test src/DesktopNode.Verification.Tests --filter CurrentEvidenceVerifierTests`.
+
+실행 기록(2026-09-27): 생성기는 `OwnedRelativePaths` `7`개와 `packaging/windows-desktop-node/README.md`까지 `8`개 target의 generated block을 갱신했고 `-Check`에서 모두 `current`다. `CurrentEvidenceVerifierTests` `13/13`. `AGENTS.md`가 spec에 pin되어 있어 Delivery.Tests의 `source-sha`는 Task 3 pin 갱신 전까지 red다.
 
 ## Task 3: 수기 문서, spec, 계약 테스트
 
