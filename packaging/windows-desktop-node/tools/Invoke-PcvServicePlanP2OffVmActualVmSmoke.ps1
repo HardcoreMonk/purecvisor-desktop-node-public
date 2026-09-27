@@ -1251,8 +1251,9 @@ function Invoke-ExportSlice {
         source_product = $sourceProduct
     }
     Write-AtomicSummary
+    # Generation 2 exports carry a .vmgs guest-state file even without TPM, so vmgs_count is recorded, not gated.
     if (-not [bool]$package.exists -or [int]$package.vmcx_count -ne 1 -or [int]$package.vhdx_count -lt 1 -or
-        [int]$package.vmgs_count -ne 0 -or $sourceHyperV -ne 'Off' -or -not (Test-PcvProductOff $sourceProduct)) {
+        $sourceHyperV -ne 'Off' -or -not (Test-PcvProductOff $sourceProduct)) {
         throw "PCV_P2_OFFVM_STATE_MISMATCH|export|vmcx=$($package.vmcx_count)|vhdx=$($package.vhdx_count)"
     }
 }

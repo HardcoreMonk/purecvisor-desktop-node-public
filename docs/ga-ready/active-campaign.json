@@ -12,7 +12,7 @@
   ],
   "mutation_allowed": false,
   "current_write_allowed": false,
-  "next_step": "Task 8: Lane 2 export-import and network-connect runs on installed 0.42.79-admin-smoke (probe vehicle with the Off-vocabulary fix), one artifact root and one VM root per family, new evidence files. Current stays 0.42.78.",
+  "next_step": "Task 8 blocked (new-design-required): on installed 0.42.79 the export-import run fails because the import provider rejects any .vmgs file, so the product cannot import its own Generation 2 export. Needs a user decision on the import security guard. The network-connect run on 0.42.79 has not been done yet. Current stays 0.42.78.",
   "plan": "docs/superpowers/plans/2026-09-27-purecvisor-desktop-node-p2-offvm-lane2.md",
   "task_queue": ["Task 1", "Task 2", "Task 3", "Task 4", "Task 5", "Task 6", "Task 7", "Task 8"],
   "next_task": "Task 8",

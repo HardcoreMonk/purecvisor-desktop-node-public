@@ -73,7 +73,7 @@ guest OS 없이 Off VM으로 검증할 수 있는 P2 기능군을 설치본 CLI�
 | `export_confirm_required` | `--yes` 없이 export | `PCV_CLI_CONFIRMATION_REQUIRED`, job 없음, export 디렉터리 없음 |
 | `export_path_not_allowed` | allowlist 밖 디렉터리로 export preview | `PCV_VM_EXPORT_PATH_NOT_ALLOWED`, 바깥 디렉터리 없음 |
 | `export_preview` | export preview | `dry_run=true`, `host_mutation_performed=false`, job 없음, 디렉터리 없음 |
-| `export` | export `--yes` | job succeeded, `.vmcx` `1`, `.vhdx` `1`개 이상, `.vmgs` `0`, 소스 Off |
+| `export` | export `--yes` | job succeeded, `.vmcx` `1`, `.vhdx` `1`개 이상, 소스 Off. `.vmgs` 수는 기록만 한다(Gen2 guest state) |
 | `import_preview` | import preview `--has-vmcx` | `dry_run`, `generate_new_id`, `apply_managed_marker` 모두 true, 대상 없음 |
 | `import` | import `--yes` | job succeeded, 새 identity(소스 id와 다름), managed, Off, 소스 Off |
 | `cleanup` | import VM 먼저 제품 delete, 다음 소스, export root와 VM 디렉터리 삭제 | 둘 다 없음, 디렉터리 없음 |

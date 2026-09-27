@@ -97,3 +97,5 @@ PCVCLI가 아니라 `DesktopNode.Host.exe service-action switch-create|switch-re
 ## Task 8: Lane 2 `export-import`, `network-connect` (수정 설치본)
 
 - [ ] 기능군마다 한 run. evidence 문서 새 파일.
+
+실행 기록(2026-09-28, export-import): 설치본 `0.42.79`에서 Off 어휘 수정은 동작한다(export 확인·거절·preview·job PASS). r1은 runner의 `.vmgs` `0` 가정으로 FAIL, r2는 import job이 `PCV_VM_IMPORT_SECURITY_FEATURES_UNSUPPORTED`로 FAIL이다. import provider가 `.vmgs` 파일 존재를 TPM 신호로 써서 제품이 자기 Gen2 export를 import하지 못한다. `docs/ga-ready/evidence/service-plan-p2-offvm-export-import-actual-vm-2026-09-28-04279-r2.md`. 수정은 보안 guard 변경이라 설계 결정 대기(`new-design-required`). network-connect run은 아직 하지 않았다.
