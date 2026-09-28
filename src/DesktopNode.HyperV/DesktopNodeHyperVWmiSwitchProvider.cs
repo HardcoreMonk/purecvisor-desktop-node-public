@@ -49,6 +49,7 @@ public sealed class DesktopNodeHyperVWmiSwitchProvider : IDesktopNodeHyperVSwitc
                 EnsureAssociationTraversalPath(item.Path?.Path);
                 var hasInternalManagementPort = false;
                 var hasExternalBinding = false;
+                string? externalAdapterDescription = null;
                 using var relatedPorts = item.GetRelated("Msvm_EthernetSwitchPort");
                 foreach (ManagementObject relatedPort in relatedPorts)
                 {
@@ -67,27 +68,53 @@ public sealed class DesktopNodeHyperVWmiSwitchProvider : IDesktopNodeHyperVSwitc
                             cancellationToken.ThrowIfCancellationRequested();
                             using (allocationSetting)
                             {
-                                var hostResource = allocationSetting.Properties["HostResource"]?.Value;
-                                hasExternalBinding |= hostResource switch
+                                foreach (var externalPortPath in ExternalPortPaths(allocationSetting.Properties["HostResource"]?.Value))
                                 {
-                                    string resource => resource.Contains(
-                                        "Msvm_ExternalEthernetPort",
-                                        StringComparison.OrdinalIgnoreCase),
-                                    string[] resources => resources.Any(resource => resource.Contains(
-                                        "Msvm_ExternalEthernetPort",
-                                        StringComparison.OrdinalIgnoreCase)),
-                                    _ => false
-                                };
+                                    hasExternalBinding = true;
+                                    externalAdapterDescription ??= TryReadExternalAdapterDescription(externalPortPath);
+                                }
                             }
                         }
                     }
                 }
 
-                switches.Add(MapSwitch(name, hasInternalManagementPort, hasExternalBinding));
+                switches.Add(MapSwitch(name, hasInternalManagementPort, hasExternalBinding, externalAdapterDescription));
             }
         }
 
         return switches;
+    }
+
+    public static IEnumerable<string> ExternalPortPaths(object? hostResource)
+    {
+        var resources = hostResource switch
+        {
+            string resource => [resource],
+            string[] values => values,
+            _ => []
+        };
+        return resources.Where(static resource =>
+            !string.IsNullOrWhiteSpace(resource) &&
+            resource.Contains("Msvm_ExternalEthernetPort", StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static string? TryReadExternalAdapterDescription(string externalPortPath)
+    {
+        try
+        {
+            using var port = new ManagementObject(externalPortPath);
+            port.Get();
+            var description = GetStringProperty(port, "ElementName");
+            return string.IsNullOrWhiteSpace(description) ? null : description;
+        }
+        catch (ManagementException)
+        {
+            return null;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return null;
+        }
     }
 
     public static void EnsureAssociationTraversalPath(string? objectPath)
@@ -101,18 +128,21 @@ public sealed class DesktopNodeHyperVWmiSwitchProvider : IDesktopNodeHyperVSwitc
     public static DesktopNodeHyperVSwitchInfo MapSwitch(
         string? name,
         bool hasInternalManagementPort = false,
-        bool hasExternalBinding = false)
+        bool hasExternalBinding = false,
+        string? externalAdapterDescription = null)
     {
         var switchName = string.IsNullOrWhiteSpace(name) ? "unknown" : name;
         var isDefault = string.Equals(switchName, "Default Switch", StringComparison.OrdinalIgnoreCase);
         var isInternal = isDefault || (hasInternalManagementPort && !hasExternalBinding);
         // A switch with neither a management-OS port nor an external binding is a private switch.
         var isPrivate = !isDefault && !hasInternalManagementPort && !hasExternalBinding;
+        // An externally bound switch is complete only when the bound adapter can be named.
+        var isExternal = !isDefault && hasExternalBinding && !string.IsNullOrWhiteSpace(externalAdapterDescription);
         return new DesktopNodeHyperVSwitchInfo(
             Name: switchName,
-            Type: isInternal ? "internal" : isPrivate ? "private" : "unknown",
+            Type: isInternal ? "internal" : isPrivate ? "private" : isExternal ? "external" : "unknown",
             IsDefault: isDefault,
-            AllowManagementOs: isInternal ? true : isPrivate ? false : null,
-            NetAdapterInterfaceDescription: null);
+            AllowManagementOs: isInternal ? true : isPrivate ? false : isExternal ? hasInternalManagementPort : null,
+            NetAdapterInterfaceDescription: isExternal ? externalAdapterDescription : null);
     }
 }

@@ -284,7 +284,17 @@ Describe 'current evidence canonical record' {
         $canonical | ConvertTo-Json -Depth 64 |
             Set-Content -LiteralPath $canonicalPath -Encoding utf8
         $candidate = $script:Record | ConvertTo-Json -Depth 64 | ConvertFrom-Json -Depth 64
-        $candidate.current.version = '0.42.75-ADMIN-SMOKE'
+        # The candidate differs from the canonical version only by case and carries its own blocker, so the
+        # case-sensitive promotion check must refuse it no matter what the live record allows.
+        $candidate.current.version = ([string]$script:Record.current.version).ToUpperInvariant()
+        $candidate.feature_qualification.promotion_eligible = $false
+        $candidate.feature_qualification.blockers = @(
+            [pscustomobject]@{
+                feature_id = 'pcv.vm.saved-lifecycle'
+                stage = 'actual_vm_tested'
+                verdict = 'fail'
+            }
+        )
         $candidate | ConvertTo-Json -Depth 64 |
             Set-Content -LiteralPath $candidatePath -Encoding utf8
 

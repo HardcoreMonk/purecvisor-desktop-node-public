@@ -546,6 +546,29 @@ public sealed class DesktopNodeHyperVNativeAdapterTests
     }
 
     [Fact]
+    public void NativeNetworkInventoryAdapterAcceptsProviderMappedExternalSwitch()
+    {
+        using var parameters = JsonDocument.Parse("{}");
+        var adapter = new DesktopNodeHyperVNativeAdapter(new RecordingHyperVSwitchProvider(
+        [
+            DesktopNodeHyperVWmiSwitchProvider.MapSwitch("Default Switch"),
+            DesktopNodeHyperVWmiSwitchProvider.MapSwitch(
+                "corp-uplink",
+                hasInternalManagementPort: true,
+                hasExternalBinding: true,
+                externalAdapterDescription: "Intel(R) Ethernet Controller")
+        ]));
+
+        var handled = adapter.TryInvoke("network.inventory", parameters.RootElement, CancellationToken.None, out var result);
+
+        Assert.True(handled);
+        Assert.True(result.Ok);
+        var external = result.Data!.Value.GetProperty("switches")[1];
+        Assert.Equal("external", external.GetProperty("type").GetString());
+        Assert.Equal("Intel(R) Ethernet Controller", external.GetProperty("net_adapter_interface_description").GetString());
+    }
+
+    [Fact]
     public void NativeNetworkInventoryAdapterAcceptsPrivateSwitchTopology()
     {
         using var parameters = JsonDocument.Parse("{}");

@@ -136,6 +136,16 @@ internal sealed partial class DesktopNodeApiVmMutationRouteHandler
 
     private static int CountDvdDrives(JsonElement vm)
     {
+        // Native inventory lists VHDs only in storage and reports DVD drives in dvd_drives.count.
+        if (vm.TryGetProperty("dvd_drives", out var dvdDrives) &&
+            dvdDrives.ValueKind == JsonValueKind.Object &&
+            dvdDrives.TryGetProperty("count", out var dvdCount) &&
+            dvdCount.ValueKind == JsonValueKind.Number &&
+            dvdCount.TryGetInt32(out var reported))
+        {
+            return reported;
+        }
+
         if (!vm.TryGetProperty("storage", out var storage) || storage.ValueKind != JsonValueKind.Array)
         {
             return 0;

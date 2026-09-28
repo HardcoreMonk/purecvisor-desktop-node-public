@@ -1,3 +1,4 @@
+using System.Text.Json;
 using DesktopNode.Contracts;
 using DesktopNode.HyperV;
 
@@ -5,6 +6,28 @@ namespace DesktopNode.HyperV.Tests;
 
 public sealed class DesktopNodeHyperVWmiProviderTests
 {
+    [Fact]
+    public void WmiVmProviderReportsDvdDriveCountOnlyWhenRead()
+    {
+        var summary = new DesktopNodeHyperVWmiVmSummary(
+            Id: "alpha",
+            Name: "alpha",
+            EnabledState: 3,
+            ProcessorCount: 1,
+            StartupMemoryQuantity: 1024,
+            StartupMemoryQuantityUnits: "byte*2^20",
+            GenerationSubtype: "Microsoft:Hyper-V:SubType:2",
+            CheckpointCount: 0,
+            Notes: DesktopNodeHyperVManagedNotes.Marker,
+            DvdDriveCount: 1);
+
+        var withDvd = JsonSerializer.SerializeToElement(DesktopNodeHyperVWmiVmProvider.MapSummary(summary));
+        Assert.Equal(1, withDvd.GetProperty("dvd_drives").GetProperty("count").GetInt32());
+
+        var unread = JsonSerializer.SerializeToElement(DesktopNodeHyperVWmiVmProvider.MapSummary(summary with { DvdDriveCount = null }));
+        Assert.False(unread.TryGetProperty("dvd_drives", out _));
+    }
+
     [Fact]
     public void WmiVmProviderQueryAvoidsPowerShellOnlyNotesProjection()
     {
@@ -450,6 +473,37 @@ public sealed class DesktopNodeHyperVWmiProviderTests
         {
             Directory.Delete(directory, recursive: true);
         }
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void WmiSwitchProviderMapsNamedExternalBindingAsExternal(bool hasInternalManagementPort)
+    {
+        var info = DesktopNodeHyperVWmiSwitchProvider.MapSwitch(
+            "corp-uplink",
+            hasInternalManagementPort: hasInternalManagementPort,
+            hasExternalBinding: true,
+            externalAdapterDescription: "Intel(R) Ethernet Controller");
+
+        Assert.Equal("external", info.Type);
+        Assert.False(info.IsDefault);
+        Assert.Equal(hasInternalManagementPort, info.AllowManagementOs);
+        Assert.Equal("Intel(R) Ethernet Controller", info.NetAdapterInterfaceDescription);
+    }
+
+    [Fact]
+    public void WmiSwitchProviderSelectsOnlyExternalPortHostResources()
+    {
+        Assert.Equal(
+            [@"\\HOST\root\virtualization\v2:Msvm_ExternalEthernetPort.CreationClassName=""x"""],
+            DesktopNodeHyperVWmiSwitchProvider.ExternalPortPaths(new[]
+            {
+                @"\\HOST\root\virtualization\v2:Msvm_InternalEthernetPort.Name=""y""",
+                @"\\HOST\root\virtualization\v2:Msvm_ExternalEthernetPort.CreationClassName=""x""",
+                string.Empty
+            }));
+        Assert.Empty(DesktopNodeHyperVWmiSwitchProvider.ExternalPortPaths(null));
     }
 
     [Fact]

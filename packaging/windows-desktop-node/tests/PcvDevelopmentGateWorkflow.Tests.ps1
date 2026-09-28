@@ -72,7 +72,7 @@ Describe 'Development gates workflow contract' {
                 'Run dotnet shard',
                 'Run web shard',
                 'Run delivery shard',
-                'Run installer-policy shard',
+                'Run installer and policy shard',
                 'actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd',
                 'actions/setup-dotnet@d4c94342e560b34958eacfc5d055d21461ed1c5d',
                 'actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903',

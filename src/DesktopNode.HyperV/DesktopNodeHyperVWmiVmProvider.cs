@@ -6,7 +6,7 @@ using static DesktopNode.HyperV.DesktopNodeHyperVWmiCommon;
 
 namespace DesktopNode.HyperV;
 
-public sealed class DesktopNodeHyperVWmiVmProvider : IDesktopNodeHyperVVmProvider
+public sealed partial class DesktopNodeHyperVWmiVmProvider : IDesktopNodeHyperVVmProvider
 {
     public const string CimQuery = DesktopNodeHyperVWmiCommon.VmQuery;
     public const string VirtualSystemSettingClass = "Msvm_VirtualSystemSettingData";
@@ -17,6 +17,8 @@ public sealed class DesktopNodeHyperVWmiVmProvider : IDesktopNodeHyperVVmProvide
     public const string SnapshotAssociationClass = "Msvm_SnapshotOfVirtualSystem";
     public const string StorageSettingClass = "Msvm_StorageAllocationSettingData";
     public const string EthernetPortAllocationSettingClass = "Msvm_EthernetPortAllocationSettingData";
+    public const string ResourceAllocationSettingClass = "Msvm_ResourceAllocationSettingData";
+    public const string SyntheticDvdDriveSubtype = "Microsoft:Hyper-V:Synthetic DVD Drive";
 
     public IReadOnlyList<DesktopNodeHyperVVmInfo> GetVms(CancellationToken cancellationToken)
     {
@@ -66,7 +68,8 @@ public sealed class DesktopNodeHyperVWmiVmProvider : IDesktopNodeHyperVVmProvide
             CreatedAt: summary.CreationTime,
             LastPoweredOn: MapLastPoweredOn(state, summary.TimeOfLastStateChange),
             Notes: DesktopNodeHyperVManagedNotes.OperatorNotes(summary.Notes),
-            TemplateLock: DesktopNodeHyperVManagedNotes.IsTemplateLocked(summary.Notes));
+            TemplateLock: DesktopNodeHyperVManagedNotes.IsTemplateLocked(summary.Notes),
+            DvdDrives: summary.DvdDriveCount is { } dvdDriveCount ? new DesktopNodeHyperVVmDvdDriveInfo(dvdDriveCount) : null);
     }
 
     private static string? MapLastPoweredOn(string state, string? timeOfLastStateChange)
@@ -89,6 +92,7 @@ public sealed class DesktopNodeHyperVWmiVmProvider : IDesktopNodeHyperVVmProvide
         string? creationTime = null;
         IReadOnlyList<DesktopNodeHyperVWmiVmStorageSummary> storage = [];
         IReadOnlyList<DesktopNodeHyperVWmiVmNetworkSummary> network = [];
+        int? dvdDriveCount = null;
 
         try
         {
@@ -114,6 +118,7 @@ public sealed class DesktopNodeHyperVWmiVmProvider : IDesktopNodeHyperVVmProvide
                     creationTime = GetDateTimeProperty(setting, "CreationTime");
                     storage = GetStorageSummaries(setting);
                     network = GetNetworkSummaries(setting);
+                    dvdDriveCount = GetDvdDriveCount(setting);
                 }
 
                 break;
@@ -139,7 +144,8 @@ public sealed class DesktopNodeHyperVWmiVmProvider : IDesktopNodeHyperVVmProvide
             Storage: storage,
             Network: network,
             CreationTime: creationTime,
-            TimeOfLastStateChange: GetDateTimeProperty(vm, "TimeOfLastStateChange"));
+            TimeOfLastStateChange: GetDateTimeProperty(vm, "TimeOfLastStateChange"),
+            DvdDriveCount: dvdDriveCount);
     }
 
     private static int? ConvertToInt32(object? value)
@@ -391,46 +397,6 @@ public sealed class DesktopNodeHyperVWmiVmProvider : IDesktopNodeHyperVVmProvide
                     if (!string.IsNullOrWhiteSpace(path))
                     {
                         result.Add(new DesktopNodeHyperVWmiVmStorageSummary(path, Attached: true));
-                    }
-                }
-            }
-
-            return result;
-        }
-        catch (ManagementException)
-        {
-            return [];
-        }
-        catch (UnauthorizedAccessException)
-        {
-            return [];
-        }
-    }
-
-    private static IReadOnlyList<DesktopNodeHyperVWmiVmNetworkSummary> GetNetworkSummaries(ManagementObject setting)
-    {
-        try
-        {
-            using var related = setting.GetRelated(
-                EthernetPortAllocationSettingClass,
-                SettingDataComponentAssociationClass,
-                relationshipQualifier: null,
-                relatedQualifier: null,
-                relatedRole: "PartComponent",
-                thisRole: "GroupComponent",
-                classDefinitionsOnly: false,
-                options: null);
-
-            var result = new List<DesktopNodeHyperVWmiVmNetworkSummary>();
-            foreach (ManagementObject item in related)
-            {
-                using (item)
-                {
-                    var switchName = GetStringProperty(item, "LastKnownSwitchName") ??
-                        GetFirstStringArrayItem(item, "Connection", static value => !string.IsNullOrWhiteSpace(value));
-                    if (!string.IsNullOrWhiteSpace(switchName))
-                    {
-                        result.Add(new DesktopNodeHyperVWmiVmNetworkSummary(switchName));
                     }
                 }
             }
