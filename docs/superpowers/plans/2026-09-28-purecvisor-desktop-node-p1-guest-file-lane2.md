@@ -39,4 +39,19 @@
 
 ## Task 3: Lane 2 run (별도 승인)
 
-- [ ] 설치본에서 한 run. evidence 문서 새 파일. copy 실패가 제품 결함이면 Lane 1 수정 task를 더한다.
+- [x] 설치본에서 한 run. evidence 문서 새 파일. copy 실패가 제품 결함이면 Lane 1 수정 task를 더한다.
+
+실행 기록(2026-09-28): 승인 `guest file run 승인, host mutation 승인`. copy 전 slice는 모두 PASS(시작·heartbeat·channel·거절 셋·preview). guest 접두사가 없어 copy job이 `PCV_GUEST_FILE_COPY_FAILED`(`RemotePathNotFound`)로 FAIL. cleanup PASS, VM `Off` 복귀. `docs/ga-ready/evidence/service-plan-p1-guest-file-actual-vm-2026-09-28-04281.md`.
+
+## Task 4: guest 부모 디렉터리 생성 (Lane 1)
+
+- [ ] 제품 copier가 copy 전에 guest 경로의 부모 디렉터리를 세션 안에서 만든다. 부모는 allowlist 접두사 안이어야 하고 C#에서 확인한다.
+- [ ] 단위 테스트(부모 계산·접두사 경계, bridge script 순서).
+
+## Task 5: probe-vehicle package와 설치 (별도 승인)
+
+- [ ] Task 4가 든 HEAD에서 다음 admin-smoke version을 빌드하고 설치한다. MSI 설치 승인 없이는 시작하지 않는다.
+
+## Task 6: Lane 2 재실행
+
+- [ ] 한 run, evidence 문서 새 파일.
