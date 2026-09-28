@@ -52,7 +52,9 @@
 
 ## Task 5: probe-vehicle package와 설치 (별도 승인)
 
-- [ ] Task 4가 든 HEAD에서 다음 admin-smoke version을 빌드하고 설치한다. MSI 설치 승인 없이는 시작하지 않는다.
+- [x] Task 4가 든 HEAD에서 다음 admin-smoke version을 빌드하고 설치한다. MSI 설치 승인 없이는 시작하지 않는다.
+
+실행 기록(2026-09-28): 승인 `빌드 + 설치 + 재실행`. HEAD `77346bf`에서 `0.42.82-admin-smoke`, MSI `6078f250…`. msiexec exit `0`, ARP `0.42.82` 1개, 설치본 CLI/Host hash가 build와 같음, log skip `0`, Web `200`, API `401`. `docs/ga-ready/evidence/admin-smoke-package-2026-09-28-04282.md`.
 
 ## Task 6: Lane 2 재실행
 
