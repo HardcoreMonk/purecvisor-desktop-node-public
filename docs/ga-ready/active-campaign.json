@@ -2,24 +2,25 @@
   "schema_version": 1,
   "contract": "pcv-active-campaign-v1",
   "status": "open",
-  "id": "lane1-residual-defects-20260928",
-  "intent": "lane1-continuous-development",
+  "id": "p1-guest-file-lane2-20260928",
+  "intent": "lane2-actual-vm-guest-file",
   "working_authority": "source_head",
   "allowed_lanes": [
     "0",
-    "1"
+    "1",
+    "2"
   ],
   "mutation_allowed": false,
   "current_write_allowed": false,
-  "next_step": "Residual defects run complete (Task 1-4): two stale packaging Pester tests aligned, named external switches classified as external, route DVD guard reads inventory dvd_drives.count. No queued task. The installed build is still the 0.42.81 probe without Task 2-3; Lane 3 promotion, push/PR, and P1-8 guest file actual-VM need a decision.",
-  "plan": "docs/superpowers/plans/2026-09-28-purecvisor-desktop-node-residual-defects.md",
-  "task_queue": ["Task 1", "Task 2", "Task 3", "Task 4"],
-  "next_task": null,
-  "completed_tasks": ["Task 1", "Task 2", "Task 3", "Task 4"],
+  "next_step": "Task 2 (Lane 1): guest file actual-VM runner with DryRun/RuntimeAdapter Pester and a C# contract test. Task 3 (Lane 2 run on the persistent guest) needs its own approval.",
+  "plan": "docs/superpowers/plans/2026-09-28-purecvisor-desktop-node-p1-guest-file-lane2.md",
+  "task_queue": ["Task 1", "Task 2", "Task 3"],
+  "next_task": "Task 2",
+  "completed_tasks": ["Task 1"],
   "commit_policy": "local-commit-per-task",
   "push_allowed": false,
   "checkpoint_limit": 6,
-  "approval_locator": "User-Approval: 2026-09-27 campaign runner commit policy local-commit-per-task (push/PR, host mutation, current-evidence excluded); 2026-09-28 residual defects Lane 1 campaign (route DVD guard, External switch classification, pre-existing packaging Pester failures)",
+  "approval_locator": "User-Approval: 2026-09-27 campaign runner commit policy local-commit-per-task (push/PR, host mutation, current-evidence excluded); 2026-09-28 P1-8 guest file actual-VM design first; Lane 2 run on the persistent guest not approved yet",
   "stop_on": [
     "same-cause-fail-3",
     "budget",
@@ -31,5 +32,5 @@
     "dirty-tree-at-start"
   ],
   "out_of_scope_is_not_next_step": true,
-  "closed_predecessor": "p2-offvm-lane2-20260927"
+  "closed_predecessor": "lane1-residual-defects-20260928"
 }
