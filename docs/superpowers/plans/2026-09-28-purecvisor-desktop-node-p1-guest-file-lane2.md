@@ -58,4 +58,10 @@
 
 ## Task 6: Lane 2 재실행
 
-- [ ] 한 run, evidence 문서 새 파일.
+- [x] 한 run, evidence 문서 새 파일.
+
+실행 기록(2026-09-28): 첫 run PASS. guest 접두사가 없던 상태에서 제품이 부모를 만들고 copy가 성공했으며 guest hash가 payload와 같다. cleanup PASS, VM `Off` 복귀. `docs/ga-ready/evidence/service-plan-p1-guest-file-actual-vm-2026-09-28-04282.md`.
+
+## 종료 상태 (2026-09-28)
+
+P1-8 guest file Lane 2 PASS(설치본 `0.42.82` probe). 찾아 고친 제품 결함 1건: copy가 guest 부모 디렉터리를 만들지 않음. 설치본은 probe `0.42.82-admin-smoke`, operational current는 `0.42.78-admin-smoke`다.
