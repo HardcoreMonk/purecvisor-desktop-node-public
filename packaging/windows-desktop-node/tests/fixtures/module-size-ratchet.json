@@ -128,9 +128,9 @@
     },
     {
       "path": "src/DesktopNode.HyperV/DesktopNodeHyperVPowerShellDirectGuestExecutionProvider.cs",
-      "max_lines": 702,
+      "max_lines": 628,
       "owner": "PowerShell Direct guest execution provider",
-      "note": "2026-09-27 registered at its current size by the post-0.42.78 backlog Task 1. Registration freezes growth and is not a split. plan: docs/superpowers/plans/2026-09-27-purecvisor-desktop-node-post-04278-backlog.md"
+      "note": "2026-09-27 registered at its current size by the post-0.42.78 backlog Task 1. Registration freezes growth and is not a split. plan: docs/superpowers/plans/2026-09-27-purecvisor-desktop-node-post-04278-backlog.md. 2026-09-28 P1-8 guest file Task 4 moved DesktopNodeHyperVPowerShellDirectFileCopier to its own file and lowered the ceiling to the new size (plan: docs/superpowers/plans/2026-09-28-purecvisor-desktop-node-p1-guest-file-lane2.md)"
     },
     {
       "path": "src/DesktopNode.HyperV/DesktopNodeHyperVWmiVmCreateProvider.cs",

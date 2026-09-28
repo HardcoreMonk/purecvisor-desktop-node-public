@@ -45,8 +45,10 @@
 
 ## Task 4: guest 부모 디렉터리 생성 (Lane 1)
 
-- [ ] 제품 copier가 copy 전에 guest 경로의 부모 디렉터리를 세션 안에서 만든다. 부모는 allowlist 접두사 안이어야 하고 C#에서 확인한다.
-- [ ] 단위 테스트(부모 계산·접두사 경계, bridge script 순서).
+- [x] 제품 copier가 copy 전에 guest 경로의 부모 디렉터리를 세션 안에서 만든다. 부모는 allowlist 접두사 안이어야 하고 C#에서 확인한다.
+- [x] 단위 테스트(부모 계산·접두사 경계, bridge script 순서).
+
+실행 기록(2026-09-28): `DesktopNodeHyperVPowerShellDirectFileCopier`를 자기 파일로 옮기고 bridge script를 `CopyBridgeScript` 상수로 뺐다. 같은 PowerShell Direct 세션에서 `Invoke-Command -Session`으로 `[System.IO.Directory]::CreateDirectory(guest_parent)` 뒤 `Copy-Item -ToSession`을 한다. `ResolveGuestParent`는 부모가 `C:\Users\Public\PureCVisor\` 안이 아니면 `PCV_GUEST_FILE_PATH_NOT_ALLOWED`다(`PureCVisorX` 같은 접두사 흉내도 거절). provider 파일이 상한(`702`)에 딱 맞아 copier를 옮기고 상한을 새 크기(`628`)로 낮췄다. fixture pin `f280fe43` → `420074b3`, `ExpectedSpecSha256` `38af10eb` → `58990947`. HyperV.Tests `238/238`, Delivery `715/715`.
 
 ## Task 5: probe-vehicle package와 설치 (별도 승인)
 
