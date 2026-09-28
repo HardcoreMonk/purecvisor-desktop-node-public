@@ -31,9 +31,11 @@
 
 **생성:** `packaging/windows-desktop-node/tools/Invoke-PcvServicePlanP1GuestFileActualVmSmoke.ps1`, `packaging/windows-desktop-node/manual-admin-tests/PcvServicePlanP1GuestFileActualVmSmoke.Tests.ps1`, `src/DesktopNode.Delivery.Tests/Delivery/ManualAdmin/PcvServicePlanP1GuestFileActualVmSmokeContractTests.cs`
 
-- [ ] 착수 시 제품 전원 명령(`vm start`/`vm stop` 계열)과 `guest-exec`/`guest-agent-ensure-channel` CLI 인자, job 결과의 stdout digest 필드를 확인한다.
-- [ ] 설계 §4 slice를 구현한다. guest 접두사를 만들지 않는다.
-- [ ] DryRun, RuntimeAdapter Pester(PASS, 접두사 부재로 copy 실패, 정지 실패), C# 계약 테스트.
+- [x] 착수 시 제품 전원 명령(`vm start`/`vm stop` 계열)과 `guest-exec`/`guest-agent-ensure-channel` CLI 인자, job 결과의 stdout digest 필드를 확인한다.
+- [x] 설계 §4 slice를 구현한다. guest 접두사를 만들지 않는다.
+- [x] DryRun, RuntimeAdapter Pester(PASS, 접두사 부재로 copy 실패, 정지 실패), C# 계약 테스트.
+
+실행 기록(2026-09-28): 전원은 `vm start`, 복귀는 `vm shutdown` 뒤 `Off`가 안 되면 `vm poweroff`(둘 다 제품 명령). guest 확인·정리는 `vm guest-exec -- powershell.exe -NoProfile -NonInteractive -Command <script>`이고 판정은 job 결과 `stdout_digest`(stdout UTF-8 SHA-256)를 `<값>`+CRLF/LF/무종결의 digest와 비교한다. transport가 `Out-String`으로 출력을 묶기 때문이다. Hyper-V 전원·heartbeat는 WMI(`EnabledState`, `Msvm_HeartbeatComponent`)로 읽는다. `preflight`는 읽기만 하고 host staging은 별도 `host_staging` slice로 뺐다(설계 표 갱신). 읽기 전용 확인: 설치본 `vm guest-exec --dry-run`이 이 argv와 credential-ref를 받는다(`host_mutation_performed=false`, VM `Off` 유지). Pester `6/6`(PASS, 접두사 부재 copy 실패, 비보존 VM 거절, 이미 Running, shutdown 실패 시 poweroff), Delivery `715/715`.
 
 ## Task 3: Lane 2 run (별도 승인)
 

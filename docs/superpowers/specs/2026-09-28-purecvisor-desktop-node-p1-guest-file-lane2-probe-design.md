@@ -54,6 +54,7 @@ P1-8 guest file(`vm.guest.file.preview`, `vm.guest.file`)은 Lane 1 계약·rout
 | `vm_start` | 시작 전 `Off`면 제품 start, `Running` 대기 | Hyper-V `Running`, heartbeat OK |
 | `channel_verify` | `vm guest-agent-ensure-channel --verify` | job succeeded, transport `windows-powershell-direct` |
 | `guest_prefix_probe` | guest-exec `Test-Path C:\Users\Public\PureCVisor` | 결과 기록(만들지 않음) |
+| `host_staging` | host root 아래 run 전용 디렉터리에 `1 MiB` 난수 payload와 `64 MiB + 1` 파일 생성 | 길이 일치, payload SHA-256 기록 |
 | `preview_path_not_allowed` | 접두사 밖 guest 경로로 `--dry-run` | `PCV_GUEST_FILE_PATH_NOT_ALLOWED`, job 없음 |
 | `preview_size_limit` | `64 MiB + 1` host 파일로 `--dry-run` | `PCV_GUEST_FILE_SIZE_LIMIT`, job 없음 |
 | `preview_ok` | run 전용 `1 MiB` 난수 파일 `--dry-run` | 계획 byte = 파일 길이, guest 파일 없음 |
