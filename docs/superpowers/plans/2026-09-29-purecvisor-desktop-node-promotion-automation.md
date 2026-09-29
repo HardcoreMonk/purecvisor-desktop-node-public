@@ -35,8 +35,8 @@
   - 새 Pester/xUnit 테스트가 통과한다.
   - `git diff --check`에 문제가 없다.
 - host mutation, 설치본 변경, public trusted signing, external stable publication은 범위 밖이다.
-- task 하나가 checkpoint 하나다(30분, tool batch 18회, 리뷰 1회 + 제한 재검토 2회). 범위 밖 발견은 `report-only`로 처리한다. commit은 사용자가 요청할 때만 하고, push/PR은 별도 승인을 받는다.
-- 열린 P1-8 campaign(`lane2/p1-guest-file-20260928`)과 섞지 않는다. 이 계획은 `tooling/descriptor-chain-20260929` 브랜치에서 진행한다.
+- task 하나가 checkpoint 하나다(30분, tool batch 18회, 리뷰 1회 + 제한 재검토 2회). 범위 밖 발견은 `report-only`로 처리한다. commit은 campaign `promotion-automation-20260929`의 `commit_policy`(`local-commit-per-task`)를 따르고, push/PR은 별도 승인을 받는다.
+- P1-8 브랜치(`lane2/p1-guest-file-20260928`, PR #16)와 섞지 않는다. 이 계획은 `origin/main` 기반 `tooling/descriptor-chain-20260929` 브랜치에서 진행한다.
 
 ## Task 0: descriptor chain rotation (완료)
 
@@ -55,12 +55,23 @@
 **수정 후보:** `packaging/windows-desktop-node/tools/Update-PcvManualAdminDescriptorChain.ps1`
 **생성 후보:** `packaging/windows-desktop-node/tools/Update-PcvCurrentEvidenceLedgerRows.ps1`, `packaging/windows-desktop-node/tests/PcvCurrentEvidenceLedgerRows.Tests.ps1`
 
-- [ ] head key `4`개(`current_full_admin_host_mutation`, `current_manual_admin_package_pair`, `current_descriptor_batch_id`, `current_manual_admin_evidence`)가 descriptor와 같은 규칙으로 강등되는지 확인한다. 같으면 기존 도구를 `-DescriptorPath docs/ga-ready/CURRENT_EVIDENCE_LEDGER.md`로 재사용한다. 그 전에 key block 탐지 범위(첫 `key: ` 줄부터 다음 `## `까지)가 생성 블록이나 표와 겹치지 않는지 먼저 본다.
-- [ ] `ff77943` ledger diff 전체 줄을 읽고, status table 행 `8`종의 처리 방식을 표로 확정한다.
+- [x] head key `4`개(`current_full_admin_host_mutation`, `current_manual_admin_package_pair`, `current_descriptor_batch_id`, `current_manual_admin_evidence`)가 descriptor와 같은 규칙으로 강등되는지 확인한다. 같으면 기존 도구를 `-DescriptorPath docs/ga-ready/CURRENT_EVIDENCE_LEDGER.md`로 재사용한다. 그 전에 key block 탐지 범위(첫 `key: ` 줄부터 다음 `## `까지)가 생성 블록이나 표와 겹치지 않는지 먼저 본다.
+- [x] `ff77943` ledger diff 전체 줄을 읽고, status table 행 `8`종의 처리 방식을 표로 확정한다.
   - 강등 후 삽입: 기존 행의 근거 칸을 `predecessor after <ver> promotion`으로 바꾸고, 바로 아래 새 current 행을 넣는다. 대상은 `manual-admin-package-pair-current`, `package-build-current`, `installed-operator-surface-smoke-latest`, `manual-admin-package-pair-latest-candidate`다.
   - 교체: 기존 행을 새 행으로 바꾼다. 대상은 `latest-product-payload-smoke`, `functional-correctness-actual-host-latest`, `manual-admin-package-pair-next`다.
   - `full-admin-host-mutation-current`는 기존 행의 artifact 칸도 바뀌었다. 그래서 별도 규칙이 필요한지 확인한다.
-- [ ] 완료 기준: `ff77943^` ledger에 0.42.78 spec을 replay한 결과가 `ff77943` ledger와 byte 단위로 일치한다.
+- [x] 완료 기준: `ff77943^` ledger에 0.42.78 spec을 replay한 결과가 `ff77943` ledger와 byte 단위로 일치한다.
+
+실행 기록(2026-09-29): 실측이 계획과 두 곳에서 달랐다.
+- key block(`23`~`854`행)은 생성 블록(`3`~`19`행)과 `## 현재 Anchor` 표(`866`행~)와 겹치지 않는다. 그래서 head key는 기존 도구를 고치지 않고 `-DescriptorPath`로 재사용한다. tag 규칙도 같다(`current_*`는 직전 버전 tag).
+- `full-admin-host-mutation-current`도 강등 후 삽입이다. 강등 행 5종은 모두 같은 규칙을 따른다.
+  - 근거 칸: 첫 evidence 문서를 남기고, 둘째 항목이 `artifacts/batch-runs/<leaf>`이면 `<leaf>`(batch id)를 남긴 뒤 `predecessor after <tag> promotion`을 붙인다.
+  - 상태 칸: 바꾸지 않는다.
+  - 운영 규칙 칸: 템플릿(`<a>→<b> pair PASS는 predecessor다.`, `<tag> fullgate|package|current-card PASS는 predecessor다.`)으로 만든다.
+  - 0.42.78에서 템플릿과 다른 문장 `2`개(`installed-operator-surface-smoke-latest`, `manual-admin-package-pair-latest-candidate`)는 spec의 `predecessor_rule`로 받는다.
+- 같은 id가 앞쪽 과거 표에도 `4`행 있다. 그래서 도구는 `## 현재 Anchor` 표 header로 범위를 잡는다.
+
+새 도구 `Update-PcvCurrentEvidenceLedgerRows.ps1`(contract `pcv-current-evidence-ledger-rows-rotation-v1`)를 만들었다. `supersede`/`replace` 목록을 받는다. 0.42.78 replay는 head key `4`개(기존 도구) 뒤 행 `8`종(강등 후 삽입 `5`, 교체 `3`)을 적용했고, 결과가 `ff77943` ledger와 byte 단위로 일치했다. 두 도구의 `-Check`는 `current`를 냈다. 적용 전 ledger의 `-Check`는 `8`종 모두 stale이었고, 같은 rotation을 두 번 적용하면 `already-rotated`로 거부된다. Pester는 새 suite `9`개를 포함해 `24`개가 통과했다(`PcvManualAdminDescriptorChain` `9`개, `PcvManualAdminDescriptorCurrency` `6`개).
 
 ## Task 2: index 승격 절 생성
 
