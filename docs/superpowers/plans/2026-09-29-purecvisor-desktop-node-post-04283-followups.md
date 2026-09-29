@@ -35,9 +35,21 @@
 
 ## Task 2: pair orchestrator 반입
 
-- [ ] `.worktrees/04277-manual-admin-promotion`의 `Invoke-PcvManualAdminPackagePairCampaign.ps1`와 그 Pester를 끝까지 읽는다. 저장소에 이미 들어온 runner와 어떻게 이어지는지 확인한다.
-- [ ] 도구를 `packaging/windows-desktop-node/tools/`에, Pester를 `manual-admin-tests/`에 둔다. C# 정적 계약을 더한다.
-- [ ] Pester와 Delivery.Tests를 돌린다.
+- [x] `.worktrees/04277-manual-admin-promotion`의 `Invoke-PcvManualAdminPackagePairCampaign.ps1`와 그 Pester를 끝까지 읽는다. 저장소에 이미 들어온 runner와 어떻게 이어지는지 확인한다.
+- [x] 도구를 `packaging/windows-desktop-node/tools/`에, Pester를 `manual-admin-tests/`에 둔다. C# 정적 계약을 더한다.
+- [x] Pester와 Delivery.Tests를 돌린다.
+
+실행 기록(2026-09-29):
+- orchestrator(SHA `04f19ccf…`, 2026-08-31부터 미추적)와 Pester(`de42fc1f…`)를 그대로 들여왔다.
+- orchestrator가 부르는 helper 8개(readiness, clean-host, descriptor, reservation 모듈과 writer, product wrapper, Burn, MSIX)는 모두 저장소에 있다. Burn/MSIX runner는 PR #18에서 들여왔다.
+- orchestrator의 동작
+  - 모드는 `-PlanOnly` 또는 `-Execute` 하나만 받는다.
+  - package pair, MSI hash, catalog, publication을 검증한 뒤에만 출력을 쓴다.
+  - 여섯 bucket을 pair 순서로 실행하고, 실패하면 target으로 되돌린다.
+  - 모두 PASS이면 closed descriptor를 만들고 baseline reservation을 소비한다. guest credential은 artifact에 쓰지 않는다.
+- 0.42.83 pair는 이 orchestrator를 쓰지 않았다. bucket별 runner를 직접 실행했다. 이 orchestrator는 제품 Update를 catalog URI로 하므로, 쓰려면 package마다 update catalog JSON이 필요하다.
+- C# 정적 계약 `PcvManualAdminPackagePairCampaignContractTests`(`3`개)를 더했다.
+- 검증: Pester `13/13`, Delivery `740/740`.
 
 ## Task 3: clean-host base VHD 오프라인 갱신 설계
 
