@@ -11,7 +11,7 @@
   ],
   "mutation_allowed": false,
   "current_write_allowed": false,
-  "next_step": "Promotion automation campaign complete (Task 1, 2, 4, 5): one pcv-lane3-promotion-docs-v1 spec drives the generated blocks, descriptor chain, ledger head keys and rows, index sections, and spec pins, and replays the 0.42.78 promotion byte-exact against ab88076. No queued task. Open follow-ups need a decision: push/PR of tooling/descriptor-chain-20260929, the Task 3 data-driven verifier design, and the next Lane 3 promotion with its host mutation approval.",
+  "next_step": "Promotion automation Task 1, 2, 4, 5 complete (PR #17). Task 3 design is written (docs/superpowers/specs/2026-09-29-purecvisor-desktop-node-data-driven-promotion-verifier-design.md); its implementation waits for the design approval. The next Lane 3 promotion needs its own plan and host mutation approval.",
   "plan": "docs/superpowers/plans/2026-09-29-purecvisor-desktop-node-promotion-automation.md",
   "task_queue": ["Task 1", "Task 2", "Task 4", "Task 5"],
   "next_task": null,
