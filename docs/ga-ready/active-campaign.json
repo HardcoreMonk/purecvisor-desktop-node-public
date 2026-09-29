@@ -19,9 +19,9 @@
   "next_task": "Task 2c",
   "completed_tasks": ["Task 1", "Task 2a", "Task 2b", "Task 2f", "Task 2r"],
   "commit_policy": "local-commit-per-task",
-  "push_allowed": false,
+  "push_allowed": true,
   "checkpoint_limit": 13,
-  "approval_locator": "User-Approval: 2026-09-27 campaign runner commit policy local-commit-per-task; 2026-09-29 Lane 3 promotion to 0.42.83: write the plan then run the host work continuously (MSI uninstall/install, product update/rollback, clean-host VM create/Windows Update/delete, Burn, MSIX, fullgate, current-card) and write current-evidence in Task 5; push/PR not approved yet; a Lane 2 budget over 45 minutes needs its own approval; 2026-09-29 Task 2c elapsed budget 180 minutes approved; untracked Burn/MSIX runners imported into the repo before use",
+  "approval_locator": "User-Approval: 2026-09-27 campaign runner commit policy local-commit-per-task; 2026-09-29 Lane 3 promotion to 0.42.83: write the plan then run the host work continuously (MSI uninstall/install, product update/rollback, clean-host VM create/Windows Update/delete, Burn, MSIX, fullgate, current-card) and write current-evidence in Task 5; push/PR not approved yet; a Lane 2 budget over 45 minutes needs its own approval; 2026-09-29 Task 2c elapsed budget 180 minutes approved; untracked Burn/MSIX runners imported into the repo before use; 2026-09-29 push after every commit approved (no PR or merge implied)",
   "stop_on": [
     "same-cause-fail-3",
     "budget",
