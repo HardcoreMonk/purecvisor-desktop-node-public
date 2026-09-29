@@ -48,8 +48,9 @@ Lane 3 문서 단계는 PR #17의 `Invoke-PcvLane3PromotionDocs.ps1`와 데이�
 
 ## Task 2b: 설치본 update/rollback (Lane 2)
 
-- [ ] 설치본을 `0.42.82`에서 baseline `0.42.78`로 되돌린다. MSI 제거 뒤 `0.42.78` MSI를 설치한다.
-- [ ] `Invoke-PcvDesktopNodeProduct.ps1 -Action Update`로 `0.42.83` payload에 update한다. 그 뒤 `-Action Rollback`을 실행한다.
+- [x] 설치본을 `0.42.82`에서 baseline `0.42.78`로 되돌린다. MSI 제거 뒤 `0.42.78` MSI를 설치한다.
+- [x] `Invoke-PcvDesktopNodeProduct.ps1 -Action Update`로 `0.42.83` payload에 update한다. 그 뒤 `-Action Rollback`을 실행한다.
+실행 기록(2026-09-29): baseline 설치는 Task 2a에서 했다. Update(`0.42.78 → 0.42.83`)와 Rollback 모두 exit `0`, `ok=true`이고, 실행 단계는 0.42.78 run과 같다. 최종 상태는 manifest `0.42.78`, `DesktopNode.failed` `0.42.83`, service Running이다. evidence `product-update-rollback-2026-09-29-04278-04283`.
 
 ## Task 2c: dedicated clean-host Windows Update (Lane 2)
 
