@@ -113,8 +113,14 @@ Lane 3 문서 단계는 PR #17의 `Invoke-PcvLane3PromotionDocs.ps1`와 데이�
 
 ## Task 4: 최종 설치와 installed current-card (Lane 2)
 
-- [ ] `0.42.83`을 설치된 상태로 두고, installed operator surface current-card를 실행한다.
+- [x] `0.42.83`을 설치된 상태로 두고, installed operator surface current-card를 실행한다.
   - 판정 기준: CLI exit `0`, Web `200`, service `Running/Automatic`, TUI 없음
+
+실행 기록(2026-09-29):
+- 임시 캡처 스크립트로 캡처했고, 스크립트는 artifact root에 두었다.
+- 결과는 PASS다. CLI 3개 exit `0`, Web 2개 `200`, service `Running/Automatic`(credential manager target, token flag 없음), TUI 없음, ARP 1개, 테스트 VM 0개, secret 관측 없음이다. 설치본 Host/CLI는 fullgate build와 같다.
+- 첫 실행은 flag 판정 정규식 오류로 `fail`이어서 고쳐 다시 캡처했다.
+- evidence는 `installed-operator-surface-current-card-2026-09-29-04283`이다.
 
 ## Task 5: Lane 3 문서 (Lane 3)
 
