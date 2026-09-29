@@ -123,6 +123,13 @@
 - 검증 정책 문서와 ADR은 버전별 verifier를 요구하지 않으므로 ADR은 필요 없다.
 - 구현은 설계 승인 뒤에 한다.
 
+실행 기록(2026-09-29, 설계 승인 뒤 구현):
+- `D2EvidenceContractVerifier`의 `Verify04278Current`와 `Verify04277PreviousCurrent`를 `VerifyCurrentPromotion`과 `VerifyImmediatePredecessor`로 바꿨다.
+- 기대값은 `current-evidence.json`과 ledger head chain에서 계산한다. 순수 함수는 `ExpectedCurrentDescriptorMetadata`, `VersionTag`, `ReadImmediatePredecessor`다.
+- `Pcv04277`/`Pcv04278PromotionEvidenceContractTests`를 지우고 `PcvCurrentPromotionEvidenceContractTests`(`10`개)를 더했다.
+- `docs/DEVELOPMENT_PROCEDURE.md` §6에서 "C# 수기 수정" 단계를 지웠다.
+- Delivery `734/734`.
+
 ## Task 4: spec SHA pin 갱신 도구
 
 **생성:** `packaging/windows-desktop-node/tools/Update-PcvContractSpecPins.ps1`, `packaging/windows-desktop-node/manual-admin-tests/PcvContractSpecPins.Tests.ps1`

@@ -235,7 +235,7 @@ operator surface current-card와 feature qualification이 모두 PASS이고 별�
 2. 승격 spec 하나로 `packaging/windows-desktop-node/tools/Invoke-PcvLane3PromotionDocs.ps1`를 실행한다. dry-run으로 먼저 보고, 그 다음 `-Apply`, 끝에 `-Check`를 실행한다.
    - 도구가 처리하는 단계: 생성 블록, descriptor chain, ledger head key와 status 행, index 승격 절, contract spec pin
    - 견본 spec: `packaging/windows-desktop-node/tests/fixtures/lane3-promotion-docs-spec-04278.json`
-3. 버전별 C# verifier는 아직 수기로 고친다.
+3. C# 계약 `PcvCurrentPromotionEvidenceContractTests`는 기대값을 `current-evidence.json`과 ledger head chain에서 읽는다. 그래서 승격할 때 C#을 고치지 않는다.
 
 ## 7. 중단 조건
 
