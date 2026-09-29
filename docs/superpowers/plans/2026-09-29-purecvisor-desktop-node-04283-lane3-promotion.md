@@ -151,7 +151,13 @@ Lane 3 한도(30분, tool batch 12회) 안에 끝내려고 5a(승격 evidence), 
   - `-Check`: 6단계 모두 `current`
 - C#은 `CurrentEvidenceVerifierTests`의 기대 버전 문자열 하나만 고쳤다. 데이터 기반 `PcvCurrentPromotionEvidenceContractTests`가 새 current와 predecessor를 그대로 통과했다.
 - 검증: Delivery `737/737`, `CurrentEvidenceVerifierTests` `13/13`, Pester(evidence docs, descriptor currency, campaign descriptor, current evidence generation) `113/113`.
-- [ ] 5c: `DOCUMENTATION_INDEX`와 `FEATURE_IMPLEMENTATION_LEDGER`를 정렬한다.
+- [x] 5c: `DOCUMENTATION_INDEX`와 `FEATURE_IMPLEMENTATION_LEDGER`를 정렬한다.
+
+실행 기록(2026-09-29, 5c):
+- `DOCUMENTATION_INDEX`의 운영 제품 권위, 호스트 설치본, 열린 campaign intent를 `0.42.83`으로 바꾸고 `0.42.78 -> 0.42.83` consume 줄을 더했다.
+- 공개 소스 HEAD와 Required CI run 줄은 04278 때처럼 merge 뒤에 갱신한다.
+- `FEATURE_IMPLEMENTATION_LEDGER`의 anchor 문장과 nonclaim을 `0.42.83`으로 바꿨다.
+- 두 문서는 spec pin 대상이 아니다(pin `-Check` current).
 - [ ] 5c: 솔루션 테스트, Pester, pin `-Check`를 돌린다.
 
 ## Task 6: 종료 검증과 push/PR
