@@ -40,7 +40,7 @@
 
 ## Task 0: descriptor chain rotation (완료)
 
-**생성:** `packaging/windows-desktop-node/tools/Update-PcvManualAdminDescriptorChain.ps1`, `packaging/windows-desktop-node/tests/PcvManualAdminDescriptorChain.Tests.ps1` (`1865503`)
+**생성:** `packaging/windows-desktop-node/tools/Update-PcvManualAdminDescriptorChain.ps1`, `packaging/windows-desktop-node/manual-admin-tests/PcvManualAdminDescriptorChain.Tests.ps1` (`1865503`)
 
 - [x] rotation 규칙을 정했다.
   - 이전 값은 key 바로 아래 `previous_<tag>_<key>` 줄로 옮긴다.
@@ -53,7 +53,7 @@
 ## Task 1: ledger key block과 status table 행 rotation
 
 **수정 후보:** `packaging/windows-desktop-node/tools/Update-PcvManualAdminDescriptorChain.ps1`
-**생성 후보:** `packaging/windows-desktop-node/tools/Update-PcvCurrentEvidenceLedgerRows.ps1`, `packaging/windows-desktop-node/tests/PcvCurrentEvidenceLedgerRows.Tests.ps1`
+**생성 후보:** `packaging/windows-desktop-node/tools/Update-PcvCurrentEvidenceLedgerRows.ps1`, `packaging/windows-desktop-node/manual-admin-tests/PcvCurrentEvidenceLedgerRows.Tests.ps1`
 
 - [x] head key `4`개(`current_full_admin_host_mutation`, `current_manual_admin_package_pair`, `current_descriptor_batch_id`, `current_manual_admin_evidence`)가 descriptor와 같은 규칙으로 강등되는지 확인한다. 같으면 기존 도구를 `-DescriptorPath docs/ga-ready/CURRENT_EVIDENCE_LEDGER.md`로 재사용한다. 그 전에 key block 탐지 범위(첫 `key: ` 줄부터 다음 `## `까지)가 생성 블록이나 표와 겹치지 않는지 먼저 본다.
 - [x] `ff77943` ledger diff 전체 줄을 읽고, status table 행 `8`종의 처리 방식을 표로 확정한다.
@@ -75,7 +75,7 @@
 
 ## Task 2: index 승격 절 생성
 
-**생성:** `packaging/windows-desktop-node/tools/New-PcvPromotionIndexSections.ps1`, `packaging/windows-desktop-node/tests/PcvPromotionIndexSections.Tests.ps1`
+**생성:** `packaging/windows-desktop-node/tools/New-PcvPromotionIndexSections.ps1`, `packaging/windows-desktop-node/manual-admin-tests/PcvPromotionIndexSections.Tests.ps1`
 
 - [x] `EVIDENCE_INDEX.md`를 갱신한다.
   - 기존 current 절 위에 새 `## <date> \`<ver>\` current promotion` 절을 넣는다. 내용은 package, fullgate, current-card, functional, pair, claims의 `6`개 bullet이다.
@@ -119,7 +119,7 @@
 
 ## Task 4: spec SHA pin 갱신 도구
 
-**생성:** `packaging/windows-desktop-node/tools/Update-PcvContractSpecPins.ps1`, `packaging/windows-desktop-node/tests/PcvContractSpecPins.Tests.ps1`
+**생성:** `packaging/windows-desktop-node/tools/Update-PcvContractSpecPins.ps1`, `packaging/windows-desktop-node/manual-admin-tests/PcvContractSpecPins.Tests.ps1`
 
 - [x] 착수 전에 pin 구조를 확인한다. 예상 구조는 두 단계다.
   - source file SHA를 spec JSON에 적는다.
@@ -150,11 +150,39 @@ C# verifier가 spec 없이 직접 pin하는 상수(`ExpectedLegacySha256`, `Expe
 
 **생성:** `packaging/windows-desktop-node/tools/Invoke-PcvLane3PromotionDocs.ps1`
 
-- [ ] 승격 spec 하나로 아래 순서를 실행하고, 결과를 JSON 하나로 요약한다.
+- [x] 승격 spec 하나로 아래 순서를 실행하고, 결과를 JSON 하나로 요약한다.
   1. `Update-PcvCurrentEvidenceDocs.ps1`
   2. Task 0~2 생성기
   3. Task 4 pin 도구
-- [ ] 자동화된 단계를 승격 절차 문서에 반영한다. 그 문서가 spec pin 대상이면 Task 4 도구로 pin을 함께 갱신한다.
+- [x] 자동화된 단계를 승격 절차 문서에 반영한다. 그 문서가 spec pin 대상이면 Task 4 도구로 pin을 함께 갱신한다.
+
+실행 기록(2026-09-29): `Invoke-PcvLane3PromotionDocs.ps1`(contract `pcv-lane3-promotion-docs-v1`)를 만들었다.
+- 입력: spec 하나에 `descriptor_chain`, `ledger_head`, `ledger_rows`, `index_sections` 네 절이 든다. 각 절은 원문 그대로(`GetRawText`) 해당 도구에 넘긴다.
+- 실행 순서: 생성 블록 → descriptor chain → ledger head key → ledger 행 → index 절 → spec pin.
+- `-Apply`: spec을 받는 네 단계를 먼저 dry-run으로 검증하고, 하나라도 `planned`가 아니면 아무것도 쓰지 않는다. 적용 중에는 첫 실패에서 멈춘다.
+- dry-run: `Update-PcvCurrentEvidenceDocs.ps1`에는 dry-run이 없어서 `-Check`로 대신한다.
+
+0.42.78 replay 방법: `ab88076` 트리에서 도구가 다루는 파일 `15`개(생성 target `8`, descriptor, spec `3`, verifier `3`)를 승격 직전(`064f6f2^`) 상태로 되돌렸다. 그 뒤 spec 하나로 dry-run, `-Apply`, `-Check`를 차례로 실행했다.
+- dry-run: 생성 블록 `stale`, 나머지 다섯 단계 `planned`
+- `-Apply`: 여섯 단계 모두 적용됐다.
+- 결과: `15`개 파일이 모두 `ab88076`과 byte 단위로 일치했다. 0.42.78 승격 commit `4`개 가운데 이 파일들에 대한 수기 편집을 spec 하나가 대신한다.
+- `-Check`: 여섯 단계 모두 `current`다.
+
+그 spec은 견본으로 `packaging/windows-desktop-node/tests/fixtures/lane3-promotion-docs-spec-04278.json`에 두었다. `docs/DEVELOPMENT_PROCEDURE.md` §6에 문서 반영 순서를 적었다. 이 문서는 contract spec pin 대상이 아니다. pin 도구 `-Check`는 `current`였고, 절차 문서 계약 테스트 `3`개가 통과했다. Pester 새 suite `4`개가 통과했다.
+
+남은 수기 작업:
+- evidence 문서
+- `current-evidence.json`
+- 버전별 C# verifier(Task 3, 설계 승인 필요)
+- `DOCUMENTATION_INDEX.md`와 `FEATURE_IMPLEMENTATION_LEDGER.md` 정렬(`ff77943`에 있었다)
+
+검증 보정(2026-09-29): Task 0~5는 새 Pester 파일 `5`개를 `packaging/windows-desktop-node/tests`에 두었다.
+- 그 폴더는 Pester-free 이관 뒤 고정된 inventory다. 파일 `55`개가 `LegacyPesterContractParserTests`와 `MigrationManifestV2`에 고정돼 있다. 그래서 솔루션 테스트에서 Delivery `3`건이 실패했다.
+- P1-8 선례(`PcvServicePlanP1GuestFileActualVmSmokeContractTests`)를 따라 두 가지를 바꿨다.
+  - 다섯 suite를 inventory 밖 `packaging/windows-desktop-node/manual-admin-tests`로 옮겼다.
+  - Delivery.Tests에 C# 정적 계약 `PcvLane3PromotionDocsToolsContractTests`(`11`개)를 더했다. 다섯 도구의 mode, contract 이름, 오류 코드, 단계 순서를 고정하고, host mutation 호출이 없는지 확인한다.
+- 같이 실패한 `Verification.Tests`의 `policy-boundaries`는 원인이 달랐다. cutover git boundary가 dirty worktree를 거부했고(`cutover-worktree=dirty`), 당시 Task 5가 미커밋이었다.
+- task별 focused 검증에 `dotnet test src/DesktopNode.Delivery.Tests`가 빠져 있었다.
 
 ## 순서와 측정
 
