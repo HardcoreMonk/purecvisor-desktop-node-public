@@ -77,18 +77,35 @@
 
 **생성:** `packaging/windows-desktop-node/tools/New-PcvPromotionIndexSections.ps1`, `packaging/windows-desktop-node/tests/PcvPromotionIndexSections.Tests.ps1`
 
-- [ ] `EVIDENCE_INDEX.md`를 갱신한다.
+- [x] `EVIDENCE_INDEX.md`를 갱신한다.
   - 기존 current 절 위에 새 `## <date> \`<ver>\` current promotion` 절을 넣는다. 내용은 package, fullgate, current-card, functional, pair, claims의 `6`개 bullet이다.
   - 기존 절 제목은 `predecessor promotion`으로 바꾼다.
   - 도입 문단에 `<date> Lane 3가 \`<ver>\`로 다시 승격했다.` 줄을 추가한다.
-- [ ] `CONTROL_PLANE_INDEX.md`에 `operational current promotion` 절과 `<prev> -> <ver>` descriptor consume 절을 만든다.
-- [ ] 문장 템플릿과 입력 값을 정한다.
+- [x] `CONTROL_PLANE_INDEX.md`에 `operational current promotion` 절과 `<prev> -> <ver>` descriptor consume 절을 만든다.
+- [x] 문장 템플릿과 입력 값을 정한다.
   - 문장 템플릿은 0.42.78 절을 그대로 옮긴다.
   - `promotion_eligible`과 blocker 문장은 `current-evidence.json`의 `feature_qualification`에서 만든다.
   - carry-forward 설명처럼 사람이 판단해야 하는 문장은 spec의 `notes` 배열로 받는다.
-- [ ] 완료 기준:
+- [x] 완료 기준:
   - `ab88076^`에 0.42.78 spec을 replay한 결과가 두 index 파일 모두 `ab88076`과 byte 단위로 일치한다.
   - `D2EvidenceContractVerifier`의 `RequireMatches` 패턴(`canonical current는 ...다`, `operational current는 ...다`)이 생성 결과에 그대로 맞는다.
+
+실행 기록(2026-09-29): `ab88076` diff 실측은 위 항목과 두 파일의 역할이 달랐다.
+- `EVIDENCE_INDEX.md`: 제목 바로 아래에 `operational current promotion` 절과 `<prev> -> <ver>` descriptor consume 절을 넣기만 한다. 기존 절 제목과 도입 문단은 바꾸지 않는다.
+- `CONTROL_PLANE_INDEX.md`: closure 문단 끝에 `<date> Lane 3가 <ver>로 다시 승격했다.` 줄을 붙이고, 새 `current promotion` 절을 넣은 뒤, 직전 절 제목을 `predecessor promotion`으로 바꾼다. consume 절은 없다.
+
+새 도구 `New-PcvPromotionIndexSections.ps1`(contract `pcv-promotion-index-sections-v1`)를 만들었다.
+- 값은 `current-evidence.json`에서 읽는다. version, 문서 경로, SHA, provenance, pair(baseline, target, descriptor)가 여기에 든다.
+- spec은 사람이 정하는 값만 받는다. `date`, `previous_version`, `installed_version`, `p0_feature_ledger_version`, `pair_evidence`, `functional_note`, 선택 항목 `main_push_evidence`다.
+- 다음 경우는 거부한다.
+  - `promotion_eligible=false` 또는 blocker가 있음
+  - claim이 `true`
+  - pair target이 current가 아님
+  - 직전 current 절 제목의 version이 `previous_version`과 다름
+  - closure 줄이 없음
+  - 같은 절을 두 번 적용함
+
+0.42.78 replay 결과는 `EVIDENCE_INDEX.md` `+32`행, `CONTROL_PLANE_INDEX.md` `+25`행이고, 두 파일 모두 `ab88076`과 byte 단위로 일치했다. 결과가 같으므로 verifier 패턴도 그대로 맞는다. `-Check`는 `current`, 적용 전 파일은 두 target 모두 stale이었다. Pester 새 suite `7`개가 통과했다.
 
 ## Task 3: 버전별 C# verifier를 데이터 기반으로 전환 (설계 선행)
 
