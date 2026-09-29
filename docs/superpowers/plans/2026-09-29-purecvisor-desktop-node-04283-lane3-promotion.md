@@ -81,7 +81,9 @@ Lane 3 문서 단계는 PR #17의 `Invoke-PcvLane3PromotionDocs.ps1`와 데이�
 
 ## Task 2e: MSIX build/install/update/remove (Lane 2)
 
-- [ ] MSIX lifecycle runner를 `0.42.78 → 0.42.83`으로 실행한다.
+- [x] MSIX lifecycle runner를 `0.42.78 → 0.42.83`으로 실행한다.
+
+실행 기록(2026-09-29): 들여온 runner와 템플릿, 기존 내부 서명 인증서로 `-Execute`를 실행했다(20초). pack, sign, verify가 모두 `0`이고, install, update, remove를 통과해 결과는 PASS다. 최종 상태는 패키지와 smoke 서비스 없음, MSI 서비스 `Running/Automatic`, manifest `0.42.83` 그대로다. evidence `msix-package-lifecycle-smoke-2026-09-29-04278-04283`.
 
 ## Task 2f: installed runtime ops summary (Lane 2)
 
