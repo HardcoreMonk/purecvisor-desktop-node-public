@@ -37,8 +37,9 @@ Lane 3 문서 단계는 PR #17의 `Invoke-PcvLane3PromotionDocs.ps1`와 데이�
 
 ## Task 1: `0.42.83-admin-smoke` package (Lane 1)
 
-- [ ] clean HEAD에서 빌드한다. 명령: `packaging/windows-desktop-node/installer/build.ps1 -Version 0.42.83-admin-smoke -MsiProductVersion 0.42.83 -SigningMode AllowUnsignedDev -SigningTrustModel LocalTest`
-- [ ] 산출물(MSI, update ZIP, payload, provenance)과 SHA를 확인한다. evidence `docs/ga-ready/evidence/admin-smoke-package-2026-09-29-04283.md`를 새로 쓴다. 이 task는 설치하지 않는다.
+- [x] clean HEAD에서 빌드한다. 명령: `packaging/windows-desktop-node/installer/build.ps1 -Version 0.42.83-admin-smoke -MsiProductVersion 0.42.83 -SigningMode AllowUnsignedDev -SigningTrustModel LocalTest`
+- [x] 산출물(MSI, update ZIP, payload, provenance)과 SHA를 확인한다. evidence `docs/ga-ready/evidence/admin-smoke-package-2026-09-29-04283.md`를 새로 쓴다. 이 task는 설치하지 않는다.
+실행 기록(2026-09-29): clean HEAD `bcda14f`에서 빌드했다. 결과는 MSI `52d7cfd5…`, payload aggregate `76d9ae9c…`, Host `8d8622fb…`, CLI `c217df9f…`, payload `8`개이고, provenance commit이 HEAD와 같다. update ZIP은 build 산출물에 없다. 0.42.78의 ZIP은 pair 단계에서 만들어졌으므로 Task 2에서 만드는 방법을 확인한다. evidence는 `admin-smoke-package-2026-09-29-04283`이다.
 
 ## Task 2a: pair readiness (Lane 2)
 
