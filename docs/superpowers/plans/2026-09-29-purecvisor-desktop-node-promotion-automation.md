@@ -121,12 +121,30 @@
 
 **생성:** `packaging/windows-desktop-node/tools/Update-PcvContractSpecPins.ps1`, `packaging/windows-desktop-node/tests/PcvContractSpecPins.Tests.ps1`
 
-- [ ] 착수 전에 pin 구조를 확인한다. 예상 구조는 두 단계다.
+- [x] 착수 전에 pin 구조를 확인한다. 예상 구조는 두 단계다.
   - source file SHA를 spec JSON에 적는다.
   - spec JSON의 SHA를 verifier 상수에 적는다.
-- [ ] 대상은 `config/pcv-*-contract-spec-v1.json` `9`개와 verifier 상수다. verifier 상수는 `ExpectedSpecSha256` `6`곳과, `ab88076`에서 함께 바뀐 `InstalledContractVerifier`/`ManualAdminContractVerifier`의 SHA 상수다.
-- [ ] `-Check`는 SHA 불일치를 보고하고, `-Apply`는 두 단계를 순서대로 갱신한다.
-- [ ] 완료 기준: `ab88076^`에서 replay한 결과가 `ab88076`의 spec `3`개와 verifier 상수 `3`곳과 일치한다.
+- [x] 대상은 `config/pcv-*-contract-spec-v1.json` `9`개와 verifier 상수다. verifier 상수는 `ExpectedSpecSha256` `6`곳과, `ab88076`에서 함께 바뀐 `InstalledContractVerifier`/`ManualAdminContractVerifier`의 SHA 상수다.
+- [x] `-Check`는 SHA 불일치를 보고하고, `-Apply`는 두 단계를 순서대로 갱신한다.
+- [x] 완료 기준: `ab88076^`에서 replay한 결과가 `ab88076`의 spec `3`개와 verifier 상수 `3`곳과 일치한다.
+
+실행 기록(2026-09-29): 실측으로 확인한 구조는 다음과 같다.
+- pin은 spec JSON의 `source_files[]`와 `legacy_files[]` 안 `{ "path", "sha256" }` 항목이다. raw text에서 `"path"` 바로 뒤에 `"sha256"`이 온다.
+- spec을 pin하는 verifier는 `SpecPath` 상수로 찾는다(`9`개 spec에 하나씩). SHA 상수는 두 형식이다.
+  - `ExpectedSpecSha256 =` 다음 줄
+  - `LegacyBatchContractVerifier`의 `new(SpecPath, "<sha>", ...)` 인자
+- hash는 verifier와 같이 계산한다. BOM을 뺀 UTF-8 text이고, 줄바꿈은 정규화하지 않는다(`.gitattributes`가 eol을 고정한다).
+- verifier가 `StructuredTransitionSources`에 둔 경로는 source SHA 검사에서 빠진다. 도구도 이 경로는 갱신하지 않고 `exempt_stale`로만 보고한다. 현재 development policy `4`개, orchestration `1`개다.
+- spec이 verifier나 다른 spec을 pin하는 순환은 없다.
+
+새 도구 `Update-PcvContractSpecPins.ps1`은 입력 spec 없이 저장소를 읽는다. dry-run, `-Apply`, `-Check` 세 모드를 가진다.
+
+replay 방법: `ab88076` 트리에서 pin 파일 `6`개(spec `3`, verifier `3`)만 `ab88076^`로 되돌린 뒤 `-Apply`했다.
+- 결과: spec `3`개의 pin `4`개(`AGENTS.md`, packaging `README.md`, `current-evidence.json`, descriptor 문서)와 verifier 상수 `3`곳이 갱신됐다.
+- spec `9`개와 verifier `9`개가 모두 `ab88076`과 byte 단위로 일치했다.
+- 현재 저장소의 `-Check`는 `current`다. Pester 새 suite `4`개가 통과했다.
+
+C# verifier가 spec 없이 직접 pin하는 상수(`ExpectedLegacySha256`, `ExpectedModuleSha256`, `ProductInvokeContractVerifier`의 `4`개)는 이 도구 범위 밖이다(`report-only`).
 
 ## Task 5: 승격 문서 orchestration
 
