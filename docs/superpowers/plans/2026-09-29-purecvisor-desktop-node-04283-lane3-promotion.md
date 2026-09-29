@@ -163,7 +163,7 @@ Lane 3 한도(30분, tool batch 12회) 안에 끝내려고 5a(승격 evidence), 
 ## Task 6: 종료 검증과 push/PR
 
 - [x] clean HEAD에서 전체 검증을 돌린다.
-- [ ] push/PR은 승인을 받은 뒤에 한다. push는 2026-09-29 승인으로 커밋마다 했다. PR과 merge는 아직 승인 전이다.
+- [x] push/PR은 승인을 받은 뒤에 한다. push는 2026-09-29 승인으로 커밋마다 했다. PR #18은 사용자 승인 뒤 CI 6개 pass를 확인하고 merge했다(`dd638d4`). main push의 Development Gates run `36585730842`와 Public Boundary run `36585731022`가 success다. campaign은 `post-04283-followups-20260929`가 `closed_predecessor`로 닫았다.
 
 실행 기록(2026-09-29, clean HEAD `888cda6`):
 - `dotnet test src/DesktopNode.sln` 실패 `0`. Service `11`, Contracts `200`, Cli `179`, Runtime `128`, Delivery `737`, HyperV `238`, Host `216`, Api `414`, Verification `557`.
