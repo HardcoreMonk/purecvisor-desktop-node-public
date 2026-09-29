@@ -115,8 +115,13 @@
   1. 버전 고정 상수가 지키던 불변식을 무엇으로 대체할지 정한다. 이 상수는 `current-evidence.json`이 실수로 바뀌는 것을 막는다. 대안은 `current-evidence.json`이 바뀌면 descriptor, ledger, index의 `-Check` 통과를 필수로 요구하는 방식이다.
   2. previous-current 검증을 descriptor의 `previous_<tag>_*` chain에서 읽을지 정한다.
   3. 기존 `Pcv04273`/`Pcv04277`/`Pcv04278` 테스트를 evidence anchor로 보존할지, 은퇴시킬지 정한다.
-- [ ] 이 변경이 `docs/DEVELOPMENT_VERIFICATION_POLICY.md`의 검증 정책을 바꾸면 ADR로 처리한다. 구현은 사용자 승인 후에 한다.
-실행 기록(2026-09-29): 설계 문서 `docs/superpowers/specs/2026-09-29-purecvisor-desktop-node-data-driven-promotion-verifier-design.md`를 썼다.- 권장 결정: I1(`current-evidence.json` 고정)은 spec pin으로 대신한다. 직전 current는 ledger head chain에서 읽는다.- `Pcv04277`/`Pcv04278` 테스트는 generic `PcvCurrentPromotionEvidenceContractTests`로 바꾼다. manifest 등록 legacy contract(`Pcv04273`, `Pcv04274`)는 유지한다.- 검증 정책 문서와 ADR은 버전별 verifier를 요구하지 않으므로 ADR은 필요 없다.- 구현은 설계 승인 뒤에 한다.
+- [x] 이 변경이 `docs/DEVELOPMENT_VERIFICATION_POLICY.md`의 검증 정책을 바꾸면 ADR로 처리한다. 구현은 사용자 승인 후에 한다.
+
+실행 기록(2026-09-29): 설계 문서 `docs/superpowers/specs/2026-09-29-purecvisor-desktop-node-data-driven-promotion-verifier-design.md`를 썼다.
+- 권장 결정: I1(`current-evidence.json` 고정)은 spec pin으로 대신한다. 직전 current는 ledger head chain에서 읽는다.
+- `Pcv04277`/`Pcv04278` 테스트는 generic `PcvCurrentPromotionEvidenceContractTests`로 바꾼다. manifest 등록 legacy contract(`Pcv04273`, `Pcv04274`)는 유지한다.
+- 검증 정책 문서와 ADR은 버전별 verifier를 요구하지 않으므로 ADR은 필요 없다.
+- 구현은 설계 승인 뒤에 한다.
 
 ## Task 4: spec SHA pin 갱신 도구
 
