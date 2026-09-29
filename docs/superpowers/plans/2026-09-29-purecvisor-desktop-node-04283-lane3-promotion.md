@@ -69,7 +69,8 @@ Lane 3 문서 단계는 PR #17의 `Invoke-PcvLane3PromotionDocs.ps1`와 데이�
 
 ## Task 2f: installed runtime ops summary (Lane 2)
 
-- [ ] 설치본 `pcvcli --protected-token-file <file> --json ops summary`로 runtime ops summary를 만든다.
+- [x] 설치본 `pcvcli --protected-token-file <file> --json ops summary`로 runtime ops summary를 만든다.
+실행 기록(2026-09-29): baseline `0.42.78`이 설치된 동안 Task 2c보다 먼저 실행했다(0.42.78 pair 때도 baseline 설치본에서 캡처했다). 결과는 CLI exit `0`, `ok=true`, 비인증 `401 PCV_AUTH_REQUIRED`, Web `200`, errors `0`, token 값 없음이다. evidence `installed-runtime-ops-summary-2026-09-29-04278`.
 
 ## Task 2g: pair descriptor (Lane 2, non-mutating)
 
