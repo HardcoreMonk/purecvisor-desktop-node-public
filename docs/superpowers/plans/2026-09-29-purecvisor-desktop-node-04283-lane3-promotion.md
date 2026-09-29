@@ -92,9 +92,11 @@ Lane 3 문서 단계는 PR #17의 `Invoke-PcvLane3PromotionDocs.ps1`와 데이�
 
 ## Task 2g: pair descriptor (Lane 2, non-mutating)
 
-- [ ] 여섯 bucket root로 `New-PcvManualAdminCampaignDescriptor`를 실행한다.
+- [x] 여섯 bucket root로 `New-PcvManualAdminCampaignDescriptor`를 실행한다.
   - 판정 기준: `overall_status=pass`, `missing_count=0`, `not_pass_count=0`
-- [ ] 결과로 descriptor evidence를 쓴다.
+- [x] 결과로 descriptor evidence를 쓴다.
+
+실행 기록(2026-09-29): `-PlanOnly`로 실행했다. 결과는 `overall_status=pass`, runner `6`, `missing_count=0`, `not_pass_count=0`, host mutation 없음이다. batch는 `manual-admin-campaign-descriptor-20260929-04278-04283`이고 evidence는 `manual-admin-campaign-descriptor-2026-09-29-04278-04283`이다.
 
 ## Task 3: full admin host mutation gate (Lane 2)
 
