@@ -29,7 +29,7 @@
 - 생성기는 입력 spec에 없는 줄을 byte 단위로 보존한다. 과거 dated section, `previous_*`, `historical_*` 값은 재해석하거나 삭제하지 않는다.
 - 새 evidence는 새 파일로 추가하고 기존 evidence를 덮어쓰지 않는다.
 - 생성기 인터페이스는 `Update-PcvManualAdminDescriptorChain.ps1`와 맞춘다. 기본 dry-run, `-Apply`, `-Check`를 두고, 결과는 JSON 한 줄(`schema_version`, `ok`, `mode`), 오류는 `PCV_*_INVALID|<field>|<detail>` 형식이다.
-- spec JSON은 `System.Text.Json.JsonDocument`로 읽는다. `ConvertFrom-Json`은 `updated_at` 같은 ISO 시각을 `DateTime`으로 바꾼다(`1865503`에서 replay로 확인).
+- spec JSON은 `System.Text.Json.JsonDocument`로 읽는다. `ConvertFrom-Json`은 `updated_at` 같은 ISO 시각을 `DateTime`으로 바꾼다(`ac7945b`에서 replay로 확인).
 - 각 task의 완료 기준:
   - 0.42.78 replay가 해당 commit 결과와 byte 단위로 일치한다.
   - 새 Pester/xUnit 테스트가 통과한다.
@@ -40,7 +40,7 @@
 
 ## Task 0: descriptor chain rotation (완료)
 
-**생성:** `packaging/windows-desktop-node/tools/Update-PcvManualAdminDescriptorChain.ps1`, `packaging/windows-desktop-node/manual-admin-tests/PcvManualAdminDescriptorChain.Tests.ps1` (`1865503`)
+**생성:** `packaging/windows-desktop-node/tools/Update-PcvManualAdminDescriptorChain.ps1`, `packaging/windows-desktop-node/manual-admin-tests/PcvManualAdminDescriptorChain.Tests.ps1` (`ac7945b`)
 
 - [x] rotation 규칙을 정했다.
   - 이전 값은 key 바로 아래 `previous_<tag>_<key>` 줄로 옮긴다.
