@@ -151,7 +151,7 @@ feature promotion evidence를 서로 다른 계약으로 유지한다.
 
 ## Evidence stage 투영
 
-Operational current package/service anchor는 `0.42.78-admin-smoke`다. 이것은 별도의
+Operational current package/service anchor는 `0.42.83-admin-smoke`다. 이것은 별도의
 feature promotion 결정과 동일하지 않다. 현재 feature promotion은
 `promotion_eligible=true`, `blocker_count=0`이다.
 
@@ -203,7 +203,7 @@ manual-admin 관측은 `0.42.75-admin-smoke`에서 모두 pass다.
 
 - 이 문서는 public trusted signing을 증명하지 않는다.
 - 이 문서는 external stable publication을 증명하지 않는다.
-- `0.42.78-admin-smoke` operational current 상태가 28개 feature의 promotion 완료를 뜻하지 않는다.
+- `0.42.83-admin-smoke` operational current 상태가 28개 feature의 promotion 완료를 뜻하지 않는다.
 - `pcv.vm.clone`은 feature evidence ledger 후보가 아니어서 승격 조건에 들어가지 않는다. 0.42.77 설치본 actual-VM clone PASS(`docs/ga-ready/evidence/service-plan-p1-clone-actual-vm-2026-08-29-04277-r2.md`)는 있으나 manual-admin evidence는 없고, stage 표는 ledger 투영 규칙에 따라 `not-assessed`로 둔다. stage별 evidence를 표에 기록하려면 feature evidence ledger 모델 확장이 먼저 필요하다.
 - `not-assessed`는 pass도 fail도 아니며, 실제 VM 또는 manual-admin evidence를 추정하지 않는다.
 - 이 문서 생성 과정에서 host, VM, service, package mutation을 수행하지 않았다.
