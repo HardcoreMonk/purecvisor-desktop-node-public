@@ -54,10 +54,11 @@ Lane 3 문서 단계는 PR #17의 `Invoke-PcvLane3PromotionDocs.ps1`와 데이�
 
 ## Task 2c: dedicated clean-host Windows Update (Lane 2)
 
-- [ ] `Invoke-PcvInternalCleanHostInstallUpdateRollbackSmoke.ps1`을 실행한다.
+- [x] `Invoke-PcvInternalCleanHostInstallUpdateRollbackSmoke.ps1`을 실행한다.
   - baseline `0.42.78` MSI, target `0.42.83` update package
   - `-InstallWindowsUpdates -RemoveVmOnSuccess`
-- [ ] base VHD가 있는지 먼저 확인한다.
+- [x] base VHD가 있는지 먼저 확인한다.
+실행 기록(2026-09-29): 경과 한도는 사용자 승인으로 180분이었고, 실제로 46분 걸렸다. update ZIP(`e9da9714…`)은 0.42.78과 같은 구조로 payload를 압축해 만들었다. 결과는 PASS다. Windows Update는 `KB5122882` 1개를 설치했다(UBR `169 → 5622`). 재부팅 뒤 무응답 자동 복구가 한 번 실행됐다. update와 rollback exit는 `0`, final은 `0.42.78`, Web `200`이고 VM은 삭제됐다. evidence `internal-clean-host-install-update-rollback-smoke-2026-09-29-04278-04283`.
 
 ## Task 2r: Burn/MSIX runner 반입 (Lane 1, 2026-09-29 추가)
 
