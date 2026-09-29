@@ -59,6 +59,19 @@ Lane 3 문서 단계는 PR #17의 `Invoke-PcvLane3PromotionDocs.ps1`와 데이�
   - `-InstallWindowsUpdates -RemoveVmOnSuccess`
 - [ ] base VHD가 있는지 먼저 확인한다.
 
+## Task 2r: Burn/MSIX runner 반입 (Lane 1, 2026-09-29 추가)
+
+- [x] runner를 저장소에 들여온다. Burn과 MSIX runner는 2026-08-31부터 `.worktrees/04277-manual-admin-promotion`에 미추적 파일로만 있었다. MSIX 템플릿 layout은 `artifacts/manual-admin-campaign-20260831-04275-04277/msix-template-layout`에만 있었다.
+
+실행 기록(2026-09-29, 사용자 결정 "먼저 저장소에 들여오기"):
+- 들여온 파일
+  - runner 2개를 그대로 `packaging/windows-desktop-node/tools/`에 두었다(SHA `d9841416…`, `0be42d17…`).
+  - Pester 2개는 `manual-admin-tests/`에 두었다. packaging Pester inventory 밖이다.
+  - 템플릿 layout(manifest 템플릿, 379 byte 로고 PNG 3개)은 `packaging/windows-desktop-node/msix/template-layout/`에 두었다.
+- C# 정적 계약 `PcvPairLifecycleRunnersContractTests`(`3`개)를 더했다.
+- 검증: Delivery `737/737`, Pester `16/16`.
+- pair orchestrator `Invoke-PcvManualAdminPackagePairCampaign.ps1`는 들여오지 않았다(`report-only`).
+
 ## Task 2d: Burn install/repair/remove (Lane 2)
 
 - [ ] Burn bootstrapper lifecycle runner를 `0.42.83` package로 실행한다.
