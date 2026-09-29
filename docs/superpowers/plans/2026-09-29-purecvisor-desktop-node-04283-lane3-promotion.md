@@ -75,7 +75,9 @@ Lane 3 문서 단계는 PR #17의 `Invoke-PcvLane3PromotionDocs.ps1`와 데이�
 
 ## Task 2d: Burn install/repair/remove (Lane 2)
 
-- [ ] Burn bootstrapper lifecycle runner를 `0.42.83` package로 실행한다.
+- [x] Burn bootstrapper lifecycle runner를 `0.42.83` package로 실행한다.
+
+실행 기록(2026-09-29): 제품 Update로 설치본을 `0.42.83`에 맞춘 뒤 `-Execute`를 실행했다(44초). build, install, repair, uninstall, target MSI 복구 exit가 모두 `0`이고 결과는 PASS다. 최종 상태는 ARP `0.42.83` 1개, service `Running/Automatic`, Web `200`이다. evidence `burn-bootstrapper-lifecycle-smoke-2026-09-29-04283`.
 
 ## Task 2e: MSIX build/install/update/remove (Lane 2)
 
