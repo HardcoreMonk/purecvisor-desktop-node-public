@@ -43,7 +43,8 @@ Lane 3 문서 단계는 PR #17의 `Invoke-PcvLane3PromotionDocs.ps1`와 데이�
 
 ## Task 2a: pair readiness (Lane 2)
 
-- [ ] `New-PcvManualAdminRebaselineReadiness.ps1`로 baseline `0.42.78`과 target `0.42.83`의 readiness summary를 만든다.
+- [x] `New-PcvManualAdminRebaselineReadiness.ps1`로 baseline `0.42.78`과 target `0.42.83`의 readiness summary를 만든다.
+실행 기록(2026-09-29): readiness는 설치본이 baseline과 같아야 한다(`installed_version_matches_requested`). 그래서 Task 2b의 baseline 설치를 여기서 먼저 했다. `0.42.82` 제거(`{3027FF28-…}`, exit `0`, `REMOVE_DATA` 없음) 뒤 `0.42.78` MSI를 설치했다(exit `0`). 결과: ARP `0.42.78` 1개, service `Running/Automatic`, Web `200`, API `401`. 로그는 `artifacts/manual-admin-campaign-20260929-04278-04283/baseline-install`에 있다. readiness(`-PlanOnly`, campaign `manual-admin-campaign-20260929-04278-04283`)는 `ok=true`, `ready-current-baseline-target-package-pair`, target MSI `52d7cfd5…`, `host_mutation_performed=false`다. summary SHA는 `47707174…`이고 root는 `artifacts/manual-admin-rebaseline-readiness-20260929-04278-04283`이다.
 
 ## Task 2b: 설치본 update/rollback (Lane 2)
 
