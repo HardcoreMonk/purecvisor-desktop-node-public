@@ -5,6 +5,37 @@ namespace DesktopNode.HyperV.Tests;
 
 public sealed class DesktopNodeHyperVGuestFileJobTests
 {
+    [Theory]
+    [InlineData(@"C:\Users\Public\PureCVisor\payload.bin", @"C:\Users\Public\PureCVisor")]
+    [InlineData(@"C:\Users\Public\PureCVisor\lab\payload.bin", @"C:\Users\Public\PureCVisor\lab")]
+    public void CopierResolvesGuestParentInsideAllowlistPrefix(string guestPath, string expectedParent)
+    {
+        Assert.Equal(expectedParent, DesktopNodeHyperVPowerShellDirectFileCopier.ResolveGuestParent(guestPath));
+    }
+
+    [Theory]
+    [InlineData(@"C:\Users\Public\payload.bin")]
+    [InlineData(@"C:\Users\Public\PureCVisorX\payload.bin")]
+    [InlineData(@"C:\Windows\Temp\payload.bin")]
+    public void CopierRefusesGuestParentOutsideAllowlistPrefix(string guestPath)
+    {
+        var error = Assert.Throws<DesktopNodeHyperVNativeOperationException>(
+            () => DesktopNodeHyperVPowerShellDirectFileCopier.ResolveGuestParent(guestPath));
+        Assert.Equal(DesktopNode.Contracts.GuestFileJobProblemCodes.PathNotAllowed, error.Code);
+    }
+
+    [Fact]
+    public void CopyBridgeCreatesGuestParentInTheSessionBeforeCopyItem()
+    {
+        var script = DesktopNodeHyperVPowerShellDirectFileCopier.CopyBridgeScript;
+        var createIndex = script.IndexOf("[System.IO.Directory]::CreateDirectory($parent)", StringComparison.Ordinal);
+        var copyIndex = script.IndexOf("Copy-Item -ToSession $session", StringComparison.Ordinal);
+
+        Assert.True(createIndex > 0);
+        Assert.True(copyIndex > createIndex);
+        Assert.Contains("Invoke-Command -Session $session -ArgumentList ([string]$payload.guest_parent)", script, StringComparison.Ordinal);
+    }
+
     [Fact]
     public void PreviewAcceptsAllowlistedHostFileWithoutCopying()
     {
