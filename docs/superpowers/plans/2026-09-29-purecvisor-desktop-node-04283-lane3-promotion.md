@@ -158,12 +158,18 @@ Lane 3 한도(30분, tool batch 12회) 안에 끝내려고 5a(승격 evidence), 
 - 공개 소스 HEAD와 Required CI run 줄은 04278 때처럼 merge 뒤에 갱신한다.
 - `FEATURE_IMPLEMENTATION_LEDGER`의 anchor 문장과 nonclaim을 `0.42.83`으로 바꿨다.
 - 두 문서는 spec pin 대상이 아니다(pin `-Check` current).
-- [ ] 5c: 솔루션 테스트, Pester, pin `-Check`를 돌린다.
+- [x] 5c: 솔루션 테스트, Pester, pin `-Check`를 돌린다.
 
 ## Task 6: 종료 검증과 push/PR
 
-- [ ] clean HEAD에서 전체 검증을 돌린다.
-- [ ] push/PR은 승인을 받은 뒤에 한다.
+- [x] clean HEAD에서 전체 검증을 돌린다.
+- [ ] push/PR은 승인을 받은 뒤에 한다. push는 2026-09-29 승인으로 커밋마다 했다. PR과 merge는 아직 승인 전이다.
+
+실행 기록(2026-09-29, clean HEAD `888cda6`):
+- `dotnet test src/DesktopNode.sln` 실패 `0`. Service `11`, Contracts `200`, Cli `179`, Runtime `128`, Delivery `737`, HyperV `238`, Host `216`, Api `414`, Verification `557`.
+- Pester `packaging/windows-desktop-node/tests`와 `manual-admin-tests` `623/623`.
+- `npm run test:required --prefix web` pass `236`, fail `0`. static parity와 browser fixture도 통과했다.
+- `Update-PcvContractSpecPins.ps1 -Check`는 current, orchestrator `-Check`는 6단계 모두 current다. working tree는 clean이다.
 
 ## Nonclaims
 
