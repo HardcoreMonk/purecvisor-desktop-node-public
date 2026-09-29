@@ -136,8 +136,21 @@ Lane 3 한도(30분, tool batch 12회) 안에 끝내려고 5a(승격 evidence), 
 - main push: PR #17 merge `c7b8813`의 Public Boundary `36572971916`(job `109421280934`)와 Development Gates `36572971969`가 success다.
 - 검증: `PcvAdminSmokeEvidenceDocs` `90/90`.
 
-- [ ] 5b: `current-evidence.json`을 `0.42.83`으로 쓴다.
-- [ ] 5b: 승격 spec 하나로 `Invoke-PcvLane3PromotionDocs.ps1`를 dry-run, `-Apply`, `-Check` 순서로 실행한다. `CurrentEvidenceVerifierTests`의 기대 버전도 바꾼다.
+- [x] 5b: `current-evidence.json`을 `0.42.83`으로 쓴다.
+- [x] 5b: 승격 spec 하나로 `Invoke-PcvLane3PromotionDocs.ps1`를 dry-run, `-Apply`, `-Check` 순서로 실행한다. `CurrentEvidenceVerifierTests`의 기대 버전도 바꾼다.
+
+실행 기록(2026-09-29, 5b):
+- `current-evidence.json`
+  - current: `0.42.83`, clean MSI `52d7cfd5…`, operational MSI `b7e26bfb…`, payload `773eb918…`, provenance `6846248`
+  - manual_admin: `0.42.78 → 0.42.83`, consume descriptor
+- 승격 spec: `packaging/windows-desktop-node/tests/fixtures/lane3-promotion-docs-spec-04283.json`. 0.42.78 견본의 key 구성을 그대로 따랐다.
+  - descriptor key `45`, ledger head `4`, ledger 행 supersede `5`와 replace `3`, index 절
+- orchestrator
+  - dry-run: 생성 블록 `stale`, 나머지 `planned`
+  - `-Apply`: 6단계 적용, 파일 `15`개와 `current-evidence.json` 변경
+  - `-Check`: 6단계 모두 `current`
+- C#은 `CurrentEvidenceVerifierTests`의 기대 버전 문자열 하나만 고쳤다. 데이터 기반 `PcvCurrentPromotionEvidenceContractTests`가 새 current와 predecessor를 그대로 통과했다.
+- 검증: Delivery `737/737`, `CurrentEvidenceVerifierTests` `13/13`, Pester(evidence docs, descriptor currency, campaign descriptor, current evidence generation) `113/113`.
 - [ ] 5c: `DOCUMENTATION_INDEX`와 `FEATURE_IMPLEMENTATION_LEDGER`를 정렬한다.
 - [ ] 5c: 솔루션 테스트, Pester, pin `-Check`를 돌린다.
 
