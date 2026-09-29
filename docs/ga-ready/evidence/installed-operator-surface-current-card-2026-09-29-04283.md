@@ -34,9 +34,9 @@ token_rotation_evidence: `docs/ga-ready/evidence/installed-token-rotation-smoke-
 token_rotation_r4_summary: `artifacts/installed-token-rotation-smoke-reconciliation-r4-20260810-04272/summary.json`
 token_rotation_r4_summary_sha256: `285661fe50ade63169b6cfc85ff1dcf754a679e30152bd04d166581b4d762136`
 token_rotation_status: `carry-forward-no-token-payload-change-after-04272`
-promotion_ledger_status: `not-promoted`
-canonical_current_evidence: `0.42.78-admin-smoke`
-canonical_current_changed: `false`
+promotion_ledger_status: `promoted-current`
+canonical_current_evidence: `0.42.83-admin-smoke`
+canonical_current_changed: `true`
 public_trusted_signing: `not-claimed`
 external_stable_publication: `not-claimed`
 
@@ -75,5 +75,5 @@ service argv는 `--api-token-credential-target`으로 credential manager target�
 
 ## Nonclaims
 
-- 이 current-card는 Lane 3 전의 캡처다(`promotion_ledger_status=not-promoted`). current-evidence는 Task 5에서 쓴다.
+- 캡처는 Lane 3 전에 했다(artifact summary는 `not-promoted`). 2026-09-29 Lane 3가 이 카드를 `0.42.83-admin-smoke` operational current의 installed current-card로 승격했다(`promoted-current`).
 - public trusted signing과 external stable publication을 주장하지 않는다.

@@ -124,12 +124,22 @@ Lane 3 문서 단계는 PR #17의 `Invoke-PcvLane3PromotionDocs.ps1`와 데이�
 
 ## Task 5: Lane 3 문서 (Lane 3)
 
-- [ ] functional carry-forward evidence를 쓴다(04275 actual-VM PASS를 이어 받는다).
-- [ ] manual-admin single-root consume과 consume evidence를 쓴다.
-- [ ] `current-evidence.json`을 `0.42.83`으로 쓴다.
-- [ ] 승격 spec 하나로 `Invoke-PcvLane3PromotionDocs.ps1`를 dry-run, `-Apply`, `-Check` 순서로 실행한다.
-- [ ] `DOCUMENTATION_INDEX`와 `FEATURE_IMPLEMENTATION_LEDGER`를 정렬한다.
-- [ ] 솔루션 테스트, Pester, pin `-Check`를 돌린다.
+Lane 3 한도(30분, tool batch 12회) 안에 끝내려고 5a(승격 evidence), 5b(current-evidence와 orchestrator), 5c(index 정렬과 전체 검증)로 나눴다.
+
+- [x] 5a: functional carry-forward evidence를 쓴다(04275 actual-VM PASS를 이어 받는다).
+- [x] 5a: manual-admin single-root consume과 consume evidence를 쓴다.
+- [x] 5a: main push evidence를 쓰고, current-card를 `promoted-current`로 바꾼다.
+
+실행 기록(2026-09-29, 5a):
+- consume: 여섯 bucket JSON `19`개를 `artifacts/manual-admin-campaign-20260929-04278-04283`에 모았다. consume descriptor `manual-admin-campaign-descriptor-20260929-04278-04283-consume`(`-PlanOnly`)는 runner `6/6` pass, missing `0`, not_pass `0`이다. 원본 descriptor와 날짜가 같아 `-consume`을 붙였다.
+- functional: carry-forward 원본 SHA(`a907535a…`)와 feature ledger(`bb15f66` 뒤 변경 없음)를 다시 확인했다.
+- main push: PR #17 merge `c7b8813`의 Public Boundary `36572971916`(job `109421280934`)와 Development Gates `36572971969`가 success다.
+- 검증: `PcvAdminSmokeEvidenceDocs` `90/90`.
+
+- [ ] 5b: `current-evidence.json`을 `0.42.83`으로 쓴다.
+- [ ] 5b: 승격 spec 하나로 `Invoke-PcvLane3PromotionDocs.ps1`를 dry-run, `-Apply`, `-Check` 순서로 실행한다. `CurrentEvidenceVerifierTests`의 기대 버전도 바꾼다.
+- [ ] 5c: `DOCUMENTATION_INDEX`와 `FEATURE_IMPLEMENTATION_LEDGER`를 정렬한다.
+- [ ] 5c: 솔루션 테스트, Pester, pin `-Check`를 돌린다.
 
 ## Task 6: 종료 검증과 push/PR
 
