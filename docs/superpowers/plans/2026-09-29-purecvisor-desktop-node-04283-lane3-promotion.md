@@ -100,9 +100,16 @@ Lane 3 문서 단계는 PR #17의 `Invoke-PcvLane3PromotionDocs.ps1`와 데이�
 
 ## Task 3: full admin host mutation gate (Lane 2)
 
-- [ ] 같은 version의 잔여 ProductCode를 먼저 점검한다.
-- [ ] `0.42.83`으로 fullgate batch를 실행한다(Service/MSI/Hyper-V route, OS mutation).
-- [ ] 결과를 evidence `full-admin-host-mutation-gate-2026-09-29-04283-hostmutation.md`로 쓴다.
+- [x] 같은 version의 잔여 ProductCode를 먼저 점검한다.
+- [x] `0.42.83`으로 fullgate batch를 실행한다(Service/MSI/Hyper-V route, OS mutation).
+- [x] 결과를 evidence `full-admin-host-mutation-gate-2026-09-29-04283-hostmutation.md`로 쓴다.
+
+실행 기록(2026-09-29):
+- 사전 정리: clean `0.42.83`을 데이터를 보존한 채 `msiexec /x`해 ARP를 `0`으로 만들었다.
+- 실행: manifest는 0.42.78 r2에서 version, batch id, 경로만 바꿨고, HEAD `6846248`에서 돌렸다.
+- 결과: 두 step 모두 PASS(`218s`, `11s`).
+- 설치본: ARP 1개, Host/CLI SHA와 ProductVersion `+6846248`이 gate build와 같다.
+- data root: `install.jsonl`이 없어졌다. gate의 `REMOVE_DATA` 단계가 설계대로 지우는 파일이다.
 
 ## Task 4: 최종 설치와 installed current-card (Lane 2)
 
