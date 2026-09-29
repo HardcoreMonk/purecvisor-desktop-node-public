@@ -53,12 +53,19 @@
 
 ## Task 3: clean-host base VHD 오프라인 갱신 설계
 
-- [ ] 설계 문서 `docs/superpowers/specs/2026-09-29-purecvisor-desktop-node-clean-host-base-vhd-refresh-design.md`를 쓴다. 담을 내용은 다음과 같다.
+- [x] 설계 문서 `docs/superpowers/specs/2026-09-29-purecvisor-desktop-node-clean-host-base-vhd-refresh-design.md`를 쓴다. 담을 내용은 다음과 같다.
   - 현재 대기 시간의 원인(0.42.83 clean-host 관측)
   - WSUS와 Connected Cache를 고르지 않은 이유
   - DISM 오프라인 서비싱 절차, base 파일 이름과 보존 규칙
   - runner와 evidence 변경, 검증과 위험, 승인 범위
-- [ ] 구현은 하지 않는다.
+- [x] 구현은 하지 않는다.
+
+실행 기록(2026-09-29):
+- 권장안: 원본 VHD를 날짜별 복사본으로 두고, 그 복사본에 최신 LCU를 DISM으로 오프라인 적용한다. 원본은 보존한다.
+- runner는 `current-base.json`으로 base를 고른다. Windows Update 단계는 그대로 두고, base가 최신이면 검색만 한다.
+- 기대 효과: 0.42.83 run 46분 가운데 LCU 설치, 재부팅, 무응답 복구 대기가 사라진다.
+- 구현 첫 spike에서 확인할 사항: 합쳐진 SSU+LCU `.msu`의 오프라인 적용, `.vhd` mount 방식
+- 구현(Lane 1)과 첫 갱신 run(Lane 2)은 별도 승인 대상이다.
 
 ## Nonclaims
 
