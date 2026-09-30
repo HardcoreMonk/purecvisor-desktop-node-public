@@ -85,13 +85,15 @@
 
 ## Task 5: media/잠금 reconcile — `vm.attach`, `vm.eject`, `vm.template.lock`
 
-- [ ] DVD media path readback과 template lock marker readback으로 판정한다.
-- [ ] 검증: `dotnet test src/DesktopNode.Api.Tests`, `git diff --check`
+- [x] DVD media path readback과 template lock marker readback으로 판정한다. (착수 실측: `vm.list`에 DVD media 경로가 없어 `vm.template.lock`만 구현했다. `vm.attach`/`vm.eject`는 Task 6 비대상으로 넘긴다.)
+- [x] 검증: `dotnet test src/DesktopNode.Api.Tests`, `git diff --check`
+
+실행 기록(2026-09-30): schema는 `pcv-vm-template-lock-reconciliation/v1`이다. `vm.list`는 잠기지 않은 VM의 `template_lock`을 생략하므로 없으면 `false`로 읽는다. 착수 실측 결과 `vm.list` storage에는 `vhdx`만 있고 `size_gb`는 항상 `null`이다(`DesktopNodeHyperVWmiVmProvider.cs:338`). DVD는 개수(`dvd_drives.count`)만 있다. 그래서 `vm.attach`/`vm.eject`는 readback이 없어 비대상이다. Task 4 `vm.disk-resize` reconcile은 실제 호스트에서 `readback-value-unavailable`(`409`)만 낸다(거짓 성공 없음). 둘 다 `vm.list` readback 확장이 필요하며 계획 밖 결정 항목에 올렸다. Runtime은 허용 목록과 mutation 이름을 사전 하나(`ReconcilableMutations`)로 합쳤다(`504`줄). 검증: Api `462`/`462`, Runtime `128`/`128`, Delivery `744`/`744`, `git diff --check`.
 
 ## Task 6: 나머지 mutation reconcile 분류
 
 - [ ] `vm.network.connect`는 NIC switch readback으로 reconcile한다.
-- [ ] 관찰할 수 없거나 부작용이 반복될 수 있는 operation은 이유를 붙여 명시적 비대상으로 분류한다. 후보는 `vm.guest.*`,
+- [ ] 관찰할 수 없거나 부작용이 반복될 수 있는 operation은 이유를 붙여 명시적 비대상으로 분류한다. 후보는 `vm.attach`, `vm.eject`(Task 5 실측: media readback 없음), `vm.guest.*`,
       `account.*`, `diagnostic.bundle.create`, `vm.device.add`, `vm.clone`, `vm.import`, `vm.export`, `vm.manage`,
       `vm.limit`이다. 착수 때 readback 가능 여부를 다시 확인해 확정한다.
 - [ ] surface ledger의 모든 mutating operation이 "reconcile 대상" 또는 "이유 있는 비대상" 중 하나라는 테스트를 둔다.
@@ -147,6 +149,7 @@
 
 - push와 PR, 다음 package pair와 fullgate, 새 기능의 Lane 2 actual-VM 검증, Lane 3 승격
 - 같은 version 재빌드 installer 정책 구현(installer handoff)
+- `vm.list` readback 확장(DVD media 경로, VHD `size_gb`): `vm.attach`/`vm.eject` reconcile과 `vm.disk-resize` reconcile 성공 판정의 선행 조건이다. HyperV WMI provider와 API 계약 변경이라 별도 설계와 Lane 2 확인이 필요하다.
 - noVNC target Web 저장 폼, LAN 기본 on
 
 ## Nonclaims

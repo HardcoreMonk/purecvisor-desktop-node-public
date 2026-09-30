@@ -11,7 +11,7 @@
   ],
   "mutation_allowed": false,
   "current_write_allowed": false,
-  "next_step": "Task 5: reconcile vm.attach, vm.eject, vm.template.lock from DVD media path and template lock readback; first merge the Runtime reconcile allowlist and mutation names into one table (Persistence.cs is at its ratchet cap).",
+  "next_step": "Task 6: reconcile vm.network.connect from NIC switch readback if vm.list exposes it, classify every other mutating operation (vm.attach/vm.eject without media readback, guest, account, diagnostics, device add, clone, import, export, manage, limit) as an explicit non-target with a reason, and pin that every ledger mutating operation is classified.",
   "plan": "docs/superpowers/plans/2026-09-30-purecvisor-desktop-node-development-completion.md",
   "task_queue": [
     "Task 1",
@@ -28,12 +28,13 @@
     "Task 12",
     "Task 13"
   ],
-  "next_task": "Task 5",
+  "next_task": "Task 6",
   "completed_tasks": [
     "Task 1",
     "Task 2",
     "Task 3",
-    "Task 4"
+    "Task 4",
+    "Task 5"
   ],
   "commit_policy": "local-commit-per-task",
   "push_allowed": false,

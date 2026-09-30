@@ -287,11 +287,10 @@ internal sealed partial class DesktopNodeApiVmMutationRouteHandler
 
                     return DesktopNodeApiResponseFactory.JobCreated(CreateJob(
                         "vm.template.lock",
-                        DesktopNodeApiResponseFactory.JsonFromObject(new SortedDictionary<string, object?>
-                        {
-                            ["name"] = routeId.Value,
-                            ["locked"] = lockedElement.ValueKind == JsonValueKind.True
-                        }),
+                        reconciliationHandler.BuildVmTemplateLockParameters(
+                            routeId.Value!,
+                            lockedElement.ValueKind == JsonValueKind.True,
+                            cancellationToken),
                         request.RequestId!));
                 }
 
