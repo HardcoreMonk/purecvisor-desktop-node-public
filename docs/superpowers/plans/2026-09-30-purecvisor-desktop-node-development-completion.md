@@ -141,13 +141,15 @@
 - [x] ledger와 투영 문서를 맞추고 build/parity를 재생성한다.
 - [x] 검증: 공통 검증 전체
 
-실행 기록(2026-09-30): VM detail에 switch 연결 폼(network inventory의 switch 목록으로 채운 select)과 NIC/DVD 추가 폼을 두었다. 둘 다 확인 후 job으로 추적한다. network inventory 패널은 switch 생성/삭제, NAT, DHCP 편집기가 여전히 없고, `vm.network.connect` 문구만 "VM detail"로 바꿨다. static 계약에서 "편집기 없음" 검사는 `app.js` 전체에 그대로 두고, 연결 폼 부재 검사만 inventory 소스로 좁혔다. Web 제외는 `8`→`6`이다. 검증: `npm run test:required --prefix web` exit `0`, web Pester `50`/`0`, Cli `179`/`179`, Api `474`/`474`, Delivery `744`/`744`, `git diff --check`.
+실행 기록(2026-09-30): VM detail에 switch 연결 폼(network inventory의 switch 목록으로 채운 select)과 NIC/DVD 추가 폼을 두었다. 둘 다 확인 후 job으로 추적한다. network inventory 패널은 switch 생성/삭제, NAT, DHCP 편집기가 여전히 없고, `vm.network.connect` 문구만 "VM detail"로 바꿨다. static 계약에서 "편집기 없음" 검사는 `app.js` 전체에 그대로 두고, 연결 폼 부재 검사만 inventory 소스로 좁혔다. Web 제외는 `8`→`6`이다. commit 뒤 web Pester 한 건(`PcvDesktopWeb.Static.Tests.ps1`의 network 검사)이 예전 문구에 묶여 있던 것을 발견해 fix commit으로 맞췄다. 검증: `npm run test:required --prefix web` exit `0`, web Pester `50`/`0`, Cli `179`/`179`, Api `474`/`474`, Delivery `744`/`744`, `git diff --check`.
 
 ## Task 12: Web guest exec/channel preview
 
-- [ ] guest exec와 channel ensure 앞에 preview를 둔다. 실행 전 preview 결과를 보인다.
-- [ ] ledger와 투영 문서를 맞추고 build/parity를 재생성한다.
-- [ ] 검증: 공통 검증 전체
+- [x] guest exec와 channel ensure 앞에 preview를 둔다. 실행 전 preview 결과를 보인다.
+- [x] ledger와 투영 문서를 맞추고 build/parity를 재생성한다.
+- [x] 검증: 공통 검증 전체
+
+실행 기록(2026-09-30): guest exec와 channel 폼에 "Preview exec", "Preview channel" 버튼을 더했다. 결과는 기존 guest 결과 영역에 mode `preview`로 표시하며 job을 만들지 않는다. channel preview는 repair(ensure) payload를 보낸다. `served-app.ts`는 guest preview 분기 한 곳이 늘어 `423`줄이다. 남은 Web 제외는 정책 근거가 있는 `4`개(noVNC target `3`, `vm.limit`)다. 검증: `npm run test:required --prefix web` exit `0`, web Pester `50`/`0`(exit code 확인), Cli `179`/`179`, Api `474`/`474`, Delivery `744`/`744`, `git diff --check`.
 
 ## Task 13: 코어 계약 종결과 종료 검증
 

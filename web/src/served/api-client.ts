@@ -219,6 +219,14 @@ const desktopApi: Readonly<PcvDesktopApi> = Object.freeze({
   }),
   restoreCheckpoint: (vmId: string, checkpointId: string) => apiFetch(DESKTOP_NODE_API_ROUTES.checkpointAction(vmId, checkpointId, 'restore'), { method: 'POST' }),
   deleteCheckpoint: (vmId: string, checkpointId: string) => apiFetch(DESKTOP_NODE_API_ROUTES.checkpointDetail(vmId, checkpointId), { method: 'DELETE' }),
+  previewVmGuestExec: (vmId: string, payload: Record<string, unknown>) => apiFetch(DESKTOP_NODE_API_ROUTES.vmGuestExecPreview(vmId), {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  }),
+  previewVmGuestChannel: (vmId: string, payload: Record<string, unknown>) => apiFetch(DESKTOP_NODE_API_ROUTES.vmGuestChannelPreview(vmId), {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  }),
   connectVmNetwork: (vmId: string, payload: Record<string, unknown>) => apiFetch(DESKTOP_NODE_API_ROUTES.vmNetwork(vmId), {
     method: 'POST',
     body: JSON.stringify(payload)

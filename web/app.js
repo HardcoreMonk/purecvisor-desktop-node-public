@@ -209,6 +209,8 @@ const DESKTOP_NODE_API_ROUTES = Object.freeze({
     vmAction: (vmId, action) => `/api/v1/vms/${encodeRouteSegment(vmId)}/${requireRouteAction(action, ['start', 'shutdown', 'poweroff', 'restart', 'save', 'resume-saved', 'pause', 'resume', 'rename', 'eject', 'attach', 'delete-status', 'set-memory', 'set-vcpu', 'disk-resize', 'manage', 'clone', 'template-lock'])}`,
     vmClonePreview: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/clone/preview`,
     vmCheckpoints: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/checkpoints`,
+    vmGuestExecPreview: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/guest/exec/preview`,
+    vmGuestChannelPreview: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/guest/channel/preview`,
     vmNetwork: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/network`,
     vmDevices: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/devices`,
     vmExportPreview: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/export/preview`,
@@ -245,6 +247,8 @@ const DESKTOP_NODE_ROUTE_COVERAGE = Object.freeze([
     { id: 'vm.import', featureId: 'pcv.vm.managed-import', method: 'POST', route: '/api/v1/vms/import', view: 'vms', mutating: true, tokenRequired: true },
     { id: 'vm.network.connect', featureId: 'pcv.network.inventory', method: 'POST', route: '/api/v1/vms/{vm_id}/network', view: 'vms', mutating: true, tokenRequired: true },
     { id: 'vm.device.add', featureId: 'pcv.network.inventory', method: 'POST', route: '/api/v1/vms/{vm_id}/devices', view: 'vms', mutating: true, tokenRequired: true },
+    { id: 'vm.guest.exec.preview', featureId: 'pcv.vm.guest-execution', method: 'POST', route: '/api/v1/vms/{vm_id}/guest/exec/preview', view: 'vms', mutating: false, tokenRequired: true },
+    { id: 'vm.guest.channel.preview', featureId: 'pcv.vm.guest-channel', method: 'POST', route: '/api/v1/vms/{vm_id}/guest/channel/preview', view: 'vms', mutating: false, tokenRequired: true },
     { id: 'vm.bandwidth', featureId: 'pcv.vm.qos', method: 'GET', route: '/api/v1/vms/{vm_id}/bandwidth', view: 'vms', mutating: false, tokenRequired: true },
     { id: 'vm.qos.storage.preview', featureId: 'pcv.vm.qos', method: 'POST', route: '/api/v1/vms/{vm_id}/qos/storage/preview', view: 'vms', mutating: false, tokenRequired: true },
     { id: 'vm.qos.storage.set', featureId: 'pcv.vm.qos', method: 'POST', route: '/api/v1/vms/{vm_id}/qos/storage', view: 'vms', mutating: true, tokenRequired: true },
@@ -811,6 +815,14 @@ const desktopApi = Object.freeze({
     }),
     restoreCheckpoint: (vmId, checkpointId) => apiFetch(DESKTOP_NODE_API_ROUTES.checkpointAction(vmId, checkpointId, 'restore'), { method: 'POST' }),
     deleteCheckpoint: (vmId, checkpointId) => apiFetch(DESKTOP_NODE_API_ROUTES.checkpointDetail(vmId, checkpointId), { method: 'DELETE' }),
+    previewVmGuestExec: (vmId, payload) => apiFetch(DESKTOP_NODE_API_ROUTES.vmGuestExecPreview(vmId), {
+        method: 'POST',
+        body: JSON.stringify(payload)
+    }),
+    previewVmGuestChannel: (vmId, payload) => apiFetch(DESKTOP_NODE_API_ROUTES.vmGuestChannelPreview(vmId), {
+        method: 'POST',
+        body: JSON.stringify(payload)
+    }),
     connectVmNetwork: (vmId, payload) => apiFetch(DESKTOP_NODE_API_ROUTES.vmNetwork(vmId), {
         method: 'POST',
         body: JSON.stringify(payload)
@@ -1801,6 +1813,7 @@ function renderVmQosDirectControl(vmId) {
         <label>Timeout seconds<input name="timeout_sec" type="number" min="1" max="600" step="1" value="60"${guestExecDisabled}></label>
         <label>Command<input name="command" autocomplete="off" placeholder="hostname"${guestExecDisabled}></label>
         <div class="qos-control-actions">
+          <button type="submit" data-action="vm-guest-exec-preview"${guestExecDisabled}>Preview exec</button>
           <button type="submit" class="danger-button" data-action="vm-guest-exec"${guestExecDisabled}>Queue exec</button>
         </div>
       </form>
@@ -1808,6 +1821,7 @@ function renderVmQosDirectControl(vmId) {
         <label>Credential reference<input name="credential_ref" autocomplete="off" placeholder="wincred:target"${guestChannelDisabled}></label>
         <label>Timeout seconds<input name="timeout_sec" type="number" min="1" max="600" step="1" value="30"${guestChannelDisabled}></label>
         <div class="qos-control-actions">
+          <button type="submit" data-action="guest-agent-channel-preview"${guestChannelDisabled}>Preview channel</button>
           <button type="submit" data-action="guest-agent-ensure-channel" data-guest-channel-mode="verify"${guestChannelDisabled}>Verify channel</button>
           <button type="submit" class="danger-button" data-action="guest-agent-ensure-channel" data-guest-channel-mode="repair"${guestChannelDisabled}>Repair channel</button>
         </div>
@@ -4539,6 +4553,37 @@ async function queueVmNetworkChange(vmId, kind, payload) {
         render();
     }
 }
+async function previewVmGuestExecutionControl(vmId, kind, payload) {
+    requireRbac(kind === 'exec' ? 'guest.exec' : 'guest.channel.configure', `VM guest ${kind} preview`);
+    const controlKind = kind === 'exec' ? 'guest-execution' : 'guest-channel';
+    const control = (patch) => ({ vm_id: vmId, kind: controlKind, mode: 'preview', loading: false, updated_at: new Date().toISOString(), result: null, error: null, ...patch });
+    state.actionPending = true;
+    setVmActionPending(vmId, `guest-${kind}-preview`);
+    state.error = null;
+    state.selectedVmQosControl = control({ loading: true, updated_at: '' });
+    render();
+    try {
+        const result = kind === 'exec'
+            ? await desktopApi.previewVmGuestExec(vmId, payload)
+            : await desktopApi.previewVmGuestChannel(vmId, payload);
+        state.selectedVmQosControl = control({ result });
+        state.connectionState = 'connected';
+    }
+    catch (error) {
+        const normalized = normalizeError(error);
+        state.error = normalized;
+        state.selectedVmQosControl = control({ error: normalized });
+    }
+    finally {
+        state.actionPending = false;
+        clearVmActionPending(vmId);
+        render();
+    }
+}
+async function handleVmGuestPreviewSubmit(guestForm, submitterAction, data) {
+    const exec = submitterAction === 'vm-guest-exec-preview';
+    await previewVmGuestExecutionControl(guestForm.dataset.vmId, exec ? 'exec' : 'channel', exec ? readVmGuestExecPayload(data) : readVmGuestChannelPayload(data, 'repair'));
+}
 async function handleVmDetailExtensionSubmit(form, data, submitterAction) {
     if (form?.dataset.action === 'vm-rename') {
         await queueVmRename(form.dataset.vmId, data.get('new_name'));
@@ -5419,6 +5464,9 @@ function bindEvents() {
             }
             else if (submitterAction === 'vm-qos-network-preview' || submitterAction === 'vm-qos-network-apply') {
                 await queueVmQosDirectControl(qosForm.dataset.vmId, 'network', submitterAction.endsWith('-apply') ? 'apply' : 'preview', readVmQosPayload('network', data));
+            }
+            else if (submitterAction === 'vm-guest-exec-preview' || submitterAction === 'guest-agent-channel-preview') {
+                await handleVmGuestPreviewSubmit(guestForm, submitterAction, data);
             }
             else if (submitterAction === 'vm-guest-exec') {
                 await queueVmGuestExecutionControl(guestForm.dataset.vmId, 'exec', readVmGuestExecPayload(data));

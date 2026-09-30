@@ -212,6 +212,40 @@ async function queueVmNetworkChange(vmId, kind, payload) {
   }
 }
 
+async function previewVmGuestExecutionControl(vmId, kind, payload) {
+  requireRbac(kind === 'exec' ? 'guest.exec' : 'guest.channel.configure', `VM guest ${kind} preview`);
+  const controlKind = kind === 'exec' ? 'guest-execution' : 'guest-channel';
+  const control = (patch) => ({ vm_id: vmId, kind: controlKind, mode: 'preview', loading: false, updated_at: new Date().toISOString(), result: null, error: null, ...patch });
+  state.actionPending = true;
+  setVmActionPending(vmId, `guest-${kind}-preview`);
+  state.error = null;
+  state.selectedVmQosControl = control({ loading: true, updated_at: '' });
+  render();
+  try {
+    const result = kind === 'exec'
+      ? await desktopApi.previewVmGuestExec(vmId, payload)
+      : await desktopApi.previewVmGuestChannel(vmId, payload);
+    state.selectedVmQosControl = control({ result });
+    state.connectionState = 'connected';
+  } catch (error) {
+    const normalized = normalizeError(error);
+    state.error = normalized;
+    state.selectedVmQosControl = control({ error: normalized });
+  } finally {
+    state.actionPending = false;
+    clearVmActionPending(vmId);
+    render();
+  }
+}
+
+async function handleVmGuestPreviewSubmit(guestForm, submitterAction, data) {
+  const exec = submitterAction === 'vm-guest-exec-preview';
+  await previewVmGuestExecutionControl(
+    guestForm.dataset.vmId,
+    exec ? 'exec' : 'channel',
+    exec ? readVmGuestExecPayload(data) : readVmGuestChannelPayload(data, 'repair'));
+}
+
 async function handleVmDetailExtensionSubmit(form, data, submitterAction) {
   if (form?.dataset.action === 'vm-rename') {
     await queueVmRename(form.dataset.vmId, data.get('new_name'));

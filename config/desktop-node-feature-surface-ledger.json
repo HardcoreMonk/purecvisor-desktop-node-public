@@ -1137,14 +1137,10 @@
           "required_permission": "guest.exec",
           "present_surfaces": [
             "api",
-            "cli"
+            "cli",
+            "web"
           ],
-          "excluded_surfaces": [
-            {
-              "surface": "web",
-              "reason": "Web Console exposes explicit direct control; this preview route remains API/CLI-only."
-            }
-          ],
+          "excluded_surfaces": [],
           "surface_bindings": {
             "cli": {
               "command": [
@@ -1157,6 +1153,9 @@
                 "--",
                 "hostname"
               ]
+            },
+            "web": {
+              "coverage_id": "vm.guest.exec.preview"
             }
           }
         },
@@ -1263,14 +1262,10 @@
           "required_permission": "guest.channel.configure",
           "present_surfaces": [
             "api",
-            "cli"
+            "cli",
+            "web"
           ],
-          "excluded_surfaces": [
-            {
-              "surface": "web",
-              "reason": "Web Console exposes explicit direct control; this preview route remains API/CLI-only."
-            }
-          ],
+          "excluded_surfaces": [],
           "surface_bindings": {
             "cli": {
               "command": [
@@ -1279,6 +1274,9 @@
                 "vm-01",
                 "--dry-run"
               ]
+            },
+            "web": {
+              "coverage_id": "vm.guest.channel.preview"
             }
           }
         },

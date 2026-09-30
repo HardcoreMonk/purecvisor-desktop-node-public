@@ -220,6 +220,8 @@ function bindEvents() {
           'network',
           submitterAction.endsWith('-apply') ? 'apply' : 'preview',
           readVmQosPayload('network', data));
+      } else if (submitterAction === 'vm-guest-exec-preview' || submitterAction === 'guest-agent-channel-preview') {
+        await handleVmGuestPreviewSubmit(guestForm, submitterAction, data);
       } else if (submitterAction === 'vm-guest-exec') {
         await queueVmGuestExecutionControl(
           guestForm.dataset.vmId,

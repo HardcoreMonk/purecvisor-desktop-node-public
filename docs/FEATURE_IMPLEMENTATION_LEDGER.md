@@ -49,8 +49,8 @@ feature promotion evidence를 서로 다른 계약으로 유지한다.
 | <a id="pcv-vm-telemetry"></a>`pcv.vm.telemetry` | VM telemetry | 2 | 2 present / 0 excluded | 2 present / 0 excluded |
 | <a id="pcv-vm-qos"></a>`pcv.vm.qos` | VM QoS | 6 | 6 present / 0 excluded | 6 present / 0 excluded |
 | <a id="pcv-vm-guest-service-readback"></a>`pcv.vm.guest-service-readback` | Guest service readback | 2 | 2 present / 0 excluded | 2 present / 0 excluded |
-| <a id="pcv-vm-guest-execution"></a>`pcv.vm.guest-execution` | Guest execution | 4 | 3 present / 1 excluded | 4 present / 0 excluded |
-| <a id="pcv-vm-guest-channel"></a>`pcv.vm.guest-channel` | Guest channel configuration | 3 | 2 present / 1 excluded | 3 present / 0 excluded |
+| <a id="pcv-vm-guest-execution"></a>`pcv.vm.guest-execution` | Guest execution | 4 | 4 present / 0 excluded | 4 present / 0 excluded |
+| <a id="pcv-vm-guest-channel"></a>`pcv.vm.guest-channel` | Guest channel configuration | 3 | 3 present / 0 excluded | 3 present / 0 excluded |
 | <a id="pcv-checkpoint-lifecycle"></a>`pcv.checkpoint.lifecycle` | Checkpoint lifecycle | 6 | 6 present / 0 excluded | 6 present / 0 excluded |
 | <a id="pcv-vm-create"></a>`pcv.vm.create` | VM creation | 1 | 1 present / 0 excluded | 1 present / 0 excluded |
 | <a id="pcv-checkpoint-restore"></a>`pcv.checkpoint.restore` | Checkpoint restore | 1 | 1 present / 0 excluded | 1 present / 0 excluded |
@@ -110,11 +110,11 @@ feature promotion evidence를 서로 다른 계약으로 유지한다.
 | `pcv.vm.qos` | `vm.qos.network.set` | `POST /api/v1/vms/{vmId}/qos/network` | `operate` | present — `vm.qos.network.set` | present — `pcvcli vm bandwidth-set vm-01 --adapter adapter0 --maximum-kbps 2048 --yes` |
 | `pcv.vm.guest-service-readback` | `vm.guest-agent-status` | `GET /api/v1/vms/{vmId}/guest-agent/status` | `read` | present — `vm.guest-agent-status` | present — `pcvcli vm guest-agent-status vm-01` |
 | `pcv.vm.guest-service-readback` | `vm.guest-ping` | `GET /api/v1/vms/{vmId}/guest-agent/ping` | `read` | present — `vm.guest-ping` | present — `pcvcli vm guest-ping vm-01` |
-| `pcv.vm.guest-execution` | `vm.guest.exec.preview` | `POST /api/v1/vms/{vmId}/guest/exec/preview` | `guest.exec` | excluded — Web Console exposes explicit direct control; this preview route remains API/CLI-only. | present — `pcvcli vm guest-exec vm-01 --dry-run --credential-ref wincred:PureCVisor/guest/admin -- hostname` |
+| `pcv.vm.guest-execution` | `vm.guest.exec.preview` | `POST /api/v1/vms/{vmId}/guest/exec/preview` | `guest.exec` | present — `vm.guest.exec.preview` | present — `pcvcli vm guest-exec vm-01 --dry-run --credential-ref wincred:PureCVisor/guest/admin -- hostname` |
 | `pcv.vm.guest-execution` | `vm.guest.exec` | `POST /api/v1/vms/{vmId}/guest/exec` | `guest.exec` | present — `vm.guest.exec` | present — `pcvcli vm guest-exec vm-01 --credential-ref wincred:PureCVisor/guest/admin -- hostname` |
 | `pcv.vm.guest-execution` | `vm.guest.file.preview` | `POST /api/v1/vms/{vmId}/guest/file/preview` | `guest.exec` | present — `vm.guest.file.preview` | present — `pcvcli vm guest-file vm-01 --host-path C:\ProgramData\PureCVisor\desktop-node\guest-files\payload.iso --guest-path C:\Users\Public\PureCVisor\payload.iso --credential-ref wincred:PureCVisor/guest/admin --dry-run` |
 | `pcv.vm.guest-execution` | `vm.guest.file` | `POST /api/v1/vms/{vmId}/guest/file` | `guest.exec` | present — `vm.guest.file` | present — `pcvcli vm guest-file vm-01 --host-path C:\ProgramData\PureCVisor\desktop-node\guest-files\payload.iso --guest-path C:\Users\Public\PureCVisor\payload.iso --credential-ref wincred:PureCVisor/guest/admin --yes` |
-| `pcv.vm.guest-channel` | `vm.guest.channel.preview` | `POST /api/v1/vms/{vmId}/guest/channel/preview` | `guest.channel.configure` | excluded — Web Console exposes explicit direct control; this preview route remains API/CLI-only. | present — `pcvcli vm guest-agent-ensure-channel vm-01 --dry-run` |
+| `pcv.vm.guest-channel` | `vm.guest.channel.preview` | `POST /api/v1/vms/{vmId}/guest/channel/preview` | `guest.channel.configure` | present — `vm.guest.channel.preview` | present — `pcvcli vm guest-agent-ensure-channel vm-01 --dry-run` |
 | `pcv.vm.guest-channel` | `vm.guest.channel.verify` | `POST /api/v1/vms/{vmId}/guest/channel/verify` | `guest.channel.configure` | present — `vm.guest.channel.verify` | present — `pcvcli vm guest-agent-ensure-channel vm-01 --verify --credential-ref wincred:PureCVisor/guest/admin` |
 | `pcv.vm.guest-channel` | `vm.guest.channel.ensure` | `POST /api/v1/vms/{vmId}/guest/channel` | `guest.channel.configure` | present — `vm.guest.channel.ensure` | present — `pcvcli vm guest-agent-ensure-channel vm-01 --repair --yes` |
 | `pcv.checkpoint.lifecycle` | `checkpoint.list` | `GET /api/v1/vms/{vmId}/checkpoints` | `read` | present — `checkpoint.list` | present — `pcvcli vm checkpoint list vm-01` |
