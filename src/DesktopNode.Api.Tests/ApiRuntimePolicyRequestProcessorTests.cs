@@ -4875,7 +4875,7 @@ public sealed partial class ApiRuntimePolicyRequestProcessorTests
 
         Assert.Equal(202, create.StatusCode);
         Assert.Empty(fallbackCalls);
-        if (expectedOperation is "checkpoint.create" or "checkpoint.restore")
+        if (expectedOperation is "checkpoint.create" or "checkpoint.restore" or "checkpoint.delete")
         {
             Assert.Equal("checkpoint.list", Assert.Single(nativeCalls).Operation);
         }
@@ -4888,7 +4888,7 @@ public sealed partial class ApiRuntimePolicyRequestProcessorTests
 
         Assert.True(tick.Processed);
         Assert.Empty(fallbackCalls);
-        var nativeCall = expectedOperation is "checkpoint.create" or "checkpoint.restore"
+        var nativeCall = expectedOperation is "checkpoint.create" or "checkpoint.restore" or "checkpoint.delete"
             ? nativeCalls[1]
             : Assert.Single(nativeCalls);
         Assert.Equal(expectedOperation, nativeCall.Operation);

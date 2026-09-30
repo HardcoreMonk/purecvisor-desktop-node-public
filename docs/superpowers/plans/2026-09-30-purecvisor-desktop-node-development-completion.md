@@ -70,9 +70,11 @@
 
 ## Task 3: `checkpoint.delete` reconcile
 
-- [ ] 제출 때 checkpoint identity를 잡는다(`CheckpointCapture` 패턴). readback에서 그 identity가 사라졌을 때만 `succeeded`다.
-- [ ] 같은 이름의 다른 checkpoint가 남은 경우처럼 모호하면 `409`를 준다.
-- [ ] 검증: `dotnet test src/DesktopNode.Api.Tests`, `git diff --check`
+- [x] 제출 때 checkpoint identity를 잡는다(`CheckpointCapture` 패턴). readback에서 그 identity가 사라졌을 때만 `succeeded`다.
+- [x] 같은 이름의 다른 checkpoint가 남은 경우처럼 모호하면 `409`를 준다.
+- [x] 검증: `dotnet test src/DesktopNode.Api.Tests`, `git diff --check`
+
+실행 기록(2026-09-30): schema는 `pcv-checkpoint-delete-reconciliation/v1`이고 identity는 `(vm_name, name, created_at)`이다. 같은 이름이 남아 있으면 `created_at`이 같을 때 `not-applied`, 다를 때 `replacement-observed`, 둘 이상이면 `ambiguous-duplicate-names`다. 모두 `409`다. `report-only`: schedule retention worker(`DesktopNodeCheckpointScheduleDueWorker`)가 넣는 `checkpoint.delete`는 baseline이 없다. 그래서 중단되면 `baseline-unavailable`이다. 검증: Api `443`/`443`, Runtime `128`/`128`, Delivery `744`/`744`, `git diff --check`.
 
 ## Task 4: 자원 reconcile — `vm.set-memory`, `vm.set-vcpu`, `vm.disk-resize`
 

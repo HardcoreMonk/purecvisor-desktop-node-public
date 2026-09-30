@@ -80,6 +80,7 @@ internal sealed partial class DesktopNodeApiJobReconciliationHandler
             "vm.delete" => ReconcileVmDeleteJob(job, cancellationToken),
             "checkpoint.create" => ReconcileCheckpointCreateJob(job, cancellationToken),
             "checkpoint.restore" => ReconcileCheckpointRestoreJob(job, cancellationToken),
+            "checkpoint.delete" => ReconcileCheckpointDeleteJob(job, cancellationToken),
             "vm.create" => ReconcileVmCreateJob(job, cancellationToken),
             "vm.shutdown" => ReconcileVmShutdownJob(job, cancellationToken),
             "vm.restart" => ReconcileVmRestartJob(job, cancellationToken),
@@ -103,7 +104,7 @@ internal sealed partial class DesktopNodeApiJobReconciliationHandler
                 ReconciliationRequiredError(
                     jobId,
                     "job-not-reconcilable",
-                    "Only a failed vm.rename, vm.delete, checkpoint.create, checkpoint.restore, vm.create, vm.shutdown, vm.restart, vm.start, vm.poweroff, vm.pause, vm.resume, vm.save, vm.resume-saved, vm.qos.storage.set, vm.qos.network.set, console.novnc-target.set, console.novnc-target.clear, checkpoint.schedule.set, or checkpoint.schedule.clear job with PCV_JOB_INTERRUPTED can be reconciled.",
+                    "Only a failed vm.rename, vm.delete, checkpoint.create, checkpoint.restore, checkpoint.delete, vm.create, vm.shutdown, vm.restart, vm.start, vm.poweroff, vm.pause, vm.resume, vm.save, vm.resume-saved, vm.qos.storage.set, vm.qos.network.set, console.novnc-target.set, console.novnc-target.clear, checkpoint.schedule.set, or checkpoint.schedule.clear job with PCV_JOB_INTERRUPTED can be reconciled.",
                     job.Operation));
             return RenderReconciliationResult(jobRuntime.Reconcile(jobId, assessment));
         }
@@ -382,6 +383,7 @@ internal sealed partial class DesktopNodeApiJobReconciliationHandler
             "checkpoint.schedule.clear" => "checkpoint schedule clear",
             "checkpoint.create" => "checkpoint create",
             "checkpoint.restore" => "checkpoint restore",
+            "checkpoint.delete" => "checkpoint delete",
             _ => "rename"
         };
         return new DesktopNodeJobRuntimeError(

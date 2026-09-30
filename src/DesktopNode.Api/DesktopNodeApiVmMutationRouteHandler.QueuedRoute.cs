@@ -88,11 +88,7 @@ internal sealed partial class DesktopNodeApiVmMutationRouteHandler
 
                     return DesktopNodeApiResponseFactory.JobCreated(CreateJob(
                         "checkpoint.delete",
-                        DesktopNodeApiResponseFactory.JsonFromObject(new SortedDictionary<string, object?>
-                        {
-                            ["checkpoint_name"] = checkpointId.Value,
-                            ["vm_name"] = routeId.Value
-                        }),
+                        reconciliationHandler.BuildCheckpointDeleteParameters(routeId.Value!, checkpointId.Value!, cancellationToken),
                         request.RequestId!));
                 }
 

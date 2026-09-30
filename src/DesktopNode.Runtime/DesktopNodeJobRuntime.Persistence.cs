@@ -241,7 +241,7 @@ public sealed partial class DesktopNodeJobRuntime
     private static bool IsReconciliationSupportedOperation(string operation)
     {
         return operation is "vm.rename" or "vm.delete" or "vm.create" or "vm.shutdown" or "vm.restart" or
-            "vm.start" or "vm.poweroff" or "vm.pause" or "vm.resume" or "vm.save" or "vm.resume-saved" or "checkpoint.create" or "checkpoint.restore" or
+            "vm.start" or "vm.poweroff" or "vm.pause" or "vm.resume" or "vm.save" or "vm.resume-saved" or "checkpoint.create" or "checkpoint.restore" or "checkpoint.delete" or
             "checkpoint.schedule.set" or "checkpoint.schedule.clear" or "vm.qos.storage.set" or
             "vm.qos.network.set" or "console.novnc-target.set" or "console.novnc-target.clear";
     }
@@ -272,6 +272,7 @@ public sealed partial class DesktopNodeJobRuntime
             "checkpoint.schedule.clear" => "checkpoint schedule clear",
             "checkpoint.create" => "checkpoint create",
             "checkpoint.restore" => "checkpoint restore",
+            "checkpoint.delete" => "checkpoint delete",
             _ => "rename"
         };
         return new DesktopNodeJobRuntimeError(
