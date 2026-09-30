@@ -33,9 +33,11 @@
 
 ## Task 1: 승격 evidence (Lane 3, 5a)
 
-- [ ] functional carry-forward evidence `functional-correctness-actual-host-validation-2026-09-30-04284-carryforward`를 쓴다. 04283 carry-forward에 0.42.84의 fullgate route smoke, current-card, 개발 완료 Lane 2 probe를 더한다.
-- [ ] single-root consume을 만든다. 여섯 bucket summary를 `artifacts/manual-admin-campaign-20260930-04283-04284`에 모으고, consume descriptor `manual-admin-campaign-descriptor-20260930-04283-04284-consume`(`-PlanOnly`)를 만든다. consume evidence `manual-admin-campaign-2026-09-30-04283-04284`를 쓴다.
-- [ ] current-card evidence를 `promoted-current`로 바꾼다.
+- [x] functional carry-forward evidence `functional-correctness-actual-host-validation-2026-09-30-04284-carryforward`를 쓴다. 04283 carry-forward에 0.42.84의 fullgate route smoke, current-card, 개발 완료 Lane 2 probe를 더한다.
+- [x] single-root consume을 만든다. 여섯 bucket summary를 `artifacts/manual-admin-campaign-20260930-04283-04284`에 모으고, consume descriptor `manual-admin-campaign-descriptor-20260930-04283-04284-consume`(`-PlanOnly`)를 만든다. consume evidence `manual-admin-campaign-2026-09-30-04283-04284`를 쓴다.
+- [x] current-card evidence를 `promoted-current`로 바꾼다.
+
+실행 기록(2026-09-30): carry-forward 원본 SHA(`a907535a…`)와 feature ledger(`bb15f66` 뒤 변경 없음)를 다시 확인했다. consume은 여섯 bucket JSON `16`개를 `artifacts/manual-admin-campaign-20260930-04283-04284`에 모았다. consume descriptor `manual-admin-campaign-descriptor-20260930-04283-04284-consume`(`-PlanOnly`)는 runner `6/6` pass, missing `0`, not_pass `0`이다. descriptor 도구는 bucket 경로를 명시적으로 받는다(`-CampaignArtifactRoot`만 주면 인자 오류). current-card evidence는 0.42.83 형식 헤더로 다시 쓰고 `promoted-current`로 바꿨다. 검증: `PcvAdminSmokeEvidenceDocs` Pester 통과.
 
 ## Task 2: main push evidence (Lane 3, 5a)
 
