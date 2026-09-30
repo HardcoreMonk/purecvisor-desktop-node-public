@@ -16,6 +16,8 @@ public sealed partial class DesktopNodeHyperVWmiVmProvider : IDesktopNodeHyperVV
     public const string MemorySettingClass = "Msvm_MemorySettingData";
     public const string SnapshotAssociationClass = "Msvm_SnapshotOfVirtualSystem";
     public const string StorageSettingClass = "Msvm_StorageAllocationSettingData";
+    public const string VirtualDvdDiskSubtype = "Microsoft:Hyper-V:Virtual CD/DVD Disk";
+    private const string DvdStorageKind = "dvd";
     public const string EthernetPortAllocationSettingClass = "Msvm_EthernetPortAllocationSettingData";
     public const string ResourceAllocationSettingClass = "Msvm_ResourceAllocationSettingData";
     public const string SyntheticDvdDriveSubtype = "Microsoft:Hyper-V:Synthetic DVD Drive";
@@ -69,7 +71,8 @@ public sealed partial class DesktopNodeHyperVWmiVmProvider : IDesktopNodeHyperVV
             LastPoweredOn: MapLastPoweredOn(state, summary.TimeOfLastStateChange),
             Notes: DesktopNodeHyperVManagedNotes.OperatorNotes(summary.Notes),
             TemplateLock: DesktopNodeHyperVManagedNotes.IsTemplateLocked(summary.Notes),
-            DvdDrives: summary.DvdDriveCount is { } dvdDriveCount ? new DesktopNodeHyperVVmDvdDriveInfo(dvdDriveCount) : null);
+            DvdDrives: summary.DvdDriveCount is { } dvdDriveCount ? new DesktopNodeHyperVVmDvdDriveInfo(dvdDriveCount) : null,
+            DvdMedia: summary.Storage is null ? null : MapDvdMedia(summary.Storage));
     }
 
     private static string? MapLastPoweredOn(string state, string? timeOfLastStateChange)
@@ -330,7 +333,7 @@ public sealed partial class DesktopNodeHyperVWmiVmProvider : IDesktopNodeHyperVV
         var disks = new List<DesktopNodeHyperVVmDiskInfo>();
         foreach (var item in storage)
         {
-            if (!IsVhdPath(item.Path))
+            if (item.Kind == DvdStorageKind || !IsVhdPath(item.Path))
             {
                 continue;
             }
@@ -339,6 +342,14 @@ public sealed partial class DesktopNodeHyperVWmiVmProvider : IDesktopNodeHyperVV
         }
 
         return disks;
+    }
+
+    private static IReadOnlyList<DesktopNodeHyperVVmDvdMediaInfo> MapDvdMedia(IReadOnlyList<DesktopNodeHyperVWmiVmStorageSummary> storage)
+    {
+        return storage
+            .Where(item => item.Kind == DvdStorageKind && !string.IsNullOrWhiteSpace(item.Path))
+            .Select(item => new DesktopNodeHyperVVmDvdMediaInfo(item.Path!))
+            .ToArray();
     }
 
     private static IReadOnlyList<DesktopNodeHyperVVmNetworkInfo> MapNetwork(IReadOnlyList<DesktopNodeHyperVWmiVmNetworkSummary>? network)
@@ -374,7 +385,9 @@ public sealed partial class DesktopNodeHyperVWmiVmProvider : IDesktopNodeHyperVV
                 path.EndsWith(".vhd", StringComparison.OrdinalIgnoreCase));
     }
 
-    private static IReadOnlyList<DesktopNodeHyperVWmiVmStorageSummary> GetStorageSummaries(ManagementObject setting)
+    // 저장소 할당은 subtype 으로 나눈다. 가상 DVD 디스크의 HostResource 는 ISO 경로다. 읽기에 실패하면 null 을 돌려
+    // dvd_media 를 생략하므로, 소비자는 "media 없음"(빈 목록)과 "모름"(필드 없음)을 구분할 수 있다.
+    private static IReadOnlyList<DesktopNodeHyperVWmiVmStorageSummary>? GetStorageSummaries(ManagementObject setting)
     {
         try
         {
@@ -393,6 +406,17 @@ public sealed partial class DesktopNodeHyperVWmiVmProvider : IDesktopNodeHyperVV
             {
                 using (item)
                 {
+                    if (string.Equals(item.Properties["ResourceSubType"]?.Value as string, VirtualDvdDiskSubtype, StringComparison.OrdinalIgnoreCase))
+                    {
+                        var iso = GetFirstStringArrayItem(item, "HostResource", value => !string.IsNullOrWhiteSpace(value));
+                        if (iso is not null)
+                        {
+                            result.Add(new DesktopNodeHyperVWmiVmStorageSummary(iso, Attached: true, Kind: DvdStorageKind));
+                        }
+
+                        continue;
+                    }
+
                     var path = GetFirstStringArrayItem(item, "HostResource", IsVhdPath);
                     if (!string.IsNullOrWhiteSpace(path))
                     {
@@ -405,11 +429,11 @@ public sealed partial class DesktopNodeHyperVWmiVmProvider : IDesktopNodeHyperVV
         }
         catch (ManagementException)
         {
-            return [];
+            return null;
         }
         catch (UnauthorizedAccessException)
         {
-            return [];
+            return null;
         }
     }
 

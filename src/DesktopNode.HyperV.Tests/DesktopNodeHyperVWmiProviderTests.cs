@@ -29,6 +29,40 @@ public sealed class DesktopNodeHyperVWmiProviderTests
     }
 
     [Fact]
+    public void WmiVmProviderSplitsDvdMediaFromVirtualDisks()
+    {
+        var summary = new DesktopNodeHyperVWmiVmSummary(
+            Id: "alpha",
+            Name: "alpha",
+            EnabledState: 3,
+            ProcessorCount: 1,
+            StartupMemoryQuantity: 1024,
+            StartupMemoryQuantityUnits: "byte*2^20",
+            GenerationSubtype: "Microsoft:Hyper-V:SubType:2",
+            CheckpointCount: 0,
+            Notes: DesktopNodeHyperVManagedNotes.Marker,
+            Storage:
+            [
+                new DesktopNodeHyperVWmiVmStorageSummary(@"D:\VMs\alpha\disk0.vhdx", Attached: true),
+                new DesktopNodeHyperVWmiVmStorageSummary(@"D:\iso\setup.iso", Attached: true, Kind: "dvd")
+            ]);
+
+        var vm = JsonSerializer.SerializeToElement(DesktopNodeHyperVWmiVmProvider.MapSummary(summary));
+
+        var disk = Assert.Single(vm.GetProperty("storage").EnumerateArray());
+        Assert.Equal(@"D:\VMs\alpha\disk0.vhdx", disk.GetProperty("path").GetString());
+        var media = Assert.Single(vm.GetProperty("dvd_media").EnumerateArray());
+        Assert.Equal(@"D:\iso\setup.iso", media.GetProperty("path").GetString());
+
+        var noMedia = JsonSerializer.SerializeToElement(DesktopNodeHyperVWmiVmProvider.MapSummary(summary with { Storage = [summary.Storage![0]] }));
+        Assert.Empty(noMedia.GetProperty("dvd_media").EnumerateArray());
+
+        var unread = JsonSerializer.SerializeToElement(DesktopNodeHyperVWmiVmProvider.MapSummary(summary with { Storage = null }));
+        Assert.False(unread.TryGetProperty("dvd_media", out _));
+        Assert.Empty(unread.GetProperty("storage").EnumerateArray());
+    }
+
+    [Fact]
     public void WmiVmProviderQueryAvoidsPowerShellOnlyNotesProjection()
     {
         Assert.Contains("Msvm_ComputerSystem", DesktopNodeHyperVWmiVmProvider.CimQuery);

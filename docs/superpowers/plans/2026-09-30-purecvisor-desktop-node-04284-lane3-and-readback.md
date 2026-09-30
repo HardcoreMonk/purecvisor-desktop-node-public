@@ -62,12 +62,16 @@
 
 ## Task 5: PR과 merge (Lane 0)
 
-- [ ] PR을 열고 CI 통과를 확인한 뒤 merge한다. main push CI를 확인한다.
+- [x] PR을 열고 CI 통과를 확인한 뒤 merge한다. main push CI를 확인한다.
+
+실행 기록(2026-09-30): PR #23(`https://github.com/HardcoreMonk/purecvisor-desktop-node-public/pull/23`)의 CI 6개가 pass였고 merge commit `102873f`로 merge했다. 이제 operational current는 `0.42.84-admin-smoke`다.
 
 ## Task 6: `vm.list` `dvd_media` (Lane 1)
 
-- [ ] `origin/main`에서 `feat/vm-list-readback-20260930`을 만든다.
-- [ ] `GetStorageSummaries`가 `ResourceSubType`을 읽는다. VHD는 `storage[]`에, `Virtual CD/DVD Disk`는 새 `dvd_media[]`에 담는다. model, 매핑, HyperV 테스트를 더한다.
+- [x] `origin/main`에서 `feat/vm-list-readback-20260930`을 만든다.
+- [x] `GetStorageSummaries`가 `ResourceSubType`을 읽는다. VHD는 `storage[]`에, `Virtual CD/DVD Disk`는 새 `dvd_media[]`에 담는다. model, 매핑, HyperV 테스트를 더한다.
+
+실행 기록(2026-09-30): storage summary에 `Kind`(`vhd`/`dvd`)를 더했다. `GetStorageSummaries`가 `ResourceSubType`이 `Virtual CD/DVD Disk`인 항목의 ISO 경로를 담는다. `MapSummary`는 `dvd_media`를 채운다. WMI 읽기에 실패하면 이제 null을 돌려 `dvd_media`를 생략하며, `storage[]` 출력은 전과 같다. model `522`/`533`, provider `563`/`573`줄로 라쳇 안이다. 검증: HyperV `239`(새 테스트 1), Api `477`, Delivery `744`, `git diff --check`.
 
 ## Task 7: 내부 read operation `vm.disk.inspect` (Lane 1)
 

@@ -230,10 +230,17 @@ public sealed record DesktopNodeHyperVVmInfo(
     bool TemplateLock = false,
     [property: JsonPropertyName("dvd_drives")]
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    DesktopNodeHyperVVmDvdDriveInfo? DvdDrives = null);
+    DesktopNodeHyperVVmDvdDriveInfo? DvdDrives = null,
+    [property: JsonPropertyName("dvd_media")]
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    IReadOnlyList<DesktopNodeHyperVVmDvdMediaInfo>? DvdMedia = null);
 
 public sealed record DesktopNodeHyperVVmDvdDriveInfo(
     [property: JsonPropertyName("count")] int Count);
+
+// DVD drive 에 붙은 ISO 한 개다. 빈 drive 는 항목이 없다(drive 수는 dvd_drives.count).
+public sealed record DesktopNodeHyperVVmDvdMediaInfo(
+    [property: JsonPropertyName("path")] string Path);
 
 public sealed record DesktopNodeHyperVVmCpuInfo(
     [property: JsonPropertyName("count")] int? Count);
@@ -490,7 +497,7 @@ public sealed record DesktopNodeHyperVWmiVmSummary(
     string? TimeOfLastStateChange = null,
     int? DvdDriveCount = null);
 
-public sealed record DesktopNodeHyperVWmiVmStorageSummary(string? Path, bool Attached);
+public sealed record DesktopNodeHyperVWmiVmStorageSummary(string? Path, bool Attached, string Kind = "vhd");
 
 public sealed record DesktopNodeHyperVWmiVmNetworkSummary(string? SwitchName);
 
