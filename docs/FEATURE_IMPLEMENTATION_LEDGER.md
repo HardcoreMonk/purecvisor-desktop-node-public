@@ -55,9 +55,9 @@ feature promotion evidence를 서로 다른 계약으로 유지한다.
 | <a id="pcv-vm-create"></a>`pcv.vm.create` | VM creation | 1 | 1 present / 0 excluded | 1 present / 0 excluded |
 | <a id="pcv-checkpoint-restore"></a>`pcv.checkpoint.restore` | Checkpoint restore | 1 | 1 present / 0 excluded | 1 present / 0 excluded |
 | <a id="pcv-vm-power-lifecycle"></a>`pcv.vm.power-lifecycle` | VM power lifecycle | 4 | 4 present / 0 excluded | 4 present / 0 excluded |
-| <a id="pcv-vm-pause-lifecycle"></a>`pcv.vm.pause-lifecycle` | VM pause lifecycle | 2 | 0 present / 2 excluded | 2 present / 0 excluded |
+| <a id="pcv-vm-pause-lifecycle"></a>`pcv.vm.pause-lifecycle` | VM pause lifecycle | 2 | 2 present / 0 excluded | 2 present / 0 excluded |
 | <a id="pcv-vm-saved-lifecycle"></a>`pcv.vm.saved-lifecycle` | VM saved lifecycle | 2 | 2 present / 0 excluded | 2 present / 0 excluded |
-| <a id="pcv-vm-rename"></a>`pcv.vm.rename` | VM rename | 1 | 0 present / 1 excluded | 1 present / 0 excluded |
+| <a id="pcv-vm-rename"></a>`pcv.vm.rename` | VM rename | 1 | 1 present / 0 excluded | 1 present / 0 excluded |
 | <a id="pcv-vm-managed-import"></a>`pcv.vm.managed-import` | Managed VM import | 4 | 1 present / 3 excluded | 4 present / 0 excluded |
 | <a id="pcv-vm-clone"></a>`pcv.vm.clone` | Managed VM full clone | 3 | 3 present / 0 excluded | 3 present / 0 excluded |
 | <a id="pcv-vm-media-eject"></a>`pcv.vm.media-eject` | VM media eject | 1 | 1 present / 0 excluded | 1 present / 0 excluded |
@@ -129,11 +129,11 @@ feature promotion evidence를 서로 다른 계약으로 유지한다.
 | `pcv.vm.power-lifecycle` | `vm.shutdown` | `POST /api/v1/vms/{vmId}/shutdown` | `operate` | present — `vm.lifecycle` | present — `pcvcli vm guest-shutdown vm-01` |
 | `pcv.vm.power-lifecycle` | `vm.poweroff` | `POST /api/v1/vms/{vmId}/poweroff` | `operate` | present — `vm.lifecycle` | present — `pcvcli vm stop vm-01` |
 | `pcv.vm.power-lifecycle` | `vm.restart` | `POST /api/v1/vms/{vmId}/restart` | `operate` | present — `vm.lifecycle` | present — `pcvcli vm restart vm-01` |
-| `pcv.vm.pause-lifecycle` | `vm.pause` | `POST /api/v1/vms/{vmId}/pause` | `operate` | excluded — Web Console intentionally omits transient pause/resume controls; this route remains API/CLI-only. | present — `pcvcli vm pause vm-01` |
-| `pcv.vm.pause-lifecycle` | `vm.resume` | `POST /api/v1/vms/{vmId}/resume` | `operate` | excluded — Web Console intentionally omits transient pause/resume controls; this route remains API/CLI-only. | present — `pcvcli vm resume vm-01` |
+| `pcv.vm.pause-lifecycle` | `vm.pause` | `POST /api/v1/vms/{vmId}/pause` | `operate` | present — `vm.pause` | present — `pcvcli vm pause vm-01` |
+| `pcv.vm.pause-lifecycle` | `vm.resume` | `POST /api/v1/vms/{vmId}/resume` | `operate` | present — `vm.resume` | present — `pcvcli vm resume vm-01` |
 | `pcv.vm.saved-lifecycle` | `vm.save` | `POST /api/v1/vms/{vmId}/save` | `operate` | present — `vm.save` | present — `pcvcli vm save vm-01` |
 | `pcv.vm.saved-lifecycle` | `vm.resume-saved` | `POST /api/v1/vms/{vmId}/resume-saved` | `operate` | present — `vm.resume-saved` | present — `pcvcli vm resume-saved vm-01` |
-| `pcv.vm.rename` | `vm.rename` | `POST /api/v1/vms/{vmId}/rename` | `operate` | excluded — Web Console does not expose rename in the current operator flow; this route remains API/CLI-only. | present — `pcvcli vm rename vm-01 vm-02` |
+| `pcv.vm.rename` | `vm.rename` | `POST /api/v1/vms/{vmId}/rename` | `operate` | present — `vm.rename` | present — `pcvcli vm rename vm-01 vm-02` |
 | `pcv.vm.managed-import` | `vm.manage` | `POST /api/v1/vms/{vmId}/manage` | `operate` | present — `vm.manage` | present — `pcvcli vm manage vm-01 --yes` |
 | `pcv.vm.managed-import` | `vm.export.preview` | `POST /api/v1/vms/{vmId}/export/preview` | `operate` | excluded — Hyper-V export/import stays CLI/API; Web Console shows inventory status readback without an export/import save form. | present — `pcvcli vm export preview vm-01 --directory D:\PureCVisor\exports\vm-01` |
 | `pcv.vm.managed-import` | `vm.export` | `POST /api/v1/vms/{vmId}/export` | `operate` | excluded — Hyper-V export/import stays CLI/API; Web Console shows inventory status readback without an export/import save form. | present — `pcvcli vm export vm-01 --directory D:\PureCVisor\exports\vm-01 --yes` |

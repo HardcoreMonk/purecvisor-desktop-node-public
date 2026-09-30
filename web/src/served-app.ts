@@ -251,6 +251,8 @@ function bindEvents() {
       } else if (form.dataset.action === 'vm-clone') {
         await queueVmClone(form.dataset.vmId, data.get('name'));
         form.reset();
+      } else {
+        await handleVmDetailExtensionSubmit(form, data);
       }
     } catch (error) {
       state.error = normalizeError(error);
@@ -260,16 +262,7 @@ function bindEvents() {
   els.vmDetailPanel.addEventListener('click', async (event) => {
     const button = event.target.closest('button[data-action]');
     if (!button) return;
-    const actionMap = {
-      'vm-start': 'start',
-      'vm-shutdown': 'shutdown',
-      'vm-poweroff': 'poweroff',
-      'vm-restart': 'restart',
-      'vm-save': 'save',
-      'vm-resume-saved': 'resume-saved',
-      'vm-eject': 'eject'
-    };
-    const action = actionMap[button.dataset.action];
+    const action = VM_LIFECYCLE_ACTIONS[button.dataset.action];
     state.error = null;
     try {
       if (action) {

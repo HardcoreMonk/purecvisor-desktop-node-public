@@ -98,6 +98,7 @@ interface PcvDesktopApi {
   getVmCheckpoints(vmId: string, options?: RequestInit): Promise<any>;
   queueVmAction(vmId: string, action: string): Promise<any>;
   queueVmAttach(vmId: string, isoPath: string): Promise<any>;
+  queueVmRename(vmId: string, newName: string): Promise<any>;
   queueVmManage(vmId: string, confirmName: string): Promise<any>;
   queueVmTemplateLock(vmId: string, confirmName: string, locked: boolean): Promise<any>;
   previewVmClone(vmId: string, payload: Record<string, unknown>): Promise<any>;

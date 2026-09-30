@@ -103,11 +103,13 @@
 
 ## Task 7: Web pause/resume, rename
 
-- [ ] VM detail에 Pause/Resume 버튼과 Rename(새 이름 입력, 대상 이름 확인) 동작을 둔다. `routes.ts` 등록, 오류 매핑, 신규 모듈을 둔다.
-- [ ] ledger의 `vm.pause`, `vm.resume`, `vm.rename`을 Web present(`coverage_id`)로 옮기고 `FEATURE_IMPLEMENTATION_LEDGER.md`,
+- [x] VM detail에 Pause/Resume 버튼과 Rename(새 이름 입력, 대상 이름 확인) 동작을 둔다. `routes.ts` 등록, 오류 매핑, 신규 모듈을 둔다.
+- [x] ledger의 `vm.pause`, `vm.resume`, `vm.rename`을 Web present(`coverage_id`)로 옮기고 `FEATURE_IMPLEMENTATION_LEDGER.md`,
       `USER_FEATURE_USAGE_SPEC.md` 투영을 맞춘다.
-- [ ] `npm run build:served --prefix web`, `npm run generate:parity --prefix web`
-- [ ] 검증: 공통 검증 전체
+- [x] `npm run build:served --prefix web`, `npm run generate:parity --prefix web`
+- [x] 검증: 공통 검증 전체
+
+실행 기록(2026-09-30): 새 모듈 `web/src/served/vm-detail-extensions.ts`가 lifecycle action 표(`VM_LIFECYCLE_ACTIONS`)와 확장 submit hook(`handleVmDetailExtensionSubmit`)을 가진다. `served-app.ts`는 `426`→`419`줄로 줄었다(상한 `429`). 다음 Web task는 이 hook에 붙는다. Web 제외는 `20`→`17`이며, `verify-feature-surface-parity.mjs`의 고정 개수도 `63`/`17`로 바꿨다. `USER_FEATURE_USAGE_SPEC.md`의 VM power 행은 이미 "VM detail actions"라 바꾸지 않았다. 검증: `npm run test:required --prefix web` exit `0`, web Pester `50`/`0`, Cli `179`/`179`, Api `474`/`474`, Delivery `744`/`744`, `git diff --check`.
 
 ## Task 8: Web telemetry — `vm.memory-stats`, `vm.cpu-stats`
 

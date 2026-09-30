@@ -50,6 +50,8 @@ function renderVmDetail() {
       <button class="danger-button" data-action="vm-restart" data-vm-id="${escapeHtml(vmId)}"${lockedMutationDisabled}>Restart</button>
       <button data-action="vm-save" data-vm-id="${escapeHtml(vmId)}"${lockedMutationDisabled}>Save</button>
       <button data-action="vm-resume-saved" data-vm-id="${escapeHtml(vmId)}"${lockedMutationDisabled}>Resume saved</button>
+      <button data-action="vm-pause" data-vm-id="${escapeHtml(vmId)}"${lockedMutationDisabled}>Pause</button>
+      <button data-action="vm-resume" data-vm-id="${escapeHtml(vmId)}"${lockedMutationDisabled}>Resume</button>
       <button data-action="vm-eject" data-vm-id="${escapeHtml(vmId)}"${lockedMutationDisabled}>Eject media</button>
       <button data-action="vm-delete-status" data-vm-id="${escapeHtml(vmId)}"${actionDisabled}>Delete status</button>
       <button data-action="vm-manage" data-vm-id="${escapeHtml(vmId)}"${lockedMutationDisabled}>Manage VM</button>
@@ -65,6 +67,10 @@ function renderVmDetail() {
       <form class="vm-resource-form" data-action="vm-attach" data-vm-id="${escapeHtml(vmId)}">
         <input name="iso_path" type="text" placeholder="ISO path" aria-label="ISO path"${lockedMutationDisabled}>
         <button type="submit"${lockedMutationDisabled}>Attach media</button>
+      </form>
+      <form class="vm-resource-form" data-action="vm-rename" data-vm-id="${escapeHtml(vmId)}">
+        <input name="new_name" type="text" placeholder="New VM name" aria-label="New VM name"${lockedMutationDisabled}>
+        <button type="submit"${lockedMutationDisabled}>Rename VM</button>
       </form>
       <form class="vm-resource-form" data-action="vm-set-memory" data-vm-id="${escapeHtml(vmId)}">
         <input name="memory_mb" type="number" min="512" max="262144" step="128" placeholder="Memory MB" aria-label="memory MB"${lockedMutationDisabled}>

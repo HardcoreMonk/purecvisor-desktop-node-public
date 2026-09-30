@@ -11,7 +11,7 @@
   ],
   "mutation_allowed": false,
   "current_write_allowed": false,
-  "next_step": "Task 7: Web Console VM detail pause/resume buttons and rename (new name input, target-name confirmation) in a new served module; move vm.pause, vm.resume, vm.rename to Web present in the surface ledger and projections; rebuild app.js and parity.",
+  "next_step": "Task 8: Web Console VM detail memory/CPU telemetry read panel (vm.memory-stats, vm.cpu-stats) through the vm-detail-extensions module; move both routes to Web present in the ledger and projections, bump the web parity counts, rebuild app.js and parity.",
   "plan": "docs/superpowers/plans/2026-09-30-purecvisor-desktop-node-development-completion.md",
   "task_queue": [
     "Task 1",
@@ -28,14 +28,15 @@
     "Task 12",
     "Task 13"
   ],
-  "next_task": "Task 7",
+  "next_task": "Task 8",
   "completed_tasks": [
     "Task 1",
     "Task 2",
     "Task 3",
     "Task 4",
     "Task 5",
-    "Task 6"
+    "Task 6",
+    "Task 7"
   ],
   "commit_policy": "local-commit-per-task",
   "push_allowed": false,

@@ -204,7 +204,7 @@ const DESKTOP_NODE_API_ROUTES = Object.freeze({
     vmGuestFile: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/guest/file`,
     vmGuestChannelVerify: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/guest/channel/verify`,
     vmGuestChannelEnsure: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/guest/channel`,
-    vmAction: (vmId, action) => `/api/v1/vms/${encodeRouteSegment(vmId)}/${requireRouteAction(action, ['start', 'shutdown', 'poweroff', 'restart', 'save', 'resume-saved', 'eject', 'attach', 'delete-status', 'set-memory', 'set-vcpu', 'disk-resize', 'manage', 'clone', 'template-lock'])}`,
+    vmAction: (vmId, action) => `/api/v1/vms/${encodeRouteSegment(vmId)}/${requireRouteAction(action, ['start', 'shutdown', 'poweroff', 'restart', 'save', 'resume-saved', 'pause', 'resume', 'rename', 'eject', 'attach', 'delete-status', 'set-memory', 'set-vcpu', 'disk-resize', 'manage', 'clone', 'template-lock'])}`,
     vmClonePreview: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/clone/preview`,
     vmCheckpoints: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/checkpoints`,
     checkpointDetail: (vmId, checkpointId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/checkpoints/${encodeRouteSegment(checkpointId)}`,
@@ -238,6 +238,9 @@ const DESKTOP_NODE_ROUTE_COVERAGE = Object.freeze([
     { id: 'vm.lifecycle', featureId: 'pcv.vm.power-lifecycle', method: 'POST', route: '/api/v1/vms/{vm_id}/start|shutdown|poweroff|restart', view: 'vms', mutating: true, tokenRequired: true },
     { id: 'vm.save', featureId: 'pcv.vm.saved-lifecycle', method: 'POST', route: '/api/v1/vms/{vm_id}/save', view: 'vms', mutating: true, tokenRequired: true },
     { id: 'vm.resume-saved', featureId: 'pcv.vm.saved-lifecycle', method: 'POST', route: '/api/v1/vms/{vm_id}/resume-saved', view: 'vms', mutating: true, tokenRequired: true },
+    { id: 'vm.pause', featureId: 'pcv.vm.pause-lifecycle', method: 'POST', route: '/api/v1/vms/{vm_id}/pause', view: 'vms', mutating: true, tokenRequired: true },
+    { id: 'vm.resume', featureId: 'pcv.vm.pause-lifecycle', method: 'POST', route: '/api/v1/vms/{vm_id}/resume', view: 'vms', mutating: true, tokenRequired: true },
+    { id: 'vm.rename', featureId: 'pcv.vm.rename', method: 'POST', route: '/api/v1/vms/{vm_id}/rename', view: 'vms', mutating: true, tokenRequired: true },
     { id: 'vm.media', featureId: 'pcv.vm.media-eject', method: 'POST', route: '/api/v1/vms/{vm_id}/eject', view: 'vms', mutating: true, tokenRequired: true },
     { id: 'vm.media.attach', featureId: 'pcv.vm.media-attach', method: 'POST', route: '/api/v1/vms/{vm_id}/attach', view: 'vms', mutating: true, tokenRequired: true },
     { id: 'vm.resource-mutation', featureId: 'pcv.vm.resource-limits', method: 'POST', route: '/api/v1/vms/{vm_id}/set-memory|set-vcpu|disk-resize', view: 'vms', mutating: true, tokenRequired: true },
@@ -751,6 +754,10 @@ const desktopApi = Object.freeze({
     queueVmAttach: (vmId, isoPath) => apiFetch(DESKTOP_NODE_API_ROUTES.vmAction(vmId, 'attach'), {
         method: 'POST',
         body: JSON.stringify({ iso_path: isoPath })
+    }),
+    queueVmRename: (vmId, newName) => apiFetch(DESKTOP_NODE_API_ROUTES.vmAction(vmId, 'rename'), {
+        method: 'POST',
+        body: JSON.stringify({ new_name: newName })
     }),
     queueVmManage: (vmId, confirmName) => apiFetch(DESKTOP_NODE_API_ROUTES.vmAction(vmId, 'manage'), {
         method: 'POST',
@@ -1812,6 +1819,8 @@ function renderVmDetail() {
       <button class="danger-button" data-action="vm-restart" data-vm-id="${escapeHtml(vmId)}"${lockedMutationDisabled}>Restart</button>
       <button data-action="vm-save" data-vm-id="${escapeHtml(vmId)}"${lockedMutationDisabled}>Save</button>
       <button data-action="vm-resume-saved" data-vm-id="${escapeHtml(vmId)}"${lockedMutationDisabled}>Resume saved</button>
+      <button data-action="vm-pause" data-vm-id="${escapeHtml(vmId)}"${lockedMutationDisabled}>Pause</button>
+      <button data-action="vm-resume" data-vm-id="${escapeHtml(vmId)}"${lockedMutationDisabled}>Resume</button>
       <button data-action="vm-eject" data-vm-id="${escapeHtml(vmId)}"${lockedMutationDisabled}>Eject media</button>
       <button data-action="vm-delete-status" data-vm-id="${escapeHtml(vmId)}"${actionDisabled}>Delete status</button>
       <button data-action="vm-manage" data-vm-id="${escapeHtml(vmId)}"${lockedMutationDisabled}>Manage VM</button>
@@ -1827,6 +1836,10 @@ function renderVmDetail() {
       <form class="vm-resource-form" data-action="vm-attach" data-vm-id="${escapeHtml(vmId)}">
         <input name="iso_path" type="text" placeholder="ISO path" aria-label="ISO path"${lockedMutationDisabled}>
         <button type="submit"${lockedMutationDisabled}>Attach media</button>
+      </form>
+      <form class="vm-resource-form" data-action="vm-rename" data-vm-id="${escapeHtml(vmId)}">
+        <input name="new_name" type="text" placeholder="New VM name" aria-label="New VM name"${lockedMutationDisabled}>
+        <button type="submit"${lockedMutationDisabled}>Rename VM</button>
       </form>
       <form class="vm-resource-form" data-action="vm-set-memory" data-vm-id="${escapeHtml(vmId)}">
         <input name="memory_mb" type="number" min="512" max="262144" step="128" placeholder="Memory MB" aria-label="memory MB"${lockedMutationDisabled}>
@@ -4229,6 +4242,59 @@ async function queueCheckpointDelete(vmId, checkpointId) {
         clearCheckpointActionPending(vmId, checkpointId);
     }
 }
+// --- src/served/vm-detail-extensions.ts ---
+// @ts-nocheck
+// VM detail 의 lifecycle action 표와 확장 form action 이다. served-app.ts 의 submit 분기가 처리하지 않은
+// data-action 은 handleVmDetailExtensionSubmit 으로 온다.
+const VM_LIFECYCLE_ACTIONS = {
+    'vm-start': 'start',
+    'vm-shutdown': 'shutdown',
+    'vm-poweroff': 'poweroff',
+    'vm-restart': 'restart',
+    'vm-save': 'save',
+    'vm-resume-saved': 'resume-saved',
+    'vm-pause': 'pause',
+    'vm-resume': 'resume',
+    'vm-eject': 'eject'
+};
+async function queueVmRename(vmId, newName) {
+    requireRbac('operate', 'VM rename');
+    const target = String(newName || '').trim();
+    if (!target) {
+        throw normalizeError({
+            code: 'PCV_VM_RENAME_TARGET_REQUIRED',
+            message: 'Enter a new VM name.',
+            detail: 'new_name is required before queueing vm.rename.'
+        });
+    }
+    if (!window.confirm(`Rename VM '${vmId}' to '${target}'?\n\nThe VM keeps its ID and disks. Scripts that use the old name must change.`)) {
+        return;
+    }
+    state.actionPending = true;
+    setVmActionPending(vmId, 'rename');
+    state.error = null;
+    render();
+    try {
+        const job = await desktopApi.queueVmRename(vmId, target);
+        trackJob(job);
+        state.connectionState = 'connected';
+        startPolling();
+    }
+    catch (error) {
+        state.error = normalizeError(error);
+    }
+    finally {
+        state.actionPending = false;
+        clearVmActionPending(vmId);
+        render();
+    }
+}
+async function handleVmDetailExtensionSubmit(form, data) {
+    if (form?.dataset.action === 'vm-rename') {
+        await queueVmRename(form.dataset.vmId, data.get('new_name'));
+        form.reset();
+    }
+}
 // --- src/served/job-polling.ts ---
 // @ts-nocheck
 async function refreshAll() {
@@ -5122,6 +5188,9 @@ function bindEvents() {
                 await queueVmClone(form.dataset.vmId, data.get('name'));
                 form.reset();
             }
+            else {
+                await handleVmDetailExtensionSubmit(form, data);
+            }
         }
         catch (error) {
             state.error = normalizeError(error);
@@ -5132,16 +5201,7 @@ function bindEvents() {
         const button = event.target.closest('button[data-action]');
         if (!button)
             return;
-        const actionMap = {
-            'vm-start': 'start',
-            'vm-shutdown': 'shutdown',
-            'vm-poweroff': 'poweroff',
-            'vm-restart': 'restart',
-            'vm-save': 'save',
-            'vm-resume-saved': 'resume-saved',
-            'vm-eject': 'eject'
-        };
-        const action = actionMap[button.dataset.action];
+        const action = VM_LIFECYCLE_ACTIONS[button.dataset.action];
         state.error = null;
         try {
             if (action) {

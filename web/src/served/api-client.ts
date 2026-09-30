@@ -185,6 +185,10 @@ const desktopApi: Readonly<PcvDesktopApi> = Object.freeze({
     method: 'POST',
     body: JSON.stringify({ iso_path: isoPath })
   }),
+  queueVmRename: (vmId: string, newName: string) => apiFetch(DESKTOP_NODE_API_ROUTES.vmAction(vmId, 'rename'), {
+    method: 'POST',
+    body: JSON.stringify({ new_name: newName })
+  }),
   queueVmManage: (vmId: string, confirmName: string) => apiFetch(DESKTOP_NODE_API_ROUTES.vmAction(vmId, 'manage'), {
     method: 'POST',
     body: JSON.stringify({ confirm_name: confirmName })
