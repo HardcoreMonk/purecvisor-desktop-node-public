@@ -12,7 +12,7 @@
   ],
   "mutation_allowed": true,
   "current_write_allowed": false,
-  "next_step": "Task 3: build 0.42.84-admin-smoke from the clean HEAD with installer/build.ps1 (AllowUnsignedDev, LocalTest, OutputRoot artifacts/admin-smoke-package-20260930-04284), verify SHA and provenance, write evidence admin-smoke-package-2026-09-30-04284; no install.",
+  "next_step": "Task 4a: New-PcvManualAdminRebaselineReadiness.ps1 -PlanOnly for baseline 0.42.83 (installed) and target 0.42.84 (MSI 12a582ef…).",
   "plan": "docs/superpowers/plans/2026-09-30-purecvisor-desktop-node-04284-package-pair.md",
   "task_queue": [
     "Task 1",
@@ -30,10 +30,11 @@
     "Task 7",
     "Task 8"
   ],
-  "next_task": "Task 3",
+  "next_task": "Task 4a",
   "completed_tasks": [
     "Task 1",
-    "Task 2"
+    "Task 2",
+    "Task 3"
   ],
   "commit_policy": "local-commit-per-task",
   "push_allowed": true,

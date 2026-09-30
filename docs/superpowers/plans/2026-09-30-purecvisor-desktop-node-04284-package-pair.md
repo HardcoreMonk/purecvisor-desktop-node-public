@@ -58,8 +58,10 @@
 
 ## Task 3: `0.42.84-admin-smoke` package (Lane 1)
 
-- [ ] clean HEAD에서 빌드한다: `packaging/windows-desktop-node/installer/build.ps1 -Version 0.42.84-admin-smoke -MsiProductVersion 0.42.84 -SigningMode AllowUnsignedDev -SigningTrustModel LocalTest -OutputRoot artifacts/admin-smoke-package-20260930-04284`
-- [ ] 산출물과 SHA를 확인하고 evidence `admin-smoke-package-2026-09-30-04284`를 쓴다. 설치하지 않는다.
+- [x] clean HEAD에서 빌드한다: `packaging/windows-desktop-node/installer/build.ps1 -Version 0.42.84-admin-smoke -MsiProductVersion 0.42.84 -SigningMode AllowUnsignedDev -SigningTrustModel LocalTest -OutputRoot artifacts/admin-smoke-package-20260930-04284`
+- [x] 산출물과 SHA를 확인하고 evidence `admin-smoke-package-2026-09-30-04284`를 쓴다. 설치하지 않는다.
+
+실행 기록(2026-09-30): clean HEAD `aab0bc1`에서 빌드했다(exit `0`, `43`초). 결과는 MSI `12a582ef…`, payload aggregate `9d8c92c5…`, Host `12512b67…`, CLI `78273f6d…`, payload `8`개이고, provenance commit이 HEAD와 같다. evidence는 `admin-smoke-package-2026-09-30-04284`다.
 
 ## Task 4a: pair readiness (Lane 2)
 
