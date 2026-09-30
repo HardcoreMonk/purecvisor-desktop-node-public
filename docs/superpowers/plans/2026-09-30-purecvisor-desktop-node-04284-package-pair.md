@@ -101,7 +101,9 @@
 
 ## Task 4g: pair descriptor (Lane 2, non-mutating)
 
-- [ ] 여섯 bucket root로 `New-PcvManualAdminCampaignDescriptor -PlanOnly`를 실행한다. 판정 기준은 `overall_status=pass`, `missing_count=0`, `not_pass_count=0`이다.
+- [x] 여섯 bucket root로 `New-PcvManualAdminCampaignDescriptor -PlanOnly`를 실행한다. 판정 기준은 `overall_status=pass`, `missing_count=0`, `not_pass_count=0`이다.
+
+실행 기록(2026-09-30): 여섯 bucket summary 경로로 `-PlanOnly`를 실행했다. 결과는 `overall_status=pass`, runner `6`, `missing_count=0`, `not_pass_count=0`, host mutation 없음, next candidate `0.42.84-admin-smoke`다. evidence는 `manual-admin-campaign-descriptor-2026-09-30-04283-04284`다.
 
 ## Task 5: full admin host mutation gate (Lane 2)
 
