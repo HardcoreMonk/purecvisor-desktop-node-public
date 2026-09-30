@@ -47,9 +47,11 @@
 
 ## Task 3: current-evidence와 승격 문서 (Lane 3, 5b)
 
-- [ ] `current-evidence.json`을 `0.42.84`로 쓴다(clean MSI `12a582ef…`, operational MSI `f9e1e341…`, payload `77481bdb…`, provenance `ee90e0e`, manual_admin `0.42.83 → 0.42.84` consume descriptor).
-- [ ] 승격 spec `packaging/windows-desktop-node/tests/fixtures/lane3-promotion-docs-spec-04284.json`을 04283 견본 구성대로 만든다. `Invoke-PcvLane3PromotionDocs.ps1`를 dry-run, `-Apply`, `-Check` 순서로 실행한다.
-- [ ] `CurrentEvidenceVerifierTests`의 기대 버전을 바꾼다.
+- [x] `current-evidence.json`을 `0.42.84`로 쓴다(clean MSI `12a582ef…`, operational MSI `f9e1e341…`, payload `77481bdb…`, provenance `ee90e0e`, manual_admin `0.42.83 → 0.42.84` consume descriptor).
+- [x] 승격 spec `packaging/windows-desktop-node/tests/fixtures/lane3-promotion-docs-spec-04284.json`을 04283 견본 구성대로 만든다. `Invoke-PcvLane3PromotionDocs.ps1`를 dry-run, `-Apply`, `-Check` 순서로 실행한다.
+- [x] `CurrentEvidenceVerifierTests`의 기대 버전을 바꾼다.
+
+실행 기록(2026-09-30): `current-evidence.json`을 `0.42.84`로 썼다(`operator_surfaces` 한 줄 서식은 원본대로 유지). 승격 spec `lane3-promotion-docs-spec-04284.json`은 04283 견본과 key 구성이 같다(descriptor key `45`, ledger head `4`, 행 supersede `5`와 replace `3`, index 절). orchestrator 결과: dry-run은 생성 블록 `stale`에 나머지 `planned`, `-Apply`는 6단계를 적용해 파일 `15`개를 바꿨고, `-Check`는 6단계 모두 `current`다. C#은 `CurrentEvidenceVerifierTests` 기대 버전 한 줄만 고쳤다. 검증: `CurrentEvidenceVerifierTests` `13/13`, Delivery `744/744`, Pester(evidence docs, manual-admin tests) `219/219`, `git diff --check`.
 
 ## Task 4: 정렬과 전체 검증 (Lane 3, 5c)
 
