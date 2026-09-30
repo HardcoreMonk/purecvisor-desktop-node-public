@@ -85,7 +85,9 @@
 
 ## Task 8: reconcile 전환 (Lane 1)
 
-- [ ] `vm.attach`/`vm.eject`를 비대상에서 대상으로 옮기고 `dvd_media` 판정을 구현한다. `vm.disk-resize` 판정은 `vm.disk.inspect` bytes로 바꾼다. 분류 계약(대상 `28`, 비대상 `17`)과 테스트를 갱신한다.
+- [x] `vm.attach`/`vm.eject`를 비대상에서 대상으로 옮기고 `dvd_media` 판정을 구현한다. `vm.disk-resize` 판정은 `vm.disk.inspect` bytes로 바꾼다. 분류 계약(대상 `28`, 비대상 `17`)과 테스트를 갱신한다.
+
+실행 기록(2026-09-30): schema `pcv-vm-media-reconciliation/v1`을 새로 두었다. attach는 요청 ISO가 after에 정확히 하나 있고 before에는 없었을 때 성공이다(기존 media 교체 포함). eject는 after가 before에서 정확히 하나 빠진 부분집합일 때 성공이다. 같으면 `not-applied`, 그 밖은 `ambiguous-media-state`이고, `dvd_media`가 없으면 capture `unavailable`이거나 `readback-value-unavailable`이다. disk-resize는 before와 observed를 `vm.disk.inspect` byte로 읽고 요청 GB × 2^30과 비교한다. Runtime reconcile 표는 새 partial `DesktopNodeJobRuntime.ReconcilableMutations.cs`로 옮겼다(`Persistence.cs` `504`→`473`줄). 분류 계약은 대상 `28`, 비대상 `17`이다. 검증: Api `488`(새 테스트 `11`), Runtime `128`, Delivery `744`, `git diff --check`.
 
 ## Task 9: Web 표시와 종료 (Lane 1)
 

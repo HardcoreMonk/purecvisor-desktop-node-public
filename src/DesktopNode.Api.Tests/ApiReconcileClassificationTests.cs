@@ -30,7 +30,7 @@ public sealed class ApiReconcileClassificationTests
             "vm.pause", "vm.resume", "vm.save", "vm.resume-saved", "vm.set-memory", "vm.set-vcpu", "vm.disk-resize",
             "checkpoint.create", "checkpoint.restore", "checkpoint.delete", "checkpoint.schedule.set",
             "checkpoint.schedule.clear", "vm.qos.storage.set", "vm.qos.network.set", "console.novnc-target.set",
-            "console.novnc-target.clear", "vm.template.lock", "vm.network.connect", "vm.manage"
+            "console.novnc-target.clear", "vm.template.lock", "vm.network.connect", "vm.manage", "vm.attach", "vm.eject"
         ];
 
         Assert.Equal(

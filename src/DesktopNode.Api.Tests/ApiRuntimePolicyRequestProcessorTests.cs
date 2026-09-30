@@ -4625,12 +4625,12 @@ public sealed partial class ApiRuntimePolicyRequestProcessorTests
         var create = processor.Handle(new DesktopNodeApiRequest("POST", "/api/v1/vms/lab%20vm/eject"));
 
         Assert.Equal(202, create.StatusCode);
-        Assert.Empty(nativeCalls);
+        Assert.Equal("vm.list", Assert.Single(nativeCalls).Operation);
 
         var tick = processor.ProcessOneQueuedJob();
 
         Assert.True(tick.Processed);
-        var nativeCall = Assert.Single(nativeCalls);
+        var nativeCall = Assert.Single(nativeCalls, call => call.Operation == "vm.eject");
         Assert.Equal("vm.eject", nativeCall.Operation);
         using var parameters = JsonDocument.Parse(nativeCall.ParamsJson);
         Assert.Equal("lab vm", parameters.RootElement.GetProperty("name").GetString());
@@ -4651,7 +4651,7 @@ public sealed partial class ApiRuntimePolicyRequestProcessorTests
             """{"iso_path":"D:\\isos\\ubuntu.iso"}"""));
 
         Assert.Equal(202, create.StatusCode);
-        Assert.Empty(nativeCalls);
+        Assert.Equal("vm.list", Assert.Single(nativeCalls).Operation);
         using (var document = JsonDocument.Parse(create.Body))
         {
             Assert.Equal("vm.attach", document.RootElement.GetProperty("data").GetProperty("operation").GetString());
@@ -4660,7 +4660,7 @@ public sealed partial class ApiRuntimePolicyRequestProcessorTests
         var tick = processor.ProcessOneQueuedJob();
 
         Assert.True(tick.Processed);
-        var nativeCall = Assert.Single(nativeCalls);
+        var nativeCall = Assert.Single(nativeCalls, call => call.Operation == "vm.attach");
         Assert.Equal("vm.attach", nativeCall.Operation);
         using var parameters = JsonDocument.Parse(nativeCall.ParamsJson);
         Assert.Equal("lab vm", parameters.RootElement.GetProperty("name").GetString());

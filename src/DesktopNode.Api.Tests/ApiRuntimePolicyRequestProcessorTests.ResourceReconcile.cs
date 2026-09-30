@@ -22,7 +22,8 @@ public sealed partial class ApiRuntimePolicyRequestProcessorTests
         var processor = DesktopNodeApiRequestProcessor.CreateDefault(
             nativeAdapter: new RecordingNativeHyperVAdapter(nativeCalls, new Dictionary<string, string>
             {
-                ["vm.list"] = ResourceVmList("vm-id", 4096, 2, 64)
+                ["vm.list"] = ResourceVmList("vm-id", 4096, 2, 64),
+                ["vm.disk.inspect"] = DiskInspectResponse(64)
             }));
 
         var response = processor.Handle(new DesktopNodeApiRequest(
@@ -31,7 +32,7 @@ public sealed partial class ApiRuntimePolicyRequestProcessorTests
             $"{{\"{valueProperty}\":{requested}}}"));
 
         Assert.Equal(202, response.StatusCode);
-        Assert.Equal(["vm.list"], nativeCalls);
+        Assert.Equal(ExpectedResourceCalls(operation), nativeCalls);
         using var document = JsonDocument.Parse(response.Body);
         var parameters = document.RootElement.GetProperty("data").GetProperty("params");
         Assert.Equal(requested, parameters.GetProperty(valueProperty).GetInt32());
@@ -39,7 +40,7 @@ public sealed partial class ApiRuntimePolicyRequestProcessorTests
         Assert.Equal("pcv-vm-resource-reconciliation/v1", reconciliation.GetProperty("schema").GetString());
         Assert.Equal(operation, reconciliation.GetProperty("operation").GetString());
         Assert.Equal("captured", reconciliation.GetProperty("capture_status").GetString());
-        Assert.Equal(before, reconciliation.GetProperty("before_value").GetInt32());
+        Assert.Equal(operation == "vm.disk-resize" ? before * ResourceGiB : before, reconciliation.GetProperty("before_value").GetInt64());
         Assert.Equal(requested, reconciliation.GetProperty("expected_after").GetProperty(valueProperty).GetInt32());
         if (operation == "vm.disk-resize")
         {
@@ -74,13 +75,14 @@ public sealed partial class ApiRuntimePolicyRequestProcessorTests
             jobStorePath: store.Path,
             nativeAdapter: new RecordingNativeHyperVAdapter(nativeCalls, new Dictionary<string, string>
             {
-                ["vm.list"] = ResourceVmList(observedId, observedMemory, observedCpu, observedDisk)
+                ["vm.list"] = ResourceVmList(observedId, observedMemory, observedCpu, observedDisk),
+                ["vm.disk.inspect"] = DiskInspectResponse(observedDisk)
             }));
 
         var response = processor.Handle(new DesktopNodeApiRequest("POST", "/api/v1/jobs/job-resource/reconcile"));
 
         Assert.Equal(expectedStatusCode, response.StatusCode);
-        Assert.Equal(["vm.list"], nativeCalls);
+        Assert.Equal(observedId == "vm-id" ? ExpectedResourceCalls(operation) : ["vm.list"], nativeCalls);
         Assert.Contains(expectedClassification, response.Body, StringComparison.Ordinal);
         if (expectedStatusCode == 200)
         {
@@ -110,6 +112,17 @@ public sealed partial class ApiRuntimePolicyRequestProcessorTests
 
         Assert.Equal(409, response.StatusCode);
         Assert.Contains("baseline-unavailable", response.Body, StringComparison.Ordinal);
+    }
+
+    private const long ResourceGiB = 1024L * 1024 * 1024;
+
+    private static string[] ExpectedResourceCalls(string operation) =>
+        operation == "vm.disk-resize" ? ["vm.list", "vm.disk.inspect"] : ["vm.list"];
+
+    private static string DiskInspectResponse(int gb)
+    {
+        return "{\"ok\":true,\"operation\":\"vm.disk.inspect\",\"data\":{\"name\":\"lab-vm\",\"max_internal_size_bytes\":" +
+            (gb * ResourceGiB) + "},\"error\":null}";
     }
 
     private static string ResourceVmItem(string id, int memory, int cpu, int disk)
@@ -154,7 +167,7 @@ public sealed partial class ApiRuntimePolicyRequestProcessorTests
                       "capture_status": "{{(captured ? "captured" : "unavailable")}}",
                       "before": {{(captured ? beforeVm : "null")}},
                       "before_fingerprint": {{(captured ? "{ \"id\": \"vm-id\", \"platform\": \"hyperv\", \"guest_family\": \"windows\", \"generation\": 2, \"managed_by_purecvisor\": true }" : "null")}},
-                      "before_value": {{before}},
+                      "before_value": {{(operation == "vm.disk-resize" ? before * ResourceGiB : before)}},
                       "expected_after": { "name": "lab-vm", "{{valueProperty}}": {{requested}}{{diskPath}} }
                     }
                   },

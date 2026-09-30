@@ -91,6 +91,7 @@ internal sealed partial class DesktopNodeApiJobReconciliationHandler
             var operation when ResourceValueProperty(operation) is not null => ReconcileVmResourceJob(job, cancellationToken),
             "vm.template.lock" => ReconcileVmTemplateLockJob(job, cancellationToken),
             "vm.network.connect" or "vm.manage" => ReconcileVmReadbackJob(job, cancellationToken),
+            "vm.attach" or "vm.eject" => ReconcileVmMediaJob(job, cancellationToken),
             _ => null
         };
         if (dispatched is not null)
@@ -384,6 +385,8 @@ internal sealed partial class DesktopNodeApiJobReconciliationHandler
             "vm.template.lock" => "template lock",
             "vm.network.connect" => "network connect",
             "vm.manage" => "manage",
+            "vm.attach" => "media attach",
+            "vm.eject" => "media eject",
             "vm.qos.storage.set" => "storage QoS",
             "vm.qos.network.set" => "network QoS",
             "console.novnc-target.set" => "noVNC target",
