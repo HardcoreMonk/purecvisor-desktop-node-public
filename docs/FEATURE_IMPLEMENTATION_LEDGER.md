@@ -43,7 +43,7 @@ feature promotion evidence를 서로 다른 계약으로 유지한다.
 | <a id="pcv-diagnostics-bundle"></a>`pcv.diagnostics.bundle` | Diagnostic bundles | 3 | 3 present / 0 excluded | 3 present / 0 excluded |
 | <a id="pcv-account-session"></a>`pcv.account.session` | Account and RBAC session | 9 | 9 present / 0 excluded | 3 present / 6 excluded |
 | <a id="pcv-console-capabilities"></a>`pcv.console.capabilities` | Console capability discovery | 1 | 1 present / 0 excluded | 0 present / 1 excluded |
-| <a id="pcv-network-inventory"></a>`pcv.network.inventory` | Network inventory | 3 | 1 present / 2 excluded | 3 present / 0 excluded |
+| <a id="pcv-network-inventory"></a>`pcv.network.inventory` | Network inventory | 3 | 3 present / 0 excluded | 3 present / 0 excluded |
 | <a id="pcv-vm-delete"></a>`pcv.vm.delete` | VM delete lifecycle | 2 | 2 present / 0 excluded | 2 present / 0 excluded |
 | <a id="pcv-vm-console-handoff"></a>`pcv.vm.console-handoff` | VM console handoff | 4 | 1 present / 3 excluded | 4 present / 0 excluded |
 | <a id="pcv-vm-telemetry"></a>`pcv.vm.telemetry` | VM telemetry | 2 | 2 present / 0 excluded | 2 present / 0 excluded |
@@ -92,8 +92,8 @@ feature promotion evidence를 서로 다른 계약으로 유지한다.
 | `pcv.account.session` | `account.disable` | `POST /api/v1/accounts/{username}/disable` | `account.manage` | present — `account.disable` | present — `pcvcli account disable lab-operator --yes` |
 | `pcv.console.capabilities` | `console.capabilities` | `GET /api/v1/console/capabilities` | `read` | present — `console.capabilities` | excluded — Global console capability discovery is API/Web-only; PCVCLI exposes VM-specific console handoff. |
 | `pcv.network.inventory` | `network.inventory` | `GET /api/v1/network/inventory` | `read` | present — `network.inventory` | present — `pcvcli network list` |
-| `pcv.network.inventory` | `vm.network.connect` | `POST /api/v1/vms/{vmId}/network` | `operate` | excluded — VM switch attach stays CLI/API; Web Console Network view remains inventory read-only without a switch/NAT/DHCP editor. | present — `pcvcli vm network connect vm-01 --switch pcv-lab-internal --yes` |
-| `pcv.network.inventory` | `vm.device.add` | `POST /api/v1/vms/{vmId}/devices` | `operate` | excluded — NIC/DVD add stays CLI/API; Web Console does not open a device shop or NAT/DHCP editor. | present — `pcvcli vm device add vm-01 --kind nic --switch Default Switch --yes` |
+| `pcv.network.inventory` | `vm.network.connect` | `POST /api/v1/vms/{vmId}/network` | `operate` | present — `vm.network.connect` | present — `pcvcli vm network connect vm-01 --switch pcv-lab-internal --yes` |
+| `pcv.network.inventory` | `vm.device.add` | `POST /api/v1/vms/{vmId}/devices` | `operate` | present — `vm.device.add` | present — `pcvcli vm device add vm-01 --kind nic --switch Default Switch --yes` |
 | `pcv.vm.delete` | `vm.delete-status` | `GET /api/v1/vms/{vmId}/delete-status` | `read` | present — `vm.delete-status` | present — `pcvcli vm delete-status vm-01` |
 | `pcv.vm.delete` | `vm.delete` | `DELETE /api/v1/vms/{vmId}` | `operate` | present — `vm.delete` | present — `pcvcli vm delete vm-01 --yes` |
 | `pcv.vm.console-handoff` | `console.session` | `GET /api/v1/vms/{vmId}/console` | `console.view` | present — `console.session` | present — `pcvcli vm console vm-01` |

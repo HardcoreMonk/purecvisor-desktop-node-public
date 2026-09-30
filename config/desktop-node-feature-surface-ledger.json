@@ -625,14 +625,10 @@
           "required_permission": "operate",
           "present_surfaces": [
             "api",
-            "cli"
+            "cli",
+            "web"
           ],
-          "excluded_surfaces": [
-            {
-              "surface": "web",
-              "reason": "VM switch attach stays CLI/API; Web Console Network view remains inventory read-only without a switch/NAT/DHCP editor."
-            }
-          ],
+          "excluded_surfaces": [],
           "surface_bindings": {
             "cli": {
               "command": [
@@ -644,6 +640,9 @@
                 "pcv-lab-internal",
                 "--yes"
               ]
+            },
+            "web": {
+              "coverage_id": "vm.network.connect"
             }
           }
         },
@@ -654,14 +653,10 @@
           "required_permission": "operate",
           "present_surfaces": [
             "api",
-            "cli"
+            "cli",
+            "web"
           ],
-          "excluded_surfaces": [
-            {
-              "surface": "web",
-              "reason": "NIC/DVD add stays CLI/API; Web Console does not open a device shop or NAT/DHCP editor."
-            }
-          ],
+          "excluded_surfaces": [],
           "surface_bindings": {
             "cli": {
               "command": [
@@ -675,6 +670,9 @@
                 "Default Switch",
                 "--yes"
               ]
+            },
+            "web": {
+              "coverage_id": "vm.device.add"
             }
           }
         }

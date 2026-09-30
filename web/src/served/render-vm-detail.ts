@@ -72,6 +72,16 @@ function renderVmDetail() {
         <input name="new_name" type="text" placeholder="New VM name" aria-label="New VM name"${lockedMutationDisabled}>
         <button type="submit"${lockedMutationDisabled}>Rename VM</button>
       </form>
+      <form class="vm-resource-form" data-action="vm-network-connect" data-vm-id="${escapeHtml(vmId)}">
+        <select name="switch" aria-label="Switch to connect"${lockedMutationDisabled}>${renderSwitchOptions()}</select>
+        <button type="submit"${lockedMutationDisabled}>Connect switch</button>
+      </form>
+      <form class="vm-resource-form" data-action="vm-device-add" data-vm-id="${escapeHtml(vmId)}">
+        <select name="device" aria-label="Device kind"${lockedMutationDisabled}><option value="nic">Network adapter</option><option value="dvd">DVD drive</option></select>
+        <select name="switch" aria-label="Network adapter switch"${lockedMutationDisabled}>${renderSwitchOptions()}</select>
+        <input name="iso_path" type="text" placeholder="DVD ISO path (optional)" aria-label="DVD ISO path"${lockedMutationDisabled}>
+        <button type="submit"${lockedMutationDisabled}>Add device</button>
+      </form>
       <form class="vm-resource-form" data-action="vm-set-memory" data-vm-id="${escapeHtml(vmId)}">
         <input name="memory_mb" type="number" min="512" max="262144" step="128" placeholder="Memory MB" aria-label="memory MB"${lockedMutationDisabled}>
         <button type="submit"${lockedMutationDisabled}>Set memory</button>

@@ -158,6 +158,60 @@ function renderExportImportPreview(vmId) {
   return `<p class="muted">${escapeHtml(preview.kind)} preview ${escapeHtml(updated)}: ${escapeHtml(formatObjectValue(preview.result))}</p>`;
 }
 
+function renderSwitchOptions() {
+  const inventory = state.networkInventory || {};
+  const switches = asArray(inventory.switches || inventory.items || inventory.networks)
+    .map((item) => String(item?.name || '').trim())
+    .filter(Boolean);
+  return ['<option value="">Select switch</option>']
+    .concat(switches.map((name) => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`))
+    .join('');
+}
+
+function readVmNetworkChangePayload(kind, data) {
+  const switchName = String(data.get('switch') || '').trim();
+  if (kind === 'connect') {
+    return { switch: switchName };
+  }
+  const device = String(data.get('device') || 'nic');
+  const isoPath = String(data.get('iso_path') || '').trim();
+  return device === 'dvd'
+    ? (isoPath ? { device, iso_path: isoPath } : { device })
+    : { device, switch: switchName };
+}
+
+function buildVmNetworkChangeConfirmation(vmId, kind, payload) {
+  return kind === 'connect'
+    ? `Connect VM '${vmId}' to switch '${payload.switch}'?\n\nThe first network adapter is retargeted. The VM must be Off.`
+    : `Add a ${payload.device === 'dvd' ? 'DVD drive' : 'network adapter'} to VM '${vmId}'?\n\nThe VM must be Off. Each add creates another device.`;
+}
+
+async function queueVmNetworkChange(vmId, kind, payload) {
+  requireRbac('operate', kind === 'connect' ? 'VM switch connect' : 'VM device add');
+  if (!window.confirm(buildVmNetworkChangeConfirmation(vmId, kind, payload))) {
+    return;
+  }
+
+  state.actionPending = true;
+  setVmActionPending(vmId, kind === 'connect' ? 'network-connect' : 'device-add');
+  state.error = null;
+  render();
+  try {
+    const job = kind === 'connect'
+      ? await desktopApi.connectVmNetwork(vmId, payload)
+      : await desktopApi.addVmDevice(vmId, payload);
+    trackJob(job);
+    state.connectionState = 'connected';
+    startPolling();
+  } catch (error) {
+    state.error = normalizeError(error);
+  } finally {
+    state.actionPending = false;
+    clearVmActionPending(vmId);
+    render();
+  }
+}
+
 async function handleVmDetailExtensionSubmit(form, data, submitterAction) {
   if (form?.dataset.action === 'vm-rename') {
     await queueVmRename(form.dataset.vmId, data.get('new_name'));
@@ -169,6 +223,9 @@ async function handleVmDetailExtensionSubmit(form, data, submitterAction) {
       kind,
       String(submitterAction || '').endsWith('-apply') ? 'apply' : 'preview',
       readExportImportPayload(kind, data));
+  } else if (form?.dataset.action === 'vm-network-connect' || form?.dataset.action === 'vm-device-add') {
+    const kind = form.dataset.action === 'vm-network-connect' ? 'connect' : 'device';
+    await queueVmNetworkChange(form.dataset.vmId, kind, readVmNetworkChangePayload(kind, data));
   } else if (form?.dataset.action === 'checkpoint-schedule') {
     await queueCheckpointScheduleControl(
       form.dataset.vmId,

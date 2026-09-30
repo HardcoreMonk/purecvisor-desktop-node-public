@@ -209,6 +209,8 @@ const DESKTOP_NODE_API_ROUTES = Object.freeze({
     vmAction: (vmId, action) => `/api/v1/vms/${encodeRouteSegment(vmId)}/${requireRouteAction(action, ['start', 'shutdown', 'poweroff', 'restart', 'save', 'resume-saved', 'pause', 'resume', 'rename', 'eject', 'attach', 'delete-status', 'set-memory', 'set-vcpu', 'disk-resize', 'manage', 'clone', 'template-lock'])}`,
     vmClonePreview: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/clone/preview`,
     vmCheckpoints: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/checkpoints`,
+    vmNetwork: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/network`,
+    vmDevices: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/devices`,
     vmExportPreview: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/export/preview`,
     vmExport: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/export`,
     vmImportPreview: () => '/api/v1/vms/import/preview',
@@ -241,6 +243,8 @@ const DESKTOP_NODE_ROUTE_COVERAGE = Object.freeze([
     { id: 'vm.export', featureId: 'pcv.vm.managed-import', method: 'POST', route: '/api/v1/vms/{vm_id}/export', view: 'vms', mutating: true, tokenRequired: true },
     { id: 'vm.import.preview', featureId: 'pcv.vm.managed-import', method: 'POST', route: '/api/v1/vms/import/preview', view: 'vms', mutating: false, tokenRequired: true },
     { id: 'vm.import', featureId: 'pcv.vm.managed-import', method: 'POST', route: '/api/v1/vms/import', view: 'vms', mutating: true, tokenRequired: true },
+    { id: 'vm.network.connect', featureId: 'pcv.network.inventory', method: 'POST', route: '/api/v1/vms/{vm_id}/network', view: 'vms', mutating: true, tokenRequired: true },
+    { id: 'vm.device.add', featureId: 'pcv.network.inventory', method: 'POST', route: '/api/v1/vms/{vm_id}/devices', view: 'vms', mutating: true, tokenRequired: true },
     { id: 'vm.bandwidth', featureId: 'pcv.vm.qos', method: 'GET', route: '/api/v1/vms/{vm_id}/bandwidth', view: 'vms', mutating: false, tokenRequired: true },
     { id: 'vm.qos.storage.preview', featureId: 'pcv.vm.qos', method: 'POST', route: '/api/v1/vms/{vm_id}/qos/storage/preview', view: 'vms', mutating: false, tokenRequired: true },
     { id: 'vm.qos.storage.set', featureId: 'pcv.vm.qos', method: 'POST', route: '/api/v1/vms/{vm_id}/qos/storage', view: 'vms', mutating: true, tokenRequired: true },
@@ -807,6 +811,14 @@ const desktopApi = Object.freeze({
     }),
     restoreCheckpoint: (vmId, checkpointId) => apiFetch(DESKTOP_NODE_API_ROUTES.checkpointAction(vmId, checkpointId, 'restore'), { method: 'POST' }),
     deleteCheckpoint: (vmId, checkpointId) => apiFetch(DESKTOP_NODE_API_ROUTES.checkpointDetail(vmId, checkpointId), { method: 'DELETE' }),
+    connectVmNetwork: (vmId, payload) => apiFetch(DESKTOP_NODE_API_ROUTES.vmNetwork(vmId), {
+        method: 'POST',
+        body: JSON.stringify(payload)
+    }),
+    addVmDevice: (vmId, payload) => apiFetch(DESKTOP_NODE_API_ROUTES.vmDevices(vmId), {
+        method: 'POST',
+        body: JSON.stringify(payload)
+    }),
     previewVmExport: (vmId, payload) => apiFetch(DESKTOP_NODE_API_ROUTES.vmExportPreview(vmId), {
         method: 'POST',
         body: JSON.stringify(payload)
@@ -1573,14 +1585,14 @@ function renderNetworkChangeReadback(switches) {
         <div class="diagnostics-fact"><span class="muted">product switches</span><strong>${escapeHtml(productCount)}</strong></div>
         <div class="diagnostics-fact"><span class="muted">reserved</span><strong>${escapeHtml(reservedCount)}</strong></div>
         <div class="diagnostics-fact"><span class="muted">external</span><strong>${escapeHtml(externalCount === 0 ? 'none' : 'present')}</strong></div>
-        <div class="diagnostics-fact"><span class="muted">vm.network.connect</span><strong>CLI/API only</strong></div>
+        <div class="diagnostics-fact"><span class="muted">vm.network.connect</span><strong>VM detail</strong></div>
         <div class="diagnostics-fact"><span class="muted">NAT/DHCP</span><strong>excluded</strong></div>
       </div>
       <div class="boundary-chip-row">
         <span>no switch create form</span>
         <span>no NAT editor</span>
         <span>no DHCP editor</span>
-        <span>CLI/API vm.network.connect only</span>
+        <span>switch connect in VM detail</span>
       </div>
     </div>`;
 }
@@ -1887,6 +1899,16 @@ function renderVmDetail() {
       <form class="vm-resource-form" data-action="vm-rename" data-vm-id="${escapeHtml(vmId)}">
         <input name="new_name" type="text" placeholder="New VM name" aria-label="New VM name"${lockedMutationDisabled}>
         <button type="submit"${lockedMutationDisabled}>Rename VM</button>
+      </form>
+      <form class="vm-resource-form" data-action="vm-network-connect" data-vm-id="${escapeHtml(vmId)}">
+        <select name="switch" aria-label="Switch to connect"${lockedMutationDisabled}>${renderSwitchOptions()}</select>
+        <button type="submit"${lockedMutationDisabled}>Connect switch</button>
+      </form>
+      <form class="vm-resource-form" data-action="vm-device-add" data-vm-id="${escapeHtml(vmId)}">
+        <select name="device" aria-label="Device kind"${lockedMutationDisabled}><option value="nic">Network adapter</option><option value="dvd">DVD drive</option></select>
+        <select name="switch" aria-label="Network adapter switch"${lockedMutationDisabled}>${renderSwitchOptions()}</select>
+        <input name="iso_path" type="text" placeholder="DVD ISO path (optional)" aria-label="DVD ISO path"${lockedMutationDisabled}>
+        <button type="submit"${lockedMutationDisabled}>Add device</button>
       </form>
       <form class="vm-resource-form" data-action="vm-set-memory" data-vm-id="${escapeHtml(vmId)}">
         <input name="memory_mb" type="number" min="512" max="262144" step="128" placeholder="Memory MB" aria-label="memory MB"${lockedMutationDisabled}>
@@ -4466,6 +4488,57 @@ function renderExportImportPreview(vmId) {
     const updated = preview.updated_at ? new Date(preview.updated_at).toLocaleString() : '-';
     return `<p class="muted">${escapeHtml(preview.kind)} preview ${escapeHtml(updated)}: ${escapeHtml(formatObjectValue(preview.result))}</p>`;
 }
+function renderSwitchOptions() {
+    const inventory = state.networkInventory || {};
+    const switches = asArray(inventory.switches || inventory.items || inventory.networks)
+        .map((item) => String(item?.name || '').trim())
+        .filter(Boolean);
+    return ['<option value="">Select switch</option>']
+        .concat(switches.map((name) => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`))
+        .join('');
+}
+function readVmNetworkChangePayload(kind, data) {
+    const switchName = String(data.get('switch') || '').trim();
+    if (kind === 'connect') {
+        return { switch: switchName };
+    }
+    const device = String(data.get('device') || 'nic');
+    const isoPath = String(data.get('iso_path') || '').trim();
+    return device === 'dvd'
+        ? (isoPath ? { device, iso_path: isoPath } : { device })
+        : { device, switch: switchName };
+}
+function buildVmNetworkChangeConfirmation(vmId, kind, payload) {
+    return kind === 'connect'
+        ? `Connect VM '${vmId}' to switch '${payload.switch}'?\n\nThe first network adapter is retargeted. The VM must be Off.`
+        : `Add a ${payload.device === 'dvd' ? 'DVD drive' : 'network adapter'} to VM '${vmId}'?\n\nThe VM must be Off. Each add creates another device.`;
+}
+async function queueVmNetworkChange(vmId, kind, payload) {
+    requireRbac('operate', kind === 'connect' ? 'VM switch connect' : 'VM device add');
+    if (!window.confirm(buildVmNetworkChangeConfirmation(vmId, kind, payload))) {
+        return;
+    }
+    state.actionPending = true;
+    setVmActionPending(vmId, kind === 'connect' ? 'network-connect' : 'device-add');
+    state.error = null;
+    render();
+    try {
+        const job = kind === 'connect'
+            ? await desktopApi.connectVmNetwork(vmId, payload)
+            : await desktopApi.addVmDevice(vmId, payload);
+        trackJob(job);
+        state.connectionState = 'connected';
+        startPolling();
+    }
+    catch (error) {
+        state.error = normalizeError(error);
+    }
+    finally {
+        state.actionPending = false;
+        clearVmActionPending(vmId);
+        render();
+    }
+}
 async function handleVmDetailExtensionSubmit(form, data, submitterAction) {
     if (form?.dataset.action === 'vm-rename') {
         await queueVmRename(form.dataset.vmId, data.get('new_name'));
@@ -4474,6 +4547,10 @@ async function handleVmDetailExtensionSubmit(form, data, submitterAction) {
     else if (form?.dataset.action === 'vm-export' || form?.dataset.action === 'vm-import') {
         const kind = form.dataset.action === 'vm-export' ? 'export' : 'import';
         await queueVmExportImportControl(form.dataset.vmId, kind, String(submitterAction || '').endsWith('-apply') ? 'apply' : 'preview', readExportImportPayload(kind, data));
+    }
+    else if (form?.dataset.action === 'vm-network-connect' || form?.dataset.action === 'vm-device-add') {
+        const kind = form.dataset.action === 'vm-network-connect' ? 'connect' : 'device';
+        await queueVmNetworkChange(form.dataset.vmId, kind, readVmNetworkChangePayload(kind, data));
     }
     else if (form?.dataset.action === 'checkpoint-schedule') {
         await queueCheckpointScheduleControl(form.dataset.vmId, submitterAction === 'checkpoint-schedule-set' ? 'set' : 'preview', readCheckpointSchedulePayload(data));

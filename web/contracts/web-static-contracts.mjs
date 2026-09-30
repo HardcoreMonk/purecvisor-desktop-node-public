@@ -1722,13 +1722,14 @@ function verifyNetworkInventory(context) {
     [/no switch create form/i, "no-switch-create-form"],
     [/no NAT editor/i, "no-nat-editor"],
     [/no DHCP editor/i, "no-dhcp-editor"],
-    [/CLI\/API vm\.network\.connect only/i, "network-connect-cli-api"]
+    [/switch connect in VM detail/i, "network-connect-vm-detail"]
   ], "network-inventory");
   context.assertNotMatch(
     inventorySource + app,
-    /data-action="switch-create"|data-action="switch-remove"|data-action="vm-network-connect"|name="nat-network"|name="dhcp-scope"/i,
+    /data-action="switch-create"|data-action="switch-remove"|name="nat-network"|name="dhcp-scope"/i,
     "network-inventory:no-editor-form"
   );
+  context.assertNotMatch(inventorySource, /data-action="vm-network-connect"/i, "network-inventory:no-connect-form-in-inventory");
   context.assertNotMatch(
     combined,
     /New-VMSwitch|Remove-VMSwitch|New-NetIPAddress|Set-NetFirewallRule/i,

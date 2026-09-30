@@ -109,14 +109,14 @@ function renderNetworkChangeReadback(switches) {
         <div class="diagnostics-fact"><span class="muted">product switches</span><strong>${escapeHtml(productCount)}</strong></div>
         <div class="diagnostics-fact"><span class="muted">reserved</span><strong>${escapeHtml(reservedCount)}</strong></div>
         <div class="diagnostics-fact"><span class="muted">external</span><strong>${escapeHtml(externalCount === 0 ? 'none' : 'present')}</strong></div>
-        <div class="diagnostics-fact"><span class="muted">vm.network.connect</span><strong>CLI/API only</strong></div>
+        <div class="diagnostics-fact"><span class="muted">vm.network.connect</span><strong>VM detail</strong></div>
         <div class="diagnostics-fact"><span class="muted">NAT/DHCP</span><strong>excluded</strong></div>
       </div>
       <div class="boundary-chip-row">
         <span>no switch create form</span>
         <span>no NAT editor</span>
         <span>no DHCP editor</span>
-        <span>CLI/API vm.network.connect only</span>
+        <span>switch connect in VM detail</span>
       </div>
     </div>`;
 }

@@ -57,6 +57,8 @@ interface PcvRouteRegistry {
   vmAction(vmId: string, action: string): string;
   vmClonePreview(vmId: string): string;
   vmCheckpoints(vmId: string): string;
+  vmNetwork(vmId: string): string;
+  vmDevices(vmId: string): string;
   vmExportPreview(vmId: string): string;
   vmExport(vmId: string): string;
   vmImportPreview(): string;
@@ -107,6 +109,8 @@ interface PcvDesktopApi {
   ensureVmGuestChannel(vmId: string, payload: Record<string, unknown>): Promise<any>;
   getVmDeleteStatus(vmId: string, options?: RequestInit): Promise<any>;
   getVmCheckpoints(vmId: string, options?: RequestInit): Promise<any>;
+  connectVmNetwork(vmId: string, payload: Record<string, unknown>): Promise<any>;
+  addVmDevice(vmId: string, payload: Record<string, unknown>): Promise<any>;
   previewVmExport(vmId: string, payload: Record<string, unknown>): Promise<any>;
   exportVm(vmId: string, payload: Record<string, unknown>): Promise<any>;
   previewVmImport(payload: Record<string, unknown>): Promise<any>;
