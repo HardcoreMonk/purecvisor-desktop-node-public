@@ -83,7 +83,9 @@
 
 ## Task 4c: dedicated clean-host Windows Update (Lane 2)
 
-- [ ] `Invoke-PcvInternalCleanHostInstallUpdateRollbackSmoke.ps1`을 baseline `0.42.83` MSI, target `0.42.84` update package, `current-base.json` base로 `-InstallWindowsUpdates -RemoveVmOnSuccess` 실행한다.
+- [x] `Invoke-PcvInternalCleanHostInstallUpdateRollbackSmoke.ps1`을 baseline `0.42.83` MSI, target `0.42.84` update package, `current-base.json` base로 `-InstallWindowsUpdates -RemoveVmOnSuccess` 실행한다.
+
+실행 기록(2026-09-30): update ZIP(`09b22e1c…`)을 0.42.83 ZIP과 같은 구조로 만들어 runner를 실행했다(약 `130`초, exit `0`). base는 `current-base.json`(UBR `5622`)이 골랐고 Windows Update 대상은 `0`개였다. install, update, rollback이 모두 exit `0`이고 최종 manifest는 `0.42.83`, Web `200`, VM은 삭제됐다. evidence는 `internal-clean-host-install-update-rollback-smoke-2026-09-30-04283-04284`다.
 
 ## Task 4d: Burn install/repair/remove (Lane 2)
 
