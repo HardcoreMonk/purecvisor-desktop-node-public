@@ -23,6 +23,9 @@ function renderVmDetail() {
   const pendingVmAction = state.pendingVmActions[getVmActionKey(vmId)];
   const storage = flattenNamedList(vm.storage, ['path', 'size_gb', 'attached']);
   const network = flattenNamedList(vm.network, ['name', 'switch', 'mode']);
+  const dvdMedia = Array.isArray(vm.dvd_media)
+    ? (vm.dvd_media.length > 0 ? flattenNamedList(vm.dvd_media, ['path']) : 'none')
+    : 'not reported';
   const details = [
     ['State', vm.state || vm.status],
     ['ID', vm.id],
@@ -31,6 +34,7 @@ function renderVmDetail() {
     ['Assigned Memory MB', vm.memory?.assigned_mb ?? vm.memory_assigned_mb],
     ['Generation', vm.generation],
     ['Storage', storage],
+    ['DVD Media', dvdMedia],
     ['Network', network],
     ['Checkpoints', vm.checkpoints?.count ?? vm.checkpoints_count],
     ['Console', formatConsoleValue(vm.console)],
