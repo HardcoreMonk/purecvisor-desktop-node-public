@@ -9,13 +9,14 @@
 - 공개 소스 권위: `HardcoreMonk/purecvisor-desktop-node-public`, HEAD `82b553f5386c79493532c425afec3b0192c92798` (PR #20, clean-host base VHD 오프라인 갱신 merge).
 - Required CI 권위: Development Gates run `36660066308`; 보호 context는 정확히 `dotnet`, `web`, `delivery`, `installer-policy`다.
 - PowerShell/Pester 경계: invocation 0은 위 Required CI 네 context에만 적용한다. 별도 Public Boundary workflow는 비필수 legacy residue로 보존한다(run `36660066317`, job `109712635173`).
-- 운영 제품 권위: `0.42.83-admin-smoke`; Web Console과 PCVCLI가 active이고 TUI는 absent다. Feature promotion은 `promotion_eligible=true`, blockers `none`이다. P0 feature ledger는 `0.42.75-admin-smoke` evidence를 유지한다.
-- 이 호스트 설치본(2026-09-29 fullgate): `0.42.83-admin-smoke`, service `Running/Automatic`. ARP `DisplayVersion`은 `0.42.83`(항목 `1`개).
+- 운영 제품 권위: `0.42.84-admin-smoke`; Web Console과 PCVCLI가 active이고 TUI는 absent다. Feature promotion은 `promotion_eligible=true`, blockers `none`이다. P0 feature ledger는 `0.42.75-admin-smoke` evidence를 유지한다.
+- 이 호스트 설치본(2026-09-30 fullgate): `0.42.84-admin-smoke`, service `Running/Automatic`. ARP `DisplayVersion`은 `0.42.84`(항목 `1`개).
 - 개발 campaign: `docs/ga-ready/active-campaign.json` intent `lane3-04284-promotion-and-lane1-vm-list-readback`(2026-09-30 개설, 계획 `docs/superpowers/plans/2026-09-30-purecvisor-desktop-node-04284-lane3-and-readback.md`). 선행 `lane1-lane2-04284-package-pair-actual-vm-and-readback-design`은 완료했다. clean-host base는 `current-base.json`이 고른다(`20348.5622`).
 - 진행 상황 현행화: `docs/project-status-audit-2026-09-27.md`. 직전 snapshot은 `docs/project-status-audit-2026-09-20.md`.
 - `0.42.75 -> 0.42.77` descriptor consume: `docs/ga-ready/evidence/manual-admin-campaign-2026-09-20-04275-04277.md` (`pass`, current 유지).
 - `0.42.77 -> 0.42.78` descriptor consume: `docs/ga-ready/evidence/manual-admin-campaign-2026-09-27-04277-04278.md` (`pass`, 당시 current `0.42.78-admin-smoke`).
-- `0.42.78 -> 0.42.83` descriptor consume: `docs/ga-ready/evidence/manual-admin-campaign-2026-09-29-04278-04283.md` (`pass`, current `0.42.83-admin-smoke`).
+- `0.42.83 -> 0.42.84` descriptor consume: `docs/ga-ready/evidence/manual-admin-campaign-2026-09-30-04283-04284.md` (`pass`, current `0.42.84-admin-smoke`).
+- `0.42.78 -> 0.42.83` descriptor consume: `docs/ga-ready/evidence/manual-admin-campaign-2026-09-29-04278-04283.md` (`pass`, 당시 current `0.42.83-admin-smoke`).
 - 릴리스 주장 경계: `public_trusted_signing=false`, `external_stable_publication=false`.
 
 ## 관례적 진입점 매핑
