@@ -89,7 +89,9 @@
 
 ## Task 4d: Burn install/repair/remove (Lane 2)
 
-- [ ] 설치본을 `0.42.84`에 맞춘 뒤 Burn bootstrapper lifecycle runner를 실행한다.
+- [x] 설치본을 `0.42.84`에 맞춘 뒤 Burn bootstrapper lifecycle runner를 실행한다.
+
+실행 기록(2026-09-30): 제품 Update로 설치본을 `0.42.84`에 맞춘 뒤 `-Execute`를 실행했다(약 `31`초). build, install, repair, remove, target MSI 복구 exit가 모두 `0`이고 결과는 PASS다. 최종 상태는 ARP `0.42.84` `{F50C37FD-…}` 1개, service `Running/Automatic`, Web `200`이다. evidence는 `burn-bootstrapper-lifecycle-smoke-2026-09-30-04284`다.
 
 ## Task 4e: MSIX build/install/update/remove (Lane 2)
 
