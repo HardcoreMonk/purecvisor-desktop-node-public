@@ -71,7 +71,9 @@
 
 ## Task 4f: installed runtime ops summary (Lane 2)
 
-- [ ] baseline `0.42.83`이 설치된 동안 `pcvcli --protected-token-file <file> --json ops summary`를 캡처한다. evidence `installed-runtime-ops-summary-2026-09-30-04283`.
+- [x] baseline `0.42.83`이 설치된 동안 `pcvcli --protected-token-file <file> --json ops summary`를 캡처한다. evidence `installed-runtime-ops-summary-2026-09-30-04283`.
+
+실행 기록(2026-09-30): baseline `0.42.83`이 설치된 동안 캡처했다. 결과는 CLI exit `0`, `ok=true`, 비인증 `401 PCV_AUTH_REQUIRED`, Web `200`, errors `0`, VM `1`개이고 token 형태 문자열은 없다. evidence는 `installed-runtime-ops-summary-2026-09-30-04283`이다.
 
 ## Task 4b: 설치본 update/rollback (Lane 2)
 
