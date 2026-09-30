@@ -53,11 +53,15 @@ Lane 3 승격은 하지 않는다.
 
 ## Task 2a: pair readiness (Lane 2)
 
-- [ ] baseline `0.42.84`(clean package `admin-smoke-package-20260930-04284`)와 target `0.42.85`로 `New-PcvManualAdminRebaselineReadiness.ps1 -PlanOnly`를 실행한다.
+- [x] baseline `0.42.84`(clean package `admin-smoke-package-20260930-04284`)와 target `0.42.85`로 `New-PcvManualAdminRebaselineReadiness.ps1 -PlanOnly`를 실행한다.
+
+실행 기록(2026-10-01): 설치본이 baseline `0.42.84`라 설치 변경 없이 실행했다. `-PlanOnly`, campaign `manual-admin-campaign-20261001-04284-04285` 결과는 `ok=true`, `ready-current-baseline-target-package-pair`, `installed_version_matches_requested=true`, target MSI `cba74683…`, host mutation 없음이다. summary SHA `8a7e6c2a…`.
 
 ## Task 2f: installed runtime ops summary (Lane 2)
 
-- [ ] baseline `0.42.84`가 설치된 동안 ops summary를 캡처한다. evidence `installed-runtime-ops-summary-2026-10-01-04284`.
+- [x] baseline `0.42.84`가 설치된 동안 ops summary를 캡처한다. evidence `installed-runtime-ops-summary-2026-10-01-04284`.
+
+실행 기록(2026-10-01): CLI exit `0`, `ok=true`, 비인증 `401 PCV_AUTH_REQUIRED`, Web `200`, errors `0`, VM `1`개이고 token 형태 문자열은 없다. evidence `installed-runtime-ops-summary-2026-10-01-04284`.
 
 ## Task 2b: 설치본 update/rollback (Lane 2)
 
