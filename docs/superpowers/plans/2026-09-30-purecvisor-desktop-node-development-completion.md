@@ -129,9 +129,11 @@
 
 ## Task 10: Web export/import — preview와 제출
 
-- [ ] VM detail에 export preview → export를, inventory에 import preview → import를 둔다. 경로 입력은 API 검증 결과를 그대로 보인다.
-- [ ] ledger와 투영 문서를 맞추고 build/parity를 재생성한다.
-- [ ] 검증: 공통 검증 전체
+- [x] VM detail에 export preview → export를, inventory에 import preview → import를 둔다. 경로 입력은 API 검증 결과를 그대로 보인다.
+- [x] ledger와 투영 문서를 맞추고 build/parity를 재생성한다.
+- [x] 검증: 공통 검증 전체
+
+실행 기록(2026-09-30): plan과 달리 import 폼도 inventory가 아니라 VM detail의 기존 "Export / Import" 카드에 두었다. export → import 흐름이 한 카드에서 이어진다. import preview는 CLI `--has-vmcx`와 같은 운영자 확인 체크박스를 보낸다. 실행은 확인 후 job으로 추적하고, preview 결과는 카드 안에 표시한다. 폼 부재를 고정하던 계약(static 계약 두 줄, negative 테스트 하나, browser fixture negative 검사 다섯 줄)을 새 폼 기준으로 바꿨다. `FEATURE_IMPLEMENTATION_LEDGER.md` 요약표는 ledger에서 Routes/Web/CLI 열을 다시 계산한다. 그 과정에서 80-route ledger와 어긋나 있던 두 행(`pcv.network.inventory` `3` route, `pcv.vm.managed-import` `5` route)도 바로잡았다. Web 제외는 `12`→`8`이다. 검증: `npm run test:required --prefix web` exit `0`, web Pester `50`/`0`, Cli `179`/`179`, Api `474`/`474`, Delivery `744`/`744`, `git diff --check`.
 
 ## Task 11: Web network connect, device add
 

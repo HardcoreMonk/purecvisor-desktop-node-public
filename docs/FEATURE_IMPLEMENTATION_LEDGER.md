@@ -43,7 +43,7 @@ feature promotion evidence를 서로 다른 계약으로 유지한다.
 | <a id="pcv-diagnostics-bundle"></a>`pcv.diagnostics.bundle` | Diagnostic bundles | 3 | 3 present / 0 excluded | 3 present / 0 excluded |
 | <a id="pcv-account-session"></a>`pcv.account.session` | Account and RBAC session | 9 | 9 present / 0 excluded | 3 present / 6 excluded |
 | <a id="pcv-console-capabilities"></a>`pcv.console.capabilities` | Console capability discovery | 1 | 1 present / 0 excluded | 0 present / 1 excluded |
-| <a id="pcv-network-inventory"></a>`pcv.network.inventory` | Network inventory | 2 | 1 present / 1 excluded | 2 present / 0 excluded |
+| <a id="pcv-network-inventory"></a>`pcv.network.inventory` | Network inventory | 3 | 1 present / 2 excluded | 3 present / 0 excluded |
 | <a id="pcv-vm-delete"></a>`pcv.vm.delete` | VM delete lifecycle | 2 | 2 present / 0 excluded | 2 present / 0 excluded |
 | <a id="pcv-vm-console-handoff"></a>`pcv.vm.console-handoff` | VM console handoff | 4 | 1 present / 3 excluded | 4 present / 0 excluded |
 | <a id="pcv-vm-telemetry"></a>`pcv.vm.telemetry` | VM telemetry | 2 | 2 present / 0 excluded | 2 present / 0 excluded |
@@ -58,7 +58,7 @@ feature promotion evidence를 서로 다른 계약으로 유지한다.
 | <a id="pcv-vm-pause-lifecycle"></a>`pcv.vm.pause-lifecycle` | VM pause lifecycle | 2 | 2 present / 0 excluded | 2 present / 0 excluded |
 | <a id="pcv-vm-saved-lifecycle"></a>`pcv.vm.saved-lifecycle` | VM saved lifecycle | 2 | 2 present / 0 excluded | 2 present / 0 excluded |
 | <a id="pcv-vm-rename"></a>`pcv.vm.rename` | VM rename | 1 | 1 present / 0 excluded | 1 present / 0 excluded |
-| <a id="pcv-vm-managed-import"></a>`pcv.vm.managed-import` | Managed VM import | 4 | 1 present / 3 excluded | 4 present / 0 excluded |
+| <a id="pcv-vm-managed-import"></a>`pcv.vm.managed-import` | Managed VM import | 5 | 5 present / 0 excluded | 5 present / 0 excluded |
 | <a id="pcv-vm-clone"></a>`pcv.vm.clone` | Managed VM full clone | 3 | 3 present / 0 excluded | 3 present / 0 excluded |
 | <a id="pcv-vm-media-eject"></a>`pcv.vm.media-eject` | VM media eject | 1 | 1 present / 0 excluded | 1 present / 0 excluded |
 | <a id="pcv-vm-media-attach"></a>`pcv.vm.media-attach` | VM media attach | 1 | 1 present / 0 excluded | 1 present / 0 excluded |
@@ -135,10 +135,10 @@ feature promotion evidence를 서로 다른 계약으로 유지한다.
 | `pcv.vm.saved-lifecycle` | `vm.resume-saved` | `POST /api/v1/vms/{vmId}/resume-saved` | `operate` | present — `vm.resume-saved` | present — `pcvcli vm resume-saved vm-01` |
 | `pcv.vm.rename` | `vm.rename` | `POST /api/v1/vms/{vmId}/rename` | `operate` | present — `vm.rename` | present — `pcvcli vm rename vm-01 vm-02` |
 | `pcv.vm.managed-import` | `vm.manage` | `POST /api/v1/vms/{vmId}/manage` | `operate` | present — `vm.manage` | present — `pcvcli vm manage vm-01 --yes` |
-| `pcv.vm.managed-import` | `vm.export.preview` | `POST /api/v1/vms/{vmId}/export/preview` | `operate` | excluded — Hyper-V export/import stays CLI/API; Web Console shows inventory status readback without an export/import save form. | present — `pcvcli vm export preview vm-01 --directory D:\PureCVisor\exports\vm-01` |
-| `pcv.vm.managed-import` | `vm.export` | `POST /api/v1/vms/{vmId}/export` | `operate` | excluded — Hyper-V export/import stays CLI/API; Web Console shows inventory status readback without an export/import save form. | present — `pcvcli vm export vm-01 --directory D:\PureCVisor\exports\vm-01 --yes` |
-| `pcv.vm.managed-import` | `vm.import.preview` | `POST /api/v1/vms/import/preview` | `operate` | excluded — Hyper-V export/import stays CLI/API; Web Console shows inventory status readback without an export/import save form. | present — `pcvcli vm import preview --name vm-02 --directory D:\PureCVisor\exports\vm-01 --has-vmcx` |
-| `pcv.vm.managed-import` | `vm.import` | `POST /api/v1/vms/import` | `operate` | excluded — Hyper-V export/import stays CLI/API; Web Console shows inventory status readback without an export/import save form. | present — `pcvcli vm import --name vm-02 --directory D:\PureCVisor\exports\vm-01 --yes` |
+| `pcv.vm.managed-import` | `vm.export.preview` | `POST /api/v1/vms/{vmId}/export/preview` | `operate` | present — `vm.export.preview` | present — `pcvcli vm export preview vm-01 --directory D:\PureCVisor\exports\vm-01` |
+| `pcv.vm.managed-import` | `vm.export` | `POST /api/v1/vms/{vmId}/export` | `operate` | present — `vm.export` | present — `pcvcli vm export vm-01 --directory D:\PureCVisor\exports\vm-01 --yes` |
+| `pcv.vm.managed-import` | `vm.import.preview` | `POST /api/v1/vms/import/preview` | `operate` | present — `vm.import.preview` | present — `pcvcli vm import preview --name vm-02 --directory D:\PureCVisor\exports\vm-01 --has-vmcx` |
+| `pcv.vm.managed-import` | `vm.import` | `POST /api/v1/vms/import` | `operate` | present — `vm.import` | present — `pcvcli vm import --name vm-02 --directory D:\PureCVisor\exports\vm-01 --yes` |
 | `pcv.vm.clone` | `vm.clone.preview` | `POST /api/v1/vms/{vmId}/clone/preview` | `operate` | present — `vm.clone.preview` | present — `pcvcli vm clone vm-01 --name vm-02 --dry-run` |
 | `pcv.vm.clone` | `vm.clone` | `POST /api/v1/vms/{vmId}/clone` | `operate` | present — `vm.clone` | present — `pcvcli vm clone vm-01 --name vm-02 --yes` |
 | `pcv.vm.clone` | `vm.template.lock` | `POST /api/v1/vms/{vmId}/template-lock` | `operate` | present — `vm.template.lock` | present — `pcvcli vm template-lock vm-01 --yes` |

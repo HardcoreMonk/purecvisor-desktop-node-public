@@ -1081,8 +1081,8 @@ function verifyVmLifecycleActions(context) {
     [/Clone VM/i, "clone-label"],
     [/data-action="vm-delete"/i, "delete"],
     [/export-import-readback/i, "export-import-readback"],
-    [/no export\/import save form/i, "no-export-import-save-form"],
-    [/CLI\/API export\/import only/i, "export-import-cli-api"],
+    [/vm-export-preview/i, "export-preview"],
+    [/vm-import-preview/i, "import-preview"],
     [/no OVF/i, "no-ovf"],
     [/no TPM key copy/i, "no-tpm-key-copy"]
   ], "vm-lifecycle-actions");

@@ -92,7 +92,7 @@ function renderVmDetail() {
     <div class="details-grid detail-grid">
       ${details.map(([label, value]) => `<div class="kv"><span>${escapeHtml(label)}</span><strong>${escapeHtml(formatObjectValue(value))}</strong></div>`).join('')}
     </div>
-    ${renderExportImportReadback(vm)}
+    ${renderExportImportReadback(vm, vmId, actionDisabled)}
     ${renderVmQosGuestReadback(vmId)}
     ${renderVmQosDirectControl(vmId)}
     <div class="checkpoint-panel">
@@ -112,7 +112,7 @@ function renderVmDetail() {
     </div>`;
 }
 
-function renderExportImportReadback(vm) {
+function renderExportImportReadback(vm, vmId, actionDisabled = '') {
   const managed = vm?.managed_by_purecvisor === true;
   const generation = Number(vm?.generation);
   const power = String(vm?.state || vm?.status || '').trim().toLowerCase();
@@ -133,11 +133,24 @@ function renderExportImportReadback(vm) {
         <div class="diagnostics-fact"><span class="muted">generation</span><strong>${escapeHtml(formatObjectValue(vm?.generation))}</strong></div>
         <div class="diagnostics-fact"><span class="muted">power</span><strong>${escapeHtml(formatObjectValue(vm?.state || vm?.status))}</strong></div>
         <div class="diagnostics-fact"><span class="muted">security features</span><strong>${escapeHtml(securityLabel)}</strong></div>
-        <div class="diagnostics-fact"><span class="muted">import</span><strong>CLI/API only</strong></div>
+        <div class="diagnostics-fact"><span class="muted">import</span><strong>new identity</strong></div>
       </div>
+      <form class="vm-resource-form export-import-form" data-action="vm-export" data-vm-id="${escapeHtml(vmId)}">
+        <input name="directory" type="text" placeholder="Export directory" aria-label="Export directory"${actionDisabled}>
+        <button type="submit" data-action="vm-export-preview"${actionDisabled}>Preview export</button>
+        <button type="submit" data-action="vm-export-apply"${actionDisabled}>Export VM</button>
+      </form>
+      <form class="vm-resource-form export-import-form" data-action="vm-import" data-vm-id="${escapeHtml(vmId)}">
+        <input name="name" type="text" placeholder="New VM name" aria-label="Import VM name"${actionDisabled}>
+        <input name="directory" type="text" placeholder="Export package directory" aria-label="Import package directory"${actionDisabled}>
+        <label><input name="has_vmcx" type="checkbox"${actionDisabled}> package has .vmcx</label>
+        <button type="submit" data-action="vm-import-preview"${actionDisabled}>Preview import</button>
+        <button type="submit" data-action="vm-import-apply"${actionDisabled}>Import VM</button>
+      </form>
+      ${renderExportImportPreview(vmId)}
       <div class="boundary-chip-row">
-        <span>no export/import save form</span>
-        <span>CLI/API export/import only</span>
+        <span>preview before export/import</span>
+        <span>new VM identity on import</span>
         <span>no OVF</span>
         <span>no TPM key copy</span>
       </div>

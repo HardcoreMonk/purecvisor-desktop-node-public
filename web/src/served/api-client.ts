@@ -219,6 +219,22 @@ const desktopApi: Readonly<PcvDesktopApi> = Object.freeze({
   }),
   restoreCheckpoint: (vmId: string, checkpointId: string) => apiFetch(DESKTOP_NODE_API_ROUTES.checkpointAction(vmId, checkpointId, 'restore'), { method: 'POST' }),
   deleteCheckpoint: (vmId: string, checkpointId: string) => apiFetch(DESKTOP_NODE_API_ROUTES.checkpointDetail(vmId, checkpointId), { method: 'DELETE' }),
+  previewVmExport: (vmId: string, payload: Record<string, unknown>) => apiFetch(DESKTOP_NODE_API_ROUTES.vmExportPreview(vmId), {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  }),
+  exportVm: (vmId: string, payload: Record<string, unknown>) => apiFetch(DESKTOP_NODE_API_ROUTES.vmExport(vmId), {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  }),
+  previewVmImport: (payload: Record<string, unknown>) => apiFetch(DESKTOP_NODE_API_ROUTES.vmImportPreview(), {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  }),
+  importVm: (payload: Record<string, unknown>) => apiFetch(DESKTOP_NODE_API_ROUTES.vmImport(), {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  }),
   previewCheckpointSchedule: (vmId: string, payload: Record<string, unknown>) => apiFetch(DESKTOP_NODE_API_ROUTES.vmCheckpointSchedulePreview(vmId), {
     method: 'POST',
     body: JSON.stringify(payload)

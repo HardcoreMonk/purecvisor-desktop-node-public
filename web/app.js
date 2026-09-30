@@ -209,6 +209,10 @@ const DESKTOP_NODE_API_ROUTES = Object.freeze({
     vmAction: (vmId, action) => `/api/v1/vms/${encodeRouteSegment(vmId)}/${requireRouteAction(action, ['start', 'shutdown', 'poweroff', 'restart', 'save', 'resume-saved', 'pause', 'resume', 'rename', 'eject', 'attach', 'delete-status', 'set-memory', 'set-vcpu', 'disk-resize', 'manage', 'clone', 'template-lock'])}`,
     vmClonePreview: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/clone/preview`,
     vmCheckpoints: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/checkpoints`,
+    vmExportPreview: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/export/preview`,
+    vmExport: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/export`,
+    vmImportPreview: () => '/api/v1/vms/import/preview',
+    vmImport: () => '/api/v1/vms/import',
     vmCheckpointSchedulePreview: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/checkpoints/schedule/preview`,
     vmCheckpointSchedule: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/checkpoints/schedule`,
     vmCheckpointScheduleClear: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/checkpoints/schedule/clear`,
@@ -233,6 +237,10 @@ const DESKTOP_NODE_ROUTE_COVERAGE = Object.freeze([
     { id: 'checkpoint.schedule.preview', featureId: 'pcv.checkpoint.lifecycle', method: 'POST', route: '/api/v1/vms/{vm_id}/checkpoints/schedule/preview', view: 'vms', mutating: true, tokenRequired: true },
     { id: 'checkpoint.schedule.set', featureId: 'pcv.checkpoint.lifecycle', method: 'POST', route: '/api/v1/vms/{vm_id}/checkpoints/schedule', view: 'vms', mutating: true, tokenRequired: true },
     { id: 'checkpoint.schedule.clear', featureId: 'pcv.checkpoint.lifecycle', method: 'POST', route: '/api/v1/vms/{vm_id}/checkpoints/schedule/clear', view: 'vms', mutating: true, tokenRequired: true },
+    { id: 'vm.export.preview', featureId: 'pcv.vm.managed-import', method: 'POST', route: '/api/v1/vms/{vm_id}/export/preview', view: 'vms', mutating: false, tokenRequired: true },
+    { id: 'vm.export', featureId: 'pcv.vm.managed-import', method: 'POST', route: '/api/v1/vms/{vm_id}/export', view: 'vms', mutating: true, tokenRequired: true },
+    { id: 'vm.import.preview', featureId: 'pcv.vm.managed-import', method: 'POST', route: '/api/v1/vms/import/preview', view: 'vms', mutating: false, tokenRequired: true },
+    { id: 'vm.import', featureId: 'pcv.vm.managed-import', method: 'POST', route: '/api/v1/vms/import', view: 'vms', mutating: true, tokenRequired: true },
     { id: 'vm.bandwidth', featureId: 'pcv.vm.qos', method: 'GET', route: '/api/v1/vms/{vm_id}/bandwidth', view: 'vms', mutating: false, tokenRequired: true },
     { id: 'vm.qos.storage.preview', featureId: 'pcv.vm.qos', method: 'POST', route: '/api/v1/vms/{vm_id}/qos/storage/preview', view: 'vms', mutating: false, tokenRequired: true },
     { id: 'vm.qos.storage.set', featureId: 'pcv.vm.qos', method: 'POST', route: '/api/v1/vms/{vm_id}/qos/storage', view: 'vms', mutating: true, tokenRequired: true },
@@ -799,6 +807,22 @@ const desktopApi = Object.freeze({
     }),
     restoreCheckpoint: (vmId, checkpointId) => apiFetch(DESKTOP_NODE_API_ROUTES.checkpointAction(vmId, checkpointId, 'restore'), { method: 'POST' }),
     deleteCheckpoint: (vmId, checkpointId) => apiFetch(DESKTOP_NODE_API_ROUTES.checkpointDetail(vmId, checkpointId), { method: 'DELETE' }),
+    previewVmExport: (vmId, payload) => apiFetch(DESKTOP_NODE_API_ROUTES.vmExportPreview(vmId), {
+        method: 'POST',
+        body: JSON.stringify(payload)
+    }),
+    exportVm: (vmId, payload) => apiFetch(DESKTOP_NODE_API_ROUTES.vmExport(vmId), {
+        method: 'POST',
+        body: JSON.stringify(payload)
+    }),
+    previewVmImport: (payload) => apiFetch(DESKTOP_NODE_API_ROUTES.vmImportPreview(), {
+        method: 'POST',
+        body: JSON.stringify(payload)
+    }),
+    importVm: (payload) => apiFetch(DESKTOP_NODE_API_ROUTES.vmImport(), {
+        method: 'POST',
+        body: JSON.stringify(payload)
+    }),
     previewCheckpointSchedule: (vmId, payload) => apiFetch(DESKTOP_NODE_API_ROUTES.vmCheckpointSchedulePreview(vmId), {
         method: 'POST',
         body: JSON.stringify(payload)
@@ -1884,7 +1908,7 @@ function renderVmDetail() {
     <div class="details-grid detail-grid">
       ${details.map(([label, value]) => `<div class="kv"><span>${escapeHtml(label)}</span><strong>${escapeHtml(formatObjectValue(value))}</strong></div>`).join('')}
     </div>
-    ${renderExportImportReadback(vm)}
+    ${renderExportImportReadback(vm, vmId, actionDisabled)}
     ${renderVmQosGuestReadback(vmId)}
     ${renderVmQosDirectControl(vmId)}
     <div class="checkpoint-panel">
@@ -1903,7 +1927,7 @@ function renderVmDetail() {
       <div class="checkpoint-list">${renderCheckpointList(vmId)}</div>
     </div>`;
 }
-function renderExportImportReadback(vm) {
+function renderExportImportReadback(vm, vmId, actionDisabled = '') {
     const managed = vm?.managed_by_purecvisor === true;
     const generation = Number(vm?.generation);
     const power = String(vm?.state || vm?.status || '').trim().toLowerCase();
@@ -1924,11 +1948,24 @@ function renderExportImportReadback(vm) {
         <div class="diagnostics-fact"><span class="muted">generation</span><strong>${escapeHtml(formatObjectValue(vm?.generation))}</strong></div>
         <div class="diagnostics-fact"><span class="muted">power</span><strong>${escapeHtml(formatObjectValue(vm?.state || vm?.status))}</strong></div>
         <div class="diagnostics-fact"><span class="muted">security features</span><strong>${escapeHtml(securityLabel)}</strong></div>
-        <div class="diagnostics-fact"><span class="muted">import</span><strong>CLI/API only</strong></div>
+        <div class="diagnostics-fact"><span class="muted">import</span><strong>new identity</strong></div>
       </div>
+      <form class="vm-resource-form export-import-form" data-action="vm-export" data-vm-id="${escapeHtml(vmId)}">
+        <input name="directory" type="text" placeholder="Export directory" aria-label="Export directory"${actionDisabled}>
+        <button type="submit" data-action="vm-export-preview"${actionDisabled}>Preview export</button>
+        <button type="submit" data-action="vm-export-apply"${actionDisabled}>Export VM</button>
+      </form>
+      <form class="vm-resource-form export-import-form" data-action="vm-import" data-vm-id="${escapeHtml(vmId)}">
+        <input name="name" type="text" placeholder="New VM name" aria-label="Import VM name"${actionDisabled}>
+        <input name="directory" type="text" placeholder="Export package directory" aria-label="Import package directory"${actionDisabled}>
+        <label><input name="has_vmcx" type="checkbox"${actionDisabled}> package has .vmcx</label>
+        <button type="submit" data-action="vm-import-preview"${actionDisabled}>Preview import</button>
+        <button type="submit" data-action="vm-import-apply"${actionDisabled}>Import VM</button>
+      </form>
+      ${renderExportImportPreview(vmId)}
       <div class="boundary-chip-row">
-        <span>no export/import save form</span>
-        <span>CLI/API export/import only</span>
+        <span>preview before export/import</span>
+        <span>new VM identity on import</span>
         <span>no OVF</span>
         <span>no TPM key copy</span>
       </div>
@@ -4378,10 +4415,65 @@ function renderCheckpointSchedulePreview(vmId) {
     const updated = preview.updated_at ? new Date(preview.updated_at).toLocaleString() : '-';
     return `<p class="muted">schedule preview ${escapeHtml(updated)}: ${escapeHtml(formatObjectValue(preview.result))}</p>`;
 }
+function readExportImportPayload(kind, data) {
+    const directory = String(data.get('directory') || '').trim();
+    return kind === 'export'
+        ? { directory }
+        : { name: String(data.get('name') || '').trim(), directory, has_vmcx: data.get('has_vmcx') === 'on' };
+}
+function buildExportImportConfirmation(vmId, kind, payload) {
+    return kind === 'export'
+        ? `Export VM '${vmId}' to '${payload.directory}'?\n\nHyper-V writes an export package there. The VM itself does not change.`
+        : `Import '${payload.directory}' as new VM '${payload.name}'?\n\nThe import gets a new VM identity and the managed marker. Disks are copied under the VM root.`;
+}
+async function queueVmExportImportControl(vmId, kind, mode, payload) {
+    requireRbac('operate', `VM ${kind} ${mode}`);
+    const apply = mode === 'apply';
+    if (apply && !window.confirm(buildExportImportConfirmation(vmId, kind, payload))) {
+        return;
+    }
+    state.actionPending = true;
+    setVmActionPending(vmId, `${kind}-${mode}`);
+    state.error = null;
+    render();
+    try {
+        const result = kind === 'export'
+            ? apply ? await desktopApi.exportVm(vmId, payload) : await desktopApi.previewVmExport(vmId, payload)
+            : apply ? await desktopApi.importVm(payload) : await desktopApi.previewVmImport(payload);
+        if (apply) {
+            trackJob(result);
+            startPolling();
+        }
+        else {
+            state.vmExportImportPreview = { vm_id: vmId, kind, updated_at: new Date().toISOString(), result };
+        }
+        state.connectionState = 'connected';
+    }
+    catch (error) {
+        state.error = normalizeError(error);
+    }
+    finally {
+        state.actionPending = false;
+        clearVmActionPending(vmId);
+        render();
+    }
+}
+function renderExportImportPreview(vmId) {
+    const preview = state.vmExportImportPreview;
+    if (!preview || preview.vm_id !== vmId) {
+        return '<p class="muted">Preview an export or import before running it.</p>';
+    }
+    const updated = preview.updated_at ? new Date(preview.updated_at).toLocaleString() : '-';
+    return `<p class="muted">${escapeHtml(preview.kind)} preview ${escapeHtml(updated)}: ${escapeHtml(formatObjectValue(preview.result))}</p>`;
+}
 async function handleVmDetailExtensionSubmit(form, data, submitterAction) {
     if (form?.dataset.action === 'vm-rename') {
         await queueVmRename(form.dataset.vmId, data.get('new_name'));
         form.reset();
+    }
+    else if (form?.dataset.action === 'vm-export' || form?.dataset.action === 'vm-import') {
+        const kind = form.dataset.action === 'vm-export' ? 'export' : 'import';
+        await queueVmExportImportControl(form.dataset.vmId, kind, String(submitterAction || '').endsWith('-apply') ? 'apply' : 'preview', readExportImportPayload(kind, data));
     }
     else if (form?.dataset.action === 'checkpoint-schedule') {
         await queueCheckpointScheduleControl(form.dataset.vmId, submitterAction === 'checkpoint-schedule-set' ? 'set' : 'preview', readCheckpointSchedulePayload(data));

@@ -57,6 +57,10 @@ interface PcvRouteRegistry {
   vmAction(vmId: string, action: string): string;
   vmClonePreview(vmId: string): string;
   vmCheckpoints(vmId: string): string;
+  vmExportPreview(vmId: string): string;
+  vmExport(vmId: string): string;
+  vmImportPreview(): string;
+  vmImport(): string;
   vmCheckpointSchedulePreview(vmId: string): string;
   vmCheckpointSchedule(vmId: string): string;
   vmCheckpointScheduleClear(vmId: string): string;
@@ -103,6 +107,10 @@ interface PcvDesktopApi {
   ensureVmGuestChannel(vmId: string, payload: Record<string, unknown>): Promise<any>;
   getVmDeleteStatus(vmId: string, options?: RequestInit): Promise<any>;
   getVmCheckpoints(vmId: string, options?: RequestInit): Promise<any>;
+  previewVmExport(vmId: string, payload: Record<string, unknown>): Promise<any>;
+  exportVm(vmId: string, payload: Record<string, unknown>): Promise<any>;
+  previewVmImport(payload: Record<string, unknown>): Promise<any>;
+  importVm(payload: Record<string, unknown>): Promise<any>;
   previewCheckpointSchedule(vmId: string, payload: Record<string, unknown>): Promise<any>;
   setCheckpointSchedule(vmId: string, payload: Record<string, unknown>): Promise<any>;
   clearCheckpointSchedule(vmId: string): Promise<any>;

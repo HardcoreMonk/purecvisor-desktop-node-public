@@ -105,10 +105,70 @@ function renderCheckpointSchedulePreview(vmId) {
   return `<p class="muted">schedule preview ${escapeHtml(updated)}: ${escapeHtml(formatObjectValue(preview.result))}</p>`;
 }
 
+function readExportImportPayload(kind, data) {
+  const directory = String(data.get('directory') || '').trim();
+  return kind === 'export'
+    ? { directory }
+    : { name: String(data.get('name') || '').trim(), directory, has_vmcx: data.get('has_vmcx') === 'on' };
+}
+
+function buildExportImportConfirmation(vmId, kind, payload) {
+  return kind === 'export'
+    ? `Export VM '${vmId}' to '${payload.directory}'?\n\nHyper-V writes an export package there. The VM itself does not change.`
+    : `Import '${payload.directory}' as new VM '${payload.name}'?\n\nThe import gets a new VM identity and the managed marker. Disks are copied under the VM root.`;
+}
+
+async function queueVmExportImportControl(vmId, kind, mode, payload) {
+  requireRbac('operate', `VM ${kind} ${mode}`);
+  const apply = mode === 'apply';
+  if (apply && !window.confirm(buildExportImportConfirmation(vmId, kind, payload))) {
+    return;
+  }
+
+  state.actionPending = true;
+  setVmActionPending(vmId, `${kind}-${mode}`);
+  state.error = null;
+  render();
+  try {
+    const result = kind === 'export'
+      ? apply ? await desktopApi.exportVm(vmId, payload) : await desktopApi.previewVmExport(vmId, payload)
+      : apply ? await desktopApi.importVm(payload) : await desktopApi.previewVmImport(payload);
+    if (apply) {
+      trackJob(result);
+      startPolling();
+    } else {
+      state.vmExportImportPreview = { vm_id: vmId, kind, updated_at: new Date().toISOString(), result };
+    }
+    state.connectionState = 'connected';
+  } catch (error) {
+    state.error = normalizeError(error);
+  } finally {
+    state.actionPending = false;
+    clearVmActionPending(vmId);
+    render();
+  }
+}
+
+function renderExportImportPreview(vmId) {
+  const preview = state.vmExportImportPreview;
+  if (!preview || preview.vm_id !== vmId) {
+    return '<p class="muted">Preview an export or import before running it.</p>';
+  }
+  const updated = preview.updated_at ? new Date(preview.updated_at).toLocaleString() : '-';
+  return `<p class="muted">${escapeHtml(preview.kind)} preview ${escapeHtml(updated)}: ${escapeHtml(formatObjectValue(preview.result))}</p>`;
+}
+
 async function handleVmDetailExtensionSubmit(form, data, submitterAction) {
   if (form?.dataset.action === 'vm-rename') {
     await queueVmRename(form.dataset.vmId, data.get('new_name'));
     form.reset();
+  } else if (form?.dataset.action === 'vm-export' || form?.dataset.action === 'vm-import') {
+    const kind = form.dataset.action === 'vm-export' ? 'export' : 'import';
+    await queueVmExportImportControl(
+      form.dataset.vmId,
+      kind,
+      String(submitterAction || '').endsWith('-apply') ? 'apply' : 'preview',
+      readExportImportPayload(kind, data));
   } else if (form?.dataset.action === 'checkpoint-schedule') {
     await queueCheckpointScheduleControl(
       form.dataset.vmId,
