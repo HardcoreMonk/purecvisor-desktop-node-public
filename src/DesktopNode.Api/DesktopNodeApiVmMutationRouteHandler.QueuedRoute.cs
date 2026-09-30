@@ -229,10 +229,7 @@ internal sealed partial class DesktopNodeApiVmMutationRouteHandler
 
                     return DesktopNodeApiResponseFactory.JobCreated(CreateJob(
                         "vm.manage",
-                        DesktopNodeApiResponseFactory.JsonFromObject(new SortedDictionary<string, object?>
-                        {
-                            ["name"] = routeId.Value
-                        }),
+                        reconciliationHandler.BuildVmManageParameters(routeId.Value!, cancellationToken),
                         request.RequestId!));
                 }
 

@@ -239,7 +239,7 @@ public sealed partial class DesktopNodeJobRuntime
     }
 
     // reconcile 가능한 operation 과 운영자 안내에 쓰는 mutation 이름의 단일 표다. Api 조정 handler 의 dispatch 와 같은 집합이다.
-    private static readonly IReadOnlyDictionary<string, string> ReconcilableMutations = new Dictionary<string, string>(StringComparer.Ordinal)
+    public static readonly IReadOnlyDictionary<string, string> ReconcilableMutations = new Dictionary<string, string>(StringComparer.Ordinal)
     {
         ["vm.rename"] = "rename",
         ["vm.delete"] = "delete",
@@ -265,9 +265,9 @@ public sealed partial class DesktopNodeJobRuntime
         ["console.novnc-target.set"] = "noVNC target",
         ["console.novnc-target.clear"] = "noVNC clear",
         ["vm.template.lock"] = "template lock",
+        ["vm.network.connect"] = "network connect",
+        ["vm.manage"] = "manage",
     };
-
-    private static bool IsReconciliationSupportedOperation(string operation) => ReconcilableMutations.ContainsKey(operation);
 
     private static DesktopNodeJobRuntimeError ReconciliationRequiredError(
         string jobId,

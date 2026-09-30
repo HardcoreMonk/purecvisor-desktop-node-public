@@ -90,6 +90,7 @@ internal sealed partial class DesktopNodeApiJobReconciliationHandler
             var operation when ExpectedPowerState(operation) is not null => ReconcileVmPowerStateJob(job, cancellationToken),
             var operation when ResourceValueProperty(operation) is not null => ReconcileVmResourceJob(job, cancellationToken),
             "vm.template.lock" => ReconcileVmTemplateLockJob(job, cancellationToken),
+            "vm.network.connect" or "vm.manage" => ReconcileVmReadbackJob(job, cancellationToken),
             _ => null
         };
         if (dispatched is not null)
@@ -106,7 +107,9 @@ internal sealed partial class DesktopNodeApiJobReconciliationHandler
                 ReconciliationRequiredError(
                     jobId,
                     "job-not-reconcilable",
-                    "Only a failed vm.rename, vm.delete, checkpoint.create, checkpoint.restore, checkpoint.delete, vm.create, vm.shutdown, vm.restart, vm.start, vm.poweroff, vm.pause, vm.resume, vm.save, vm.resume-saved, vm.set-memory, vm.set-vcpu, vm.disk-resize, vm.template.lock, vm.qos.storage.set, vm.qos.network.set, console.novnc-target.set, console.novnc-target.clear, checkpoint.schedule.set, or checkpoint.schedule.clear job with PCV_JOB_INTERRUPTED can be reconciled.",
+                    ReconcileNonTargets.TryGetValue(job.Operation, out var nonTargetReason)
+                        ? $"{job.Operation} is not a reconcile target: {nonTargetReason}"
+                        : $"Only a failed {string.Join(", ", DesktopNodeJobRuntime.ReconcilableMutations.Keys)} job with PCV_JOB_INTERRUPTED can be reconciled.",
                     job.Operation));
             return RenderReconciliationResult(jobRuntime.Reconcile(jobId, assessment));
         }
@@ -379,6 +382,8 @@ internal sealed partial class DesktopNodeApiJobReconciliationHandler
             "vm.resume-saved" => "resume from saved",
             "vm.set-memory" or "vm.set-vcpu" or "vm.disk-resize" => "resource change",
             "vm.template.lock" => "template lock",
+            "vm.network.connect" => "network connect",
+            "vm.manage" => "manage",
             "vm.qos.storage.set" => "storage QoS",
             "vm.qos.network.set" => "network QoS",
             "console.novnc-target.set" => "noVNC target",

@@ -4842,13 +4842,13 @@ public sealed partial class ApiRuntimePolicyRequestProcessorTests
 
         Assert.Equal(202, create.StatusCode);
         Assert.Empty(fallbackCalls);
-        Assert.Empty(nativeCalls);
+        Assert.Equal("vm.list", Assert.Single(nativeCalls).Operation);
 
         var tick = processor.ProcessOneQueuedJob();
 
         Assert.True(tick.Processed);
         Assert.Empty(fallbackCalls);
-        var nativeCall = Assert.Single(nativeCalls);
+        var nativeCall = Assert.Single(nativeCalls, call => call.Operation == "vm.manage");
         Assert.Equal("vm.manage", nativeCall.Operation);
         using var parameters = JsonDocument.Parse(nativeCall.ParamsJson);
         Assert.Equal("lab vm", parameters.RootElement.GetProperty("name").GetString());

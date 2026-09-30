@@ -11,7 +11,7 @@
   ],
   "mutation_allowed": false,
   "current_write_allowed": false,
-  "next_step": "Task 6: reconcile vm.network.connect from NIC switch readback if vm.list exposes it, classify every other mutating operation (vm.attach/vm.eject without media readback, guest, account, diagnostics, device add, clone, import, export, manage, limit) as an explicit non-target with a reason, and pin that every ledger mutating operation is classified.",
+  "next_step": "Task 7: Web Console VM detail pause/resume buttons and rename (new name input, target-name confirmation) in a new served module; move vm.pause, vm.resume, vm.rename to Web present in the surface ledger and projections; rebuild app.js and parity.",
   "plan": "docs/superpowers/plans/2026-09-30-purecvisor-desktop-node-development-completion.md",
   "task_queue": [
     "Task 1",
@@ -28,13 +28,14 @@
     "Task 12",
     "Task 13"
   ],
-  "next_task": "Task 6",
+  "next_task": "Task 7",
   "completed_tasks": [
     "Task 1",
     "Task 2",
     "Task 3",
     "Task 4",
-    "Task 5"
+    "Task 5",
+    "Task 6"
   ],
   "commit_policy": "local-commit-per-task",
   "push_allowed": false,

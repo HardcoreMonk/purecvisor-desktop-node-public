@@ -92,12 +92,14 @@
 
 ## Task 6: 나머지 mutation reconcile 분류
 
-- [ ] `vm.network.connect`는 NIC switch readback으로 reconcile한다.
-- [ ] 관찰할 수 없거나 부작용이 반복될 수 있는 operation은 이유를 붙여 명시적 비대상으로 분류한다. 후보는 `vm.attach`, `vm.eject`(Task 5 실측: media readback 없음), `vm.guest.*`,
+- [x] `vm.network.connect`는 NIC switch readback으로 reconcile한다.
+- [x] 관찰할 수 없거나 부작용이 반복될 수 있는 operation은 이유를 붙여 명시적 비대상으로 분류한다. 후보는 `vm.attach`, `vm.eject`(Task 5 실측: media readback 없음), `vm.guest.*`,
       `account.*`, `diagnostic.bundle.create`, `vm.device.add`, `vm.clone`, `vm.import`, `vm.export`, `vm.manage`,
       `vm.limit`이다. 착수 때 readback 가능 여부를 다시 확인해 확정한다.
-- [ ] surface ledger의 모든 mutating operation이 "reconcile 대상" 또는 "이유 있는 비대상" 중 하나라는 테스트를 둔다.
-- [ ] 검증: `dotnet test src/DesktopNode.Api.Tests`, `git diff --check`
+- [x] surface ledger의 모든 mutating operation이 "reconcile 대상" 또는 "이유 있는 비대상" 중 하나라는 테스트를 둔다.
+- [x] 검증: `dotnet test src/DesktopNode.Api.Tests`, `git diff --check`
+
+실행 기록(2026-09-30): 대상은 Runtime `DesktopNodeJobRuntime.ReconcilableMutations`(public, `26`개)가, 비대상과 이유는 Api `ReconcileNonTargets`(`19`개)가 소유한다. `vm.network.connect`는 연결된 switch가 요청 switch 하나뿐이고 before에 그 switch가 없었을 때만 성공이다. `vm.manage`는 착수 실측에서 `managed_by_purecvisor` readback이 있어 비대상 후보에서 대상으로 옮겼다. identity는 VM `id`다. 비대상 job을 reconcile하면 `409`와 분류 이유가 나온다. Runtime 거부 경로에 남아 있던 고정 operation 목록 메시지는 표에서 만든다. `ApiReconcileClassificationTests`가 ledger의 mutating operation 전부가 둘 중 정확히 한 곳에 있음을 고정한다. 검증: Api `474`/`474`, Runtime `128`/`128`, Delivery `744`/`744`, `git diff --check`.
 
 ## Task 7: Web pause/resume, rename
 

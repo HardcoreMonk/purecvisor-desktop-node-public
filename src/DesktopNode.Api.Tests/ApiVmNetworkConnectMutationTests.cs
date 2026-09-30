@@ -20,7 +20,7 @@ public sealed class ApiVmNetworkConnectMutationTests
             ServiceBearerAccepted: true));
 
         Assert.Equal(202, queued.StatusCode);
-        Assert.Equal(["vm.list", "network.inventory"], nativeCalls);
+        Assert.Equal(["vm.list", "network.inventory", "vm.list"], nativeCalls);
         using (var queuedDocument = JsonDocument.Parse(queued.Body))
         {
             Assert.Equal("queued", queuedDocument.RootElement.GetProperty("data").GetProperty("status").GetString());
@@ -29,7 +29,7 @@ public sealed class ApiVmNetworkConnectMutationTests
 
         var tick = processor.ProcessOneQueuedJob();
         Assert.True(tick.Processed);
-        Assert.Equal(["vm.list", "network.inventory", "vm.network.connect"], nativeCalls);
+        Assert.Equal(["vm.list", "network.inventory", "vm.list", "vm.network.connect"], nativeCalls);
         Assert.Equal("succeeded", tick.Job!.Value.GetProperty("status").GetString());
         Assert.Equal("connect", tick.Job.Value.GetProperty("result").GetProperty("data").GetProperty("action").GetString());
         Assert.Equal("pcv-lab-internal", tick.Job.Value.GetProperty("result").GetProperty("data").GetProperty("switch").GetString());
