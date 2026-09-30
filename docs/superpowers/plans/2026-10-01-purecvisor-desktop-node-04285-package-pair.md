@@ -107,12 +107,14 @@ Lane 3 승격은 하지 않는다.
 
 ## Task 5: 새 기능 actual-VM probe (Lane 2)
 
-- [ ] 설치본 `0.42.85`에서 probe VM 하나로 다음을 확인한다.
+- [x] 설치본 `0.42.85`에서 probe VM 하나로 다음을 확인한다.
   - `vm list`에 `dvd_media`가 나오는지(생성 때 붙은 ISO), eject 뒤 비는지, attach 뒤 새 ISO가 나오는지
   - media job의 capture baseline(`before_media`)이 채워지는지
   - disk-resize job의 capture `before_value`가 실제 VHD byte인지(`vm.disk.inspect`)
   - interrupt를 만들 수 있으면 media job 하나의 reconcile 판정
-- [ ] probe VM과 디렉터리를 지운다. evidence `lane2-vm-list-readback-actual-vm-2026-10-01-04285`.
+- [x] probe VM과 디렉터리를 지운다. evidence `lane2-vm-list-readback-actual-vm-2026-10-01-04285`.
+
+실행 기록(2026-10-01): result `PARTIAL`. 새 기능 확인은 모두 PASS다: `dvd_media` readback, `before_media` capture, `before_value` `21474836480`(20 GiB), interrupt된 attach의 `not-applied` 409. eject는 0.42.74부터 있던 결함(`ModifyResourceSettings`에 빈 `HostResource`)으로 실패한다. 진단 VM에서 `RemoveResourceSettings`가 동작하는 것과 빈 drive attach의 `PCV_VM_DVD_DRIVE_NOT_FOUND` 결함을 확인했다. 수정은 이 campaign 범위 밖이다. 두 VM과 디렉터리는 지웠다.
 
 ## Task 6: 종료
 
