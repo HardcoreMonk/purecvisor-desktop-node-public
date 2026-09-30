@@ -118,7 +118,9 @@ Lane 3 승격은 하지 않는다.
 
 ## Task 6: 종료
 
-- [ ] 종료 검증 뒤 PR을 열고 campaign을 닫는다. `next_step`에 PR merge와 Lane 3 승격이 승인 대상이라고 적는다.
+- [x] 종료 검증 뒤 PR을 열고 campaign을 닫는다. `next_step`에 PR merge와 Lane 3 승격이 승인 대상이라고 적는다.
+
+실행 기록(2026-10-01): 깨끗한 HEAD `9fa71c7`에서 종료 검증을 돌렸다. `dotnet test src/DesktopNode.sln`는 모든 프로젝트가 통과했다(Api `488`, Verification `557`, Delivery `744`, HyperV `240`, Host `216`, Contracts `200`, Cli `179`, Runtime `128`, Service `11`). `npm run test:required --prefix web`와 `git diff --check`도 exit `0`이다. PR을 열고(merge 안 함) campaign을 닫는다. 결과: package pair PASS, fullgate PASS, installed current-card PASS(`installed_non_promoted_candidate`), Lane 2 probe PARTIAL(새 기능 PASS, 0.42.74부터 있던 eject 결함 확인).
 
 ## Nonclaims
 
