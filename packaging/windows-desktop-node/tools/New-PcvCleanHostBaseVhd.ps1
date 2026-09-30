@@ -42,7 +42,8 @@ function Get-PcvUtcNow { (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm
 function Test-PcvPackagedHost { $PSHOME -like '*\WindowsApps\*' }
 function Expand-PcvMsuPackage {
     param([Parameter(Mandatory)][string]$PackagePath, [Parameter(Mandatory)][string]$Destination)
-    & expand.exe "-F:*.cab" $PackagePath $Destination | Out-Null
+    # Absolute path: a PATH inherited from Git Bash resolves expand.exe to coreutils /usr/bin/expand.
+    & (Join-Path $env:SystemRoot 'System32\expand.exe') "-F:*.cab" $PackagePath $Destination | Out-Null
     if ($LASTEXITCODE -ne 0) { throw "PCV_BASE_VHD_MSU_EXPAND_FAILED|exit=$LASTEXITCODE|$PackagePath" }
 }
 function Test-PcvElevated {

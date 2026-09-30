@@ -69,7 +69,7 @@ public sealed class PcvCleanHostBaseVhdContractTests
             "& reg.exe load \"HKLM\\$key\" $hive",
             "& reg.exe unload \"HKLM\\$key\"",
             "$PSHOME -like '*\\WindowsApps\\*'",
-            "& expand.exe \"-F:*.cab\" $PackagePath $Destination",
+            "& (Join-Path $env:SystemRoot 'System32\\expand.exe') \"-F:*.cab\" $PackagePath $Destination",
             "applied_packages = $appliedPackages",
             "Remove-Item -LiteralPath $packageExtractPath -Recurse -Force");
     }
