@@ -51,8 +51,10 @@
 
 ## Task 2: `vm.list` readback 확장 설계 (Lane 1)
 
-- [ ] 설계 문서 `docs/superpowers/specs/2026-09-30-purecvisor-desktop-node-vm-list-readback-extension-design.md`를 쓴다. 범위는 DVD media 경로와 VHD `size_gb`를 WMI에서 읽는 방법, API 계약 변경, `vm.attach`/`vm.eject` reconcile 대상 전환 조건, `vm.disk-resize` 성공 판정, 테스트와 Lane 2 확인 방법이다.
-- [ ] 구현은 하지 않는다. 설계 승인은 따로 받는다.
+- [x] 설계 문서 `docs/superpowers/specs/2026-09-30-purecvisor-desktop-node-vm-list-readback-extension-design.md`를 쓴다. 범위는 DVD media 경로와 VHD `size_gb`를 WMI에서 읽는 방법, API 계약 변경, `vm.attach`/`vm.eject` reconcile 대상 전환 조건, `vm.disk-resize` 성공 판정, 테스트와 Lane 2 확인 방법이다.
+- [x] 구현은 하지 않는다. 설계 승인은 따로 받는다.
+
+실행 기록(2026-09-30): 설계 문서를 썼다. DVD media는 `vm.list`에 새 필드 `dvd_media`로 싣는다(추가 WMI 호출 없음). VHD 크기는 `vm.list`가 아니라 공개 route 없는 내부 read operation `vm.disk.inspect`(`MaxInternalSize`)로 읽는다. `vm.attach`/`vm.eject`를 대상으로 옮기는 조건과 `vm.disk-resize` 판정 변경을 표로 정했다. 구현 승인은 따로 받는다. 검증: Delivery `744`/`744`, `git diff --check`.
 
 ## Task 3: `0.42.84-admin-smoke` package (Lane 1)
 
