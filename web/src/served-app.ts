@@ -220,6 +220,8 @@ function bindEvents() {
           'network',
           submitterAction.endsWith('-apply') ? 'apply' : 'preview',
           readVmQosPayload('network', data));
+      } else if (submitterAction === 'vm-guest-exec-preview' || submitterAction === 'guest-agent-channel-preview') {
+        await handleVmGuestPreviewSubmit(guestForm, submitterAction, data);
       } else if (submitterAction === 'vm-guest-exec') {
         await queueVmGuestExecutionControl(
           guestForm.dataset.vmId,
@@ -251,6 +253,8 @@ function bindEvents() {
       } else if (form.dataset.action === 'vm-clone') {
         await queueVmClone(form.dataset.vmId, data.get('name'));
         form.reset();
+      } else {
+        await handleVmDetailExtensionSubmit(form, data, submitterAction);
       }
     } catch (error) {
       state.error = normalizeError(error);
@@ -260,16 +264,7 @@ function bindEvents() {
   els.vmDetailPanel.addEventListener('click', async (event) => {
     const button = event.target.closest('button[data-action]');
     if (!button) return;
-    const actionMap = {
-      'vm-start': 'start',
-      'vm-shutdown': 'shutdown',
-      'vm-poweroff': 'poweroff',
-      'vm-restart': 'restart',
-      'vm-save': 'save',
-      'vm-resume-saved': 'resume-saved',
-      'vm-eject': 'eject'
-    };
-    const action = actionMap[button.dataset.action];
+    const action = VM_LIFECYCLE_ACTIONS[button.dataset.action];
     state.error = null;
     try {
       if (action) {
@@ -300,6 +295,8 @@ function bindEvents() {
         await queueCheckpointRestore(button.dataset.vmId, button.dataset.checkpointId);
       } else if (button.dataset.action === 'checkpoint-delete') {
         await queueCheckpointDelete(button.dataset.vmId, button.dataset.checkpointId);
+      } else if (VM_DETAIL_EXTENSION_CLICK_ACTIONS.has(button.dataset.action)) {
+        await handleVmDetailExtensionClick(button);
       }
     } catch (error) {
       state.error = normalizeError(error);

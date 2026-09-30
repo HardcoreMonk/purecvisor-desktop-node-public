@@ -31,6 +31,7 @@ const servedSourceParts = [
   "src/served/render-shell.ts",
   "src/served/load.ts",
   "src/served/mutate.ts",
+  "src/served/vm-detail-extensions.ts",
   "src/served/job-polling.ts",
   "src/served/actions.ts",
   "src/served-app.ts"

@@ -4704,12 +4704,19 @@ public sealed partial class ApiRuntimePolicyRequestProcessorTests
         var create = processor.Handle(new DesktopNodeApiRequest(method, path, body));
 
         Assert.Equal(202, create.StatusCode);
-        Assert.Empty(nativeCalls);
+        if (expectedOperation == "vm.limit")
+        {
+            Assert.Empty(nativeCalls);
+        }
+        else
+        {
+            Assert.Equal("vm.list", Assert.Single(nativeCalls).Operation);
+        }
 
         var tick = processor.ProcessOneQueuedJob();
 
         Assert.True(tick.Processed);
-        var nativeCall = Assert.Single(nativeCalls);
+        var nativeCall = Assert.Single(nativeCalls, call => call.Operation == expectedOperation);
         Assert.Equal(expectedOperation, nativeCall.Operation);
         using var parameters = JsonDocument.Parse(nativeCall.ParamsJson);
         Assert.Equal("lab vm", parameters.RootElement.GetProperty("name").GetString());
@@ -4776,14 +4783,7 @@ public sealed partial class ApiRuntimePolicyRequestProcessorTests
 
         Assert.Equal(202, create.StatusCode);
         Assert.Empty(fallbackCalls);
-        if (expectedOperation is "vm.shutdown" or "vm.restart")
-        {
-            Assert.Equal("vm.list", Assert.Single(nativeCalls).Operation);
-        }
-        else
-        {
-            Assert.Empty(nativeCalls);
-        }
+        Assert.Equal("vm.list", Assert.Single(nativeCalls).Operation);
 
         var tick = processor.ProcessOneQueuedJob();
 
@@ -4842,13 +4842,13 @@ public sealed partial class ApiRuntimePolicyRequestProcessorTests
 
         Assert.Equal(202, create.StatusCode);
         Assert.Empty(fallbackCalls);
-        Assert.Empty(nativeCalls);
+        Assert.Equal("vm.list", Assert.Single(nativeCalls).Operation);
 
         var tick = processor.ProcessOneQueuedJob();
 
         Assert.True(tick.Processed);
         Assert.Empty(fallbackCalls);
-        var nativeCall = Assert.Single(nativeCalls);
+        var nativeCall = Assert.Single(nativeCalls, call => call.Operation == "vm.manage");
         Assert.Equal("vm.manage", nativeCall.Operation);
         using var parameters = JsonDocument.Parse(nativeCall.ParamsJson);
         Assert.Equal("lab vm", parameters.RootElement.GetProperty("name").GetString());
@@ -4882,7 +4882,7 @@ public sealed partial class ApiRuntimePolicyRequestProcessorTests
 
         Assert.Equal(202, create.StatusCode);
         Assert.Empty(fallbackCalls);
-        if (expectedOperation is "checkpoint.create" or "checkpoint.restore")
+        if (expectedOperation is "checkpoint.create" or "checkpoint.restore" or "checkpoint.delete")
         {
             Assert.Equal("checkpoint.list", Assert.Single(nativeCalls).Operation);
         }
@@ -4895,7 +4895,7 @@ public sealed partial class ApiRuntimePolicyRequestProcessorTests
 
         Assert.True(tick.Processed);
         Assert.Empty(fallbackCalls);
-        var nativeCall = expectedOperation is "checkpoint.create" or "checkpoint.restore"
+        var nativeCall = expectedOperation is "checkpoint.create" or "checkpoint.restore" or "checkpoint.delete"
             ? nativeCalls[1]
             : Assert.Single(nativeCalls);
         Assert.Equal(expectedOperation, nativeCall.Operation);

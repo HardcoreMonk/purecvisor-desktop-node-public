@@ -252,11 +252,7 @@ internal sealed partial class DesktopNodeApiVmMutationRouteHandler
 
         return DesktopNodeApiResponseFactory.JobCreated(CreateJob(
             operation,
-            DesktopNodeApiResponseFactory.JsonFromObject(new SortedDictionary<string, object?>
-            {
-                ["switch"] = evaluation.SwitchName,
-                ["vm_name"] = evaluation.VmName
-            }),
+            reconciliationHandler.BuildVmNetworkConnectParameters(evaluation.VmName!, evaluation.SwitchName!, cancellationToken),
             request.RequestId!));
     }
 

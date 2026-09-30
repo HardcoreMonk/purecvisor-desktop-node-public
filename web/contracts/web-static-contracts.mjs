@@ -1081,8 +1081,8 @@ function verifyVmLifecycleActions(context) {
     [/Clone VM/i, "clone-label"],
     [/data-action="vm-delete"/i, "delete"],
     [/export-import-readback/i, "export-import-readback"],
-    [/no export\/import save form/i, "no-export-import-save-form"],
-    [/CLI\/API export\/import only/i, "export-import-cli-api"],
+    [/vm-export-preview/i, "export-preview"],
+    [/vm-import-preview/i, "import-preview"],
     [/no OVF/i, "no-ovf"],
     [/no TPM key copy/i, "no-tpm-key-copy"]
   ], "vm-lifecycle-actions");
@@ -1124,7 +1124,7 @@ function verifyCheckpointActions(context) {
   assertSourceAndGenerated(context, detailSource, app, [
     [/checkpoint-create/i, "create"],
     [/checkpoint_schedule/i, "readback-field"],
-    [/no schedule save form/i, "no-save-form"],
+    [/checkpoint-schedule-preview/i, "schedule-preview"],
     [/no infinite retention/i, "no-infinite-retention"]
   ], "checkpoint-actions");
   assertSourceAndGenerated(context, qosSource, app, [
@@ -1722,13 +1722,14 @@ function verifyNetworkInventory(context) {
     [/no switch create form/i, "no-switch-create-form"],
     [/no NAT editor/i, "no-nat-editor"],
     [/no DHCP editor/i, "no-dhcp-editor"],
-    [/CLI\/API vm\.network\.connect only/i, "network-connect-cli-api"]
+    [/switch connect in VM detail/i, "network-connect-vm-detail"]
   ], "network-inventory");
   context.assertNotMatch(
     inventorySource + app,
-    /data-action="switch-create"|data-action="switch-remove"|data-action="vm-network-connect"|name="nat-network"|name="dhcp-scope"/i,
+    /data-action="switch-create"|data-action="switch-remove"|name="nat-network"|name="dhcp-scope"/i,
     "network-inventory:no-editor-form"
   );
+  context.assertNotMatch(inventorySource, /data-action="vm-network-connect"/i, "network-inventory:no-connect-form-in-inventory");
   context.assertNotMatch(
     combined,
     /New-VMSwitch|Remove-VMSwitch|New-NetIPAddress|Set-NetFirewallRule/i,

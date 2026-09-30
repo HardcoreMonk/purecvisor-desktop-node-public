@@ -73,75 +73,32 @@ internal sealed partial class DesktopNodeApiJobReconciliationHandler
         }
 
         var job = current.Job;
-        if (string.Equals(job.Operation, "vm.delete", StringComparison.Ordinal) &&
-            string.Equals(job.Status, "failed", StringComparison.Ordinal) &&
-            string.Equals(job.Error?.Code, "PCV_JOB_INTERRUPTED", StringComparison.Ordinal))
+        var interrupted = string.Equals(job.Status, "failed", StringComparison.Ordinal) &&
+            string.Equals(job.Error?.Code, "PCV_JOB_INTERRUPTED", StringComparison.Ordinal);
+        DesktopNodeApiResponse? dispatched = !interrupted ? null : job.Operation switch
         {
-            return ReconcileVmDeleteJob(job, cancellationToken);
+            "vm.delete" => ReconcileVmDeleteJob(job, cancellationToken),
+            "checkpoint.create" => ReconcileCheckpointCreateJob(job, cancellationToken),
+            "checkpoint.restore" => ReconcileCheckpointRestoreJob(job, cancellationToken),
+            "checkpoint.delete" => ReconcileCheckpointDeleteJob(job, cancellationToken),
+            "vm.create" => ReconcileVmCreateJob(job, cancellationToken),
+            "vm.shutdown" => ReconcileVmShutdownJob(job, cancellationToken),
+            "vm.restart" => ReconcileVmRestartJob(job, cancellationToken),
+            "vm.qos.storage.set" or "vm.qos.network.set" => ReconcileVmQosJob(job, cancellationToken),
+            "console.novnc-target.set" or "console.novnc-target.clear" => ReconcileNoVncTargetJob(job),
+            "checkpoint.schedule.set" or "checkpoint.schedule.clear" => ReconcileCheckpointScheduleJob(job),
+            var operation when ExpectedPowerState(operation) is not null => ReconcileVmPowerStateJob(job, cancellationToken),
+            var operation when ResourceValueProperty(operation) is not null => ReconcileVmResourceJob(job, cancellationToken),
+            "vm.template.lock" => ReconcileVmTemplateLockJob(job, cancellationToken),
+            "vm.network.connect" or "vm.manage" => ReconcileVmReadbackJob(job, cancellationToken),
+            _ => null
+        };
+        if (dispatched is not null)
+        {
+            return dispatched;
         }
 
-        if (string.Equals(job.Operation, "checkpoint.create", StringComparison.Ordinal) &&
-            string.Equals(job.Status, "failed", StringComparison.Ordinal) &&
-            string.Equals(job.Error?.Code, "PCV_JOB_INTERRUPTED", StringComparison.Ordinal))
-        {
-            return ReconcileCheckpointCreateJob(job, cancellationToken);
-        }
-
-        if (string.Equals(job.Operation, "checkpoint.restore", StringComparison.Ordinal) &&
-            string.Equals(job.Status, "failed", StringComparison.Ordinal) &&
-            string.Equals(job.Error?.Code, "PCV_JOB_INTERRUPTED", StringComparison.Ordinal))
-        {
-            return ReconcileCheckpointRestoreJob(job, cancellationToken);
-        }
-
-        if (string.Equals(job.Operation, "vm.create", StringComparison.Ordinal) &&
-            string.Equals(job.Status, "failed", StringComparison.Ordinal) &&
-            string.Equals(job.Error?.Code, "PCV_JOB_INTERRUPTED", StringComparison.Ordinal))
-        {
-            return ReconcileVmCreateJob(job, cancellationToken);
-        }
-
-        if (string.Equals(job.Operation, "vm.shutdown", StringComparison.Ordinal) &&
-            string.Equals(job.Status, "failed", StringComparison.Ordinal) &&
-            string.Equals(job.Error?.Code, "PCV_JOB_INTERRUPTED", StringComparison.Ordinal))
-        {
-            return ReconcileVmShutdownJob(job, cancellationToken);
-        }
-
-        if (string.Equals(job.Operation, "vm.restart", StringComparison.Ordinal) &&
-            string.Equals(job.Status, "failed", StringComparison.Ordinal) &&
-            string.Equals(job.Error?.Code, "PCV_JOB_INTERRUPTED", StringComparison.Ordinal))
-        {
-            return ReconcileVmRestartJob(job, cancellationToken);
-        }
-
-        if ((string.Equals(job.Operation, "vm.qos.storage.set", StringComparison.Ordinal) ||
-                string.Equals(job.Operation, "vm.qos.network.set", StringComparison.Ordinal)) &&
-            string.Equals(job.Status, "failed", StringComparison.Ordinal) &&
-            string.Equals(job.Error?.Code, "PCV_JOB_INTERRUPTED", StringComparison.Ordinal))
-        {
-            return ReconcileVmQosJob(job, cancellationToken);
-        }
-
-        if ((string.Equals(job.Operation, "console.novnc-target.set", StringComparison.Ordinal) ||
-                string.Equals(job.Operation, "console.novnc-target.clear", StringComparison.Ordinal)) &&
-            string.Equals(job.Status, "failed", StringComparison.Ordinal) &&
-            string.Equals(job.Error?.Code, "PCV_JOB_INTERRUPTED", StringComparison.Ordinal))
-        {
-            return ReconcileNoVncTargetJob(job);
-        }
-
-        if ((string.Equals(job.Operation, "checkpoint.schedule.set", StringComparison.Ordinal) ||
-                string.Equals(job.Operation, "checkpoint.schedule.clear", StringComparison.Ordinal)) &&
-            string.Equals(job.Status, "failed", StringComparison.Ordinal) &&
-            string.Equals(job.Error?.Code, "PCV_JOB_INTERRUPTED", StringComparison.Ordinal))
-        {
-            return ReconcileCheckpointScheduleJob(job);
-        }
-
-        if (!string.Equals(job.Operation, "vm.rename", StringComparison.Ordinal) ||
-            !string.Equals(job.Status, "failed", StringComparison.Ordinal) ||
-            !string.Equals(job.Error?.Code, "PCV_JOB_INTERRUPTED", StringComparison.Ordinal))
+        if (!interrupted || !string.Equals(job.Operation, "vm.rename", StringComparison.Ordinal))
         {
             var assessment = new DesktopNodeJobReconciliationAssessment(
                 false,
@@ -150,7 +107,9 @@ internal sealed partial class DesktopNodeApiJobReconciliationHandler
                 ReconciliationRequiredError(
                     jobId,
                     "job-not-reconcilable",
-                    "Only a failed vm.rename, vm.delete, checkpoint.create, checkpoint.restore, vm.create, vm.shutdown, vm.restart, vm.qos.storage.set, vm.qos.network.set, console.novnc-target.set, console.novnc-target.clear, checkpoint.schedule.set, or checkpoint.schedule.clear job with PCV_JOB_INTERRUPTED can be reconciled.",
+                    ReconcileNonTargets.TryGetValue(job.Operation, out var nonTargetReason)
+                        ? $"{job.Operation} is not a reconcile target: {nonTargetReason}"
+                        : $"Only a failed {string.Join(", ", DesktopNodeJobRuntime.ReconcilableMutations.Keys)} job with PCV_JOB_INTERRUPTED can be reconciled.",
                     job.Operation));
             return RenderReconciliationResult(jobRuntime.Reconcile(jobId, assessment));
         }
@@ -415,6 +374,16 @@ internal sealed partial class DesktopNodeApiJobReconciliationHandler
             "vm.create" => "create",
             "vm.shutdown" => "shutdown",
             "vm.restart" => "restart",
+            "vm.start" => "start",
+            "vm.poweroff" => "power off",
+            "vm.pause" => "pause",
+            "vm.resume" => "resume",
+            "vm.save" => "save",
+            "vm.resume-saved" => "resume from saved",
+            "vm.set-memory" or "vm.set-vcpu" or "vm.disk-resize" => "resource change",
+            "vm.template.lock" => "template lock",
+            "vm.network.connect" => "network connect",
+            "vm.manage" => "manage",
             "vm.qos.storage.set" => "storage QoS",
             "vm.qos.network.set" => "network QoS",
             "console.novnc-target.set" => "noVNC target",
@@ -423,6 +392,7 @@ internal sealed partial class DesktopNodeApiJobReconciliationHandler
             "checkpoint.schedule.clear" => "checkpoint schedule clear",
             "checkpoint.create" => "checkpoint create",
             "checkpoint.restore" => "checkpoint restore",
+            "checkpoint.delete" => "checkpoint delete",
             _ => "rename"
         };
         return new DesktopNodeJobRuntimeError(

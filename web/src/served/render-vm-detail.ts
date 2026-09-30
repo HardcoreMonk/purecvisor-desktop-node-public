@@ -50,6 +50,8 @@ function renderVmDetail() {
       <button class="danger-button" data-action="vm-restart" data-vm-id="${escapeHtml(vmId)}"${lockedMutationDisabled}>Restart</button>
       <button data-action="vm-save" data-vm-id="${escapeHtml(vmId)}"${lockedMutationDisabled}>Save</button>
       <button data-action="vm-resume-saved" data-vm-id="${escapeHtml(vmId)}"${lockedMutationDisabled}>Resume saved</button>
+      <button data-action="vm-pause" data-vm-id="${escapeHtml(vmId)}"${lockedMutationDisabled}>Pause</button>
+      <button data-action="vm-resume" data-vm-id="${escapeHtml(vmId)}"${lockedMutationDisabled}>Resume</button>
       <button data-action="vm-eject" data-vm-id="${escapeHtml(vmId)}"${lockedMutationDisabled}>Eject media</button>
       <button data-action="vm-delete-status" data-vm-id="${escapeHtml(vmId)}"${actionDisabled}>Delete status</button>
       <button data-action="vm-manage" data-vm-id="${escapeHtml(vmId)}"${lockedMutationDisabled}>Manage VM</button>
@@ -65,6 +67,20 @@ function renderVmDetail() {
       <form class="vm-resource-form" data-action="vm-attach" data-vm-id="${escapeHtml(vmId)}">
         <input name="iso_path" type="text" placeholder="ISO path" aria-label="ISO path"${lockedMutationDisabled}>
         <button type="submit"${lockedMutationDisabled}>Attach media</button>
+      </form>
+      <form class="vm-resource-form" data-action="vm-rename" data-vm-id="${escapeHtml(vmId)}">
+        <input name="new_name" type="text" placeholder="New VM name" aria-label="New VM name"${lockedMutationDisabled}>
+        <button type="submit"${lockedMutationDisabled}>Rename VM</button>
+      </form>
+      <form class="vm-resource-form" data-action="vm-network-connect" data-vm-id="${escapeHtml(vmId)}">
+        <select name="switch" aria-label="Switch to connect"${lockedMutationDisabled}>${renderSwitchOptions()}</select>
+        <button type="submit"${lockedMutationDisabled}>Connect switch</button>
+      </form>
+      <form class="vm-resource-form" data-action="vm-device-add" data-vm-id="${escapeHtml(vmId)}">
+        <select name="device" aria-label="Device kind"${lockedMutationDisabled}><option value="nic">Network adapter</option><option value="dvd">DVD drive</option></select>
+        <select name="switch" aria-label="Network adapter switch"${lockedMutationDisabled}>${renderSwitchOptions()}</select>
+        <input name="iso_path" type="text" placeholder="DVD ISO path (optional)" aria-label="DVD ISO path"${lockedMutationDisabled}>
+        <button type="submit"${lockedMutationDisabled}>Add device</button>
       </form>
       <form class="vm-resource-form" data-action="vm-set-memory" data-vm-id="${escapeHtml(vmId)}">
         <input name="memory_mb" type="number" min="512" max="262144" step="128" placeholder="Memory MB" aria-label="memory MB"${lockedMutationDisabled}>
@@ -86,7 +102,7 @@ function renderVmDetail() {
     <div class="details-grid detail-grid">
       ${details.map(([label, value]) => `<div class="kv"><span>${escapeHtml(label)}</span><strong>${escapeHtml(formatObjectValue(value))}</strong></div>`).join('')}
     </div>
-    ${renderExportImportReadback(vm)}
+    ${renderExportImportReadback(vm, vmId, actionDisabled)}
     ${renderVmQosGuestReadback(vmId)}
     ${renderVmQosDirectControl(vmId)}
     <div class="checkpoint-panel">
@@ -97,7 +113,7 @@ function renderVmDetail() {
         </div>
         <button data-action="checkpoint-refresh" data-vm-id="${escapeHtml(vmId)}"${checkpointRefreshDisabled}>Refresh checkpoints</button>
       </div>
-      ${renderCheckpointScheduleReadback(vm)}
+      ${renderCheckpointScheduleReadback(vm, vmId, actionDisabled)}
       <form class="checkpoint-form" data-action="checkpoint-create" data-vm-id="${escapeHtml(vmId)}">
         <input name="checkpoint_name" autocomplete="off" placeholder="Checkpoint name" aria-label="checkpoint name"${checkpointMutationDisabled}>
         <button type="submit"${checkpointMutationDisabled}>Create checkpoint</button>
@@ -106,7 +122,7 @@ function renderVmDetail() {
     </div>`;
 }
 
-function renderExportImportReadback(vm) {
+function renderExportImportReadback(vm, vmId, actionDisabled = '') {
   const managed = vm?.managed_by_purecvisor === true;
   const generation = Number(vm?.generation);
   const power = String(vm?.state || vm?.status || '').trim().toLowerCase();
@@ -127,18 +143,31 @@ function renderExportImportReadback(vm) {
         <div class="diagnostics-fact"><span class="muted">generation</span><strong>${escapeHtml(formatObjectValue(vm?.generation))}</strong></div>
         <div class="diagnostics-fact"><span class="muted">power</span><strong>${escapeHtml(formatObjectValue(vm?.state || vm?.status))}</strong></div>
         <div class="diagnostics-fact"><span class="muted">security features</span><strong>${escapeHtml(securityLabel)}</strong></div>
-        <div class="diagnostics-fact"><span class="muted">import</span><strong>CLI/API only</strong></div>
+        <div class="diagnostics-fact"><span class="muted">import</span><strong>new identity</strong></div>
       </div>
+      <form class="vm-resource-form export-import-form" data-action="vm-export" data-vm-id="${escapeHtml(vmId)}">
+        <input name="directory" type="text" placeholder="Export directory" aria-label="Export directory"${actionDisabled}>
+        <button type="submit" data-action="vm-export-preview"${actionDisabled}>Preview export</button>
+        <button type="submit" data-action="vm-export-apply"${actionDisabled}>Export VM</button>
+      </form>
+      <form class="vm-resource-form export-import-form" data-action="vm-import" data-vm-id="${escapeHtml(vmId)}">
+        <input name="name" type="text" placeholder="New VM name" aria-label="Import VM name"${actionDisabled}>
+        <input name="directory" type="text" placeholder="Export package directory" aria-label="Import package directory"${actionDisabled}>
+        <label><input name="has_vmcx" type="checkbox"${actionDisabled}> package has .vmcx</label>
+        <button type="submit" data-action="vm-import-preview"${actionDisabled}>Preview import</button>
+        <button type="submit" data-action="vm-import-apply"${actionDisabled}>Import VM</button>
+      </form>
+      ${renderExportImportPreview(vmId)}
       <div class="boundary-chip-row">
-        <span>no export/import save form</span>
-        <span>CLI/API export/import only</span>
+        <span>preview before export/import</span>
+        <span>new VM identity on import</span>
         <span>no OVF</span>
         <span>no TPM key copy</span>
       </div>
     </div>`;
 }
 
-function renderCheckpointScheduleReadback(vm) {
+function renderCheckpointScheduleReadback(vm, vmId, actionDisabled = '') {
   const schedule = asObject(vm?.checkpoint_schedule);
   const enabled = schedule.enabled === true;
   const status = schedule.status || (enabled ? 'waiting' : 'disabled');
@@ -155,9 +184,16 @@ function renderCheckpointScheduleReadback(vm) {
         <div class="diagnostics-fact"><span class="muted">last enqueued</span><strong>${escapeHtml(formatObjectValue(schedule.last_enqueued_at))}</strong></div>
         <div class="diagnostics-fact"><span class="muted">next due</span><strong>${escapeHtml(formatObjectValue(schedule.next_due_at))}</strong></div>
       </div>
+      <form class="vm-resource-form checkpoint-schedule-form" data-action="checkpoint-schedule" data-vm-id="${escapeHtml(vmId)}">
+        <input name="interval_minutes" type="number" min="1" step="1" placeholder="Interval minutes" aria-label="Checkpoint interval minutes"${actionDisabled}>
+        <input name="retention_max" type="number" min="1" step="1" placeholder="Retention max" aria-label="Checkpoint retention max"${actionDisabled}>
+        <button type="submit" data-action="checkpoint-schedule-preview"${actionDisabled}>Preview schedule</button>
+        <button type="submit" data-action="checkpoint-schedule-set"${actionDisabled}>Save schedule</button>
+        <button type="button" class="danger-button" data-action="checkpoint-schedule-clear" data-vm-id="${escapeHtml(vmId)}"${actionDisabled}>Clear schedule</button>
+      </form>
+      ${renderCheckpointSchedulePreview(vmId)}
       <div class="boundary-chip-row">
-        <span>no schedule save form</span>
-        <span>CLI/API configure only</span>
+        <span>preview before save</span>
         <span>no infinite retention</span>
       </div>
     </div>`;

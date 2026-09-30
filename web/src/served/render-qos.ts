@@ -85,6 +85,8 @@ function renderVmQosGuestReadback(vmId) {
       ${renderReadbackCard(readbacks, 'bandwidth', 'bandwidth', 'network_qos', ['linux_bandwidth_compatible', 'mutation_supported'])}
       ${renderReadbackCard(readbacks, 'guest_agent', 'guest-agent-status', 'guest_agent', ['status', 'qemu_guest_agent', 'guest_exec_supported'])}
       ${renderReadbackCard(readbacks, 'guest_ping', 'guest-ping', 'guest_ping', ['reachable', 'guest_heartbeat_verified'])}
+      ${renderReadbackCard(readbacks, 'memory_stats', 'memory-stats', 'memory', ['startup_mb', 'assigned_mb', 'dynamic'])}
+      ${renderReadbackCard(readbacks, 'cpu_stats', 'cpu-stats', 'cpu', ['count'])}
     </div>
     <p class="muted">updated_at=${escapeHtml(updated)} / vm.limit remains CLI/API queued mutation</p>
   </section>`;
@@ -166,6 +168,7 @@ function renderVmQosDirectControl(vmId) {
         <label>Timeout seconds<input name="timeout_sec" type="number" min="1" max="600" step="1" value="60"${guestExecDisabled}></label>
         <label>Command<input name="command" autocomplete="off" placeholder="hostname"${guestExecDisabled}></label>
         <div class="qos-control-actions">
+          <button type="submit" data-action="vm-guest-exec-preview"${guestExecDisabled}>Preview exec</button>
           <button type="submit" class="danger-button" data-action="vm-guest-exec"${guestExecDisabled}>Queue exec</button>
         </div>
       </form>
@@ -173,6 +176,7 @@ function renderVmQosDirectControl(vmId) {
         <label>Credential reference<input name="credential_ref" autocomplete="off" placeholder="wincred:target"${guestChannelDisabled}></label>
         <label>Timeout seconds<input name="timeout_sec" type="number" min="1" max="600" step="1" value="30"${guestChannelDisabled}></label>
         <div class="qos-control-actions">
+          <button type="submit" data-action="guest-agent-channel-preview"${guestChannelDisabled}>Preview channel</button>
           <button type="submit" data-action="guest-agent-ensure-channel" data-guest-channel-mode="verify"${guestChannelDisabled}>Verify channel</button>
           <button type="submit" class="danger-button" data-action="guest-agent-ensure-channel" data-guest-channel-mode="repair"${guestChannelDisabled}>Repair channel</button>
         </div>

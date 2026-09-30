@@ -545,6 +545,13 @@ public sealed class ApiJobStoreFailureCharacterizationTests
             CancellationToken cancellationToken,
             out DesktopNodeHyperVOperationResult result)
         {
+            // 큐 등록 때 reconcile baseline readback 은 mutation 호출로 세지 않는다.
+            if (string.Equals(operation, "vm.list", StringComparison.Ordinal))
+            {
+                result = new DesktopNodeHyperVOperationResult(Ok: true, Operation: operation, Data: JsonSerializer.SerializeToElement(Array.Empty<object>()), Error: null);
+                return true;
+            }
+
             Interlocked.Increment(ref invokeCount);
             trace?.Add("provider.invoke");
             result = new DesktopNodeHyperVOperationResult(

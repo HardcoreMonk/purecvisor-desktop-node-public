@@ -606,7 +606,8 @@ internal sealed partial class DesktopNodeApiVmMutationRouteHandler
         string valueProperty,
         string missingCode,
         string missingMessage,
-        string missingAction)
+        string missingAction,
+        CancellationToken cancellationToken)
     {
         var routeId = DesktopNodeApiRequestParsing.DecodeRouteId(routeMatch.Parameters["vmId"], operation);
         if (!routeId.Ok)
@@ -628,11 +629,7 @@ internal sealed partial class DesktopNodeApiVmMutationRouteHandler
 
         return DesktopNodeApiResponseFactory.JobCreated(CreateJob(
             operation,
-            DesktopNodeApiResponseFactory.JsonFromObject(new SortedDictionary<string, object?>
-            {
-                ["name"] = routeId.Value,
-                [valueProperty] = requestedValue.Value
-            }),
+            reconciliationHandler.BuildVmResourceParameters(operation, routeId.Value!, requestedValue.Value, cancellationToken),
             request.RequestId!));
     }
 

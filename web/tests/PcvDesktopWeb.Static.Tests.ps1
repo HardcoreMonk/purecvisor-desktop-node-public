@@ -880,8 +880,9 @@ Describe 'PcvDesktopWeb static console assets' {
         ($app + $inventorySource) | Should -Match 'no switch create form'
         ($app + $inventorySource) | Should -Match 'no NAT editor'
         ($app + $inventorySource) | Should -Match 'no DHCP editor'
-        ($app + $inventorySource) | Should -Match 'CLI/API vm.network.connect only'
-        ($app + $inventorySource) | Should -Not -Match 'data-action="switch-create"|data-action="switch-remove"|data-action="vm-network-connect"|name="nat-network"|name="dhcp-scope"'
+        ($app + $inventorySource) | Should -Match 'switch connect in VM detail'
+        ($app + $inventorySource) | Should -Not -Match 'data-action="switch-create"|data-action="switch-remove"|name="nat-network"|name="dhcp-scope"'
+        $inventorySource | Should -Not -Match 'data-action="vm-network-connect"'
         ($app + $servedSource) | Should -Not -Match 'New-VMSwitch|Remove-VMSwitch|New-NetIPAddress|Set-NetFirewallRule'
     }
 

@@ -193,6 +193,8 @@ const DESKTOP_NODE_API_ROUTES = Object.freeze({
     vmDetail: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}`,
     vmBlkio: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/blkio`,
     vmBandwidth: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/bandwidth`,
+    vmMemoryStats: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/memory-stats`,
+    vmCpuStats: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/cpu-stats`,
     vmQosStoragePreview: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/qos/storage/preview`,
     vmQosStorage: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/qos/storage`,
     vmQosNetworkPreview: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/qos/network/preview`,
@@ -204,9 +206,20 @@ const DESKTOP_NODE_API_ROUTES = Object.freeze({
     vmGuestFile: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/guest/file`,
     vmGuestChannelVerify: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/guest/channel/verify`,
     vmGuestChannelEnsure: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/guest/channel`,
-    vmAction: (vmId, action) => `/api/v1/vms/${encodeRouteSegment(vmId)}/${requireRouteAction(action, ['start', 'shutdown', 'poweroff', 'restart', 'save', 'resume-saved', 'eject', 'attach', 'delete-status', 'set-memory', 'set-vcpu', 'disk-resize', 'manage', 'clone', 'template-lock'])}`,
+    vmAction: (vmId, action) => `/api/v1/vms/${encodeRouteSegment(vmId)}/${requireRouteAction(action, ['start', 'shutdown', 'poweroff', 'restart', 'save', 'resume-saved', 'pause', 'resume', 'rename', 'eject', 'attach', 'delete-status', 'set-memory', 'set-vcpu', 'disk-resize', 'manage', 'clone', 'template-lock'])}`,
     vmClonePreview: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/clone/preview`,
     vmCheckpoints: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/checkpoints`,
+    vmGuestExecPreview: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/guest/exec/preview`,
+    vmGuestChannelPreview: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/guest/channel/preview`,
+    vmNetwork: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/network`,
+    vmDevices: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/devices`,
+    vmExportPreview: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/export/preview`,
+    vmExport: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/export`,
+    vmImportPreview: () => '/api/v1/vms/import/preview',
+    vmImport: () => '/api/v1/vms/import',
+    vmCheckpointSchedulePreview: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/checkpoints/schedule/preview`,
+    vmCheckpointSchedule: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/checkpoints/schedule`,
+    vmCheckpointScheduleClear: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/checkpoints/schedule/clear`,
     checkpointDetail: (vmId, checkpointId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/checkpoints/${encodeRouteSegment(checkpointId)}`,
     checkpointAction: (vmId, checkpointId, action) => `/api/v1/vms/${encodeRouteSegment(vmId)}/checkpoints/${encodeRouteSegment(checkpointId)}/${requireRouteAction(action, ['restore'])}`,
     jobDetail: (jobId) => `/api/v1/jobs/${encodeRouteSegment(jobId)}`,
@@ -223,6 +236,19 @@ const DESKTOP_NODE_ROUTE_COVERAGE = Object.freeze([
     { id: 'vm.create', featureId: 'pcv.vm.create', method: 'POST', route: DESKTOP_NODE_API_ROUTES.vmList, view: 'vms', mutating: true, tokenRequired: true },
     { id: 'vm.detail', featureId: 'pcv.vm.inventory', method: 'GET', route: '/api/v1/vms/{vm_id}', view: 'vms', mutating: false, tokenRequired: true },
     { id: 'vm.blkio-get', featureId: 'pcv.vm.qos', method: 'GET', route: '/api/v1/vms/{vm_id}/blkio', view: 'vms', mutating: false, tokenRequired: true },
+    { id: 'vm.memory-stats', featureId: 'pcv.vm.telemetry', method: 'GET', route: '/api/v1/vms/{vm_id}/memory-stats', view: 'vms', mutating: false, tokenRequired: true },
+    { id: 'vm.cpu-stats', featureId: 'pcv.vm.telemetry', method: 'GET', route: '/api/v1/vms/{vm_id}/cpu-stats', view: 'vms', mutating: false, tokenRequired: true },
+    { id: 'checkpoint.schedule.preview', featureId: 'pcv.checkpoint.lifecycle', method: 'POST', route: '/api/v1/vms/{vm_id}/checkpoints/schedule/preview', view: 'vms', mutating: true, tokenRequired: true },
+    { id: 'checkpoint.schedule.set', featureId: 'pcv.checkpoint.lifecycle', method: 'POST', route: '/api/v1/vms/{vm_id}/checkpoints/schedule', view: 'vms', mutating: true, tokenRequired: true },
+    { id: 'checkpoint.schedule.clear', featureId: 'pcv.checkpoint.lifecycle', method: 'POST', route: '/api/v1/vms/{vm_id}/checkpoints/schedule/clear', view: 'vms', mutating: true, tokenRequired: true },
+    { id: 'vm.export.preview', featureId: 'pcv.vm.managed-import', method: 'POST', route: '/api/v1/vms/{vm_id}/export/preview', view: 'vms', mutating: false, tokenRequired: true },
+    { id: 'vm.export', featureId: 'pcv.vm.managed-import', method: 'POST', route: '/api/v1/vms/{vm_id}/export', view: 'vms', mutating: true, tokenRequired: true },
+    { id: 'vm.import.preview', featureId: 'pcv.vm.managed-import', method: 'POST', route: '/api/v1/vms/import/preview', view: 'vms', mutating: false, tokenRequired: true },
+    { id: 'vm.import', featureId: 'pcv.vm.managed-import', method: 'POST', route: '/api/v1/vms/import', view: 'vms', mutating: true, tokenRequired: true },
+    { id: 'vm.network.connect', featureId: 'pcv.network.inventory', method: 'POST', route: '/api/v1/vms/{vm_id}/network', view: 'vms', mutating: true, tokenRequired: true },
+    { id: 'vm.device.add', featureId: 'pcv.network.inventory', method: 'POST', route: '/api/v1/vms/{vm_id}/devices', view: 'vms', mutating: true, tokenRequired: true },
+    { id: 'vm.guest.exec.preview', featureId: 'pcv.vm.guest-execution', method: 'POST', route: '/api/v1/vms/{vm_id}/guest/exec/preview', view: 'vms', mutating: false, tokenRequired: true },
+    { id: 'vm.guest.channel.preview', featureId: 'pcv.vm.guest-channel', method: 'POST', route: '/api/v1/vms/{vm_id}/guest/channel/preview', view: 'vms', mutating: false, tokenRequired: true },
     { id: 'vm.bandwidth', featureId: 'pcv.vm.qos', method: 'GET', route: '/api/v1/vms/{vm_id}/bandwidth', view: 'vms', mutating: false, tokenRequired: true },
     { id: 'vm.qos.storage.preview', featureId: 'pcv.vm.qos', method: 'POST', route: '/api/v1/vms/{vm_id}/qos/storage/preview', view: 'vms', mutating: false, tokenRequired: true },
     { id: 'vm.qos.storage.set', featureId: 'pcv.vm.qos', method: 'POST', route: '/api/v1/vms/{vm_id}/qos/storage', view: 'vms', mutating: true, tokenRequired: true },
@@ -238,6 +264,9 @@ const DESKTOP_NODE_ROUTE_COVERAGE = Object.freeze([
     { id: 'vm.lifecycle', featureId: 'pcv.vm.power-lifecycle', method: 'POST', route: '/api/v1/vms/{vm_id}/start|shutdown|poweroff|restart', view: 'vms', mutating: true, tokenRequired: true },
     { id: 'vm.save', featureId: 'pcv.vm.saved-lifecycle', method: 'POST', route: '/api/v1/vms/{vm_id}/save', view: 'vms', mutating: true, tokenRequired: true },
     { id: 'vm.resume-saved', featureId: 'pcv.vm.saved-lifecycle', method: 'POST', route: '/api/v1/vms/{vm_id}/resume-saved', view: 'vms', mutating: true, tokenRequired: true },
+    { id: 'vm.pause', featureId: 'pcv.vm.pause-lifecycle', method: 'POST', route: '/api/v1/vms/{vm_id}/pause', view: 'vms', mutating: true, tokenRequired: true },
+    { id: 'vm.resume', featureId: 'pcv.vm.pause-lifecycle', method: 'POST', route: '/api/v1/vms/{vm_id}/resume', view: 'vms', mutating: true, tokenRequired: true },
+    { id: 'vm.rename', featureId: 'pcv.vm.rename', method: 'POST', route: '/api/v1/vms/{vm_id}/rename', view: 'vms', mutating: true, tokenRequired: true },
     { id: 'vm.media', featureId: 'pcv.vm.media-eject', method: 'POST', route: '/api/v1/vms/{vm_id}/eject', view: 'vms', mutating: true, tokenRequired: true },
     { id: 'vm.media.attach', featureId: 'pcv.vm.media-attach', method: 'POST', route: '/api/v1/vms/{vm_id}/attach', view: 'vms', mutating: true, tokenRequired: true },
     { id: 'vm.resource-mutation', featureId: 'pcv.vm.resource-limits', method: 'POST', route: '/api/v1/vms/{vm_id}/set-memory|set-vcpu|disk-resize', view: 'vms', mutating: true, tokenRequired: true },
@@ -707,6 +736,8 @@ const desktopApi = Object.freeze({
     getVm: (vmId, options = {}) => apiFetch(DESKTOP_NODE_API_ROUTES.vmDetail(vmId), options),
     getVmBlkio: (vmId, options = {}) => apiFetch(DESKTOP_NODE_API_ROUTES.vmBlkio(vmId), options),
     getVmBandwidth: (vmId, options = {}) => apiFetch(DESKTOP_NODE_API_ROUTES.vmBandwidth(vmId), options),
+    getVmMemoryStats: (vmId, options = {}) => apiFetch(DESKTOP_NODE_API_ROUTES.vmMemoryStats(vmId), options),
+    getVmCpuStats: (vmId, options = {}) => apiFetch(DESKTOP_NODE_API_ROUTES.vmCpuStats(vmId), options),
     previewVmQosStorage: (vmId, payload) => apiFetch(DESKTOP_NODE_API_ROUTES.vmQosStoragePreview(vmId), {
         method: 'POST',
         body: JSON.stringify(payload)
@@ -752,6 +783,10 @@ const desktopApi = Object.freeze({
         method: 'POST',
         body: JSON.stringify({ iso_path: isoPath })
     }),
+    queueVmRename: (vmId, newName) => apiFetch(DESKTOP_NODE_API_ROUTES.vmAction(vmId, 'rename'), {
+        method: 'POST',
+        body: JSON.stringify({ new_name: newName })
+    }),
     queueVmManage: (vmId, confirmName) => apiFetch(DESKTOP_NODE_API_ROUTES.vmAction(vmId, 'manage'), {
         method: 'POST',
         body: JSON.stringify({ confirm_name: confirmName })
@@ -780,6 +815,47 @@ const desktopApi = Object.freeze({
     }),
     restoreCheckpoint: (vmId, checkpointId) => apiFetch(DESKTOP_NODE_API_ROUTES.checkpointAction(vmId, checkpointId, 'restore'), { method: 'POST' }),
     deleteCheckpoint: (vmId, checkpointId) => apiFetch(DESKTOP_NODE_API_ROUTES.checkpointDetail(vmId, checkpointId), { method: 'DELETE' }),
+    previewVmGuestExec: (vmId, payload) => apiFetch(DESKTOP_NODE_API_ROUTES.vmGuestExecPreview(vmId), {
+        method: 'POST',
+        body: JSON.stringify(payload)
+    }),
+    previewVmGuestChannel: (vmId, payload) => apiFetch(DESKTOP_NODE_API_ROUTES.vmGuestChannelPreview(vmId), {
+        method: 'POST',
+        body: JSON.stringify(payload)
+    }),
+    connectVmNetwork: (vmId, payload) => apiFetch(DESKTOP_NODE_API_ROUTES.vmNetwork(vmId), {
+        method: 'POST',
+        body: JSON.stringify(payload)
+    }),
+    addVmDevice: (vmId, payload) => apiFetch(DESKTOP_NODE_API_ROUTES.vmDevices(vmId), {
+        method: 'POST',
+        body: JSON.stringify(payload)
+    }),
+    previewVmExport: (vmId, payload) => apiFetch(DESKTOP_NODE_API_ROUTES.vmExportPreview(vmId), {
+        method: 'POST',
+        body: JSON.stringify(payload)
+    }),
+    exportVm: (vmId, payload) => apiFetch(DESKTOP_NODE_API_ROUTES.vmExport(vmId), {
+        method: 'POST',
+        body: JSON.stringify(payload)
+    }),
+    previewVmImport: (payload) => apiFetch(DESKTOP_NODE_API_ROUTES.vmImportPreview(), {
+        method: 'POST',
+        body: JSON.stringify(payload)
+    }),
+    importVm: (payload) => apiFetch(DESKTOP_NODE_API_ROUTES.vmImport(), {
+        method: 'POST',
+        body: JSON.stringify(payload)
+    }),
+    previewCheckpointSchedule: (vmId, payload) => apiFetch(DESKTOP_NODE_API_ROUTES.vmCheckpointSchedulePreview(vmId), {
+        method: 'POST',
+        body: JSON.stringify(payload)
+    }),
+    setCheckpointSchedule: (vmId, payload) => apiFetch(DESKTOP_NODE_API_ROUTES.vmCheckpointSchedule(vmId), {
+        method: 'POST',
+        body: JSON.stringify(payload)
+    }),
+    clearCheckpointSchedule: (vmId) => apiFetch(DESKTOP_NODE_API_ROUTES.vmCheckpointScheduleClear(vmId), { method: 'POST' }),
     getJob: (jobId, options = {}) => apiFetch(DESKTOP_NODE_API_ROUTES.jobDetail(jobId), options),
     cancelJob: (jobId) => apiFetch(DESKTOP_NODE_API_ROUTES.jobAction(jobId, 'cancel'), { method: 'POST' }),
     retryJob: (jobId) => apiFetch(DESKTOP_NODE_API_ROUTES.jobAction(jobId, 'retry'), { method: 'POST' }),
@@ -1521,14 +1597,14 @@ function renderNetworkChangeReadback(switches) {
         <div class="diagnostics-fact"><span class="muted">product switches</span><strong>${escapeHtml(productCount)}</strong></div>
         <div class="diagnostics-fact"><span class="muted">reserved</span><strong>${escapeHtml(reservedCount)}</strong></div>
         <div class="diagnostics-fact"><span class="muted">external</span><strong>${escapeHtml(externalCount === 0 ? 'none' : 'present')}</strong></div>
-        <div class="diagnostics-fact"><span class="muted">vm.network.connect</span><strong>CLI/API only</strong></div>
+        <div class="diagnostics-fact"><span class="muted">vm.network.connect</span><strong>VM detail</strong></div>
         <div class="diagnostics-fact"><span class="muted">NAT/DHCP</span><strong>excluded</strong></div>
       </div>
       <div class="boundary-chip-row">
         <span>no switch create form</span>
         <span>no NAT editor</span>
         <span>no DHCP editor</span>
-        <span>CLI/API vm.network.connect only</span>
+        <span>switch connect in VM detail</span>
       </div>
     </div>`;
 }
@@ -1658,6 +1734,8 @@ function renderVmQosGuestReadback(vmId) {
       ${renderReadbackCard(readbacks, 'bandwidth', 'bandwidth', 'network_qos', ['linux_bandwidth_compatible', 'mutation_supported'])}
       ${renderReadbackCard(readbacks, 'guest_agent', 'guest-agent-status', 'guest_agent', ['status', 'qemu_guest_agent', 'guest_exec_supported'])}
       ${renderReadbackCard(readbacks, 'guest_ping', 'guest-ping', 'guest_ping', ['reachable', 'guest_heartbeat_verified'])}
+      ${renderReadbackCard(readbacks, 'memory_stats', 'memory-stats', 'memory', ['startup_mb', 'assigned_mb', 'dynamic'])}
+      ${renderReadbackCard(readbacks, 'cpu_stats', 'cpu-stats', 'cpu', ['count'])}
     </div>
     <p class="muted">updated_at=${escapeHtml(updated)} / vm.limit remains CLI/API queued mutation</p>
   </section>`;
@@ -1735,6 +1813,7 @@ function renderVmQosDirectControl(vmId) {
         <label>Timeout seconds<input name="timeout_sec" type="number" min="1" max="600" step="1" value="60"${guestExecDisabled}></label>
         <label>Command<input name="command" autocomplete="off" placeholder="hostname"${guestExecDisabled}></label>
         <div class="qos-control-actions">
+          <button type="submit" data-action="vm-guest-exec-preview"${guestExecDisabled}>Preview exec</button>
           <button type="submit" class="danger-button" data-action="vm-guest-exec"${guestExecDisabled}>Queue exec</button>
         </div>
       </form>
@@ -1742,6 +1821,7 @@ function renderVmQosDirectControl(vmId) {
         <label>Credential reference<input name="credential_ref" autocomplete="off" placeholder="wincred:target"${guestChannelDisabled}></label>
         <label>Timeout seconds<input name="timeout_sec" type="number" min="1" max="600" step="1" value="30"${guestChannelDisabled}></label>
         <div class="qos-control-actions">
+          <button type="submit" data-action="guest-agent-channel-preview"${guestChannelDisabled}>Preview channel</button>
           <button type="submit" data-action="guest-agent-ensure-channel" data-guest-channel-mode="verify"${guestChannelDisabled}>Verify channel</button>
           <button type="submit" class="danger-button" data-action="guest-agent-ensure-channel" data-guest-channel-mode="repair"${guestChannelDisabled}>Repair channel</button>
         </div>
@@ -1812,6 +1892,8 @@ function renderVmDetail() {
       <button class="danger-button" data-action="vm-restart" data-vm-id="${escapeHtml(vmId)}"${lockedMutationDisabled}>Restart</button>
       <button data-action="vm-save" data-vm-id="${escapeHtml(vmId)}"${lockedMutationDisabled}>Save</button>
       <button data-action="vm-resume-saved" data-vm-id="${escapeHtml(vmId)}"${lockedMutationDisabled}>Resume saved</button>
+      <button data-action="vm-pause" data-vm-id="${escapeHtml(vmId)}"${lockedMutationDisabled}>Pause</button>
+      <button data-action="vm-resume" data-vm-id="${escapeHtml(vmId)}"${lockedMutationDisabled}>Resume</button>
       <button data-action="vm-eject" data-vm-id="${escapeHtml(vmId)}"${lockedMutationDisabled}>Eject media</button>
       <button data-action="vm-delete-status" data-vm-id="${escapeHtml(vmId)}"${actionDisabled}>Delete status</button>
       <button data-action="vm-manage" data-vm-id="${escapeHtml(vmId)}"${lockedMutationDisabled}>Manage VM</button>
@@ -1827,6 +1909,20 @@ function renderVmDetail() {
       <form class="vm-resource-form" data-action="vm-attach" data-vm-id="${escapeHtml(vmId)}">
         <input name="iso_path" type="text" placeholder="ISO path" aria-label="ISO path"${lockedMutationDisabled}>
         <button type="submit"${lockedMutationDisabled}>Attach media</button>
+      </form>
+      <form class="vm-resource-form" data-action="vm-rename" data-vm-id="${escapeHtml(vmId)}">
+        <input name="new_name" type="text" placeholder="New VM name" aria-label="New VM name"${lockedMutationDisabled}>
+        <button type="submit"${lockedMutationDisabled}>Rename VM</button>
+      </form>
+      <form class="vm-resource-form" data-action="vm-network-connect" data-vm-id="${escapeHtml(vmId)}">
+        <select name="switch" aria-label="Switch to connect"${lockedMutationDisabled}>${renderSwitchOptions()}</select>
+        <button type="submit"${lockedMutationDisabled}>Connect switch</button>
+      </form>
+      <form class="vm-resource-form" data-action="vm-device-add" data-vm-id="${escapeHtml(vmId)}">
+        <select name="device" aria-label="Device kind"${lockedMutationDisabled}><option value="nic">Network adapter</option><option value="dvd">DVD drive</option></select>
+        <select name="switch" aria-label="Network adapter switch"${lockedMutationDisabled}>${renderSwitchOptions()}</select>
+        <input name="iso_path" type="text" placeholder="DVD ISO path (optional)" aria-label="DVD ISO path"${lockedMutationDisabled}>
+        <button type="submit"${lockedMutationDisabled}>Add device</button>
       </form>
       <form class="vm-resource-form" data-action="vm-set-memory" data-vm-id="${escapeHtml(vmId)}">
         <input name="memory_mb" type="number" min="512" max="262144" step="128" placeholder="Memory MB" aria-label="memory MB"${lockedMutationDisabled}>
@@ -1848,7 +1944,7 @@ function renderVmDetail() {
     <div class="details-grid detail-grid">
       ${details.map(([label, value]) => `<div class="kv"><span>${escapeHtml(label)}</span><strong>${escapeHtml(formatObjectValue(value))}</strong></div>`).join('')}
     </div>
-    ${renderExportImportReadback(vm)}
+    ${renderExportImportReadback(vm, vmId, actionDisabled)}
     ${renderVmQosGuestReadback(vmId)}
     ${renderVmQosDirectControl(vmId)}
     <div class="checkpoint-panel">
@@ -1859,7 +1955,7 @@ function renderVmDetail() {
         </div>
         <button data-action="checkpoint-refresh" data-vm-id="${escapeHtml(vmId)}"${checkpointRefreshDisabled}>Refresh checkpoints</button>
       </div>
-      ${renderCheckpointScheduleReadback(vm)}
+      ${renderCheckpointScheduleReadback(vm, vmId, actionDisabled)}
       <form class="checkpoint-form" data-action="checkpoint-create" data-vm-id="${escapeHtml(vmId)}">
         <input name="checkpoint_name" autocomplete="off" placeholder="Checkpoint name" aria-label="checkpoint name"${checkpointMutationDisabled}>
         <button type="submit"${checkpointMutationDisabled}>Create checkpoint</button>
@@ -1867,7 +1963,7 @@ function renderVmDetail() {
       <div class="checkpoint-list">${renderCheckpointList(vmId)}</div>
     </div>`;
 }
-function renderExportImportReadback(vm) {
+function renderExportImportReadback(vm, vmId, actionDisabled = '') {
     const managed = vm?.managed_by_purecvisor === true;
     const generation = Number(vm?.generation);
     const power = String(vm?.state || vm?.status || '').trim().toLowerCase();
@@ -1888,17 +1984,30 @@ function renderExportImportReadback(vm) {
         <div class="diagnostics-fact"><span class="muted">generation</span><strong>${escapeHtml(formatObjectValue(vm?.generation))}</strong></div>
         <div class="diagnostics-fact"><span class="muted">power</span><strong>${escapeHtml(formatObjectValue(vm?.state || vm?.status))}</strong></div>
         <div class="diagnostics-fact"><span class="muted">security features</span><strong>${escapeHtml(securityLabel)}</strong></div>
-        <div class="diagnostics-fact"><span class="muted">import</span><strong>CLI/API only</strong></div>
+        <div class="diagnostics-fact"><span class="muted">import</span><strong>new identity</strong></div>
       </div>
+      <form class="vm-resource-form export-import-form" data-action="vm-export" data-vm-id="${escapeHtml(vmId)}">
+        <input name="directory" type="text" placeholder="Export directory" aria-label="Export directory"${actionDisabled}>
+        <button type="submit" data-action="vm-export-preview"${actionDisabled}>Preview export</button>
+        <button type="submit" data-action="vm-export-apply"${actionDisabled}>Export VM</button>
+      </form>
+      <form class="vm-resource-form export-import-form" data-action="vm-import" data-vm-id="${escapeHtml(vmId)}">
+        <input name="name" type="text" placeholder="New VM name" aria-label="Import VM name"${actionDisabled}>
+        <input name="directory" type="text" placeholder="Export package directory" aria-label="Import package directory"${actionDisabled}>
+        <label><input name="has_vmcx" type="checkbox"${actionDisabled}> package has .vmcx</label>
+        <button type="submit" data-action="vm-import-preview"${actionDisabled}>Preview import</button>
+        <button type="submit" data-action="vm-import-apply"${actionDisabled}>Import VM</button>
+      </form>
+      ${renderExportImportPreview(vmId)}
       <div class="boundary-chip-row">
-        <span>no export/import save form</span>
-        <span>CLI/API export/import only</span>
+        <span>preview before export/import</span>
+        <span>new VM identity on import</span>
         <span>no OVF</span>
         <span>no TPM key copy</span>
       </div>
     </div>`;
 }
-function renderCheckpointScheduleReadback(vm) {
+function renderCheckpointScheduleReadback(vm, vmId, actionDisabled = '') {
     const schedule = asObject(vm?.checkpoint_schedule);
     const enabled = schedule.enabled === true;
     const status = schedule.status || (enabled ? 'waiting' : 'disabled');
@@ -1915,9 +2024,16 @@ function renderCheckpointScheduleReadback(vm) {
         <div class="diagnostics-fact"><span class="muted">last enqueued</span><strong>${escapeHtml(formatObjectValue(schedule.last_enqueued_at))}</strong></div>
         <div class="diagnostics-fact"><span class="muted">next due</span><strong>${escapeHtml(formatObjectValue(schedule.next_due_at))}</strong></div>
       </div>
+      <form class="vm-resource-form checkpoint-schedule-form" data-action="checkpoint-schedule" data-vm-id="${escapeHtml(vmId)}">
+        <input name="interval_minutes" type="number" min="1" step="1" placeholder="Interval minutes" aria-label="Checkpoint interval minutes"${actionDisabled}>
+        <input name="retention_max" type="number" min="1" step="1" placeholder="Retention max" aria-label="Checkpoint retention max"${actionDisabled}>
+        <button type="submit" data-action="checkpoint-schedule-preview"${actionDisabled}>Preview schedule</button>
+        <button type="submit" data-action="checkpoint-schedule-set"${actionDisabled}>Save schedule</button>
+        <button type="button" class="danger-button" data-action="checkpoint-schedule-clear" data-vm-id="${escapeHtml(vmId)}"${actionDisabled}>Clear schedule</button>
+      </form>
+      ${renderCheckpointSchedulePreview(vmId)}
       <div class="boundary-chip-row">
-        <span>no schedule save form</span>
-        <span>CLI/API configure only</span>
+        <span>preview before save</span>
         <span>no infinite retention</span>
       </div>
     </div>`;
@@ -3616,7 +3732,9 @@ async function loadVmQosGuestReadbacks(vmId, options = {}) {
         ['blkio', () => desktopApi.getVmBlkio(vmId, requestOptions)],
         ['bandwidth', () => desktopApi.getVmBandwidth(vmId, requestOptions)],
         ['guest_agent', () => desktopApi.getVmGuestAgentStatus(vmId, requestOptions)],
-        ['guest_ping', () => desktopApi.getVmGuestAgentPing(vmId, requestOptions)]
+        ['guest_ping', () => desktopApi.getVmGuestAgentPing(vmId, requestOptions)],
+        ['memory_stats', () => desktopApi.getVmMemoryStats(vmId, requestOptions)],
+        ['cpu_stats', () => desktopApi.getVmCpuStats(vmId, requestOptions)]
     ];
     const results = await Promise.allSettled(steps.map(([, run]) => run()));
     if (state.selectedVmId !== vmId)
@@ -4227,6 +4345,265 @@ async function queueCheckpointDelete(vmId, checkpointId) {
     finally {
         state.checkpointPending = false;
         clearCheckpointActionPending(vmId, checkpointId);
+    }
+}
+// --- src/served/vm-detail-extensions.ts ---
+// @ts-nocheck
+// VM detail 의 lifecycle action 표와 확장 form action 이다. served-app.ts 의 submit 분기가 처리하지 않은
+// data-action 은 handleVmDetailExtensionSubmit 으로 온다.
+const VM_LIFECYCLE_ACTIONS = {
+    'vm-start': 'start',
+    'vm-shutdown': 'shutdown',
+    'vm-poweroff': 'poweroff',
+    'vm-restart': 'restart',
+    'vm-save': 'save',
+    'vm-resume-saved': 'resume-saved',
+    'vm-pause': 'pause',
+    'vm-resume': 'resume',
+    'vm-eject': 'eject'
+};
+async function queueVmRename(vmId, newName) {
+    requireRbac('operate', 'VM rename');
+    const target = String(newName || '').trim();
+    if (!target) {
+        throw normalizeError({
+            code: 'PCV_VM_RENAME_TARGET_REQUIRED',
+            message: 'Enter a new VM name.',
+            detail: 'new_name is required before queueing vm.rename.'
+        });
+    }
+    if (!window.confirm(`Rename VM '${vmId}' to '${target}'?\n\nThe VM keeps its ID and disks. Scripts that use the old name must change.`)) {
+        return;
+    }
+    state.actionPending = true;
+    setVmActionPending(vmId, 'rename');
+    state.error = null;
+    render();
+    try {
+        const job = await desktopApi.queueVmRename(vmId, target);
+        trackJob(job);
+        state.connectionState = 'connected';
+        startPolling();
+    }
+    catch (error) {
+        state.error = normalizeError(error);
+    }
+    finally {
+        state.actionPending = false;
+        clearVmActionPending(vmId);
+        render();
+    }
+}
+const VM_DETAIL_EXTENSION_CLICK_ACTIONS = new Set(['checkpoint-schedule-clear']);
+function readCheckpointSchedulePayload(data) {
+    const payload = {};
+    for (const name of ['interval_minutes', 'retention_max']) {
+        const raw = String(data.get(name) ?? '').trim();
+        if (raw) {
+            payload[name] = Number(raw);
+        }
+    }
+    return payload;
+}
+function buildCheckpointScheduleConfirmation(vmId, mode, payload) {
+    return mode === 'clear'
+        ? `Clear the periodic checkpoint schedule for VM '${vmId}'?\n\nExisting checkpoints stay. Scheduled checkpoints stop until a new schedule is saved.`
+        : `Save the periodic checkpoint schedule for VM '${vmId}'?\n\ninterval_minutes=${payload.interval_minutes ?? '-'} / retention_max=${payload.retention_max ?? '-'}`;
+}
+async function queueCheckpointScheduleControl(vmId, mode, payload) {
+    requireRbac('operate', `Checkpoint schedule ${mode}`);
+    if (mode !== 'preview' && !window.confirm(buildCheckpointScheduleConfirmation(vmId, mode, payload))) {
+        return;
+    }
+    state.actionPending = true;
+    setVmActionPending(vmId, `checkpoint-schedule-${mode}`);
+    state.error = null;
+    render();
+    try {
+        const result = mode === 'preview'
+            ? await desktopApi.previewCheckpointSchedule(vmId, payload)
+            : mode === 'set'
+                ? await desktopApi.setCheckpointSchedule(vmId, payload)
+                : await desktopApi.clearCheckpointSchedule(vmId);
+        if (mode === 'preview') {
+            state.checkpointSchedulePreview = { vm_id: vmId, updated_at: new Date().toISOString(), result };
+        }
+        else {
+            trackJob(result);
+            startPolling();
+        }
+        state.connectionState = 'connected';
+    }
+    catch (error) {
+        state.error = normalizeError(error);
+    }
+    finally {
+        state.actionPending = false;
+        clearVmActionPending(vmId);
+        render();
+    }
+}
+function renderCheckpointSchedulePreview(vmId) {
+    const preview = state.checkpointSchedulePreview;
+    if (!preview || preview.vm_id !== vmId) {
+        return '<p class="muted">Preview the schedule before saving it.</p>';
+    }
+    const updated = preview.updated_at ? new Date(preview.updated_at).toLocaleString() : '-';
+    return `<p class="muted">schedule preview ${escapeHtml(updated)}: ${escapeHtml(formatObjectValue(preview.result))}</p>`;
+}
+function readExportImportPayload(kind, data) {
+    const directory = String(data.get('directory') || '').trim();
+    return kind === 'export'
+        ? { directory }
+        : { name: String(data.get('name') || '').trim(), directory, has_vmcx: data.get('has_vmcx') === 'on' };
+}
+function buildExportImportConfirmation(vmId, kind, payload) {
+    return kind === 'export'
+        ? `Export VM '${vmId}' to '${payload.directory}'?\n\nHyper-V writes an export package there. The VM itself does not change.`
+        : `Import '${payload.directory}' as new VM '${payload.name}'?\n\nThe import gets a new VM identity and the managed marker. Disks are copied under the VM root.`;
+}
+async function queueVmExportImportControl(vmId, kind, mode, payload) {
+    requireRbac('operate', `VM ${kind} ${mode}`);
+    const apply = mode === 'apply';
+    if (apply && !window.confirm(buildExportImportConfirmation(vmId, kind, payload))) {
+        return;
+    }
+    state.actionPending = true;
+    setVmActionPending(vmId, `${kind}-${mode}`);
+    state.error = null;
+    render();
+    try {
+        const result = kind === 'export'
+            ? apply ? await desktopApi.exportVm(vmId, payload) : await desktopApi.previewVmExport(vmId, payload)
+            : apply ? await desktopApi.importVm(payload) : await desktopApi.previewVmImport(payload);
+        if (apply) {
+            trackJob(result);
+            startPolling();
+        }
+        else {
+            state.vmExportImportPreview = { vm_id: vmId, kind, updated_at: new Date().toISOString(), result };
+        }
+        state.connectionState = 'connected';
+    }
+    catch (error) {
+        state.error = normalizeError(error);
+    }
+    finally {
+        state.actionPending = false;
+        clearVmActionPending(vmId);
+        render();
+    }
+}
+function renderExportImportPreview(vmId) {
+    const preview = state.vmExportImportPreview;
+    if (!preview || preview.vm_id !== vmId) {
+        return '<p class="muted">Preview an export or import before running it.</p>';
+    }
+    const updated = preview.updated_at ? new Date(preview.updated_at).toLocaleString() : '-';
+    return `<p class="muted">${escapeHtml(preview.kind)} preview ${escapeHtml(updated)}: ${escapeHtml(formatObjectValue(preview.result))}</p>`;
+}
+function renderSwitchOptions() {
+    const inventory = state.networkInventory || {};
+    const switches = asArray(inventory.switches || inventory.items || inventory.networks)
+        .map((item) => String(item?.name || '').trim())
+        .filter(Boolean);
+    return ['<option value="">Select switch</option>']
+        .concat(switches.map((name) => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`))
+        .join('');
+}
+function readVmNetworkChangePayload(kind, data) {
+    const switchName = String(data.get('switch') || '').trim();
+    if (kind === 'connect') {
+        return { switch: switchName };
+    }
+    const device = String(data.get('device') || 'nic');
+    const isoPath = String(data.get('iso_path') || '').trim();
+    return device === 'dvd'
+        ? (isoPath ? { device, iso_path: isoPath } : { device })
+        : { device, switch: switchName };
+}
+function buildVmNetworkChangeConfirmation(vmId, kind, payload) {
+    return kind === 'connect'
+        ? `Connect VM '${vmId}' to switch '${payload.switch}'?\n\nThe first network adapter is retargeted. The VM must be Off.`
+        : `Add a ${payload.device === 'dvd' ? 'DVD drive' : 'network adapter'} to VM '${vmId}'?\n\nThe VM must be Off. Each add creates another device.`;
+}
+async function queueVmNetworkChange(vmId, kind, payload) {
+    requireRbac('operate', kind === 'connect' ? 'VM switch connect' : 'VM device add');
+    if (!window.confirm(buildVmNetworkChangeConfirmation(vmId, kind, payload))) {
+        return;
+    }
+    state.actionPending = true;
+    setVmActionPending(vmId, kind === 'connect' ? 'network-connect' : 'device-add');
+    state.error = null;
+    render();
+    try {
+        const job = kind === 'connect'
+            ? await desktopApi.connectVmNetwork(vmId, payload)
+            : await desktopApi.addVmDevice(vmId, payload);
+        trackJob(job);
+        state.connectionState = 'connected';
+        startPolling();
+    }
+    catch (error) {
+        state.error = normalizeError(error);
+    }
+    finally {
+        state.actionPending = false;
+        clearVmActionPending(vmId);
+        render();
+    }
+}
+async function previewVmGuestExecutionControl(vmId, kind, payload) {
+    requireRbac(kind === 'exec' ? 'guest.exec' : 'guest.channel.configure', `VM guest ${kind} preview`);
+    const controlKind = kind === 'exec' ? 'guest-execution' : 'guest-channel';
+    const control = (patch) => ({ vm_id: vmId, kind: controlKind, mode: 'preview', loading: false, updated_at: new Date().toISOString(), result: null, error: null, ...patch });
+    state.actionPending = true;
+    setVmActionPending(vmId, `guest-${kind}-preview`);
+    state.error = null;
+    state.selectedVmQosControl = control({ loading: true, updated_at: '' });
+    render();
+    try {
+        const result = kind === 'exec'
+            ? await desktopApi.previewVmGuestExec(vmId, payload)
+            : await desktopApi.previewVmGuestChannel(vmId, payload);
+        state.selectedVmQosControl = control({ result });
+        state.connectionState = 'connected';
+    }
+    catch (error) {
+        const normalized = normalizeError(error);
+        state.error = normalized;
+        state.selectedVmQosControl = control({ error: normalized });
+    }
+    finally {
+        state.actionPending = false;
+        clearVmActionPending(vmId);
+        render();
+    }
+}
+async function handleVmGuestPreviewSubmit(guestForm, submitterAction, data) {
+    const exec = submitterAction === 'vm-guest-exec-preview';
+    await previewVmGuestExecutionControl(guestForm.dataset.vmId, exec ? 'exec' : 'channel', exec ? readVmGuestExecPayload(data) : readVmGuestChannelPayload(data, 'repair'));
+}
+async function handleVmDetailExtensionSubmit(form, data, submitterAction) {
+    if (form?.dataset.action === 'vm-rename') {
+        await queueVmRename(form.dataset.vmId, data.get('new_name'));
+        form.reset();
+    }
+    else if (form?.dataset.action === 'vm-export' || form?.dataset.action === 'vm-import') {
+        const kind = form.dataset.action === 'vm-export' ? 'export' : 'import';
+        await queueVmExportImportControl(form.dataset.vmId, kind, String(submitterAction || '').endsWith('-apply') ? 'apply' : 'preview', readExportImportPayload(kind, data));
+    }
+    else if (form?.dataset.action === 'vm-network-connect' || form?.dataset.action === 'vm-device-add') {
+        const kind = form.dataset.action === 'vm-network-connect' ? 'connect' : 'device';
+        await queueVmNetworkChange(form.dataset.vmId, kind, readVmNetworkChangePayload(kind, data));
+    }
+    else if (form?.dataset.action === 'checkpoint-schedule') {
+        await queueCheckpointScheduleControl(form.dataset.vmId, submitterAction === 'checkpoint-schedule-set' ? 'set' : 'preview', readCheckpointSchedulePayload(data));
+    }
+}
+async function handleVmDetailExtensionClick(button) {
+    if (button.dataset.action === 'checkpoint-schedule-clear') {
+        await queueCheckpointScheduleControl(button.dataset.vmId, 'clear', {});
     }
 }
 // --- src/served/job-polling.ts ---
@@ -5088,6 +5465,9 @@ function bindEvents() {
             else if (submitterAction === 'vm-qos-network-preview' || submitterAction === 'vm-qos-network-apply') {
                 await queueVmQosDirectControl(qosForm.dataset.vmId, 'network', submitterAction.endsWith('-apply') ? 'apply' : 'preview', readVmQosPayload('network', data));
             }
+            else if (submitterAction === 'vm-guest-exec-preview' || submitterAction === 'guest-agent-channel-preview') {
+                await handleVmGuestPreviewSubmit(guestForm, submitterAction, data);
+            }
             else if (submitterAction === 'vm-guest-exec') {
                 await queueVmGuestExecutionControl(guestForm.dataset.vmId, 'exec', readVmGuestExecPayload(data));
             }
@@ -5122,6 +5502,9 @@ function bindEvents() {
                 await queueVmClone(form.dataset.vmId, data.get('name'));
                 form.reset();
             }
+            else {
+                await handleVmDetailExtensionSubmit(form, data, submitterAction);
+            }
         }
         catch (error) {
             state.error = normalizeError(error);
@@ -5132,16 +5515,7 @@ function bindEvents() {
         const button = event.target.closest('button[data-action]');
         if (!button)
             return;
-        const actionMap = {
-            'vm-start': 'start',
-            'vm-shutdown': 'shutdown',
-            'vm-poweroff': 'poweroff',
-            'vm-restart': 'restart',
-            'vm-save': 'save',
-            'vm-resume-saved': 'resume-saved',
-            'vm-eject': 'eject'
-        };
-        const action = actionMap[button.dataset.action];
+        const action = VM_LIFECYCLE_ACTIONS[button.dataset.action];
         state.error = null;
         try {
             if (action) {
@@ -5183,6 +5557,9 @@ function bindEvents() {
             }
             else if (button.dataset.action === 'checkpoint-delete') {
                 await queueCheckpointDelete(button.dataset.vmId, button.dataset.checkpointId);
+            }
+            else if (VM_DETAIL_EXTENSION_CLICK_ACTIONS.has(button.dataset.action)) {
+                await handleVmDetailExtensionClick(button);
             }
         }
         catch (error) {

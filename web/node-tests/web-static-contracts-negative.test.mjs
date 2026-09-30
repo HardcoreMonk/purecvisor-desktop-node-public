@@ -522,18 +522,18 @@ const defectCases = [
     expectedLabel: "checkpoint-actions:load:source"
   },
   {
-    name: "missing checkpoint schedule readback chips",
+    name: "missing checkpoint schedule preview form",
     id: "web.static.checkpoint-actions",
-    overrides: () => removeOnce("web/src/served/render-vm-detail.ts", "no schedule save form"),
+    overrides: () => removeOnce("web/src/served/render-vm-detail.ts", "checkpoint-schedule-preview"),
     expectedCode: assertionFailed,
-    expectedLabel: "checkpoint-actions:no-save-form:source"
+    expectedLabel: "checkpoint-actions:schedule-preview:source"
   },
   {
-    name: "missing export/import readback chips",
+    name: "missing export preview form",
     id: "web.static.vm-lifecycle-actions",
-    overrides: () => removeOnce("web/src/served/render-vm-detail.ts", "no export/import save form"),
+    overrides: () => removeOnce("web/src/served/render-vm-detail.ts", "vm-export-preview"),
     expectedCode: assertionFailed,
-    expectedLabel: "vm-lifecycle-actions:no-export-import-save-form:source"
+    expectedLabel: "vm-lifecycle-actions:export-preview:source"
   },
   {
     name: "missing network change readback chips",
