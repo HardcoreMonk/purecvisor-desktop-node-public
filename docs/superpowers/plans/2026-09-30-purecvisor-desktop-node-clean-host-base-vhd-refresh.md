@@ -117,14 +117,23 @@ Task 4 첫 checkpoint가 Lane 2 batch 한도로 멈췄다. 사용자 승인으�
 
 ## Task 5: 새 base로 clean-host 한 run (Lane 2)
 
-- [ ] `-BaseVhdPath <새 base>`로 runner를 실행한다. 조건은 0.42.83 run과 같다: `0.42.78 → 0.42.83`, `-InstallWindowsUpdates -RemoveVmOnSuccess`.
-- [ ] 다음을 확인한다.
+- [x] `-BaseVhdPath <새 base>`로 runner를 실행한다. 조건은 0.42.83 run과 같다: `0.42.78 → 0.42.83`, `-InstallWindowsUpdates -RemoveVmOnSuccess`.
+- [x] 다음을 확인한다.
   - `pre_update_os.ubr`가 새 base UBR과 같다.
   - `update_count`가 `0`이거나 갱신 뒤 나온 LCU 1개다.
   - 재부팅과 무응답 복구
   - 전체 시간(0.42.83 run의 46분과 비교)
-- [ ] PASS이면 도구 current 모드로 `current-base.json`을 지정한다.
-- [ ] evidence 문서를 새 파일로 쓴다.
+- [x] PASS이면 도구 current 모드로 `current-base.json`을 지정한다.
+- [x] evidence 문서를 새 파일로 쓴다.
+
+실행 기록(2026-09-30):
+- PASS, 134초(0.42.83 run은 46분).
+  - `pre_update_os.ubr=5622`, `update_count=0`
+  - 재부팅 없음, PowerShell Direct 2회, 자동 복구 없음
+  - install/update/rollback exit `0`, final `0.42.78-admin-smoke`, Web `200`
+- VM과 differencing 디스크는 삭제됐다.
+- `current-base.json`을 `20348.5622-20260930.vhd`로 지정했다.
+- evidence: `internal-clean-host-install-update-rollback-smoke-2026-09-30-04278-04283-base5622`.
 
 ## Task 6: 마무리 (Lane 1)
 
