@@ -91,8 +91,10 @@
 
 ## Task 9: Web 표시와 종료 (Lane 1)
 
-- [ ] VM detail Storage 행에 DVD media를 표시하고 browser fixture를 맞춘다.
-- [ ] 종료 검증 뒤 PR, CI, merge를 한다. campaign을 닫고, `next_step`에 설치본 검증(`0.42.85` package pair)이 승인 대상이라고 적는다.
+- [x] VM detail Storage 행에 DVD media를 표시하고 browser fixture를 맞춘다.
+- [x] 종료 검증 뒤 PR, CI, merge를 한다. campaign을 닫고, `next_step`에 설치본 검증(`0.42.85` package pair)이 승인 대상이라고 적는다.
+
+실행 기록(2026-09-30): VM detail에 `DVD Media` 행을 두었다. ISO 경로 목록을 보이고, 빈 목록이면 `none`, `dvd_media`가 없으면 `not reported`로 표시한다. browser fixture VM에 `dvd_media`를 더했다. 종료 검증: clean tree에서 `dotnet test src/DesktopNode.sln` 전 프로젝트 통과(Api `488`, HyperV `240`, Verification `557` 등), `npm run test:required --prefix web` exit `0`, web Pester `50/0`, `git diff --check`. 이 commit 뒤 branch를 PR로 올리고 CI 통과 뒤 merge한다. 설치본 검증(`0.42.85` package pair)은 승인 대상이다.
 
 ## Nonclaims
 
