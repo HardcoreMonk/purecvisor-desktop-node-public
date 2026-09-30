@@ -1,0 +1,110 @@
+# 0.42.84 package pair와 Lane 2 검증 Implementation Plan
+
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+
+**Goal:** 개발 완료 campaign(`development-completion-20260930`)의 변경을 담은 `0.42.84-admin-smoke`를 빌드한다. 그 package로 다음을 PASS로 만든다.
+- manual-admin pair(`0.42.83 → 0.42.84`)
+- fullgate
+- installed current-card
+- 새 Web 동작과 reconcile 경로의 Lane 2 actual-VM probe
+
+그리고 `vm.list` readback 확장을 설계한다. Lane 3 승격은 하지 않는다.
+
+**Architecture:** 0.42.83 pair(`docs/superpowers/plans/2026-09-29-purecvisor-desktop-node-04283-lane3-promotion.md`)의 Task 1~4 순서를 따른다. 거기에 push/PR, 설계, actual-VM probe를 더한다. 한 task가 한 checkpoint다. 모든 commit은 PR branch `feat/development-completion-20260930`에 쌓고 commit마다 push한다. 머지하지 않은 PR 위에 새 branch를 쌓지 않는다.
+
+**Tech Stack:** WiX installer `build.ps1`, `msiexec`, `Invoke-PcvDesktopNodeProduct.ps1`, manual-admin runner, `Invoke-PcvBatchSupervisor.ps1`, PCVCLI, C# / .NET 10, Pester 5
+
+## 사용자 결정 (2026-09-30)
+
+| 항목 | 결정 |
+| --- | --- |
+| 승인 | "전부 승인 합니다". 개발 완료 보고의 다음 단계 네 가지(push/PR, package pair와 fullgate, Lane 2 actual-VM, `vm.list` 확장 설계) |
+| 호스트 작업 범위 | MSI 제거·설치, 제품 Update/Rollback, clean-host VM 생성·Windows Update·삭제, Burn, MSIX, fullgate, current-card, Lane 2 probe VM 하나의 생성·조작·삭제 |
+| push/PR | commit마다 push, PR 하나. merge는 사용자가 한다(auto mode가 `gh pr merge`를 막는다) |
+| 승인 밖 | merge, Lane 3 승격, `current-evidence.json` 쓰기, public trusted signing, external stable publication |
+
+## 착수 상태 (2026-09-30)
+
+- 설치본은 `0.42.83-admin-smoke`(operational current)다. ARP는 `{A531920C-…}` 1개, 서비스는 `Running/Automatic`이다.
+- VM은 보존 VM `pcv-guest-installed-04253-r1`(Off) 하나다.
+- 소스 HEAD는 `feat/development-completion-20260930`(`5850f28`)이다. product payload가 0.42.83 build 뒤로 바뀌었다(reconcile, Web binding).
+
+## Global Constraints
+
+- 보존 VM `pcv-guest-installed-04253-r1`의 전원, Notes, 디스크를 바꾸지 않는다.
+- 새 VM은 둘뿐이다. clean-host runner가 만드는 `pcv-cleanhost-*` 하나와 Task 7 probe VM(`pcv-lane2-devcomp-*`) 하나다. 성공하면 둘 다 지운다.
+- token, credential, password는 command line, summary, evidence에 남기지 않는다. 장기 token은 `-ApiTokenProtectedFile`로 넘긴다.
+- evidence는 새 파일로만 쓴다. 기존 evidence는 덮어쓰지 않는다.
+- 같은 version을 다시 빌드하지 않는다. 다시 빌드해야 하면 version을 올린다(`0.42.85`).
+- 한도:
+  - Lane 1: 30분, tool batch 18회
+  - Lane 2: 45분, tool batch 12회
+  - clean-host(Task 4c): 0.42.83 pair와 같은 180분 한도
+- 같은 원인으로 3번 실패하거나, 범위 밖 설계가 필요하거나, 권한이 거부되면 멈춘다.
+- public trusted signing과 external stable publication은 주장하지 않는다.
+
+## Task 1: push와 PR (Lane 0)
+
+- [ ] `feat/development-completion-20260930`을 push하고 PR을 연다. 본문에는 개발 완료 13개 task, 이 campaign의 후속 commit이 같은 PR에 쌓인다는 점, merge 권한이 사용자에게 있다는 점을 적는다.
+
+## Task 2: `vm.list` readback 확장 설계 (Lane 1)
+
+- [ ] 설계 문서 `docs/superpowers/specs/2026-09-30-purecvisor-desktop-node-vm-list-readback-extension-design.md`를 쓴다. 범위는 DVD media 경로와 VHD `size_gb`를 WMI에서 읽는 방법, API 계약 변경, `vm.attach`/`vm.eject` reconcile 대상 전환 조건, `vm.disk-resize` 성공 판정, 테스트와 Lane 2 확인 방법이다.
+- [ ] 구현은 하지 않는다. 설계 승인은 따로 받는다.
+
+## Task 3: `0.42.84-admin-smoke` package (Lane 1)
+
+- [ ] clean HEAD에서 빌드한다: `packaging/windows-desktop-node/installer/build.ps1 -Version 0.42.84-admin-smoke -MsiProductVersion 0.42.84 -SigningMode AllowUnsignedDev -SigningTrustModel LocalTest -OutputRoot artifacts/admin-smoke-package-20260930-04284`
+- [ ] 산출물과 SHA를 확인하고 evidence `admin-smoke-package-2026-09-30-04284`를 쓴다. 설치하지 않는다.
+
+## Task 4a: pair readiness (Lane 2)
+
+- [ ] `New-PcvManualAdminRebaselineReadiness.ps1 -PlanOnly`로 baseline `0.42.83`(설치본)과 target `0.42.84`의 readiness를 만든다.
+
+## Task 4f: installed runtime ops summary (Lane 2)
+
+- [ ] baseline `0.42.83`이 설치된 동안 `pcvcli --protected-token-file <file> --json ops summary`를 캡처한다. evidence `installed-runtime-ops-summary-2026-09-30-04283`.
+
+## Task 4b: 설치본 update/rollback (Lane 2)
+
+- [ ] `Invoke-PcvDesktopNodeProduct.ps1 -Action Update`로 `0.42.84` payload에 update하고 `-Action Rollback`을 실행한다. evidence `product-update-rollback-2026-09-30-04283-04284`.
+
+## Task 4c: dedicated clean-host Windows Update (Lane 2)
+
+- [ ] `Invoke-PcvInternalCleanHostInstallUpdateRollbackSmoke.ps1`을 baseline `0.42.83` MSI, target `0.42.84` update package, `current-base.json` base로 `-InstallWindowsUpdates -RemoveVmOnSuccess` 실행한다.
+
+## Task 4d: Burn install/repair/remove (Lane 2)
+
+- [ ] 설치본을 `0.42.84`에 맞춘 뒤 Burn bootstrapper lifecycle runner를 실행한다.
+
+## Task 4e: MSIX build/install/update/remove (Lane 2)
+
+- [ ] MSIX lifecycle runner를 `0.42.83 → 0.42.84`로 실행한다.
+
+## Task 4g: pair descriptor (Lane 2, non-mutating)
+
+- [ ] 여섯 bucket root로 `New-PcvManualAdminCampaignDescriptor -PlanOnly`를 실행한다. 판정 기준은 `overall_status=pass`, `missing_count=0`, `not_pass_count=0`이다.
+
+## Task 5: full admin host mutation gate (Lane 2)
+
+- [ ] 같은 version의 잔여 ProductCode를 점검하고, 설치본을 데이터 보존으로 제거해 ARP를 `0`으로 만든다.
+- [ ] 0.42.83 manifest에서 version, batch id, 경로만 바꿔 fullgate batch를 실행한다. evidence `full-admin-host-mutation-gate-2026-09-30-04284-hostmutation`.
+
+## Task 6: 최종 설치와 installed current-card (Lane 2)
+
+- [ ] `0.42.84`를 설치된 상태로 두고 installed operator surface current-card를 캡처한다. 판정 기준은 CLI exit `0`, Web `200`, service `Running/Automatic`, TUI 없음이다.
+
+## Task 7: 새 기능 Lane 2 actual-VM probe (Lane 2)
+
+- [ ] 설치본 `0.42.84` API로 probe VM 하나를 만든다. 새 Web 동작의 route(pause/resume, rename, memory/CPU stats, checkpoint schedule preview/set/clear, export preview/export, import preview/import, switch connect, device add, guest exec/channel preview)를 실제 VM에 실행한다. pre-state, mutation, readback, cleanup을 기록한다.
+- [ ] reconcile 경로는 두 가지를 확인한다. 하나는 비대상 job이 분류 이유를 돌려주는지다. 다른 하나는 interrupt를 만들 수 있는 범위에서 대상 job 하나의 postcondition 판정이다. 만들 수 없으면 그 사실을 기록한다.
+- [ ] probe VM과 export 산출물을 지운다. evidence `lane2-development-completion-actual-vm-2026-09-30-04284`. 상태는 `installed_non_promoted_candidate`다.
+
+## Task 8: 종료
+
+- [ ] 종료 검증(`dotnet test src/DesktopNode.sln`, `npm run test:required --prefix web`, `git diff --check`)을 돌리고 campaign을 닫는다. `next_step`에는 Lane 3 승격이 별도 승인 대상이라고 적는다.
+
+## Nonclaims
+
+- 이 campaign은 operational current를 바꾸지 않는다. 결과는 `installed_non_promoted_candidate`까지다.
+- public trusted signing과 external stable publication을 주장하지 않는다.
