@@ -55,8 +55,10 @@
 
 ## Task 4: 정렬과 전체 검증 (Lane 3, 5c)
 
-- [ ] `DOCUMENTATION_INDEX`와 `FEATURE_IMPLEMENTATION_LEDGER`의 current 줄을 `0.42.84`로 정렬한다.
-- [ ] 검증: `dotnet test src/DesktopNode.sln`(clean tree), Pester(`packaging/windows-desktop-node/tests`, `manual-admin-tests`), `npm run test:required --prefix web`, `Update-PcvContractSpecPins.ps1 -Check`, orchestrator `-Check`, `git diff --check`
+- [x] `DOCUMENTATION_INDEX`와 `FEATURE_IMPLEMENTATION_LEDGER`의 current 줄을 `0.42.84`로 정렬한다.
+- [x] 검증: `dotnet test src/DesktopNode.sln`(clean tree), Pester(`packaging/windows-desktop-node/tests`, `manual-admin-tests`), `npm run test:required --prefix web`, `Update-PcvContractSpecPins.ps1 -Check`, orchestrator `-Check`, `git diff --check`
+
+실행 기록(2026-09-30): `DOCUMENTATION_INDEX`의 운영 제품 권위, 호스트 설치본, consume 줄과 `FEATURE_IMPLEMENTATION_LEDGER`의 anchor 문장과 nonclaim을 `0.42.84`로 바꿨다. clean tree에서 `dotnet test src/DesktopNode.sln`이 전 프로젝트 통과했다(Api `477`, Verification `557`, Delivery `744` 등). Pester(`tests`와 `manual-admin-tests`)는 `657/657`, `npm run test:required --prefix web`은 exit `0`이다. `Update-PcvContractSpecPins.ps1 -Check`는 `current`(`exempt_stale`는 기존 예외 두 개), orchestrator `-Check`는 6단계 모두 `current`다.
 
 ## Task 5: PR과 merge (Lane 0)
 
