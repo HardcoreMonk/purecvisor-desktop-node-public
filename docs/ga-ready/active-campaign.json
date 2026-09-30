@@ -11,7 +11,7 @@
   ],
   "mutation_allowed": false,
   "current_write_allowed": false,
-  "next_step": "Task 2: extend the power-state reconcile to vm.pause, vm.resume, vm.save, vm.resume-saved (paused/running/saved expected states) in both the Api dispatch and the Runtime allowlist; Api tests for success and mismatch per operation.",
+  "next_step": "Task 3: capture the checkpoint identity when checkpoint.delete is queued and reconcile an interrupted delete to succeeded only when that identity is absent on readback; ambiguous same-name checkpoints stay 409.",
   "plan": "docs/superpowers/plans/2026-09-30-purecvisor-desktop-node-development-completion.md",
   "task_queue": [
     "Task 1",
@@ -28,9 +28,10 @@
     "Task 12",
     "Task 13"
   ],
-  "next_task": "Task 2",
+  "next_task": "Task 3",
   "completed_tasks": [
-    "Task 1"
+    "Task 1",
+    "Task 2"
   ],
   "commit_policy": "local-commit-per-task",
   "push_allowed": false,

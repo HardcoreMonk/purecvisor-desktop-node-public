@@ -3,7 +3,7 @@ using DesktopNode.Runtime;
 
 namespace DesktopNode.Api;
 
-// 전원 상태 전이 job(vm.start, vm.poweroff)은 같은 규칙으로 조정한다. 큐 등록 때 vm.list readback 으로
+// 전원 상태 전이 job(vm.start, vm.poweroff, vm.pause, vm.resume, vm.save, vm.resume-saved)은 같은 규칙으로 조정한다. 큐 등록 때 vm.list readback 으로
 // before-state 와 identity fingerprint 를 잡고, 조정 때 같은 identity 의 VM 이 기대 전원 상태에 있을 때만 성공이다.
 internal sealed partial class DesktopNodeApiJobReconciliationHandler
 {
@@ -15,6 +15,10 @@ internal sealed partial class DesktopNodeApiJobReconciliationHandler
         {
             "vm.start" => "running",
             "vm.poweroff" => "off",
+            "vm.pause" => "paused",
+            "vm.resume" => "running",
+            "vm.save" => "saved",
+            "vm.resume-saved" => "running",
             _ => null
         };
     }

@@ -103,7 +103,7 @@ internal sealed partial class DesktopNodeApiJobReconciliationHandler
                 ReconciliationRequiredError(
                     jobId,
                     "job-not-reconcilable",
-                    "Only a failed vm.rename, vm.delete, checkpoint.create, checkpoint.restore, vm.create, vm.shutdown, vm.restart, vm.start, vm.poweroff, vm.qos.storage.set, vm.qos.network.set, console.novnc-target.set, console.novnc-target.clear, checkpoint.schedule.set, or checkpoint.schedule.clear job with PCV_JOB_INTERRUPTED can be reconciled.",
+                    "Only a failed vm.rename, vm.delete, checkpoint.create, checkpoint.restore, vm.create, vm.shutdown, vm.restart, vm.start, vm.poweroff, vm.pause, vm.resume, vm.save, vm.resume-saved, vm.qos.storage.set, vm.qos.network.set, console.novnc-target.set, console.novnc-target.clear, checkpoint.schedule.set, or checkpoint.schedule.clear job with PCV_JOB_INTERRUPTED can be reconciled.",
                     job.Operation));
             return RenderReconciliationResult(jobRuntime.Reconcile(jobId, assessment));
         }
@@ -370,6 +370,10 @@ internal sealed partial class DesktopNodeApiJobReconciliationHandler
             "vm.restart" => "restart",
             "vm.start" => "start",
             "vm.poweroff" => "power off",
+            "vm.pause" => "pause",
+            "vm.resume" => "resume",
+            "vm.save" => "save",
+            "vm.resume-saved" => "resume from saved",
             "vm.qos.storage.set" => "storage QoS",
             "vm.qos.network.set" => "network QoS",
             "console.novnc-target.set" => "noVNC target",

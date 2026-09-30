@@ -62,9 +62,11 @@
 
 ## Task 2: 일시정지/저장 reconcile — `vm.pause`, `vm.resume`, `vm.save`, `vm.resume-saved`
 
-- [ ] Task 1 partial에 `Paused`/`Saved`/`Running` 기대 상태를 더한다.
-- [ ] 네 operation마다 성공과 불일치 테스트를 둔다.
-- [ ] 검증: `dotnet test src/DesktopNode.Api.Tests`, `git diff --check`
+- [x] Task 1 partial에 `Paused`/`Saved`/`Running` 기대 상태를 더한다.
+- [x] 네 operation마다 성공과 불일치 테스트를 둔다.
+- [x] 검증: `dotnet test src/DesktopNode.Api.Tests`, `git diff --check`
+
+실행 기록(2026-09-30): Task 1 schema를 그대로 쓰고 기대 상태(`paused`, `running`, `saved`)만 더했다. 이제 lifecycle route 여섯 개가 모두 큐 등록 때 `vm.list` baseline을 잡는다. `saving` 같은 전이 상태는 `incomplete-power-state`다. 검증: Api `436`/`436`, Runtime `128`/`128`, Delivery `744`/`744`, `git diff --check`.
 
 ## Task 3: `checkpoint.delete` reconcile
 

@@ -10,6 +10,10 @@ public sealed partial class ApiRuntimePolicyRequestProcessorTests
     [Theory]
     [InlineData("start", "vm.start", "off", "running")]
     [InlineData("poweroff", "vm.poweroff", "running", "off")]
+    [InlineData("pause", "vm.pause", "running", "paused")]
+    [InlineData("resume", "vm.resume", "paused", "running")]
+    [InlineData("save", "vm.save", "running", "saved")]
+    [InlineData("resume-saved", "vm.resume-saved", "saved", "running")]
     public void VmPowerStateQueueCapturesReadbackBaselineWithoutMutatingProvider(
         string routeAction,
         string operation,
@@ -63,6 +67,14 @@ public sealed partial class ApiRuntimePolicyRequestProcessorTests
     [InlineData("vm.start", "off", "off", 409, "not-applied")]
     [InlineData("vm.poweroff", "running", "running", 409, "not-applied")]
     [InlineData("vm.start", "off", "saved", 409, "incomplete-power-state")]
+    [InlineData("vm.pause", "running", "paused", 200, "postcondition-confirmed")]
+    [InlineData("vm.pause", "running", "running", 409, "not-applied")]
+    [InlineData("vm.resume", "paused", "running", 200, "postcondition-confirmed")]
+    [InlineData("vm.resume", "paused", "paused", 409, "not-applied")]
+    [InlineData("vm.save", "running", "saved", 200, "postcondition-confirmed")]
+    [InlineData("vm.save", "running", "saving", 409, "incomplete-power-state")]
+    [InlineData("vm.resume-saved", "saved", "running", 200, "postcondition-confirmed")]
+    [InlineData("vm.resume-saved", "saved", "saved", 409, "not-applied")]
     public void VmPowerStateReconcileJudgesObservedStateWithoutCallingPowerProvider(
         string operation,
         string beforeState,
@@ -170,7 +182,13 @@ public sealed partial class ApiRuntimePolicyRequestProcessorTests
         public PowerStateJobStore(string operation, string beforeState, string fingerprint, bool captured = true)
         {
             Path = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "pcv-dotnet-api-power-state-" + Guid.NewGuid().ToString("N") + ".json");
-            var expectedState = operation == "vm.start" ? "running" : "off";
+            var expectedState = operation switch
+            {
+                "vm.poweroff" => "off",
+                "vm.pause" => "paused",
+                "vm.save" => "saved",
+                _ => "running"
+            };
             var captureStatus = captured ? "captured" : "unavailable";
             var before = captured
                 ? "{ \"id\": \"vm-id\", \"name\": \"lab-vm\", \"platform\": \"hyperv\", \"guest_family\": \"windows\", \"state\": \"" + beforeState + "\", \"cpu\": { \"count\": 2 }, \"memory\": { \"startup_mb\": 4096 }, \"generation\": 2, \"managed_by_purecvisor\": true }"
