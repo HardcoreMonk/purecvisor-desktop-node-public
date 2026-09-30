@@ -45,7 +45,9 @@
 
 ## Task 1: push와 PR (Lane 0)
 
-- [ ] `feat/development-completion-20260930`을 push하고 PR을 연다. 본문에는 개발 완료 13개 task, 이 campaign의 후속 commit이 같은 PR에 쌓인다는 점, merge 권한이 사용자에게 있다는 점을 적는다.
+- [x] `feat/development-completion-20260930`을 push하고 PR을 연다. 본문에는 개발 완료 13개 task, 이 campaign의 후속 commit이 같은 PR에 쌓인다는 점, merge 권한이 사용자에게 있다는 점을 적는다.
+
+실행 기록(2026-09-30): branch를 push하고 PR #22(`https://github.com/HardcoreMonk/purecvisor-desktop-node-public/pull/22`)를 열었다. 이 campaign의 후속 commit은 같은 branch에 push한다.
 
 ## Task 2: `vm.list` readback 확장 설계 (Lane 1)
 

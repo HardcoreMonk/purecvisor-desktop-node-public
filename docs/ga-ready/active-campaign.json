@@ -12,7 +12,7 @@
   ],
   "mutation_allowed": true,
   "current_write_allowed": false,
-  "next_step": "Task 1: push feat/development-completion-20260930 and open one PR; later campaign commits stack on the same branch; merge stays with the user.",
+  "next_step": "Task 2: write the vm.list readback extension design (DVD media path, VHD size_gb, API contract, attach/eject reconcile conditions, disk-resize success, tests, Lane 2 check); no implementation.",
   "plan": "docs/superpowers/plans/2026-09-30-purecvisor-desktop-node-04284-package-pair.md",
   "task_queue": [
     "Task 1",
@@ -30,8 +30,10 @@
     "Task 7",
     "Task 8"
   ],
-  "next_task": "Task 1",
-  "completed_tasks": [],
+  "next_task": "Task 2",
+  "completed_tasks": [
+    "Task 1"
+  ],
   "commit_policy": "local-commit-per-task",
   "push_allowed": true,
   "checkpoint_limit": 14,
