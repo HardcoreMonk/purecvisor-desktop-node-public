@@ -114,7 +114,9 @@
 
 ## Task 6: 최종 설치와 installed current-card (Lane 2)
 
-- [ ] `0.42.84`를 설치된 상태로 두고 installed operator surface current-card를 캡처한다. 판정 기준은 CLI exit `0`, Web `200`, service `Running/Automatic`, TUI 없음이다.
+- [x] `0.42.84`를 설치된 상태로 두고 installed operator surface current-card를 캡처한다. 판정 기준은 CLI exit `0`, Web `200`, service `Running/Automatic`, TUI 없음이다.
+
+실행 기록(2026-09-30): 0.42.83 캡처 스크립트를 바꿔 썼다. 첫 캡처는 판정 `pass`였지만 남은 0.42.83 상수 때문에 summary의 기대 SHA와 canonical 값이 틀려서 `-r2`로 다시 캡처했다. 결과는 PASS다. CLI 3개 exit `0`, Web 2개 `200`, service `Running/Auto`(credential manager, token flag 없음), TUI 없음, ARP 1개, 테스트 VM 0개, secret 없음이고 설치본은 fullgate build와 같다. evidence는 `installed-operator-surface-current-card-2026-09-30-04284`(`installed-non-promoted-candidate`)다.
 
 ## Task 7: 새 기능 Lane 2 actual-VM probe (Lane 2)
 
