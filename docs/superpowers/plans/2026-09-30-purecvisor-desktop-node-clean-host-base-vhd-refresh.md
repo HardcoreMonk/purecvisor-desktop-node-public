@@ -95,9 +95,16 @@ Task 4 첫 checkpoint가 Lane 2 batch 한도로 멈췄다. 사용자 승인으�
 ## Task 4: 첫 base 생성 (Lane 2)
 
 - [x] 최신 Server 2022 LCU `.msu`를 Microsoft Update Catalog에서 받고 SHA-256을 기록한다.
-- [ ] 도구를 dry-run한 뒤 `-Execute`로 실행한다. 설계 §3.2의 확인 사항(합쳐진 `.msu`, `.vhd` mount)을 기록한다.
-- [ ] 이때 current는 지정하지 않는다.
-- [ ] evidence 문서를 새 파일로 쓴다.
+- [x] 도구를 dry-run한 뒤 `-Execute`로 실행한다. 설계 §3.2의 확인 사항(합쳐진 `.msu`, `.vhd` mount)을 기록한다.
+- [x] 이때 current는 지정하지 않는다.
+- [x] evidence 문서를 새 파일로 쓴다.
+
+재실행 기록(2026-09-30, 새 Lane 2 예산):
+- 3차는 `expand.exe`가 Git coreutils로 해석돼 복사 전에 실패했다. System32 절대 경로로 고쳤다(`e19539b`).
+- 4차는 PASS다.
+  - SSU `20348.5614` → LCU cab 순서로 적용했다. 오프라인 UBR은 `5622`이고, 1592초 걸렸다.
+  - base `20348.5622-20260930.vhd`(`88caf8aa…`, `17994147328` bytes)가 원본보다 약 7.8GB 크다.
+- evidence: `clean-host-base-vhd-offline-refresh-2026-09-30-5622`.
 
 첫 checkpoint 기록(2026-09-30, Lane 2 batch 한도로 중단):
 - `.msu`: catalog update `45c26f42-4003-45bf-a463-e0e91c88a205`, `windows10.0-kb5122882-x64_4432fee3….msu`(`589944414` bytes)
