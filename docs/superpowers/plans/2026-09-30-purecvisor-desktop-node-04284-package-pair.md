@@ -120,9 +120,11 @@
 
 ## Task 7: 새 기능 Lane 2 actual-VM probe (Lane 2)
 
-- [ ] 설치본 `0.42.84` API로 probe VM 하나를 만든다. 새 Web 동작의 route(pause/resume, rename, memory/CPU stats, checkpoint schedule preview/set/clear, export preview/export, import preview/import, switch connect, device add, guest exec/channel preview)를 실제 VM에 실행한다. pre-state, mutation, readback, cleanup을 기록한다.
-- [ ] reconcile 경로는 두 가지를 확인한다. 하나는 비대상 job이 분류 이유를 돌려주는지다. 다른 하나는 interrupt를 만들 수 있는 범위에서 대상 job 하나의 postcondition 판정이다. 만들 수 없으면 그 사실을 기록한다.
-- [ ] probe VM과 export 산출물을 지운다. evidence `lane2-development-completion-actual-vm-2026-09-30-04284`. 상태는 `installed_non_promoted_candidate`다.
+- [x] 설치본 `0.42.84` API로 probe VM 하나를 만든다. 새 Web 동작의 route(pause/resume, rename, memory/CPU stats, checkpoint schedule preview/set/clear, export preview/export, import preview/import, switch connect, device add, guest exec/channel preview)를 실제 VM에 실행한다. pre-state, mutation, readback, cleanup을 기록한다.
+- [x] reconcile 경로는 두 가지를 확인한다. 하나는 비대상 job이 분류 이유를 돌려주는지다. 다른 하나는 interrupt를 만들 수 있는 범위에서 대상 job 하나의 postcondition 판정이다. 만들 수 없으면 그 사실을 기록한다.
+- [x] probe VM과 export 산출물을 지운다. evidence `lane2-development-completion-actual-vm-2026-09-30-04284`. 상태는 `installed_non_promoted_candidate`다.
+
+실행 기록(2026-09-30): 설치본 PCVCLI로 새 Web 동작의 route를 실제 VM에 실행했다. 모두 성공했고, DVD 추가만 정책대로 `PCV_VM_DEVICE_ALREADY_PRESENT`로 거절됐다. 설치본 `app.js`에 새 binding 표식 10개가 있다. 비대상 reconcile은 분류 이유를 돌려줬다. `vm.start` running 중 Host를 강제 종료해 `PCV_JOB_INTERRUPTED`를 만들었고, reconcile이 `succeeded`로 확정했다. probe VM 두 개와 export를 지웠고, managed delete가 남긴 probe 디렉터리 두 개도 지웠다. evidence는 `lane2-development-completion-actual-vm-2026-09-30-04284`다.
 
 ## Task 8: 종료
 
