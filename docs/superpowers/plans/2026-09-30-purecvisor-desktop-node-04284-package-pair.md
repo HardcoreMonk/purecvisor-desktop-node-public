@@ -77,7 +77,9 @@
 
 ## Task 4b: 설치본 update/rollback (Lane 2)
 
-- [ ] `Invoke-PcvDesktopNodeProduct.ps1 -Action Update`로 `0.42.84` payload에 update하고 `-Action Rollback`을 실행한다. evidence `product-update-rollback-2026-09-30-04283-04284`.
+- [x] `Invoke-PcvDesktopNodeProduct.ps1 -Action Update`로 `0.42.84` payload에 update하고 `-Action Rollback`을 실행한다. evidence `product-update-rollback-2026-09-30-04283-04284`.
+
+실행 기록(2026-09-30): Update(`0.42.83 → 0.42.84`)와 Rollback 모두 exit `0`, `ok=true`이고 실행 단계는 0.42.83 run과 같다. update 직후 Host는 `+aab0bc1`, Web은 `200`이었다. 최종 상태는 manifest `0.42.83`, `DesktopNode.failed` `0.42.84`, service Running, Web `200`이고 재부팅과 VM 변화는 없다. evidence는 `product-update-rollback-2026-09-30-04283-04284`다.
 
 ## Task 4c: dedicated clean-host Windows Update (Lane 2)
 

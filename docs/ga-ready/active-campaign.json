@@ -12,7 +12,7 @@
   ],
   "mutation_allowed": true,
   "current_write_allowed": false,
-  "next_step": "Task 4b: Invoke-PcvDesktopNodeProduct.ps1 -Action Update to the 0.42.84 payload, then -Action Rollback; evidence product-update-rollback-2026-09-30-04283-04284.",
+  "next_step": "Task 4c: run Invoke-PcvInternalCleanHostInstallUpdateRollbackSmoke.ps1 with the 0.42.83 MSI, a 0.42.84 update package, the current-base.json base, -InstallWindowsUpdates -RemoveVmOnSuccess, within 180 minutes.",
   "plan": "docs/superpowers/plans/2026-09-30-purecvisor-desktop-node-04284-package-pair.md",
   "task_queue": [
     "Task 1",
@@ -30,13 +30,14 @@
     "Task 7",
     "Task 8"
   ],
-  "next_task": "Task 4b",
+  "next_task": "Task 4c",
   "completed_tasks": [
     "Task 1",
     "Task 2",
     "Task 3",
     "Task 4a",
-    "Task 4f"
+    "Task 4f",
+    "Task 4b"
   ],
   "commit_policy": "local-commit-per-task",
   "push_allowed": true,
