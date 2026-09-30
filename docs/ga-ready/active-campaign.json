@@ -2,55 +2,40 @@
   "schema_version": 1,
   "contract": "pcv-active-campaign-v1",
   "status": "open",
-  "id": "package-pair-04284-20260930",
-  "intent": "lane1-lane2-04284-package-pair-actual-vm-and-readback-design",
+  "id": "lane3-04284-and-readback-20260930",
+  "intent": "lane3-04284-promotion-and-lane1-vm-list-readback",
   "working_authority": "source_head",
   "allowed_lanes": [
     "0",
     "1",
-    "2"
+    "3"
   ],
-  "mutation_allowed": true,
-  "current_write_allowed": false,
-  "next_step": "0.42.84 package pair campaign complete (Task 1-8): package, six-bucket pair descriptor, fullgate, installed current-card, and the development-completion actual-VM probe all PASS as installed_non_promoted_candidate; vm.list readback extension is designed. No queued task. Next steps need approval: merge PR #22 (user); Lane 3 promotion of 0.42.84-admin-smoke (current-evidence write, consume descriptor, Invoke-PcvLane3PromotionDocs); implementation of the vm.list readback extension design.",
-  "plan": "docs/superpowers/plans/2026-09-30-purecvisor-desktop-node-04284-package-pair.md",
+  "mutation_allowed": false,
+  "current_write_allowed": true,
+  "next_step": "Task 5: open the Lane 3 PR, confirm green CI, merge with a merge commit, and confirm the main push CI.",
+  "plan": "docs/superpowers/plans/2026-09-30-purecvisor-desktop-node-04284-lane3-and-readback.md",
   "task_queue": [
     "Task 1",
     "Task 2",
     "Task 3",
-    "Task 4a",
-    "Task 4f",
-    "Task 4b",
-    "Task 4c",
-    "Task 4d",
-    "Task 4e",
-    "Task 4g",
+    "Task 4",
     "Task 5",
     "Task 6",
     "Task 7",
-    "Task 8"
+    "Task 8",
+    "Task 9"
   ],
-  "next_task": null,
+  "next_task": "Task 5",
   "completed_tasks": [
     "Task 1",
     "Task 2",
     "Task 3",
-    "Task 4a",
-    "Task 4f",
-    "Task 4b",
-    "Task 4c",
-    "Task 4d",
-    "Task 4e",
-    "Task 4g",
-    "Task 5",
-    "Task 6",
-    "Task 7",
-    "Task 8"
+    "Task 4"
   ],
   "commit_policy": "local-commit-per-task",
   "push_allowed": true,
-  "checkpoint_limit": 14,
-  "approval_locator": "User-Approval: 2026-09-27 campaign runner commit policy local-commit-per-task; 2026-09-30 \"전부 승인 합니다\" (reply to the development-completion report): push per commit and one PR; package pair 0.42.83 -> 0.42.84 with fullgate and installed current-card (host mutation: MSI remove/install, product Update/Rollback, clean-host VM create/Windows Update/delete under the 0.42.83-pair 180-minute bound, Burn, MSIX, fullgate, current-card); Lane 2 actual-VM probe for the new Web actions and reconcile paths (one probe VM created and deleted); vm.list readback extension design (docs only); merge, Lane 3 promotion, and current-evidence writes not approved",
+  "checkpoint_limit": 9,
+  "approval_locator": "User-Approval: 2026-09-27 campaign runner commit policy local-commit-per-task; 2026-09-30 \"전부 승인 합니다\" (reply to the 0.42.84 pair report): merge PR #22 (done, 4afaed7), Lane 3 promotion of 0.42.84-admin-smoke including the current-evidence write, and implementation of the vm.list readback extension design; push per commit, one PR per branch, merge after green CI; installed verification of the readback change (a 0.42.85 package pair) not approved",
   "stop_on": [
     "same-cause-fail-3",
     "budget",
@@ -62,5 +47,5 @@
     "dirty-tree-at-start"
   ],
   "out_of_scope_is_not_next_step": true,
-  "closed_predecessor": "development-completion-20260930"
+  "closed_predecessor": "package-pair-04284-20260930"
 }
