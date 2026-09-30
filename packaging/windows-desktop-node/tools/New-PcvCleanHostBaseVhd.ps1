@@ -38,6 +38,13 @@ function Write-PcvJson([string]$Path, $Value) {
 }
 function Get-PcvSha256([string]$Path) { (Get-FileHash -LiteralPath $Path -Algorithm SHA256).Hash.ToLowerInvariant() }
 function Get-PcvUtcNow { (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ') }
+# A Microsoft Store (MSIX) PowerShell cannot activate the image's dismhost.exe COM server (0x80040154).
+function Test-PcvPackagedHost { $PSHOME -like '*\WindowsApps\*' }
+function Expand-PcvMsuPackage {
+    param([Parameter(Mandatory)][string]$PackagePath, [Parameter(Mandatory)][string]$Destination)
+    & expand.exe "-F:*.cab" $PackagePath $Destination | Out-Null
+    if ($LASTEXITCODE -ne 0) { throw "PCV_BASE_VHD_MSU_EXPAND_FAILED|exit=$LASTEXITCODE|$PackagePath" }
+}
 function Test-PcvElevated {
     ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole(
         [Security.Principal.WindowsBuiltInRole]::Administrator)
@@ -161,6 +168,7 @@ else {
     Resolve-PcvPath $MountRoot
 }
 $dismLogPath = Join-Path $cacheRoot "$baseFile.dism.log"
+$packageExtractPath = "$mountPath.packages"
 
 $result = [ordered]@{
     mode = if ($Execute) { 'execute' } else { 'plan' }
@@ -174,7 +182,7 @@ $result = [ordered]@{
     sidecar_path = $sidecarPath
     mount_path = $mountPath
     dism_log_path = $dismLogPath
-    steps = @('copy-source', 'mount-image', 'add-package', 'verify-offline-ubr', 'dismount-save', 'hash-base', 'write-sidecar')
+    steps = @('expand-package', 'copy-source', 'mount-image', 'add-servicing-stack', 'add-package', 'verify-offline-ubr', 'dismount-save', 'hash-base', 'write-sidecar')
     source_modified = $false
     download_performed = $false
     current_base_changed = $false
@@ -183,21 +191,49 @@ $result = [ordered]@{
 if (-not $Execute) { return [pscustomobject]$result }
 
 if (-not (Test-PcvElevated)) { throw 'PCV_BASE_VHD_ELEVATION_REQUIRED|Mounting and servicing a VHD requires an administrator shell.' }
-if ((Test-Path -LiteralPath $mountPath) -and @(Get-ChildItem -LiteralPath $mountPath -Force).Count -gt 0) {
-    throw "PCV_BASE_VHD_MOUNT_NOT_EMPTY|$mountPath"
+if (Test-PcvPackagedHost) {
+    throw "PCV_BASE_VHD_PACKAGED_HOST_UNSUPPORTED|$PSHOME|Run from Windows PowerShell (powershell.exe) or a non-Store PowerShell."
+}
+foreach ($workPath in @($mountPath, $packageExtractPath)) {
+    if ((Test-Path -LiteralPath $workPath) -and @(Get-ChildItem -LiteralPath $workPath -Force).Count -gt 0) {
+        throw "PCV_BASE_VHD_MOUNT_NOT_EMPTY|$workPath"
+    }
 }
 
 $sourceSha256 = Get-PcvSha256 $sourcePath
 $result.writes_performed = $true
 New-Item -ItemType Directory -Force -Path $mountPath | Out-Null
-Copy-Item -LiteralPath $sourcePath -Destination $basePath
-(Get-Item -LiteralPath $basePath).IsReadOnly = $false
 $mounted = $false
 $saved = $false
 try {
+    # The combined SSU+LCU .msu cannot be added to the 20348.169 image in one step: the LCU needs a newer
+    # servicing stack than the image has (0x800f0823). Apply the SSU cab first, then the LCU cab.
+    $applyPackages = @()
+    if ($packageLeaf -match '\.msu$') {
+        New-Item -ItemType Directory -Force -Path $packageExtractPath | Out-Null
+        Expand-PcvMsuPackage -PackagePath $packageFullPath -Destination $packageExtractPath
+        $servicingStack = @(Get-ChildItem -LiteralPath $packageExtractPath -Filter 'SSU-*.cab' -File)
+        $cumulative = @(Get-ChildItem -LiteralPath $packageExtractPath -Filter '*.cab' -File |
+            Where-Object { $_.Name -notlike 'SSU-*' -and $_.Name.IndexOf($ExpectedKb, [StringComparison]::OrdinalIgnoreCase) -ge 0 })
+        if ($servicingStack.Count -gt 1 -or $cumulative.Count -ne 1) {
+            throw "PCV_BASE_VHD_MSU_LAYOUT_INVALID|ssu=$($servicingStack.Count)|lcu=$($cumulative.Count)"
+        }
+        $applyPackages = @($servicingStack) + @($cumulative)
+    }
+    else {
+        $applyPackages = @(Get-Item -LiteralPath $packageFullPath)
+    }
+    $appliedPackages = @($applyPackages | ForEach-Object {
+            [ordered]@{ file = $_.Name; sha256 = Get-PcvSha256 $_.FullName; role = if ($_.Name -like 'SSU-*') { 'servicing-stack' } else { 'cumulative' } }
+        })
+
+    Copy-Item -LiteralPath $sourcePath -Destination $basePath
+    (Get-Item -LiteralPath $basePath).IsReadOnly = $false
     Mount-WindowsImage -ImagePath $basePath -Index 1 -Path $mountPath -LogPath $dismLogPath | Out-Null
     $mounted = $true
-    Add-WindowsPackage -Path $mountPath -PackagePath $packageFullPath -LogPath $dismLogPath | Out-Null
+    foreach ($package in $applyPackages) {
+        Add-WindowsPackage -Path $mountPath -PackagePath $package.FullName -LogPath $dismLogPath | Out-Null
+    }
     $offline = Get-PcvOfflineImageBuild -MountPath $mountPath
     if ($offline.build -ne $script:BaseBuild) { throw "PCV_BASE_VHD_BUILD_MISMATCH|actual=$($offline.build)|expected=$($script:BaseBuild)" }
     if ($offline.ubr -ne $ExpectedUbr) { throw "PCV_BASE_VHD_UBR_MISMATCH|actual=$($offline.ubr)|expected=$ExpectedUbr" }
@@ -216,6 +252,9 @@ finally {
     if ((Test-Path -LiteralPath $mountPath) -and @(Get-ChildItem -LiteralPath $mountPath -Force).Count -eq 0) {
         Remove-Item -LiteralPath $mountPath -Force
     }
+    if (Test-Path -LiteralPath $packageExtractPath) {
+        Remove-Item -LiteralPath $packageExtractPath -Recurse -Force
+    }
 }
 
 $baseItem = Get-Item -LiteralPath $basePath
@@ -230,6 +269,7 @@ $sidecar = [ordered]@{
     kb = $ExpectedKb.ToUpperInvariant()
     package_file = $packageLeaf
     package_sha256 = $packageSha256
+    applied_packages = $appliedPackages
     source_file = Split-Path -Leaf $sourcePath
     source_sha256 = $sourceSha256
     component_cleanup = $false

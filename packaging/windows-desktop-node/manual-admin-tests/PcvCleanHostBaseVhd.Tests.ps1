@@ -7,6 +7,8 @@ Describe 'PcvCleanHostBaseVhd contract' {
 
         # The tool defines these helpers itself; stubs let Pester mock them for the in-process invocation.
         function Test-PcvElevated { $true }
+        function Test-PcvPackagedHost { $false }
+        function Expand-PcvMsuPackage { param([string]$PackagePath, [string]$Destination) }
         function Get-PcvOfflineImageBuild { param([string]$MountPath) }
 
         function Get-TestSha256([string]$Path) { (Get-FileHash -LiteralPath $Path -Algorithm SHA256).Hash.ToLowerInvariant() }
@@ -41,8 +43,15 @@ Describe 'PcvCleanHostBaseVhd contract' {
         $script:SourceSha = Get-TestSha256 $script:Inputs.SourceVhdPath
         $script:BasePath = Join-Path (Split-Path -Parent $script:Inputs.SourceVhdPath) '20348.5622-20260930.vhd'
         Mock Test-PcvElevated { $true }
+        # Pester itself may run in a Store PowerShell; the guard has its own test below.
+        Mock Test-PcvPackagedHost { $false }
+        $msuCabs = @('SSU-20348.5614-x64.cab', 'Windows10.0-KB5122882-x64.cab', 'WSUSSCAN.cab')
+        Mock Expand-PcvMsuPackage {
+            foreach ($name in $msuCabs) { Set-Content -LiteralPath (Join-Path $Destination $name) -Value "cab-$name" -Encoding utf8 }
+        }
+        $applied = [System.Collections.Generic.List[string]]::new()
         Mock Mount-WindowsImage { }
-        Mock Add-WindowsPackage { }
+        Mock Add-WindowsPackage { $applied.Add((Split-Path -Leaf $PackagePath)) }
         Mock Dismount-WindowsImage { }
         Mock Get-PcvOfflineImageBuild { [pscustomobject]@{ build = 20348; ubr = 5622; edition_id = 'ServerDatacenterEval' } }
     }
@@ -58,7 +67,7 @@ Describe 'PcvCleanHostBaseVhd contract' {
         $plan.source_modified | Should -BeFalse
         $plan.current_base_changed | Should -BeFalse
         $plan.base_path | Should -Be $script:BasePath
-        $plan.steps | Should -Be @('copy-source', 'mount-image', 'add-package', 'verify-offline-ubr', 'dismount-save', 'hash-base', 'write-sidecar')
+        $plan.steps | Should -Be @('expand-package', 'copy-source', 'mount-image', 'add-servicing-stack', 'add-package', 'verify-offline-ubr', 'dismount-save', 'hash-base', 'write-sidecar')
         Get-TestTree $script:Root | Should -Be $before
         Should -Invoke Mount-WindowsImage -Times 0 -Exactly
         Should -Invoke Test-PcvElevated -Times 0 -Exactly
@@ -97,17 +106,42 @@ Describe 'PcvCleanHostBaseVhd contract' {
         Test-Path -LiteralPath $script:BasePath | Should -BeFalse
     }
 
-    It 'services a copy, saves it after the offline UBR check, and writes the sidecar' {
+    It 'refuses a Store (packaged) PowerShell host before copying the source' {
+        Mock Test-PcvPackagedHost { $true }
+
+        { & $script:EntryPoint @script:Inputs -Execute } | Should -Throw '*PCV_BASE_VHD_PACKAGED_HOST_UNSUPPORTED*'
+
+        Test-Path -LiteralPath $script:BasePath | Should -BeFalse
+        Should -Invoke Expand-PcvMsuPackage -Times 0 -Exactly
+    }
+
+    It 'refuses an .msu with <name> before copying the source' -TestCases @(
+        @{ name = 'no cumulative cab for the KB'; cabs = @('SSU-20348.5614-x64.cab', 'WSUSSCAN.cab') }
+        @{ name = 'two servicing stack cabs'; cabs = @('SSU-20348.5614-x64.cab', 'SSU-20348.5600-x64.cab', 'Windows10.0-KB5122882-x64.cab') }
+    ) {
+        param($name, $cabs)
+        $msuCabs = $cabs
+
+        { & $script:EntryPoint @script:Inputs -Execute } | Should -Throw '*PCV_BASE_VHD_MSU_LAYOUT_INVALID*'
+
+        Test-Path -LiteralPath $script:BasePath | Should -BeFalse
+        Test-Path -LiteralPath "$($script:Inputs.MountRoot).packages" | Should -BeFalse
+        Should -Invoke Mount-WindowsImage -Times 0 -Exactly
+    }
+
+    It 'services a copy with the servicing stack first, saves it after the offline UBR check, and writes the sidecar' {
         $result = & $script:EntryPoint @script:Inputs -Execute
 
         $result.mode | Should -Be 'execute'
         $result.offline_ubr | Should -Be 5622
         Should -Invoke Mount-WindowsImage -Times 1 -Exactly -ParameterFilter { $ImagePath -eq $script:BasePath -and $Index -eq 1 }
-        Should -Invoke Add-WindowsPackage -Times 1 -Exactly -ParameterFilter { $PackagePath -eq $script:Inputs.PackagePath }
+        Should -Invoke Expand-PcvMsuPackage -Times 1 -Exactly -ParameterFilter { $PackagePath -eq $script:Inputs.PackagePath }
+        @($applied) | Should -Be @('SSU-20348.5614-x64.cab', 'Windows10.0-KB5122882-x64.cab')
         Should -Invoke Dismount-WindowsImage -Times 1 -Exactly -ParameterFilter { $Save }
         Should -Invoke Dismount-WindowsImage -Times 0 -Exactly -ParameterFilter { $Discard }
         Get-TestSha256 $script:Inputs.SourceVhdPath | Should -Be $script:SourceSha
         Test-Path -LiteralPath $script:Inputs.MountRoot | Should -BeFalse
+        Test-Path -LiteralPath "$($script:Inputs.MountRoot).packages" | Should -BeFalse
 
         $sidecar = Get-Content -Raw -LiteralPath "$($script:BasePath).base.json" | ConvertFrom-Json
         $sidecar.schema | Should -Be 'pcv-clean-host-base-vhd-v1'
@@ -118,6 +152,9 @@ Describe 'PcvCleanHostBaseVhd contract' {
         $sidecar.ubr | Should -Be 5622
         $sidecar.kb | Should -Be 'KB5122882'
         $sidecar.package_sha256 | Should -Be $script:Inputs.ExpectedPackageSha256
+        @($sidecar.applied_packages | ForEach-Object { "$($_.role):$($_.file)" }) |
+            Should -Be @('servicing-stack:SSU-20348.5614-x64.cab', 'cumulative:Windows10.0-KB5122882-x64.cab')
+        @($sidecar.applied_packages | Where-Object { $_.sha256 -notmatch '^[0-9a-f]{64}$' }).Count | Should -Be 0
         $sidecar.source_sha256 | Should -Be $script:SourceSha
         $sidecar.component_cleanup | Should -BeFalse
         $sidecar.download_performed | Should -BeFalse

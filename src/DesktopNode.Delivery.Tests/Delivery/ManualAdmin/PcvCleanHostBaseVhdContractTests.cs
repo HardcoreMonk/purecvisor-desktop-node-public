@@ -32,6 +32,7 @@ public sealed class PcvCleanHostBaseVhdContractTests
             "if (Test-Path -LiteralPath $existing) { throw \"PCV_BASE_VHD_TARGET_EXISTS|$existing\" }",
             "if (-not $Execute) { return [pscustomobject]$result }",
             "PCV_BASE_VHD_ELEVATION_REQUIRED",
+            "PCV_BASE_VHD_PACKAGED_HOST_UNSUPPORTED",
             "Copy-Item -LiteralPath $sourcePath -Destination $basePath");
         Assert.DoesNotContain("Invoke-WebRequest", source, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("Start-BitsTransfer", source, StringComparison.OrdinalIgnoreCase);
@@ -44,10 +45,17 @@ public sealed class PcvCleanHostBaseVhdContractTests
     {
         var source = Source();
 
+        // The combined .msu fails offline on the 20348.169 image (0x800f0823): the SSU cab goes in first.
         AssertOrdered(
             source,
+            "Expand-PcvMsuPackage -PackagePath $packageFullPath -Destination $packageExtractPath",
+            "-Filter 'SSU-*.cab'",
+            "PCV_BASE_VHD_MSU_LAYOUT_INVALID",
+            "$applyPackages = @($servicingStack) + @($cumulative)",
+            "Copy-Item -LiteralPath $sourcePath -Destination $basePath",
             "Mount-WindowsImage -ImagePath $basePath -Index 1 -Path $mountPath",
-            "Add-WindowsPackage -Path $mountPath -PackagePath $packageFullPath",
+            "foreach ($package in $applyPackages) {",
+            "Add-WindowsPackage -Path $mountPath -PackagePath $package.FullName",
             "$offline = Get-PcvOfflineImageBuild -MountPath $mountPath",
             "PCV_BASE_VHD_UBR_MISMATCH",
             "Dismount-WindowsImage -Path $mountPath -Save",
@@ -59,7 +67,11 @@ public sealed class PcvCleanHostBaseVhdContractTests
             source,
             "'Windows\\System32\\config\\SOFTWARE'",
             "& reg.exe load \"HKLM\\$key\" $hive",
-            "& reg.exe unload \"HKLM\\$key\"");
+            "& reg.exe unload \"HKLM\\$key\"",
+            "$PSHOME -like '*\\WindowsApps\\*'",
+            "& expand.exe \"-F:*.cab\" $PackagePath $Destination",
+            "applied_packages = $appliedPackages",
+            "Remove-Item -LiteralPath $packageExtractPath -Recurse -Force");
     }
 
     [Fact]

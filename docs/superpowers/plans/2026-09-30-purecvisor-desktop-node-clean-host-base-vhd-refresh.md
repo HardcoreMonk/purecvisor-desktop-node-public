@@ -81,12 +81,32 @@
 - 선택 규칙 Pester `4`개(AST로 함수를 꺼내 실행)와 C# 계약 `1`개를 더했다.
 - 검증: Pester `121/121`(base VHD suite `18`개와 runner를 읽는 packaging suite 3개), Delivery `744/744`.
 
+## Task 4a: SSU 우선 적용과 packaged host 거부 (Lane 1, 2026-09-30 추가)
+
+Task 4 첫 checkpoint가 Lane 2 batch 한도로 멈췄다. 사용자 승인으로 이 task를 더하고, Task 4는 새 Lane 2 예산으로 다시 한다.
+
+- [x] `.msu`는 `expand.exe -F:*.cab`로 푼다. `SSU-*.cab`(0개 또는 1개)을 먼저 적용하고, KB 이름의 cumulative cab(정확히 1개)을 그다음에 적용한다. 구성이 다르면 `PCV_BASE_VHD_MSU_LAYOUT_INVALID`로 복사 전에 거부한다.
+- [x] Store(MSIX) PowerShell(`$PSHOME`이 `WindowsApps` 아래)이면 `PCV_BASE_VHD_PACKAGED_HOST_UNSUPPORTED`로 복사 전에 거부한다.
+- [x] sidecar에 `applied_packages`(file, sha256, role)를 더한다.
+- [x] Pester와 C# 계약을 갱신한다.
+
+실행 기록(2026-09-30): Pester `21/21`, Delivery `744/744`, Windows PowerShell 5.1 parse error `0`.
+
 ## Task 4: 첫 base 생성 (Lane 2)
 
-- [ ] 최신 Server 2022 LCU `.msu`를 Microsoft Update Catalog에서 받고 SHA-256을 기록한다.
+- [x] 최신 Server 2022 LCU `.msu`를 Microsoft Update Catalog에서 받고 SHA-256을 기록한다.
 - [ ] 도구를 dry-run한 뒤 `-Execute`로 실행한다. 설계 §3.2의 확인 사항(합쳐진 `.msu`, `.vhd` mount)을 기록한다.
 - [ ] 이때 current는 지정하지 않는다.
 - [ ] evidence 문서를 새 파일로 쓴다.
+
+첫 checkpoint 기록(2026-09-30, Lane 2 batch 한도로 중단):
+- `.msu`: catalog update `45c26f42-4003-45bf-a463-e0e91c88a205`, `windows10.0-kb5122882-x64_4432fee3….msu`(`589944414` bytes)
+  - SHA-1은 catalog digest와 같다. SHA-256은 `77e093c74d89421510987f2097a7416ea57a3077eaf81facccfc576239ab5b07`이다.
+  - Authenticode는 `Valid`(Microsoft Corporation)다.
+- 1차(Store pwsh 7.6.6): `.vhd`는 `-Index 1`로 mount됐다. `Add-WindowsPackage`는 이미지의 `dismhost.exe` COM 생성에서 `0x80040154`로 실패했다.
+- 2차(Windows PowerShell 5.1): dismhost는 떴다. 합쳐진 `.msu`는 `CBS_E_NEW_SERVICING_STACK_REQUIRED`(`0x800f0823`, LCU가 SSU `20348.1960` 이상을 요구, 이미지는 `20348.169`)로 실패했다.
+- 두 번 모두 도구가 `-Discard`로 unmount하고 복사본을 지웠다. 원본은 바뀌지 않았다.
+- 원본은 보존 VM `pcv-guest-installed-04253-r1`의 differencing 부모다.
 
 ## Task 5: 새 base로 clean-host 한 run (Lane 2)
 
