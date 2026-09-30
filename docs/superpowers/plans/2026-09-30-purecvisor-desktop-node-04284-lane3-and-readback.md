@@ -41,7 +41,9 @@
 
 ## Task 2: main push evidence (Lane 3, 5a)
 
-- [ ] PR #22 merge `4afaed7`의 Development Gates와 Public Boundary run이 success인지 확인하고 `public-boundary-ci-main-push-2026-09-30-04284-pr22-postmerge-pass`를 쓴다.
+- [x] PR #22 merge `4afaed7`의 Development Gates와 Public Boundary run이 success인지 확인하고 `public-boundary-ci-main-push-2026-09-30-04284-pr22-postmerge-pass`를 쓴다.
+
+실행 기록(2026-09-30): PR #22 merge `4afaed7`의 Development Gates `36697433260`(네 shard)와 Public Boundary `36697433373`(job `109828645222`)가 success다. `aab0bc1..ee90e0e..4afaed7` 사이에 product payload 경로 변경이 없음을 확인했다. evidence는 `public-boundary-ci-main-push-2026-09-30-04284-pr22-postmerge-pass`다.
 
 ## Task 3: current-evidence와 승격 문서 (Lane 3, 5b)
 
