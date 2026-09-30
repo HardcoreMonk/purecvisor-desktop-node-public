@@ -107,8 +107,10 @@
 
 ## Task 5: full admin host mutation gate (Lane 2)
 
-- [ ] 같은 version의 잔여 ProductCode를 점검하고, 설치본을 데이터 보존으로 제거해 ARP를 `0`으로 만든다.
-- [ ] 0.42.83 manifest에서 version, batch id, 경로만 바꿔 fullgate batch를 실행한다. evidence `full-admin-host-mutation-gate-2026-09-30-04284-hostmutation`.
+- [x] 같은 version의 잔여 ProductCode를 점검하고, 설치본을 데이터 보존으로 제거해 ARP를 `0`으로 만든다.
+- [x] 0.42.83 manifest에서 version, batch id, 경로만 바꿔 fullgate batch를 실행한다. evidence `full-admin-host-mutation-gate-2026-09-30-04284-hostmutation`.
+
+실행 기록(2026-09-30): Burn이 남긴 clean `0.42.84`(`{F50C37FD-…}`)를 데이터 보존 `msiexec /x`로 제거해 ARP를 `0`으로 만들었다(첫 시도는 인자 구문 오류로 msiexec 미실행). gate HEAD `ee90e0e`에서 두 step 모두 PASS(`206.7s`, `11.1s`)였다. 설치본은 ARP `{EE05403C-…}` 1개, Host/CLI SHA와 ProductVersion `+ee90e0e`가 gate build와 같다. data root에서는 설계대로 `install.jsonl`만 없어졌다. evidence는 `full-admin-host-mutation-gate-2026-09-30-04284-hostmutation`이다.
 
 ## Task 6: 최종 설치와 installed current-card (Lane 2)
 
