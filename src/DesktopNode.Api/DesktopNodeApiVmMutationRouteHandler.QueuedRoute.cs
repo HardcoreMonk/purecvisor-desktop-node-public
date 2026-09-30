@@ -333,10 +333,7 @@ internal sealed partial class DesktopNodeApiVmMutationRouteHandler
 
                     return DesktopNodeApiResponseFactory.JobCreated(CreateJob(
                         "vm.eject",
-                        DesktopNodeApiResponseFactory.JsonFromObject(new SortedDictionary<string, object?>
-                        {
-                            ["name"] = routeId.Value
-                        }),
+                        reconciliationHandler.BuildVmMediaParameters("vm.eject", routeId.Value!, null, cancellationToken),
                         request.RequestId!));
                 }
 
@@ -368,11 +365,7 @@ internal sealed partial class DesktopNodeApiVmMutationRouteHandler
 
                     return DesktopNodeApiResponseFactory.JobCreated(CreateJob(
                         "vm.attach",
-                        DesktopNodeApiResponseFactory.JsonFromObject(new SortedDictionary<string, object?>
-                        {
-                            ["name"] = routeId.Value,
-                            ["iso_path"] = isoPath
-                        }),
+                        reconciliationHandler.BuildVmMediaParameters("vm.attach", routeId.Value!, isoPath, cancellationToken),
                         request.RequestId!));
                 }
 

@@ -11,8 +11,8 @@ public sealed class HyperVDomainContractTests
             .OrderBy(operation => operation.Operation, StringComparer.Ordinal)
             .ToArray();
 
-        Assert.Equal(48, operations.Length);
-        Assert.Equal(48, operations.Select(operation => operation.Operation).Distinct(StringComparer.Ordinal).Count());
+        Assert.Equal(49, operations.Length);
+        Assert.Equal(49, operations.Select(operation => operation.Operation).Distinct(StringComparer.Ordinal).Count());
 
         Assert.Equal(
             [
@@ -31,6 +31,7 @@ public sealed class HyperVDomainContractTests
                 "vm.create",
                 "vm.delete",
                 "vm.disk-resize",
+                "vm.disk.inspect",
                 "vm.dvd.add",
                 "vm.eject",
                 "vm.export",
@@ -237,7 +238,7 @@ public sealed class HyperVDomainContractTests
         var dispatchCatalog = DesktopNodeHyperVAdapterDispatchCatalog.Entries
             .ToDictionary(entry => entry.Operation, StringComparer.Ordinal);
 
-        Assert.Equal(48, dispatchCatalog.Count);
+        Assert.Equal(49, dispatchCatalog.Count);
 
         foreach (var operation in DesktopNodeHyperVDomain.Catalog)
         {
@@ -269,6 +270,7 @@ public sealed class HyperVDomainContractTests
                 "vm.memory-stats",
                 "vm.cpu-stats",
                 "vm.blkio-get",
+                "vm.disk.inspect",
                 "vm.bandwidth",
                 "vm.guest-agent-status",
                 "vm.guest-ping",

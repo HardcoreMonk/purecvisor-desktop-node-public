@@ -100,7 +100,7 @@ internal sealed partial class DesktopNodeApiJobReconciliationHandler
                 ["capture_status"] = "captured",
                 ["before"] = before,
                 ["before_fingerprint"] = BuildVmResourceIdentityFingerprint(before),
-                ["before_value"] = ReadResourceValue(before, operation, diskPath),
+                ["before_value"] = ReadObservedResourceValue(before, operation, vmName, diskPath, cancellationToken),
                 ["expected_after"] = expectedAfter
             });
         }
@@ -151,7 +151,7 @@ internal sealed partial class DesktopNodeApiJobReconciliationHandler
         baseline = new VmResourceBaseline(
             before.Value.Clone(),
             beforeFingerprint.Value.Clone(),
-            DesktopNodeApiJsonReader.ReadInt(value, "before_value"),
+            ReadLong(value, "before_value"),
             diskPath,
             expectedAfter.Value.Clone());
         return true;
@@ -209,8 +209,8 @@ internal sealed partial class DesktopNodeApiJobReconciliationHandler
                 $"Provider vm.list readback did not prove a unique VM identity for {operation} reconciliation.");
         }
 
-        var observedValue = ReadResourceValue(matching[0], operation, baseline.DiskPath);
-        if (observedValue != requestedValue)
+        var observedValue = ReadObservedResourceValue(matching[0], operation, vmName, baseline.DiskPath, cancellationToken);
+        if (observedValue != ExpectedResourceValue(operation, requestedValue.Value))
         {
             var classification = observedValue is null
                 ? "readback-value-unavailable"
@@ -246,12 +246,46 @@ internal sealed partial class DesktopNodeApiJobReconciliationHandler
         {
             "vm.set-memory" => DesktopNodeApiJsonReader.ReadNestedElement(vm, "memory", "startup_mb"),
             "vm.set-vcpu" => DesktopNodeApiJsonReader.ReadNestedElement(vm, "cpu", "count"),
-            _ => VirtualDisks(vm)
-                .Where(disk => string.Equals(DesktopNodeApiJsonReader.GetStringProperty(disk, "path"), diskPath, StringComparison.OrdinalIgnoreCase))
-                .Select(disk => DesktopNodeApiJsonReader.ReadElement(disk, "size_gb"))
-                .FirstOrDefault()
+            _ => null
         };
         return element is { ValueKind: JsonValueKind.Number } number && number.TryGetInt32(out var parsed) ? parsed : null;
+    }
+
+    private const long GiB = 1024L * 1024 * 1024;
+
+    private static long ExpectedResourceValue(string operation, int requested) =>
+        operation == "vm.disk-resize" ? requested * GiB : requested;
+
+    // disk 크기는 vm.list(size_gb 없음)가 아니라 내부 read operation vm.disk.inspect 의 max_internal_size_bytes 다.
+    private long? ReadObservedResourceValue(JsonElement vm, string operation, string vmName, string? diskPath, CancellationToken cancellationToken)
+    {
+        if (operation != "vm.disk-resize")
+        {
+            return ReadResourceValue(vm, operation, diskPath);
+        }
+
+        if (string.IsNullOrWhiteSpace(diskPath))
+        {
+            return null;
+        }
+
+        using var readbackTimeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        readbackTimeout.CancelAfter(TimeSpan.FromSeconds(Math.Max(1, hardeningOptions.RouteTimeoutSeconds)));
+        var inspect = operationInvoker.Invoke(
+            "vm.disk.inspect",
+            DesktopNodeApiResponseFactory.JsonFromObject(new SortedDictionary<string, object?> { ["name"] = vmName, ["path"] = diskPath }),
+            readbackTimeout.Token);
+        return inspect.Ok && inspect.Data is { } data ? ReadLong(data, "max_internal_size_bytes") : null;
+    }
+
+    private static long? ReadLong(JsonElement element, string property)
+    {
+        return element.ValueKind == JsonValueKind.Object &&
+            element.TryGetProperty(property, out var value) &&
+            value.ValueKind == JsonValueKind.Number &&
+            value.TryGetInt64(out var parsed)
+                ? parsed
+                : null;
     }
 
     private static string? FirstAttachedVirtualDiskPath(JsonElement vm)
@@ -296,7 +330,7 @@ internal sealed partial class DesktopNodeApiJobReconciliationHandler
     private sealed record VmResourceBaseline(
         JsonElement Before,
         JsonElement BeforeFingerprint,
-        int? BeforeValue,
+        long? BeforeValue,
         string? DiskPath,
         JsonElement ExpectedAfter);
 }

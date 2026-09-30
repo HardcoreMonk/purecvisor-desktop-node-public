@@ -62,25 +62,39 @@
 
 ## Task 5: PR과 merge (Lane 0)
 
-- [ ] PR을 열고 CI 통과를 확인한 뒤 merge한다. main push CI를 확인한다.
+- [x] PR을 열고 CI 통과를 확인한 뒤 merge한다. main push CI를 확인한다.
+
+실행 기록(2026-09-30): PR #23(`https://github.com/HardcoreMonk/purecvisor-desktop-node-public/pull/23`)의 CI 6개가 pass였고 merge commit `102873f`로 merge했다. 이제 operational current는 `0.42.84-admin-smoke`다.
 
 ## Task 6: `vm.list` `dvd_media` (Lane 1)
 
-- [ ] `origin/main`에서 `feat/vm-list-readback-20260930`을 만든다.
-- [ ] `GetStorageSummaries`가 `ResourceSubType`을 읽는다. VHD는 `storage[]`에, `Virtual CD/DVD Disk`는 새 `dvd_media[]`에 담는다. model, 매핑, HyperV 테스트를 더한다.
+- [x] `origin/main`에서 `feat/vm-list-readback-20260930`을 만든다.
+- [x] `GetStorageSummaries`가 `ResourceSubType`을 읽는다. VHD는 `storage[]`에, `Virtual CD/DVD Disk`는 새 `dvd_media[]`에 담는다. model, 매핑, HyperV 테스트를 더한다.
+
+실행 기록(2026-09-30): storage summary에 `Kind`(`vhd`/`dvd`)를 더했다. `GetStorageSummaries`가 `ResourceSubType`이 `Virtual CD/DVD Disk`인 항목의 ISO 경로를 담는다. `MapSummary`는 `dvd_media`를 채운다. WMI 읽기에 실패하면 이제 null을 돌려 `dvd_media`를 생략하며, `storage[]` 출력은 전과 같다. model `522`/`533`, provider `563`/`573`줄로 라쳇 안이다. 검증: HyperV `239`(새 테스트 1), Api `477`, Delivery `744`, `git diff --check`.
 
 ## Task 7: 내부 read operation `vm.disk.inspect` (Lane 1)
 
-- [ ] clone provider의 `GetVirtualHardDiskSettingData` helper를 공용화한다. `vm.disk.inspect`(`{name, path}` → `{path, max_internal_size_bytes, disk_type}`)를 domain, dispatch, provider catalog와 Api invoker 허용 목록에 등록한다. `path`가 그 VM의 `storage[]`에 없으면 `PCV_VM_DISK_NOT_FOUND`다.
+- [x] clone provider의 `GetVirtualHardDiskSettingData` helper를 공용화한다. `vm.disk.inspect`(`{name, path}` → `{path, max_internal_size_bytes, disk_type}`)를 domain, dispatch, provider catalog와 Api invoker 허용 목록에 등록한다. `path`가 그 VM의 `storage[]`에 없으면 `PCV_VM_DISK_NOT_FOUND`다.
+
+실행 기록(2026-09-30): 설계와 두 곳이 달랐다.
+- helper: clone provider에서 새로 빼내지 않았다. disk-resize 축소 방지가 이미 쓰는 `DesktopNodeWmiVirtualDiskOperations.GetMaxInternalSize`를 재사용했다. VM provider 인터페이스에 기본 구현 메서드(`GetVirtualDiskMaxInternalSize`, 기본 `null`)를 두고, WMI VM provider가 새 partial에서 구현한다.
+- 영향 범위: 공개 route는 없지만 operation 등록은 설계 예상보다 넓다. HyperV domain, dispatch, provider catalog과 기존 `VmList` read handler 말고도 Runtime policy 계약(`native_probe_operations`와 reason 문자열), `RuntimePolicyContractTests`, `HyperVDomainContractTests`(operation `48`→`49`), Api invoker 허용 목록이 함께 바뀌었다.
+
+첫 checkpoint는 예산에 닿아 멈췄다. 재개 checkpoint에서 클래스 이름 오류를 고쳤고, 라쳇 초과(`DesktopNodeHyperVNativeAdapter.cs` `316`/`315`)는 read switch 두 줄을 한 패턴으로 합쳐 풀었다. 검증: HyperV `240`(새 adapter 테스트 1), Contracts `200`, Api `477`, Delivery `744`, Cli `179`, `npm run test:required --prefix web` exit `0`, spec pin `-Check` current, `git diff --check`.
 
 ## Task 8: reconcile 전환 (Lane 1)
 
-- [ ] `vm.attach`/`vm.eject`를 비대상에서 대상으로 옮기고 `dvd_media` 판정을 구현한다. `vm.disk-resize` 판정은 `vm.disk.inspect` bytes로 바꾼다. 분류 계약(대상 `28`, 비대상 `17`)과 테스트를 갱신한다.
+- [x] `vm.attach`/`vm.eject`를 비대상에서 대상으로 옮기고 `dvd_media` 판정을 구현한다. `vm.disk-resize` 판정은 `vm.disk.inspect` bytes로 바꾼다. 분류 계약(대상 `28`, 비대상 `17`)과 테스트를 갱신한다.
+
+실행 기록(2026-09-30): schema `pcv-vm-media-reconciliation/v1`을 새로 두었다. attach는 요청 ISO가 after에 정확히 하나 있고 before에는 없었을 때 성공이다(기존 media 교체 포함). eject는 after가 before에서 정확히 하나 빠진 부분집합일 때 성공이다. 같으면 `not-applied`, 그 밖은 `ambiguous-media-state`이고, `dvd_media`가 없으면 capture `unavailable`이거나 `readback-value-unavailable`이다. disk-resize는 before와 observed를 `vm.disk.inspect` byte로 읽고 요청 GB × 2^30과 비교한다. Runtime reconcile 표는 새 partial `DesktopNodeJobRuntime.ReconcilableMutations.cs`로 옮겼다(`Persistence.cs` `504`→`473`줄). 분류 계약은 대상 `28`, 비대상 `17`이다. 검증: Api `488`(새 테스트 `11`), Runtime `128`, Delivery `744`, `git diff --check`.
 
 ## Task 9: Web 표시와 종료 (Lane 1)
 
-- [ ] VM detail Storage 행에 DVD media를 표시하고 browser fixture를 맞춘다.
-- [ ] 종료 검증 뒤 PR, CI, merge를 한다. campaign을 닫고, `next_step`에 설치본 검증(`0.42.85` package pair)이 승인 대상이라고 적는다.
+- [x] VM detail Storage 행에 DVD media를 표시하고 browser fixture를 맞춘다.
+- [x] 종료 검증 뒤 PR, CI, merge를 한다. campaign을 닫고, `next_step`에 설치본 검증(`0.42.85` package pair)이 승인 대상이라고 적는다.
+
+실행 기록(2026-09-30): VM detail에 `DVD Media` 행을 두었다. ISO 경로 목록을 보이고, 빈 목록이면 `none`, `dvd_media`가 없으면 `not reported`로 표시한다. browser fixture VM에 `dvd_media`를 더했다. 종료 검증: clean tree에서 `dotnet test src/DesktopNode.sln` 전 프로젝트 통과(Api `488`, HyperV `240`, Verification `557` 등), `npm run test:required --prefix web` exit `0`, web Pester `50/0`, `git diff --check`. 이 commit 뒤 branch를 PR로 올리고 CI 통과 뒤 merge한다. 설치본 검증(`0.42.85` package pair)은 승인 대상이다.
 
 ## Nonclaims
 

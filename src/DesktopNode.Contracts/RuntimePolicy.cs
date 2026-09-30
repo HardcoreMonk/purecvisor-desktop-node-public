@@ -273,7 +273,8 @@ public static class RuntimePolicyContract
                             "vm.qos.network.preview",
                             "vm.guest-agent-status",
                             "vm.guest-ping",
-                            "checkpoint.list"
+                            "checkpoint.list",
+                            "vm.disk.inspect"
                         ],
                         NativeMutationOperations:
                         [
@@ -331,7 +332,7 @@ public static class RuntimePolicyContract
                         Contract: "dotnet-native-adapter-contract-tests-admin-smoke"),
                     NativeCore: new JobRuntimeNativeCorePolicy(
                         Status: "read-route-vm-qos-preview-guestservice-guest-execution-resource-checkpoint-and-qos-mutation-started",
-                        Reason: "host.status,network.inventory,vm.list,vm.memory-stats,vm.cpu-stats,vm.blkio-get,vm.bandwidth,vm.qos.storage.preview,vm.qos.network.preview,vm.guest-agent-status,vm.guest-ping,checkpoint.list,vm.create,vm.start,vm.shutdown,vm.poweroff,vm.restart,vm.pause,vm.resume,vm.save,vm.resume-saved,vm.rename,vm.manage,vm.template.lock,vm.clone.preview,vm.clone,vm.export,vm.import,vm.network.connect,vm.nic.add,vm.dvd.add,vm.eject,vm.attach,vm.limit,vm.qos.storage.set,vm.qos.network.set,vm.guest.exec,vm.guest.channel.verify,vm.guest.channel.ensure,vm.guest.file.preview,vm.guest.file,vm.set-memory,vm.set-vcpu,vm.disk-resize,vm.delete,checkpoint.create,checkpoint.restore,checkpoint.delete",
+                        Reason: "host.status,network.inventory,vm.list,vm.memory-stats,vm.cpu-stats,vm.blkio-get,vm.bandwidth,vm.qos.storage.preview,vm.qos.network.preview,vm.guest-agent-status,vm.guest-ping,checkpoint.list,vm.disk.inspect,vm.create,vm.start,vm.shutdown,vm.poweroff,vm.restart,vm.pause,vm.resume,vm.save,vm.resume-saved,vm.rename,vm.manage,vm.template.lock,vm.clone.preview,vm.clone,vm.export,vm.import,vm.network.connect,vm.nic.add,vm.dvd.add,vm.eject,vm.attach,vm.limit,vm.qos.storage.set,vm.qos.network.set,vm.guest.exec,vm.guest.channel.verify,vm.guest.channel.ensure,vm.guest.file.preview,vm.guest.file,vm.set-memory,vm.set-vcpu,vm.disk-resize,vm.delete,checkpoint.create,checkpoint.restore,checkpoint.delete",
                         RevisitWhen: "next-read-route-or-mutation-adapter-parity"),
                     ManagedCore: new JobRuntimeManagedCorePolicy(
                         Candidate: "dotnet",

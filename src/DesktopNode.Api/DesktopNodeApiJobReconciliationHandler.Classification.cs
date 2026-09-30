@@ -12,8 +12,6 @@ internal sealed partial class DesktopNodeApiJobReconciliationHandler
         ["diagnostic.bundle.create"] = "Diagnostic bundles are local evidence files; a failed bundle is recreated, not reconciled.",
         ["account.create"] = "Account store writes are synchronous and report their own outcome.",
         ["account.disable"] = "Account store writes are synchronous and report their own outcome.",
-        ["vm.attach"] = "vm.list exposes no DVD media path, so the attached ISO cannot be read back.",
-        ["vm.eject"] = "vm.list exposes no DVD media path, so the ejected ISO cannot be read back.",
         ["vm.device.add"] = "A repeated add creates another NIC or DVD drive, and vm.list cannot tell which add applied.",
         ["vm.nic.add"] = "A repeated add creates another NIC, and vm.list cannot tell which add applied.",
         ["vm.dvd.add"] = "A repeated add creates another DVD drive, and vm.list cannot tell which add applied.",
