@@ -75,7 +75,13 @@
 
 ## Task 7: 내부 read operation `vm.disk.inspect` (Lane 1)
 
-- [ ] clone provider의 `GetVirtualHardDiskSettingData` helper를 공용화한다. `vm.disk.inspect`(`{name, path}` → `{path, max_internal_size_bytes, disk_type}`)를 domain, dispatch, provider catalog와 Api invoker 허용 목록에 등록한다. `path`가 그 VM의 `storage[]`에 없으면 `PCV_VM_DISK_NOT_FOUND`다.
+- [x] clone provider의 `GetVirtualHardDiskSettingData` helper를 공용화한다. `vm.disk.inspect`(`{name, path}` → `{path, max_internal_size_bytes, disk_type}`)를 domain, dispatch, provider catalog와 Api invoker 허용 목록에 등록한다. `path`가 그 VM의 `storage[]`에 없으면 `PCV_VM_DISK_NOT_FOUND`다.
+
+실행 기록(2026-09-30): 설계와 두 곳이 달랐다.
+- helper: clone provider에서 새로 빼내지 않았다. disk-resize 축소 방지가 이미 쓰는 `DesktopNodeWmiVirtualDiskOperations.GetMaxInternalSize`를 재사용했다. VM provider 인터페이스에 기본 구현 메서드(`GetVirtualDiskMaxInternalSize`, 기본 `null`)를 두고, WMI VM provider가 새 partial에서 구현한다.
+- 영향 범위: 공개 route는 없지만 operation 등록은 설계 예상보다 넓다. HyperV domain, dispatch, provider catalog과 기존 `VmList` read handler 말고도 Runtime policy 계약(`native_probe_operations`와 reason 문자열), `RuntimePolicyContractTests`, `HyperVDomainContractTests`(operation `48`→`49`), Api invoker 허용 목록이 함께 바뀌었다.
+
+첫 checkpoint는 예산에 닿아 멈췄다. 재개 checkpoint에서 클래스 이름 오류를 고쳤고, 라쳇 초과(`DesktopNodeHyperVNativeAdapter.cs` `316`/`315`)는 read switch 두 줄을 한 패턴으로 합쳐 풀었다. 검증: HyperV `240`(새 adapter 테스트 1), Contracts `200`, Api `477`, Delivery `744`, Cli `179`, `npm run test:required --prefix web` exit `0`, spec pin `-Check` current, `git diff --check`.
 
 ## Task 8: reconcile 전환 (Lane 1)
 

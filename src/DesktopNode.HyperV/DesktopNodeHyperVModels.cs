@@ -34,6 +34,9 @@ public interface IDesktopNodeHyperVHostStatusProvider
 public interface IDesktopNodeHyperVVmProvider
 {
     IReadOnlyList<DesktopNodeHyperVVmInfo> GetVms(CancellationToken cancellationToken);
+
+    // vm.disk.inspect 이 쓰는 VHD 최대 내부 크기다. 크기를 모르는 provider 는 null 을 돌려준다.
+    ulong? GetVirtualDiskMaxInternalSize(string diskPath, CancellationToken cancellationToken) => null;
 }
 
 public interface IDesktopNodeHyperVCheckpointProvider

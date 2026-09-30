@@ -218,9 +218,9 @@ public sealed partial class DesktopNodeHyperVNativeAdapter : IDesktopNodeHyperVN
     {
         return operation switch
         {
-            "vm.memory-stats" => TryInvokeVmStats(operation, parameters, cancellationToken, out result),
-            "vm.cpu-stats" => TryInvokeVmStats(operation, parameters, cancellationToken, out result),
+            "vm.memory-stats" or "vm.cpu-stats" => TryInvokeVmStats(operation, parameters, cancellationToken, out result),
             "vm.blkio-get" => TryInvokeVmInventoryReadback(operation, parameters, cancellationToken, out result),
+            "vm.disk.inspect" => TryInvokeVmDiskInspect(operation, parameters, cancellationToken, out result),
             "vm.bandwidth" => TryInvokeVmInventoryReadback(operation, parameters, cancellationToken, out result),
             "vm.qos.storage.preview" => TryInvokeVmQosPreview(operation, parameters, cancellationToken, out result),
             "vm.qos.network.preview" => TryInvokeVmQosPreview(operation, parameters, cancellationToken, out result),

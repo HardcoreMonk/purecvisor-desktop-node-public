@@ -40,6 +40,7 @@ internal sealed class DesktopNodeApiHyperVOperationInvoker
             "network.inventory" or
             "vm.list" or
             "vm.memory-stats" or
+            "vm.disk.inspect" or
             "vm.cpu-stats" or
             "vm.blkio-get" or
             "vm.bandwidth" or

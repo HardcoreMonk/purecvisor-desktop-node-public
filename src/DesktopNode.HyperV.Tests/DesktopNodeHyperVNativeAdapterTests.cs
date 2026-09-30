@@ -196,6 +196,36 @@ public sealed class DesktopNodeHyperVNativeAdapterTests
     }
 
     [Fact]
+    public void NativeVmDiskInspectReportsSizeOnlyForTheVmsOwnDisk()
+    {
+        var diskPath = @"D:\VMs\alpha\disk0.vhdx";
+        var vm = CompleteVm("alpha") with { Storage = [new DesktopNodeHyperVVmDiskInfo("vhdx", diskPath, null, true)] };
+        var adapter = new DesktopNodeHyperVNativeAdapter(
+            new RecordingHyperVSwitchProvider([]),
+            new SizedHyperVVmProvider([vm], 64UL * 1024 * 1024 * 1024));
+
+        using var owned = JsonDocument.Parse(JsonSerializer.Serialize(new { name = "alpha", path = diskPath }));
+        Assert.True(adapter.TryInvoke("vm.disk.inspect", owned.RootElement, CancellationToken.None, out var result));
+        Assert.True(result.Ok);
+        Assert.Equal(64UL * 1024 * 1024 * 1024, result.Data!.Value.GetProperty("max_internal_size_bytes").GetUInt64());
+
+        using var foreign = JsonDocument.Parse("""{"name":"alpha","path":"C:\\Windows\\system32\\config\\SAM"}""");
+        Assert.True(adapter.TryInvoke("vm.disk.inspect", foreign.RootElement, CancellationToken.None, out var rejected));
+        Assert.Equal("PCV_VM_DISK_NOT_FOUND", rejected.Error!.Code);
+
+        var sizeless = new DesktopNodeHyperVNativeAdapter(new RecordingHyperVSwitchProvider([]), new RecordingHyperVVmProvider([vm]));
+        Assert.True(sizeless.TryInvoke("vm.disk.inspect", owned.RootElement, CancellationToken.None, out var unavailable));
+        Assert.Equal("PCV_VM_DISK_INSPECT_UNAVAILABLE", unavailable.Error!.Code);
+    }
+
+    private sealed class SizedHyperVVmProvider(IReadOnlyList<DesktopNodeHyperVVmInfo> vms, ulong bytes) : IDesktopNodeHyperVVmProvider
+    {
+        public IReadOnlyList<DesktopNodeHyperVVmInfo> GetVms(CancellationToken cancellationToken) => vms;
+
+        public ulong? GetVirtualDiskMaxInternalSize(string diskPath, CancellationToken cancellationToken) => bytes;
+    }
+
+    [Fact]
     public void NativeVmStatsAdapterReturnsNotFoundWhenVmIsAbsent()
     {
         using var parameters = JsonDocument.Parse("""{"vm_name":"missing"}""");
