@@ -65,7 +65,9 @@
 
 ## Task 4a: pair readiness (Lane 2)
 
-- [ ] `New-PcvManualAdminRebaselineReadiness.ps1 -PlanOnly`로 baseline `0.42.83`(설치본)과 target `0.42.84`의 readiness를 만든다.
+- [x] `New-PcvManualAdminRebaselineReadiness.ps1 -PlanOnly`로 baseline `0.42.83`(설치본)과 target `0.42.84`의 readiness를 만든다.
+
+실행 기록(2026-09-30): 설치본이 이미 baseline `0.42.83`이라 설치 변경 없이 실행했다. `-PlanOnly`, campaign `manual-admin-campaign-20260930-04283-04284`로 돌렸고 결과는 `ok=true`, `ready-current-baseline-target-package-pair`, `installed_version_matches_requested=true`, `host_mutation_performed=false`다. summary SHA는 `09d15758…`이고 root는 `artifacts/manual-admin-rebaseline-readiness-20260930-04283-04284`다.
 
 ## Task 4f: installed runtime ops summary (Lane 2)
 

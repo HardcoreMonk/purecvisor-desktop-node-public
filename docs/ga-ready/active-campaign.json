@@ -12,7 +12,7 @@
   ],
   "mutation_allowed": true,
   "current_write_allowed": false,
-  "next_step": "Task 4a: New-PcvManualAdminRebaselineReadiness.ps1 -PlanOnly for baseline 0.42.83 (installed) and target 0.42.84 (MSI 12a582ef…).",
+  "next_step": "Task 4f: capture the installed 0.42.83 runtime ops summary with pcvcli --protected-token-file --json ops summary plus unauthenticated 401 and Web 200 checks; evidence installed-runtime-ops-summary-2026-09-30-04283.",
   "plan": "docs/superpowers/plans/2026-09-30-purecvisor-desktop-node-04284-package-pair.md",
   "task_queue": [
     "Task 1",
@@ -30,11 +30,12 @@
     "Task 7",
     "Task 8"
   ],
-  "next_task": "Task 4a",
+  "next_task": "Task 4f",
   "completed_tasks": [
     "Task 1",
     "Task 2",
-    "Task 3"
+    "Task 3",
+    "Task 4a"
   ],
   "commit_policy": "local-commit-per-task",
   "push_allowed": true,
