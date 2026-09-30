@@ -95,7 +95,9 @@ Lane 3 승격은 하지 않는다.
 
 ## Task 3: fullgate (Lane 2)
 
-- [ ] 설치본을 데이터 보존으로 제거해 ARP를 `0`으로 만들고, 0.42.84 manifest에서 version, batch id, 경로만 바꿔 fullgate를 실행한다.
+- [x] 설치본을 데이터 보존으로 제거해 ARP를 `0`으로 만들고, 0.42.84 manifest에서 version, batch id, 경로만 바꿔 fullgate를 실행한다.
+
+실행 기록(2026-10-01): batch `ok=true`, 두 step `PASS`, MSI lifecycle 6 phase exit `0`. 설치본 Host/CLI SHA는 gate build와 같다. ARP 1개, Web `200`, firewall rule `0`. evidence `full-admin-host-mutation-gate-2026-10-01-04285-hostmutation`.
 
 ## Task 4: installed current-card (Lane 2)
 
