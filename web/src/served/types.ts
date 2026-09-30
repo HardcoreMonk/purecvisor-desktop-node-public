@@ -57,6 +57,9 @@ interface PcvRouteRegistry {
   vmAction(vmId: string, action: string): string;
   vmClonePreview(vmId: string): string;
   vmCheckpoints(vmId: string): string;
+  vmCheckpointSchedulePreview(vmId: string): string;
+  vmCheckpointSchedule(vmId: string): string;
+  vmCheckpointScheduleClear(vmId: string): string;
   checkpointDetail(vmId: string, checkpointId: string): string;
   checkpointAction(vmId: string, checkpointId: string, action: string): string;
   jobDetail(jobId: string): string;
@@ -100,6 +103,9 @@ interface PcvDesktopApi {
   ensureVmGuestChannel(vmId: string, payload: Record<string, unknown>): Promise<any>;
   getVmDeleteStatus(vmId: string, options?: RequestInit): Promise<any>;
   getVmCheckpoints(vmId: string, options?: RequestInit): Promise<any>;
+  previewCheckpointSchedule(vmId: string, payload: Record<string, unknown>): Promise<any>;
+  setCheckpointSchedule(vmId: string, payload: Record<string, unknown>): Promise<any>;
+  clearCheckpointSchedule(vmId: string): Promise<any>;
   queueVmAction(vmId: string, action: string): Promise<any>;
   queueVmAttach(vmId: string, isoPath: string): Promise<any>;
   queueVmRename(vmId: string, newName: string): Promise<any>;

@@ -209,6 +209,9 @@ const DESKTOP_NODE_API_ROUTES = Object.freeze({
     vmAction: (vmId, action) => `/api/v1/vms/${encodeRouteSegment(vmId)}/${requireRouteAction(action, ['start', 'shutdown', 'poweroff', 'restart', 'save', 'resume-saved', 'pause', 'resume', 'rename', 'eject', 'attach', 'delete-status', 'set-memory', 'set-vcpu', 'disk-resize', 'manage', 'clone', 'template-lock'])}`,
     vmClonePreview: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/clone/preview`,
     vmCheckpoints: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/checkpoints`,
+    vmCheckpointSchedulePreview: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/checkpoints/schedule/preview`,
+    vmCheckpointSchedule: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/checkpoints/schedule`,
+    vmCheckpointScheduleClear: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/checkpoints/schedule/clear`,
     checkpointDetail: (vmId, checkpointId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/checkpoints/${encodeRouteSegment(checkpointId)}`,
     checkpointAction: (vmId, checkpointId, action) => `/api/v1/vms/${encodeRouteSegment(vmId)}/checkpoints/${encodeRouteSegment(checkpointId)}/${requireRouteAction(action, ['restore'])}`,
     jobDetail: (jobId) => `/api/v1/jobs/${encodeRouteSegment(jobId)}`,
@@ -227,6 +230,9 @@ const DESKTOP_NODE_ROUTE_COVERAGE = Object.freeze([
     { id: 'vm.blkio-get', featureId: 'pcv.vm.qos', method: 'GET', route: '/api/v1/vms/{vm_id}/blkio', view: 'vms', mutating: false, tokenRequired: true },
     { id: 'vm.memory-stats', featureId: 'pcv.vm.telemetry', method: 'GET', route: '/api/v1/vms/{vm_id}/memory-stats', view: 'vms', mutating: false, tokenRequired: true },
     { id: 'vm.cpu-stats', featureId: 'pcv.vm.telemetry', method: 'GET', route: '/api/v1/vms/{vm_id}/cpu-stats', view: 'vms', mutating: false, tokenRequired: true },
+    { id: 'checkpoint.schedule.preview', featureId: 'pcv.checkpoint.lifecycle', method: 'POST', route: '/api/v1/vms/{vm_id}/checkpoints/schedule/preview', view: 'vms', mutating: true, tokenRequired: true },
+    { id: 'checkpoint.schedule.set', featureId: 'pcv.checkpoint.lifecycle', method: 'POST', route: '/api/v1/vms/{vm_id}/checkpoints/schedule', view: 'vms', mutating: true, tokenRequired: true },
+    { id: 'checkpoint.schedule.clear', featureId: 'pcv.checkpoint.lifecycle', method: 'POST', route: '/api/v1/vms/{vm_id}/checkpoints/schedule/clear', view: 'vms', mutating: true, tokenRequired: true },
     { id: 'vm.bandwidth', featureId: 'pcv.vm.qos', method: 'GET', route: '/api/v1/vms/{vm_id}/bandwidth', view: 'vms', mutating: false, tokenRequired: true },
     { id: 'vm.qos.storage.preview', featureId: 'pcv.vm.qos', method: 'POST', route: '/api/v1/vms/{vm_id}/qos/storage/preview', view: 'vms', mutating: false, tokenRequired: true },
     { id: 'vm.qos.storage.set', featureId: 'pcv.vm.qos', method: 'POST', route: '/api/v1/vms/{vm_id}/qos/storage', view: 'vms', mutating: true, tokenRequired: true },
@@ -793,6 +799,15 @@ const desktopApi = Object.freeze({
     }),
     restoreCheckpoint: (vmId, checkpointId) => apiFetch(DESKTOP_NODE_API_ROUTES.checkpointAction(vmId, checkpointId, 'restore'), { method: 'POST' }),
     deleteCheckpoint: (vmId, checkpointId) => apiFetch(DESKTOP_NODE_API_ROUTES.checkpointDetail(vmId, checkpointId), { method: 'DELETE' }),
+    previewCheckpointSchedule: (vmId, payload) => apiFetch(DESKTOP_NODE_API_ROUTES.vmCheckpointSchedulePreview(vmId), {
+        method: 'POST',
+        body: JSON.stringify(payload)
+    }),
+    setCheckpointSchedule: (vmId, payload) => apiFetch(DESKTOP_NODE_API_ROUTES.vmCheckpointSchedule(vmId), {
+        method: 'POST',
+        body: JSON.stringify(payload)
+    }),
+    clearCheckpointSchedule: (vmId) => apiFetch(DESKTOP_NODE_API_ROUTES.vmCheckpointScheduleClear(vmId), { method: 'POST' }),
     getJob: (jobId, options = {}) => apiFetch(DESKTOP_NODE_API_ROUTES.jobDetail(jobId), options),
     cancelJob: (jobId) => apiFetch(DESKTOP_NODE_API_ROUTES.jobAction(jobId, 'cancel'), { method: 'POST' }),
     retryJob: (jobId) => apiFetch(DESKTOP_NODE_API_ROUTES.jobAction(jobId, 'retry'), { method: 'POST' }),
@@ -1880,7 +1895,7 @@ function renderVmDetail() {
         </div>
         <button data-action="checkpoint-refresh" data-vm-id="${escapeHtml(vmId)}"${checkpointRefreshDisabled}>Refresh checkpoints</button>
       </div>
-      ${renderCheckpointScheduleReadback(vm)}
+      ${renderCheckpointScheduleReadback(vm, vmId, actionDisabled)}
       <form class="checkpoint-form" data-action="checkpoint-create" data-vm-id="${escapeHtml(vmId)}">
         <input name="checkpoint_name" autocomplete="off" placeholder="Checkpoint name" aria-label="checkpoint name"${checkpointMutationDisabled}>
         <button type="submit"${checkpointMutationDisabled}>Create checkpoint</button>
@@ -1919,7 +1934,7 @@ function renderExportImportReadback(vm) {
       </div>
     </div>`;
 }
-function renderCheckpointScheduleReadback(vm) {
+function renderCheckpointScheduleReadback(vm, vmId, actionDisabled = '') {
     const schedule = asObject(vm?.checkpoint_schedule);
     const enabled = schedule.enabled === true;
     const status = schedule.status || (enabled ? 'waiting' : 'disabled');
@@ -1936,9 +1951,16 @@ function renderCheckpointScheduleReadback(vm) {
         <div class="diagnostics-fact"><span class="muted">last enqueued</span><strong>${escapeHtml(formatObjectValue(schedule.last_enqueued_at))}</strong></div>
         <div class="diagnostics-fact"><span class="muted">next due</span><strong>${escapeHtml(formatObjectValue(schedule.next_due_at))}</strong></div>
       </div>
+      <form class="vm-resource-form checkpoint-schedule-form" data-action="checkpoint-schedule" data-vm-id="${escapeHtml(vmId)}">
+        <input name="interval_minutes" type="number" min="1" step="1" placeholder="Interval minutes" aria-label="Checkpoint interval minutes"${actionDisabled}>
+        <input name="retention_max" type="number" min="1" step="1" placeholder="Retention max" aria-label="Checkpoint retention max"${actionDisabled}>
+        <button type="submit" data-action="checkpoint-schedule-preview"${actionDisabled}>Preview schedule</button>
+        <button type="submit" data-action="checkpoint-schedule-set"${actionDisabled}>Save schedule</button>
+        <button type="button" class="danger-button" data-action="checkpoint-schedule-clear" data-vm-id="${escapeHtml(vmId)}"${actionDisabled}>Clear schedule</button>
+      </form>
+      ${renderCheckpointSchedulePreview(vmId)}
       <div class="boundary-chip-row">
-        <span>no schedule save form</span>
-        <span>CLI/API configure only</span>
+        <span>preview before save</span>
         <span>no infinite retention</span>
       </div>
     </div>`;
@@ -4299,10 +4321,75 @@ async function queueVmRename(vmId, newName) {
         render();
     }
 }
-async function handleVmDetailExtensionSubmit(form, data) {
+const VM_DETAIL_EXTENSION_CLICK_ACTIONS = new Set(['checkpoint-schedule-clear']);
+function readCheckpointSchedulePayload(data) {
+    const payload = {};
+    for (const name of ['interval_minutes', 'retention_max']) {
+        const raw = String(data.get(name) ?? '').trim();
+        if (raw) {
+            payload[name] = Number(raw);
+        }
+    }
+    return payload;
+}
+function buildCheckpointScheduleConfirmation(vmId, mode, payload) {
+    return mode === 'clear'
+        ? `Clear the periodic checkpoint schedule for VM '${vmId}'?\n\nExisting checkpoints stay. Scheduled checkpoints stop until a new schedule is saved.`
+        : `Save the periodic checkpoint schedule for VM '${vmId}'?\n\ninterval_minutes=${payload.interval_minutes ?? '-'} / retention_max=${payload.retention_max ?? '-'}`;
+}
+async function queueCheckpointScheduleControl(vmId, mode, payload) {
+    requireRbac('operate', `Checkpoint schedule ${mode}`);
+    if (mode !== 'preview' && !window.confirm(buildCheckpointScheduleConfirmation(vmId, mode, payload))) {
+        return;
+    }
+    state.actionPending = true;
+    setVmActionPending(vmId, `checkpoint-schedule-${mode}`);
+    state.error = null;
+    render();
+    try {
+        const result = mode === 'preview'
+            ? await desktopApi.previewCheckpointSchedule(vmId, payload)
+            : mode === 'set'
+                ? await desktopApi.setCheckpointSchedule(vmId, payload)
+                : await desktopApi.clearCheckpointSchedule(vmId);
+        if (mode === 'preview') {
+            state.checkpointSchedulePreview = { vm_id: vmId, updated_at: new Date().toISOString(), result };
+        }
+        else {
+            trackJob(result);
+            startPolling();
+        }
+        state.connectionState = 'connected';
+    }
+    catch (error) {
+        state.error = normalizeError(error);
+    }
+    finally {
+        state.actionPending = false;
+        clearVmActionPending(vmId);
+        render();
+    }
+}
+function renderCheckpointSchedulePreview(vmId) {
+    const preview = state.checkpointSchedulePreview;
+    if (!preview || preview.vm_id !== vmId) {
+        return '<p class="muted">Preview the schedule before saving it.</p>';
+    }
+    const updated = preview.updated_at ? new Date(preview.updated_at).toLocaleString() : '-';
+    return `<p class="muted">schedule preview ${escapeHtml(updated)}: ${escapeHtml(formatObjectValue(preview.result))}</p>`;
+}
+async function handleVmDetailExtensionSubmit(form, data, submitterAction) {
     if (form?.dataset.action === 'vm-rename') {
         await queueVmRename(form.dataset.vmId, data.get('new_name'));
         form.reset();
+    }
+    else if (form?.dataset.action === 'checkpoint-schedule') {
+        await queueCheckpointScheduleControl(form.dataset.vmId, submitterAction === 'checkpoint-schedule-set' ? 'set' : 'preview', readCheckpointSchedulePayload(data));
+    }
+}
+async function handleVmDetailExtensionClick(button) {
+    if (button.dataset.action === 'checkpoint-schedule-clear') {
+        await queueCheckpointScheduleControl(button.dataset.vmId, 'clear', {});
     }
 }
 // --- src/served/job-polling.ts ---
@@ -5199,7 +5286,7 @@ function bindEvents() {
                 form.reset();
             }
             else {
-                await handleVmDetailExtensionSubmit(form, data);
+                await handleVmDetailExtensionSubmit(form, data, submitterAction);
             }
         }
         catch (error) {
@@ -5253,6 +5340,9 @@ function bindEvents() {
             }
             else if (button.dataset.action === 'checkpoint-delete') {
                 await queueCheckpointDelete(button.dataset.vmId, button.dataset.checkpointId);
+            }
+            else if (VM_DETAIL_EXTENSION_CLICK_ACTIONS.has(button.dataset.action)) {
+                await handleVmDetailExtensionClick(button);
             }
         }
         catch (error) {

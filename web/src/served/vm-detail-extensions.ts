@@ -45,9 +45,80 @@ async function queueVmRename(vmId, newName) {
   }
 }
 
-async function handleVmDetailExtensionSubmit(form, data) {
+const VM_DETAIL_EXTENSION_CLICK_ACTIONS = new Set(['checkpoint-schedule-clear']);
+
+function readCheckpointSchedulePayload(data) {
+  const payload = {};
+  for (const name of ['interval_minutes', 'retention_max']) {
+    const raw = String(data.get(name) ?? '').trim();
+    if (raw) {
+      payload[name] = Number(raw);
+    }
+  }
+  return payload;
+}
+
+function buildCheckpointScheduleConfirmation(vmId, mode, payload) {
+  return mode === 'clear'
+    ? `Clear the periodic checkpoint schedule for VM '${vmId}'?\n\nExisting checkpoints stay. Scheduled checkpoints stop until a new schedule is saved.`
+    : `Save the periodic checkpoint schedule for VM '${vmId}'?\n\ninterval_minutes=${payload.interval_minutes ?? '-'} / retention_max=${payload.retention_max ?? '-'}`;
+}
+
+async function queueCheckpointScheduleControl(vmId, mode, payload) {
+  requireRbac('operate', `Checkpoint schedule ${mode}`);
+  if (mode !== 'preview' && !window.confirm(buildCheckpointScheduleConfirmation(vmId, mode, payload))) {
+    return;
+  }
+
+  state.actionPending = true;
+  setVmActionPending(vmId, `checkpoint-schedule-${mode}`);
+  state.error = null;
+  render();
+  try {
+    const result = mode === 'preview'
+      ? await desktopApi.previewCheckpointSchedule(vmId, payload)
+      : mode === 'set'
+        ? await desktopApi.setCheckpointSchedule(vmId, payload)
+        : await desktopApi.clearCheckpointSchedule(vmId);
+    if (mode === 'preview') {
+      state.checkpointSchedulePreview = { vm_id: vmId, updated_at: new Date().toISOString(), result };
+    } else {
+      trackJob(result);
+      startPolling();
+    }
+    state.connectionState = 'connected';
+  } catch (error) {
+    state.error = normalizeError(error);
+  } finally {
+    state.actionPending = false;
+    clearVmActionPending(vmId);
+    render();
+  }
+}
+
+function renderCheckpointSchedulePreview(vmId) {
+  const preview = state.checkpointSchedulePreview;
+  if (!preview || preview.vm_id !== vmId) {
+    return '<p class="muted">Preview the schedule before saving it.</p>';
+  }
+  const updated = preview.updated_at ? new Date(preview.updated_at).toLocaleString() : '-';
+  return `<p class="muted">schedule preview ${escapeHtml(updated)}: ${escapeHtml(formatObjectValue(preview.result))}</p>`;
+}
+
+async function handleVmDetailExtensionSubmit(form, data, submitterAction) {
   if (form?.dataset.action === 'vm-rename') {
     await queueVmRename(form.dataset.vmId, data.get('new_name'));
     form.reset();
+  } else if (form?.dataset.action === 'checkpoint-schedule') {
+    await queueCheckpointScheduleControl(
+      form.dataset.vmId,
+      submitterAction === 'checkpoint-schedule-set' ? 'set' : 'preview',
+      readCheckpointSchedulePayload(data));
+  }
+}
+
+async function handleVmDetailExtensionClick(button) {
+  if (button.dataset.action === 'checkpoint-schedule-clear') {
+    await queueCheckpointScheduleControl(button.dataset.vmId, 'clear', {});
   }
 }

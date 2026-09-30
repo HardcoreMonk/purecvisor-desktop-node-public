@@ -219,6 +219,15 @@ const desktopApi: Readonly<PcvDesktopApi> = Object.freeze({
   }),
   restoreCheckpoint: (vmId: string, checkpointId: string) => apiFetch(DESKTOP_NODE_API_ROUTES.checkpointAction(vmId, checkpointId, 'restore'), { method: 'POST' }),
   deleteCheckpoint: (vmId: string, checkpointId: string) => apiFetch(DESKTOP_NODE_API_ROUTES.checkpointDetail(vmId, checkpointId), { method: 'DELETE' }),
+  previewCheckpointSchedule: (vmId: string, payload: Record<string, unknown>) => apiFetch(DESKTOP_NODE_API_ROUTES.vmCheckpointSchedulePreview(vmId), {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  }),
+  setCheckpointSchedule: (vmId: string, payload: Record<string, unknown>) => apiFetch(DESKTOP_NODE_API_ROUTES.vmCheckpointSchedule(vmId), {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  }),
+  clearCheckpointSchedule: (vmId: string) => apiFetch(DESKTOP_NODE_API_ROUTES.vmCheckpointScheduleClear(vmId), { method: 'POST' }),
   getJob: (jobId: string, options = {}) => apiFetch(DESKTOP_NODE_API_ROUTES.jobDetail(jobId), options),
   cancelJob: (jobId: string) => apiFetch(DESKTOP_NODE_API_ROUTES.jobAction(jobId, 'cancel'), { method: 'POST' }),
   retryJob: (jobId: string) => apiFetch(DESKTOP_NODE_API_ROUTES.jobAction(jobId, 'retry'), { method: 'POST' }),

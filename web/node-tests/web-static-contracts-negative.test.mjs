@@ -522,11 +522,11 @@ const defectCases = [
     expectedLabel: "checkpoint-actions:load:source"
   },
   {
-    name: "missing checkpoint schedule readback chips",
+    name: "missing checkpoint schedule preview form",
     id: "web.static.checkpoint-actions",
-    overrides: () => removeOnce("web/src/served/render-vm-detail.ts", "no schedule save form"),
+    overrides: () => removeOnce("web/src/served/render-vm-detail.ts", "checkpoint-schedule-preview"),
     expectedCode: assertionFailed,
-    expectedLabel: "checkpoint-actions:no-save-form:source"
+    expectedLabel: "checkpoint-actions:schedule-preview:source"
   },
   {
     name: "missing export/import readback chips",

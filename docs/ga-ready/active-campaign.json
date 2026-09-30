@@ -11,7 +11,7 @@
   ],
   "mutation_allowed": false,
   "current_write_allowed": false,
-  "next_step": "Task 9: Web Console checkpoint panel schedule preview -> set -> clear form (clear confirms) through the vm-detail-extensions hook; replace the \"no schedule save form\" copy and browser fixture expectations; move checkpoint.schedule.preview/set/clear to Web present; bump parity counts; rebuild app.js and parity.",
+  "next_step": "Task 10: Web Console export preview -> export in the VM detail and import preview -> import in the inventory through the extension hooks; replace the \"no export/import save form\" / \"CLI/API export/import only\" copy and its static contract, negative test, and browser fixture expectations; move vm.export(.preview) and vm.import(.preview) to Web present; bump parity counts; rebuild app.js and parity.",
   "plan": "docs/superpowers/plans/2026-09-30-purecvisor-desktop-node-development-completion.md",
   "task_queue": [
     "Task 1",
@@ -28,7 +28,7 @@
     "Task 12",
     "Task 13"
   ],
-  "next_task": "Task 9",
+  "next_task": "Task 10",
   "completed_tasks": [
     "Task 1",
     "Task 2",
@@ -37,7 +37,8 @@
     "Task 5",
     "Task 6",
     "Task 7",
-    "Task 8"
+    "Task 8",
+    "Task 9"
   ],
   "commit_policy": "local-commit-per-task",
   "push_allowed": false,

@@ -51,7 +51,7 @@ feature promotion evidence를 서로 다른 계약으로 유지한다.
 | <a id="pcv-vm-guest-service-readback"></a>`pcv.vm.guest-service-readback` | Guest service readback | 2 | 2 present / 0 excluded | 2 present / 0 excluded |
 | <a id="pcv-vm-guest-execution"></a>`pcv.vm.guest-execution` | Guest execution | 4 | 3 present / 1 excluded | 4 present / 0 excluded |
 | <a id="pcv-vm-guest-channel"></a>`pcv.vm.guest-channel` | Guest channel configuration | 3 | 2 present / 1 excluded | 3 present / 0 excluded |
-| <a id="pcv-checkpoint-lifecycle"></a>`pcv.checkpoint.lifecycle` | Checkpoint lifecycle | 6 | 3 present / 3 excluded | 6 present / 0 excluded |
+| <a id="pcv-checkpoint-lifecycle"></a>`pcv.checkpoint.lifecycle` | Checkpoint lifecycle | 6 | 6 present / 0 excluded | 6 present / 0 excluded |
 | <a id="pcv-vm-create"></a>`pcv.vm.create` | VM creation | 1 | 1 present / 0 excluded | 1 present / 0 excluded |
 | <a id="pcv-checkpoint-restore"></a>`pcv.checkpoint.restore` | Checkpoint restore | 1 | 1 present / 0 excluded | 1 present / 0 excluded |
 | <a id="pcv-vm-power-lifecycle"></a>`pcv.vm.power-lifecycle` | VM power lifecycle | 4 | 4 present / 0 excluded | 4 present / 0 excluded |
@@ -119,9 +119,9 @@ feature promotion evidence를 서로 다른 계약으로 유지한다.
 | `pcv.vm.guest-channel` | `vm.guest.channel.ensure` | `POST /api/v1/vms/{vmId}/guest/channel` | `guest.channel.configure` | present — `vm.guest.channel.ensure` | present — `pcvcli vm guest-agent-ensure-channel vm-01 --repair --yes` |
 | `pcv.checkpoint.lifecycle` | `checkpoint.list` | `GET /api/v1/vms/{vmId}/checkpoints` | `read` | present — `checkpoint.list` | present — `pcvcli vm checkpoint list vm-01` |
 | `pcv.checkpoint.lifecycle` | `checkpoint.create` | `POST /api/v1/vms/{vmId}/checkpoints` | `operate` | present — `checkpoint.create` | present — `pcvcli vm checkpoint create vm-01 --name before-upgrade` |
-| `pcv.checkpoint.lifecycle` | `checkpoint.schedule.preview` | `POST /api/v1/vms/{vmId}/checkpoints/schedule/preview` | `operate` | excluded — Periodic checkpoint schedule stays CLI/API; Web Console keeps checkpoint panel readback without a schedule save form. | present — `pcvcli vm checkpoint schedule preview vm-01 --interval-minutes 1440 --retention-max 8` |
-| `pcv.checkpoint.lifecycle` | `checkpoint.schedule.set` | `POST /api/v1/vms/{vmId}/checkpoints/schedule` | `operate` | excluded — Periodic checkpoint schedule stays CLI/API; Web Console keeps checkpoint panel readback without a schedule save form. | present — `pcvcli vm checkpoint schedule set vm-01 --interval-minutes 1440 --retention-max 8 --yes` |
-| `pcv.checkpoint.lifecycle` | `checkpoint.schedule.clear` | `POST /api/v1/vms/{vmId}/checkpoints/schedule/clear` | `operate` | excluded — Periodic checkpoint schedule stays CLI/API; Web Console keeps checkpoint panel readback without a schedule save form. | present — `pcvcli vm checkpoint schedule clear vm-01 --yes` |
+| `pcv.checkpoint.lifecycle` | `checkpoint.schedule.preview` | `POST /api/v1/vms/{vmId}/checkpoints/schedule/preview` | `operate` | present — `checkpoint.schedule.preview` | present — `pcvcli vm checkpoint schedule preview vm-01 --interval-minutes 1440 --retention-max 8` |
+| `pcv.checkpoint.lifecycle` | `checkpoint.schedule.set` | `POST /api/v1/vms/{vmId}/checkpoints/schedule` | `operate` | present — `checkpoint.schedule.set` | present — `pcvcli vm checkpoint schedule set vm-01 --interval-minutes 1440 --retention-max 8 --yes` |
+| `pcv.checkpoint.lifecycle` | `checkpoint.schedule.clear` | `POST /api/v1/vms/{vmId}/checkpoints/schedule/clear` | `operate` | present — `checkpoint.schedule.clear` | present — `pcvcli vm checkpoint schedule clear vm-01 --yes` |
 | `pcv.checkpoint.lifecycle` | `checkpoint.delete` | `DELETE /api/v1/vms/{vmId}/checkpoints/{checkpointId}` | `operate` | present — `checkpoint.delete` | present — `pcvcli vm checkpoint delete vm-01 before-upgrade` |
 | `pcv.vm.create` | `vm.create` | `POST /api/v1/vms` | `operate` | present — `vm.create` | present — `pcvcli vm create vm-01 --vcpu 2 --memory_mb 4096 --disk_size_gb 40 --iso_path D:\isos\windows.iso` |
 | `pcv.checkpoint.restore` | `checkpoint.restore` | `POST /api/v1/vms/{vmId}/checkpoints/{checkpointId}/restore` | `operate` | present — `checkpoint.restore` | present — `pcvcli vm checkpoint restore vm-01 before-upgrade` |

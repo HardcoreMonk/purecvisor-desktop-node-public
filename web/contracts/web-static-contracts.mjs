@@ -1124,7 +1124,7 @@ function verifyCheckpointActions(context) {
   assertSourceAndGenerated(context, detailSource, app, [
     [/checkpoint-create/i, "create"],
     [/checkpoint_schedule/i, "readback-field"],
-    [/no schedule save form/i, "no-save-form"],
+    [/checkpoint-schedule-preview/i, "schedule-preview"],
     [/no infinite retention/i, "no-infinite-retention"]
   ], "checkpoint-actions");
   assertSourceAndGenerated(context, qosSource, app, [

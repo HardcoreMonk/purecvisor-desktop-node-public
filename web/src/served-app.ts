@@ -252,7 +252,7 @@ function bindEvents() {
         await queueVmClone(form.dataset.vmId, data.get('name'));
         form.reset();
       } else {
-        await handleVmDetailExtensionSubmit(form, data);
+        await handleVmDetailExtensionSubmit(form, data, submitterAction);
       }
     } catch (error) {
       state.error = normalizeError(error);
@@ -293,6 +293,8 @@ function bindEvents() {
         await queueCheckpointRestore(button.dataset.vmId, button.dataset.checkpointId);
       } else if (button.dataset.action === 'checkpoint-delete') {
         await queueCheckpointDelete(button.dataset.vmId, button.dataset.checkpointId);
+      } else if (VM_DETAIL_EXTENSION_CLICK_ACTIONS.has(button.dataset.action)) {
+        await handleVmDetailExtensionClick(button);
       }
     } catch (error) {
       state.error = normalizeError(error);

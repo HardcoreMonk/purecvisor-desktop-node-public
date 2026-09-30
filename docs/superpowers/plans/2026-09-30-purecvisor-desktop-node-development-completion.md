@@ -121,9 +121,11 @@
 
 ## Task 9: Web checkpoint schedule — preview/set/clear
 
-- [ ] checkpoint 패널에 schedule preview → 저장 → 해제 폼을 둔다. 해제는 확인을 받는다.
-- [ ] ledger와 투영 문서를 맞추고 build/parity를 재생성한다.
-- [ ] 검증: 공통 검증 전체
+- [x] checkpoint 패널에 schedule preview → 저장 → 해제 폼을 둔다. 해제는 확인을 받는다.
+- [x] ledger와 투영 문서를 맞추고 build/parity를 재생성한다.
+- [x] 검증: 공통 검증 전체
+
+실행 기록(2026-09-30): checkpoint schedule readback 아래에 "Preview schedule → Save schedule → Clear schedule" 폼을 두었다. preview 결과는 폼 아래에 표시하고, 저장과 해제는 확인을 받은 뒤 job으로 추적한다. `served-app.ts`에 확장 click hook(`VM_DETAIL_EXTENSION_CLICK_ACTIONS`에 있는 action만)을 더했다(`421`줄). 이전 결정을 고정하던 세 계약(static 계약 `no-save-form`, 그 negative 테스트, browser fixture의 negative 검사 세 줄)을 새 폼 기준(`schedule-preview`, `name="interval_minutes"`)으로 바꿨다. Web 제외는 `15`→`12`이다. 검증: `npm run test:required --prefix web` exit `0`, web Pester `50`/`0`, Cli `179`/`179`, Api `474`/`474`, Delivery `744`/`744`, `git diff --check`.
 
 ## Task 10: Web export/import — preview와 제출
 

@@ -103,7 +103,7 @@ function renderVmDetail() {
         </div>
         <button data-action="checkpoint-refresh" data-vm-id="${escapeHtml(vmId)}"${checkpointRefreshDisabled}>Refresh checkpoints</button>
       </div>
-      ${renderCheckpointScheduleReadback(vm)}
+      ${renderCheckpointScheduleReadback(vm, vmId, actionDisabled)}
       <form class="checkpoint-form" data-action="checkpoint-create" data-vm-id="${escapeHtml(vmId)}">
         <input name="checkpoint_name" autocomplete="off" placeholder="Checkpoint name" aria-label="checkpoint name"${checkpointMutationDisabled}>
         <button type="submit"${checkpointMutationDisabled}>Create checkpoint</button>
@@ -144,7 +144,7 @@ function renderExportImportReadback(vm) {
     </div>`;
 }
 
-function renderCheckpointScheduleReadback(vm) {
+function renderCheckpointScheduleReadback(vm, vmId, actionDisabled = '') {
   const schedule = asObject(vm?.checkpoint_schedule);
   const enabled = schedule.enabled === true;
   const status = schedule.status || (enabled ? 'waiting' : 'disabled');
@@ -161,9 +161,16 @@ function renderCheckpointScheduleReadback(vm) {
         <div class="diagnostics-fact"><span class="muted">last enqueued</span><strong>${escapeHtml(formatObjectValue(schedule.last_enqueued_at))}</strong></div>
         <div class="diagnostics-fact"><span class="muted">next due</span><strong>${escapeHtml(formatObjectValue(schedule.next_due_at))}</strong></div>
       </div>
+      <form class="vm-resource-form checkpoint-schedule-form" data-action="checkpoint-schedule" data-vm-id="${escapeHtml(vmId)}">
+        <input name="interval_minutes" type="number" min="1" step="1" placeholder="Interval minutes" aria-label="Checkpoint interval minutes"${actionDisabled}>
+        <input name="retention_max" type="number" min="1" step="1" placeholder="Retention max" aria-label="Checkpoint retention max"${actionDisabled}>
+        <button type="submit" data-action="checkpoint-schedule-preview"${actionDisabled}>Preview schedule</button>
+        <button type="submit" data-action="checkpoint-schedule-set"${actionDisabled}>Save schedule</button>
+        <button type="button" class="danger-button" data-action="checkpoint-schedule-clear" data-vm-id="${escapeHtml(vmId)}"${actionDisabled}>Clear schedule</button>
+      </form>
+      ${renderCheckpointSchedulePreview(vmId)}
       <div class="boundary-chip-row">
-        <span>no schedule save form</span>
-        <span>CLI/API configure only</span>
+        <span>preview before save</span>
         <span>no infinite retention</span>
       </div>
     </div>`;

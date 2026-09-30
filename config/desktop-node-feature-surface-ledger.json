@@ -1402,14 +1402,10 @@
           "required_permission": "operate",
           "present_surfaces": [
             "api",
-            "cli"
+            "cli",
+            "web"
           ],
-          "excluded_surfaces": [
-            {
-              "surface": "web",
-              "reason": "Periodic checkpoint schedule stays CLI/API; Web Console keeps checkpoint panel readback without a schedule save form."
-            }
-          ],
+          "excluded_surfaces": [],
           "surface_bindings": {
             "cli": {
               "command": [
@@ -1423,6 +1419,9 @@
                 "--retention-max",
                 "8"
               ]
+            },
+            "web": {
+              "coverage_id": "checkpoint.schedule.preview"
             }
           }
         },
@@ -1433,14 +1432,10 @@
           "required_permission": "operate",
           "present_surfaces": [
             "api",
-            "cli"
+            "cli",
+            "web"
           ],
-          "excluded_surfaces": [
-            {
-              "surface": "web",
-              "reason": "Periodic checkpoint schedule stays CLI/API; Web Console keeps checkpoint panel readback without a schedule save form."
-            }
-          ],
+          "excluded_surfaces": [],
           "surface_bindings": {
             "cli": {
               "command": [
@@ -1455,6 +1450,9 @@
                 "8",
                 "--yes"
               ]
+            },
+            "web": {
+              "coverage_id": "checkpoint.schedule.set"
             }
           }
         },
@@ -1465,14 +1463,10 @@
           "required_permission": "operate",
           "present_surfaces": [
             "api",
-            "cli"
+            "cli",
+            "web"
           ],
-          "excluded_surfaces": [
-            {
-              "surface": "web",
-              "reason": "Periodic checkpoint schedule stays CLI/API; Web Console keeps checkpoint panel readback without a schedule save form."
-            }
-          ],
+          "excluded_surfaces": [],
           "surface_bindings": {
             "cli": {
               "command": [
@@ -1483,6 +1477,9 @@
                 "vm-01",
                 "--yes"
               ]
+            },
+            "web": {
+              "coverage_id": "checkpoint.schedule.clear"
             }
           }
         },
