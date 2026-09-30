@@ -77,11 +77,15 @@ Lane 3 승격은 하지 않는다.
 
 ## Task 2d: Burn (Lane 2)
 
-- [ ] 설치본을 `0.42.85`에 맞춘 뒤 Burn lifecycle runner를 실행한다.
+- [x] 설치본을 `0.42.85`에 맞춘 뒤 Burn lifecycle runner를 실행한다.
+
+실행 기록(2026-10-01): r1은 repair `3010`(Host.exe 사용 중, 재부팅 뒤 교체)으로 FAIL이었고 복구는 PASS였다. Host.exe 교체 재부팅 대기가 없음을 확인한 뒤 새 root `-r2`로 다시 실행해 PASS했다(모든 exit `0`). 최종 ARP `0.42.85` `{B23EB9BF-…}` 1개, service Running/Automatic, Web `200`. evidence `burn-bootstrapper-lifecycle-smoke-2026-10-01-04285`(r2 기준).
 
 ## Task 2e: MSIX (Lane 2)
 
-- [ ] MSIX lifecycle runner를 `0.42.84 → 0.42.85`로 실행한다.
+- [x] MSIX lifecycle runner를 `0.42.84 → 0.42.85`로 실행한다.
+
+실행 기록(2026-10-01): 세 자리 버전으로 한 번에 PASS(`19`초). pack·sign·verify `0`, install·update·remove 통과, smoke 패키지와 서비스 없음, manifest `0.42.85` 유지. evidence `msix-package-lifecycle-smoke-2026-10-01-04284-04285`.
 
 ## Task 2g: pair descriptor (Lane 2, non-mutating)
 
