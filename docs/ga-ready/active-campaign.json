@@ -12,7 +12,7 @@
   ],
   "mutation_allowed": true,
   "current_write_allowed": false,
-  "next_step": "Task 2b: product Update to the 0.42.85 payload, then Rollback; evidence product-update-rollback-2026-10-01-04284-04285.",
+  "next_step": "Task 2c: clean-host runner with the 0.42.84 clean MSI, the 0.42.85 update ZIP, current-base.json base, -InstallWindowsUpdates -RemoveVmOnSuccess.",
   "plan": "docs/superpowers/plans/2026-10-01-purecvisor-desktop-node-04285-package-pair.md",
   "task_queue": [
     "Task 1",
@@ -28,11 +28,12 @@
     "Task 5",
     "Task 6"
   ],
-  "next_task": "Task 2b",
+  "next_task": "Task 2c",
   "completed_tasks": [
     "Task 1",
     "Task 2a",
-    "Task 2f"
+    "Task 2f",
+    "Task 2b"
   ],
   "commit_policy": "local-commit-per-task",
   "push_allowed": true,
