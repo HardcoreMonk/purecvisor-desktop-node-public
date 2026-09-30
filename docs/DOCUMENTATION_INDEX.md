@@ -6,9 +6,9 @@
 
 ## 현재 기준
 
-- 공개 소스 권위: `HardcoreMonk/purecvisor-desktop-node-public`, HEAD `dd638d4744f153e6f5d6110cbd3ca93a77ef0f2f` (PR #18, 0.42.83 Lane 3 merge).
-- Required CI 권위: Development Gates run `36585730842`; 보호 context는 정확히 `dotnet`, `web`, `delivery`, `installer-policy`다.
-- PowerShell/Pester 경계: invocation 0은 위 Required CI 네 context에만 적용한다. 별도 Public Boundary workflow는 비필수 legacy residue로 보존한다(run `36585731022`, job `109465396607`).
+- 공개 소스 권위: `HardcoreMonk/purecvisor-desktop-node-public`, HEAD `82b553f5386c79493532c425afec3b0192c92798` (PR #20, clean-host base VHD 오프라인 갱신 merge).
+- Required CI 권위: Development Gates run `36660066308`; 보호 context는 정확히 `dotnet`, `web`, `delivery`, `installer-policy`다.
+- PowerShell/Pester 경계: invocation 0은 위 Required CI 네 context에만 적용한다. 별도 Public Boundary workflow는 비필수 legacy residue로 보존한다(run `36660066317`, job `109712635173`).
 - 운영 제품 권위: `0.42.83-admin-smoke`; Web Console과 PCVCLI가 active이고 TUI는 absent다. Feature promotion은 `promotion_eligible=true`, blockers `none`이다. P0 feature ledger는 `0.42.75-admin-smoke` evidence를 유지한다.
 - 이 호스트 설치본(2026-09-29 fullgate): `0.42.83-admin-smoke`, service `Running/Automatic`. ARP `DisplayVersion`은 `0.42.83`(항목 `1`개).
 - 개발 campaign: `docs/ga-ready/active-campaign.json` intent `lane1-lane2-clean-host-base-vhd-refresh`(2026-09-30 완료, 대기 task 없음). clean-host base는 `current-base.json`이 고른다(`20348.5622`).
