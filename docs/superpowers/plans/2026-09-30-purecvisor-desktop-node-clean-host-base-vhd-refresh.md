@@ -139,7 +139,9 @@ Task 4 첫 checkpoint가 Lane 2 batch 한도로 멈췄다. 사용자 승인으�
 
 - [x] 설계 문서 상태, 계획 실행 기록, campaign 종료를 기록한다.
 - [x] PR을 올린다.
-- [ ] required CI가 green이면 merge한다. merge 기록은 다음 campaign의 첫 task가 남긴다.
+- [x] required CI가 green이면 merge한다.
+
+merge 기록(2026-09-30): PR #20을 merge했다(`82b553f`). PR의 required CI(`dotnet`, `web`, `delivery`, `installer-policy`)는 모두 green이었다. main의 Development Gates run `36660066308`과 Public Boundary run `36660066317`(job `109712635173`)은 success다.
 
 실행 기록(2026-09-30):
 - 설계 문서 상태를 구현 완료로 바꾸고 §8에 구현 결과를 더했다.
