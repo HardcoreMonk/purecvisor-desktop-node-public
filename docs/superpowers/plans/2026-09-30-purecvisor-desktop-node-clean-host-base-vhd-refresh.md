@@ -54,13 +54,15 @@
 
 ## Task 2: 도구 C# 정적 계약 (Lane 1)
 
-- [ ] `src/DesktopNode.Delivery.Tests/Delivery/ManualAdmin/PcvCleanHostBaseVhdContractTests.cs`에 다음을 고정한다.
+- [x] `src/DesktopNode.Delivery.Tests/Delivery/ManualAdmin/PcvCleanHostBaseVhdContractTests.cs`에 다음을 고정한다.
   - 원본 보존
   - dry-run 기본
   - 다운로드 없음
   - 실패 시 discard
   - sidecar/current schema
-- [ ] 검증: `dotnet test src/DesktopNode.Delivery.Tests`
+- [x] 검증: `dotnet test src/DesktopNode.Delivery.Tests`
+
+실행 기록(2026-09-30): `PcvCleanHostBaseVhdContractTests` `3`개를 더했다. 입력 검증 뒤 계획 반환, mount 전 elevation, UBR 확인 뒤 `-Save`, 실패 시 `-Discard`와 복사본 삭제, 다운로드 명령 없음, 두 schema를 고정한다. 검증: Delivery `743/743`.
 
 ## Task 3: runner의 base 선택과 summary 필드 (Lane 1)
 
