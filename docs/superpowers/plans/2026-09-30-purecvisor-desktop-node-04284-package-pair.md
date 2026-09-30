@@ -95,7 +95,9 @@
 
 ## Task 4e: MSIX build/install/update/remove (Lane 2)
 
-- [ ] MSIX lifecycle runner를 `0.42.83 → 0.42.84`로 실행한다.
+- [x] MSIX lifecycle runner를 `0.42.83 → 0.42.84`로 실행한다.
+
+실행 기록(2026-09-30): 첫 실행은 네 자리 버전(`0.42.83.0`)을 넘긴 입력 실수로 `pack-baseline`에서 `FAIL`이었다. runner가 `.0`을 붙여 `0.42.83.0.0`이 되었고, 설치 전이라 host mutation은 없었다. 세 자리 버전으로 `-r2`를 다시 실행했다(`19`초). pack, sign, verify가 모두 `0`이고 install, update, remove를 통과해 PASS다. 최종 상태는 smoke 패키지와 서비스 없음, MSI 서비스 `Running/Automatic`, manifest `0.42.84` 그대로다. evidence는 `msix-package-lifecycle-smoke-2026-09-30-04283-04284`다.
 
 ## Task 4g: pair descriptor (Lane 2, non-mutating)
 
