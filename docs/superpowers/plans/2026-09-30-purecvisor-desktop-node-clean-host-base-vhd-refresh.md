@@ -66,12 +66,20 @@
 
 ## Task 3: runner의 base 선택과 summary 필드 (Lane 1)
 
-- [ ] `Invoke-PcvInternalCleanHostInstallUpdateRollbackSmoke.ps1`
+- [x] `Invoke-PcvInternalCleanHostInstallUpdateRollbackSmoke.ps1`
   - `BaseVhdPath`를 명시하지 않으면 원본 옆 `current-base.json`을 읽는다. 파일이 없으면 원본을 쓴다.
   - plan과 summary에 `base_vhd_source`, `base_vhd_ubr`, `base_vhd_kb`를 더한다. 값은 sidecar에서 읽는다.
   - Windows Update 단계는 바꾸지 않는다.
-- [ ] C# 계약에 runner의 base 선택 순서를 더한다.
-- [ ] 검증: Delivery.Tests, runner를 다루는 packaging Pester(`PcvRunnerArtifactRootContract`, `PcvManualAdminRebaselineReadiness`, `PcvAdminSmokeEvidenceDocs`)
+- [x] C# 계약에 runner의 base 선택 순서를 더한다.
+- [x] 검증: Delivery.Tests, runner를 다루는 packaging Pester(`PcvRunnerArtifactRootContract`, `PcvManualAdminRebaselineReadiness`, `PcvAdminSmokeEvidenceDocs`)
+
+실행 기록(2026-09-30):
+- `BaseVhdPath` 기본값을 빈 값으로 바꾸고, `Resolve-PcvCleanHostBaseVhd`가 base를 고른다. 순서는 명시 인자, `current-base.json`, 원본이다.
+- `current-base.json`의 `base_file`은 파일 이름만 받는다.
+- plan과 summary에 `base_vhd_source`, `base_vhd_ubr`, `base_vhd_kb`를 더했다.
+- runner SHA가 바뀌어 `config/pcv-orchestration-contract-spec-v1.json`의 source SHA(`0066c0d1…`)와 `OrchestrationContractVerifier.ExpectedSpecSha256`(`24aac99b…`)를 갱신했다.
+- 선택 규칙 Pester `4`개(AST로 함수를 꺼내 실행)와 C# 계약 `1`개를 더했다.
+- 검증: Pester `121/121`(base VHD suite `18`개와 runner를 읽는 packaging suite 3개), Delivery `744/744`.
 
 ## Task 4: 첫 base 생성 (Lane 2)
 

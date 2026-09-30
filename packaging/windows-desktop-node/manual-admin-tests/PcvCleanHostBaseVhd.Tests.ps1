@@ -208,5 +208,53 @@ Describe 'PcvCleanHostBaseVhd contract' {
         It 'refuses a VHD without a sidecar such as the evaluation source' {
             { & $script:EntryPoint -SetCurrentBasePath $script:Inputs.SourceVhdPath -Execute } | Should -Throw '*PCV_BASE_VHD_SIDECAR_MISSING*'
         }
+
+        Context 'clean-host runner base selection' {
+            BeforeAll {
+                $runnerPath = Join-Path $script:RepoRoot 'packaging/windows-desktop-node/tools/Invoke-PcvInternalCleanHostInstallUpdateRollbackSmoke.ps1'
+                $ast = [System.Management.Automation.Language.Parser]::ParseFile($runnerPath, [ref]$null, [ref]$null)
+                foreach ($name in @('Resolve-PcvFilePath', 'Resolve-PcvCleanHostBaseVhd')) {
+                    $definition = $ast.Find({
+                            param($node)
+                            $node -is [System.Management.Automation.Language.FunctionDefinitionAst] -and $node.Name -eq $name
+                        }, $true)
+                    . ([scriptblock]::Create($definition.Extent.Text))
+                }
+            }
+
+            It 'uses the base named by current-base.json and reads its sidecar' {
+                $selected = Resolve-PcvCleanHostBaseVhd -ExplicitPath '' -DefaultSourcePath $script:Inputs.SourceVhdPath
+
+                $selected.source | Should -Be 'current-base'
+                $selected.path | Should -Be (Join-Path $script:Cache '20348.5400-20260801.vhd')
+                $selected.ubr | Should -Be 5400
+                $selected.kb | Should -Be 'KB5122882'
+            }
+
+            It 'lets an explicit path win over current-base.json' {
+                $selected = Resolve-PcvCleanHostBaseVhd -ExplicitPath $script:Newest -DefaultSourcePath $script:Inputs.SourceVhdPath
+
+                $selected.source | Should -Be 'explicit'
+                $selected.ubr | Should -Be 5622
+            }
+
+            It 'falls back to the evaluation VHD without current-base.json' {
+                Remove-Item -LiteralPath $script:CurrentPath
+
+                $selected = Resolve-PcvCleanHostBaseVhd -ExplicitPath '' -DefaultSourcePath $script:Inputs.SourceVhdPath
+
+                $selected.source | Should -Be 'default-source'
+                $selected.path | Should -Be $script:Inputs.SourceVhdPath
+                $selected.ubr | Should -BeNullOrEmpty
+            }
+
+            It 'rejects a current-base.json that points outside the image cache' {
+                (@{ schema = 'pcv-clean-host-current-base-v1'; base_file = '..\escape.vhd' } | ConvertTo-Json) |
+                    Set-Content -LiteralPath $script:CurrentPath -Encoding utf8
+
+                { Resolve-PcvCleanHostBaseVhd -ExplicitPath '' -DefaultSourcePath $script:Inputs.SourceVhdPath } |
+                    Should -Throw '*PCV_CLEAN_HOST_CURRENT_BASE_INVALID*'
+            }
+        }
     }
 }

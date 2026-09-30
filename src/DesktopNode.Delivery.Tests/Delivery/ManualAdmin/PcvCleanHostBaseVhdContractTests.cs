@@ -87,6 +87,40 @@ public sealed class PcvCleanHostBaseVhdContractTests
         Assert.DoesNotContain("Remove-Item -LiteralPath $sourcePath", source, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public void CleanHostRunnerPrefersExplicitThenCurrentBaseThenTheEvaluationVhd()
+    {
+        var runner = RepositoryContractContext.Find().ReadUtf8Text(Runner);
+
+        RequireTokens(
+            runner,
+            "[string]$BaseVhdPath = '',",
+            "'pcv-clean-host-current-base-v1'",
+            "PCV_CLEAN_HOST_CURRENT_BASE_INVALID",
+            "[System.IO.Path]::GetFileName($baseFile) -ne $baseFile",
+            "$sidecarPath = \"$full.base.json\"");
+        AssertOrdered(
+            runner,
+            "if (-not [string]::IsNullOrWhiteSpace($ExplicitPath)) {",
+            "$source = 'explicit'",
+            "'current-base.json'",
+            "$source = 'current-base'",
+            "$path = $DefaultSourcePath",
+            "$source = 'default-source'");
+        AssertOrdered(
+            runner,
+            "$baseVhd = Resolve-PcvCleanHostBaseVhd -ExplicitPath $BaseVhdPath -DefaultSourcePath $script:DefaultSourceBaseVhdPath",
+            "base_vhd_source = $baseVhd.source",
+            "base_vhd_ubr = $baseVhd.ubr",
+            "$summary.base_vhd_source = $baseVhd.source",
+            "$summary.base_vhd_ubr = $baseVhd.ubr",
+            "$summary.base_vhd_kb = $baseVhd.kb",
+            "New-VHD -Path $diffVhdPath -ParentPath $baseVhdFull -Differencing");
+    }
+
+    private const string Runner =
+        "packaging/windows-desktop-node/tools/Invoke-PcvInternalCleanHostInstallUpdateRollbackSmoke.ps1";
+
     private static string Source() =>
         RepositoryContractContext.Find().ReadUtf8Text(Tool);
 
