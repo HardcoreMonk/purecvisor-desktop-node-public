@@ -137,8 +137,17 @@ Task 4 첫 checkpoint가 Lane 2 batch 한도로 멈췄다. 사용자 승인으�
 
 ## Task 6: 마무리 (Lane 1)
 
-- [ ] 설계 문서 상태, 계획 실행 기록, campaign 종료를 기록한다.
-- [ ] PR을 올리고 required CI가 green이면 merge한다.
+- [x] 설계 문서 상태, 계획 실행 기록, campaign 종료를 기록한다.
+- [x] PR을 올린다.
+- [ ] required CI가 green이면 merge한다. merge 기록은 다음 campaign의 첫 task가 남긴다.
+
+실행 기록(2026-09-30):
+- 설계 문서 상태를 구현 완료로 바꾸고 §8에 구현 결과를 더했다.
+  - SSU 우선 적용과 packaged host 거부
+  - base 크기(약 18.0GB)
+  - 134초 run
+- `DOCUMENTATION_INDEX.md`의 campaign 줄을 바꿨다.
+
 
 ## Nonclaims
 

@@ -1,6 +1,6 @@
 # clean-host base VHD 오프라인 갱신 설계 (2026-09-29)
 
-상태: 설계. 구현과 첫 갱신 run은 이 설계를 확인한 뒤 별도 승인으로 한다(`docs/superpowers/plans/2026-09-29-purecvisor-desktop-node-post-04283-followups.md` Task 3).
+상태: 구현과 첫 갱신 run 완료(2026-09-30, `docs/superpowers/plans/2026-09-30-purecvisor-desktop-node-clean-host-base-vhd-refresh.md`). 설계와 달라진 점은 §8에 있다. 설계는 `docs/superpowers/plans/2026-09-29-purecvisor-desktop-node-post-04283-followups.md` Task 3에서 썼다.
 
 ## 1. 문제
 
@@ -104,5 +104,32 @@ run 중 VM 관측 결과는 다음과 같다(KST).
 
 ## 7. Nonclaims
 
-- 이 설계는 구현하지 않았고, VHD를 mount하거나 업데이트를 받지 않았다.
+- 이 설계 절(§1~§6)을 쓸 때는 구현하지 않았고, VHD를 mount하거나 업데이트를 받지 않았다. 구현 결과는 §8에 있다.
 - public trusted signing과 external stable publication을 주장하지 않는다.
+
+## 8. 구현 결과 (2026-09-30)
+
+§3.2에서 확인하기로 한 사항의 답과, 설계와 달라진 점이다.
+
+| 항목 | 결과 |
+| --- | --- |
+| `.vhd` mount | `Mount-WindowsImage -Index 1`로 직접 열린다. `Mount-VHD` 대안은 필요 없다 |
+| 합쳐진 `.msu` | 오프라인 `20348.169` 이미지에는 한 번에 넣을 수 없다(`0x800f0823`, LCU가 SSU `20348.1960` 이상 요구) |
+| 적용 순서 | 도구가 `.msu`를 `%SystemRoot%\System32\expand.exe`로 풀고 `SSU-*.cab` → KB cumulative cab 순서로 적용한다 |
+| 실행 host | Microsoft Store판 PowerShell에서는 이미지의 `dismhost.exe` COM 생성이 실패한다(`0x80040154`). 도구가 packaged host를 거부한다. Windows PowerShell 5.1(`powershell.exe`)로 실행한다 |
+| component store 정리 | 하지 않았다. 효과는 재지 않았다 |
+| base 크기 | `20348.5622` base가 약 18.0GB다. §5의 "약 10GB" 가정보다 약 7.8GB 크다. base 두 개를 남기면 원본을 빼고 약 36GB다 |
+| 생성 시간 | 약 26.5분(base를 만들 때 한 번) |
+| clean-host run | 134초, `update_count=0`, 재부팅 없음. 0.42.83 run(base `20348.169`)은 46분이었다 |
+
+evidence:
+- `clean-host-base-vhd-offline-refresh-2026-09-30-5622`
+- `internal-clean-host-install-update-rollback-smoke-2026-09-30-04278-04283-base5622`
+
+`current-base.json`은 `20348.5622-20260930.vhd`를 가리킨다.
+
+매달 할 일:
+1. 새 LCU `.msu`를 받는다.
+2. 도구 build 모드로 새 base를 만든다.
+3. 새 base를 `-BaseVhdPath`로 명시해 clean-host 한 run을 돌린다.
+4. PASS이면 current 모드로 지정한다.
