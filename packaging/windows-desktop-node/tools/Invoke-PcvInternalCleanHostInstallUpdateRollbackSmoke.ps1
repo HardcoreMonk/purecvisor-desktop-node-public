@@ -1,7 +1,7 @@
 [CmdletBinding()]
 param(
     [string]$ArtifactRoot = (Join-Path 'artifacts' ("internal-clean-host-install-update-rollback-smoke-" + (Get-Date -Format 'yyyyMMdd-HHmmss'))),
-    [string]$BaseVhdPath = 'D:\data\projects\codex-zone\purecvisor-desktop-node\artifacts\image-cache\windows-server-2022-eval-vhd\20348.169.amd64fre.fe_release_svc_refresh.210806-2348_server_serverdatacentereval_en-us.vhd',
+    [string]$BaseVhdPath = '',
     [string]$BaselineMsiPath = 'D:\data\projects\codex-zone\purecvisor-desktop-node\artifacts\internal-enterprise-requiresigned-rc-msi-20260507-0387\PureCVisorDesktopNode-0.38.7-rc.1-windows-x64.msi',
     [string]$UpdatePackagePath = 'D:\data\projects\codex-zone\purecvisor-desktop-node\artifacts\msi-update-package-20260509-0391\PureCVisorDesktopNode-0.39.1-admin-smoke-update.zip',
     [string]$InternalRootCertificatePath = '',
@@ -60,6 +60,52 @@ function Resolve-PcvFilePath {
     }
 
     (Resolve-Path -LiteralPath $Path -ErrorAction Stop).Path
+}
+
+# An explicit -BaseVhdPath wins. Otherwise current-base.json next to the evaluation VHD names the dated base
+# that New-PcvCleanHostBaseVhd.ps1 serviced offline; without it the evaluation VHD itself is the base.
+$script:DefaultSourceBaseVhdPath = 'D:\data\projects\codex-zone\purecvisor-desktop-node\artifacts\image-cache\windows-server-2022-eval-vhd\20348.169.amd64fre.fe_release_svc_refresh.210806-2348_server_serverdatacentereval_en-us.vhd'
+
+function Resolve-PcvCleanHostBaseVhd {
+    param(
+        [AllowEmptyString()][string]$ExplicitPath,
+        [Parameter(Mandatory)][string]$DefaultSourcePath
+    )
+
+    if (-not [string]::IsNullOrWhiteSpace($ExplicitPath)) {
+        $path = $ExplicitPath
+        $source = 'explicit'
+    }
+    else {
+        $currentPath = Join-Path (Split-Path -Parent $DefaultSourcePath) 'current-base.json'
+        if (Test-Path -LiteralPath $currentPath -PathType Leaf) {
+            $current = Get-Content -Raw -LiteralPath $currentPath | ConvertFrom-Json
+            $baseFile = [string]$current.base_file
+            if ($current.schema -ne 'pcv-clean-host-current-base-v1' -or
+                [string]::IsNullOrWhiteSpace($baseFile) -or
+                [System.IO.Path]::GetFileName($baseFile) -ne $baseFile) {
+                throw "PCV_CLEAN_HOST_CURRENT_BASE_INVALID|$currentPath"
+            }
+            $path = Join-Path (Split-Path -Parent $currentPath) $baseFile
+            $source = 'current-base'
+        }
+        else {
+            $path = $DefaultSourcePath
+            $source = 'default-source'
+        }
+    }
+
+    $full = Resolve-PcvFilePath -Path $path
+    $ubr = $null
+    $kb = $null
+    $sidecarPath = "$full.base.json"
+    if (Test-Path -LiteralPath $sidecarPath -PathType Leaf) {
+        $sidecar = Get-Content -Raw -LiteralPath $sidecarPath | ConvertFrom-Json
+        $ubr = [int]$sidecar.ubr
+        $kb = [string]$sidecar.kb
+    }
+
+    [pscustomobject]@{ path = $full; source = $source; ubr = $ubr; kb = $kb }
 }
 
 function Test-PcvChildPath {
@@ -618,7 +664,8 @@ try {
         throw "VM already exists: $VmName"
     }
 
-    $baseVhdFull = Resolve-PcvFilePath -Path $BaseVhdPath
+    $baseVhd = Resolve-PcvCleanHostBaseVhd -ExplicitPath $BaseVhdPath -DefaultSourcePath $script:DefaultSourceBaseVhdPath
+    $baseVhdFull = $baseVhd.path
     $baselineMsiFull = Resolve-PcvFilePath -Path $BaselineMsiPath
     $updatePackageFull = Resolve-PcvFilePath -Path $UpdatePackagePath
     $internalRootCertificateFull = if ([string]::IsNullOrWhiteSpace($InternalRootCertificatePath)) {
@@ -636,6 +683,9 @@ try {
         vm_generation = $VmGeneration
         vm_switch_name = $VMSwitchName
         base_vhd_path = $baseVhdFull
+        base_vhd_source = $baseVhd.source
+        base_vhd_ubr = $baseVhd.ubr
+        base_vhd_kb = $baseVhd.kb
         differencing_vhd_path = $diffVhdPath
         baseline_msi_path = $baselineMsiFull
         baseline_msi_sha256 = $baselineMsiSha256
@@ -679,6 +729,9 @@ try {
 
     $summary.host_mutation_performed = $true
     $summary.base_vhd_path = $baseVhdFull
+    $summary.base_vhd_source = $baseVhd.source
+    $summary.base_vhd_ubr = $baseVhd.ubr
+    $summary.base_vhd_kb = $baseVhd.kb
     $summary.vm_switch_name = $VMSwitchName
     $summary.baseline_msi_sha256 = $baselineMsiSha256
     $summary.update_package_sha256 = $updatePackageSha256
