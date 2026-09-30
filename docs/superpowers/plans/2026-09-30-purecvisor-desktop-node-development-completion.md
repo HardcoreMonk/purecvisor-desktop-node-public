@@ -78,8 +78,10 @@
 
 ## Task 4: 자원 reconcile — `vm.set-memory`, `vm.set-vcpu`, `vm.disk-resize`
 
-- [ ] 요청 값과 before-state를 잡는다. readback이 요청 값과 같을 때만 `succeeded`다. disk는 shrink가 없으므로 before 이하 값은 불일치다.
-- [ ] 검증: `dotnet test src/DesktopNode.Api.Tests`, `git diff --check`
+- [x] 요청 값과 before-state를 잡는다. readback이 요청 값과 같을 때만 `succeeded`다. disk는 shrink가 없으므로 before 이하 값은 불일치다.
+- [x] 검증: `dotnet test src/DesktopNode.Api.Tests`, `git diff --check`
+
+실행 기록(2026-09-30): schema는 `pcv-vm-resource-reconciliation/v1`이다. identity는 바뀌는 자원 값을 빼고 `id`, `platform`, `guest_family`, `generation`, `managed_by_purecvisor`로 잡는다. disk는 provider와 같은 규칙(첫 번째로 연결된 VHD/VHDX)으로 경로를 고정한다. readback 값이 요청 값이면 성공, before 값이면 `not-applied`, 그 밖이면 `incomplete-resource-value`다. `vm.limit`은 baseline을 잡지 않는다(Task 6 분류). Runtime `Persistence.cs`가 상한 `505`에 닿았으니 다음 task에서 허용 목록과 mutation 이름을 한 표로 합친다. 검증: Api `455`/`455`, Runtime `128`/`128`, Delivery `744`/`744`, `git diff --check`.
 
 ## Task 5: media/잠금 reconcile — `vm.attach`, `vm.eject`, `vm.template.lock`
 

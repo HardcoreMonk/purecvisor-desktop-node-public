@@ -11,7 +11,7 @@
   ],
   "mutation_allowed": false,
   "current_write_allowed": false,
-  "next_step": "Task 4: capture requested value and before-state for vm.set-memory, vm.set-vcpu, vm.disk-resize; reconcile an interrupted job to succeeded only when readback equals the requested value (disk never shrinks).",
+  "next_step": "Task 5: reconcile vm.attach, vm.eject, vm.template.lock from DVD media path and template lock readback; first merge the Runtime reconcile allowlist and mutation names into one table (Persistence.cs is at its ratchet cap).",
   "plan": "docs/superpowers/plans/2026-09-30-purecvisor-desktop-node-development-completion.md",
   "task_queue": [
     "Task 1",
@@ -28,11 +28,12 @@
     "Task 12",
     "Task 13"
   ],
-  "next_task": "Task 4",
+  "next_task": "Task 5",
   "completed_tasks": [
     "Task 1",
     "Task 2",
-    "Task 3"
+    "Task 3",
+    "Task 4"
   ],
   "commit_policy": "local-commit-per-task",
   "push_allowed": false,

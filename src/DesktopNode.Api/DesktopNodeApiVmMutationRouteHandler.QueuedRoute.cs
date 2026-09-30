@@ -417,7 +417,8 @@ internal sealed partial class DesktopNodeApiVmMutationRouteHandler
                     "memory_mb",
                     "PCV_VM_MEMORY_VALUE_REQUIRED",
                     "VM memory value is required.",
-                    "Pass a JSON body with numeric memory_mb.");
+                    "Pass a JSON body with numeric memory_mb.",
+                    cancellationToken);
 
             case "QueueSetVmVcpu":
                 return QueueVmResourceMutation(
@@ -427,7 +428,8 @@ internal sealed partial class DesktopNodeApiVmMutationRouteHandler
                     "cpu",
                     "PCV_VM_CPU_VALUE_REQUIRED",
                     "VM vCPU value is required.",
-                    "Pass a JSON body with numeric cpu.");
+                    "Pass a JSON body with numeric cpu.",
+                    cancellationToken);
 
             case "QueueResizeVmDisk":
                 return QueueVmResourceMutation(
@@ -437,7 +439,8 @@ internal sealed partial class DesktopNodeApiVmMutationRouteHandler
                     "disk_gb",
                     "PCV_VM_DISK_SIZE_VALUE_REQUIRED",
                     "VM disk resize value is required.",
-                    "Pass a JSON body with numeric disk_gb.");
+                    "Pass a JSON body with numeric disk_gb.",
+                    cancellationToken);
 
             case "QueueVmGuestExec":
                 return QueueVmGuestExec(request, routeMatch);

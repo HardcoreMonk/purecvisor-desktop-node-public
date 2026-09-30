@@ -88,6 +88,7 @@ internal sealed partial class DesktopNodeApiJobReconciliationHandler
             "console.novnc-target.set" or "console.novnc-target.clear" => ReconcileNoVncTargetJob(job),
             "checkpoint.schedule.set" or "checkpoint.schedule.clear" => ReconcileCheckpointScheduleJob(job),
             var operation when ExpectedPowerState(operation) is not null => ReconcileVmPowerStateJob(job, cancellationToken),
+            var operation when ResourceValueProperty(operation) is not null => ReconcileVmResourceJob(job, cancellationToken),
             _ => null
         };
         if (dispatched is not null)
@@ -104,7 +105,7 @@ internal sealed partial class DesktopNodeApiJobReconciliationHandler
                 ReconciliationRequiredError(
                     jobId,
                     "job-not-reconcilable",
-                    "Only a failed vm.rename, vm.delete, checkpoint.create, checkpoint.restore, checkpoint.delete, vm.create, vm.shutdown, vm.restart, vm.start, vm.poweroff, vm.pause, vm.resume, vm.save, vm.resume-saved, vm.qos.storage.set, vm.qos.network.set, console.novnc-target.set, console.novnc-target.clear, checkpoint.schedule.set, or checkpoint.schedule.clear job with PCV_JOB_INTERRUPTED can be reconciled.",
+                    "Only a failed vm.rename, vm.delete, checkpoint.create, checkpoint.restore, checkpoint.delete, vm.create, vm.shutdown, vm.restart, vm.start, vm.poweroff, vm.pause, vm.resume, vm.save, vm.resume-saved, vm.set-memory, vm.set-vcpu, vm.disk-resize, vm.qos.storage.set, vm.qos.network.set, console.novnc-target.set, console.novnc-target.clear, checkpoint.schedule.set, or checkpoint.schedule.clear job with PCV_JOB_INTERRUPTED can be reconciled.",
                     job.Operation));
             return RenderReconciliationResult(jobRuntime.Reconcile(jobId, assessment));
         }
@@ -375,6 +376,7 @@ internal sealed partial class DesktopNodeApiJobReconciliationHandler
             "vm.resume" => "resume",
             "vm.save" => "save",
             "vm.resume-saved" => "resume from saved",
+            "vm.set-memory" or "vm.set-vcpu" or "vm.disk-resize" => "resource change",
             "vm.qos.storage.set" => "storage QoS",
             "vm.qos.network.set" => "network QoS",
             "console.novnc-target.set" => "noVNC target",

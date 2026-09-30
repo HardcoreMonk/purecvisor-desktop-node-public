@@ -4704,12 +4704,19 @@ public sealed partial class ApiRuntimePolicyRequestProcessorTests
         var create = processor.Handle(new DesktopNodeApiRequest(method, path, body));
 
         Assert.Equal(202, create.StatusCode);
-        Assert.Empty(nativeCalls);
+        if (expectedOperation == "vm.limit")
+        {
+            Assert.Empty(nativeCalls);
+        }
+        else
+        {
+            Assert.Equal("vm.list", Assert.Single(nativeCalls).Operation);
+        }
 
         var tick = processor.ProcessOneQueuedJob();
 
         Assert.True(tick.Processed);
-        var nativeCall = Assert.Single(nativeCalls);
+        var nativeCall = Assert.Single(nativeCalls, call => call.Operation == expectedOperation);
         Assert.Equal(expectedOperation, nativeCall.Operation);
         using var parameters = JsonDocument.Parse(nativeCall.ParamsJson);
         Assert.Equal("lab vm", parameters.RootElement.GetProperty("name").GetString());
