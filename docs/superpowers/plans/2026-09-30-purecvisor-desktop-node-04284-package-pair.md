@@ -128,7 +128,9 @@
 
 ## Task 8: 종료
 
-- [ ] 종료 검증(`dotnet test src/DesktopNode.sln`, `npm run test:required --prefix web`, `git diff --check`)을 돌리고 campaign을 닫는다. `next_step`에는 Lane 3 승격이 별도 승인 대상이라고 적는다.
+- [x] 종료 검증(`dotnet test src/DesktopNode.sln`, `npm run test:required --prefix web`, `git diff --check`)을 돌리고 campaign을 닫는다. `next_step`에는 Lane 3 승격이 별도 승인 대상이라고 적는다.
+
+실행 기록(2026-09-30): 깨끗한 HEAD `c0dae89`에서 `dotnet test src/DesktopNode.sln`이 전 프로젝트 통과했다(Api `477`, Verification `557`, Delivery `744`, Host `216`, HyperV `238`, Contracts `200`, Cli `179`, Runtime `128`, Service `11`). `npm run test:required --prefix web` exit `0`, `git diff --check`도 통과했다. campaign을 닫는다. 결과는 package pair PASS, fullgate PASS, installed current-card PASS, Lane 2 probe PASS이고 모두 `installed_non_promoted_candidate`다.
 
 ## Nonclaims
 
