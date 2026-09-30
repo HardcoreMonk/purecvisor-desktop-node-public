@@ -162,14 +162,16 @@ evidence다.
 | 영역 | 판정 | 근거 |
 | --- | --- | --- |
 | 서비스 코어 (SCM, MSI, listener, token) | 내부 운영 가능 | 04273 fullgate + current-card |
-| 백엔드 제품 경로 | 구현 완료, 일부 family 미완 | route registry + 04273 functional 10/10 |
-| Web 기본 경로 | 04273에서 열림 | loopback smoke, token 붙여넣기 없음 |
-| Job reconcile | 부분 | rename/delete/checkpoint.create만 |
-| 다음 lab 운영 공백 | 기획 대상 | attach, Saved, clone, managed import |
+| 백엔드 제품 경로 | 구현 완료 | route `80`개, surface ledger(`config/desktop-node-feature-surface-ledger.json`) |
+| Web 기본 경로 | 열림, 정책 제외 `4`개 외 전 route binding | loopback smoke. 제외는 noVNC target 저장 `3`개(§7.2)와 `vm.limit`(명시적 QoS/자원 제어와 중복) |
+| Job reconcile | 분류 완료 | 대상 `26`개(`DesktopNodeJobRuntime.ReconcilableMutations`), 이유 있는 비대상 `19`개(`ReconcileNonTargets`). `vm.disk-resize`는 `vm.list` size readback 전까지 `409` |
+| 다음 lab 운영 공백 | 소스 반영 | attach, Saved, clone, managed import(P0~P2). 설치본 evidence는 package pair와 Lane 2가 맡는다 |
 
 2026-07-16 평가의 “Web 첫 진입 401 + 가짜 Connected”는 후속 진실성 slice와 loopback
 bootstrap으로 닫혔다. 남은 백엔드는 새 하이퍼바이저가 아니라 **기존 family의 빈 짝과
-조건부 복구**다.
+조건부 복구**였다. 2026-09-30 개발 완료 campaign(`development-completion-20260930`)이 그 빈 짝을 소스에서
+닫았다. Web binding과 reconcile 분류가 끝났고, `ApiSurfaceCompletionContractTests`와
+`ApiReconcileClassificationTests`가 그 상태를 고정한다. 설치본 동작과 actual-VM 동작은 아직 주장하지 않는다.
 
 ## 6. 참조 제품: Workstation 26H1
 

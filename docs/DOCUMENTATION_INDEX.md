@@ -11,7 +11,7 @@
 - PowerShell/Pester 경계: invocation 0은 위 Required CI 네 context에만 적용한다. 별도 Public Boundary workflow는 비필수 legacy residue로 보존한다(run `36660066317`, job `109712635173`).
 - 운영 제품 권위: `0.42.83-admin-smoke`; Web Console과 PCVCLI가 active이고 TUI는 absent다. Feature promotion은 `promotion_eligible=true`, blockers `none`이다. P0 feature ledger는 `0.42.75-admin-smoke` evidence를 유지한다.
 - 이 호스트 설치본(2026-09-29 fullgate): `0.42.83-admin-smoke`, service `Running/Automatic`. ARP `DisplayVersion`은 `0.42.83`(항목 `1`개).
-- 개발 campaign: `docs/ga-ready/active-campaign.json` intent `lane1-core-backend-frontend-development-completion`(2026-09-30 개설, Task 1-13, 계획 `docs/superpowers/plans/2026-09-30-purecvisor-desktop-node-development-completion.md`). 선행 `lane1-lane2-clean-host-base-vhd-refresh`는 완료했다. clean-host base는 `current-base.json`이 고른다(`20348.5622`).
+- 개발 campaign: `docs/ga-ready/active-campaign.json` intent `lane1-core-backend-frontend-development-completion`(2026-09-30 완료, Task 1-13, 대기 task 없음, 계획 `docs/superpowers/plans/2026-09-30-purecvisor-desktop-node-development-completion.md`). 선행 `lane1-lane2-clean-host-base-vhd-refresh`는 완료했다. clean-host base는 `current-base.json`이 고른다(`20348.5622`).
 - 진행 상황 현행화: `docs/project-status-audit-2026-09-27.md`. 직전 snapshot은 `docs/project-status-audit-2026-09-20.md`.
 - `0.42.75 -> 0.42.77` descriptor consume: `docs/ga-ready/evidence/manual-admin-campaign-2026-09-20-04275-04277.md` (`pass`, current 유지).
 - `0.42.77 -> 0.42.78` descriptor consume: `docs/ga-ready/evidence/manual-admin-campaign-2026-09-27-04277-04278.md` (`pass`, 당시 current `0.42.78-admin-smoke`).

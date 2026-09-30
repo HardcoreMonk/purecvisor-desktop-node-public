@@ -153,11 +153,13 @@
 
 ## Task 13: 코어 계약 종결과 종료 검증
 
-- [ ] Web 제외를 정책 근거 `4`개(noVNC target `3`, `vm.limit`)로, CLI 제외를 현재 `7`개(auth/session `6`, console capabilities `1`)로 고정하는 계약 테스트를 둔다.
-- [ ] `SERVICE_PLAN.md` §5 완결도, `FEATURE_IMPLEMENTATION_LEDGER.md`, `USER_FEATURE_USAGE_SPEC.md`, `DOCUMENTATION_INDEX.md` campaign 줄을 현행화한다.
-- [ ] 종료 검증: `dotnet test src/DesktopNode.sln`, `npm run test:required --prefix web`,
+- [x] Web 제외를 정책 근거 `4`개(noVNC target `3`, `vm.limit`)로, CLI 제외를 현재 `7`개(auth/session `6`, console capabilities `1`)로 고정하는 계약 테스트를 둔다.
+- [x] `SERVICE_PLAN.md` §5 완결도, `FEATURE_IMPLEMENTATION_LEDGER.md`, `USER_FEATURE_USAGE_SPEC.md`, `DOCUMENTATION_INDEX.md` campaign 줄을 현행화한다.
+- [x] 종료 검증: `dotnet test src/DesktopNode.sln`, `npm run test:required --prefix web`,
       packaging Pester(`packaging/windows-desktop-node/tests`), `git diff --check`
-- [ ] campaign `next_task`를 `null`로 두고 `next_step`에 완료와 다음 승인 대상(push/PR, package pair, Lane 2 actual-VM)을 적는다.
+- [x] campaign `next_task`를 `null`로 두고 `next_step`에 완료와 다음 승인 대상(push/PR, package pair, Lane 2 actual-VM)을 적는다.
+
+실행 기록(2026-09-30): `ApiSurfaceCompletionContractTests`가 Web 제외 `4`개와 CLI 제외 `7`개를 고정한다. 모든 route가 각 operator surface에 binding 또는 이유를 갖는지도 검사한다. `SERVICE_PLAN.md` §5, `FEATURE_IMPLEMENTATION_LEDGER.md`(80-route), `USER_FEATURE_USAGE_SPEC.md`, `DOCUMENTATION_INDEX.md`를 현행화했다. 종료 검증: `dotnet test src/DesktopNode.sln` 전 프로젝트 통과(Api `477`, Verification `557` 등). 단 `policy-boundaries`는 commit 전 dirty 작업 트리에서 `cutover-worktree=dirty`로 실패하므로 깨끗한 HEAD에서 따로 확인했다. 그 밖에 `npm run test:required --prefix web` exit `0`, web Pester `50`/`0`, packaging Pester `528`/`0`, `git diff --check`.
 
 ## 계획 밖 (승인 필요)
 

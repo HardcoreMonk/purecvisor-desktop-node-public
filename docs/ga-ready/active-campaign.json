@@ -11,7 +11,7 @@
   ],
   "mutation_allowed": false,
   "current_write_allowed": false,
-  "next_step": "Task 13: pin the final surface contract (Web exclusions = noVNC target x3 + vm.limit, CLI exclusions = auth/session x6 + console capabilities), refresh SERVICE_PLAN completeness, FEATURE_IMPLEMENTATION_LEDGER route count text, USER_FEATURE_USAGE_SPEC, DOCUMENTATION_INDEX, run the full closing verification, and close the campaign.",
+  "next_step": "Development completion complete (Task 1-13): reconcile covers 26 operations with 19 reasoned non-targets, Web Console binds every route except the 4 policy-backed exclusions, and contract tests pin both. No queued task. Next steps need approval: push the branch and open a PR; a package pair and fullgate carrying the new behavior; Lane 2 actual-VM checks for the new Web actions and reconcile paths; a vm.list readback extension design (DVD media path, VHD size) for attach/eject and effective disk-resize reconcile.",
   "plan": "docs/superpowers/plans/2026-09-30-purecvisor-desktop-node-development-completion.md",
   "task_queue": [
     "Task 1",
@@ -28,7 +28,7 @@
     "Task 12",
     "Task 13"
   ],
-  "next_task": "Task 13",
+  "next_task": null,
   "completed_tasks": [
     "Task 1",
     "Task 2",
@@ -41,7 +41,8 @@
     "Task 9",
     "Task 10",
     "Task 11",
-    "Task 12"
+    "Task 12",
+    "Task 13"
   ],
   "commit_policy": "local-commit-per-task",
   "push_allowed": false,

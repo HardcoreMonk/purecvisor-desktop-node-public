@@ -27,7 +27,7 @@ flowchart LR
     I -->|"1 blocker"| J["promotion_eligible=false"]
 ```
 
-API는 모든 77개 route의 backend 경계다. Web Console과 PCVCLI는 각 route에 대해 실제
+API는 모든 80개 route의 backend 경계다. Web Console과 PCVCLI는 각 route에 대해 실제
 binding 또는 이유가 있는 제외 중 하나를 가져야 한다. 이 흐름은 surface 존재 여부와
 feature promotion evidence를 서로 다른 계약으로 유지한다.
 
@@ -64,7 +64,7 @@ feature promotion evidence를 서로 다른 계약으로 유지한다.
 | <a id="pcv-vm-media-attach"></a>`pcv.vm.media-attach` | VM media attach | 1 | 1 present / 0 excluded | 1 present / 0 excluded |
 | <a id="pcv-vm-resource-limits"></a>`pcv.vm.resource-limits` | VM resource limits | 4 | 3 present / 1 excluded | 4 present / 0 excluded |
 
-## 77-route surface 투영
+## 80-route surface 투영
 
 | Feature ID | Operation ID | Canonical API route | Permission | Web Console | PCVCLI |
 |---|---|---|---|---|---|
