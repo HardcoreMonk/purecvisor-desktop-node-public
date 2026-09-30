@@ -140,6 +140,8 @@ const desktopApi: Readonly<PcvDesktopApi> = Object.freeze({
   getVm: (vmId: string, options = {}) => apiFetch(DESKTOP_NODE_API_ROUTES.vmDetail(vmId), options),
   getVmBlkio: (vmId: string, options = {}) => apiFetch(DESKTOP_NODE_API_ROUTES.vmBlkio(vmId), options),
   getVmBandwidth: (vmId: string, options = {}) => apiFetch(DESKTOP_NODE_API_ROUTES.vmBandwidth(vmId), options),
+  getVmMemoryStats: (vmId: string, options = {}) => apiFetch(DESKTOP_NODE_API_ROUTES.vmMemoryStats(vmId), options),
+  getVmCpuStats: (vmId: string, options = {}) => apiFetch(DESKTOP_NODE_API_ROUTES.vmCpuStats(vmId), options),
   previewVmQosStorage: (vmId: string, payload: Record<string, unknown>) => apiFetch(DESKTOP_NODE_API_ROUTES.vmQosStoragePreview(vmId), {
     method: 'POST',
     body: JSON.stringify(payload)

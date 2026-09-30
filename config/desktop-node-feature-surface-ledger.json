@@ -861,14 +861,10 @@
           "required_permission": "read",
           "present_surfaces": [
             "api",
-            "cli"
+            "cli",
+            "web"
           ],
-          "excluded_surfaces": [
-            {
-              "surface": "web",
-              "reason": "Web Console uses inventory and ops-summary projections instead of raw per-VM telemetry endpoints."
-            }
-          ],
+          "excluded_surfaces": [],
           "surface_bindings": {
             "cli": {
               "command": [
@@ -876,6 +872,9 @@
                 "memory-stats",
                 "vm-01"
               ]
+            },
+            "web": {
+              "coverage_id": "vm.memory-stats"
             }
           }
         },
@@ -886,14 +885,10 @@
           "required_permission": "read",
           "present_surfaces": [
             "api",
-            "cli"
+            "cli",
+            "web"
           ],
-          "excluded_surfaces": [
-            {
-              "surface": "web",
-              "reason": "Web Console uses inventory and ops-summary projections instead of raw per-VM telemetry endpoints."
-            }
-          ],
+          "excluded_surfaces": [],
           "surface_bindings": {
             "cli": {
               "command": [
@@ -901,6 +896,9 @@
                 "cpu-stats",
                 "vm-01"
               ]
+            },
+            "web": {
+              "coverage_id": "vm.cpu-stats"
             }
           }
         }

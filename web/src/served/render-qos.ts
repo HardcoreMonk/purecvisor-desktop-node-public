@@ -85,6 +85,8 @@ function renderVmQosGuestReadback(vmId) {
       ${renderReadbackCard(readbacks, 'bandwidth', 'bandwidth', 'network_qos', ['linux_bandwidth_compatible', 'mutation_supported'])}
       ${renderReadbackCard(readbacks, 'guest_agent', 'guest-agent-status', 'guest_agent', ['status', 'qemu_guest_agent', 'guest_exec_supported'])}
       ${renderReadbackCard(readbacks, 'guest_ping', 'guest-ping', 'guest_ping', ['reachable', 'guest_heartbeat_verified'])}
+      ${renderReadbackCard(readbacks, 'memory_stats', 'memory-stats', 'memory', ['startup_mb', 'assigned_mb', 'dynamic'])}
+      ${renderReadbackCard(readbacks, 'cpu_stats', 'cpu-stats', 'cpu', ['count'])}
     </div>
     <p class="muted">updated_at=${escapeHtml(updated)} / vm.limit remains CLI/API queued mutation</p>
   </section>`;

@@ -113,9 +113,11 @@
 
 ## Task 8: Web telemetry — `vm.memory-stats`, `vm.cpu-stats`
 
-- [ ] VM detail에 memory/CPU telemetry 읽기 패널을 둔다. 읽기 전용이며 실패는 `PCV_*`와 다음 행동을 보인다.
-- [ ] ledger와 투영 문서를 맞추고 build/parity를 재생성한다.
-- [ ] 검증: 공통 검증 전체
+- [x] VM detail에 memory/CPU telemetry 읽기 패널을 둔다. 읽기 전용이며 실패는 `PCV_*`와 다음 행동을 보인다.
+- [x] ledger와 투영 문서를 맞추고 build/parity를 재생성한다.
+- [x] 검증: 공통 검증 전체
+
+실행 기록(2026-09-30): 새 패널 대신 기존 VM detail "QoS / Guest Readback" 패널의 readback 로더에 `memory_stats`, `cpu_stats` 단계와 카드 두 개를 더했다. 같은 Refresh 버튼을 쓰고, 실패는 카드에 `PCV_*`와 detail로 보인다. browser fixture에 두 GET 응답과 기대 문자열을 더했다. Web 제외는 `17`→`15`이다. `report-only`: browser fixture가 "no schedule save form", "no export/import save form", "CLI/API vm.network.connect only" 같은 제외 문구를 기대 문자열로 고정하고 있어서, Task 9~11은 그 문구와 fixture를 함께 바꿔야 한다. 검증: `npm run test:required --prefix web` exit `0`, web Pester `50`/`0`, Cli `179`/`179`, Api `474`/`474`, Delivery `744`/`744`, `git diff --check`.
 
 ## Task 9: Web checkpoint schedule — preview/set/clear
 

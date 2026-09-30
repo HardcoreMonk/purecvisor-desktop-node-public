@@ -193,6 +193,8 @@ const DESKTOP_NODE_API_ROUTES = Object.freeze({
     vmDetail: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}`,
     vmBlkio: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/blkio`,
     vmBandwidth: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/bandwidth`,
+    vmMemoryStats: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/memory-stats`,
+    vmCpuStats: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/cpu-stats`,
     vmQosStoragePreview: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/qos/storage/preview`,
     vmQosStorage: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/qos/storage`,
     vmQosNetworkPreview: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/qos/network/preview`,
@@ -223,6 +225,8 @@ const DESKTOP_NODE_ROUTE_COVERAGE = Object.freeze([
     { id: 'vm.create', featureId: 'pcv.vm.create', method: 'POST', route: DESKTOP_NODE_API_ROUTES.vmList, view: 'vms', mutating: true, tokenRequired: true },
     { id: 'vm.detail', featureId: 'pcv.vm.inventory', method: 'GET', route: '/api/v1/vms/{vm_id}', view: 'vms', mutating: false, tokenRequired: true },
     { id: 'vm.blkio-get', featureId: 'pcv.vm.qos', method: 'GET', route: '/api/v1/vms/{vm_id}/blkio', view: 'vms', mutating: false, tokenRequired: true },
+    { id: 'vm.memory-stats', featureId: 'pcv.vm.telemetry', method: 'GET', route: '/api/v1/vms/{vm_id}/memory-stats', view: 'vms', mutating: false, tokenRequired: true },
+    { id: 'vm.cpu-stats', featureId: 'pcv.vm.telemetry', method: 'GET', route: '/api/v1/vms/{vm_id}/cpu-stats', view: 'vms', mutating: false, tokenRequired: true },
     { id: 'vm.bandwidth', featureId: 'pcv.vm.qos', method: 'GET', route: '/api/v1/vms/{vm_id}/bandwidth', view: 'vms', mutating: false, tokenRequired: true },
     { id: 'vm.qos.storage.preview', featureId: 'pcv.vm.qos', method: 'POST', route: '/api/v1/vms/{vm_id}/qos/storage/preview', view: 'vms', mutating: false, tokenRequired: true },
     { id: 'vm.qos.storage.set', featureId: 'pcv.vm.qos', method: 'POST', route: '/api/v1/vms/{vm_id}/qos/storage', view: 'vms', mutating: true, tokenRequired: true },
@@ -710,6 +714,8 @@ const desktopApi = Object.freeze({
     getVm: (vmId, options = {}) => apiFetch(DESKTOP_NODE_API_ROUTES.vmDetail(vmId), options),
     getVmBlkio: (vmId, options = {}) => apiFetch(DESKTOP_NODE_API_ROUTES.vmBlkio(vmId), options),
     getVmBandwidth: (vmId, options = {}) => apiFetch(DESKTOP_NODE_API_ROUTES.vmBandwidth(vmId), options),
+    getVmMemoryStats: (vmId, options = {}) => apiFetch(DESKTOP_NODE_API_ROUTES.vmMemoryStats(vmId), options),
+    getVmCpuStats: (vmId, options = {}) => apiFetch(DESKTOP_NODE_API_ROUTES.vmCpuStats(vmId), options),
     previewVmQosStorage: (vmId, payload) => apiFetch(DESKTOP_NODE_API_ROUTES.vmQosStoragePreview(vmId), {
         method: 'POST',
         body: JSON.stringify(payload)
@@ -1665,6 +1671,8 @@ function renderVmQosGuestReadback(vmId) {
       ${renderReadbackCard(readbacks, 'bandwidth', 'bandwidth', 'network_qos', ['linux_bandwidth_compatible', 'mutation_supported'])}
       ${renderReadbackCard(readbacks, 'guest_agent', 'guest-agent-status', 'guest_agent', ['status', 'qemu_guest_agent', 'guest_exec_supported'])}
       ${renderReadbackCard(readbacks, 'guest_ping', 'guest-ping', 'guest_ping', ['reachable', 'guest_heartbeat_verified'])}
+      ${renderReadbackCard(readbacks, 'memory_stats', 'memory-stats', 'memory', ['startup_mb', 'assigned_mb', 'dynamic'])}
+      ${renderReadbackCard(readbacks, 'cpu_stats', 'cpu-stats', 'cpu', ['count'])}
     </div>
     <p class="muted">updated_at=${escapeHtml(updated)} / vm.limit remains CLI/API queued mutation</p>
   </section>`;
@@ -3629,7 +3637,9 @@ async function loadVmQosGuestReadbacks(vmId, options = {}) {
         ['blkio', () => desktopApi.getVmBlkio(vmId, requestOptions)],
         ['bandwidth', () => desktopApi.getVmBandwidth(vmId, requestOptions)],
         ['guest_agent', () => desktopApi.getVmGuestAgentStatus(vmId, requestOptions)],
-        ['guest_ping', () => desktopApi.getVmGuestAgentPing(vmId, requestOptions)]
+        ['guest_ping', () => desktopApi.getVmGuestAgentPing(vmId, requestOptions)],
+        ['memory_stats', () => desktopApi.getVmMemoryStats(vmId, requestOptions)],
+        ['cpu_stats', () => desktopApi.getVmCpuStats(vmId, requestOptions)]
     ];
     const results = await Promise.allSettled(steps.map(([, run]) => run()));
     if (state.selectedVmId !== vmId)

@@ -41,6 +41,8 @@ interface PcvRouteRegistry {
   vmDetail(vmId: string): string;
   vmBlkio(vmId: string): string;
   vmBandwidth(vmId: string): string;
+  vmMemoryStats(vmId: string): string;
+  vmCpuStats(vmId: string): string;
   vmQosStoragePreview(vmId: string): string;
   vmQosStorage(vmId: string): string;
   vmQosNetworkPreview(vmId: string): string;
@@ -83,6 +85,8 @@ interface PcvDesktopApi {
   getVm(vmId: string, options?: RequestInit): Promise<any>;
   getVmBlkio(vmId: string, options?: RequestInit): Promise<any>;
   getVmBandwidth(vmId: string, options?: RequestInit): Promise<any>;
+  getVmMemoryStats(vmId: string, options?: RequestInit): Promise<any>;
+  getVmCpuStats(vmId: string, options?: RequestInit): Promise<any>;
   previewVmQosStorage(vmId: string, payload: Record<string, unknown>): Promise<any>;
   applyVmQosStorage(vmId: string, payload: Record<string, unknown>): Promise<any>;
   previewVmQosNetwork(vmId: string, payload: Record<string, unknown>): Promise<any>;

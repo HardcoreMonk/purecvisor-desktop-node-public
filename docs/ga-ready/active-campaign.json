@@ -11,7 +11,7 @@
   ],
   "mutation_allowed": false,
   "current_write_allowed": false,
-  "next_step": "Task 8: Web Console VM detail memory/CPU telemetry read panel (vm.memory-stats, vm.cpu-stats) through the vm-detail-extensions module; move both routes to Web present in the ledger and projections, bump the web parity counts, rebuild app.js and parity.",
+  "next_step": "Task 9: Web Console checkpoint panel schedule preview -> set -> clear form (clear confirms) through the vm-detail-extensions hook; replace the \"no schedule save form\" copy and browser fixture expectations; move checkpoint.schedule.preview/set/clear to Web present; bump parity counts; rebuild app.js and parity.",
   "plan": "docs/superpowers/plans/2026-09-30-purecvisor-desktop-node-development-completion.md",
   "task_queue": [
     "Task 1",
@@ -28,7 +28,7 @@
     "Task 12",
     "Task 13"
   ],
-  "next_task": "Task 8",
+  "next_task": "Task 9",
   "completed_tasks": [
     "Task 1",
     "Task 2",
@@ -36,7 +36,8 @@
     "Task 4",
     "Task 5",
     "Task 6",
-    "Task 7"
+    "Task 7",
+    "Task 8"
   ],
   "commit_policy": "local-commit-per-task",
   "push_allowed": false,
