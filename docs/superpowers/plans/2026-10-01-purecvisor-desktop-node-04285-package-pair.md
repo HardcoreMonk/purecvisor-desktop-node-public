@@ -101,7 +101,9 @@ Lane 3 승격은 하지 않는다.
 
 ## Task 4: installed current-card (Lane 2)
 
-- [ ] `0.42.85`를 설치된 채로 두고 current-card를 캡처한다.
+- [x] `0.42.85`를 설치된 채로 두고 current-card를 캡처한다.
+
+실행 기록(2026-10-01): `status=pass`, CLI `3/3`, Web `2/2`, 설치본 Host/CLI가 fullgate operational payload와 같다. `promotion_ledger_status=not-promoted`, canonical current는 `0.42.84-admin-smoke`로 유지된다. evidence `installed-operator-surface-current-card-2026-10-01-04285`.
 
 ## Task 5: 새 기능 actual-VM probe (Lane 2)
 
