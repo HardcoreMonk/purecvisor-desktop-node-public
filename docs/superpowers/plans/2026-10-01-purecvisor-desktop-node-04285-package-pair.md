@@ -71,7 +71,9 @@ Lane 3 승격은 하지 않는다.
 
 ## Task 2c: dedicated clean-host Windows Update (Lane 2)
 
-- [ ] baseline `0.42.84` clean MSI, target `0.42.85` update ZIP, `current-base.json` base로 clean-host runner를 실행한다.
+- [x] baseline `0.42.84` clean MSI, target `0.42.85` update ZIP, `current-base.json` base로 clean-host runner를 실행한다.
+
+실행 기록(2026-10-01): 약 `134`초, exit `0`. base `current-base`(UBR `5622`), Windows Update 대상 `0`개다. install, update, rollback이 모두 exit `0`이고 최종 manifest `0.42.84`, Web `200`이며 VM은 삭제됐다. evidence `internal-clean-host-install-update-rollback-smoke-2026-10-01-04284-04285`.
 
 ## Task 2d: Burn (Lane 2)
 
