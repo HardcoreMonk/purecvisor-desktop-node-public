@@ -164,10 +164,12 @@ internal sealed partial class DesktopNodeApiVmMutationRouteHandler
 
                     return DesktopNodeApiResponseFactory.JobCreated(CreateJob(
                         lifecycleOperation,
-                        DesktopNodeApiResponseFactory.JsonFromObject(new SortedDictionary<string, object?>
-                        {
-                            ["name"] = routeId.Value
-                        }),
+                        DesktopNodeApiJobReconciliationHandler.ExpectedPowerState(lifecycleOperation) is not null
+                            ? reconciliationHandler.BuildVmPowerStateParameters(lifecycleOperation, routeId.Value!, cancellationToken)
+                            : DesktopNodeApiResponseFactory.JsonFromObject(new SortedDictionary<string, object?>
+                            {
+                                ["name"] = routeId.Value
+                            }),
                         request.RequestId!));
                 }
 

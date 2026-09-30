@@ -240,19 +240,10 @@ public sealed partial class DesktopNodeJobRuntime
 
     private static bool IsReconciliationSupportedOperation(string operation)
     {
-        return string.Equals(operation, "vm.rename", StringComparison.Ordinal) ||
-            string.Equals(operation, "vm.delete", StringComparison.Ordinal) ||
-            string.Equals(operation, "checkpoint.create", StringComparison.Ordinal) ||
-            string.Equals(operation, "checkpoint.restore", StringComparison.Ordinal) ||
-            string.Equals(operation, "vm.create", StringComparison.Ordinal) ||
-            string.Equals(operation, "vm.shutdown", StringComparison.Ordinal) ||
-            string.Equals(operation, "vm.restart", StringComparison.Ordinal) ||
-            string.Equals(operation, "vm.qos.storage.set", StringComparison.Ordinal) ||
-            string.Equals(operation, "vm.qos.network.set", StringComparison.Ordinal) ||
-            string.Equals(operation, "console.novnc-target.set", StringComparison.Ordinal) ||
-            string.Equals(operation, "console.novnc-target.clear", StringComparison.Ordinal) ||
-            string.Equals(operation, "checkpoint.schedule.set", StringComparison.Ordinal) ||
-            string.Equals(operation, "checkpoint.schedule.clear", StringComparison.Ordinal);
+        return operation is "vm.rename" or "vm.delete" or "vm.create" or "vm.shutdown" or "vm.restart" or
+            "vm.start" or "vm.poweroff" or "checkpoint.create" or "checkpoint.restore" or
+            "checkpoint.schedule.set" or "checkpoint.schedule.clear" or "vm.qos.storage.set" or
+            "vm.qos.network.set" or "console.novnc-target.set" or "console.novnc-target.clear";
     }
 
     private static DesktopNodeJobRuntimeError ReconciliationRequiredError(
@@ -267,6 +258,8 @@ public sealed partial class DesktopNodeJobRuntime
             "vm.create" => "create",
             "vm.shutdown" => "shutdown",
             "vm.restart" => "restart",
+            "vm.start" => "start",
+            "vm.poweroff" => "power off",
             "vm.qos.storage.set" => "storage QoS",
             "vm.qos.network.set" => "network QoS",
             "console.novnc-target.set" => "noVNC target",

@@ -4776,7 +4776,7 @@ public sealed partial class ApiRuntimePolicyRequestProcessorTests
 
         Assert.Equal(202, create.StatusCode);
         Assert.Empty(fallbackCalls);
-        if (expectedOperation is "vm.shutdown" or "vm.restart")
+        if (expectedOperation is "vm.shutdown" or "vm.restart" or "vm.start" or "vm.poweroff")
         {
             Assert.Equal("vm.list", Assert.Single(nativeCalls).Operation);
         }

@@ -53,10 +53,12 @@
 
 ## Task 1: 전원 reconcile — `vm.start`, `vm.poweroff`
 
-- [ ] 제출 때 before-state를 잡는다(`VmCapture` 패턴). reconcile은 VM identity와 전원 상태 readback(`Running`/`Off`)으로 판정한다.
-- [ ] 새 partial(`DesktopNodeApiJobReconciliationHandler.PowerReconcile.cs`)에 두고, 본 파일 dispatch가 라쳇 상한을 넘으면 dispatch를 표 형태로 줄인다.
-- [ ] 성공, 상태 불일치, identity 모호, readback 실패를 Api 테스트로 고정한다.
-- [ ] 검증: `dotnet test src/DesktopNode.Api.Tests`, `git diff --check`
+- [x] 제출 때 before-state를 잡는다(`VmCapture` 패턴). reconcile은 VM identity와 전원 상태 readback(`Running`/`Off`)으로 판정한다.
+- [x] 새 partial(`DesktopNodeApiJobReconciliationHandler.PowerReconcile.cs`)에 두고, 본 파일 dispatch가 라쳇 상한을 넘으면 dispatch를 표 형태로 줄인다.
+- [x] 성공, 상태 불일치, identity 모호, readback 실패를 Api 테스트로 고정한다.
+- [x] 검증: `dotnet test src/DesktopNode.Api.Tests`, `git diff --check`
+
+실행 기록(2026-09-30): 새 schema `pcv-vm-power-state-reconciliation/v1`이다. reconcile 허용 목록은 Api dispatch와 Runtime `IsReconciliationSupportedOperation` 두 곳에 있어서 둘 다 넓혔다. 본 파일은 dispatch를 switch 표로 줄여 `674`→`629`줄이 됐다. Runtime `Persistence.cs`는 허용 목록을 패턴식으로 줄여 상한 `505` 안(`498`)에 뒀다. 큐 등록 때 `vm.list` readback이 생겨서, 호출 수를 세는 기존 fake adapter 두 개는 그 readback을 mutation 호출로 세지 않게 했다. 검증: Api `424`/`424`, Runtime `128`/`128`, Delivery `744`/`744`, `git diff --check`.
 
 ## Task 2: 일시정지/저장 reconcile — `vm.pause`, `vm.resume`, `vm.save`, `vm.resume-saved`
 
