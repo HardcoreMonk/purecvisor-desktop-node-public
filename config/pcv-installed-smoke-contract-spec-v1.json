@@ -10,7 +10,7 @@
     },
     {
       "path": "packaging/windows-desktop-node/README.md",
-      "sha256": "bcd2de12b690cbe85c65bd34024a9d01ca806799b9800dc6e3a5bfda468c6ded"
+      "sha256": "73702fe72cc61dd374080718929d00cf1c722bbb84403aac19409d35414d23bc"
     },
     {
       "path": "packaging/windows-desktop-node/tools/Invoke-PcvInstalledAccountLoginSmoke.ps1",
