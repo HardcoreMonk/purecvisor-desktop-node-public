@@ -249,7 +249,7 @@ pcvcli account disable lab-operator --yes
 | `pcvcli vm network connect <vm> --switch NAME --yes` | `POST /api/v1/vms/{vm}/network` | 기존 NIC를 inventory 스위치에 연결. `--yes` 필요. 새 NIC 추가는 아님. 스위치 생성/삭제는 Host `service-action` |
 | `pcvcli vm device add <vm> --kind nic --switch NAME --yes` | `POST /api/v1/vms/{vm}/devices` | synthetic NIC 하나를 기존 스위치에 추가. `--yes` 필요. NAT/DHCP와 장치 상점은 열지 않음 |
 | `pcvcli vm device add <vm> --kind dvd --yes` | `POST /api/v1/vms/{vm}/devices` | 빈 DVD 드라이브 하나를 추가. ISO는 `vm attach`. `--yes` 필요 |
-| `pcvcli vm delete <vm> --yes` | `DELETE /api/v1/vms/{vm}` | Managed VM delete job queue |
+| `pcvcli vm delete <vm> --yes` | `DELETE /api/v1/vms/{vm}` | Managed VM delete job queue. VM 전용 디렉터리(`ConfigurationDataRoot`) 안 디스크 이미지 중 남은 VM이 참조하지 않는 것과 빈 디렉터리를 지우고 결과를 `storage_cleanup`에 남김 |
 
 VM 생성 예:
 
