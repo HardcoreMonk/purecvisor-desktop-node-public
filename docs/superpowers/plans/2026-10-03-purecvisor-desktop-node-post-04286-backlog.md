@@ -60,10 +60,12 @@
 
 **수정:** `src/DesktopNode.Api/DesktopNodeApiJobReconciliationHandler.cs`, `src/DesktopNode.Runtime/DesktopNodeJobRuntime.Persistence.cs`, 해당 테스트
 
-- [ ] 비대상 operation 안내가 `rename`을 말하지 않도록 기본값을 중립 문구로 바꾼다.
-- [ ] 비대상 operation 안내를 단언하는 테스트를 Api와 Runtime 쪽에 더한다.
+- [x] 비대상 operation 안내가 `rename`을 말하지 않도록 기본값을 중립 문구로 바꾼다.
+- [x] 비대상 operation 안내를 단언하는 테스트를 Api와 Runtime 쪽에 더한다.
 
 검증: 바뀐 프로젝트의 `*.Tests`, `git diff --check`.
+
+실행 기록(2026-10-03): Api switch에는 `vm.rename`이 없어서 rename 경로도 기본값으로 `rename`을 받고 있었다. `vm.rename => rename`을 명시하고, rename 전용 경로 세 곳은 `vm.rename`을 넘기며, 기본값은 Api와 Runtime 모두 `mutation`으로 바꿨다. `ApiReconcileClassificationTests`의 `vm.guest.exec` 비대상 사례와 Runtime `NonTargetReconciliationGuidanceNamesNoSpecificMutation`이 "confirm whether the mutation applied"를 단언하고, rename 미확인 사례는 계속 "confirm whether the rename applied"를 단언한다. Runtime `129/129`, Api `488/488`.
 
 ## Task 4: feature evidence ledger 모델 확장 결정
 

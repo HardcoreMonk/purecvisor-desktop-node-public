@@ -40,8 +40,29 @@ public sealed class JobRuntimeReconciliationTests
         Assert.Equal("failed", result.Job!.Status);
         Assert.Equal("PCV_JOB_INTERRUPTED", result.Job.Error!.Code);
         Assert.Equal("PCV_JOB_RECONCILIATION_REQUIRED", result.Error!.Code);
+        Assert.Contains("confirm whether the rename applied", result.Error.RecommendedAction, StringComparison.Ordinal);
         Assert.Contains(runtime.Snapshot().StoreHealth.RecentEvents, item => item.Event == "job-reconciliation-required");
         Assert.Equal(InterruptedRenameSnapshot(), store.DurableSnapshot);
+    }
+
+    [Fact]
+    public void NonTargetReconciliationGuidanceNamesNoSpecificMutation()
+    {
+        var snapshot = InterruptedRenameSnapshot().Replace(
+            "\"operation\": \"vm.rename\"",
+            "\"operation\": \"vm.guest.exec\"",
+            StringComparison.Ordinal);
+        var store = new RecordingJobStore(snapshot);
+        var runtime = new DesktopNodeJobRuntime(store);
+
+        var result = runtime.Reconcile(
+            "job-rename-reconcile",
+            new DesktopNodeJobReconciliationAssessment(false, "job-not-reconcilable", null));
+
+        Assert.Equal(DesktopNodeJobReconciliationOutcome.Required, result.Outcome);
+        Assert.Equal("PCV_JOB_RECONCILIATION_REQUIRED", result.Error!.Code);
+        Assert.Contains("confirm whether the mutation applied", result.Error.RecommendedAction, StringComparison.Ordinal);
+        Assert.DoesNotContain("rename", result.Error.RecommendedAction, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]

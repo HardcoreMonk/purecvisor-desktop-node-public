@@ -128,7 +128,8 @@ internal sealed partial class DesktopNodeApiJobReconciliationHandler
                 ReconciliationRequiredError(
                     jobId,
                     "baseline-unavailable",
-                    "The durable vm.rename baseline was not captured or is not structurally valid."));
+                    "The durable vm.rename baseline was not captured or is not structurally valid.",
+                    "vm.rename"));
             return RenderReconciliationResult(jobRuntime.Reconcile(jobId, assessment));
         }
 
@@ -145,7 +146,8 @@ internal sealed partial class DesktopNodeApiJobReconciliationHandler
                 ReconciliationRequiredError(
                     jobId,
                     "readback-unavailable",
-                    $"Provider vm.list readback failed with {providerCode}; no mutation was attempted."));
+                    $"Provider vm.list readback failed with {providerCode}; no mutation was attempted.",
+                    "vm.rename"));
             return RenderReconciliationResult(jobRuntime.Reconcile(jobId, assessment));
         }
 
@@ -198,7 +200,8 @@ internal sealed partial class DesktopNodeApiJobReconciliationHandler
             ReconciliationRequiredError(
                 jobId,
                 classification,
-                "Provider readback did not prove a unique renamed VM with the captured pre-state fingerprint."));
+                "Provider readback did not prove a unique renamed VM with the captured pre-state fingerprint.",
+                "vm.rename"));
         return RenderReconciliationResult(jobRuntime.Reconcile(jobId, requiredAssessment));
     }
 
@@ -371,6 +374,7 @@ internal sealed partial class DesktopNodeApiJobReconciliationHandler
     {
         var mutation = operation switch
         {
+            "vm.rename" => "rename",
             "vm.delete" => "delete",
             "vm.create" => "create",
             "vm.shutdown" => "shutdown",
@@ -396,7 +400,7 @@ internal sealed partial class DesktopNodeApiJobReconciliationHandler
             "checkpoint.create" => "checkpoint create",
             "checkpoint.restore" => "checkpoint restore",
             "checkpoint.delete" => "checkpoint delete",
-            _ => "rename"
+            _ => "mutation"
         };
         return new DesktopNodeJobRuntimeError(
             "PCV_JOB_RECONCILIATION_REQUIRED",

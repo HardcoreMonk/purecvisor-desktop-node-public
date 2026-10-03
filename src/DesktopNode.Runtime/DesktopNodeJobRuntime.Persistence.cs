@@ -244,7 +244,7 @@ public sealed partial class DesktopNodeJobRuntime
         string detail,
         string? operation = null)
     {
-        var mutation = operation is not null && ReconcilableMutations.TryGetValue(operation, out var name) ? name : "rename";
+        var mutation = operation is not null && ReconcilableMutations.TryGetValue(operation, out var name) ? name : "mutation";
         return new DesktopNodeJobRuntimeError(
             "PCV_JOB_RECONCILIATION_REQUIRED",
             $"Job '{jobId}' requires operator reconciliation.",
