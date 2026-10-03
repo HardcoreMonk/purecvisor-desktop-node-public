@@ -11,7 +11,7 @@
   ],
   "mutation_allowed": false,
   "current_write_allowed": false,
-  "next_step": "Run Task 4 (feature evidence ledger model extension decision) from docs/superpowers/plans/2026-10-03-purecvisor-desktop-node-post-04286-backlog.md, then Tasks 5-6 in order.",
+  "next_step": "Run Task 5 (repository hygiene) from docs/superpowers/plans/2026-10-03-purecvisor-desktop-node-post-04286-backlog.md, then Task 6.",
   "plan": "docs/superpowers/plans/2026-10-03-purecvisor-desktop-node-post-04286-backlog.md",
   "task_queue": [
     "Task 1",
@@ -21,11 +21,12 @@
     "Task 5",
     "Task 6"
   ],
-  "next_task": "Task 4",
+  "next_task": "Task 5",
   "completed_tasks": [
     "Task 1",
     "Task 2",
-    "Task 3"
+    "Task 3",
+    "Task 4"
   ],
   "commit_policy": "local-commit-per-task",
   "push_allowed": true,

@@ -71,11 +71,13 @@
 
 **수정:** 결정 기록, `config/desktop-node-feature-evidence-ledger.json`과 schema, `docs/FEATURE_IMPLEMENTATION_LEDGER.md`, 관련 테스트
 
-- [ ] 착수 시 ledger JSON을 읽는 곳(C#, PowerShell, web)을 모두 찾는다.
-- [ ] 결정: 비후보 feature에 stage별 관측 evidence를 담는 선택 필드를 더할지, `not-assessed`를 유지할지. 모든 reader가 선택 필드를 견디고 evaluator(`candidate_required`만 판단)가 그대로면 확장한다. reader 변경이 크거나 새 설계가 필요하면 결정 기록만 남기고 멈춘다.
-- [ ] 확장하면 PASS evidence가 있는 stage만 기록한다(예: `pcv.vm.clone` 0.42.77 actual-VM, `pcv.vm.media-eject` 0.42.86 actual-VM). `candidate_required`와 promotion 판정은 바꾸지 않는다.
+- [x] 착수 시 ledger JSON을 읽는 곳(C#, PowerShell, web)을 모두 찾는다.
+- [x] 결정: 비후보 feature에 stage별 관측 evidence를 담는 선택 필드를 더할지, `not-assessed`를 유지할지. 모든 reader가 선택 필드를 견디고 evaluator(`candidate_required`만 판단)가 그대로면 확장한다. reader 변경이 크거나 새 설계가 필요하면 결정 기록만 남기고 멈춘다.
+- [x] 확장하면 PASS evidence가 있는 stage만 기록한다(예: `pcv.vm.clone` 0.42.77 actual-VM, `pcv.vm.media-eject` 0.42.86 actual-VM). `candidate_required`와 promotion 판정은 바꾸지 않는다.
 
 검증: `PcvFeatureEvidencePromotion` Pester, `dotnet test src/DesktopNode.Delivery.Tests`, Verification tests, `git diff --check`.
+
+실행 기록(2026-10-03): ledger reader는 PowerShell evaluator, `D2EvidenceContractVerifier`, `ApiHandlerAdapterContractTests`(후보 `4`개 단언)이고 web은 읽지 않는다. 08-24 설계 §3.2와 ADR-0015가 evidence ledger를 P0 후보 `4`개로 고정하고, 있는 evidence는 feature가 아니라 operation 일부만 덮는다. 그래서 모델을 확장하지 않기로 결정했다(`docs/superpowers/specs/2026-10-03-purecvisor-desktop-node-feature-stage-observation-decision.md`). stage 표는 그대로 두고 `docs/FEATURE_IMPLEMENTATION_LEDGER.md`에 "비후보 actual-VM 관측 (승격 판정 밖)" 절을 더해 feature `8`개, 행 `9`개를 evidence id와 함께 적었다. 인용한 evidence `7`개는 모두 `result: PASS`와 적은 version을 다시 확인했다.
 
 ## Task 5: 저장소 위생
 

@@ -186,6 +186,24 @@ feature promotion 결정과 동일하지 않다. 현재 feature promotion은
 | `pcv.vm.media-attach` | pass | pass | pass | pass | pass | none |
 | `pcv.vm.resource-limits` | not-assessed | not-assessed | not-assessed | not-assessed | not-assessed | none |
 
+## 비후보 actual-VM 관측 (승격 판정 밖)
+
+2026-10-03 결정(`docs/superpowers/specs/2026-10-03-purecvisor-desktop-node-feature-stage-observation-decision.md`)에
+따라 feature evidence ledger 후보가 아닌 feature의 설치본 actual-VM PASS를 operation 단위로 적는다. 덮은 operation만
+주장하며, 위 stage 표와 promotion 판정은 바꾸지 않는다. evidence 경로는 `docs/ga-ready/evidence/<id>.md`다.
+
+| Feature ID | operation | 설치본 | evidence id |
+|---|---|---|---|
+| `pcv.vm.clone` | `vm.clone` | `0.42.77-admin-smoke` | `service-plan-p1-clone-actual-vm-2026-08-29-04277-r2` |
+| `pcv.checkpoint.lifecycle` | `checkpoint.schedule.set`, `checkpoint.schedule.clear` | `0.42.78-admin-smoke` | `service-plan-p2-offvm-checkpoint-schedule-actual-vm-2026-09-27-04278` |
+| `pcv.network.inventory` | `vm.device.add` | `0.42.78-admin-smoke` | `service-plan-p2-offvm-device-add-actual-vm-2026-09-27-04278-r2` |
+| `pcv.network.inventory` | `vm.network.connect` | `0.42.81-admin-smoke` (probe 운반) | `service-plan-p2-offvm-network-connect-actual-vm-2026-09-28-04281` |
+| `pcv.vm.guest-execution` | `vm.guest.file` | `0.42.82-admin-smoke` (probe 운반) | `service-plan-p1-guest-file-actual-vm-2026-09-28-04282` |
+| `pcv.vm.pause-lifecycle` | `vm.pause`, `vm.resume` | `0.42.84-admin-smoke` | `lane2-development-completion-actual-vm-2026-09-30-04284` |
+| `pcv.vm.rename` | `vm.rename` | `0.42.84-admin-smoke` | `lane2-development-completion-actual-vm-2026-09-30-04284` |
+| `pcv.vm.telemetry` | `vm.memory-stats`, `vm.cpu-stats` | `0.42.84-admin-smoke` | `lane2-development-completion-actual-vm-2026-09-30-04284` |
+| `pcv.vm.media-eject` | `vm.eject` | `0.42.86-admin-smoke` | `lane2-vm-media-eject-attach-2026-10-02-04286` |
+
 ## 현재 blocker
 
 열린 승격 blocker는 없다. Saved lifecycle의 code, package, installed, actual-VM,
@@ -204,6 +222,7 @@ manual-admin 관측은 `0.42.75-admin-smoke`에서 모두 pass다.
 - 이 문서는 public trusted signing을 증명하지 않는다.
 - 이 문서는 external stable publication을 증명하지 않는다.
 - `0.42.86-admin-smoke` operational current 상태가 28개 feature의 promotion 완료를 뜻하지 않는다.
-- `pcv.vm.clone`은 feature evidence ledger 후보가 아니어서 승격 조건에 들어가지 않는다. 0.42.77 설치본 actual-VM clone PASS(`docs/ga-ready/evidence/service-plan-p1-clone-actual-vm-2026-08-29-04277-r2.md`)는 있으나 manual-admin evidence는 없고, stage 표는 ledger 투영 규칙에 따라 `not-assessed`로 둔다. stage별 evidence를 표에 기록하려면 feature evidence ledger 모델 확장이 먼저 필요하다.
+- `pcv.vm.clone`은 feature evidence ledger 후보가 아니어서 승격 조건에 들어가지 않는다. 0.42.77 설치본 actual-VM clone PASS(`docs/ga-ready/evidence/service-plan-p1-clone-actual-vm-2026-08-29-04277-r2.md`)는 있으나 manual-admin evidence는 없고, stage 표는 ledger 투영 규칙에 따라 `not-assessed`로 둔다. 2026-10-03 결정으로 ledger 모델은 확장하지 않고, 이런 관측은 "비후보 actual-VM 관측" 절에 operation 단위로 적는다.
+- "비후보 actual-VM 관측" 절은 promotion 판정, current-evidence, stage 표의 입력이 아니다.
 - `not-assessed`는 pass도 fail도 아니며, 실제 VM 또는 manual-admin evidence를 추정하지 않는다.
 - 이 문서 생성 과정에서 host, VM, service, package mutation을 수행하지 않았다.
