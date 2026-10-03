@@ -65,7 +65,9 @@ Lane 3 승격은 하지 않는다.
 
 ## Task 2d: Burn (Lane 2)
 
-- [ ] 제품 Update로 `0.42.88`에 맞추고 Burn lifecycle runner를 실행한다.
+- [x] 제품 Update로 `0.42.88`에 맞추고 Burn lifecycle runner를 실행한다.
+
+실행 기록(2026-10-03): 제품 Update로 `0.42.88`에 맞추고 15초 기다린 뒤 실행했다. 첫 실행 명령은 와일드카드 이동·삭제 단계가 도구에서 막혀 아무것도 실행되지 않았고(설치본 `0.42.87` 그대로 확인), 그 단계를 뺀 명령으로 다시 실행했다. build, install, repair, remove, 복구 모두 exit `0`(`31`초). 최종 ARP `0.42.88` `{5B28DA82-…}` 1개, Host `+ff62e59`, Running/Automatic, Web `200`. evidence `burn-bootstrapper-lifecycle-smoke-2026-10-03-04288`.
 
 ## Task 2e: MSIX (Lane 2)
 
