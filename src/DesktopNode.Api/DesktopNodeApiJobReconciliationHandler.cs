@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using DesktopNode.Runtime;
@@ -7,20 +8,26 @@ namespace DesktopNode.Api;
 // 조정 경로와 baseline 캡처는 같은 스키마 상수와 fingerprint 를
 // 공유하므로 한 소유자가 갖는다. Build*Parameters 는 큐 등록 시점에 provider readback 으로
 // baseline 을 캡처하므로 mutation 경로가 이 소유자를 소비한다 - 방향은 한쪽뿐이다.
-internal sealed class DesktopNodeApiJobReconciliationHandler
+internal sealed partial class DesktopNodeApiJobReconciliationHandler
 {
     private readonly DesktopNodeJobRuntime jobRuntime;
     private readonly DesktopNodeApiHyperVOperationInvoker operationInvoker;
     private readonly DesktopNodeApiHardeningOptions hardeningOptions;
+    private readonly DesktopNodeNoVncTargetStore noVncTargetStore;
+    private readonly DesktopNodeCheckpointScheduleStore checkpointScheduleStore;
 
     public DesktopNodeApiJobReconciliationHandler(
         DesktopNodeJobRuntime jobRuntime,
         DesktopNodeApiHyperVOperationInvoker operationInvoker,
-        DesktopNodeApiHardeningOptions hardeningOptions)
+        DesktopNodeApiHardeningOptions hardeningOptions,
+        DesktopNodeNoVncTargetStore noVncTargetStore,
+        DesktopNodeCheckpointScheduleStore checkpointScheduleStore)
     {
         this.jobRuntime = jobRuntime;
         this.operationInvoker = operationInvoker;
         this.hardeningOptions = hardeningOptions;
+        this.noVncTargetStore = noVncTargetStore;
+        this.checkpointScheduleStore = checkpointScheduleStore;
     }
 
     public DesktopNodeApiResponse? TryHandle(string method, string normalizedPath, CancellationToken cancellationToken)
@@ -37,6 +44,11 @@ internal sealed class DesktopNodeApiJobReconciliationHandler
     private const string VmDeleteReconciliationSchema = "pcv-vm-delete-reconciliation/v1";
     private const string CheckpointCreateReconciliationSchema = "pcv-checkpoint-create-reconciliation/v1";
     private const string CheckpointRestoreReconciliationSchema = "pcv-checkpoint-restore-reconciliation/v1";
+    private const string VmCreateReconciliationSchema = "pcv-vm-create-reconciliation/v1";
+    private const string VmShutdownReconciliationSchema = "pcv-vm-shutdown-reconciliation/v1";
+    private const string VmRestartReconciliationSchema = "pcv-vm-restart-reconciliation/v1";
+    private const string VmQosStorageReconciliationSchema = "pcv-vm-qos-storage-reconciliation/v1";
+    private const string VmQosNetworkReconciliationSchema = "pcv-vm-qos-network-reconciliation/v1";
 
     private DesktopNodeApiResponse HandleJobReconcile(
         string jobId,
@@ -61,30 +73,33 @@ internal sealed class DesktopNodeApiJobReconciliationHandler
         }
 
         var job = current.Job;
-        if (string.Equals(job.Operation, "vm.delete", StringComparison.Ordinal) &&
-            string.Equals(job.Status, "failed", StringComparison.Ordinal) &&
-            string.Equals(job.Error?.Code, "PCV_JOB_INTERRUPTED", StringComparison.Ordinal))
+        var interrupted = string.Equals(job.Status, "failed", StringComparison.Ordinal) &&
+            string.Equals(job.Error?.Code, "PCV_JOB_INTERRUPTED", StringComparison.Ordinal);
+        DesktopNodeApiResponse? dispatched = !interrupted ? null : job.Operation switch
         {
-            return ReconcileVmDeleteJob(job, cancellationToken);
+            "vm.delete" => ReconcileVmDeleteJob(job, cancellationToken),
+            "checkpoint.create" => ReconcileCheckpointCreateJob(job, cancellationToken),
+            "checkpoint.restore" => ReconcileCheckpointRestoreJob(job, cancellationToken),
+            "checkpoint.delete" => ReconcileCheckpointDeleteJob(job, cancellationToken),
+            "vm.create" => ReconcileVmCreateJob(job, cancellationToken),
+            "vm.shutdown" => ReconcileVmShutdownJob(job, cancellationToken),
+            "vm.restart" => ReconcileVmRestartJob(job, cancellationToken),
+            "vm.qos.storage.set" or "vm.qos.network.set" => ReconcileVmQosJob(job, cancellationToken),
+            "console.novnc-target.set" or "console.novnc-target.clear" => ReconcileNoVncTargetJob(job),
+            "checkpoint.schedule.set" or "checkpoint.schedule.clear" => ReconcileCheckpointScheduleJob(job),
+            var operation when ExpectedPowerState(operation) is not null => ReconcileVmPowerStateJob(job, cancellationToken),
+            var operation when ResourceValueProperty(operation) is not null => ReconcileVmResourceJob(job, cancellationToken),
+            "vm.template.lock" => ReconcileVmTemplateLockJob(job, cancellationToken),
+            "vm.network.connect" or "vm.manage" => ReconcileVmReadbackJob(job, cancellationToken),
+            "vm.attach" or "vm.eject" => ReconcileVmMediaJob(job, cancellationToken),
+            _ => null
+        };
+        if (dispatched is not null)
+        {
+            return dispatched;
         }
 
-        if (string.Equals(job.Operation, "checkpoint.create", StringComparison.Ordinal) &&
-            string.Equals(job.Status, "failed", StringComparison.Ordinal) &&
-            string.Equals(job.Error?.Code, "PCV_JOB_INTERRUPTED", StringComparison.Ordinal))
-        {
-            return ReconcileCheckpointCreateJob(job, cancellationToken);
-        }
-
-        if (string.Equals(job.Operation, "checkpoint.restore", StringComparison.Ordinal) &&
-            string.Equals(job.Status, "failed", StringComparison.Ordinal) &&
-            string.Equals(job.Error?.Code, "PCV_JOB_INTERRUPTED", StringComparison.Ordinal))
-        {
-            return ReconcileCheckpointRestoreJob(job, cancellationToken);
-        }
-
-        if (!string.Equals(job.Operation, "vm.rename", StringComparison.Ordinal) ||
-            !string.Equals(job.Status, "failed", StringComparison.Ordinal) ||
-            !string.Equals(job.Error?.Code, "PCV_JOB_INTERRUPTED", StringComparison.Ordinal))
+        if (!interrupted || !string.Equals(job.Operation, "vm.rename", StringComparison.Ordinal))
         {
             var assessment = new DesktopNodeJobReconciliationAssessment(
                 false,
@@ -93,7 +108,9 @@ internal sealed class DesktopNodeApiJobReconciliationHandler
                 ReconciliationRequiredError(
                     jobId,
                     "job-not-reconcilable",
-                    "Only a failed vm.rename, vm.delete, checkpoint.create, or checkpoint.restore job with PCV_JOB_INTERRUPTED can be reconciled.",
+                    ReconcileNonTargets.TryGetValue(job.Operation, out var nonTargetReason)
+                        ? $"{job.Operation} is not a reconcile target: {nonTargetReason}"
+                        : $"Only a failed {string.Join(", ", DesktopNodeJobRuntime.ReconcilableMutations.Keys)} job with PCV_JOB_INTERRUPTED can be reconciled.",
                     job.Operation));
             return RenderReconciliationResult(jobRuntime.Reconcile(jobId, assessment));
         }
@@ -185,289 +202,155 @@ internal sealed class DesktopNodeApiJobReconciliationHandler
         return RenderReconciliationResult(jobRuntime.Reconcile(jobId, requiredAssessment));
     }
 
-    private DesktopNodeApiResponse ReconcileVmDeleteJob(
-        DesktopNodeJobSnapshot job,
-        CancellationToken cancellationToken)
+    private DesktopNodeApiResponse ReconcileNoVncTargetJob(DesktopNodeJobSnapshot job)
     {
         var jobId = job.JobId;
-        var vmName = DesktopNodeApiJsonReader.ReadString(job.Parameters, "name");
+        var operation = job.Operation;
         var metadata = DesktopNodeApiJsonReader.ReadElement(job.Parameters, "reconciliation");
-        if (string.IsNullOrWhiteSpace(vmName) ||
-            !TryReadCapturedDeleteBaseline(metadata, out var baseline))
+        if (metadata is null ||
+            metadata.Value.ValueKind != JsonValueKind.Object ||
+            !string.Equals(DesktopNodeApiJsonReader.ReadString(metadata.Value, "schema"), DesktopNodeNoVncTargetStore.ReconciliationSchema, StringComparison.Ordinal) ||
+            !string.Equals(DesktopNodeApiJsonReader.ReadString(metadata.Value, "capture_status"), "captured", StringComparison.Ordinal))
         {
-            var assessment = new DesktopNodeJobReconciliationAssessment(
-                false,
-                "baseline-unavailable",
-                null,
-                ReconciliationRequiredError(
-                    jobId,
+            return RenderReconciliationResult(jobRuntime.Reconcile(
+                jobId,
+                new DesktopNodeJobReconciliationAssessment(
+                    false,
                     "baseline-unavailable",
-                    "The durable vm.delete baseline was not captured or is not structurally valid.",
-                    "vm.delete"));
-            return RenderReconciliationResult(jobRuntime.Reconcile(jobId, assessment));
+                    null,
+                    ReconciliationRequiredError(
+                        jobId,
+                        "baseline-unavailable",
+                        $"The durable {operation} baseline was not captured or is not structurally valid.",
+                        operation))));
         }
 
-        using var readbackTimeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        readbackTimeout.CancelAfter(TimeSpan.FromSeconds(Math.Max(1, hardeningOptions.RouteTimeoutSeconds)));
-        var readback = operationInvoker.Invoke("vm.list", DesktopNodeApiResponseFactory.EmptyObject(), readbackTimeout.Token);
-        if (!readback.Ok || readback.Data is null)
+        var expectedAfter = DesktopNodeApiJsonReader.ReadElement(metadata.Value, "expected_after");
+        var before = DesktopNodeApiJsonReader.ReadElement(metadata.Value, "before");
+        if (expectedAfter is null || before is null)
         {
-            var providerCode = readback.Error?.Code ?? "PCV_VM_LIST_FAILED";
-            var assessment = new DesktopNodeJobReconciliationAssessment(
-                false,
-                "readback-unavailable",
-                null,
-                ReconciliationRequiredError(
-                    jobId,
-                    "readback-unavailable",
-                    $"Provider vm.list readback failed with {providerCode}; no mutation was attempted.",
-                    "vm.delete"));
-            return RenderReconciliationResult(jobRuntime.Reconcile(jobId, assessment));
+            return RenderReconciliationResult(jobRuntime.Reconcile(
+                jobId,
+                new DesktopNodeJobReconciliationAssessment(
+                    false,
+                    "baseline-unavailable",
+                    null,
+                    ReconciliationRequiredError(
+                        jobId,
+                        "baseline-unavailable",
+                        $"The durable {operation} baseline was not captured or is not structurally valid.",
+                        operation))));
         }
 
-        var matching = DesktopNodeApiJsonReader.EnumerateVmList(readback.Data.Value)
-            .Where(vm => string.Equals(DesktopNodeApiJsonReader.GetStringProperty(vm, "name"), vmName, StringComparison.OrdinalIgnoreCase))
-            .ToArray();
-
-        if (matching.Length == 0)
+        if (noVncTargetStore.MatchesExpected(expectedAfter.Value))
         {
+            noVncTargetStore.TryReadCurrent(out var observed);
             var result = DesktopNodeApiResponseFactory.JsonFromObject(new SortedDictionary<string, object?>
             {
                 ["action"] = "reconciled",
-                ["operation"] = "vm.delete",
+                ["operation"] = operation,
                 ["reconciliation"] = new SortedDictionary<string, object?>
                 {
-                    ["schema"] = baseline.Schema,
+                    ["schema"] = DesktopNodeNoVncTargetStore.ReconciliationSchema,
                     ["classification"] = "postcondition-confirmed",
-                    ["before"] = baseline.Before,
-                    ["expected_after"] = new SortedDictionary<string, object?>
-                    {
-                        ["name"] = vmName,
-                        ["state"] = "absent"
-                    },
-                    ["observed"] = new SortedDictionary<string, object?>
-                    {
-                        ["name"] = vmName,
-                        ["state"] = "absent"
-                    }
+                    ["before"] = before.Value,
+                    ["expected_after"] = expectedAfter.Value,
+                    ["observed"] = observed
                 }
             });
             return RenderReconciliationResult(jobRuntime.Reconcile(
                 jobId,
-                new DesktopNodeJobReconciliationAssessment(
-                    true,
-                    "postcondition-confirmed",
-                    result)));
+                new DesktopNodeJobReconciliationAssessment(true, "postcondition-confirmed", result)));
         }
 
-        var beforeId = DesktopNodeApiJsonReader.ReadString(baseline.Before, "id");
-        var classification = matching.Length > 1
-            ? "ambiguous-multiple-targets"
-            : string.Equals(beforeId, DesktopNodeApiJsonReader.GetStringProperty(matching[0], "id"), StringComparison.Ordinal) &&
-                IsManagedVm(matching[0])
-                ? "not-applied"
-                : IsManagedVm(matching[0])
-                    ? "target-recreated-or-identity-changed"
-                    : "target-name-collision-unmanaged";
-        var requiredAssessment = new DesktopNodeJobReconciliationAssessment(
-            false,
-            classification,
-            null,
-            ReconciliationRequiredError(
-                jobId,
+        var classification = noVncTargetStore.MatchesBefore(before.Value) ? "not-applied" : "partial-policy";
+        return RenderReconciliationResult(jobRuntime.Reconcile(
+            jobId,
+            new DesktopNodeJobReconciliationAssessment(
+                false,
                 classification,
-                "Provider readback still contains the delete target or an ambiguous name collision; absence was not proven.",
-                "vm.delete"));
-        return RenderReconciliationResult(jobRuntime.Reconcile(jobId, requiredAssessment));
+                null,
+                ReconciliationRequiredError(
+                    jobId,
+                    classification,
+                    $"The noVNC target file did not prove the captured {operation} postcondition.",
+                    operation))));
     }
 
-    private DesktopNodeApiResponse ReconcileCheckpointCreateJob(
-        DesktopNodeJobSnapshot job,
-        CancellationToken cancellationToken)
+    private DesktopNodeApiResponse ReconcileCheckpointScheduleJob(DesktopNodeJobSnapshot job)
     {
         var jobId = job.JobId;
-        var vmName = DesktopNodeApiJsonReader.ReadString(job.Parameters, "vm_name");
-        var checkpointName = DesktopNodeApiJsonReader.ReadString(job.Parameters, "checkpoint_name");
+        var operation = job.Operation;
+        var vmName = DesktopNodeApiJsonReader.ReadString(job.Parameters, "vm_name") ?? string.Empty;
         var metadata = DesktopNodeApiJsonReader.ReadElement(job.Parameters, "reconciliation");
-        if (string.IsNullOrWhiteSpace(vmName) ||
-            string.IsNullOrWhiteSpace(checkpointName) ||
-            !TryReadCapturedCheckpointCreateBaseline(metadata, vmName, checkpointName, out var baseline))
+        if (metadata is null ||
+            metadata.Value.ValueKind != JsonValueKind.Object ||
+            !string.Equals(DesktopNodeApiJsonReader.ReadString(metadata.Value, "schema"), DesktopNodeCheckpointScheduleStore.ReconciliationSchema, StringComparison.Ordinal) ||
+            !string.Equals(DesktopNodeApiJsonReader.ReadString(metadata.Value, "capture_status"), "captured", StringComparison.Ordinal))
         {
-            var assessment = new DesktopNodeJobReconciliationAssessment(
-                false,
-                "baseline-unavailable",
-                null,
-                ReconciliationRequiredError(
-                    jobId,
+            return RenderReconciliationResult(jobRuntime.Reconcile(
+                jobId,
+                new DesktopNodeJobReconciliationAssessment(
+                    false,
                     "baseline-unavailable",
-                    "The durable checkpoint.create baseline was not captured or is not structurally valid.",
-                    "checkpoint.create"));
-            return RenderReconciliationResult(jobRuntime.Reconcile(jobId, assessment));
+                    null,
+                    ReconciliationRequiredError(
+                        jobId,
+                        "baseline-unavailable",
+                        $"The durable {operation} baseline was not captured or is not structurally valid.",
+                        operation))));
         }
 
-        using var readbackTimeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        readbackTimeout.CancelAfter(TimeSpan.FromSeconds(Math.Max(1, hardeningOptions.RouteTimeoutSeconds)));
-        var readback = operationInvoker.Invoke(
-            "checkpoint.list",
-            DesktopNodeApiResponseFactory.JsonFromObject(new SortedDictionary<string, object?> { ["vm_name"] = vmName }),
-            readbackTimeout.Token);
-        if (!readback.Ok || readback.Data is null)
+        var expectedAfter = DesktopNodeApiJsonReader.ReadElement(metadata.Value, "expected_after");
+        var before = DesktopNodeApiJsonReader.ReadElement(metadata.Value, "before");
+        if (expectedAfter is null || before is null)
         {
-            var providerCode = readback.Error?.Code ?? "PCV_CHECKPOINT_LIST_FAILED";
-            var assessment = new DesktopNodeJobReconciliationAssessment(
-                false,
-                "readback-unavailable",
-                null,
-                ReconciliationRequiredError(
-                    jobId,
-                    "readback-unavailable",
-                    $"Provider checkpoint.list readback failed with {providerCode}; no mutation was attempted.",
-                    "checkpoint.create"));
-            return RenderReconciliationResult(jobRuntime.Reconcile(jobId, assessment));
+            return RenderReconciliationResult(jobRuntime.Reconcile(
+                jobId,
+                new DesktopNodeJobReconciliationAssessment(
+                    false,
+                    "baseline-unavailable",
+                    null,
+                    ReconciliationRequiredError(
+                        jobId,
+                        "baseline-unavailable",
+                        $"The durable {operation} baseline was not captured or is not structurally valid.",
+                        operation))));
         }
 
-        var matching = DesktopNodeApiJsonReader.EnumerateCheckpointList(readback.Data.Value)
-            .Where(checkpoint =>
-                string.Equals(DesktopNodeApiJsonReader.GetStringProperty(checkpoint, "name"), checkpointName, StringComparison.OrdinalIgnoreCase) &&
-                string.Equals(DesktopNodeApiJsonReader.GetStringProperty(checkpoint, "vm_name"), vmName, StringComparison.OrdinalIgnoreCase))
-            .ToArray();
-
-        if (matching.Length == 1)
+        if (checkpointScheduleStore.MatchesExpected(vmName, expectedAfter.Value))
         {
+            checkpointScheduleStore.TryReadCurrent(vmName, out var observed);
             var result = DesktopNodeApiResponseFactory.JsonFromObject(new SortedDictionary<string, object?>
             {
                 ["action"] = "reconciled",
-                ["operation"] = "checkpoint.create",
+                ["operation"] = operation,
                 ["reconciliation"] = new SortedDictionary<string, object?>
                 {
-                    ["schema"] = baseline.Schema,
+                    ["schema"] = DesktopNodeCheckpointScheduleStore.ReconciliationSchema,
                     ["classification"] = "postcondition-confirmed",
-                    ["before"] = baseline.Before,
-                    ["expected_before"] = new SortedDictionary<string, object?>
-                    {
-                        ["state"] = "absent",
-                        ["name"] = checkpointName,
-                        ["vm_name"] = vmName
-                    },
-                    ["expected_after"] = new SortedDictionary<string, object?>
-                    {
-                        ["state"] = "present",
-                        ["name"] = checkpointName,
-                        ["vm_name"] = vmName
-                    },
-                    ["observed"] = matching[0]
+                    ["before"] = before.Value,
+                    ["expected_after"] = expectedAfter.Value,
+                    ["observed"] = observed
                 }
             });
             return RenderReconciliationResult(jobRuntime.Reconcile(
                 jobId,
-                new DesktopNodeJobReconciliationAssessment(
-                    true,
-                    "postcondition-confirmed",
-                    result)));
+                new DesktopNodeJobReconciliationAssessment(true, "postcondition-confirmed", result)));
         }
 
-        var classification = matching.Length == 0
-            ? "not-applied"
-            : "ambiguous-duplicate-checkpoint-names";
-        var requiredAssessment = new DesktopNodeJobReconciliationAssessment(
-            false,
-            classification,
-            null,
-            ReconciliationRequiredError(
-                jobId,
-                classification,
-                "Provider checkpoint.list readback did not prove exactly one checkpoint with the captured absent pre-state.",
-                "checkpoint.create"));
-        return RenderReconciliationResult(jobRuntime.Reconcile(jobId, requiredAssessment));
-    }
-
-    private DesktopNodeApiResponse ReconcileCheckpointRestoreJob(
-        DesktopNodeJobSnapshot job,
-        CancellationToken cancellationToken)
-    {
-        var jobId = job.JobId;
-        var vmName = DesktopNodeApiJsonReader.ReadString(job.Parameters, "vm_name");
-        var checkpointName = DesktopNodeApiJsonReader.ReadString(job.Parameters, "checkpoint_name");
-        var metadata = DesktopNodeApiJsonReader.ReadElement(job.Parameters, "reconciliation");
-        if (string.IsNullOrWhiteSpace(vmName) ||
-            string.IsNullOrWhiteSpace(checkpointName) ||
-            !TryReadCapturedCheckpointRestoreBaseline(metadata, vmName, checkpointName, out var baseline))
-        {
-            var assessment = new DesktopNodeJobReconciliationAssessment(
+        var classification = checkpointScheduleStore.MatchesBefore(vmName, before.Value) ? "not-applied" : "partial-policy";
+        return RenderReconciliationResult(jobRuntime.Reconcile(
+            jobId,
+            new DesktopNodeJobReconciliationAssessment(
                 false,
-                "baseline-unavailable",
+                classification,
                 null,
                 ReconciliationRequiredError(
                     jobId,
-                    "baseline-unavailable",
-                    "The durable checkpoint.restore baseline was not captured or is not structurally valid.",
-                    "checkpoint.restore"));
-            return RenderReconciliationResult(jobRuntime.Reconcile(jobId, assessment));
-        }
-
-        using var readbackTimeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        readbackTimeout.CancelAfter(TimeSpan.FromSeconds(Math.Max(1, hardeningOptions.RouteTimeoutSeconds)));
-        var readback = operationInvoker.Invoke(
-            "checkpoint.list",
-            DesktopNodeApiResponseFactory.JsonFromObject(new SortedDictionary<string, object?> { ["vm_name"] = vmName }),
-            readbackTimeout.Token);
-        if (!readback.Ok || readback.Data is null)
-        {
-            var providerCode = readback.Error?.Code ?? "PCV_CHECKPOINT_LIST_FAILED";
-            var assessment = new DesktopNodeJobReconciliationAssessment(
-                false,
-                "readback-unavailable",
-                null,
-                ReconciliationRequiredError(
-                    jobId,
-                    "readback-unavailable",
-                    $"Provider checkpoint.list readback failed with {providerCode}; no mutation was attempted.",
-                    "checkpoint.restore"));
-            return RenderReconciliationResult(jobRuntime.Reconcile(jobId, assessment));
-        }
-
-        var matching = MatchingCheckpoints(readback.Data.Value, vmName, checkpointName);
-        var currentTrue = CurrentTrueCheckpoints(readback.Data.Value);
-        if (matching.Length == 1 && currentTrue.Length == 1 && ReadIsCurrent(matching[0]) == true)
-        {
-            var result = DesktopNodeApiResponseFactory.JsonFromObject(new SortedDictionary<string, object?>
-            {
-                ["action"] = "reconciled",
-                ["operation"] = "checkpoint.restore",
-                ["reconciliation"] = new SortedDictionary<string, object?>
-                {
-                    ["schema"] = baseline.Schema,
-                    ["classification"] = "postcondition-confirmed",
-                    ["before"] = baseline.Before,
-                    ["expected_after"] = baseline.ExpectedAfter,
-                    ["observed"] = matching[0]
-                }
-            });
-            return RenderReconciliationResult(jobRuntime.Reconcile(
-                jobId,
-                new DesktopNodeJobReconciliationAssessment(
-                    true,
-                    "postcondition-confirmed",
-                    result)));
-        }
-
-        var classification = matching.Length == 0
-            ? "not-applied"
-            : matching.Length > 1
-                ? "ambiguous-duplicate-checkpoint-names"
-                : ReadIsCurrent(matching[0]) == false
-                    ? "not-applied"
-                    : "current-unavailable";
-        var requiredAssessment = new DesktopNodeJobReconciliationAssessment(
-            false,
-            classification,
-            null,
-            ReconciliationRequiredError(
-                jobId,
-                classification,
-                "Provider checkpoint.list readback did not prove the requested checkpoint is uniquely current.",
-                "checkpoint.restore"));
-        return RenderReconciliationResult(jobRuntime.Reconcile(jobId, requiredAssessment));
+                    classification,
+                    $"The checkpoint schedule file did not prove the captured {operation} postcondition.",
+                    operation))));
     }
 
     private DesktopNodeApiResponse RenderReconciliationResult(DesktopNodeJobReconciliationResult result)
@@ -489,8 +372,30 @@ internal sealed class DesktopNodeApiJobReconciliationHandler
         var mutation = operation switch
         {
             "vm.delete" => "delete",
+            "vm.create" => "create",
+            "vm.shutdown" => "shutdown",
+            "vm.restart" => "restart",
+            "vm.start" => "start",
+            "vm.poweroff" => "power off",
+            "vm.pause" => "pause",
+            "vm.resume" => "resume",
+            "vm.save" => "save",
+            "vm.resume-saved" => "resume from saved",
+            "vm.set-memory" or "vm.set-vcpu" or "vm.disk-resize" => "resource change",
+            "vm.template.lock" => "template lock",
+            "vm.network.connect" => "network connect",
+            "vm.manage" => "manage",
+            "vm.attach" => "media attach",
+            "vm.eject" => "media eject",
+            "vm.qos.storage.set" => "storage QoS",
+            "vm.qos.network.set" => "network QoS",
+            "console.novnc-target.set" => "noVNC target",
+            "console.novnc-target.clear" => "noVNC clear",
+            "checkpoint.schedule.set" => "checkpoint schedule",
+            "checkpoint.schedule.clear" => "checkpoint schedule clear",
             "checkpoint.create" => "checkpoint create",
             "checkpoint.restore" => "checkpoint restore",
+            "checkpoint.delete" => "checkpoint delete",
             _ => "rename"
         };
         return new DesktopNodeJobRuntimeError(
@@ -555,385 +460,82 @@ internal sealed class DesktopNodeApiJobReconciliationHandler
         });
     }
 
-    private JsonElement CaptureVmRenameBaseline(
-        string oldName,
-        string newName,
-        CancellationToken cancellationToken)
+    public JsonElement BuildVmCreateParameters(JsonElement body, CancellationToken cancellationToken)
     {
-        try
+        var name = DesktopNodeApiJsonReader.GetStringProperty(body, "name") ?? string.Empty;
+        var generation = 2;
+        if (body.ValueKind == JsonValueKind.Object &&
+            body.TryGetProperty("generation", out var generationElement) &&
+            generationElement.TryGetInt32(out var parsedGeneration))
         {
-            using var readbackTimeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            readbackTimeout.CancelAfter(TimeSpan.FromSeconds(Math.Max(1, hardeningOptions.RouteTimeoutSeconds)));
-            var readback = operationInvoker.Invoke("vm.list", DesktopNodeApiResponseFactory.EmptyObject(), readbackTimeout.Token);
-            if (!readback.Ok || readback.Data is null)
-            {
-                return DesktopNodeApiResponseFactory.JsonFromObject(new SortedDictionary<string, object?>
-                {
-                    ["schema"] = VmRenameReconciliationSchema,
-                    ["capture_status"] = "unavailable",
-                    ["capture_error_code"] = readback.Error?.Code ?? "PCV_VM_LIST_FAILED",
-                    ["before"] = null,
-                    ["before_fingerprint"] = null,
-                    ["expected_after"] = new SortedDictionary<string, object?> { ["name"] = newName }
-                });
-            }
-
-            var matches = DesktopNodeApiJsonReader.EnumerateVmList(readback.Data.Value)
-                .Where(vm => string.Equals(DesktopNodeApiJsonReader.GetStringProperty(vm, "name"), oldName, StringComparison.OrdinalIgnoreCase))
-                .ToArray();
-            if (matches.Length != 1)
-            {
-                return DesktopNodeApiResponseFactory.JsonFromObject(new SortedDictionary<string, object?>
-                {
-                    ["schema"] = VmRenameReconciliationSchema,
-                    ["capture_status"] = "unavailable",
-                    ["capture_error_code"] = matches.Length == 0 ? "PCV_VM_NOT_FOUND" : "PCV_VM_IDENTITY_AMBIGUOUS",
-                    ["before"] = null,
-                    ["before_fingerprint"] = null,
-                    ["expected_after"] = new SortedDictionary<string, object?> { ["name"] = newName }
-                });
-            }
-
-            var before = matches[0].Clone();
-            return DesktopNodeApiResponseFactory.JsonFromObject(new SortedDictionary<string, object?>
-            {
-                ["schema"] = VmRenameReconciliationSchema,
-                ["capture_status"] = "captured",
-                ["before"] = before,
-                ["before_fingerprint"] = BuildVmRenameFingerprint(before),
-                ["expected_after"] = new SortedDictionary<string, object?> { ["name"] = newName }
-            });
+            generation = parsedGeneration;
         }
-        catch (Exception)
-        {
-            return DesktopNodeApiResponseFactory.JsonFromObject(new SortedDictionary<string, object?>
-            {
-                ["schema"] = VmRenameReconciliationSchema,
-                ["capture_status"] = "unavailable",
-                ["capture_error_code"] = "PCV_VM_LIST_FAILED",
-                ["before"] = null,
-                ["before_fingerprint"] = null,
-                ["expected_after"] = new SortedDictionary<string, object?> { ["name"] = newName }
-            });
-        }
+
+        var payload = body.ValueKind == JsonValueKind.Object
+            ? JsonNode.Parse(body.GetRawText()) as JsonObject ?? new JsonObject()
+            : new JsonObject();
+        payload["reconciliation"] = JsonNode.Parse(
+            CaptureVmCreateBaseline(name, generation, cancellationToken).GetRawText());
+        using var document = JsonDocument.Parse(payload.ToJsonString());
+        return document.RootElement.Clone();
     }
 
-    private JsonElement CaptureVmDeleteBaseline(
-        string vmName,
-        CancellationToken cancellationToken)
+    public JsonElement BuildVmShutdownParameters(string vmName, CancellationToken cancellationToken)
     {
-        try
-        {
-            using var readbackTimeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            readbackTimeout.CancelAfter(TimeSpan.FromSeconds(Math.Max(1, hardeningOptions.RouteTimeoutSeconds)));
-            var readback = operationInvoker.Invoke("vm.list", DesktopNodeApiResponseFactory.EmptyObject(), readbackTimeout.Token);
-            if (!readback.Ok || readback.Data is null)
-            {
-                return DesktopNodeApiResponseFactory.JsonFromObject(new SortedDictionary<string, object?>
-                {
-                    ["schema"] = VmDeleteReconciliationSchema,
-                    ["capture_status"] = "unavailable",
-                    ["capture_error_code"] = readback.Error?.Code ?? "PCV_VM_LIST_FAILED",
-                    ["before"] = null,
-                    ["before_fingerprint"] = null,
-                    ["expected_after"] = new SortedDictionary<string, object?>
-                    {
-                        ["name"] = vmName,
-                        ["state"] = "absent"
-                    }
-                });
-            }
-
-            var matches = DesktopNodeApiJsonReader.EnumerateVmList(readback.Data.Value)
-                .Where(vm => string.Equals(DesktopNodeApiJsonReader.GetStringProperty(vm, "name"), vmName, StringComparison.OrdinalIgnoreCase))
-                .ToArray();
-            if (matches.Length != 1)
-            {
-                return DesktopNodeApiResponseFactory.JsonFromObject(new SortedDictionary<string, object?>
-                {
-                    ["schema"] = VmDeleteReconciliationSchema,
-                    ["capture_status"] = "unavailable",
-                    ["capture_error_code"] = matches.Length == 0 ? "PCV_VM_NOT_FOUND" : "PCV_VM_IDENTITY_AMBIGUOUS",
-                    ["before"] = null,
-                    ["before_fingerprint"] = null,
-                    ["expected_after"] = new SortedDictionary<string, object?>
-                    {
-                        ["name"] = vmName,
-                        ["state"] = "absent"
-                    }
-                });
-            }
-
-            var before = matches[0].Clone();
-            if (!IsManagedVm(before))
-            {
-                return DesktopNodeApiResponseFactory.JsonFromObject(new SortedDictionary<string, object?>
-                {
-                    ["schema"] = VmDeleteReconciliationSchema,
-                    ["capture_status"] = "unavailable",
-                    ["capture_error_code"] = "PCV_VM_NOT_MANAGED_BY_PURECVISOR",
-                    ["before"] = null,
-                    ["before_fingerprint"] = null,
-                    ["expected_after"] = new SortedDictionary<string, object?>
-                    {
-                        ["name"] = vmName,
-                        ["state"] = "absent"
-                    }
-                });
-            }
-
-            if (string.IsNullOrWhiteSpace(DesktopNodeApiJsonReader.ReadString(before, "id")))
-            {
-                return DesktopNodeApiResponseFactory.JsonFromObject(new SortedDictionary<string, object?>
-                {
-                    ["schema"] = VmDeleteReconciliationSchema,
-                    ["capture_status"] = "unavailable",
-                    ["capture_error_code"] = "PCV_VM_IDENTITY_UNAVAILABLE",
-                    ["before"] = null,
-                    ["before_fingerprint"] = null,
-                    ["expected_after"] = new SortedDictionary<string, object?>
-                    {
-                        ["name"] = vmName,
-                        ["state"] = "absent"
-                    }
-                });
-            }
-
-            return DesktopNodeApiResponseFactory.JsonFromObject(new SortedDictionary<string, object?>
-            {
-                ["schema"] = VmDeleteReconciliationSchema,
-                ["capture_status"] = "captured",
-                ["before"] = before,
-                ["before_fingerprint"] = BuildVmDeleteFingerprint(before),
-                ["expected_after"] = new SortedDictionary<string, object?>
-                {
-                    ["name"] = vmName,
-                    ["state"] = "absent"
-                }
-            });
-        }
-        catch (Exception)
-        {
-            return DesktopNodeApiResponseFactory.JsonFromObject(new SortedDictionary<string, object?>
-            {
-                ["schema"] = VmDeleteReconciliationSchema,
-                ["capture_status"] = "unavailable",
-                ["capture_error_code"] = "PCV_VM_LIST_FAILED",
-                ["before"] = null,
-                ["before_fingerprint"] = null,
-                ["expected_after"] = new SortedDictionary<string, object?>
-                {
-                    ["name"] = vmName,
-                    ["state"] = "absent"
-                }
-            });
-        }
-    }
-
-    private JsonElement CaptureCheckpointCreateBaseline(
-        string vmName,
-        string checkpointName,
-        CancellationToken cancellationToken)
-    {
-        var expectedBefore = new SortedDictionary<string, object?>
-        {
-            ["state"] = "absent",
-            ["name"] = checkpointName,
-            ["vm_name"] = vmName
-        };
-        var expectedAfter = new SortedDictionary<string, object?>
-        {
-            ["state"] = "present",
-            ["name"] = checkpointName,
-            ["vm_name"] = vmName
-        };
-
-        try
-        {
-            using var readbackTimeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            readbackTimeout.CancelAfter(TimeSpan.FromSeconds(Math.Max(1, hardeningOptions.RouteTimeoutSeconds)));
-            var readback = operationInvoker.Invoke(
-                "checkpoint.list",
-                DesktopNodeApiResponseFactory.JsonFromObject(new SortedDictionary<string, object?> { ["vm_name"] = vmName }),
-                readbackTimeout.Token);
-            if (!readback.Ok || readback.Data is null)
-            {
-                return DesktopNodeApiResponseFactory.JsonFromObject(new SortedDictionary<string, object?>
-                {
-                    ["schema"] = CheckpointCreateReconciliationSchema,
-                    ["capture_status"] = "unavailable",
-                    ["capture_error_code"] = readback.Error?.Code ?? "PCV_CHECKPOINT_LIST_FAILED",
-                    ["before"] = null,
-                    ["expected_before"] = expectedBefore,
-                    ["expected_after"] = expectedAfter
-                });
-            }
-
-            var matching = DesktopNodeApiJsonReader.EnumerateCheckpointList(readback.Data.Value)
-                .Where(checkpoint =>
-                    string.Equals(DesktopNodeApiJsonReader.GetStringProperty(checkpoint, "name"), checkpointName, StringComparison.OrdinalIgnoreCase) &&
-                    string.Equals(DesktopNodeApiJsonReader.GetStringProperty(checkpoint, "vm_name"), vmName, StringComparison.OrdinalIgnoreCase))
-                .ToArray();
-            if (matching.Length != 0)
-            {
-                return DesktopNodeApiResponseFactory.JsonFromObject(new SortedDictionary<string, object?>
-                {
-                    ["schema"] = CheckpointCreateReconciliationSchema,
-                    ["capture_status"] = "unavailable",
-                    ["capture_error_code"] = matching.Length == 1
-                        ? "PCV_CHECKPOINT_ALREADY_EXISTS"
-                        : "PCV_CHECKPOINT_IDENTITY_AMBIGUOUS",
-                    ["before"] = matching.Length == 1 ? matching[0] : null,
-                    ["expected_before"] = expectedBefore,
-                    ["expected_after"] = expectedAfter
-                });
-            }
-
-            return DesktopNodeApiResponseFactory.JsonFromObject(new SortedDictionary<string, object?>
-            {
-                ["schema"] = CheckpointCreateReconciliationSchema,
-                ["capture_status"] = "captured",
-                ["before"] = null,
-                ["expected_before"] = expectedBefore,
-                ["expected_after"] = expectedAfter
-            });
-        }
-        catch (Exception)
-        {
-            return DesktopNodeApiResponseFactory.JsonFromObject(new SortedDictionary<string, object?>
-            {
-                ["schema"] = CheckpointCreateReconciliationSchema,
-                ["capture_status"] = "unavailable",
-                ["capture_error_code"] = "PCV_CHECKPOINT_LIST_FAILED",
-                ["before"] = null,
-                ["expected_before"] = expectedBefore,
-                ["expected_after"] = expectedAfter
-            });
-        }
-    }
-
-    private JsonElement CaptureCheckpointRestoreBaseline(
-        string vmName,
-        string checkpointName,
-        CancellationToken cancellationToken)
-    {
-        var expectedAfter = CheckpointRestoreExpectedAfter(vmName, checkpointName);
-
-        try
-        {
-            using var readbackTimeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            readbackTimeout.CancelAfter(TimeSpan.FromSeconds(Math.Max(1, hardeningOptions.RouteTimeoutSeconds)));
-            var readback = operationInvoker.Invoke(
-                "checkpoint.list",
-                DesktopNodeApiResponseFactory.JsonFromObject(new SortedDictionary<string, object?> { ["vm_name"] = vmName }),
-                readbackTimeout.Token);
-            if (!readback.Ok || readback.Data is null)
-            {
-                return UnavailableCheckpointRestoreBaseline(
-                    expectedAfter,
-                    readback.Error?.Code ?? "PCV_CHECKPOINT_LIST_FAILED");
-            }
-
-            var matching = MatchingCheckpoints(readback.Data.Value, vmName, checkpointName);
-            if (matching.Length == 0)
-            {
-                return UnavailableCheckpointRestoreBaseline(expectedAfter, "PCV_CHECKPOINT_NOT_FOUND");
-            }
-
-            if (matching.Length != 1)
-            {
-                return UnavailableCheckpointRestoreBaseline(expectedAfter, "PCV_CHECKPOINT_IDENTITY_AMBIGUOUS");
-            }
-
-            var currentTrue = CurrentTrueCheckpoints(readback.Data.Value);
-            if (currentTrue.Length != 1)
-            {
-                return UnavailableCheckpointRestoreBaseline(expectedAfter, "PCV_CHECKPOINT_CURRENT_UNAVAILABLE");
-            }
-
-            var currentName = DesktopNodeApiJsonReader.GetStringProperty(currentTrue[0], "name");
-            if (string.IsNullOrWhiteSpace(currentName))
-            {
-                return UnavailableCheckpointRestoreBaseline(expectedAfter, "PCV_CHECKPOINT_CURRENT_UNAVAILABLE");
-            }
-
-            if (string.Equals(currentName, checkpointName, StringComparison.OrdinalIgnoreCase))
-            {
-                return UnavailableCheckpointRestoreBaseline(expectedAfter, "PCV_CHECKPOINT_ALREADY_CURRENT");
-            }
-
-            return DesktopNodeApiResponseFactory.JsonFromObject(new SortedDictionary<string, object?>
-            {
-                ["schema"] = CheckpointRestoreReconciliationSchema,
-                ["capture_status"] = "captured",
-                ["before"] = new SortedDictionary<string, object?>
-                {
-                    ["current_name"] = currentName,
-                    ["vm_name"] = vmName
-                },
-                ["expected_after"] = expectedAfter
-            });
-        }
-        catch (Exception)
-        {
-            return UnavailableCheckpointRestoreBaseline(expectedAfter, "PCV_CHECKPOINT_LIST_FAILED");
-        }
-    }
-
-    private static JsonElement UnavailableCheckpointRestoreBaseline(
-        SortedDictionary<string, object?> expectedAfter,
-        string captureErrorCode)
-    {
+        var reconciliation = CaptureVmShutdownBaseline(vmName, cancellationToken);
         return DesktopNodeApiResponseFactory.JsonFromObject(new SortedDictionary<string, object?>
         {
-            ["schema"] = CheckpointRestoreReconciliationSchema,
-            ["capture_status"] = "unavailable",
-            ["capture_error_code"] = captureErrorCode,
-            ["before"] = null,
-            ["expected_after"] = expectedAfter
+            ["name"] = vmName,
+            ["reconciliation"] = reconciliation
         });
     }
 
-    private static SortedDictionary<string, object?> CheckpointRestoreExpectedAfter(string vmName, string checkpointName)
+    public JsonElement BuildVmRestartParameters(string vmName, CancellationToken cancellationToken)
     {
-        return new SortedDictionary<string, object?>
+        var reconciliation = CaptureVmRestartBaseline(vmName, cancellationToken);
+        return DesktopNodeApiResponseFactory.JsonFromObject(new SortedDictionary<string, object?>
         {
-            ["current_name"] = checkpointName,
-            ["vm_name"] = vmName,
-            ["is_current"] = true
+            ["name"] = vmName,
+            ["reconciliation"] = reconciliation
+        });
+    }
+
+    public JsonElement BuildVmQosParameters(
+        string operation,
+        string vmName,
+        string targetProperty,
+        string target,
+        string requiredValueProperty,
+        int requiredValue,
+        string optionalValueProperty,
+        int? optionalValue,
+        CancellationToken cancellationToken)
+    {
+        var reconciliation = CaptureVmQosBaseline(
+            operation,
+            vmName,
+            targetProperty,
+            target,
+            requiredValueProperty,
+            requiredValue,
+            optionalValueProperty,
+            optionalValue,
+            cancellationToken);
+        var parameters = new SortedDictionary<string, object?>
+        {
+            ["name"] = vmName,
+            [targetProperty] = target,
+            [requiredValueProperty] = requiredValue,
+            ["rollback_descriptor_required"] = true,
+            ["readback_after_apply_required"] = true,
+            ["reconciliation"] = reconciliation
         };
-    }
-
-    private static JsonElement[] MatchingCheckpoints(JsonElement data, string vmName, string checkpointName)
-    {
-        return DesktopNodeApiJsonReader.EnumerateCheckpointList(data)
-            .Where(checkpoint =>
-                string.Equals(DesktopNodeApiJsonReader.GetStringProperty(checkpoint, "name"), checkpointName, StringComparison.OrdinalIgnoreCase) &&
-                string.Equals(DesktopNodeApiJsonReader.GetStringProperty(checkpoint, "vm_name"), vmName, StringComparison.OrdinalIgnoreCase))
-            .ToArray();
-    }
-
-    private static JsonElement[] CurrentTrueCheckpoints(JsonElement data)
-    {
-        return DesktopNodeApiJsonReader.EnumerateCheckpointList(data)
-            .Where(checkpoint => ReadIsCurrent(checkpoint) == true)
-            .ToArray();
-    }
-
-    private static bool? ReadIsCurrent(JsonElement checkpoint)
-    {
-        if (checkpoint.ValueKind != JsonValueKind.Object ||
-            !checkpoint.TryGetProperty("is_current", out var value))
+        if (optionalValue is not null)
         {
-            return null;
+            parameters[optionalValueProperty] = optionalValue.Value;
         }
 
-        return value.ValueKind switch
-        {
-            JsonValueKind.True => true,
-            JsonValueKind.False => false,
-            _ => null
-        };
+        return DesktopNodeApiResponseFactory.JsonFromObject(parameters);
     }
 
     private static JsonElement BuildVmRenameFingerprint(JsonElement vm)
@@ -950,6 +552,62 @@ internal sealed class DesktopNodeApiJobReconciliationHandler
         });
     }
 
+    private static JsonElement BuildVmShutdownIdentityFingerprint(JsonElement vm)
+    {
+        return DesktopNodeApiResponseFactory.JsonFromObject(new SortedDictionary<string, object?>
+        {
+            ["platform"] = DesktopNodeApiJsonReader.GetStringProperty(vm, "platform"),
+            ["guest_family"] = DesktopNodeApiJsonReader.GetStringProperty(vm, "guest_family"),
+            ["cpu_count"] = DesktopNodeApiJsonReader.ReadNestedElement(vm, "cpu", "count"),
+            ["startup_memory_mb"] = DesktopNodeApiJsonReader.ReadNestedElement(vm, "memory", "startup_mb"),
+            ["generation"] = DesktopNodeApiJsonReader.ReadElement(vm, "generation"),
+            ["managed_by_purecvisor"] = DesktopNodeApiJsonReader.ReadElement(vm, "managed_by_purecvisor")
+        });
+    }
+
+    private static bool ShutdownIdentityMatches(JsonElement beforeFingerprint, JsonElement observed)
+    {
+        if (beforeFingerprint.ValueKind != JsonValueKind.Object || observed.ValueKind != JsonValueKind.Object)
+        {
+            return false;
+        }
+
+        return JsonNode.DeepEquals(
+            JsonNode.Parse(beforeFingerprint.GetRawText()),
+            JsonNode.Parse(BuildVmShutdownIdentityFingerprint(observed).GetRawText()));
+    }
+
+    private static string NormalizePowerState(string? state)
+    {
+        var value = (state ?? string.Empty).Trim().ToLowerInvariant();
+        if (value is "off" or "stopped")
+        {
+            return "off";
+        }
+
+        if (value.Contains("running", StringComparison.Ordinal))
+        {
+            return "running";
+        }
+
+        return value;
+    }
+
+    private static bool TryReadTimestamp(string? value, out DateTimeOffset timestamp)
+    {
+        timestamp = default;
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return false;
+        }
+
+        return DateTimeOffset.TryParse(
+            value,
+            CultureInfo.InvariantCulture,
+            DateTimeStyles.RoundtripKind,
+            out timestamp);
+    }
+
     private static JsonElement BuildVmDeleteFingerprint(JsonElement vm)
     {
         return BuildVmRenameFingerprint(vm);
@@ -959,6 +617,20 @@ internal sealed class DesktopNodeApiJobReconciliationHandler
     {
         var marker = DesktopNodeApiJsonReader.ReadElement(vm, "managed_by_purecvisor");
         return marker is not null && marker.Value.ValueKind == JsonValueKind.True;
+    }
+
+    private static bool CreateFingerprintMatches(VmCreateBaseline baseline, JsonElement observed)
+    {
+        if (!IsManagedVm(observed))
+        {
+            return false;
+        }
+
+        var generation = DesktopNodeApiJsonReader.ReadElement(observed, "generation");
+        return generation is not null &&
+            generation.Value.ValueKind == JsonValueKind.Number &&
+            generation.Value.TryGetInt32(out var observedGeneration) &&
+            observedGeneration == baseline.Generation;
     }
 
     private static bool RenameFingerprintMatches(JsonElement beforeFingerprint, JsonElement observed)
@@ -972,168 +644,4 @@ internal sealed class DesktopNodeApiJobReconciliationHandler
             JsonNode.Parse(beforeFingerprint.GetRawText()),
             JsonNode.Parse(BuildVmRenameFingerprint(observed).GetRawText()));
     }
-
-    private static bool TryReadCapturedRenameBaseline(
-        JsonElement? metadata,
-        out VmRenameBaseline baseline)
-    {
-        baseline = null!;
-        if (metadata is null || metadata.Value.ValueKind != JsonValueKind.Object)
-        {
-            return false;
-        }
-
-        var value = metadata.Value;
-        if (!string.Equals(DesktopNodeApiJsonReader.ReadString(value, "schema"), VmRenameReconciliationSchema, StringComparison.Ordinal) ||
-            !string.Equals(DesktopNodeApiJsonReader.ReadString(value, "capture_status"), "captured", StringComparison.Ordinal))
-        {
-            return false;
-        }
-
-        var before = DesktopNodeApiJsonReader.ReadElement(value, "before");
-        var beforeFingerprint = DesktopNodeApiJsonReader.ReadElement(value, "before_fingerprint");
-        if (before is null || beforeFingerprint is null ||
-            before.Value.ValueKind != JsonValueKind.Object ||
-            beforeFingerprint.Value.ValueKind != JsonValueKind.Object)
-        {
-            return false;
-        }
-
-        baseline = new VmRenameBaseline(
-            VmRenameReconciliationSchema,
-            before.Value.Clone(),
-            beforeFingerprint.Value.Clone());
-        return true;
-    }
-
-    private static bool TryReadCapturedDeleteBaseline(
-        JsonElement? metadata,
-        out VmDeleteBaseline baseline)
-    {
-        baseline = null!;
-        if (metadata is null || metadata.Value.ValueKind != JsonValueKind.Object)
-        {
-            return false;
-        }
-
-        var value = metadata.Value;
-        if (!string.Equals(DesktopNodeApiJsonReader.ReadString(value, "schema"), VmDeleteReconciliationSchema, StringComparison.Ordinal) ||
-            !string.Equals(DesktopNodeApiJsonReader.ReadString(value, "capture_status"), "captured", StringComparison.Ordinal))
-        {
-            return false;
-        }
-
-        var before = DesktopNodeApiJsonReader.ReadElement(value, "before");
-        var beforeFingerprint = DesktopNodeApiJsonReader.ReadElement(value, "before_fingerprint");
-        if (before is null || beforeFingerprint is null ||
-            before.Value.ValueKind != JsonValueKind.Object ||
-            beforeFingerprint.Value.ValueKind != JsonValueKind.Object ||
-            string.IsNullOrWhiteSpace(DesktopNodeApiJsonReader.ReadString(before.Value, "id")) ||
-            !IsManagedVm(before.Value))
-        {
-            return false;
-        }
-
-        baseline = new VmDeleteBaseline(
-            VmDeleteReconciliationSchema,
-            before.Value.Clone(),
-            beforeFingerprint.Value.Clone());
-        return true;
-    }
-
-    private static bool TryReadCapturedCheckpointCreateBaseline(
-        JsonElement? metadata,
-        string vmName,
-        string checkpointName,
-        out VmCheckpointCreateBaseline baseline)
-    {
-        baseline = null!;
-        if (metadata is null || metadata.Value.ValueKind != JsonValueKind.Object)
-        {
-            return false;
-        }
-
-        var value = metadata.Value;
-        if (!string.Equals(DesktopNodeApiJsonReader.ReadString(value, "schema"), CheckpointCreateReconciliationSchema, StringComparison.Ordinal) ||
-            !string.Equals(DesktopNodeApiJsonReader.ReadString(value, "capture_status"), "captured", StringComparison.Ordinal) ||
-            DesktopNodeApiJsonReader.ReadElement(value, "before") is not null)
-        {
-            return false;
-        }
-
-        var expectedBefore = DesktopNodeApiJsonReader.ReadElement(value, "expected_before");
-        if (expectedBefore is null ||
-            !string.Equals(DesktopNodeApiJsonReader.ReadString(expectedBefore.Value, "state"), "absent", StringComparison.Ordinal) ||
-            !string.Equals(DesktopNodeApiJsonReader.ReadString(expectedBefore.Value, "name"), checkpointName, StringComparison.Ordinal) ||
-            !string.Equals(DesktopNodeApiJsonReader.ReadString(expectedBefore.Value, "vm_name"), vmName, StringComparison.Ordinal))
-        {
-            return false;
-        }
-
-        baseline = new VmCheckpointCreateBaseline(
-            CheckpointCreateReconciliationSchema,
-            null);
-        return true;
-    }
-
-    private static bool TryReadCapturedCheckpointRestoreBaseline(
-        JsonElement? metadata,
-        string vmName,
-        string checkpointName,
-        out VmCheckpointRestoreBaseline baseline)
-    {
-        baseline = null!;
-        if (metadata is null || metadata.Value.ValueKind != JsonValueKind.Object)
-        {
-            return false;
-        }
-
-        var value = metadata.Value;
-        if (!string.Equals(DesktopNodeApiJsonReader.ReadString(value, "schema"), CheckpointRestoreReconciliationSchema, StringComparison.Ordinal) ||
-            !string.Equals(DesktopNodeApiJsonReader.ReadString(value, "capture_status"), "captured", StringComparison.Ordinal))
-        {
-            return false;
-        }
-
-        var before = DesktopNodeApiJsonReader.ReadElement(value, "before");
-        var expectedAfter = DesktopNodeApiJsonReader.ReadElement(value, "expected_after");
-        if (before is null ||
-            expectedAfter is null ||
-            before.Value.ValueKind != JsonValueKind.Object ||
-            expectedAfter.Value.ValueKind != JsonValueKind.Object ||
-            string.IsNullOrWhiteSpace(DesktopNodeApiJsonReader.ReadString(before.Value, "current_name")) ||
-            !string.Equals(DesktopNodeApiJsonReader.ReadString(before.Value, "vm_name"), vmName, StringComparison.Ordinal) ||
-            !string.Equals(DesktopNodeApiJsonReader.ReadString(expectedAfter.Value, "current_name"), checkpointName, StringComparison.Ordinal) ||
-            !string.Equals(DesktopNodeApiJsonReader.ReadString(expectedAfter.Value, "vm_name"), vmName, StringComparison.Ordinal) ||
-            !expectedAfter.Value.TryGetProperty("is_current", out var isCurrent) ||
-            isCurrent.ValueKind != JsonValueKind.True)
-        {
-            return false;
-        }
-
-        baseline = new VmCheckpointRestoreBaseline(
-            CheckpointRestoreReconciliationSchema,
-            before.Value.Clone(),
-            expectedAfter.Value.Clone());
-        return true;
-    }
-
-    private sealed record VmRenameBaseline(
-        string Schema,
-        JsonElement Before,
-        JsonElement BeforeFingerprint);
-
-    private sealed record VmDeleteBaseline(
-        string Schema,
-        JsonElement Before,
-        JsonElement BeforeFingerprint);
-
-    private sealed record VmCheckpointCreateBaseline(
-        string Schema,
-        JsonElement? Before);
-
-    private sealed record VmCheckpointRestoreBaseline(
-        string Schema,
-        JsonElement Before,
-        JsonElement ExpectedAfter);
 }

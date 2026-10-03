@@ -1,23 +1,32 @@
 # 문서 통합 인덱스
 
-> 2026-08-26 현재 기준. 공개 저장소 Required CI 전환 이후 다시 생성했으며, 이 인덱스를
-> 포함한 Markdown 문서 778개 전체를 수록한다.
+> 2026-08-26에 공개 저장소 Required CI 전환 이후 전체 카탈로그를 다시 생성했다. 아래 현재 기준
+> 블록과 핵심 문서 목록은 2026-09-20에 HEAD `2e63bd5` 기준으로 현행화했다. 전체 파일 재생성은
+> 이 현행화가 수행하지 않는다.
 
 ## 현재 기준
 
-- 공개 소스 권위: `HardcoreMonk/purecvisor-desktop-node-public`, final main `6e2bdb93ce308b632c929e2c17f5550ac3845401`.
-- Required CI 권위: Development Gates run `32904006595`; 보호 context는 정확히 `dotnet`, `web`, `delivery`, `installer-policy`다.
-- PowerShell/Pester 경계: invocation 0은 위 Required CI 네 context에만 적용한다. 별도 Public Boundary workflow는 비필수 legacy residue로 보존한다(run `32904006619`, job `97983888524`).
-- 운영 제품 권위: `0.42.74-admin-smoke`; Web Console과 PCVCLI가 active이고 TUI는 absent다. 승격은 `pcv.vm.saved-lifecycle/actual_vm_tested/fail`로 계속 차단된다.
+- 공개 소스 권위: `HardcoreMonk/purecvisor-desktop-node-public`, HEAD `82b553f5386c79493532c425afec3b0192c92798` (PR #20, clean-host base VHD 오프라인 갱신 merge).
+- Required CI 권위: Development Gates run `36660066308`; 보호 context는 정확히 `dotnet`, `web`, `delivery`, `installer-policy`다.
+- PowerShell/Pester 경계: invocation 0은 위 Required CI 네 context에만 적용한다. 별도 Public Boundary workflow는 비필수 legacy residue로 보존한다(run `36660066317`, job `109712635173`).
+- 운영 제품 권위: `0.42.86-admin-smoke`; Web Console과 PCVCLI가 active이고 TUI는 absent다. Feature promotion은 `promotion_eligible=true`, blockers `none`이다. P0 feature ledger는 `0.42.75-admin-smoke` evidence를 유지한다.
+- 이 호스트 설치본(2026-10-02 fullgate): `0.42.86-admin-smoke`, service `Running/Automatic`. ARP `DisplayVersion`은 `0.42.86`(항목 `1`개).
+- 개발 campaign: `docs/ga-ready/active-campaign.json` intent `lane1-lane2-04285-package-pair-and-readback-actual-vm`(2026-10-01 개설, 계획 `docs/superpowers/plans/2026-10-01-purecvisor-desktop-node-04285-package-pair.md`). 선행 `lane3-04284-promotion-and-lane1-vm-list-readback`은 완료했다. clean-host base는 `current-base.json`이 고른다(`20348.5622`).
+- 진행 상황 현행화: `docs/project-status-audit-2026-09-27.md`. 직전 snapshot은 `docs/project-status-audit-2026-09-20.md`.
+- `0.42.75 -> 0.42.77` descriptor consume: `docs/ga-ready/evidence/manual-admin-campaign-2026-09-20-04275-04277.md` (`pass`, current 유지).
+- `0.42.77 -> 0.42.78` descriptor consume: `docs/ga-ready/evidence/manual-admin-campaign-2026-09-27-04277-04278.md` (`pass`, 당시 current `0.42.78-admin-smoke`).
+- `0.42.83 -> 0.42.84` descriptor consume: `docs/ga-ready/evidence/manual-admin-campaign-2026-09-30-04283-04284.md` (`pass`, 당시 current `0.42.84-admin-smoke`).
+- `0.42.85 -> 0.42.86` descriptor consume: `docs/ga-ready/evidence/manual-admin-campaign-2026-10-02-04285-04286.md` (`pass`, current `0.42.86-admin-smoke`). `0.42.85`는 원장 current가 아니었다.
+- `0.42.78 -> 0.42.83` descriptor consume: `docs/ga-ready/evidence/manual-admin-campaign-2026-09-29-04278-04283.md` (`pass`, 당시 current `0.42.83-admin-smoke`).
 - 릴리스 주장 경계: `public_trusted_signing=false`, `external_stable_publication=false`.
 
 ## 관례적 진입점 매핑
 
 이 저장소는 관례적 파일명을 중복 생성하지 않고 기존 권위 문서를 사용한다.
 
-- 기여자 온보딩: `docs/DEVELOPER_INDEX.md`, `docs/CODING_GUIDE.md`, `docs/DEVELOPMENT_VERIFICATION_POLICY.md`
+- 기여자 온보딩: `docs/DEVELOPMENT_PROCEDURE.md`, `docs/DEVELOPER_INDEX.md`, `docs/CODING_GUIDE.md`, `docs/DEVELOPMENT_VERIFICATION_POLICY.md`
 - 아키텍처: `docs/ADR_INDEX.md`, `docs/adr/`, `docs/service-core-backend-frontend-implementation-evaluation-2026-07-16.md`
-- 현재 작업과 상태: `docs/FEATURE_IMPLEMENTATION_LEDGER.md`, `docs/ga-ready/CURRENT_EVIDENCE_LEDGER.md`, `docs/ga-ready/EVIDENCE_INDEX.md`
+- 현재 작업과 상태: `docs/project-status-audit-2026-09-20.md`, `docs/FEATURE_IMPLEMENTATION_LEDGER.md`, `docs/ga-ready/CURRENT_EVIDENCE_LEDGER.md`, `docs/ga-ready/EVIDENCE_INDEX.md`
 - 버전·릴리스 증거: [docs/ga-ready/current-evidence.json](ga-ready/current-evidence.json)과 위 evidence index
 - 역사 변경 기록: Git 이력과 아래 날짜별 계획·명세·증거
 
@@ -40,6 +49,7 @@
 - [docs/CODING_GUIDE.md](CODING_GUIDE.md)
 - [docs/DEVELOPER_INDEX.md](DEVELOPER_INDEX.md)
 - [docs/DEVELOPMENT_CHANGE_CLASSIFICATION.md](DEVELOPMENT_CHANGE_CLASSIFICATION.md)
+- [docs/DEVELOPMENT_PROCEDURE.md](DEVELOPMENT_PROCEDURE.md)
 - [docs/DEVELOPMENT_VERIFICATION_POLICY.md](DEVELOPMENT_VERIFICATION_POLICY.md)
 - [docs/DOCUMENTATION_INDEX.md](DOCUMENTATION_INDEX.md)
 - [docs/FEATURE_IMPLEMENTATION_LEDGER.md](FEATURE_IMPLEMENTATION_LEDGER.md)
@@ -52,6 +62,8 @@
 - [docs/OPERATOR_SURFACE_TERMS.md](OPERATOR_SURFACE_TERMS.md)
 - [docs/project-status-audit-2026-07-13.md](project-status-audit-2026-07-13.md)
 - [docs/project-status-audit-2026-08-05.md](project-status-audit-2026-08-05.md)
+- [docs/project-status-audit-2026-09-06.md](project-status-audit-2026-09-06.md)
+- [docs/project-status-audit-2026-09-20.md](project-status-audit-2026-09-20.md)
 - [docs/PUBLIC_RELEASE_BOUNDARY.md](PUBLIC_RELEASE_BOUNDARY.md)
 - [docs/PUBLIC_SOURCE_AUTHORITY.md](PUBLIC_SOURCE_AUTHORITY.md)
 - [docs/SERVICE_PLAN.md](SERVICE_PLAN.md)
@@ -73,6 +85,7 @@
 - [docs/adr/0009-guest-execution-security-boundary-candidate.md](adr/0009-guest-execution-security-boundary-candidate.md)
 - [docs/adr/0009-guest-execution-security-boundary.md](adr/0009-guest-execution-security-boundary.md)
 - [docs/adr/0010-account-novnc-target-config-security-policy-candidate.md](adr/0010-account-novnc-target-config-security-policy-candidate.md)
+- [docs/adr/0010-novnc-target-config-security-policy.md](adr/0010-novnc-target-config-security-policy.md)
 - [docs/adr/0011-cli-web-only-operator-surface.md](adr/0011-cli-web-only-operator-surface.md)
 - [docs/adr/0012-api-read-concurrency-policy.md](adr/0012-api-read-concurrency-policy.md)
 - [docs/adr/0013-job-store-single-writer-transaction-lease.md](adr/0013-job-store-single-writer-transaction-lease.md)
@@ -536,6 +549,7 @@
 - [docs/ga-ready/evidence/public-boundary-ci-main-push-2026-08-12-pr187-postmerge-pass.md](ga-ready/evidence/public-boundary-ci-main-push-2026-08-12-pr187-postmerge-pass.md)
 - [docs/ga-ready/evidence/public-boundary-ci-main-push-2026-08-14-04273-promotion-postpush-pass.md](ga-ready/evidence/public-boundary-ci-main-push-2026-08-14-04273-promotion-postpush-pass.md)
 - [docs/ga-ready/evidence/public-boundary-ci-main-push-2026-08-21-04274-p0-landing-pass.md](ga-ready/evidence/public-boundary-ci-main-push-2026-08-21-04274-p0-landing-pass.md)
+- [docs/ga-ready/evidence/public-boundary-ci-main-push-2026-08-27-04275-promotion-postpush-pass.md](ga-ready/evidence/public-boundary-ci-main-push-2026-08-27-04275-promotion-postpush-pass.md)
 - [docs/ga-ready/evidence/public-boundary-ci-rerun-2026-05-16-04220-pass.md](ga-ready/evidence/public-boundary-ci-rerun-2026-05-16-04220-pass.md)
 - [docs/ga-ready/evidence/public-distribution-operations-expansion-phase1-2026-05-07.md](ga-ready/evidence/public-distribution-operations-expansion-phase1-2026-05-07.md)
 - [docs/ga-ready/evidence/public-distribution-ops-execution-bundle-2026-05-09.md](ga-ready/evidence/public-distribution-ops-execution-bundle-2026-05-09.md)
@@ -553,10 +567,12 @@
 - [docs/ga-ready/evidence/secondary-hyperv-wmi-topology-smoke-2026-07-13-04262.md](ga-ready/evidence/secondary-hyperv-wmi-topology-smoke-2026-07-13-04262.md)
 - [docs/ga-ready/evidence/served-app-decomposition-2026-08-08.md](ga-ready/evidence/served-app-decomposition-2026-08-08.md)
 - [docs/ga-ready/evidence/service-plan-p0-actual-vm-2026-08-20-04274.md](ga-ready/evidence/service-plan-p0-actual-vm-2026-08-20-04274.md)
+- [docs/ga-ready/evidence/service-plan-p0-actual-vm-2026-08-27-04275.md](ga-ready/evidence/service-plan-p0-actual-vm-2026-08-27-04275.md)
 - [docs/ga-ready/evidence/service-plan-p0-checkpoint-restore-reconciliation-code-level-2026-08-14.md](ga-ready/evidence/service-plan-p0-checkpoint-restore-reconciliation-code-level-2026-08-14.md)
 - [docs/ga-ready/evidence/service-plan-p0-hyperv-saved-code-level-2026-08-14.md](ga-ready/evidence/service-plan-p0-hyperv-saved-code-level-2026-08-14.md)
 - [docs/ga-ready/evidence/service-plan-p0-managed-import-code-level-2026-08-14.md](ga-ready/evidence/service-plan-p0-managed-import-code-level-2026-08-14.md)
 - [docs/ga-ready/evidence/service-plan-p0-media-attach-code-level-2026-08-14.md](ga-ready/evidence/service-plan-p0-media-attach-code-level-2026-08-14.md)
+- [docs/ga-ready/evidence/service-plan-p1-managed-full-clone-code-level-2026-08-27.md](ga-ready/evidence/service-plan-p1-managed-full-clone-code-level-2026-08-27.md)
 - [docs/ga-ready/evidence/service-token-rotation-replace-hardening-2026-08-09.md](ga-ready/evidence/service-token-rotation-replace-hardening-2026-08-09.md)
 - [docs/ga-ready/evidence/service-token-rotation-revoke-installed-2026-05-09.md](ga-ready/evidence/service-token-rotation-revoke-installed-2026-05-09.md)
 - [docs/ga-ready/evidence/service-token-rotation-revoke-preflight-2026-05-08.md](ga-ready/evidence/service-token-rotation-revoke-preflight-2026-05-08.md)
@@ -730,6 +746,8 @@
 - [docs/superpowers/plans/2026-08-25-purecvisor-desktop-node-public-baseline-and-protection.md](superpowers/plans/2026-08-25-purecvisor-desktop-node-public-baseline-and-protection.md)
 - [docs/superpowers/plans/2026-08-25-purecvisor-desktop-node-required-ci-cutover-wave-e.md](superpowers/plans/2026-08-25-purecvisor-desktop-node-required-ci-cutover-wave-e.md)
 - [docs/superpowers/plans/2026-08-27-purecvisor-desktop-node-lane-separated-development-procedure.md](superpowers/plans/2026-08-27-purecvisor-desktop-node-lane-separated-development-procedure.md)
+- [docs/superpowers/plans/2026-08-27-purecvisor-desktop-node-p1-managed-full-clone.md](superpowers/plans/2026-08-27-purecvisor-desktop-node-p1-managed-full-clone.md)
+- [docs/superpowers/plans/2026-08-29-purecvisor-desktop-node-efficient-development-procedure.md](superpowers/plans/2026-08-29-purecvisor-desktop-node-efficient-development-procedure.md)
 
 ## 설계 명세
 
@@ -814,6 +832,12 @@
 - [docs/superpowers/specs/2026-08-25-purecvisor-desktop-node-pester-free-required-ci-cutover-design.md](superpowers/specs/2026-08-25-purecvisor-desktop-node-pester-free-required-ci-cutover-design.md)
 - [docs/superpowers/specs/2026-08-25-purecvisor-desktop-node-public-authority-snapshot-delta-design.md](superpowers/specs/2026-08-25-purecvisor-desktop-node-public-authority-snapshot-delta-design.md)
 - [docs/superpowers/specs/2026-08-27-purecvisor-desktop-node-lane-separated-development-procedure-design.md](superpowers/specs/2026-08-27-purecvisor-desktop-node-lane-separated-development-procedure-design.md)
+- [docs/superpowers/specs/2026-08-27-purecvisor-desktop-node-p1-managed-full-clone-design.md](superpowers/specs/2026-08-27-purecvisor-desktop-node-p1-managed-full-clone-design.md)
+- [docs/superpowers/specs/2026-08-29-purecvisor-desktop-node-efficient-development-procedure-design.md](superpowers/specs/2026-08-29-purecvisor-desktop-node-efficient-development-procedure-design.md)
+- [docs/superpowers/specs/2026-09-20-purecvisor-desktop-node-campaign-continuity-design.md](superpowers/specs/2026-09-20-purecvisor-desktop-node-campaign-continuity-design.md)
+- [docs/superpowers/specs/2026-09-20-purecvisor-desktop-node-p1-inventory-timestamps-design.md](superpowers/specs/2026-09-20-purecvisor-desktop-node-p1-inventory-timestamps-design.md)
+- [docs/superpowers/specs/2026-09-20-purecvisor-desktop-node-p1-template-lock-design.md](superpowers/specs/2026-09-20-purecvisor-desktop-node-p1-template-lock-design.md)
+- [docs/superpowers/specs/2026-09-20-purecvisor-desktop-node-p1-guest-file-job-design.md](superpowers/specs/2026-09-20-purecvisor-desktop-node-p1-guest-file-job-design.md)
 
 ## 패키징 문서
 

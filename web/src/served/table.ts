@@ -76,3 +76,21 @@ function clearCheckpointActionPending(vmId, checkpointId = 'create') {
   delete state.pendingCheckpoints[getCheckpointActionKey(vmId, checkpointId)];
 }
 
+function bindJobAndNetworkFilterEvents() {
+  els.jobFilter?.addEventListener('input', () => {
+    state.jobFilter = els.jobFilter.value;
+    render();
+  });
+  els.jobStatusFilter?.addEventListener('change', () => {
+    state.jobStatusFilter = els.jobStatusFilter.value || 'all';
+    render();
+  });
+  els.jobSort?.addEventListener('change', () => {
+    state.jobSort = els.jobSort.value || 'updated:desc';
+    render();
+  });
+  els.networkFilter?.addEventListener('input', () => {
+    state.networkFilter = els.networkFilter.value;
+    render();
+  });
+}

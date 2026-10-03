@@ -196,6 +196,36 @@ public sealed class DesktopNodeHyperVNativeAdapterTests
     }
 
     [Fact]
+    public void NativeVmDiskInspectReportsSizeOnlyForTheVmsOwnDisk()
+    {
+        var diskPath = @"D:\VMs\alpha\disk0.vhdx";
+        var vm = CompleteVm("alpha") with { Storage = [new DesktopNodeHyperVVmDiskInfo("vhdx", diskPath, null, true)] };
+        var adapter = new DesktopNodeHyperVNativeAdapter(
+            new RecordingHyperVSwitchProvider([]),
+            new SizedHyperVVmProvider([vm], 64UL * 1024 * 1024 * 1024));
+
+        using var owned = JsonDocument.Parse(JsonSerializer.Serialize(new { name = "alpha", path = diskPath }));
+        Assert.True(adapter.TryInvoke("vm.disk.inspect", owned.RootElement, CancellationToken.None, out var result));
+        Assert.True(result.Ok);
+        Assert.Equal(64UL * 1024 * 1024 * 1024, result.Data!.Value.GetProperty("max_internal_size_bytes").GetUInt64());
+
+        using var foreign = JsonDocument.Parse("""{"name":"alpha","path":"C:\\Windows\\system32\\config\\SAM"}""");
+        Assert.True(adapter.TryInvoke("vm.disk.inspect", foreign.RootElement, CancellationToken.None, out var rejected));
+        Assert.Equal("PCV_VM_DISK_NOT_FOUND", rejected.Error!.Code);
+
+        var sizeless = new DesktopNodeHyperVNativeAdapter(new RecordingHyperVSwitchProvider([]), new RecordingHyperVVmProvider([vm]));
+        Assert.True(sizeless.TryInvoke("vm.disk.inspect", owned.RootElement, CancellationToken.None, out var unavailable));
+        Assert.Equal("PCV_VM_DISK_INSPECT_UNAVAILABLE", unavailable.Error!.Code);
+    }
+
+    private sealed class SizedHyperVVmProvider(IReadOnlyList<DesktopNodeHyperVVmInfo> vms, ulong bytes) : IDesktopNodeHyperVVmProvider
+    {
+        public IReadOnlyList<DesktopNodeHyperVVmInfo> GetVms(CancellationToken cancellationToken) => vms;
+
+        public ulong? GetVirtualDiskMaxInternalSize(string diskPath, CancellationToken cancellationToken) => bytes;
+    }
+
+    [Fact]
     public void NativeVmStatsAdapterReturnsNotFoundWhenVmIsAbsent()
     {
         using var parameters = JsonDocument.Parse("""{"vm_name":"missing"}""");
@@ -546,6 +576,49 @@ public sealed class DesktopNodeHyperVNativeAdapterTests
     }
 
     [Fact]
+    public void NativeNetworkInventoryAdapterAcceptsProviderMappedExternalSwitch()
+    {
+        using var parameters = JsonDocument.Parse("{}");
+        var adapter = new DesktopNodeHyperVNativeAdapter(new RecordingHyperVSwitchProvider(
+        [
+            DesktopNodeHyperVWmiSwitchProvider.MapSwitch("Default Switch"),
+            DesktopNodeHyperVWmiSwitchProvider.MapSwitch(
+                "corp-uplink",
+                hasInternalManagementPort: true,
+                hasExternalBinding: true,
+                externalAdapterDescription: "Intel(R) Ethernet Controller")
+        ]));
+
+        var handled = adapter.TryInvoke("network.inventory", parameters.RootElement, CancellationToken.None, out var result);
+
+        Assert.True(handled);
+        Assert.True(result.Ok);
+        var external = result.Data!.Value.GetProperty("switches")[1];
+        Assert.Equal("external", external.GetProperty("type").GetString());
+        Assert.Equal("Intel(R) Ethernet Controller", external.GetProperty("net_adapter_interface_description").GetString());
+    }
+
+    [Fact]
+    public void NativeNetworkInventoryAdapterAcceptsPrivateSwitchTopology()
+    {
+        using var parameters = JsonDocument.Parse("{}");
+        var adapter = new DesktopNodeHyperVNativeAdapter(new RecordingHyperVSwitchProvider(
+        [
+            DesktopNodeHyperVWmiSwitchProvider.MapSwitch("Default Switch"),
+            DesktopNodeHyperVWmiSwitchProvider.MapSwitch("pcv-lab-private")
+        ]));
+
+        var handled = adapter.TryInvoke("network.inventory", parameters.RootElement, CancellationToken.None, out var result);
+
+        Assert.True(handled);
+        Assert.True(result.Ok);
+        var switches = result.Data!.Value.GetProperty("switches");
+        Assert.Equal("pcv-lab-private", switches[1].GetProperty("name").GetString());
+        Assert.Equal("private", switches[1].GetProperty("type").GetString());
+        Assert.False(switches[1].GetProperty("allow_management_os").GetBoolean());
+    }
+
+    [Fact]
     public void NativeNetworkInventoryAdapterReturnsStructuredFailureForMissingManagementOsParityField()
     {
         using var parameters = JsonDocument.Parse("{}");
@@ -684,6 +757,77 @@ public sealed class DesktopNodeHyperVNativeAdapterTests
     }
 
     [Fact]
+    public void NativeAdapterAllowsStartOnTemplateLockedVm()
+    {
+        using var parameters = JsonDocument.Parse("""{"name":"gold"}""");
+        var adapter = new DesktopNodeHyperVNativeAdapter(
+            new RecordingHyperVSwitchProvider([]),
+            new RecordingHyperVVmProvider([CompleteVm("gold") with { TemplateLock = true, State = "stopped" }]),
+            new RecordingHyperVCheckpointProvider([]),
+            new RecordingHyperVCheckpointMutationProvider(),
+            new RecordingHyperVVmPowerStateProvider());
+
+        var handled = adapter.TryInvoke("vm.start", parameters.RootElement, CancellationToken.None, out var result);
+
+        Assert.True(handled);
+        Assert.True(result.Ok);
+        Assert.Equal("start", result.Data!.Value.GetProperty("action").GetString());
+    }
+
+    [Fact]
+    public void NativeAdapterRejectsDeleteOnTemplateLockedVm()
+    {
+        using var parameters = JsonDocument.Parse("""{"name":"gold"}""");
+        var provider = new RecordingHyperVVmDeleteProvider();
+        var adapter = new DesktopNodeHyperVNativeAdapter(
+            new RecordingHyperVSwitchProvider([]),
+            new RecordingHyperVVmProvider([CompleteVm("gold") with { TemplateLock = true }]),
+            new RecordingHyperVCheckpointProvider([]),
+            new RecordingHyperVCheckpointMutationProvider(),
+            new RecordingHyperVVmPowerStateProvider(),
+            new RecordingHyperVVmCreateProvider(),
+            provider);
+
+        var handled = adapter.TryInvoke("vm.delete", parameters.RootElement, CancellationToken.None, out var result);
+
+        Assert.True(handled);
+        Assert.False(result.Ok);
+        Assert.Equal(DesktopNodeHyperVVmTemplateLockGuard.LockedCode, result.Error!.Code);
+        Assert.False(result.Error.Retryable);
+        Assert.Equal(0, provider.CallCount);
+    }
+
+    [Fact]
+    public void NativeAdapterLocksAndUnlocksTemplateVm()
+    {
+        using var lockParameters = JsonDocument.Parse("""{"name":"gold","locked":true}""");
+        using var unlockParameters = JsonDocument.Parse("""{"name":"gold","locked":false}""");
+        var provider = new RecordingHyperVVmManageProvider();
+        var adapter = new DesktopNodeHyperVNativeAdapter(
+            new RecordingHyperVSwitchProvider([]),
+            new RecordingHyperVVmProvider([CompleteVm("gold")]),
+            new RecordingHyperVCheckpointProvider([]),
+            new RecordingHyperVCheckpointMutationProvider(),
+            new RecordingHyperVVmPowerStateProvider(),
+            new RecordingHyperVVmCreateProvider(),
+            new RecordingHyperVVmDeleteProvider(),
+            new RecordingHyperVVmRenameProvider(),
+            provider);
+
+        var locked = adapter.TryInvoke("vm.template.lock", lockParameters.RootElement, CancellationToken.None, out var lockResult);
+        var unlocked = adapter.TryInvoke("vm.template.lock", unlockParameters.RootElement, CancellationToken.None, out var unlockResult);
+
+        Assert.True(locked);
+        Assert.True(lockResult.Ok);
+        Assert.Equal("lock", lockResult.Data!.Value.GetProperty("action").GetString());
+        Assert.True(unlocked);
+        Assert.True(unlockResult.Ok);
+        Assert.Equal("unlock", unlockResult.Data!.Value.GetProperty("action").GetString());
+        Assert.Equal(2, provider.CallCount);
+        Assert.False(provider.LastLocked);
+    }
+
+    [Fact]
     public void NativeVmRenameAdapterMapsProviderResult()
     {
         using var parameters = JsonDocument.Parse("""{"name":"alpha","new_name":"beta"}""");
@@ -756,6 +900,103 @@ public sealed class DesktopNodeHyperVNativeAdapterTests
         Assert.True(result.Ok);
         Assert.Equal("already-managed", result.Data!.Value.GetProperty("action").GetString());
         Assert.Equal(1, provider.CallCount);
+    }
+
+    [Fact]
+    public void NativeVmClonePreviewAdapterMapsProviderResult()
+    {
+        using var parameters = JsonDocument.Parse("""{"source":"alpha","name":"beta"}""");
+        var provider = new RecordingHyperVVmCloneProvider();
+        var adapter = CreateCloneAdapter(provider);
+
+        var handled = adapter.TryInvoke("vm.clone.preview", parameters.RootElement, CancellationToken.None, out var result);
+
+        Assert.True(handled);
+        Assert.True(result.Ok);
+        Assert.Equal("vm.clone.preview", result.Operation);
+        Assert.Equal("alpha", result.Data!.Value.GetProperty("source").GetString());
+        Assert.Equal("beta", result.Data.Value.GetProperty("name").GetString());
+        Assert.Equal("preview", result.Data.Value.GetProperty("action").GetString());
+        Assert.Equal(2, result.Data.Value.GetProperty("generation").GetInt32());
+        Assert.Equal(@"D:\PureCVisor\VMs\beta", result.Data.Value.GetProperty("directory").GetString());
+        Assert.Equal(1, result.Data.Value.GetProperty("disk_count").GetInt32());
+        Assert.Equal(1024, result.Data.Value.GetProperty("planned_copy_bytes").GetInt64());
+        var disk = Assert.Single(result.Data.Value.GetProperty("disks").EnumerateArray());
+        Assert.Equal(@"D:\PureCVisor\VMs\alpha\disk0.vhdx", disk.GetProperty("source").GetString());
+        Assert.Equal(@"D:\PureCVisor\VMs\beta\disk0.vhdx", disk.GetProperty("target").GetString());
+        Assert.Equal(1, provider.PreviewCallCount);
+        Assert.Equal(0, provider.InvokeCallCount);
+        Assert.Equal("alpha", provider.LastRequest!.SourceName);
+        Assert.Equal("beta", provider.LastRequest.TargetName);
+        Assert.Equal(@"D:\PureCVisor\VMs", provider.LastRequest.VmRoot);
+    }
+
+    [Fact]
+    public void NativeVmCloneAdapterMapsProviderResult()
+    {
+        using var parameters = JsonDocument.Parse("""{"source":"alpha","name":"beta"}""");
+        var provider = new RecordingHyperVVmCloneProvider();
+        var adapter = CreateCloneAdapter(provider);
+
+        var handled = adapter.TryInvoke("vm.clone", parameters.RootElement, CancellationToken.None, out var result);
+
+        Assert.True(handled);
+        Assert.True(result.Ok);
+        Assert.Equal("vm.clone", result.Operation);
+        Assert.Equal("alpha", result.Data!.Value.GetProperty("source").GetString());
+        Assert.Equal("beta", result.Data.Value.GetProperty("name").GetString());
+        Assert.Equal("clone", result.Data.Value.GetProperty("action").GetString());
+        Assert.Equal(@"D:\PureCVisor\VMs\beta", result.Data.Value.GetProperty("directory").GetString());
+        Assert.Equal(@"D:\PureCVisor\VMs\beta\disk0.vhdx", Assert.Single(result.Data.Value.GetProperty("disks").EnumerateArray()).GetString());
+        Assert.Equal(0, provider.PreviewCallCount);
+        Assert.Equal(1, provider.InvokeCallCount);
+        Assert.Equal("alpha", provider.LastRequest!.SourceName);
+        Assert.Equal("beta", provider.LastRequest.TargetName);
+    }
+
+    [Fact]
+    public void NativeVmClonePreviewAdapterMapsNameAndTargetParamsAsSourceAndName()
+    {
+        using var parameters = JsonDocument.Parse("""{"name":"alpha","target":"beta"}""");
+        var provider = new RecordingHyperVVmCloneProvider();
+        var adapter = CreateCloneAdapter(provider);
+
+        var handled = adapter.TryInvoke("vm.clone.preview", parameters.RootElement, CancellationToken.None, out var result);
+
+        Assert.True(handled);
+        Assert.True(result.Ok);
+        Assert.Equal("alpha", provider.LastRequest!.SourceName);
+        Assert.Equal("beta", provider.LastRequest.TargetName);
+        Assert.Equal("alpha", result.Data!.Value.GetProperty("source").GetString());
+        Assert.Equal("beta", result.Data.Value.GetProperty("name").GetString());
+    }
+
+    [Theory]
+    [InlineData("vm.clone.preview")]
+    [InlineData("vm.clone")]
+    public void NativeVmCloneAdapterPassesThroughProviderNotFound(string operation)
+    {
+        using var parameters = JsonDocument.Parse("""{"source":"missing","name":"beta"}""");
+        var provider = new RecordingHyperVVmCloneProvider(throwNotFound: true);
+        var adapter = CreateCloneAdapter(provider);
+
+        var handled = adapter.TryInvoke(operation, parameters.RootElement, CancellationToken.None, out var result);
+
+        Assert.True(handled);
+        Assert.False(result.Ok);
+        Assert.Equal(operation, result.Operation);
+        Assert.Equal("PCV_VM_NOT_FOUND", result.Error!.Code);
+        Assert.False(result.Error.Retryable);
+        if (operation == "vm.clone.preview")
+        {
+            Assert.Equal(1, provider.PreviewCallCount);
+            Assert.Equal(0, provider.InvokeCallCount);
+        }
+        else
+        {
+            Assert.Equal(0, provider.PreviewCallCount);
+            Assert.Equal(1, provider.InvokeCallCount);
+        }
     }
 
     [Fact]
@@ -1123,12 +1364,93 @@ public sealed class DesktopNodeHyperVNativeAdapterTests
 
         public string? LastVmName { get; private set; }
 
+        public bool? LastLocked { get; private set; }
+
         public DesktopNodeHyperVVmManageInfo Invoke(string vmName, CancellationToken cancellationToken)
         {
             CallCount += 1;
             LastVmName = vmName;
             return new DesktopNodeHyperVVmManageInfo(vmName, action);
         }
+
+        public DesktopNodeHyperVVmManageInfo InvokeTemplateLock(string vmName, bool locked, CancellationToken cancellationToken)
+        {
+            CallCount += 1;
+            LastVmName = vmName;
+            LastLocked = locked;
+            return new DesktopNodeHyperVVmManageInfo(vmName, locked ? "lock" : "unlock");
+        }
+    }
+
+    private sealed class RecordingHyperVVmCloneProvider(bool throwNotFound = false) : IDesktopNodeHyperVVmCloneProvider
+    {
+        public int PreviewCallCount { get; private set; }
+
+        public int InvokeCallCount { get; private set; }
+
+        public DesktopNodeHyperVVmCloneRequest? LastRequest { get; private set; }
+
+        public DesktopNodeHyperVVmClonePlan Preview(DesktopNodeHyperVVmCloneRequest request, CancellationToken cancellationToken)
+        {
+            PreviewCallCount += 1;
+            LastRequest = request;
+            ThrowIfMissing(request.SourceName);
+            return new DesktopNodeHyperVVmClonePlan(
+                request.SourceName,
+                request.TargetName,
+                "preview",
+                2,
+                Path.Combine(request.VmRoot, request.TargetName),
+                1,
+                1024,
+                [
+                    new DesktopNodeHyperVVmCloneDiskPlan(
+                        Path.Combine(request.VmRoot, request.SourceName, "disk0.vhdx"),
+                        Path.Combine(request.VmRoot, request.TargetName, "disk0.vhdx"))
+                ]);
+        }
+
+        public DesktopNodeHyperVVmCloneInfo Invoke(DesktopNodeHyperVVmCloneRequest request, CancellationToken cancellationToken)
+        {
+            InvokeCallCount += 1;
+            LastRequest = request;
+            ThrowIfMissing(request.SourceName);
+            return new DesktopNodeHyperVVmCloneInfo(
+                request.SourceName,
+                request.TargetName,
+                "clone",
+                Path.Combine(request.VmRoot, request.TargetName),
+                [Path.Combine(request.VmRoot, request.TargetName, "disk0.vhdx")]);
+        }
+
+        private void ThrowIfMissing(string sourceName)
+        {
+            if (!throwNotFound)
+            {
+                return;
+            }
+
+            throw new DesktopNodeHyperVNativeOperationException(
+                "PCV_VM_NOT_FOUND",
+                $"VM '{sourceName}' was not found.",
+                "The VM was not present in the native Hyper-V VM inventory response.",
+                false);
+        }
+    }
+
+    private static DesktopNodeHyperVNativeAdapter CreateCloneAdapter(IDesktopNodeHyperVVmCloneProvider cloneProvider)
+    {
+        return new DesktopNodeHyperVNativeAdapter(
+            new RecordingHyperVSwitchProvider([]),
+            new RecordingHyperVVmProvider([CompleteVm("alpha")]),
+            new RecordingHyperVCheckpointProvider([]),
+            new RecordingHyperVCheckpointMutationProvider(),
+            new RecordingHyperVVmPowerStateProvider(),
+            new RecordingHyperVVmCreateProvider(),
+            new RecordingHyperVVmDeleteProvider(),
+            new RecordingHyperVVmRenameProvider(),
+            new RecordingHyperVVmManageProvider(),
+            cloneProvider);
     }
 
     private sealed class MutableHyperVVmProvider(IEnumerable<DesktopNodeHyperVVmInfo> vms) : IDesktopNodeHyperVVmProvider
@@ -1166,6 +1488,24 @@ public sealed class DesktopNodeHyperVNativeAdapterTests
 
             vms.Replace(current with { ManagedByPurecvisor = true });
             return new DesktopNodeHyperVVmManageInfo(vmName, "manage");
+        }
+
+        public DesktopNodeHyperVVmManageInfo InvokeTemplateLock(string vmName, bool locked, CancellationToken cancellationToken)
+        {
+            var current = vms.GetVms(cancellationToken)
+                .First(vm => string.Equals(vm.Name, vmName, StringComparison.Ordinal));
+            if (locked && current.TemplateLock)
+            {
+                return new DesktopNodeHyperVVmManageInfo(vmName, "already-locked");
+            }
+
+            if (!locked && !current.TemplateLock)
+            {
+                return new DesktopNodeHyperVVmManageInfo(vmName, "already-unlocked");
+            }
+
+            vms.Replace(current with { TemplateLock = locked });
+            return new DesktopNodeHyperVVmManageInfo(vmName, locked ? "lock" : "unlock");
         }
     }
 
@@ -1262,6 +1602,13 @@ public sealed class DesktopNodeHyperVNativeAdapterTests
             LastRequest = request;
             var action = request.Operation == "vm.attach" ? "attach" : "eject";
             return new DesktopNodeHyperVVmMediaInfo(request.VmName, action, request.IsoPath);
+        }
+
+        public DesktopNodeHyperVVmDeviceAddInfo AddDvd(
+            DesktopNodeHyperVVmDeviceAddRequest request,
+            CancellationToken cancellationToken)
+        {
+            return new DesktopNodeHyperVVmDeviceAddInfo("dvd-add", request.VmName, "dvd", null);
         }
     }
 

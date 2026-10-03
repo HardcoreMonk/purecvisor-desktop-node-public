@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using DesktopNode.Contracts;
 
 namespace DesktopNode.HyperV;
 
@@ -12,18 +13,28 @@ public sealed class DesktopNodeHyperVPowerShellDirectGuestExecutionProvider : ID
     private const string TransportName = "windows-powershell-direct";
     private readonly IDesktopNodeHyperVGuestCredentialResolver credentialResolver;
     private readonly IDesktopNodeHyperVGuestExecutionTransport transport;
+    private readonly IDesktopNodeHyperVGuestFileHost fileHost;
+    private readonly IDesktopNodeHyperVGuestFileCopier fileCopier;
 
     public DesktopNodeHyperVPowerShellDirectGuestExecutionProvider()
-        : this(new DesktopNodeHyperVGuestCredentialResolver(), new DesktopNodeHyperVPowerShellDirectTransport())
+        : this(
+            new DesktopNodeHyperVGuestCredentialResolver(),
+            new DesktopNodeHyperVPowerShellDirectTransport(),
+            new DesktopNodeHyperVGuestFileHost(),
+            new DesktopNodeHyperVPowerShellDirectFileCopier())
     {
     }
 
     internal DesktopNodeHyperVPowerShellDirectGuestExecutionProvider(
         IDesktopNodeHyperVGuestCredentialResolver credentialResolver,
-        IDesktopNodeHyperVGuestExecutionTransport transport)
+        IDesktopNodeHyperVGuestExecutionTransport transport,
+        IDesktopNodeHyperVGuestFileHost? fileHost = null,
+        IDesktopNodeHyperVGuestFileCopier? fileCopier = null)
     {
         this.credentialResolver = credentialResolver;
         this.transport = transport;
+        this.fileHost = fileHost ?? new DesktopNodeHyperVGuestFileHost();
+        this.fileCopier = fileCopier ?? new DesktopNodeHyperVPowerShellDirectFileCopier();
     }
 
     public DesktopNodeHyperVGuestExecutionInfo Invoke(
@@ -41,9 +52,88 @@ public sealed class DesktopNodeHyperVPowerShellDirectGuestExecutionProvider : ID
             _ => throw new DesktopNodeHyperVNativeOperationException(
                 "PCV_GUEST_EXEC_OPERATION_UNSUPPORTED",
                 $"Guest execution provider does not support operation '{request.Operation}'.",
-                "Use vm.guest.exec, vm.guest.channel.verify, or vm.guest.channel.ensure.",
+                "Use vm.guest.exec, vm.guest.channel.verify, vm.guest.channel.ensure, vm.guest.file.preview, or vm.guest.file.",
                 false)
         };
+    }
+
+    public DesktopNodeHyperVGuestFileInfo InvokeFile(
+        DesktopNodeHyperVGuestFileRequest request,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        cancellationToken.ThrowIfCancellationRequested();
+
+        var copy = string.Equals(request.Operation, "vm.guest.file", StringComparison.Ordinal);
+        if (!copy && !string.Equals(request.Operation, "vm.guest.file.preview", StringComparison.Ordinal))
+        {
+            throw new DesktopNodeHyperVNativeOperationException(
+                "PCV_GUEST_EXEC_OPERATION_UNSUPPORTED",
+                $"Guest execution provider does not support operation '{request.Operation}'.",
+                "Use vm.guest.file.preview or vm.guest.file.",
+                false);
+        }
+
+        var hostExists = fileHost.TryGetLength(request.HostPath ?? string.Empty, out var hostLength);
+        if (hostExists && request.SizeBytes is not null && request.SizeBytes.Value != hostLength)
+        {
+            throw new DesktopNodeHyperVNativeOperationException(
+                GuestFileJobProblemCodes.SizeLimit,
+                "Declared size_bytes does not match the host file length.",
+                "Omit size_bytes or pass the actual file length.",
+                false);
+        }
+
+        var sizeBytes = request.SizeBytes ?? (hostExists ? hostLength : 1);
+
+        var evaluation = GuestFileJobContract.Evaluate(new GuestFileJobRequest(
+            request.Direction ?? GuestFileJobContract.DirectionHostToGuest,
+            request.HostPath,
+            request.GuestPath,
+            sizeBytes,
+            request.CredentialRef,
+            request.SharedFolder));
+        if (!evaluation.Ok)
+        {
+            throw new DesktopNodeHyperVNativeOperationException(
+                evaluation.ErrorCode ?? GuestFileJobProblemCodes.PathNotAllowed,
+                "Guest file job request is outside the allowlist.",
+                "Use host-to-guest, credential-ref, and allowlisted paths/size.",
+                false);
+        }
+
+        if (!hostExists)
+        {
+            throw new DesktopNodeHyperVNativeOperationException(
+                GuestFileJobProblemCodes.PathNotAllowed,
+                "Host file is missing or unreadable.",
+                "Place a single file under %ProgramData%\\PureCVisor\\desktop-node\\guest-files\\.",
+                false);
+        }
+
+        if (copy)
+        {
+            var credential = ResolveCredential(request.CredentialRef);
+            cancellationToken.ThrowIfCancellationRequested();
+            fileCopier.CopyToGuest(
+                request.Name,
+                credential.Username,
+                credential.Password,
+                evaluation.NormalizedHostPath!,
+                evaluation.NormalizedGuestPath!,
+                request.TimeoutSeconds,
+                cancellationToken);
+        }
+
+        return new DesktopNodeHyperVGuestFileInfo(
+            request.Name,
+            request.Operation,
+            evaluation.Direction,
+            evaluation.NormalizedHostPath!,
+            evaluation.NormalizedGuestPath!,
+            evaluation.SizeBytes,
+            Copied: copy,
+            HostMutationPerformed: false);
     }
 
     private DesktopNodeHyperVGuestExecutionInfo Execute(
@@ -168,6 +258,51 @@ public sealed class DesktopNodeHyperVPowerShellDirectGuestExecutionProvider : ID
         var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(value ?? string.Empty));
         return Convert.ToHexString(bytes).ToLowerInvariant();
     }
+}
+
+internal interface IDesktopNodeHyperVGuestFileHost
+{
+    bool TryGetLength(string path, out long length);
+}
+
+internal sealed class DesktopNodeHyperVGuestFileHost : IDesktopNodeHyperVGuestFileHost
+{
+    public bool TryGetLength(string path, out long length)
+    {
+        length = 0;
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            return false;
+        }
+
+        try
+        {
+            var info = new FileInfo(path);
+            if (!info.Exists)
+            {
+                return false;
+            }
+
+            length = info.Length;
+            return true;
+        }
+        catch (Exception ex) when (ex is ArgumentException or IOException or UnauthorizedAccessException or NotSupportedException)
+        {
+            return false;
+        }
+    }
+}
+
+internal interface IDesktopNodeHyperVGuestFileCopier
+{
+    void CopyToGuest(
+        string vmName,
+        string username,
+        string password,
+        string hostPath,
+        string guestPath,
+        int timeoutSeconds,
+        CancellationToken cancellationToken);
 }
 
 internal interface IDesktopNodeHyperVGuestCredentialResolver

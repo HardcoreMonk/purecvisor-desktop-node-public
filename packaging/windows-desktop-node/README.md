@@ -3,18 +3,18 @@
 <!-- BEGIN GENERATED CURRENT EVIDENCE -->
 ## Current operational evidence (generated)
 
-- Version: `0.42.74-admin-smoke`
+- Version: `0.42.86-admin-smoke`
 - Active operator surfaces: Web Console and PCVCLI; `tui_present=false`.
-- Package evidence: `docs/ga-ready/evidence/admin-smoke-package-2026-08-20-04274.md`.
-- Full admin host mutation: `full-admin-host-mutation-gate-20260820-04274` / `docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-08-20-04274-hostmutation.md`.
-- Actual-VM functional evidence: `docs/ga-ready/evidence/functional-correctness-actual-host-validation-2026-08-20-04274.md`.
-- Feature qualification: `contract=pcv-feature-promotion-decision-v1`; `promotion_eligible=false`; `blocker_count=1`; `blockers=pcv.vm.saved-lifecycle/actual_vm_tested/fail`.
-- Installed CLI/Web current-card: `docs/ga-ready/evidence/installed-operator-surface-current-card-2026-08-20-04274.md`; CLI exit 0, Web HTTP 200, service Running/Automatic, TUI absent.
-- Clean MSI SHA-256: `f4d0fcb75bc463676b831a4f871c402636039a7f1bbaf3780b24d10eceae1b8e`.
-- Operational MSI SHA-256: `2bc46c986a629695462f6b424bb3ca963162fd59fbf6359fbcb73b38ea09b787`.
-- Operational payload aggregate SHA-256: `c7984216f1625f2570e2da8cc0428f1a9a4ef9ecf8fe049d8ccfa6d3100df71d`.
-- Provenance commit: `adc04673b569ef9b587371fdb23bc11ceb14e2e2`.
-- Latest closed manual-admin pair: `0.42.73-admin-smoke -> 0.42.74-admin-smoke` / `manual-admin-campaign-descriptor-20260820-04273-04274-closed`.
+- Package evidence: `docs/ga-ready/evidence/admin-smoke-package-2026-10-02-04286.md`.
+- Full admin host mutation: `full-admin-host-mutation-gate-20261002-04286` / `docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-10-02-04286-hostmutation.md`.
+- Actual-VM functional evidence: `docs/ga-ready/evidence/functional-correctness-actual-host-validation-2026-10-02-04286-carryforward.md`.
+- Feature qualification: `contract=pcv-feature-promotion-decision-v1`; `promotion_eligible=true`; `blocker_count=0`; `blockers=none`.
+- Installed CLI/Web current-card: `docs/ga-ready/evidence/installed-operator-surface-current-card-2026-10-02-04286.md`; CLI exit 0, Web HTTP 200, service Running/Automatic, TUI absent.
+- Clean MSI SHA-256: `8edb19ce8f1b4fc550b6b455acb0fd2509c4bb29b5e3a8b544d8009b6d17b9b6`.
+- Operational MSI SHA-256: `85387f31b6892c5be37ec25b22f64d5a655f323e870e29812e65b40ad6ed8f3e`.
+- Operational payload aggregate SHA-256: `bba7e10c0970e580bb5d5f176aa93e942961aa9c89c5e446da8de66208f9187d`.
+- Provenance commit: `b807803f778e29c206f1bb2ba8277d2a1136198f`.
+- Latest closed manual-admin pair: `0.42.85-admin-smoke -> 0.42.86-admin-smoke` / `manual-admin-campaign-descriptor-20261002-04285-04286-consume`.
 - Claims: `public_trusted_signing=false`; `external_stable_publication=false`.
 <!-- END GENERATED CURRENT EVIDENCE -->
 
@@ -112,10 +112,11 @@ Historical `0.42.24-admin-smoke` Runtime/API current evidence rollup은 `docs/ga
 현재 wrapper 요약:
 
 - 기본 제품 service host는 WinSW가 아니라 `DesktopNode.Host.exe` .NET Windows Service 실행 파일이다.
-- 현재 운영 제품은 `0.42.74-admin-smoke`다. Web Console과 PCVCLI가 active operator
+- 현재 운영 제품은 `0.42.77-admin-smoke`다. Web Console과 PCVCLI가 active operator
   surface이고 TUI는 ADR-0011에 따라 absent다. 최신 닫힌 manual-admin package-pair는
-  `0.42.73-admin-smoke -> 0.42.74-admin-smoke`이며, feature qualification은
-  `promotion_eligible=false`다.
+  `0.42.75-admin-smoke -> 0.42.77-admin-smoke`이며, feature qualification은
+  `promotion_eligible=true`다. 04275 predecessor는 `0.42.75-admin-smoke` /
+  `full-admin-host-mutation-gate-20260821-04275`다.
 - 현재 Required CI 기준은 final `main`
   `6e2bdb93ce308b632c929e2c17f5550ac3845401`, run `32904006595`의 exact four contexts
   `dotnet`, `web`, `delivery`, `installer-policy`다. Pester/pwsh Public Boundary run
@@ -190,6 +191,7 @@ Historical `0.42.24-admin-smoke` Runtime/API current evidence rollup은 `docs/ga
 - Internal HTTPS/TLS lifecycle installed smoke는 `docs/ga-ready/evidence/internal-https-tls-lifecycle-installed-2026-05-10-0397.md`, `artifacts/internal-https-tls-lifecycle-installed-20260510-0397`에서 PASS했다. `Invoke-PcvInternalHttpsTlsLifecycleSmoke.ps1`는 temporary LocalMachine cert, HTTP.sys SSL binding, service HTTPS prefix, cert rotation, binding/cert removal, original HTTP service restore를 확인한다.
 - Internal clean-host install/update/rollback smoke는 `docs/ga-ready/evidence/internal-clean-host-install-update-rollback-smoke-2026-05-10-0417.md`, `artifacts/internal-clean-host-install-update-rollback-smoke-20260510-0417`에 기록했다. 현재 상태는 `pass`다. Lifecycle/Packaging current rebaseline은 `docs/ga-ready/evidence/lifecycle-packaging-rebaseline-2026-05-10-0415-0416.md`, `artifacts/lifecycle-packaging-rebaseline-20260510-0415-0416`에서 0.41.5 to 0.41.6 package pair, installed update/rollback, internal clean-host update/rollback PASS로 닫혔다.
 - Clean-host Windows Update NoContact recovery guard는 `docs/ga-ready/evidence/clean-host-windows-update-nocontact-recovery-guard-2026-05-14.md`에 기록했다. `Invoke-PcvInternalCleanHostInstallUpdateRollbackSmoke.ps1`는 Windows Update reboot 이후 heartbeat `NoContact` + CPU idle 상태가 threshold 이상 지속되면 VM power cycle recovery를 한 번 수행하고 `recovery_actions`를 남긴다. 실제 clean-host execution은 계속 manual-admin/elevated opt-in 범위다.
+- Clean-host base VHD 오프라인 갱신은 `tools/New-PcvCleanHostBaseVhd.ps1`가 맡는다. 평가판 원본 VHD의 복사본에 SSU cab과 LCU cab을 순서대로 오프라인 적용해 날짜별 base와 sidecar를 만들고, current 모드로 `current-base.json`을 지정한다. 기본은 dry-run이고, Store판 PowerShell은 거부한다. `Invoke-PcvInternalCleanHostInstallUpdateRollbackSmoke.ps1`는 `-BaseVhdPath`가 없으면 `current-base.json`의 base를 쓰고 summary에 `base_vhd_source`, `base_vhd_ubr`, `base_vhd_kb`를 남긴다. 현재 base는 `20348.5622-20260930.vhd`다(`docs/ga-ready/evidence/clean-host-base-vhd-offline-refresh-2026-09-30-5622.md`). 이 base의 clean-host run은 134초에 PASS했다(`docs/ga-ready/evidence/internal-clean-host-install-update-rollback-smoke-2026-09-30-04278-04283-base5622.md`).
 - Historical 2026-05-18 full admin host mutation gate evidence는 `docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-05-18-04230-hostmutation.md`다. `artifacts/batch-runs/full-admin-host-mutation-gate-20260518-04230`, `artifacts/routeparity-service-msi-hyperv-batch-profile-20260518-04230`, `artifacts/os-mutation-gates-batch-profile-20260518-04230`에서 `0.42.30-admin-smoke` Service/MSI/Hyper-V/firewall/LAN/Event Log/internal trust-store gate와 installed listener `batch_evidence.status=available`, `latest.batch_id=full-admin-host-mutation-gate-20260518-04230`, `runtime-api-current-evidence-rollup-v1` current-card smoke를 PASS로 확인했다. full-gate MSI SHA-256은 `90b59f34ad58e0d7ad2890ea4ea464ded94923759aa9435d3fbfc4c0d1873c86`, superseded initial clean package MSI SHA-256은 `c80be181ab99e9d9d5d7f59d7eb40c22841fa202dea36dcff549e5ba94552763`, provenance commit은 `f4349cf049db66b0ae1d5d38a948a6b03a8b0648`, signing mode는 `AllowUnsignedDev`다. Runtime/API registry bridge는 `runtime-api-diagnostics-ops-summary-registry-bridge-v2`로 operator-visible ops summary와 Web Console diagnostics panel에 표시되고 route detail count는 `4`다. Installed Web/TUI/CLI current-card는 `docs/ga-ready/evidence/installed-operator-surface-current-card-2026-05-18-04230.md`에서 PASS했고 Host Ops Web diagnostics bucket table contract는 `host-ops-web-diagnostics-bucket-table-v1`이다. 이 evidence는 public trusted signing 또는 외부 stable publication evidence가 아니다.
 - Historical 2026-05-18 manual-admin package-pair evidence는 `docs/ga-ready/evidence/manual-admin-campaign-2026-05-18-04229-04230.md`다. `0.42.29-admin-smoke -> 0.42.30-admin-smoke` installed update/rollback, clean-host with Windows Update, Burn, MSIX, installed runtime ops summary, descriptor generation v2, installed current-card recheck가 PASS다. Target operational MSI SHA-256은 `90b59f34ad58e0d7ad2890ea4ea464ded94923759aa9435d3fbfc4c0d1873c86`, update ZIP SHA-256은 `f9739db9f25622a6dc61ef9c7e00e5ba07f2c8b9020308ecfe7587162175a9c2`, provenance commit은 `f4349cf049db66b0ae1d5d38a948a6b03a8b0648`다. Descriptor `manual-admin-campaign-descriptor-20260518-04229-04230-closed`는 `missing_count=0`, `not_pass_count=0`이다. 이전 `0.42.28-admin-smoke -> 0.42.29-admin-smoke`, `0.42.27-admin-smoke -> 0.42.28-admin-smoke`, `0.42.26-admin-smoke -> 0.42.27-admin-smoke`, `0.42.25-admin-smoke -> 0.42.26-admin-smoke`는 historical closed package-pair로 보존한다.
 - Previous full admin host mutation gate evidence는 `docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-05-16-04220-hostmutation.md`다. `artifacts/batch-runs/full-admin-host-mutation-gate-20260516-04220`, `artifacts/routeparity-service-msi-hyperv-batch-profile-20260516-04220`, `artifacts/os-mutation-gates-batch-profile-20260516-04220`에서 `0.42.20-admin-smoke` Service/MSI/Hyper-V/firewall/LAN/Event Log/internal trust-store gate와 installed listener `batch_evidence.status=available`, `latest.batch_id=full-admin-host-mutation-gate-20260516-04220` current-card smoke를 PASS로 확인했다. full-gate MSI SHA-256은 `12b7baec853f07430581e14603ceb6debfb467ece8bb98a509b51cc365836e3c`, clean package MSI SHA-256은 `794953bcf3c8f05d1a424b7cc83c1e93e43898d1201c9dc64e32d3e17510b84f`, provenance commit은 `0895d018935298721b25b5d9ce1ae083a6690c25`, signing mode는 `AllowUnsignedDev`다. 이 evidence는 historical predecessor이며 public trusted signing 또는 외부 stable publication evidence가 아니다.

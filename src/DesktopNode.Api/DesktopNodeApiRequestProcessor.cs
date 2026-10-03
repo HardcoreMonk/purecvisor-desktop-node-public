@@ -14,7 +14,9 @@ public sealed record DesktopNodeApiRequest(
     string? Body = null,
     string? RequestId = null,
     string? ClientIdentity = null,
-    string? Authorization = null, bool RemoteIsLoopback = false);
+    string? Authorization = null,
+    bool RemoteIsLoopback = false,
+    bool ServiceBearerAccepted = false);
 
 public sealed record DesktopNodeApiResponse(
     int StatusCode,
@@ -70,7 +72,11 @@ public sealed partial class DesktopNodeApiRequestProcessor
     private readonly DesktopNodeApiVmMutationRouteHandler vmMutationRouteHandler;
     private readonly DesktopNodeApiJobWorker jobWorker;
     private readonly DesktopNodeApiVmReadRouteHandler vmReadRouteHandler;
+    private readonly DesktopNodeCheckpointScheduleDueWorker checkpointScheduleDueWorker;
     private readonly object sync = new();
+    private DateTimeOffset lastCheckpointScheduleDueScan = DateTimeOffset.MinValue;
+
+    public bool AccountAuthReady => authSessionHandler.Ready;
 
     // Deterministic test seam for the provider-result/serialized-finalization boundary.
     // The tick itself lives on DesktopNodeApiJobWorker now, so this forwards rather than
@@ -91,7 +97,8 @@ public sealed partial class DesktopNodeApiRequestProcessor
         DesktopNodeDiagnosticBundleOptions? diagnosticBundleOptions,
         DesktopNodeAccountAuthOptions? accountAuthOptions,
         DesktopNodeConsoleOptions? consoleOptions,
-        string? currentEvidencePath)
+        string? currentEvidencePath,
+        string? checkpointScheduleFilePath)
     {
         this.tokenStorage = tokenStorage;
         this.currentExposure = currentExposure;
@@ -121,24 +128,41 @@ public sealed partial class DesktopNodeApiRequestProcessor
         // this lock is the mutual exclusion between request handling and the worker tick,
         // so a second lock object would silently drop that exclusion.
         throttle = new DesktopNodeApiRequestThrottle(this.hardeningOptions, sync);
-        consoleRouteHandler = new DesktopNodeApiConsoleRouteHandler(resolvedConsoleOptions);
+        var noVncTargetStore = new DesktopNodeNoVncTargetStore(resolvedConsoleOptions);
+        consoleRouteHandler = new DesktopNodeApiConsoleRouteHandler(noVncTargetStore, authSessionHandler, jobRuntime);
         guestExecutionRouteHandler = new DesktopNodeApiGuestExecutionRouteHandler(authSessionHandler);
         jobRouteHandler = new DesktopNodeApiJobRouteHandler(jobRuntime);
-        vmReadRouteHandler = new DesktopNodeApiVmReadRouteHandler(operationInvoker, jobRouteHandler);
+        var checkpointScheduleStore = new DesktopNodeCheckpointScheduleStore(checkpointScheduleFilePath);
+        vmReadRouteHandler = new DesktopNodeApiVmReadRouteHandler(
+            operationInvoker,
+            jobRouteHandler,
+            checkpointScheduleStore,
+            this.hardeningOptions);
         reconciliationHandler = new DesktopNodeApiJobReconciliationHandler(
             jobRuntime,
             operationInvoker,
-            this.hardeningOptions);
+            this.hardeningOptions,
+            noVncTargetStore,
+            checkpointScheduleStore);
         vmMutationRouteHandler = new DesktopNodeApiVmMutationRouteHandler(
             jobRuntime,
             operationInvoker,
             reconciliationHandler,
-            authSessionHandler);
+            authSessionHandler,
+            checkpointScheduleStore);
         jobWorker = new DesktopNodeApiJobWorker(
             jobRuntime,
             cancellationScopes,
             operationInvoker,
-            sync);
+            sync,
+            noVncTargetStore,
+            checkpointScheduleStore);
+        checkpointScheduleDueWorker = new DesktopNodeCheckpointScheduleDueWorker(
+            checkpointScheduleStore,
+            operationInvoker,
+            reconciliationHandler,
+            jobRuntime,
+            checkpointScheduleFilePath);
     }
 
     public DesktopNodeApiResponse Handle(DesktopNodeApiRequest request)
@@ -278,6 +302,12 @@ public sealed partial class DesktopNodeApiRequestProcessor
             return diagnosticsRouteResponse;
         }
 
+        var consoleRouteResponse = consoleRouteHandler.TryHandle(request, method, path);
+        if (consoleRouteResponse is not null)
+        {
+            return consoleRouteResponse;
+        }
+
         if (isQueuedMutationRoute)
         {
             return vmMutationRouteHandler.HandleQueuedMutationRoute(request, queuedMutationMatch, cancellationToken);
@@ -303,12 +333,6 @@ public sealed partial class DesktopNodeApiRequestProcessor
                 currentExposure,
                 authSessionHandler.CreateRuntimePolicy(tokenStorage),
                 consoleRouteHandler.CreateRuntimePolicy()));
-        }
-
-        var consoleRouteResponse = consoleRouteHandler.TryHandle(method, path);
-        if (consoleRouteResponse is not null)
-        {
-            return consoleRouteResponse;
         }
 
         var opsSummaryResponse = opsSummaryHandler.TryHandle(
@@ -363,6 +387,23 @@ public sealed partial class DesktopNodeApiRequestProcessor
         return jobWorker.ProcessOneQueuedJobAsync().GetAwaiter().GetResult();
     }
 
+    public IReadOnlyList<DesktopNodeCheckpointScheduleDueResult> ProcessDueCheckpointSchedules(
+        bool force = true,
+        CancellationToken cancellationToken = default)
+    {
+        lock (sync)
+        {
+            var now = hardeningOptions.Now();
+            if (!force && now - lastCheckpointScheduleDueScan < TimeSpan.FromMinutes(1))
+            {
+                return [];
+            }
+
+            lastCheckpointScheduleDueScan = now;
+            return checkpointScheduleDueWorker.Tick(now, cancellationToken);
+        }
+    }
+
     public IReadOnlyList<DesktopNodeApiWorkerTickResult> ProcessWorkerPool(int workerCount = 1)
     {
         var results = new List<DesktopNodeApiWorkerTickResult>();
@@ -386,64 +427,4 @@ public sealed partial class DesktopNodeApiRequestProcessor
 
         return results;
     }
-
-    public async Task RunWorkerLoopAsync(
-        CancellationToken cancellationToken,
-        int workerCount = 1,
-        TimeSpan? idleDelay = null)
-    {
-        var delay = idleDelay ?? TimeSpan.FromMilliseconds(250);
-        while (!cancellationToken.IsCancellationRequested)
-        {
-            var processed = false;
-            // The Desktop Node API runtime currently runs one background mutation worker.
-            var boundedWorkerCount = Math.Clamp(workerCount, 1, 1);
-            for (var index = 0; index < boundedWorkerCount; index++)
-            {
-                DesktopNodeApiWorkerTickResult tick;
-                try
-                {
-                    tick = await jobWorker.ProcessOneQueuedJobAsync(cancellationToken).ConfigureAwait(false);
-                }
-                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-                {
-                    return;
-                }
-                catch
-                {
-                    break;
-                }
-
-                if (tick.Error is not null)
-                {
-                    // A NotCommitted start leaves the job durably queued and is safe to
-                    // reevaluate after the normal poll delay. Completion uncertainty sets
-                    // the runtime load block, so reevaluation cannot replay the provider.
-                    break;
-                }
-
-                if (!tick.Processed)
-                {
-                    break;
-                }
-
-                processed = true;
-            }
-
-            if (processed)
-            {
-                continue;
-            }
-
-            try
-            {
-                await Task.Delay(delay, cancellationToken).ConfigureAwait(false);
-            }
-            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-            {
-                return;
-            }
-        }
-    }
-
 }

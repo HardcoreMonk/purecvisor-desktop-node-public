@@ -3,20 +3,71 @@
 <!-- BEGIN GENERATED CURRENT EVIDENCE -->
 ## Current operational evidence (generated)
 
-- Version: `0.42.74-admin-smoke`
+- Version: `0.42.86-admin-smoke`
 - Active operator surfaces: Web Console and PCVCLI; `tui_present=false`.
-- Package evidence: `docs/ga-ready/evidence/admin-smoke-package-2026-08-20-04274.md`.
-- Full admin host mutation: `full-admin-host-mutation-gate-20260820-04274` / `docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-08-20-04274-hostmutation.md`.
-- Actual-VM functional evidence: `docs/ga-ready/evidence/functional-correctness-actual-host-validation-2026-08-20-04274.md`.
-- Feature qualification: `contract=pcv-feature-promotion-decision-v1`; `promotion_eligible=false`; `blocker_count=1`; `blockers=pcv.vm.saved-lifecycle/actual_vm_tested/fail`.
-- Installed CLI/Web current-card: `docs/ga-ready/evidence/installed-operator-surface-current-card-2026-08-20-04274.md`; CLI exit 0, Web HTTP 200, service Running/Automatic, TUI absent.
-- Clean MSI SHA-256: `f4d0fcb75bc463676b831a4f871c402636039a7f1bbaf3780b24d10eceae1b8e`.
-- Operational MSI SHA-256: `2bc46c986a629695462f6b424bb3ca963162fd59fbf6359fbcb73b38ea09b787`.
-- Operational payload aggregate SHA-256: `c7984216f1625f2570e2da8cc0428f1a9a4ef9ecf8fe049d8ccfa6d3100df71d`.
-- Provenance commit: `adc04673b569ef9b587371fdb23bc11ceb14e2e2`.
-- Latest closed manual-admin pair: `0.42.73-admin-smoke -> 0.42.74-admin-smoke` / `manual-admin-campaign-descriptor-20260820-04273-04274-closed`.
+- Package evidence: `docs/ga-ready/evidence/admin-smoke-package-2026-10-02-04286.md`.
+- Full admin host mutation: `full-admin-host-mutation-gate-20261002-04286` / `docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-10-02-04286-hostmutation.md`.
+- Actual-VM functional evidence: `docs/ga-ready/evidence/functional-correctness-actual-host-validation-2026-10-02-04286-carryforward.md`.
+- Feature qualification: `contract=pcv-feature-promotion-decision-v1`; `promotion_eligible=true`; `blocker_count=0`; `blockers=none`.
+- Installed CLI/Web current-card: `docs/ga-ready/evidence/installed-operator-surface-current-card-2026-10-02-04286.md`; CLI exit 0, Web HTTP 200, service Running/Automatic, TUI absent.
+- Clean MSI SHA-256: `8edb19ce8f1b4fc550b6b455acb0fd2509c4bb29b5e3a8b544d8009b6d17b9b6`.
+- Operational MSI SHA-256: `85387f31b6892c5be37ec25b22f64d5a655f323e870e29812e65b40ad6ed8f3e`.
+- Operational payload aggregate SHA-256: `bba7e10c0970e580bb5d5f176aa93e942961aa9c89c5e446da8de66208f9187d`.
+- Provenance commit: `b807803f778e29c206f1bb2ba8277d2a1136198f`.
+- Latest closed manual-admin pair: `0.42.85-admin-smoke -> 0.42.86-admin-smoke` / `manual-admin-campaign-descriptor-20261002-04285-04286-consume`.
 - Claims: `public_trusted_signing=false`; `external_stable_publication=false`.
 <!-- END GENERATED CURRENT EVIDENCE -->
+
+## 2026-09-20 캠페인 연속 실행
+
+- 실행 단위는 checkpoint가 아니라 campaign이다. 열린 상태는
+  `docs/ga-ready/active-campaign.json`이다. 지금 intent는
+  `lane1-continuous-development`다.
+- 설계: `docs/superpowers/specs/2026-09-20-purecvisor-desktop-node-campaign-continuity-design.md`.
+
+## 2026-09-20 Lane 3 `0.42.77` 승격
+
+- `docs/ga-ready/current-evidence.json` current는 `0.42.77-admin-smoke`다. 닫힌 pair는
+  `0.42.75-admin-smoke -> 0.42.77-admin-smoke` /
+  `manual-admin-campaign-descriptor-20260920-04275-04277`다.
+- pair target은 clean MSI `d03eedaf…`다. operational fullgate MSI `d4ebba77…` /
+  provenance `9f051b5`는 fullgate tuple이다.
+- 이 호스트 `installed_current`는 product Update 뒤 `0.42.77-admin-smoke`다. P0 feature
+  ledger는 `0.42.75-admin-smoke` evidence를 유지한다. clone은 `not-assessed`다.
+- 2026-09-20 current-card 재캡처는 `PCV_NETWORK_INVENTORY_FAILED`로 FAIL이며 current가
+  아니다. Default Switch 복구는 열린 campaign의 `next_step`이 아니다.
+
+## 2026-09-20 프로젝트 진행 상황 현행화
+
+- 2026-09-06 감사 이후 14일, 마지막 origin/main 커밋 이후 21일의 권위 재확인은
+  `docs/project-status-audit-2026-09-20.md`가 소유한다. operational current는 계속
+  `0.42.75-admin-smoke`다. 이 현행화는 `current-evidence.json`을 바꾸지 않는다.
+- 세 권위: `ledger_current=0.42.75-admin-smoke`, `source_head=2e63bd5`,
+  `installed_current=0.42.75-admin-smoke`. 09-06의 이 호스트 `absent`는 당시 snapshot이다.
+  오늘 설치본 manifest/DisplayVersion `0.42.75`, service `Running/Automatic`을 읽었다.
+- 소스 HEAD의 `0.42.77` probe와 `0.42.75 -> 0.42.77` pair `not-opened`는 유지된다.
+  clone feature evidence는 계속 `not-assessed`다. 열린 PR은 `#5`.
+- Required CI 네 shard 재실행과 host mutation은 이 현행화 범위가 아니다. `origin/main`
+  최신 Development Gates run `33312234285`와 Public Boundary run `33312234278`이
+  2026-08-30 이후 추가 run 없이 마지막 성공이다.
+- 2026-09-20 B1: `0.42.75 -> 0.42.77` 여섯 bucket PASS를 한 root로 모아 descriptor
+  `manual-admin-campaign-descriptor-20260920-04275-04277`가 `pass`다. current는 유지.
+  증거는 `docs/ga-ready/evidence/manual-admin-campaign-2026-09-20-04275-04277.md`다.
+
+## 2026-09-06 프로젝트 진행 상황 현행화
+
+- 2026-08-05 감사 이후 32일 간격의 권위 재확인은
+  `docs/project-status-audit-2026-09-06.md`가 소유한다. operational current는 계속
+  `0.42.75-admin-smoke`다. 이 현행화는 `current-evidence.json`을 바꾸지 않는다.
+- 08-05의 프론트엔드 가짜 상태 P0, `main`/`origin/main` 양방향 분기, untracked 감사 문서,
+  68일 manual-admin 정체는 닫힌 것으로 읽는다. 닫힌 pair는
+  `0.42.74-admin-smoke -> 0.42.75-admin-smoke`다.
+- 소스 HEAD `2e63bd5`는 P1 clone과 `0.42.77-admin-smoke` probe package/fullgate/current-card/
+  clone actual-VM r2 PASS를 가지지만 current가 아니다. `0.42.75 -> 0.42.77` pair는
+  `not-opened`다. clone feature evidence 단계는 `not-assessed`다.
+- 이 워크스테이션의 `installed_current`는 `absent`다. Required CI 네 shard 재실행과 host
+  mutation은 이 현행화 범위가 아니다. `origin/main` 최신 Development Gates run
+  `33312234285`와 Public Boundary run `33312234278`이 2026-08-30에 성공했다.
 
 ## 2026-08-25 Required CI cutover closure
 
@@ -107,6 +158,11 @@
   P0-4 code-level 기록은
   `docs/ga-ready/evidence/service-plan-p0-managed-import-code-level-2026-08-14.md`다.
   이 문서 전용 편집은 product payload가 아니며 `0.42.74`를 열지 않는다.
+  P1-5 managed full clone 설계는
+  `docs/superpowers/specs/2026-08-27-purecvisor-desktop-node-p1-managed-full-clone-design.md`이며
+  구현 계획은
+  `docs/superpowers/plans/2026-08-27-purecvisor-desktop-node-p1-managed-full-clone.md`다.
+  그 설계·계획 자체는 `0.42.76`을 열지 않는다.
 - 2026-07-16 구현 평가는 `0.42.65` 기준 predecessor다. Web 기본 경로 미완은 04273
   loopback session으로 닫힌 것으로 해석한다.
 
@@ -368,7 +424,8 @@ Web/TUI cancel affordance와 actual credentialed guest-exec를 설치본 current
 04250→04254 manual-admin readiness는 baseline mismatch로 blocked
 기록만 남겼다.
 noVNC target config mutation은 `docs/adr/0010-account-novnc-target-config-security-policy-candidate.md`가
-보류 경계를 소유한다. Guest Execution docs-contract evidence는
+보류 경계를 소유한다. 현재 적용 문서는
+`docs/adr/0010-novnc-target-config-security-policy.md`다. Guest Execution docs-contract evidence는
 `docs/ga-ready/evidence/guest-execution-security-boundary-2026-05-26.md`다.
 
 설치본 TUI row projection fix는 실제 VM `pcv-ux-qos-04241` 기반
@@ -482,12 +539,12 @@ manual-admin descriptor schema v2(`descriptor_schema_version=2`,
 | CLI 명령어 사용 설명서 확인 | `docs/CLI_COMMAND_USAGE.md`, `src/DesktopNode.Cli/README.md` |
 | Phase 2 Hyper-V QoS mutation 설치본 승격 | `docs/adr/0008-hyperv-qos-mutation-policy.md`, `docs/ga-ready/evidence/hyperv-qos-mutation-code-level-2026-05-26.md`, `docs/ga-ready/evidence/hyperv-qos-mutation-installed-2026-05-26-04247.md`, `docs/superpowers/specs/2026-05-26-purecvisor-desktop-node-phase2-hyperv-qos-mutation-design.md`, `docs/superpowers/plans/2026-05-26-purecvisor-desktop-node-phase2-hyperv-qos-mutation.md` |
 | Guest Execution 보안 경계 확인 | `docs/adr/0009-guest-execution-security-boundary.md`, `docs/ga-ready/evidence/guest-execution-security-boundary-2026-05-26.md` |
-| noVNC target config mutation 보안 정책 확인 | `docs/adr/0010-account-novnc-target-config-security-policy-candidate.md` |
+| noVNC target config mutation 보안 정책 확인 | `docs/adr/0010-novnc-target-config-security-policy.md`, `docs/adr/0010-account-novnc-target-config-security-policy-candidate.md` |
 | 설치본 운영/runbook 확인 | `docs/OPERATIONS_GUIDE.md`, `docs/PUBLIC_RELEASE_BOUNDARY.md`, `packaging/windows-desktop-node/README.md` |
 | 저장소 경계 확인 | `docs/PUBLIC_RELEASE_BOUNDARY.md` |
 | 현재 적용 ADR 확인 | `docs/ADR_INDEX.md` |
 | 검증 기준 확인 | `docs/DEVELOPMENT_VERIFICATION_POLICY.md` |
-| 개발 가속 고정 기준 확인 | `docs/DEVELOPMENT_VERIFICATION_POLICY.md` |
+| 개발 작업 시작·분류·Lane·승인 절차 | `docs/DEVELOPMENT_PROCEDURE.md` |
 | 전체 phase 순서 확인 | `docs/superpowers/plans/2026-04-27-purecvisor-desktop-node-phase-roadmap.md` |
 | Phase 11 제품 승격 판단 확인 | `docs/superpowers/specs/2026-04-25-purecvisor-desktop-node-phase11-runtime-promotion-decision-design.md` |
 | Phase 13 WinSW product wrapper 변경 | `docs/superpowers/plans/2026-04-26-purecvisor-desktop-node-phase13-winsw-service-wrapper.md` |
@@ -503,6 +560,7 @@ manual-admin descriptor schema v2(`descriptor_schema_version=2`,
 | ADR-0006 내부 사설망 배포 결정 확인 | `docs/adr/0006-internal-private-network-distribution.md`, `docs/ga-ready/INTERNAL_PRIVATE_NETWORK_DISTRIBUTION_MATRIX.md`, `docs/ga-ready/evidence/internal-private-network-boundary-2026-05-10.md` |
 | Internal HTTPS/TLS lifecycle installed smoke 확인 | `docs/ga-ready/evidence/internal-https-tls-lifecycle-installed-2026-05-10-0397.md`, `artifacts/internal-https-tls-lifecycle-installed-20260510-0397/summary.json`, `packaging/windows-desktop-node/tools/Invoke-PcvInternalHttpsTlsLifecycleSmoke.ps1` |
 | Internal clean-host install/update/rollback smoke 확인 | `docs/ga-ready/evidence/internal-clean-host-install-update-rollback-smoke-2026-05-10-0417.md`, `artifacts/internal-clean-host-install-update-rollback-smoke-20260510-0417/summary.json`, `packaging/windows-desktop-node/tools/Invoke-PcvInternalCleanHostInstallUpdateRollbackSmoke.ps1` |
+| Clean-host base VHD 오프라인 갱신 확인 | `docs/superpowers/specs/2026-09-29-purecvisor-desktop-node-clean-host-base-vhd-refresh-design.md` §8, `docs/ga-ready/evidence/clean-host-base-vhd-offline-refresh-2026-09-30-5622.md`, `docs/ga-ready/evidence/internal-clean-host-install-update-rollback-smoke-2026-09-30-04278-04283-base5622.md`, `packaging/windows-desktop-node/tools/New-PcvCleanHostBaseVhd.ps1` |
 | Lifecycle/Packaging current rebaseline 확인 | `docs/ga-ready/evidence/lifecycle-packaging-rebaseline-2026-05-10-0415-0416.md`, `artifacts/lifecycle-packaging-rebaseline-20260510-0415-0416/summary.json`, `packaging/windows-desktop-node/tools/Invoke-PcvInternalCleanHostInstallUpdateRollbackSmoke.ps1` |
 | MANUAL-ADMIN 1-2-3-4 캠페인 확인 | `docs/ga-ready/evidence/manual-admin-campaign-2026-05-11-0418-0419.md`, `artifacts/manual-admin-campaign-20260511-0418-0419/summary.json`, `artifacts/internal-clean-host-install-update-rollback-smoke-20260511-0418-0419/summary.json` |
 | 최신 MANUAL-ADMIN 1-2-3-4 캠페인 확인 | `docs/ga-ready/evidence/manual-admin-campaign-2026-05-11-0420-0421.md`, `artifacts/manual-admin-campaign-20260511-0420-0421/summary.json`, `artifacts/internal-clean-host-install-update-rollback-smoke-20260511-0420-0421/summary.json` |

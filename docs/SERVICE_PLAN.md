@@ -162,14 +162,16 @@ evidence다.
 | 영역 | 판정 | 근거 |
 | --- | --- | --- |
 | 서비스 코어 (SCM, MSI, listener, token) | 내부 운영 가능 | 04273 fullgate + current-card |
-| 백엔드 제품 경로 | 구현 완료, 일부 family 미완 | route registry + 04273 functional 10/10 |
-| Web 기본 경로 | 04273에서 열림 | loopback smoke, token 붙여넣기 없음 |
-| Job reconcile | 부분 | rename/delete/checkpoint.create만 |
-| 다음 lab 운영 공백 | 기획 대상 | attach, Saved, clone, managed import |
+| 백엔드 제품 경로 | 구현 완료 | route `80`개, surface ledger(`config/desktop-node-feature-surface-ledger.json`) |
+| Web 기본 경로 | 열림, 정책 제외 `4`개 외 전 route binding | loopback smoke. 제외는 noVNC target 저장 `3`개(§7.2)와 `vm.limit`(명시적 QoS/자원 제어와 중복) |
+| Job reconcile | 분류 완료 | 대상 `26`개(`DesktopNodeJobRuntime.ReconcilableMutations`), 이유 있는 비대상 `19`개(`ReconcileNonTargets`). `vm.disk-resize`는 `vm.list` size readback 전까지 `409` |
+| 다음 lab 운영 공백 | 소스 반영 | attach, Saved, clone, managed import(P0~P2). 설치본 evidence는 package pair와 Lane 2가 맡는다 |
 
 2026-07-16 평가의 “Web 첫 진입 401 + 가짜 Connected”는 후속 진실성 slice와 loopback
 bootstrap으로 닫혔다. 남은 백엔드는 새 하이퍼바이저가 아니라 **기존 family의 빈 짝과
-조건부 복구**다.
+조건부 복구**였다. 2026-09-30 개발 완료 campaign(`development-completion-20260930`)이 그 빈 짝을 소스에서
+닫았다. Web binding과 reconcile 분류가 끝났고, `ApiSurfaceCompletionContractTests`와
+`ApiReconcileClassificationTests`가 그 상태를 고정한다. 설치본 동작과 actual-VM 동작은 아직 주장하지 않는다.
 
 ## 6. 참조 제품: Workstation 26H1
 
@@ -219,7 +221,7 @@ Workstation 이름을 가져오지 않는다. 같은 운영 공백을 PCV 계약
 
 | # | 기획 이름 | 열기 전 조건 | 열면 안 되는 형태 |
 | ---: | --- | --- | --- |
-| 11 | noVNC target 설정 | ADR-0010: audit, rollback, loopback 기본, reload | 화면에서 target 저장, LAN 기본 on |
+| 11 | noVNC target 설정 | ADR-0010 적용. audit, rollback, loopback 기본, in-process reload | 화면에서 target 저장, LAN 기본 on |
 | 12 | 주기 checkpoint | retention, 용량 가드 | 무한 AutoProtect |
 | 13 | Hyper-V export/import | managed marker 유지 | 만능 OVF, vTPM 키 노출 |
 | 14 | 네트워크 변경 | admin runbook / service-action만 | Web switch/NAT/DHCP 에디터 |
@@ -261,7 +263,7 @@ P0–P1을 열면 그때 **새 product payload**가 생기고, 그때만 `0.42.7
 #### 지금은 열지 않음
 
 - linked clone / 차이 디스크 트리
-- noVNC target self-service (ADR-0010 전)
+- Web에서 noVNC target 저장 폼 / LAN 기본 on
 - 브라우저에서 firewall/trust-store/MSI
 - 설치 시 기본 계정 생성
 - Hyper-V exactly-once, mixed-version 동시 writer (ADR-0013 비주장)
@@ -321,7 +323,7 @@ P0-1 media attach
 | `docs/service-core-backend-frontend-implementation-evaluation-2026-07-16.md` | 04265 구현 평가 (선행) |
 | `docs/adr/0006-internal-private-network-distribution.md` | 내부 사설망 |
 | `docs/adr/0009-guest-execution-security-boundary.md` | guest exec |
-| `docs/adr/0010-account-novnc-target-config-security-policy-candidate.md` | noVNC target 보류 |
+| `docs/adr/0010-novnc-target-config-security-policy.md` | noVNC target 적용 (code-level) |
 | `docs/adr/0011-cli-web-only-operator-surface.md` | CLI/Web-only |
 | `docs/adr/0013-job-store-single-writer-transaction-lease.md` | job store 비주장 |
 | `docs/ga-ready/EVIDENCE_INDEX.md` | 04273 evidence |
@@ -333,3 +335,5 @@ P0-1 media attach
 | `docs/ga-ready/evidence/service-plan-p0-hyperv-saved-code-level-2026-08-14.md` | P0-3 Hyper-V Saved code-level evidence |
 | `docs/superpowers/specs/2026-08-14-purecvisor-desktop-node-p0-managed-import-design.md` | P0-4 managed import 설계 |
 | `docs/ga-ready/evidence/service-plan-p0-managed-import-code-level-2026-08-14.md` | P0-4 managed import code-level evidence |
+| `docs/superpowers/specs/2026-08-27-purecvisor-desktop-node-p1-managed-full-clone-design.md` | P1-5 managed full clone 설계 |
+| `docs/superpowers/plans/2026-08-27-purecvisor-desktop-node-p1-managed-full-clone.md` | P1-5 managed full clone 구현 계획 |

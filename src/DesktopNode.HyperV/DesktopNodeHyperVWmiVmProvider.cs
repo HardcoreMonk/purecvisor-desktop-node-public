@@ -6,7 +6,7 @@ using static DesktopNode.HyperV.DesktopNodeHyperVWmiCommon;
 
 namespace DesktopNode.HyperV;
 
-public sealed class DesktopNodeHyperVWmiVmProvider : IDesktopNodeHyperVVmProvider
+public sealed partial class DesktopNodeHyperVWmiVmProvider : IDesktopNodeHyperVVmProvider
 {
     public const string CimQuery = DesktopNodeHyperVWmiCommon.VmQuery;
     public const string VirtualSystemSettingClass = "Msvm_VirtualSystemSettingData";
@@ -16,7 +16,11 @@ public sealed class DesktopNodeHyperVWmiVmProvider : IDesktopNodeHyperVVmProvide
     public const string MemorySettingClass = "Msvm_MemorySettingData";
     public const string SnapshotAssociationClass = "Msvm_SnapshotOfVirtualSystem";
     public const string StorageSettingClass = "Msvm_StorageAllocationSettingData";
+    public const string VirtualDvdDiskSubtype = "Microsoft:Hyper-V:Virtual CD/DVD Disk";
+    private const string DvdStorageKind = "dvd";
     public const string EthernetPortAllocationSettingClass = "Msvm_EthernetPortAllocationSettingData";
+    public const string ResourceAllocationSettingClass = "Msvm_ResourceAllocationSettingData";
+    public const string SyntheticDvdDriveSubtype = "Microsoft:Hyper-V:Synthetic DVD Drive";
 
     public IReadOnlyList<DesktopNodeHyperVVmInfo> GetVms(CancellationToken cancellationToken)
     {
@@ -45,12 +49,13 @@ public sealed class DesktopNodeHyperVWmiVmProvider : IDesktopNodeHyperVVmProvide
     {
         var name = string.IsNullOrWhiteSpace(summary.Name) ? summary.Id : summary.Name;
         var id = string.IsNullOrWhiteSpace(summary.Id) ? name : summary.Id;
+        var state = MapEnabledState(summary.EnabledState);
         return new DesktopNodeHyperVVmInfo(
             Id: id,
             Name: name,
             Platform: "hyperv",
             GuestFamily: MapGuestFamily(summary.Notes),
-            State: MapEnabledState(summary.EnabledState),
+            State: state,
             Cpu: new DesktopNodeHyperVVmCpuInfo(ConvertToInt32(summary.ProcessorCount)),
             Memory: new DesktopNodeHyperVVmMemoryInfo(
                 MapMemoryQuantityToMb(summary.StartupMemoryQuantity, summary.StartupMemoryQuantityUnits),
@@ -61,7 +66,23 @@ public sealed class DesktopNodeHyperVWmiVmProvider : IDesktopNodeHyperVVmProvide
             Network: MapNetwork(summary.Network),
             Checkpoints: new DesktopNodeHyperVVmCheckpointInfo(summary.CheckpointCount),
             Console: new DesktopNodeHyperVVmConsoleInfo("vmconnect", true),
-            ManagedByPurecvisor: DesktopNodeHyperVManagedNotes.IsManagedNotes(summary.Notes));
+            ManagedByPurecvisor: DesktopNodeHyperVManagedNotes.IsManagedNotes(summary.Notes),
+            CreatedAt: summary.CreationTime,
+            LastPoweredOn: MapLastPoweredOn(state, summary.TimeOfLastStateChange),
+            Notes: DesktopNodeHyperVManagedNotes.OperatorNotes(summary.Notes),
+            TemplateLock: DesktopNodeHyperVManagedNotes.IsTemplateLocked(summary.Notes),
+            DvdDrives: summary.DvdDriveCount is { } dvdDriveCount ? new DesktopNodeHyperVVmDvdDriveInfo(dvdDriveCount) : null,
+            DvdMedia: summary.Storage is null ? null : MapDvdMedia(summary.Storage));
+    }
+
+    private static string? MapLastPoweredOn(string state, string? timeOfLastStateChange)
+    {
+        if (!string.Equals(state, "running", StringComparison.Ordinal))
+        {
+            return null;
+        }
+
+        return string.IsNullOrWhiteSpace(timeOfLastStateChange) ? null : timeOfLastStateChange;
     }
 
     private static DesktopNodeHyperVWmiVmSummary ReadSummary(ManagementObject vm, string name)
@@ -71,8 +92,10 @@ public sealed class DesktopNodeHyperVWmiVmProvider : IDesktopNodeHyperVVmProvide
         string? startupMemoryQuantityUnits = null;
         string? generationSubtype = null;
         string? notes = null;
+        string? creationTime = null;
         IReadOnlyList<DesktopNodeHyperVWmiVmStorageSummary> storage = [];
         IReadOnlyList<DesktopNodeHyperVWmiVmNetworkSummary> network = [];
+        int? dvdDriveCount = null;
 
         try
         {
@@ -95,8 +118,10 @@ public sealed class DesktopNodeHyperVWmiVmProvider : IDesktopNodeHyperVVmProvide
                     startupMemoryQuantityUnits = GetFirstRelatedStringProperty(setting, MemorySettingClass, "VirtualQuantityUnits");
                     generationSubtype = GetStringProperty(setting, "VirtualSystemSubType");
                     notes = GetStringProperty(setting, "Notes");
+                    creationTime = GetDateTimeProperty(setting, "CreationTime");
                     storage = GetStorageSummaries(setting);
                     network = GetNetworkSummaries(setting);
+                    dvdDriveCount = GetDvdDriveCount(setting);
                 }
 
                 break;
@@ -120,7 +145,10 @@ public sealed class DesktopNodeHyperVWmiVmProvider : IDesktopNodeHyperVVmProvide
             CheckpointCount: GetCheckpointCount(vm),
             Notes: notes,
             Storage: storage,
-            Network: network);
+            Network: network,
+            CreationTime: creationTime,
+            TimeOfLastStateChange: GetDateTimeProperty(vm, "TimeOfLastStateChange"),
+            DvdDriveCount: dvdDriveCount);
     }
 
     private static int? ConvertToInt32(object? value)
@@ -305,7 +333,7 @@ public sealed class DesktopNodeHyperVWmiVmProvider : IDesktopNodeHyperVVmProvide
         var disks = new List<DesktopNodeHyperVVmDiskInfo>();
         foreach (var item in storage)
         {
-            if (!IsVhdPath(item.Path))
+            if (item.Kind == DvdStorageKind || !IsVhdPath(item.Path))
             {
                 continue;
             }
@@ -314,6 +342,14 @@ public sealed class DesktopNodeHyperVWmiVmProvider : IDesktopNodeHyperVVmProvide
         }
 
         return disks;
+    }
+
+    private static IReadOnlyList<DesktopNodeHyperVVmDvdMediaInfo> MapDvdMedia(IReadOnlyList<DesktopNodeHyperVWmiVmStorageSummary> storage)
+    {
+        return storage
+            .Where(item => item.Kind == DvdStorageKind && !string.IsNullOrWhiteSpace(item.Path))
+            .Select(item => new DesktopNodeHyperVVmDvdMediaInfo(item.Path!))
+            .ToArray();
     }
 
     private static IReadOnlyList<DesktopNodeHyperVVmNetworkInfo> MapNetwork(IReadOnlyList<DesktopNodeHyperVWmiVmNetworkSummary>? network)
@@ -349,7 +385,9 @@ public sealed class DesktopNodeHyperVWmiVmProvider : IDesktopNodeHyperVVmProvide
                 path.EndsWith(".vhd", StringComparison.OrdinalIgnoreCase));
     }
 
-    private static IReadOnlyList<DesktopNodeHyperVWmiVmStorageSummary> GetStorageSummaries(ManagementObject setting)
+    // 저장소 할당은 subtype 으로 나눈다. 가상 DVD 디스크의 HostResource 는 ISO 경로다. 읽기에 실패하면 null 을 돌려
+    // dvd_media 를 생략하므로, 소비자는 "media 없음"(빈 목록)과 "모름"(필드 없음)을 구분할 수 있다.
+    private static IReadOnlyList<DesktopNodeHyperVWmiVmStorageSummary>? GetStorageSummaries(ManagementObject setting)
     {
         try
         {
@@ -368,6 +406,17 @@ public sealed class DesktopNodeHyperVWmiVmProvider : IDesktopNodeHyperVVmProvide
             {
                 using (item)
                 {
+                    if (string.Equals(item.Properties["ResourceSubType"]?.Value as string, VirtualDvdDiskSubtype, StringComparison.OrdinalIgnoreCase))
+                    {
+                        var iso = GetFirstStringArrayItem(item, "HostResource", value => !string.IsNullOrWhiteSpace(value));
+                        if (iso is not null)
+                        {
+                            result.Add(new DesktopNodeHyperVWmiVmStorageSummary(iso, Attached: true, Kind: DvdStorageKind));
+                        }
+
+                        continue;
+                    }
+
                     var path = GetFirstStringArrayItem(item, "HostResource", IsVhdPath);
                     if (!string.IsNullOrWhiteSpace(path))
                     {
@@ -380,51 +429,11 @@ public sealed class DesktopNodeHyperVWmiVmProvider : IDesktopNodeHyperVVmProvide
         }
         catch (ManagementException)
         {
-            return [];
+            return null;
         }
         catch (UnauthorizedAccessException)
         {
-            return [];
-        }
-    }
-
-    private static IReadOnlyList<DesktopNodeHyperVWmiVmNetworkSummary> GetNetworkSummaries(ManagementObject setting)
-    {
-        try
-        {
-            using var related = setting.GetRelated(
-                EthernetPortAllocationSettingClass,
-                SettingDataComponentAssociationClass,
-                relationshipQualifier: null,
-                relatedQualifier: null,
-                relatedRole: "PartComponent",
-                thisRole: "GroupComponent",
-                classDefinitionsOnly: false,
-                options: null);
-
-            var result = new List<DesktopNodeHyperVWmiVmNetworkSummary>();
-            foreach (ManagementObject item in related)
-            {
-                using (item)
-                {
-                    var switchName = GetStringProperty(item, "LastKnownSwitchName") ??
-                        GetFirstStringArrayItem(item, "Connection", static value => !string.IsNullOrWhiteSpace(value));
-                    if (!string.IsNullOrWhiteSpace(switchName))
-                    {
-                        result.Add(new DesktopNodeHyperVWmiVmNetworkSummary(switchName));
-                    }
-                }
-            }
-
-            return result;
-        }
-        catch (ManagementException)
-        {
-            return [];
-        }
-        catch (UnauthorizedAccessException)
-        {
-            return [];
+            return null;
         }
     }
 

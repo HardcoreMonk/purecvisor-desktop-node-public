@@ -159,6 +159,31 @@ public sealed class DesktopNodeHostOptionsTests
     }
 
     [Fact]
+    public void ServiceActionOptionsParseSwitchCreateArguments()
+    {
+        var options = DesktopNodeHostOptions.Parse([
+            "service-action",
+            "switch-create",
+            "--product-root",
+            "C:\\Program Files\\PureCVisor\\DesktopNode",
+            "--service-exe",
+            "C:\\Program Files\\PureCVisor\\DesktopNode\\DesktopNode.Host.exe",
+            "--switch-name",
+            "pcv-lab-internal",
+            "--switch-type",
+            "internal",
+            "--allow-management-os",
+            "--dry-run"
+        ]);
+
+        Assert.Equal("switch-create", options.ServiceAction);
+        Assert.Equal("pcv-lab-internal", options.SwitchName);
+        Assert.Equal("internal", options.SwitchType);
+        Assert.True(options.AllowManagementOs);
+        Assert.True(options.DryRun);
+    }
+
+    [Fact]
     public void ServiceActionOptionsParseEventLogDefaultTransitionTimeout()
     {
         var options = DesktopNodeHostOptions.Parse([

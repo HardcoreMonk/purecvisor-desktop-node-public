@@ -11,8 +11,8 @@ public sealed class HyperVDomainContractTests
             .OrderBy(operation => operation.Operation, StringComparer.Ordinal)
             .ToArray();
 
-        Assert.Equal(38, operations.Length);
-        Assert.Equal(38, operations.Select(operation => operation.Operation).Distinct(StringComparer.Ordinal).Count());
+        Assert.Equal(49, operations.Length);
+        Assert.Equal(49, operations.Select(operation => operation.Operation).Distinct(StringComparer.Ordinal).Count());
 
         Assert.Equal(
             [
@@ -25,20 +25,30 @@ public sealed class HyperVDomainContractTests
                 "vm.attach",
                 "vm.bandwidth",
                 "vm.blkio-get",
+                "vm.clone",
+                "vm.clone.preview",
                 "vm.cpu-stats",
                 "vm.create",
                 "vm.delete",
                 "vm.disk-resize",
+                "vm.disk.inspect",
+                "vm.dvd.add",
                 "vm.eject",
+                "vm.export",
                 "vm.guest-agent-status",
                 "vm.guest-ping",
                 "vm.guest.channel.ensure",
                 "vm.guest.channel.verify",
                 "vm.guest.exec",
+                "vm.guest.file",
+                "vm.guest.file.preview",
+                "vm.import",
                 "vm.limit",
                 "vm.list",
                 "vm.manage",
                 "vm.memory-stats",
+                "vm.network.connect",
+                "vm.nic.add",
                 "vm.pause",
                 "vm.poweroff",
                 "vm.qos.network.preview",
@@ -53,7 +63,8 @@ public sealed class HyperVDomainContractTests
                 "vm.set-memory",
                 "vm.set-vcpu",
                 "vm.shutdown",
-                "vm.start"
+                "vm.start",
+                "vm.template.lock"
             ],
             operations.Select(operation => operation.Operation).ToArray());
 
@@ -77,6 +88,8 @@ public sealed class HyperVDomainContractTests
     [InlineData("vm.guest-agent-status", DesktopNodeHyperVOperationDomain.VmInventory, "vm-provider")]
     [InlineData("vm.guest-ping", DesktopNodeHyperVOperationDomain.VmInventory, "vm-provider")]
     [InlineData("vm.guest.exec", DesktopNodeHyperVOperationDomain.GuestExecution, "guest-execution-provider")]
+    [InlineData("vm.guest.file.preview", DesktopNodeHyperVOperationDomain.GuestExecution, "guest-execution-provider")]
+    [InlineData("vm.guest.file", DesktopNodeHyperVOperationDomain.GuestExecution, "guest-execution-provider")]
     [InlineData("vm.guest.channel.verify", DesktopNodeHyperVOperationDomain.GuestExecution, "guest-execution-provider")]
     [InlineData("vm.guest.channel.ensure", DesktopNodeHyperVOperationDomain.GuestExecution, "guest-execution-provider")]
     [InlineData("vm.create", DesktopNodeHyperVOperationDomain.VmLifecycle, "vm-create-provider")]
@@ -86,8 +99,16 @@ public sealed class HyperVDomainContractTests
     [InlineData("vm.resume-saved", DesktopNodeHyperVOperationDomain.VmLifecycle, "vm-power-state-provider")]
     [InlineData("vm.rename", DesktopNodeHyperVOperationDomain.VmLifecycle, "vm-rename-provider")]
     [InlineData("vm.manage", DesktopNodeHyperVOperationDomain.VmLifecycle, "vm-manage-provider")]
+    [InlineData("vm.template.lock", DesktopNodeHyperVOperationDomain.VmLifecycle, "vm-manage-provider")]
+    [InlineData("vm.clone.preview", DesktopNodeHyperVOperationDomain.VmLifecycle, "vm-clone-provider")]
+    [InlineData("vm.clone", DesktopNodeHyperVOperationDomain.VmLifecycle, "vm-clone-provider")]
+    [InlineData("vm.export", DesktopNodeHyperVOperationDomain.VmLifecycle, "vm-export-provider")]
+    [InlineData("vm.import", DesktopNodeHyperVOperationDomain.VmLifecycle, "vm-import-provider")]
+    [InlineData("vm.network.connect", DesktopNodeHyperVOperationDomain.VmLifecycle, "vm-network-connect-provider")]
+    [InlineData("vm.nic.add", DesktopNodeHyperVOperationDomain.VmLifecycle, "vm-network-connect-provider")]
     [InlineData("vm.eject", DesktopNodeHyperVOperationDomain.VmLifecycle, "vm-media-provider")]
     [InlineData("vm.attach", DesktopNodeHyperVOperationDomain.VmLifecycle, "vm-media-provider")]
+    [InlineData("vm.dvd.add", DesktopNodeHyperVOperationDomain.VmLifecycle, "vm-media-provider")]
     [InlineData("vm.limit", DesktopNodeHyperVOperationDomain.VmLifecycle, "vm-resource-mutation-provider")]
     [InlineData("vm.qos.storage.set", DesktopNodeHyperVOperationDomain.VmLifecycle, "vm-resource-mutation-provider")]
     [InlineData("vm.qos.network.set", DesktopNodeHyperVOperationDomain.VmLifecycle, "vm-resource-mutation-provider")]
@@ -217,7 +238,7 @@ public sealed class HyperVDomainContractTests
         var dispatchCatalog = DesktopNodeHyperVAdapterDispatchCatalog.Entries
             .ToDictionary(entry => entry.Operation, StringComparer.Ordinal);
 
-        Assert.Equal(38, dispatchCatalog.Count);
+        Assert.Equal(49, dispatchCatalog.Count);
 
         foreach (var operation in DesktopNodeHyperVDomain.Catalog)
         {
@@ -249,6 +270,7 @@ public sealed class HyperVDomainContractTests
                 "vm.memory-stats",
                 "vm.cpu-stats",
                 "vm.blkio-get",
+                "vm.disk.inspect",
                 "vm.bandwidth",
                 "vm.guest-agent-status",
                 "vm.guest-ping",
@@ -275,13 +297,34 @@ public sealed class HyperVDomainContractTests
             DesktopNodeHyperVAdapterDispatchCatalog.OperationsForHandler(DesktopNodeHyperVAdapterDispatchHandler.VmRename));
         Assert.Equal(
             [
-                "vm.manage"
+                "vm.manage",
+                "vm.template.lock"
             ],
             DesktopNodeHyperVAdapterDispatchCatalog.OperationsForHandler(DesktopNodeHyperVAdapterDispatchHandler.VmManage));
         Assert.Equal(
             [
+                "vm.clone.preview"
+            ],
+            DesktopNodeHyperVAdapterDispatchCatalog.OperationsForHandler(DesktopNodeHyperVAdapterDispatchHandler.VmClonePreview));
+        Assert.Equal(
+            [
+                "vm.clone"
+            ],
+            DesktopNodeHyperVAdapterDispatchCatalog.OperationsForHandler(DesktopNodeHyperVAdapterDispatchHandler.VmClone));
+        Assert.Equal(
+            ["vm.export"],
+            DesktopNodeHyperVAdapterDispatchCatalog.OperationsForHandler(DesktopNodeHyperVAdapterDispatchHandler.VmExport));
+        Assert.Equal(
+            ["vm.import"],
+            DesktopNodeHyperVAdapterDispatchCatalog.OperationsForHandler(DesktopNodeHyperVAdapterDispatchHandler.VmImport));
+        Assert.Equal(
+            ["vm.network.connect", "vm.nic.add"],
+            DesktopNodeHyperVAdapterDispatchCatalog.OperationsForHandler(DesktopNodeHyperVAdapterDispatchHandler.VmNetworkConnect));
+        Assert.Equal(
+            [
                 "vm.eject",
-                "vm.attach"
+                "vm.attach",
+                "vm.dvd.add"
             ],
             DesktopNodeHyperVAdapterDispatchCatalog.OperationsForHandler(DesktopNodeHyperVAdapterDispatchHandler.VmMedia));
         Assert.Equal(
@@ -298,7 +341,9 @@ public sealed class HyperVDomainContractTests
             [
                 "vm.guest.exec",
                 "vm.guest.channel.verify",
-                "vm.guest.channel.ensure"
+                "vm.guest.channel.ensure",
+                "vm.guest.file.preview",
+                "vm.guest.file"
             ],
             DesktopNodeHyperVAdapterDispatchCatalog.OperationsForHandler(DesktopNodeHyperVAdapterDispatchHandler.GuestExecution));
         Assert.Equal(

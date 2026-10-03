@@ -227,6 +227,91 @@ function renderAccountSession() {
       <span>RBAC gates destructive actions</span>
     </div>
     ${errorHtml}
+  </div>
+  ${renderAccountDirectory()}`;
+}
+
+function renderAccountDirectory() {
+  const bootstrap = isAccountBootstrapOpen();
+  const canManage = canManageAccounts();
+  const pending = state.accountManagePending || state.authPending;
+  const disabledAttr = pending ? ' disabled' : '';
+  const directoryError = state.accountDirectoryError
+    ? `<div class="diagnostics-result error"><span class="muted">Accounts</span><strong>${escapeHtml(state.accountDirectoryError.code)}</strong><p>${escapeHtml(state.accountDirectoryError.message)} ${escapeHtml(state.accountDirectoryError.detail)}</p></div>`
+    : '';
+
+  if (bootstrap) {
+    return `<div class="token-rotation-card account-directory-card">
+    <div class="diagnostics-header">
+      <div>
+        <span class="muted">Accounts</span>
+        <strong>Create first admin</strong>
+      </div>
+      <span class="status-badge warn">no-default-account</span>
+    </div>
+    <form id="account-create-form" class="account-login-form" autocomplete="off">
+      <label>Username<input name="username" type="text" autocomplete="off" aria-label="new account username"${disabledAttr}></label>
+      <label>Password<input name="password" type="password" autocomplete="new-password" aria-label="new account password"${disabledAttr}></label>
+      <label>Display name<input name="display_name" type="text" autocomplete="off" aria-label="new account display name"${disabledAttr}></label>
+      <input type="hidden" name="role" value="admin">
+      <button type="submit"${disabledAttr}>Create first admin</button>
+    </form>
+    <div class="boundary-chip-row">
+      <span>loopback bootstrap only</span>
+      <span>password stays out of the DOM after submit</span>
+      <span>no default account</span>
+    </div>
+    ${directoryError}
+  </div>`;
+  }
+
+  if (!canManage) {
+    return '';
+  }
+
+  const accounts = asArray(state.accountDirectory);
+  const rows = accounts.length
+    ? accounts.map((account) => {
+        const username = String(account?.username || '');
+        const enabled = account?.enabled !== false;
+        return `<tr>
+        <td>${escapeHtml(username)}</td>
+        <td>${escapeHtml(account?.role || '-')}</td>
+        <td>${escapeHtml(enabled ? 'enabled' : 'disabled')}</td>
+        <td><button type="button" class="danger-button" data-action="account-disable" data-username="${escapeHtml(username)}"${pending || !enabled ? ' disabled' : ''}>Disable</button></td>
+      </tr>`;
+      }).join('')
+    : '<tr><td colspan="4">No accounts listed.</td></tr>';
+
+  return `<div class="token-rotation-card account-directory-card">
+    <div class="diagnostics-header">
+      <div>
+        <span class="muted">Accounts</span>
+        <strong>Create / disable</strong>
+      </div>
+      <span class="status-badge ok">${escapeHtml(state.accountDirectory?.bootstrap_state || 'accounts-configured')}</span>
+    </div>
+    <table class="data-table account-directory-table">
+      <thead><tr><th>Username</th><th>Role</th><th>State</th><th></th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <form id="account-create-form" class="account-login-form" autocomplete="off">
+      <label>Username<input name="username" type="text" autocomplete="off" aria-label="new account username"${disabledAttr}></label>
+      <label>Password<input name="password" type="password" autocomplete="new-password" aria-label="new account password"${disabledAttr}></label>
+      <label>Role<select name="role" aria-label="new account role"${disabledAttr}>
+        <option value="admin">admin</option>
+        <option value="operator">operator</option>
+        <option value="viewer">viewer</option>
+      </select></label>
+      <label>Display name<input name="display_name" type="text" autocomplete="off" aria-label="new account display name"${disabledAttr}></label>
+      <button type="submit"${disabledAttr}>Create account</button>
+    </form>
+    <div class="boundary-chip-row">
+      <span>account.manage required</span>
+      <span>last enabled admin cannot be disabled</span>
+      <span>password stays out of the DOM after submit</span>
+    </div>
+    ${directoryError}
   </div>`;
 }
 

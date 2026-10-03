@@ -12,6 +12,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\DesktopNode.Contracts\DesktopNode.Contracts.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <!-- Lets the guest-execution transport keep its process-launch details internal while
          still being covered by a contract test. -->
     <InternalsVisibleTo Include="DesktopNode.HyperV.Tests" />

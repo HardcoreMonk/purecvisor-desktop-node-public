@@ -2,13 +2,14 @@
 function renderCheckpointList(vmId) {
   const checkpoints = asArray(state.selectedVmCheckpoints);
   const canOperate = rbacAllows('operate');
+  const templateLocked = isTemplateLockedVm(state.selectedVm);
   if (checkpoints.length === 0) {
     return '<p class="muted">No checkpoints returned for this VM.</p>';
   }
 
   return checkpoints.map((checkpoint) => {
     const checkpointId = getCheckpointId(checkpoint);
-    const checkpointDisabled = isCheckpointActionPending(vmId, checkpointId) || !canOperate ? ' disabled' : '';
+    const checkpointDisabled = isCheckpointActionPending(vmId, checkpointId) || !canOperate || templateLocked ? ' disabled' : '';
     return `<div class="checkpoint-row">
       <div>
         <strong>${escapeHtml(getCheckpointName(checkpoint))}</strong>
@@ -84,6 +85,8 @@ function renderVmQosGuestReadback(vmId) {
       ${renderReadbackCard(readbacks, 'bandwidth', 'bandwidth', 'network_qos', ['linux_bandwidth_compatible', 'mutation_supported'])}
       ${renderReadbackCard(readbacks, 'guest_agent', 'guest-agent-status', 'guest_agent', ['status', 'qemu_guest_agent', 'guest_exec_supported'])}
       ${renderReadbackCard(readbacks, 'guest_ping', 'guest-ping', 'guest_ping', ['reachable', 'guest_heartbeat_verified'])}
+      ${renderReadbackCard(readbacks, 'memory_stats', 'memory-stats', 'memory', ['startup_mb', 'assigned_mb', 'dynamic'])}
+      ${renderReadbackCard(readbacks, 'cpu_stats', 'cpu-stats', 'cpu', ['count'])}
     </div>
     <p class="muted">updated_at=${escapeHtml(updated)} / vm.limit remains CLI/API queued mutation</p>
   </section>`;
@@ -118,9 +121,10 @@ function renderVmQosDirectControl(vmId) {
   const canOperate = rbacAllows('operate');
   const canGuestExec = rbacAllows('guest.exec');
   const canGuestChannel = rbacAllows('guest.channel.configure');
-  const actionDisabled = isVmActionPending(vmId) || !canOperate ? ' disabled' : '';
-  const guestExecDisabled = isVmActionPending(vmId) || !canGuestExec ? ' disabled' : '';
-  const guestChannelDisabled = isVmActionPending(vmId) || !canGuestChannel ? ' disabled' : '';
+  const templateLocked = isTemplateLockedVm(state.selectedVm);
+  const actionDisabled = isVmActionPending(vmId) || !canOperate || templateLocked ? ' disabled' : '';
+  const guestExecDisabled = isVmActionPending(vmId) || !canGuestExec || templateLocked ? ' disabled' : '';
+  const guestChannelDisabled = isVmActionPending(vmId) || !canGuestChannel || templateLocked ? ' disabled' : '';
   const control = getSelectedVmQosControl(vmId);
   return `<section class="qos-control-panel">
     <div class="mini-section-header">
@@ -164,6 +168,7 @@ function renderVmQosDirectControl(vmId) {
         <label>Timeout seconds<input name="timeout_sec" type="number" min="1" max="600" step="1" value="60"${guestExecDisabled}></label>
         <label>Command<input name="command" autocomplete="off" placeholder="hostname"${guestExecDisabled}></label>
         <div class="qos-control-actions">
+          <button type="submit" data-action="vm-guest-exec-preview"${guestExecDisabled}>Preview exec</button>
           <button type="submit" class="danger-button" data-action="vm-guest-exec"${guestExecDisabled}>Queue exec</button>
         </div>
       </form>
@@ -171,12 +176,23 @@ function renderVmQosDirectControl(vmId) {
         <label>Credential reference<input name="credential_ref" autocomplete="off" placeholder="wincred:target"${guestChannelDisabled}></label>
         <label>Timeout seconds<input name="timeout_sec" type="number" min="1" max="600" step="1" value="30"${guestChannelDisabled}></label>
         <div class="qos-control-actions">
+          <button type="submit" data-action="guest-agent-channel-preview"${guestChannelDisabled}>Preview channel</button>
           <button type="submit" data-action="guest-agent-ensure-channel" data-guest-channel-mode="verify"${guestChannelDisabled}>Verify channel</button>
           <button type="submit" class="danger-button" data-action="guest-agent-ensure-channel" data-guest-channel-mode="repair"${guestChannelDisabled}>Repair channel</button>
         </div>
       </form>
+      <form class="qos-control-form" data-action="vm-guest-file" data-vm-id="${escapeHtml(vmId)}">
+        <label>Host path<input name="host_path" autocomplete="off" placeholder="C:\\ProgramData\\PureCVisor\\desktop-node\\guest-files\\payload.iso"${guestExecDisabled}></label>
+        <label>Guest path<input name="guest_path" autocomplete="off" placeholder="C:\\Users\\Public\\PureCVisor\\payload.iso"${guestExecDisabled}></label>
+        <label>Credential reference<input name="credential_ref" autocomplete="off" placeholder="wincred:target"${guestExecDisabled}></label>
+        <label>Timeout seconds<input name="timeout_sec" type="number" min="1" max="600" step="1" value="60"${guestExecDisabled}></label>
+        <div class="qos-control-actions">
+          <button type="submit" class="danger-button" data-action="vm-guest-file"${guestExecDisabled}>Copy host file</button>
+        </div>
+      </form>
     </div>
     <p class="muted">Guest command output is reduced to audit digests; raw stdout/stderr and credential values are not rendered.</p>
+    <p class="muted">Guest file copy is host-to-guest only, allowlisted, and does not use HGFS.</p>
     <p class="muted">Account/noVNC target config mutation remains ADR-0010 deferred.</p>
   </section>`;
 }

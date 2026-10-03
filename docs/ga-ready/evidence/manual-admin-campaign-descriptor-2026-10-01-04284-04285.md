@@ -1,0 +1,43 @@
+# Manual-admin campaign descriptor `0.42.84-admin-smoke` -> `0.42.85-admin-smoke`
+
+evidence_id: `manual-admin-campaign-descriptor-2026-10-01-04284-04285`
+result: `PASS`
+evidence_scope: `internal-admin-smoke-only`
+descriptor_batch_id: `manual-admin-campaign-descriptor-20261001-04284-04285`
+artifact_root: `artifacts/manual-admin-campaign-descriptor-20261001-04284-04285`
+descriptor_path: `artifacts/manual-admin-campaign-descriptor-20261001-04284-04285/manual-admin-campaign.descriptor.json`
+descriptor_sha256: `d510a7996527ebbd3575258778e967b253493563f4d1ef94464bd13bc8f44da8`
+summary_sha256: `3dfa58e14c7532a4ce9c636d7a2c53c7ace71c25b747b6b36852264dd157f8a9`
+readiness_root: `artifacts/manual-admin-rebaseline-readiness-20261001-04284-04285`
+plan_only: `true`
+host_mutation_performed: `false`
+overall_status: `pass`
+missing_count: `0`
+not_pass_count: `0`
+runner_count: `6`
+canonical_current_evidence: `0.42.84-admin-smoke`
+canonical_current_changed: `false`
+public_trusted_signing: `not-claimed`
+external_stable_publication: `not-claimed`
+
+## 입력
+
+| runner | status | evidence |
+| --- | --- | --- |
+| `manual-admin-readiness` | `pass` | Task 2a, readiness summary |
+| `installed-product-update-rollback` | `pass` | `product-update-rollback-2026-10-01-04284-04285` |
+| `clean-host-install-update-rollback` | `pass` | `internal-clean-host-install-update-rollback-smoke-2026-10-01-04284-04285` |
+| `burn-install-repair-remove` | `pass` | `burn-bootstrapper-lifecycle-smoke-2026-10-01-04285` (r2 root) |
+| `msix-build-install-update-remove` | `pass` | `msix-package-lifecycle-smoke-2026-10-01-04284-04285` |
+| `installed-runtime-ops-summary` | `pass` | `installed-runtime-ops-summary-2026-10-01-04284` |
+
+## 판정
+
+descriptor는 `overall_status=pass`, `missing_count=0`, `not_pass_count=0`이다. 이 생성은 로컬 evidence를 읽기만 했다. `release_candidate.next_candidate_version`은 `0.42.85-admin-smoke`다.
+
+full admin host mutation과 installed current-card는 이 descriptor의 여섯 runner에 들어 있지 않다. `docs/ga-ready/current-evidence.json`은 `0.42.84-admin-smoke` 그대로다. Lane 3 승격은 이 campaign의 승인 밖이다.
+
+## Nonclaims
+
+- public trusted signing과 external stable publication을 주장하지 않는다.
+- operational current를 `0.42.85-admin-smoke`로 올리지 않았다.

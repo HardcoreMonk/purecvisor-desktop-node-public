@@ -33,7 +33,8 @@ public sealed record DesktopNodeHostServiceActionPlan(
     string? NativeJobStoreMigrationOperation = null,
     string? NativeCredentialManagerOperation = null,
     string? NativeDataRootLifecycleOperation = null,
-    string? CredentialTarget = null);
+    string? CredentialTarget = null,
+    string? NativeSwitchOperation = null);
 
 public sealed record DesktopNodeHostCommandResult(
     string FileName,
@@ -49,147 +50,6 @@ public sealed record DesktopNodeHostRemoveDataHandoff(
     IReadOnlyList<string> Paths,
     string RequiredAction,
     string Reason);
-
-public sealed record DesktopNodeHostConfigMigrationSource(
-    string Name,
-    string Path,
-    bool Owned,
-    int? SchemaVersion,
-    string? Version);
-
-public sealed record DesktopNodeHostConfigMigrationDescriptor(
-    string Operation,
-    bool Ok,
-    IReadOnlyList<DesktopNodeHostConfigMigrationSource> ConfigSources,
-    string DataRoot,
-    string ServiceName,
-    string? MigrationPlanId,
-    int? MigrationPlanVersion,
-    bool MutationPlanned,
-    bool MutationPerformed,
-    bool ServiceStopped,
-    string BackupRoot,
-    string? ErrorCode,
-    string? ErrorMessage,
-    string? BackupPath = null,
-    string? TempPath = null,
-    int? SourceSchemaVersion = null,
-    int? TargetSchemaVersion = null,
-    bool RollbackAttempted = false,
-    bool RollbackSucceeded = false,
-    bool OriginalConfigRestored = false,
-    bool PartialConfigPresent = false);
-
-public sealed record DesktopNodeHostJobStoreMigrationDescriptor(
-    string Operation,
-    bool Ok,
-    string JobStorePath,
-    bool Owned,
-    int? CurrentSchemaVersion,
-    int JobCount,
-    int QueueCount,
-    string RuntimeWriter,
-    string DataRoot,
-    string ServiceName,
-    string? MigrationPlanId,
-    int? MigrationPlanVersion,
-    bool MutationPlanned,
-    bool MutationPerformed,
-    bool ServiceStopped,
-    string BackupRoot,
-    string? ErrorCode,
-    string? ErrorMessage,
-    string? BackupPath = null,
-    string? TempPath = null,
-    int? SourceSchemaVersion = null,
-    int? TargetSchemaVersion = null,
-    bool RollbackAttempted = false,
-    bool RollbackSucceeded = false,
-    bool OriginalJobStoreRestored = false,
-    bool PartialJobStorePresent = false,
-    bool RecoveryRequired = false);
-
-public sealed record DesktopNodeHostServiceTokenRotationDescriptor(
-    string Operation,
-    bool Ok,
-    string DataRoot,
-    string TokenPath,
-    string BackupRoot,
-    string? BackupPath,
-    string AuditPath,
-    string ServiceName,
-    string ServiceTokenMutation,
-    bool TokenValueObserved,
-    bool NewTokenValueCreated,
-    string ServiceReloadStatus,
-    string OldTokenRejectionStatus,
-    string TokenRotationAuditStatus,
-    bool HostMutationPerformed,
-    string PublicTrustedSigning,
-    string ExternalStablePublication,
-    string? OldTokenSha256,
-    string NewTokenSha256,
-    string BackupWriteStatus,
-    string AtomicReplaceStatus);
-
-public sealed record DesktopNodeHostEventLogHardeningDescriptor(
-    string Operation,
-    bool Ok,
-    string ProviderRepairStatus,
-    string EventWriteStatus,
-    string VolumeGuardStatus,
-    int? EventId,
-    bool HostMutationPerformed,
-    DesktopNodeWindowsEventLogVolumePolicySnapshot? VolumePolicy = null,
-    string DefaultWriterStatus = "not-run",
-    string ProviderRemoveStatus = "not-run",
-    string FinalProviderStatus = "not-run",
-    int? SchemaVersion = null,
-    string PublicTrustedSigning = "not-claimed",
-    string ExternalStablePublication = "not-claimed",
-    int? TimeoutSeconds = null,
-    string TimeoutGuardStatus = "not-run");
-
-public sealed record DesktopNodeHostCredentialManagerProofDescriptor(
-    string Operation,
-    bool Ok,
-    string ProofStatus,
-    string Identity,
-    string CredentialTarget,
-    string CredentialWriteStatus,
-    string CredentialReadStatus,
-    string CredentialDeleteStatus,
-    bool TokenValueObserved,
-    bool NewTokenValueCreated,
-    bool HostMutationPerformed,
-    string PublicTrustedSigning,
-    string ExternalStablePublication);
-
-public sealed record DesktopNodeHostCredentialManagerTransitionDescriptor(
-    string Operation,
-    bool Ok,
-    string Identity,
-    string CredentialTarget,
-    string DataRoot,
-    string ProtectedTokenPath,
-    string TransitionEvidencePath,
-    string RollbackDiagnosticsPath,
-    string ServiceName,
-    string SystemProofStatus,
-    string CredentialWriteStatus,
-    string CredentialReadStatus,
-    string CredentialDeleteStatus,
-    string TokenSourceMigration,
-    string ServiceReloadStatus,
-    string OldSourceRejectionStatus,
-    string RollbackDiagnosticsStatus,
-    bool TokenValueObserved,
-    bool NewTokenValueCreated,
-    bool HostMutationPerformed,
-    string PublicTrustedSigning,
-    string ExternalStablePublication,
-    string? PreviousBinaryPath,
-    string? NextBinaryPath);
 
 public sealed record DesktopNodeHostServiceActionResult(
     bool Ok,
@@ -211,7 +71,8 @@ public sealed record DesktopNodeHostServiceActionResult(
     DesktopNodeHostServiceTokenRotationDescriptor? ServiceTokenRotation = null,
     DesktopNodeHostEventLogHardeningDescriptor? EventLogHardening = null,
     DesktopNodeHostCredentialManagerProofDescriptor? CredentialManagerProof = null,
-    DesktopNodeHostCredentialManagerTransitionDescriptor? CredentialManagerTransition = null);
+    DesktopNodeHostCredentialManagerTransitionDescriptor? CredentialManagerTransition = null,
+    DesktopNodeHyperVSwitchMutationSnapshot? HyperVSwitch = null);
 
 public static partial class DesktopNodeHostServiceAction
 {
@@ -230,6 +91,7 @@ public static partial class DesktopNodeHostServiceAction
         var isNativeJobStoreMigrationAction = IsNativeJobStoreMigrationAction(action);
         var isNativeCredentialManagerAction = IsNativeCredentialManagerAction(action);
         var isNativeDataRootLifecycleAction = IsNativeDataRootLifecycleAction(action);
+        var isNativeSwitchAction = IsNativeSwitchAction(action);
         var dataRoot = RequiresDataRoot(action) ? Require(options.DataRoot, "PCV_HOST_DATA_ROOT_REQUIRED") : null;
         var credentialTarget = string.IsNullOrWhiteSpace(options.CredentialTarget)
             ? "PureCVisor/PureCVisorDesktopNode/api-token"
@@ -316,6 +178,7 @@ public static partial class DesktopNodeHostServiceAction
             "credential-manager-system-proof" or
             "eventlog-register" or "eventlog-remove" or "eventlog-repair" or "eventlog-write-test" or "eventlog-volume-guard" or "eventlog-default-transition" or
             "firewall-enable" or "firewall-remove" or
+            "switch-create" or "switch-remove" or
             "trust-store-install" or "trust-store-remove" or
             "config-migration-apply" or "job-store-migration-apply" => [],
             _ => throw new ArgumentException($"PCV_HOST_SERVICE_ACTION_INVALID|The service action is not supported.|{action}")
@@ -360,7 +223,8 @@ public static partial class DesktopNodeHostServiceAction
             NativeJobStoreMigrationOperation: isNativeJobStoreMigrationAction ? action : null,
             NativeCredentialManagerOperation: isNativeCredentialManagerAction ? action : null,
             NativeDataRootLifecycleOperation: isNativeDataRootLifecycleAction ? action : null,
-            CredentialTarget: (isNativeCredentialManagerAction || string.Equals(action, "credential-manager-default-transition", StringComparison.Ordinal)) ? credentialTarget : null);
+            CredentialTarget: (isNativeCredentialManagerAction || string.Equals(action, "credential-manager-default-transition", StringComparison.Ordinal)) ? credentialTarget : null,
+            NativeSwitchOperation: isNativeSwitchAction ? action : null);
     }
 
     public static async Task<DesktopNodeHostServiceActionResult> ExecuteAsync(
@@ -385,6 +249,24 @@ public static partial class DesktopNodeHostServiceAction
             cancellationToken).ConfigureAwait(false);
     }
 
+    public static Task<DesktopNodeHostServiceActionResult> ExecuteAsync(
+        DesktopNodeHostOptions options,
+        IDesktopNodeHyperVSwitchController switchController,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(switchController);
+        return ExecuteAsync(
+            options,
+            serviceController: null,
+            eventLogController: null,
+            firewallController: null,
+            trustStoreController: null,
+            credentialManagerController: null,
+            DesktopNodeHostFileAclHardener.Instance,
+            switchController,
+            cancellationToken);
+    }
+
     public static async Task<DesktopNodeHostServiceActionResult> ExecuteAsync(
         DesktopNodeHostOptions options,
         IDesktopNodeWindowsServiceController? serviceController,
@@ -402,6 +284,7 @@ public static partial class DesktopNodeHostServiceAction
             trustStoreController,
             credentialManagerController,
             DesktopNodeHostFileAclHardener.Instance,
+            switchController: null,
             cancellationToken).ConfigureAwait(false);
     }
 
@@ -413,6 +296,7 @@ public static partial class DesktopNodeHostServiceAction
         IDesktopNodeWindowsTrustStoreController? trustStoreController,
         IDesktopNodeWindowsCredentialManagerController? credentialManagerController,
         IDesktopNodeHostFileAclHardener fileAclHardener,
+        IDesktopNodeHyperVSwitchController? switchController = null,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(fileAclHardener);
@@ -435,6 +319,14 @@ public static partial class DesktopNodeHostServiceAction
                 options,
                 plan,
                 firewallController ?? new DesktopNodeWindowsFirewallController());
+        }
+
+        if (plan.NativeSwitchOperation is not null)
+        {
+            return Ops.DesktopNodeHyperVSwitchOps.Execute(
+                options,
+                plan,
+                switchController ?? new DesktopNodeHyperVSwitchController());
         }
 
         if (plan.NativeTrustStoreOperation is not null)

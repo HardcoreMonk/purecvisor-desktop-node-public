@@ -74,6 +74,7 @@ internal static class DesktopNodeHostOpsCatalog
                 "eventlog-default-transition"
             ]),
         new("firewall", "DesktopNodeFirewallOps", "windows-firewall-rule", ["firewall-enable", "firewall-remove"]),
+        new("hyperv-switch", "DesktopNodeHyperVSwitchOps", "hyperv-virtual-ethernet-switch", ["switch-create", "switch-remove"]),
         new("trust-store", "DesktopNodeTrustStoreOps", "windows-x509-store", ["trust-store-install", "trust-store-remove"]),
         new(
             "credential-manager",

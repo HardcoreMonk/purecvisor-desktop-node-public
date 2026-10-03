@@ -51,6 +51,22 @@ async function loadAccountSession(options = {}) {
   }
 }
 
+async function loadAccountDirectory(options = {}) {
+  if (!state.authAccessToken.trim() && !state.apiToken.trim()) {
+    state.accountDirectory = null;
+    state.accountDirectoryError = null;
+    return;
+  }
+
+  try {
+    state.accountDirectory = await desktopApi.listAccounts(options);
+    state.accountDirectoryError = null;
+  } catch (error) {
+    state.accountDirectoryError = normalizeError(error);
+    state.accountDirectory = null;
+  }
+}
+
 async function loadConsoleCapabilities(options = {}) {
   state.consoleError = null;
   try {
@@ -179,7 +195,9 @@ async function loadVmQosGuestReadbacks(vmId, options = {}) {
     ['blkio', () => desktopApi.getVmBlkio(vmId, requestOptions)],
     ['bandwidth', () => desktopApi.getVmBandwidth(vmId, requestOptions)],
     ['guest_agent', () => desktopApi.getVmGuestAgentStatus(vmId, requestOptions)],
-    ['guest_ping', () => desktopApi.getVmGuestAgentPing(vmId, requestOptions)]
+    ['guest_ping', () => desktopApi.getVmGuestAgentPing(vmId, requestOptions)],
+    ['memory_stats', () => desktopApi.getVmMemoryStats(vmId, requestOptions)],
+    ['cpu_stats', () => desktopApi.getVmCpuStats(vmId, requestOptions)]
   ];
   const results = await Promise.allSettled(steps.map(([, run]) => run()));
   if (state.selectedVmId !== vmId) return;

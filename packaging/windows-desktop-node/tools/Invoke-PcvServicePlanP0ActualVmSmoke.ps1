@@ -818,20 +818,39 @@ function Invoke-MediaAttachSlice {
         }
     }
     else {
-        Get-VMDvdDrive -VMId ([Guid]$record.id) -ErrorAction Stop | Select-Object -First 1
+        $vm = Get-PcvVmById -Id ([Guid]$record.id) -Record $record
+        if ($null -eq $vm) {
+            throw 'PCV_P0_STATE_MISMATCH|media-attach|dvd-readback-failed'
+        }
+        try {
+            Get-VMDvdDrive -VM $vm -ErrorAction Stop | Select-Object -First 1
+        }
+        catch {
+            throw 'PCV_P0_STATE_MISMATCH|media-attach|dvd-readback-failed'
+        }
     }
-    $hostResource = if ($null -ne $dvd.PSObject.Properties['HostResource']) {
+    $hostResource = if ($null -ne $dvd -and $null -ne $dvd.PSObject.Properties['HostResource']) {
         [string](@($dvd.HostResource) | Select-Object -First 1)
     }
-    else { [string]$dvd.Path }
+    elseif ($null -ne $dvd -and $null -ne $dvd.PSObject.Properties['Path']) {
+        [string]$dvd.Path
+    }
+    else { '' }
     $summary.readbacks.media_attach = [ordered]@{
         HostResource = $hostResource
         iso = $summary.iso_path_resolved
     }
-    $matches = -not [string]::IsNullOrWhiteSpace($hostResource) -and
-        (Get-AbsolutePath -Path $hostResource).Equals(
-            $summary.iso_path_resolved,
-            [System.StringComparison]::OrdinalIgnoreCase)
+    $matches = $false
+    if (-not [string]::IsNullOrWhiteSpace($hostResource)) {
+        try {
+            $matches = (Get-AbsolutePath -Path $hostResource).Equals(
+                $summary.iso_path_resolved,
+                [System.StringComparison]::OrdinalIgnoreCase)
+        }
+        catch {
+            throw "PCV_P0_STATE_MISMATCH|media-attach|HostResource=$hostResource"
+        }
+    }
     if ([string](Get-ObjectPropertyValue -InputObject $job -Name 'status') -ne 'succeeded' -or -not $matches) {
         throw "PCV_P0_STATE_MISMATCH|media-attach|HostResource=$hostResource"
     }
@@ -841,6 +860,12 @@ function Invoke-CheckpointRestoreSlice {
     $record = $script:VmRecords | Where-Object kind -eq 'managed' | Select-Object -First 1
     Start-PcvCliJob -StepName 'checkpoint-create' -Arguments @(
         'vm', 'checkpoint', 'create', $record.id, '--name', $CheckpointName) | Out-Null
+    $poweroff = Start-PcvCliJob -StepName 'vm-poweroff' -Arguments @('vm', 'poweroff', $record.id)
+    $hypervOff = Wait-HyperVState -Id ([Guid]$record.id) -Expected 'Off' -Phase 'before-restore'
+    if ([string](Get-ObjectPropertyValue -InputObject $poweroff -Name 'status') -ne 'succeeded' -or
+        $hypervOff -ne 'Off') {
+        throw "PCV_P0_STATE_MISMATCH|poweroff-before-restore|hyperv=$hypervOff"
+    }
     $restore = Start-PcvCliJob -StepName 'checkpoint-restore' -Arguments @(
         'vm', 'checkpoint', 'restore', $record.id, $CheckpointName)
     $rows = if ($null -ne $RuntimeAdapter) {
@@ -851,7 +876,7 @@ function Invoke-CheckpointRestoreSlice {
     }
     else {
         $listed = Invoke-PcvCliJson -StepName 'checkpoint-list-after-restore' -Arguments @(
-            'vm', 'checkpoint', 'list', $record.id)
+            'vm', 'checkpoint', 'list', $record.name)
         @((Get-ObjectPropertyValue -InputObject $listed.Json -Name 'data'))
     }
     $current = @($rows | Where-Object {

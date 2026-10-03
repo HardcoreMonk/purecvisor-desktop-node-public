@@ -483,6 +483,84 @@
               "coverage_id": "auth.rbac"
             }
           }
+        },
+        {
+          "operation_id": "account.list",
+          "method": "GET",
+          "route_template": "/api/v1/accounts",
+          "required_permission": "account.manage",
+          "present_surfaces": [
+            "api",
+            "cli",
+            "web"
+          ],
+          "excluded_surfaces": [],
+          "surface_bindings": {
+            "cli": {
+              "command": [
+                "account",
+                "list"
+              ]
+            },
+            "web": {
+              "coverage_id": "account.list"
+            }
+          }
+        },
+        {
+          "operation_id": "account.create",
+          "method": "POST",
+          "route_template": "/api/v1/accounts",
+          "required_permission": "account.manage",
+          "present_surfaces": [
+            "api",
+            "cli",
+            "web"
+          ],
+          "excluded_surfaces": [],
+          "surface_bindings": {
+            "cli": {
+              "command": [
+                "account",
+                "create",
+                "--username",
+                "lab-admin",
+                "--role",
+                "admin",
+                "--password-env",
+                "PCV_ACCOUNT_PASSWORD",
+                "--yes"
+              ]
+            },
+            "web": {
+              "coverage_id": "account.create"
+            }
+          }
+        },
+        {
+          "operation_id": "account.disable",
+          "method": "POST",
+          "route_template": "/api/v1/accounts/{username}/disable",
+          "required_permission": "account.manage",
+          "present_surfaces": [
+            "api",
+            "cli",
+            "web"
+          ],
+          "excluded_surfaces": [],
+          "surface_bindings": {
+            "cli": {
+              "command": [
+                "account",
+                "disable",
+                "lab-operator",
+                "--yes"
+              ]
+            },
+            "web": {
+              "coverage_id": "account.disable"
+            }
+          }
         }
       ]
     },
@@ -537,6 +615,64 @@
                 "network",
                 "list"
               ]
+            }
+          }
+        },
+        {
+          "operation_id": "vm.network.connect",
+          "method": "POST",
+          "route_template": "/api/v1/vms/{vmId}/network",
+          "required_permission": "operate",
+          "present_surfaces": [
+            "api",
+            "cli",
+            "web"
+          ],
+          "excluded_surfaces": [],
+          "surface_bindings": {
+            "cli": {
+              "command": [
+                "vm",
+                "network",
+                "connect",
+                "vm-01",
+                "--switch",
+                "pcv-lab-internal",
+                "--yes"
+              ]
+            },
+            "web": {
+              "coverage_id": "vm.network.connect"
+            }
+          }
+        },
+        {
+          "operation_id": "vm.device.add",
+          "method": "POST",
+          "route_template": "/api/v1/vms/{vmId}/devices",
+          "required_permission": "operate",
+          "present_surfaces": [
+            "api",
+            "cli",
+            "web"
+          ],
+          "excluded_surfaces": [],
+          "surface_bindings": {
+            "cli": {
+              "command": [
+                "vm",
+                "device",
+                "add",
+                "vm-01",
+                "--kind",
+                "nic",
+                "--switch",
+                "Default Switch",
+                "--yes"
+              ]
+            },
+            "web": {
+              "coverage_id": "vm.device.add"
             }
           }
         }
@@ -624,6 +760,91 @@
               ]
             }
           }
+        },
+        {
+          "operation_id": "console.novnc-target.preview",
+          "method": "POST",
+          "route_template": "/api/v1/console/novnc-target/preview",
+          "required_permission": "console.configure",
+          "present_surfaces": [
+            "api",
+            "cli"
+          ],
+          "excluded_surfaces": [
+            {
+              "surface": "web",
+              "reason": "noVNC target configuration stays CLI/API; Web Console keeps Console Access Card readback without a save form."
+            }
+          ],
+          "surface_bindings": {
+            "cli": {
+              "command": [
+                "console",
+                "novnc-target",
+                "preview",
+                "--host",
+                "127.0.0.1",
+                "--port",
+                "5900"
+              ]
+            }
+          }
+        },
+        {
+          "operation_id": "console.novnc-target.set",
+          "method": "POST",
+          "route_template": "/api/v1/console/novnc-target",
+          "required_permission": "console.configure",
+          "present_surfaces": [
+            "api",
+            "cli"
+          ],
+          "excluded_surfaces": [
+            {
+              "surface": "web",
+              "reason": "noVNC target configuration stays CLI/API; Web Console keeps Console Access Card readback without a save form."
+            }
+          ],
+          "surface_bindings": {
+            "cli": {
+              "command": [
+                "console",
+                "novnc-target",
+                "set",
+                "--host",
+                "127.0.0.1",
+                "--port",
+                "5900",
+                "--yes"
+              ]
+            }
+          }
+        },
+        {
+          "operation_id": "console.novnc-target.clear",
+          "method": "POST",
+          "route_template": "/api/v1/console/novnc-target/clear",
+          "required_permission": "console.configure",
+          "present_surfaces": [
+            "api",
+            "cli"
+          ],
+          "excluded_surfaces": [
+            {
+              "surface": "web",
+              "reason": "noVNC target configuration stays CLI/API; Web Console keeps Console Access Card readback without a save form."
+            }
+          ],
+          "surface_bindings": {
+            "cli": {
+              "command": [
+                "console",
+                "novnc-target",
+                "clear",
+                "--yes"
+              ]
+            }
+          }
         }
       ]
     },
@@ -638,14 +859,10 @@
           "required_permission": "read",
           "present_surfaces": [
             "api",
-            "cli"
+            "cli",
+            "web"
           ],
-          "excluded_surfaces": [
-            {
-              "surface": "web",
-              "reason": "Web Console uses inventory and ops-summary projections instead of raw per-VM telemetry endpoints."
-            }
-          ],
+          "excluded_surfaces": [],
           "surface_bindings": {
             "cli": {
               "command": [
@@ -653,6 +870,9 @@
                 "memory-stats",
                 "vm-01"
               ]
+            },
+            "web": {
+              "coverage_id": "vm.memory-stats"
             }
           }
         },
@@ -663,14 +883,10 @@
           "required_permission": "read",
           "present_surfaces": [
             "api",
-            "cli"
+            "cli",
+            "web"
           ],
-          "excluded_surfaces": [
-            {
-              "surface": "web",
-              "reason": "Web Console uses inventory and ops-summary projections instead of raw per-VM telemetry endpoints."
-            }
-          ],
+          "excluded_surfaces": [],
           "surface_bindings": {
             "cli": {
               "command": [
@@ -678,6 +894,9 @@
                 "cpu-stats",
                 "vm-01"
               ]
+            },
+            "web": {
+              "coverage_id": "vm.cpu-stats"
             }
           }
         }
@@ -918,14 +1137,10 @@
           "required_permission": "guest.exec",
           "present_surfaces": [
             "api",
-            "cli"
+            "cli",
+            "web"
           ],
-          "excluded_surfaces": [
-            {
-              "surface": "web",
-              "reason": "Web Console exposes explicit direct control; this preview route remains API/CLI-only."
-            }
-          ],
+          "excluded_surfaces": [],
           "surface_bindings": {
             "cli": {
               "command": [
@@ -938,6 +1153,9 @@
                 "--",
                 "hostname"
               ]
+            },
+            "web": {
+              "coverage_id": "vm.guest.exec.preview"
             }
           }
         },
@@ -968,6 +1186,68 @@
               ]
             }
           }
+        },
+        {
+          "operation_id": "vm.guest.file.preview",
+          "method": "POST",
+          "route_template": "/api/v1/vms/{vmId}/guest/file/preview",
+          "required_permission": "guest.exec",
+          "present_surfaces": [
+            "api",
+            "cli",
+            "web"
+          ],
+          "excluded_surfaces": [],
+          "surface_bindings": {
+            "web": {
+              "coverage_id": "vm.guest.file.preview"
+            },
+            "cli": {
+              "command": [
+                "vm",
+                "guest-file",
+                "vm-01",
+                "--host-path",
+                "C:\\ProgramData\\PureCVisor\\desktop-node\\guest-files\\payload.iso",
+                "--guest-path",
+                "C:\\Users\\Public\\PureCVisor\\payload.iso",
+                "--credential-ref",
+                "wincred:PureCVisor/guest/admin",
+                "--dry-run"
+              ]
+            }
+          }
+        },
+        {
+          "operation_id": "vm.guest.file",
+          "method": "POST",
+          "route_template": "/api/v1/vms/{vmId}/guest/file",
+          "required_permission": "guest.exec",
+          "present_surfaces": [
+            "api",
+            "cli",
+            "web"
+          ],
+          "excluded_surfaces": [],
+          "surface_bindings": {
+            "web": {
+              "coverage_id": "vm.guest.file"
+            },
+            "cli": {
+              "command": [
+                "vm",
+                "guest-file",
+                "vm-01",
+                "--host-path",
+                "C:\\ProgramData\\PureCVisor\\desktop-node\\guest-files\\payload.iso",
+                "--guest-path",
+                "C:\\Users\\Public\\PureCVisor\\payload.iso",
+                "--credential-ref",
+                "wincred:PureCVisor/guest/admin",
+                "--yes"
+              ]
+            }
+          }
         }
       ]
     },
@@ -982,14 +1262,10 @@
           "required_permission": "guest.channel.configure",
           "present_surfaces": [
             "api",
-            "cli"
+            "cli",
+            "web"
           ],
-          "excluded_surfaces": [
-            {
-              "surface": "web",
-              "reason": "Web Console exposes explicit direct control; this preview route remains API/CLI-only."
-            }
-          ],
+          "excluded_surfaces": [],
           "surface_bindings": {
             "cli": {
               "command": [
@@ -998,6 +1274,9 @@
                 "vm-01",
                 "--dry-run"
               ]
+            },
+            "web": {
+              "coverage_id": "vm.guest.channel.preview"
             }
           }
         },
@@ -1109,6 +1388,94 @@
                 "--name",
                 "before-upgrade"
               ]
+            }
+          }
+        },
+        {
+          "operation_id": "checkpoint.schedule.preview",
+          "method": "POST",
+          "route_template": "/api/v1/vms/{vmId}/checkpoints/schedule/preview",
+          "required_permission": "operate",
+          "present_surfaces": [
+            "api",
+            "cli",
+            "web"
+          ],
+          "excluded_surfaces": [],
+          "surface_bindings": {
+            "cli": {
+              "command": [
+                "vm",
+                "checkpoint",
+                "schedule",
+                "preview",
+                "vm-01",
+                "--interval-minutes",
+                "1440",
+                "--retention-max",
+                "8"
+              ]
+            },
+            "web": {
+              "coverage_id": "checkpoint.schedule.preview"
+            }
+          }
+        },
+        {
+          "operation_id": "checkpoint.schedule.set",
+          "method": "POST",
+          "route_template": "/api/v1/vms/{vmId}/checkpoints/schedule",
+          "required_permission": "operate",
+          "present_surfaces": [
+            "api",
+            "cli",
+            "web"
+          ],
+          "excluded_surfaces": [],
+          "surface_bindings": {
+            "cli": {
+              "command": [
+                "vm",
+                "checkpoint",
+                "schedule",
+                "set",
+                "vm-01",
+                "--interval-minutes",
+                "1440",
+                "--retention-max",
+                "8",
+                "--yes"
+              ]
+            },
+            "web": {
+              "coverage_id": "checkpoint.schedule.set"
+            }
+          }
+        },
+        {
+          "operation_id": "checkpoint.schedule.clear",
+          "method": "POST",
+          "route_template": "/api/v1/vms/{vmId}/checkpoints/schedule/clear",
+          "required_permission": "operate",
+          "present_surfaces": [
+            "api",
+            "cli",
+            "web"
+          ],
+          "excluded_surfaces": [],
+          "surface_bindings": {
+            "cli": {
+              "command": [
+                "vm",
+                "checkpoint",
+                "schedule",
+                "clear",
+                "vm-01",
+                "--yes"
+              ]
+            },
+            "web": {
+              "coverage_id": "checkpoint.schedule.clear"
             }
           }
         },
@@ -1323,14 +1690,10 @@
           "required_permission": "operate",
           "present_surfaces": [
             "api",
-            "cli"
+            "cli",
+            "web"
           ],
-          "excluded_surfaces": [
-            {
-              "surface": "web",
-              "reason": "Web Console intentionally omits transient pause/resume controls; this route remains API/CLI-only."
-            }
-          ],
+          "excluded_surfaces": [],
           "surface_bindings": {
             "cli": {
               "command": [
@@ -1338,6 +1701,9 @@
                 "pause",
                 "vm-01"
               ]
+            },
+            "web": {
+              "coverage_id": "vm.pause"
             }
           }
         },
@@ -1348,14 +1714,10 @@
           "required_permission": "operate",
           "present_surfaces": [
             "api",
-            "cli"
+            "cli",
+            "web"
           ],
-          "excluded_surfaces": [
-            {
-              "surface": "web",
-              "reason": "Web Console intentionally omits transient pause/resume controls; this route remains API/CLI-only."
-            }
-          ],
+          "excluded_surfaces": [],
           "surface_bindings": {
             "cli": {
               "command": [
@@ -1363,6 +1725,9 @@
                 "resume",
                 "vm-01"
               ]
+            },
+            "web": {
+              "coverage_id": "vm.resume"
             }
           }
         }
@@ -1433,14 +1798,10 @@
           "required_permission": "operate",
           "present_surfaces": [
             "api",
-            "cli"
+            "cli",
+            "web"
           ],
-          "excluded_surfaces": [
-            {
-              "surface": "web",
-              "reason": "Web Console does not expose rename in the current operator flow; this route remains API/CLI-only."
-            }
-          ],
+          "excluded_surfaces": [],
           "surface_bindings": {
             "cli": {
               "command": [
@@ -1449,6 +1810,9 @@
                 "vm-01",
                 "vm-02"
               ]
+            },
+            "web": {
+              "coverage_id": "vm.rename"
             }
           }
         }
@@ -1477,6 +1841,202 @@
               "command": [
                 "vm",
                 "manage",
+                "vm-01",
+                "--yes"
+              ]
+            }
+          }
+        },
+        {
+          "operation_id": "vm.export.preview",
+          "method": "POST",
+          "route_template": "/api/v1/vms/{vmId}/export/preview",
+          "required_permission": "operate",
+          "present_surfaces": [
+            "api",
+            "cli",
+            "web"
+          ],
+          "excluded_surfaces": [],
+          "surface_bindings": {
+            "cli": {
+              "command": [
+                "vm",
+                "export",
+                "preview",
+                "vm-01",
+                "--directory",
+                "D:\\PureCVisor\\exports\\vm-01"
+              ]
+            },
+            "web": {
+              "coverage_id": "vm.export.preview"
+            }
+          }
+        },
+        {
+          "operation_id": "vm.export",
+          "method": "POST",
+          "route_template": "/api/v1/vms/{vmId}/export",
+          "required_permission": "operate",
+          "present_surfaces": [
+            "api",
+            "cli",
+            "web"
+          ],
+          "excluded_surfaces": [],
+          "surface_bindings": {
+            "cli": {
+              "command": [
+                "vm",
+                "export",
+                "vm-01",
+                "--directory",
+                "D:\\PureCVisor\\exports\\vm-01",
+                "--yes"
+              ]
+            },
+            "web": {
+              "coverage_id": "vm.export"
+            }
+          }
+        },
+        {
+          "operation_id": "vm.import.preview",
+          "method": "POST",
+          "route_template": "/api/v1/vms/import/preview",
+          "required_permission": "operate",
+          "present_surfaces": [
+            "api",
+            "cli",
+            "web"
+          ],
+          "excluded_surfaces": [],
+          "surface_bindings": {
+            "cli": {
+              "command": [
+                "vm",
+                "import",
+                "preview",
+                "--name",
+                "vm-02",
+                "--directory",
+                "D:\\PureCVisor\\exports\\vm-01",
+                "--has-vmcx"
+              ]
+            },
+            "web": {
+              "coverage_id": "vm.import.preview"
+            }
+          }
+        },
+        {
+          "operation_id": "vm.import",
+          "method": "POST",
+          "route_template": "/api/v1/vms/import",
+          "required_permission": "operate",
+          "present_surfaces": [
+            "api",
+            "cli",
+            "web"
+          ],
+          "excluded_surfaces": [],
+          "surface_bindings": {
+            "cli": {
+              "command": [
+                "vm",
+                "import",
+                "--name",
+                "vm-02",
+                "--directory",
+                "D:\\PureCVisor\\exports\\vm-01",
+                "--yes"
+              ]
+            },
+            "web": {
+              "coverage_id": "vm.import"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "feature_id": "pcv.vm.clone",
+      "title": "Managed VM full clone",
+      "routes": [
+        {
+          "operation_id": "vm.clone.preview",
+          "method": "POST",
+          "route_template": "/api/v1/vms/{vmId}/clone/preview",
+          "required_permission": "operate",
+          "present_surfaces": [
+            "api",
+            "cli",
+            "web"
+          ],
+          "excluded_surfaces": [],
+          "surface_bindings": {
+            "web": {
+              "coverage_id": "vm.clone.preview"
+            },
+            "cli": {
+              "command": [
+                "vm",
+                "clone",
+                "vm-01",
+                "--name",
+                "vm-02",
+                "--dry-run"
+              ]
+            }
+          }
+        },
+        {
+          "operation_id": "vm.clone",
+          "method": "POST",
+          "route_template": "/api/v1/vms/{vmId}/clone",
+          "required_permission": "operate",
+          "present_surfaces": [
+            "api",
+            "cli",
+            "web"
+          ],
+          "excluded_surfaces": [],
+          "surface_bindings": {
+            "web": {
+              "coverage_id": "vm.clone"
+            },
+            "cli": {
+              "command": [
+                "vm",
+                "clone",
+                "vm-01",
+                "--name",
+                "vm-02",
+                "--yes"
+              ]
+            }
+          }
+        },
+        {
+          "operation_id": "vm.template.lock",
+          "method": "POST",
+          "route_template": "/api/v1/vms/{vmId}/template-lock",
+          "required_permission": "operate",
+          "present_surfaces": [
+            "api",
+            "cli",
+            "web"
+          ],
+          "excluded_surfaces": [],
+          "surface_bindings": {
+            "web": {
+              "coverage_id": "vm.template.lock"
+            },
+            "cli": {
+              "command": [
+                "vm",
+                "template-lock",
                 "vm-01",
                 "--yes"
               ]

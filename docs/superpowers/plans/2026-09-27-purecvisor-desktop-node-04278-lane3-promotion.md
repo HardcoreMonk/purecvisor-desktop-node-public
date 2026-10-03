@@ -1,0 +1,111 @@
+# 0.42.78 Lane 3 operational promotion Implementation Plan
+
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+
+**Goal:** `docs/ga-ready/current-evidence.json`의 operational current를 `0.42.77-admin-smoke`에서 `0.42.78-admin-smoke`로 승격하고, 생성 문서·수기 문서·계약 테스트를 같은 current로 맞춘다.
+
+**Architecture:** 2026-09-20 `0.42.77` 승격(`a842ede`)과 같은 carry-forward 방식이다. host mutation은 하지 않는다. 사용자 결정(2026-09-27): P0 candidate feature `4`개(`pcv.checkpoint.restore`, `pcv.vm.managed-import`, `pcv.vm.media-attach`, `pcv.vm.saved-lifecycle`)의 `0.42.75` actual-VM PASS와 functional evidence를 carry-forward한다.
+
+**Tech Stack:** JSON evidence ledger, `Update-PcvCurrentEvidenceDocs.ps1`, C# / .NET 10 xUnit, Pester 5
+
+## 승격 근거
+
+기준: `origin/main` `3c677a4` (PR #11 merge). branch `docs/04278-lane3-promotion`.
+
+| 평면 | evidence | 결과 |
+| --- | --- | --- |
+| package | `admin-smoke-package-2026-09-25-04278` (clean MSI `c3390c1e…`) | PASS |
+| full admin host mutation | `full-admin-host-mutation-gate-2026-09-27-04278-r2-hostmutation` (batch `full-admin-host-mutation-gate-20260927-04278-r2`, MSI `0856d07e…`, payload `2dfabb93…`, provenance `0de176f`) | PASS |
+| manual-admin pair | `manual-admin-campaign-descriptor-2026-09-25-04277-04278` (plan-only descriptor, runner `6`) | PASS |
+| clean-host / Burn / MSIX / update-rollback | `2026-09-25` `04277-04278` evidence | PASS |
+| installed current-card | `installed-operator-surface-current-card-2026-09-27-04278` | PASS, not promoted |
+| feature qualification | `config/desktop-node-feature-evidence-ledger.json` candidate `4`개 모두 `0.42.75` PASS, ledger 변경 없음 | carry-forward |
+| functional | `0.42.77` carry-forward 체인(원본 `functional-correctness-actual-host-validation-2026-08-27-04275`) | carry-forward |
+
+0.42.77 뒤에 추가된 P1-9~P2-15 기능은 feature evidence ledger의 candidate가 아니므로 ADR-0015 blocker가 아니다. 이 승격은 그 기능들의 actual-VM PASS를 주장하지 않는다.
+
+## Global Constraints
+
+- current evidence에는 PASS 근거만 기록한다. 09-26 FAIL과 09-27 첫 실행(제한)은 historical evidence로 둔다.
+- host mutation, 설치본 변경, public trusted signing, external stable publication은 범위 밖이다.
+- 생성 문서(`CurrentEvidenceVerifier.OwnedRelativePaths` `7`개)는 손으로 고치지 않고 `Update-PcvCurrentEvidenceDocs.ps1`로 만든다.
+- `config/pcv-development-policy-contract-spec-v1.json`의 `source_files`/`legacy_files`에 있는 파일(`AGENTS.md` 포함)이 바뀌면 spec SHA와 `ExpectedSpecSha256`을 같은 task에서 갱신한다.
+- task 하나가 checkpoint 하나다. Lane 3 한도(30분, tool batch 12회)를 따른다. commit은 `commit_policy`를 따르고 push/PR은 Task 5에서만 한다. merge는 별도 권한이 필요하다.
+
+## Task 1: 승격 evidence 문서
+
+**생성:** `docs/ga-ready/evidence/functional-correctness-actual-host-validation-2026-09-27-04278-carryforward.md`
+**수정:** `docs/ga-ready/evidence/installed-operator-surface-current-card-2026-09-27-04278.md`
+
+- [x] `0.42.77` carry-forward 문서 형식으로 `0.42.78` functional carry-forward 문서를 쓴다. 원본 체인과 P0 candidate `4`개, 새 기능의 비주장을 적는다.
+- [x] current-card를 `promotion_ledger_status: promoted-current`, `canonical_current_evidence: 0.42.78-admin-smoke`, `canonical_current_changed: true`로 바꾸고 승격 경계 절을 갱신한다(`a842ede`가 04277 current-card에 한 방식).
+- [x] `Invoke-Pester packaging/windows-desktop-node/tests/PcvAdminSmokeEvidenceDocs.Tests.ps1`.
+
+실행 기록(2026-09-27): carry-forward 원본 artifact summary SHA `a907535a…`를 다시 확인했다. token 관련 비테스트 source `6`개는 `a842ede` 뒤로 commit이 없고 `DesktopNodeHostServiceTokenRotationDescriptor`는 Task 1(라쳇)에서 내용 변화 없이 이동만 했으므로 token rotation evidence를 current-card에 carry-forward했다. `PcvAdminSmokeEvidenceDocs` `90/90`.
+
+## Task 2: current-evidence 기록과 생성 문서
+
+**수정:** `docs/ga-ready/current-evidence.json`, 생성 문서 `7`개, `src/DesktopNode.Verification.Tests/CurrentEvidenceVerifierTests.cs`
+
+- [x] `current`의 version, evidence 경로, MSI/payload SHA, provenance와 `manual_admin`의 closed baseline/target/descriptor를 `0.42.78` 값으로 바꾼다.
+- [x] `Update-PcvCurrentEvidenceDocs.ps1`로 생성 문서를 갱신하고 `-Check`로 확인한다.
+- [x] `CurrentEvidenceVerifierTests`의 기대 버전을 `0.42.78-admin-smoke`로 바꾼다.
+- [x] `dotnet test src/DesktopNode.Verification.Tests --filter CurrentEvidenceVerifierTests`.
+
+실행 기록(2026-09-27): 생성기는 `OwnedRelativePaths` `7`개와 `packaging/windows-desktop-node/README.md`까지 `8`개 target의 generated block을 갱신했고 `-Check`에서 모두 `current`다. `CurrentEvidenceVerifierTests` `13/13`. `AGENTS.md`가 spec에 pin되어 있어 Delivery.Tests의 `source-sha`는 Task 3 pin 갱신 전까지 red다.
+
+## Task 3 분할
+
+Task 3 착수 중 `a842ede`를 다시 읽고 범위를 셋으로 나눴다. 0.42.77 승격은 descriptor 외에 single-root consume evidence(`manual-admin-campaign-2026-09-20-04275-04277`)와 main push public-boundary evidence를 두고, `MANUAL_ADMIN_NEXT_CAMPAIGN_DESCRIPTOR.md`의 `current_*` 약 `40`개를 `previous_04275_*`로 옮겼다. Task 2 뒤 Delivery.Tests는 `127`건 red다(spec pin `126`, 04277 current 단언 `1`).
+
+## Task 3a: manual-admin consume과 main push evidence
+
+**생성:** `artifacts/manual-admin-campaign-20260927-04277-04278/**`(gitignored), `docs/ga-ready/evidence/manual-admin-campaign-2026-09-27-04277-04278.md`, `docs/ga-ready/evidence/public-boundary-ci-main-push-2026-09-27-04278-pr11-postmerge-pass.md`
+**수정:** `docs/ga-ready/current-evidence.json`(`latest_closed_descriptor`), 생성 문서
+
+- [x] 09-25 descriptor가 읽은 여섯 runner summary의 JSON만 0.42.77과 같은 single-root 배치로 복사하고 `consume-manifest.json`(`pcv-manual-admin-single-root-descriptor-consume-v1`)을 쓴다.
+- [x] `New-PcvManualAdminCampaignDescriptor -PlanOnly`를 single root에 실행해 `overall_status=pass`를 확인한다. descriptor batch는 `manual-admin-campaign-descriptor-20260927-04277-04278`이다.
+- [x] consume evidence 문서와 PR #11 merge(`3c677a4`) 뒤 main push evidence 문서를 쓴다.
+- [x] `current-evidence.json`의 `latest_closed_descriptor`를 consume descriptor로 바꾸고 생성 문서를 다시 만든다.
+
+실행 기록(2026-09-27): 여섯 원본 root의 JSON `18`개를 single root로 복사했고 `-PlanOnly` descriptor는 runner `6/6` pass, `actual_execution=not-run`이다. consume manifest SHA `67c6e58d…`, descriptor summary `e0347afd…`. update zip `6cb31a6b…`는 package artifact 파일 hash와 clean-host evidence가 같다. PR #11 merge `3c677a4`의 Public Boundary run `36299263811`(job `108563752427`)과 Development Gates run `36299263803`은 success다. `0de176f..3c677a4` 제품 경로 commit은 라쳇 복구 순수 이동 `7`개뿐이다. 생성 문서 `-Check` current. `PcvAdminSmokeEvidenceDocs`는 `CURRENT_EVIDENCE_LEDGER.md`의 수기 ledger 행 `2`건 때문에 red이며 Task 3b에서 고친다.
+
+## Task 3b: manual-admin descriptor chain
+
+**수정:** `docs/ga-ready/MANUAL_ADMIN_NEXT_CAMPAIGN_DESCRIPTOR.md`, `docs/DOCUMENTATION_INDEX.md`, `docs/FEATURE_IMPLEMENTATION_LEDGER.md`
+
+- [x] `a842ede`와 같은 방식으로 `current_*`/`latest_*`/`next_*` 값을 `previous_04277_*`로 옮기고 0.42.78 값을 쓴다.
+- [x] 나머지 수기 문서(`CURRENT_EVIDENCE_LEDGER.md`의 수기 ledger 행 포함)의 current 표기를 맞춘다.
+
+실행 기록(2026-09-27): `MANUAL_ADMIN_NEXT_CAMPAIGN_DESCRIPTOR.md` key `45`개(current/latest는 `previous_04277_*`, next는 `previous_04278_*`)를 옮겼다. `latest_full_admin_gate_batch`는 L943 historical block에도 있어 `a842ede`처럼 current block의 첫 항목만 바꿨다. next package pair 범위는 04278 build source `0de176f`부터이고 그 뒤 제품 source 변경 파일은 `27`개(라쳇 순수 이동)다. `CURRENT_EVIDENCE_LEDGER.md`는 ledger 행 `5`개를 predecessor+신규로, `3`개를 교체했고 metadata key `4`개를 chain으로 옮겼다. `DOCUMENTATION_INDEX.md`와 `FEATURE_IMPLEMENTATION_LEDGER.md`의 current 표기를 맞췄다. `PcvAdminSmokeEvidenceDocs` `90/90`, 생성 문서 `-Check` current.
+
+## Task 3c: 계약 테스트와 pin
+
+**수정:** `D2EvidenceContractVerifier.cs`, spec `3`종(development policy, installed smoke, manual-admin readiness)과 각 verifier의 spec SHA 상수
+**생성:** `Pcv04278PromotionEvidenceContractTests.cs`
+
+- [x] `Verify04277Current`를 previous current 검증으로 바꾸고 `Verify04278Current`와 04278 테스트를 추가한다.
+- [x] 바뀐 pin 파일의 SHA와 spec SHA 상수를 갱신한다.
+- [x] `dotnet test src/DesktopNode.Delivery.Tests` 실패 `0`.
+
+실행 기록(2026-09-27): `Verify04278Current`를 추가하고 `Verify04277Current`는 `Verify04277PreviousCurrent`(current가 0.42.77이 아니고 `previous_04277_*` metadata와 predecessor ledger 행이 남는지)로 바꿨다. 04278 계약이 요구하는 `EVIDENCE_INDEX`/`CONTROL_PLANE_INDEX`의 0.42.78 승격 절을 0.42.77 형식으로 추가했고 `CONTROL_PLANE_INDEX`의 0.42.77 절 제목은 predecessor로 바꿨다. 이 branch가 바꾼 pin 파일 `4`개(`AGENTS.md`, `packaging/windows-desktop-node/README.md`, `MANUAL_ADMIN_NEXT_CAMPAIGN_DESCRIPTOR.md`, `current-evidence.json`)와 spec SHA 상수 `3`개를 갱신했다. `StructuredTransitionSources` 예외 `4`개는 그대로다. Delivery.Tests `706/706`.
+
+## Task 4: 종료 검증
+
+- [x] `Update-PcvCurrentEvidenceDocs.ps1 -Check`.
+- [x] `dotnet test src/DesktopNode.sln` 실패 `0`(clean HEAD).
+- [x] Pester `PcvModuleSizeRatchet`, `PcvCSharpArchitectureGapRegistry`, `PcvAdminSmokeEvidenceDocs`.
+- [x] `npm run test:required --prefix web`.
+- [x] clean HEAD에서 Required CI 네 shard.
+
+실행 기록(2026-09-27, clean HEAD `ab88076`): 생성 문서 `-Check` current. `dotnet test src/DesktopNode.sln` 실패 `0`(Delivery `706`, Verification `557`, Api `410`, Host `216`, HyperV `220`, Runtime `128`, Cli `178`, Contracts `178`, Service `11`). Pester `PcvModuleSizeRatchet`, `PcvCSharpArchitectureGapRegistry`, `PcvAdminSmokeEvidenceDocs`, `PcvManualAdminDescriptorCurrency`, `PcvManualAdminCampaignDescriptor` `114/114`. `npm run test:required` pass `236`/fail `0`. Release build 뒤 Required CI 네 shard(`dotnet` `50`초, `web` `25`초, `delivery` `5`초, `installer-policy` `3`초) exit `0`. 실행 전후 working tree clean.
+## Task 5: push와 PR
+
+- [ ] branch를 push하고 `main` 대상 PR을 만든다. PR 본문 끝에 Claude Code 표기를 붙인다.
+- [ ] CI 결과를 확인하고, green이면 merge한다(사용자 결정 2026-09-27). 허용 분류기가 막으면 멈추고 보고한다.
+
+## Nonclaims
+
+- 새 actual-VM, host mutation, 설치본 변경을 주장하지 않는다.
+- P1-9~P2-15 기능의 actual-VM PASS를 주장하지 않는다.
+- public trusted signing, external stable publication을 주장하지 않는다.

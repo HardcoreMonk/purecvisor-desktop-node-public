@@ -258,6 +258,230 @@ public sealed partial class DesktopNodeHyperVNativeAdapter
         }
     }
 
+    private bool TryInvokeVmTemplateLock(string operation, JsonElement parameters, CancellationToken cancellationToken, out DesktopNodeHyperVOperationResult result)
+    {
+        var vmName = GetStringProperty(parameters, "name");
+        if (string.IsNullOrWhiteSpace(vmName) || !IsValidHyperVName(vmName))
+        {
+            result = DesktopNodeHyperVOperationResult.Failure(
+                operation,
+                "PCV_VM_NAME_INVALID",
+                $"VM name '{vmName ?? string.Empty}' is invalid.",
+                "Use a non-empty Hyper-V display name without leading/trailing whitespace, control characters, slash, or backslash.",
+                false);
+            return true;
+        }
+
+        if (!TryGetBooleanProperty(parameters, "locked", out var locked))
+        {
+            result = DesktopNodeHyperVOperationResult.Failure(
+                operation,
+                "PCV_VM_TEMPLATE_LOCK_LOCKED_REQUIRED",
+                "Template lock requires params.locked.",
+                "Pass locked=true to lock or locked=false to unlock.",
+                false);
+            return true;
+        }
+
+        try
+        {
+            ThrowIfNativeCanceled(cancellationToken, operation);
+            var data = vmManageProvider.InvokeTemplateLock(vmName, locked, cancellationToken);
+            var payload = new SortedDictionary<string, object?>
+            {
+                ["name"] = data.Name,
+                ["action"] = data.Action,
+                ["locked"] = locked
+            };
+
+            result = new DesktopNodeHyperVOperationResult(
+                Ok: true,
+                Operation: operation,
+                Data: JsonSerializer.SerializeToElement(payload, JsonOptions),
+                Error: null);
+            return true;
+        }
+        catch (DesktopNodeHyperVNativeOperationException ex)
+        {
+            result = DesktopNodeHyperVOperationResult.Failure(operation, ex.Code, ex.Message, ex.Detail, ex.Retryable);
+            return true;
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            result = CanceledResult(operation);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            result = DesktopNodeHyperVOperationResult.Failure(
+                operation,
+                "PCV_VM_TEMPLATE_LOCK_FAILED",
+                $"VM template-lock operation failed for VM '{vmName}'.",
+                ex.Message,
+                true);
+            return true;
+        }
+    }
+
+    private bool TryInvokeVmNetworkConnect(string operation, JsonElement parameters, CancellationToken cancellationToken, out DesktopNodeHyperVOperationResult result)
+    {
+        var vmName = GetStringProperty(parameters, "vm_name") ?? GetStringProperty(parameters, "name");
+        var switchName = GetStringProperty(parameters, "switch") ?? GetStringProperty(parameters, "switch_name");
+        if (string.IsNullOrWhiteSpace(vmName) || !IsValidHyperVName(vmName))
+        {
+            result = DesktopNodeHyperVOperationResult.Failure(
+                operation,
+                DesktopNode.Contracts.NetworkChangeProblemCodes.VmRequired,
+                $"VM name '{vmName ?? string.Empty}' is invalid.",
+                "Use a non-empty Hyper-V display name.",
+                false);
+            return true;
+        }
+
+        if (string.IsNullOrWhiteSpace(switchName))
+        {
+            result = DesktopNodeHyperVOperationResult.Failure(
+                operation,
+                DesktopNode.Contracts.NetworkChangeProblemCodes.SwitchRequired,
+                "A switch name is required.",
+                "Pass switch as the target Hyper-V switch display name.",
+                false);
+            return true;
+        }
+
+        try
+        {
+            ThrowIfNativeCanceled(cancellationToken, operation);
+            if (string.Equals(operation, "vm.nic.add", StringComparison.Ordinal))
+            {
+                var added = JsonSerializer.SerializeToElement(
+                    vmNetworkConnectProvider.AddNic(new DesktopNodeHyperVVmDeviceAddRequest(vmName, switchName), cancellationToken),
+                    JsonOptions);
+                result = new DesktopNodeHyperVOperationResult(true, operation, added, null);
+                return true;
+            }
+
+            var data = JsonSerializer.SerializeToElement(
+                vmNetworkConnectProvider.Invoke(new DesktopNodeHyperVVmNetworkConnectRequest(vmName, switchName), cancellationToken),
+                JsonOptions);
+            result = new DesktopNodeHyperVOperationResult(true, operation, data, null);
+            return true;
+        }
+        catch (DesktopNodeHyperVNativeOperationException ex)
+        {
+            result = DesktopNodeHyperVOperationResult.Failure(operation, ex.Code, ex.Message, ex.Detail, ex.Retryable);
+            return true;
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            result = CanceledResult(operation);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            result = DesktopNodeHyperVOperationResult.Failure(
+                operation,
+                "PCV_VM_NETWORK_CONNECT_FAILED",
+                $"VM network connect failed for '{vmName}'.",
+                ex.Message,
+                true);
+            return true;
+        }
+    }
+
+    private bool TryInvokeVmClone(string operation, JsonElement parameters, CancellationToken cancellationToken, out DesktopNodeHyperVOperationResult result)
+    {
+        if (!TryReadVmCloneRequest(parameters, out var request, out result, operation))
+        {
+            return true;
+        }
+
+        try
+        {
+            ThrowIfNativeCanceled(cancellationToken, operation);
+            var data = operation == "vm.clone.preview"
+                ? JsonSerializer.SerializeToElement(vmCloneProvider.Preview(request, cancellationToken), JsonOptions)
+                : JsonSerializer.SerializeToElement(vmCloneProvider.Invoke(request, cancellationToken), JsonOptions);
+
+            result = new DesktopNodeHyperVOperationResult(
+                Ok: true,
+                Operation: operation,
+                Data: data,
+                Error: null);
+            return true;
+        }
+        catch (DesktopNodeHyperVNativeOperationException ex)
+        {
+            result = DesktopNodeHyperVOperationResult.Failure(operation, ex.Code, ex.Message, ex.Detail, ex.Retryable);
+            return true;
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            result = CanceledResult(operation);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            result = DesktopNodeHyperVOperationResult.Failure(
+                operation,
+                "PCV_VM_CLONE_FAILED",
+                $"VM clone operation '{operation}' failed for VM '{request.SourceName}'.",
+                ex.Message,
+                true);
+            return true;
+        }
+    }
+
+    private static bool TryReadVmCloneRequest(
+        JsonElement parameters,
+        out DesktopNodeHyperVVmCloneRequest request,
+        out DesktopNodeHyperVOperationResult result,
+        string operation)
+    {
+        var sourceName = GetStringProperty(parameters, "source");
+        var targetName = GetStringProperty(parameters, "target");
+        if (string.IsNullOrWhiteSpace(sourceName) && !string.IsNullOrWhiteSpace(targetName))
+        {
+            sourceName = GetStringProperty(parameters, "name");
+        }
+        else if (string.IsNullOrWhiteSpace(targetName))
+        {
+            targetName = GetStringProperty(parameters, "name");
+        }
+
+        var vmRoot = TryGetStringProperty(parameters, "vm_root", out var parsedVmRoot)
+            ? parsedVmRoot
+            : @"D:\PureCVisor\VMs";
+
+        if (string.IsNullOrWhiteSpace(sourceName) || !IsValidHyperVName(sourceName))
+        {
+            request = null!;
+            result = DesktopNodeHyperVOperationResult.Failure(
+                operation,
+                "PCV_VM_NAME_INVALID",
+                $"VM name '{sourceName ?? string.Empty}' is invalid.",
+                "Use a non-empty Hyper-V display name without leading/trailing whitespace, control characters, slash, or backslash.",
+                false);
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(targetName) || !IsValidHyperVName(targetName))
+        {
+            request = null!;
+            result = DesktopNodeHyperVOperationResult.Failure(
+                operation,
+                "PCV_VM_NAME_INVALID",
+                $"VM name '{targetName ?? string.Empty}' is invalid.",
+                "Use a non-empty Hyper-V display name without leading/trailing whitespace, control characters, slash, or backslash.",
+                false);
+            return false;
+        }
+
+        request = new DesktopNodeHyperVVmCloneRequest(sourceName, targetName, vmRoot);
+        result = null!;
+        return true;
+    }
+
     private bool TryInvokeVmMedia(string operation, JsonElement parameters, CancellationToken cancellationToken, out DesktopNodeHyperVOperationResult result)
     {
         var vmName = GetStringProperty(parameters, "name");
@@ -275,6 +499,17 @@ public sealed partial class DesktopNodeHyperVNativeAdapter
         try
         {
             ThrowIfNativeCanceled(cancellationToken, operation);
+            if (string.Equals(operation, "vm.dvd.add", StringComparison.Ordinal))
+            {
+                var added = vmMediaProvider.AddDvd(new DesktopNodeHyperVVmDeviceAddRequest(vmName), cancellationToken);
+                result = new DesktopNodeHyperVOperationResult(
+                    true,
+                    operation,
+                    JsonSerializer.SerializeToElement(added, JsonOptions),
+                    null);
+                return true;
+            }
+
             var isoPath = GetStringProperty(parameters, "iso_path");
             if (operation == "vm.attach" && string.IsNullOrWhiteSpace(isoPath))
             {
@@ -317,310 +552,6 @@ public sealed partial class DesktopNodeHyperVNativeAdapter
                 true);
             return true;
         }
-    }
-
-    private bool TryInvokeVmResourceMutation(string operation, JsonElement parameters, CancellationToken cancellationToken, out DesktopNodeHyperVOperationResult result)
-    {
-        var vmName = GetStringProperty(parameters, "name");
-        if (string.IsNullOrWhiteSpace(vmName) || !IsValidHyperVName(vmName))
-        {
-            result = DesktopNodeHyperVOperationResult.Failure(
-                operation,
-                "PCV_VM_NAME_INVALID",
-                $"VM name '{vmName ?? string.Empty}' is invalid.",
-                "Use a non-empty Hyper-V display name without leading/trailing whitespace, control characters, slash, or backslash.",
-                false);
-            return true;
-        }
-
-        var memoryMb = (int?)null;
-        var cpu = (int?)null;
-        var diskGb = (int?)null;
-        var diskPath = (string?)null;
-        var qosDisk = (string?)null;
-        var qosAdapter = (string?)null;
-        var maximumIops = (int?)null;
-        var minimumIops = (int?)null;
-        var maximumKbps = (int?)null;
-        var minimumKbps = (int?)null;
-        var action = operation switch
-        {
-            "vm.set-memory" => "set-memory",
-            "vm.set-vcpu" => "set-vcpu",
-            "vm.disk-resize" => "disk-resize",
-            "vm.limit" => "limit",
-            "vm.qos.storage.set" => "storage-qos",
-            "vm.qos.network.set" => "network-qos",
-            _ => string.Empty
-        };
-
-        var requestedMemoryMb = 0;
-        if (operation == "vm.set-memory" && !TryGetInt32Property(parameters, "memory_mb", out requestedMemoryMb))
-        {
-            result = ResourceMutationParamFailure(operation, "PCV_MEMORY_REQUIRED", "VM memory is required.", "Provide numeric params.memory_mb.");
-            return true;
-        }
-        if (operation == "vm.set-memory")
-        {
-            memoryMb = requestedMemoryMb;
-        }
-
-        var requestedCpu = 0;
-        if (operation == "vm.set-vcpu" && !TryGetInt32Property(parameters, "cpu", out requestedCpu))
-        {
-            result = ResourceMutationParamFailure(operation, "PCV_CPU_REQUIRED", "VM CPU count is required.", "Provide numeric params.cpu.");
-            return true;
-        }
-        if (operation == "vm.set-vcpu")
-        {
-            cpu = requestedCpu;
-        }
-
-        var requestedLimitMemoryMb = 0;
-        var requestedLimitCpu = 0;
-        if (operation == "vm.limit")
-        {
-            var hasMemoryLimit = TryGetInt32Property(parameters, "memory_mb", out requestedLimitMemoryMb);
-            var hasCpuLimit = TryGetInt32Property(parameters, "cpu", out requestedLimitCpu);
-            if (!hasMemoryLimit && !hasCpuLimit)
-            {
-                result = ResourceMutationParamFailure(
-                    operation,
-                    "PCV_LIMIT_REQUIRED",
-                    "VM limit requires at least one CPU or memory value.",
-                    "Provide numeric params.cpu and/or params.memory_mb.");
-                return true;
-            }
-
-            memoryMb = hasMemoryLimit ? requestedLimitMemoryMb : null;
-            cpu = hasCpuLimit ? requestedLimitCpu : null;
-        }
-
-        var requestedDiskGb = 0;
-        if (operation == "vm.disk-resize" && !TryGetInt32Property(parameters, "disk_gb", out requestedDiskGb))
-        {
-            result = ResourceMutationParamFailure(operation, "PCV_DISK_SIZE_REQUIRED", "VM disk size is required.", "Provide numeric params.disk_gb.");
-            return true;
-        }
-        if (operation == "vm.disk-resize")
-        {
-            diskGb = requestedDiskGb;
-        }
-
-        if (operation == "vm.qos.storage.set")
-        {
-            qosDisk = GetStringProperty(parameters, "disk");
-            if (string.IsNullOrWhiteSpace(qosDisk) || !TryGetInt32Property(parameters, "maximum_iops", out var requestedMaximumIops))
-            {
-                result = ResourceMutationParamFailure(
-                    operation,
-                    "PCV_VM_QOS_STORAGE_VALUE_REQUIRED",
-                    "VM storage QoS requires disk and maximum_iops.",
-                    "Provide params.disk and numeric params.maximum_iops.");
-                return true;
-            }
-
-            maximumIops = requestedMaximumIops;
-            if (TryGetInt32Property(parameters, "minimum_iops", out var requestedMinimumIops))
-            {
-                minimumIops = requestedMinimumIops;
-            }
-        }
-
-        if (operation == "vm.qos.network.set")
-        {
-            qosAdapter = GetStringProperty(parameters, "adapter");
-            if (string.IsNullOrWhiteSpace(qosAdapter) || !TryGetInt32Property(parameters, "maximum_kbps", out var requestedMaximumKbps))
-            {
-                result = ResourceMutationParamFailure(
-                    operation,
-                    "PCV_VM_QOS_NETWORK_VALUE_REQUIRED",
-                    "VM network QoS requires adapter and maximum_kbps.",
-                    "Provide params.adapter and numeric params.maximum_kbps.");
-                return true;
-            }
-
-            maximumKbps = requestedMaximumKbps;
-            if (TryGetInt32Property(parameters, "minimum_kbps", out var requestedMinimumKbps))
-            {
-                minimumKbps = requestedMinimumKbps;
-            }
-        }
-
-        if (string.IsNullOrWhiteSpace(action))
-        {
-            result = DesktopNodeHyperVOperationResult.Failure(
-                operation,
-                "PCV_OPERATION_NOT_ALLOWED",
-                $"Operation '{operation}' is not a VM resource mutation operation.",
-                "Use vm.limit, vm.set-memory, vm.set-vcpu, vm.disk-resize, vm.qos.storage.set, or vm.qos.network.set.",
-                false);
-            return true;
-        }
-
-        if (memoryMb is < 512 or > 262144)
-        {
-            result = DesktopNodeHyperVOperationResult.Failure(
-                operation,
-                "PCV_MEMORY_OUT_OF_RANGE",
-                $"Memory '{memoryMb}' MB is outside the supported range.",
-                "Use memory from 512 MB through 262144 MB.",
-                false);
-            return true;
-        }
-
-        if (cpu is < 1 or > 32)
-        {
-            result = DesktopNodeHyperVOperationResult.Failure(
-                operation,
-                "PCV_CPU_OUT_OF_RANGE",
-                $"CPU count '{cpu}' is outside the supported range.",
-                "Use a CPU count from 1 through 32.",
-                false);
-            return true;
-        }
-
-        if (diskGb is < 8 or > 4096)
-        {
-            result = DesktopNodeHyperVOperationResult.Failure(
-                operation,
-                "PCV_DISK_OUT_OF_RANGE",
-                $"Disk '{diskGb}' GB is outside the supported range.",
-                "Use disk size from 8 GB through 4096 GB.",
-                false);
-            return true;
-        }
-
-        if (maximumIops is < 0 or > 1_000_000_000 ||
-            minimumIops is < 0 ||
-            (maximumIops is not null && minimumIops is not null && minimumIops > maximumIops))
-        {
-            result = DesktopNodeHyperVOperationResult.Failure(
-                operation,
-                "PCV_VM_QOS_STORAGE_RANGE_INVALID",
-                "VM storage QoS values are outside the supported range.",
-                "Use non-negative IOPS values and keep minimum_iops less than or equal to maximum_iops.",
-                false);
-            return true;
-        }
-
-        if (maximumKbps is < 0 or > 1_000_000_000 ||
-            minimumKbps is < 0 ||
-            (maximumKbps is not null && minimumKbps is not null && minimumKbps > maximumKbps))
-        {
-            result = DesktopNodeHyperVOperationResult.Failure(
-                operation,
-                "PCV_VM_QOS_NETWORK_RANGE_INVALID",
-                "VM network QoS values are outside the supported range.",
-                "Use non-negative Kbps values and keep minimum_kbps less than or equal to maximum_kbps.",
-                false);
-            return true;
-        }
-
-        try
-        {
-            ThrowIfNativeCanceled(cancellationToken, operation);
-            if (operation == "vm.disk-resize")
-            {
-                var vm = FindVm(vmProvider.GetVms(cancellationToken), vmName);
-                if (vm is null)
-                {
-                    result = DesktopNodeHyperVOperationResult.Failure(
-                        operation,
-                        "PCV_VM_NOT_FOUND",
-                        $"VM '{vmName}' was not found.",
-                        "The VM was not present in the native Hyper-V VM inventory response.",
-                        false);
-                    return true;
-                }
-
-                var disk = vm.Storage.FirstOrDefault(item =>
-                    item.Attached &&
-                    !string.IsNullOrWhiteSpace(item.Path) &&
-                    (item.Path.EndsWith(".vhdx", StringComparison.OrdinalIgnoreCase) ||
-                        item.Path.EndsWith(".vhd", StringComparison.OrdinalIgnoreCase)));
-                if (disk is null)
-                {
-                    result = DesktopNodeHyperVOperationResult.Failure(
-                        operation,
-                        "PCV_VM_DISK_NOT_FOUND",
-                        $"VM '{vmName}' has no attached VHD/VHDX disk in inventory.",
-                        "Attach a virtual hard disk or refresh VM inventory before resizing.",
-                        false);
-                    return true;
-                }
-
-                if (disk.SizeGb.HasValue && diskGb < disk.SizeGb.Value)
-                {
-                    result = DesktopNodeHyperVOperationResult.Failure(
-                        operation,
-                        "PCV_DISK_RESIZE_SHRINK_NOT_SUPPORTED",
-                        $"Disk resize target '{diskGb}' GB is smaller than the current disk size '{disk.SizeGb}' GB.",
-                        "Hyper-V online disk resize supports expansion in this product route; choose a size equal to or larger than the current disk.",
-                        false);
-                    return true;
-                }
-
-                diskPath = disk.Path;
-            }
-
-            var data = vmResourceMutationProvider.Invoke(
-                new DesktopNodeHyperVVmResourceMutationRequest(
-                    operation,
-                    vmName,
-                    memoryMb,
-                    cpu,
-                    diskGb,
-                    diskPath,
-                    qosDisk,
-                    qosAdapter,
-                    maximumIops,
-                    minimumIops,
-                    maximumKbps,
-                    minimumKbps,
-                    GetStringProperty(parameters, "request_id")),
-                cancellationToken);
-            result = new DesktopNodeHyperVOperationResult(
-                Ok: true,
-                Operation: operation,
-                Data: JsonSerializer.SerializeToElement(data, JsonOptions),
-                Error: null);
-            return true;
-        }
-        catch (DesktopNodeHyperVNativeOperationException ex)
-        {
-            result = DesktopNodeHyperVOperationResult.Failure(operation, ex.Code, ex.Message, ex.Detail, ex.Retryable);
-            return true;
-        }
-        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-        {
-            result = CanceledResult(operation);
-            return true;
-        }
-        catch (Exception ex)
-        {
-            result = DesktopNodeHyperVOperationResult.Failure(
-                operation,
-                "PCV_VM_RESOURCE_MUTATION_FAILED",
-                $"VM resource mutation '{operation}' failed for VM '{vmName}'.",
-                ex.Message,
-                true);
-            return true;
-        }
-    }
-
-    private static DesktopNodeHyperVOperationResult ResourceMutationParamFailure(
-        string operation,
-        string code,
-        string message,
-        string detail)
-    {
-        return DesktopNodeHyperVOperationResult.Failure(
-            operation,
-            code,
-            message,
-            detail,
-            false);
     }
 
     private bool TryInvokeVmDelete(string operation, JsonElement parameters, CancellationToken cancellationToken, out DesktopNodeHyperVOperationResult result)

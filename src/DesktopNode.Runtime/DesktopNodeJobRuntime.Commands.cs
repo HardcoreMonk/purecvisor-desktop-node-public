@@ -212,13 +212,13 @@ public sealed partial class DesktopNodeJobRuntime
             }
 
             if (job.Status != "failed" ||
-                !IsReconciliationSupportedOperation(job.Operation) ||
+                !ReconcilableMutations.ContainsKey(job.Operation) ||
                 !string.Equals(job.Error?.Code, "PCV_JOB_INTERRUPTED", StringComparison.Ordinal))
             {
-                var rejected = ReconciliationRequiredError(
+                var rejected = assessment.Error ?? ReconciliationRequiredError(
                     jobId,
                     assessment.Classification,
-                    "Only an interrupted vm.rename, vm.delete, checkpoint.create, or checkpoint.restore job can be reconciled by this contract.",
+                    $"Only an interrupted {string.Join(", ", ReconcilableMutations.Keys)} job can be reconciled by this contract.",
                     job.Operation);
                 RecordObservationUnsafe(
                     "job-reconciliation-required",

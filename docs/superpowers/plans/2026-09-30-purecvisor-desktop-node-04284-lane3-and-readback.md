@@ -1,0 +1,102 @@
+# 0.42.84 Lane 3 승격과 `vm.list` readback 구현 Implementation Plan
+
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+
+**Goal:** 두 가지를 한다.
+1. PASS evidence가 모인 `0.42.84-admin-smoke`를 operational current로 승격한다(Lane 3).
+2. `vm.list` readback 확장 설계(`docs/superpowers/specs/2026-09-30-purecvisor-desktop-node-vm-list-readback-extension-design.md`)를 구현한다(Lane 1).
+
+**Architecture:** Task 1~5는 0.42.83 승격(`2026-09-29-purecvisor-desktop-node-04283-lane3-promotion.md` Task 5~6)과 같은 순서다. 문서 단계는 `Invoke-PcvLane3PromotionDocs.ps1`가 맡는다. Lane 3 branch는 `lane3/04284-promotion-20260930`(`origin/main` `4afaed7` 기준)이다. Task 6~9는 Lane 3 PR이 merge된 뒤 `origin/main`에서 새 branch `feat/vm-list-readback-20260930`을 만들어 진행한다. 머지하지 않은 branch 위에 쌓지 않는다.
+
+**Tech Stack:** PowerShell 7 + Pester 5, C# / .NET 10 xUnit, TypeScript Web Console
+
+## 사용자 결정 (2026-09-30)
+
+| 항목 | 결정 |
+| --- | --- |
+| 승인 | "전부 승인 합니다". 0.42.84 pair 보고의 다음 단계 세 가지(PR #22 merge, 0.42.84 Lane 3 승격, `vm.list` 확장 설계 구현) |
+| PR #22 | merge 완료(`4afaed7`) |
+| push/PR/merge | commit마다 push, branch마다 PR 하나, CI 통과 뒤 merge |
+| current-evidence 쓰기 | Task 3에서 한다 |
+| 승인 밖 | `vm.list` 구현의 설치본 검증(새 package pair `0.42.85`), public trusted signing, external stable publication |
+
+## Global Constraints
+
+- evidence는 새 파일로만 쓴다. 예외는 0.42.83 승격과 같은 current-card의 `promoted-current` 표기다.
+- `current-evidence.json`에는 PASS 근거만 적는다.
+- 호스트 mutation은 하지 않는다. Lane 3는 문서와 계약만 바꾼다.
+- 한도:
+  - Lane 3: 30분, tool batch 12회
+  - Lane 1: 30분, tool batch 18회
+- 같은 원인으로 3번 실패하거나, 범위 밖 설계가 필요하거나, 권한이 거부되면 멈춘다.
+- public trusted signing과 external stable publication은 주장하지 않는다.
+
+## Task 1: 승격 evidence (Lane 3, 5a)
+
+- [x] functional carry-forward evidence `functional-correctness-actual-host-validation-2026-09-30-04284-carryforward`를 쓴다. 04283 carry-forward에 0.42.84의 fullgate route smoke, current-card, 개발 완료 Lane 2 probe를 더한다.
+- [x] single-root consume을 만든다. 여섯 bucket summary를 `artifacts/manual-admin-campaign-20260930-04283-04284`에 모으고, consume descriptor `manual-admin-campaign-descriptor-20260930-04283-04284-consume`(`-PlanOnly`)를 만든다. consume evidence `manual-admin-campaign-2026-09-30-04283-04284`를 쓴다.
+- [x] current-card evidence를 `promoted-current`로 바꾼다.
+
+실행 기록(2026-09-30): carry-forward 원본 SHA(`a907535a…`)와 feature ledger(`bb15f66` 뒤 변경 없음)를 다시 확인했다. consume은 여섯 bucket JSON `16`개를 `artifacts/manual-admin-campaign-20260930-04283-04284`에 모았다. consume descriptor `manual-admin-campaign-descriptor-20260930-04283-04284-consume`(`-PlanOnly`)는 runner `6/6` pass, missing `0`, not_pass `0`이다. descriptor 도구는 bucket 경로를 명시적으로 받는다(`-CampaignArtifactRoot`만 주면 인자 오류). current-card evidence는 0.42.83 형식 헤더로 다시 쓰고 `promoted-current`로 바꿨다. 검증: `PcvAdminSmokeEvidenceDocs` Pester 통과.
+
+## Task 2: main push evidence (Lane 3, 5a)
+
+- [x] PR #22 merge `4afaed7`의 Development Gates와 Public Boundary run이 success인지 확인하고 `public-boundary-ci-main-push-2026-09-30-04284-pr22-postmerge-pass`를 쓴다.
+
+실행 기록(2026-09-30): PR #22 merge `4afaed7`의 Development Gates `36697433260`(네 shard)와 Public Boundary `36697433373`(job `109828645222`)가 success다. `aab0bc1..ee90e0e..4afaed7` 사이에 product payload 경로 변경이 없음을 확인했다. evidence는 `public-boundary-ci-main-push-2026-09-30-04284-pr22-postmerge-pass`다.
+
+## Task 3: current-evidence와 승격 문서 (Lane 3, 5b)
+
+- [x] `current-evidence.json`을 `0.42.84`로 쓴다(clean MSI `12a582ef…`, operational MSI `f9e1e341…`, payload `77481bdb…`, provenance `ee90e0e`, manual_admin `0.42.83 → 0.42.84` consume descriptor).
+- [x] 승격 spec `packaging/windows-desktop-node/tests/fixtures/lane3-promotion-docs-spec-04284.json`을 04283 견본 구성대로 만든다. `Invoke-PcvLane3PromotionDocs.ps1`를 dry-run, `-Apply`, `-Check` 순서로 실행한다.
+- [x] `CurrentEvidenceVerifierTests`의 기대 버전을 바꾼다.
+
+실행 기록(2026-09-30): `current-evidence.json`을 `0.42.84`로 썼다(`operator_surfaces` 한 줄 서식은 원본대로 유지). 승격 spec `lane3-promotion-docs-spec-04284.json`은 04283 견본과 key 구성이 같다(descriptor key `45`, ledger head `4`, 행 supersede `5`와 replace `3`, index 절). orchestrator 결과: dry-run은 생성 블록 `stale`에 나머지 `planned`, `-Apply`는 6단계를 적용해 파일 `15`개를 바꿨고, `-Check`는 6단계 모두 `current`다. C#은 `CurrentEvidenceVerifierTests` 기대 버전 한 줄만 고쳤다. 검증: `CurrentEvidenceVerifierTests` `13/13`, Delivery `744/744`, Pester(evidence docs, manual-admin tests) `219/219`, `git diff --check`.
+
+## Task 4: 정렬과 전체 검증 (Lane 3, 5c)
+
+- [x] `DOCUMENTATION_INDEX`와 `FEATURE_IMPLEMENTATION_LEDGER`의 current 줄을 `0.42.84`로 정렬한다.
+- [x] 검증: `dotnet test src/DesktopNode.sln`(clean tree), Pester(`packaging/windows-desktop-node/tests`, `manual-admin-tests`), `npm run test:required --prefix web`, `Update-PcvContractSpecPins.ps1 -Check`, orchestrator `-Check`, `git diff --check`
+
+실행 기록(2026-09-30): `DOCUMENTATION_INDEX`의 운영 제품 권위, 호스트 설치본, consume 줄과 `FEATURE_IMPLEMENTATION_LEDGER`의 anchor 문장과 nonclaim을 `0.42.84`로 바꿨다. clean tree에서 `dotnet test src/DesktopNode.sln`이 전 프로젝트 통과했다(Api `477`, Verification `557`, Delivery `744` 등). Pester(`tests`와 `manual-admin-tests`)는 `657/657`, `npm run test:required --prefix web`은 exit `0`이다. `Update-PcvContractSpecPins.ps1 -Check`는 `current`(`exempt_stale`는 기존 예외 두 개), orchestrator `-Check`는 6단계 모두 `current`다.
+
+## Task 5: PR과 merge (Lane 0)
+
+- [x] PR을 열고 CI 통과를 확인한 뒤 merge한다. main push CI를 확인한다.
+
+실행 기록(2026-09-30): PR #23(`https://github.com/HardcoreMonk/purecvisor-desktop-node-public/pull/23`)의 CI 6개가 pass였고 merge commit `102873f`로 merge했다. 이제 operational current는 `0.42.84-admin-smoke`다.
+
+## Task 6: `vm.list` `dvd_media` (Lane 1)
+
+- [x] `origin/main`에서 `feat/vm-list-readback-20260930`을 만든다.
+- [x] `GetStorageSummaries`가 `ResourceSubType`을 읽는다. VHD는 `storage[]`에, `Virtual CD/DVD Disk`는 새 `dvd_media[]`에 담는다. model, 매핑, HyperV 테스트를 더한다.
+
+실행 기록(2026-09-30): storage summary에 `Kind`(`vhd`/`dvd`)를 더했다. `GetStorageSummaries`가 `ResourceSubType`이 `Virtual CD/DVD Disk`인 항목의 ISO 경로를 담는다. `MapSummary`는 `dvd_media`를 채운다. WMI 읽기에 실패하면 이제 null을 돌려 `dvd_media`를 생략하며, `storage[]` 출력은 전과 같다. model `522`/`533`, provider `563`/`573`줄로 라쳇 안이다. 검증: HyperV `239`(새 테스트 1), Api `477`, Delivery `744`, `git diff --check`.
+
+## Task 7: 내부 read operation `vm.disk.inspect` (Lane 1)
+
+- [x] clone provider의 `GetVirtualHardDiskSettingData` helper를 공용화한다. `vm.disk.inspect`(`{name, path}` → `{path, max_internal_size_bytes, disk_type}`)를 domain, dispatch, provider catalog와 Api invoker 허용 목록에 등록한다. `path`가 그 VM의 `storage[]`에 없으면 `PCV_VM_DISK_NOT_FOUND`다.
+
+실행 기록(2026-09-30): 설계와 두 곳이 달랐다.
+- helper: clone provider에서 새로 빼내지 않았다. disk-resize 축소 방지가 이미 쓰는 `DesktopNodeWmiVirtualDiskOperations.GetMaxInternalSize`를 재사용했다. VM provider 인터페이스에 기본 구현 메서드(`GetVirtualDiskMaxInternalSize`, 기본 `null`)를 두고, WMI VM provider가 새 partial에서 구현한다.
+- 영향 범위: 공개 route는 없지만 operation 등록은 설계 예상보다 넓다. HyperV domain, dispatch, provider catalog과 기존 `VmList` read handler 말고도 Runtime policy 계약(`native_probe_operations`와 reason 문자열), `RuntimePolicyContractTests`, `HyperVDomainContractTests`(operation `48`→`49`), Api invoker 허용 목록이 함께 바뀌었다.
+
+첫 checkpoint는 예산에 닿아 멈췄다. 재개 checkpoint에서 클래스 이름 오류를 고쳤고, 라쳇 초과(`DesktopNodeHyperVNativeAdapter.cs` `316`/`315`)는 read switch 두 줄을 한 패턴으로 합쳐 풀었다. 검증: HyperV `240`(새 adapter 테스트 1), Contracts `200`, Api `477`, Delivery `744`, Cli `179`, `npm run test:required --prefix web` exit `0`, spec pin `-Check` current, `git diff --check`.
+
+## Task 8: reconcile 전환 (Lane 1)
+
+- [x] `vm.attach`/`vm.eject`를 비대상에서 대상으로 옮기고 `dvd_media` 판정을 구현한다. `vm.disk-resize` 판정은 `vm.disk.inspect` bytes로 바꾼다. 분류 계약(대상 `28`, 비대상 `17`)과 테스트를 갱신한다.
+
+실행 기록(2026-09-30): schema `pcv-vm-media-reconciliation/v1`을 새로 두었다. attach는 요청 ISO가 after에 정확히 하나 있고 before에는 없었을 때 성공이다(기존 media 교체 포함). eject는 after가 before에서 정확히 하나 빠진 부분집합일 때 성공이다. 같으면 `not-applied`, 그 밖은 `ambiguous-media-state`이고, `dvd_media`가 없으면 capture `unavailable`이거나 `readback-value-unavailable`이다. disk-resize는 before와 observed를 `vm.disk.inspect` byte로 읽고 요청 GB × 2^30과 비교한다. Runtime reconcile 표는 새 partial `DesktopNodeJobRuntime.ReconcilableMutations.cs`로 옮겼다(`Persistence.cs` `504`→`473`줄). 분류 계약은 대상 `28`, 비대상 `17`이다. 검증: Api `488`(새 테스트 `11`), Runtime `128`, Delivery `744`, `git diff --check`.
+
+## Task 9: Web 표시와 종료 (Lane 1)
+
+- [x] VM detail Storage 행에 DVD media를 표시하고 browser fixture를 맞춘다.
+- [x] 종료 검증 뒤 PR, CI, merge를 한다. campaign을 닫고, `next_step`에 설치본 검증(`0.42.85` package pair)이 승인 대상이라고 적는다.
+
+실행 기록(2026-09-30): VM detail에 `DVD Media` 행을 두었다. ISO 경로 목록을 보이고, 빈 목록이면 `none`, `dvd_media`가 없으면 `not reported`로 표시한다. browser fixture VM에 `dvd_media`를 더했다. 종료 검증: clean tree에서 `dotnet test src/DesktopNode.sln` 전 프로젝트 통과(Api `488`, HyperV `240`, Verification `557` 등), `npm run test:required --prefix web` exit `0`, web Pester `50/0`, `git diff --check`. 이 commit 뒤 branch를 PR로 올리고 CI 통과 뒤 merge한다. 설치본 검증(`0.42.85` package pair)은 승인 대상이다.
+
+## Nonclaims
+
+- Lane 3 승격은 internal admin-smoke 범위다. public trusted signing과 external stable publication을 주장하지 않는다.
+- Task 6~9는 소스 구현이다. 설치본과 actual-VM 동작은 주장하지 않는다.

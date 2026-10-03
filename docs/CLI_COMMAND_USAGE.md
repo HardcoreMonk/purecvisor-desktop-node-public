@@ -4,7 +4,7 @@
 
 운영자 대상 용어와 제품 경계 문구는 `docs/OPERATOR_SURFACE_TERMS.md`에 모은다.
 
-`pcvcli.exe`는 설치된 PureCVisor Desktop Node Local API를 호출하는 .NET command-line client다. Web Console과 같은 API contract를 사용하며, Hyper-V helper나 Linux `purecvisor-single` runtime을 직접 실행하지 않는다. 현재 first-class CLI command surface는 host/runtime/ops/network/VM/job/diagnostics이며, Account/RBAC/JWT login/refresh/logout은 Web Console 또는 Web API 직접 호출 경로가 소유한다. `POST /api/v1/auth/loopback-session`도 Web Console 전용이다. PCVCLI는 설치본 protected token file을 계속 사용한다.
+`pcvcli.exe`는 설치된 PureCVisor Desktop Node Local API를 호출하는 .NET command-line client다. Web Console과 같은 API contract를 사용하며, Hyper-V helper나 Linux `purecvisor-single` runtime을 직접 실행하지 않는다. 현재 first-class CLI command surface는 host/runtime/ops/network/VM/job/diagnostics/account/console이며, Account/RBAC/JWT login/refresh/logout은 Web Console 또는 Web API 직접 호출 경로가 소유한다. `POST /api/v1/auth/loopback-session`도 Web Console 전용이다. PCVCLI는 설치본 protected token file을 계속 사용한다. 계정 create/disable은 service bearer로 `pcvcli account`를 쓴다. 비밀번호는 `--password-env` 또는 `--password-stdin`만 받고 argv에 두지 않는다. noVNC target preview/set/clear는 `pcvcli console novnc-target`이다.
 
 이 문서는 설치된 제품을 사용하는 운영자와 repository checkout에서 CLI를 검증하는 개발자를 함께 대상으로 한다.
 
@@ -146,7 +146,8 @@ CLI는 inline token 값을 stdout/stderr에 출력하지 않는다. `--verbose`�
 | `csv` | Route-specific 조회는 row/page metadata를 다중 column으로, 그 외 summary 또는 body는 단일 CSV field로 출력 |
 
 `vm list`와 `diagnostics bundle list` 같은 route-specific list는 `table`, `plain`, `csv`에서
-목록 row와, route가 제공하는 경우 pagination metadata를 직접 표시한다. `json`은 동일 응답의
+목록 row와, route가 제공하는 경우 pagination metadata를 직접 표시한다. `vm list` row는
+`created_at`, `last_powered_on`, `notes`를 포함한다. 값이 없으면 `-`다. `json`은 동일 응답의
 원본 envelope을 보존한다.
 
 API가 problem JSON을 반환하면 CLI는 stderr에 `PCV_*: message` 형태로 표시하고 exit code `1`을 반환한다.
@@ -176,11 +177,31 @@ pcvcli network inventory
 pcvcli network list
 ```
 
+## 계정 명령
+
+| Command | API route | 설명 |
+|---------|-----------|------|
+| `pcvcli account list` | `GET /api/v1/accounts` | 계정 목록. password_hash 없음 |
+| `pcvcli account create --username NAME --role ROLE --password-env VAR|--password-stdin --yes` | `POST /api/v1/accounts` | 첫 계정은 admin. `--yes` 필수. 비밀번호는 env 또는 stdin |
+| `pcvcli account disable NAME --yes` | `POST /api/v1/accounts/{username}/disable` | disable. 마지막 enabled admin은 거절 |
+
+예:
+
+```powershell
+$env:PCV_ACCOUNT_PASSWORD = '<password>'
+pcvcli account create --username lab-admin --role admin --password-env PCV_ACCOUNT_PASSWORD --yes
+pcvcli account list
+pcvcli account disable lab-operator --yes
+```
+
 ## 가상 머신 명령
 
 | Command | API route | 설명 |
 |---------|-----------|------|
 | `pcvcli vm list` | `GET /api/v1/vms` | VM 목록 조회 |
+| `pcvcli vm template-lock <vm> --yes` | `POST /api/v1/vms/{id}/template-lock` | managed VM을 start/clone-only template로 잠근다 |
+| `pcvcli vm template-unlock <vm> --yes` | `POST /api/v1/vms/{id}/template-lock` | template lock을 해제한다 |
+| `pcvcli vm guest-file <vm> --host-path PATH --guest-path PATH --credential-ref REF [--timeout-sec N] --dry-run|--yes` | `POST /api/v1/vms/{id}/guest/file/preview`, `POST /api/v1/vms/{id}/guest/file` | allowlist host-to-guest 한 파일. `--dry-run`은 preview, `--yes`는 copy job |
 | `pcvcli vm get <vm>` | `GET /api/v1/vms/{vm}` | VM 상세 조회 |
 | `pcvcli vm create --name <name> --iso <path> --cpu <n> --memory-mb <mb> --disk-gb <gb> [--vm-root <path>] [--generation <n>]` | `POST /api/v1/vms` | VM 생성 job queue |
 | `pcvcli vm create <name> --iso_path <path> --vcpu <n> --memory_mb <mb> --disk_size_gb <gb> [--image_dir <path>]` | `POST /api/v1/vms` | Linux `pcvctl vm create` shape 호환 alias |
@@ -219,6 +240,15 @@ pcvcli network list
 | `pcvcli vm guest-exec <vm> --dry-run [--credential-ref <ref>] [--timeout-sec <n>] -- <command...>` | `POST /api/v1/vms/{vm}/guest/exec/preview` | Command hash/redaction/audit preview. Guest 실행 없음 |
 | `pcvcli vm guest-exec <vm> --credential-ref <ref> [--timeout-sec <n>] -- <command...>` | `POST /api/v1/vms/{vm}/guest/exec` | Protected credential reference 기반 guest execution job queue |
 | `pcvcli vm manage <vm> --yes` | `POST /api/v1/vms/{vm}/manage` | existing Hyper-V VM을 PureCVisor managed로 승격. `--yes` 필수. body `confirm_name`은 `<vm>` 인자 그대로 |
+| `pcvcli vm clone <source> --name <target> --dry-run [--vm-root <path>]` | `POST /api/v1/vms/{vm}/clone/preview` | managed VM full clone preview. `--yes` 불필요. body `confirm_name`은 `<source>` 인자 그대로, `name`은 `--name`, `--vm-root`는 `vm_root` |
+| `pcvcli vm clone <source> --name <target> --yes [--vm-root <path>]` | `POST /api/v1/vms/{vm}/clone` | managed VM을 독립 disk로 clone. `--yes` 필수. body `confirm_name`은 `<source>` 인자 그대로, `name`은 `--name`, `--vm-root`는 `vm_root`. 생략 시 기본 `D:\PureCVisor\VMs` |
+| `pcvcli vm export preview <vm> --directory PATH [--allowed-root PATH]` | `POST /api/v1/vms/{vm}/export/preview` | Hyper-V export dry-run. 파일을 쓰지 않음. `--yes` 불필요 |
+| `pcvcli vm export <vm> --directory PATH --yes [--allowed-root PATH]` | `POST /api/v1/vms/{vm}/export` | Hyper-V export queued job. `--yes` 필요. TPM/OVF 없음 |
+| `pcvcli vm import preview --name TARGET --directory PATH [--package-kind hyperv-export] [--has-vmcx]` | `POST /api/v1/vms/import/preview` | Hyper-V import dry-run. VM을 정의하지 않음. OVF 거절 |
+| `pcvcli vm import --name TARGET --directory PATH --yes [--allowed-root PATH] [--package-kind hyperv-export] [--vm-root PATH]` | `POST /api/v1/vms/import` | Hyper-V import queued job. 새 identity와 managed marker. package 디스크를 `VM root\TARGET`으로 복사. `--yes` 필요. OVF/in-place 거절 |
+| `pcvcli vm network connect <vm> --switch NAME --yes` | `POST /api/v1/vms/{vm}/network` | 기존 NIC를 inventory 스위치에 연결. `--yes` 필요. 새 NIC 추가는 아님. 스위치 생성/삭제는 Host `service-action` |
+| `pcvcli vm device add <vm> --kind nic --switch NAME --yes` | `POST /api/v1/vms/{vm}/devices` | synthetic NIC 하나를 기존 스위치에 추가. `--yes` 필요. NAT/DHCP와 장치 상점은 열지 않음 |
+| `pcvcli vm device add <vm> --kind dvd --yes` | `POST /api/v1/vms/{vm}/devices` | 빈 DVD 드라이브 하나를 추가. ISO는 `vm attach`. `--yes` 필요 |
 | `pcvcli vm delete <vm> --yes` | `DELETE /api/v1/vms/{vm}` | Managed VM delete job queue |
 
 VM 생성 예:
@@ -247,10 +277,22 @@ pcvcli vm create ubuntu-lab-01 `
 
 `pcvcli vm manage <vm> --yes`는 existing Hyper-V VM에 managed marker를 붙이는 queued job이다. `--yes`가 없으면 `PCV_CLI_CONFIRMATION_REQUIRED`다. body `confirm_name`은 `<vm>` 인자를 그대로 넣는다.
 
+`pcvcli vm clone <source> --name <target> --dry-run [--vm-root <path>]`은 `POST /api/v1/vms/{vm}/clone/preview`로 복사 계획만 조회한다. `--yes`는 필요 없다. `pcvcli vm clone <source> --name <target> --yes [--vm-root <path>]`는 `POST /api/v1/vms/{vm}/clone`로 독립 VHDX full clone job을 queue한다. `--yes`가 없으면 `PCV_CLI_CONFIRMATION_REQUIRED`다. body `confirm_name`은 `<source>` 인자 그대로, `name`은 `--name`이다. `--vm-root`는 body `vm_root`다. 생략하면 native 기본값은 `D:\PureCVisor\VMs`다. 소스는 managed Generation 2, 전원 `Off`, checkpoint 0, 독립 VHDX만 허용한다.
+
+`pcvcli vm import preview --name TARGET --directory PATH [--package-kind hyperv-export] [--has-vmcx]`는 `POST /api/v1/vms/import/preview` dry-run이다. `pcvcli vm import --name TARGET --directory PATH --yes`는 `POST /api/v1/vms/import` queued job이다. `--yes`가 없으면 `PCV_CLI_CONFIRMATION_REQUIRED`다. import는 새 identity와 managed marker만 허용하고 OVF/in-place는 거절한다. import는 package의 `Virtual Hard Disks` 디스크를 `--vm-root`(body `vm_root`, 생략 시 native 기본값 `D:\PureCVisor\VMs`) 아래 `TARGET` 디렉터리로 복사하고 VM 구성·checkpoint·디스크를 그 디렉터리에 둔다. package는 바뀌지 않아 다시 import할 수 있다. 대상 디렉터리가 이미 있으면 `PCV_VM_ALREADY_EXISTS`다.
+
 VM delete는 destructive host mutation을 queue하므로 `--yes`가 필수다. API는 PureCVisor managed marker가 없는 VM을 provider mutation 전에 차단한다. unmanaged delete 거절은 manage 이후에도 다른 unmanaged VM에 유지된다.
 
 ```powershell
 pcvcli vm manage ubuntu-lab-01 --yes
+pcvcli vm clone ubuntu-lab-01 --name ubuntu-lab-02 --dry-run
+pcvcli vm clone ubuntu-lab-01 --name ubuntu-lab-02 --yes
+pcvcli vm clone ubuntu-lab-01 --name ubuntu-lab-02 --yes --vm-root D:\data\pcv-p1-clone-04276
+pcvcli vm export preview ubuntu-lab-01 --directory D:\PureCVisor\exports\ubuntu-lab-01
+pcvcli vm export ubuntu-lab-01 --directory D:\PureCVisor\exports\ubuntu-lab-01 --yes
+pcvcli vm network connect ubuntu-lab-01 --switch pcv-lab-internal --yes
+pcvcli vm import preview --name ubuntu-lab-02 --directory D:\PureCVisor\exports\ubuntu-lab-01 --has-vmcx
+pcvcli vm import --name ubuntu-lab-02 --directory D:\PureCVisor\exports\ubuntu-lab-01 --yes
 pcvcli vm delete ubuntu-lab-01 --yes
 ```
 
@@ -352,6 +394,9 @@ secret-bearing command option은 `PCV_CLI_CREDENTIAL_REF_REQUIRED`로 거절된�
 | `pcvcli vm checkpoint create <vm> --name <checkpoint>` | `POST /api/v1/vms/{vm}/checkpoints` | Checkpoint 생성 job queue |
 | `pcvcli vm checkpoint restore <vm> <checkpoint>` | `POST /api/v1/vms/{vm}/checkpoints/{checkpoint}/restore` | Checkpoint restore job queue |
 | `pcvcli vm checkpoint delete <vm> <checkpoint>` | `DELETE /api/v1/vms/{vm}/checkpoints/{checkpoint}` | Checkpoint delete job queue |
+| `pcvcli vm checkpoint schedule preview <vm> --interval-minutes N --retention-max N` | `POST /api/v1/vms/{vm}/checkpoints/schedule/preview` | 주기 checkpoint 스케줄 dry-run. persist/tick 없음 |
+| `pcvcli vm checkpoint schedule set <vm> --interval-minutes N --retention-max N --yes` | `POST /api/v1/vms/{vm}/checkpoints/schedule` | 주기 checkpoint 스케줄 queued persist. `--yes` 필요. Host listen due worker가 만기이면 기존 `checkpoint.create`만 enqueue. retention에 막히면 `pcv-schedule-*` 중 가장 오래된 항목에 기존 `checkpoint.delete` 명시 job만 enqueue |
+| `pcvcli vm checkpoint schedule clear <vm> --yes` | `POST /api/v1/vms/{vm}/checkpoints/schedule/clear` | 스케줄 `{enabled:false}` persist. `--yes` 필요 |
 | `pcvcli vm snapshot list <vm>` | `GET /api/v1/vms/{vm}/checkpoints` | Linux `vm snapshot list` shape 호환 alias |
 | `pcvcli vm snapshot create <vm> --name <checkpoint>` | `POST /api/v1/vms/{vm}/checkpoints` | Snapshot create alias |
 | `pcvcli vm snapshot rollback <vm> <checkpoint>` | `POST /api/v1/vms/{vm}/checkpoints/{checkpoint}/restore` | Snapshot rollback alias |
@@ -367,6 +412,9 @@ confirmation dialog를 통과해야 job을 queue한다.
 pcvcli vm checkpoint create ubuntu-lab-01 --name before-upgrade
 pcvcli vm checkpoint restore ubuntu-lab-01 before-upgrade
 pcvcli vm checkpoint delete ubuntu-lab-01 before-upgrade
+pcvcli vm checkpoint schedule preview ubuntu-lab-01 --interval-minutes 1440 --retention-max 8
+pcvcli vm checkpoint schedule set ubuntu-lab-01 --interval-minutes 1440 --retention-max 8 --yes
+pcvcli vm checkpoint schedule clear ubuntu-lab-01 --yes
 pcvcli vm snapshot rollback ubuntu-lab-01 before-upgrade
 ```
 
@@ -395,7 +443,7 @@ pcvcli --json job reconcile job-123
 `limit`과 `offset`은 integer여야 한다. API의 job retention 정책은 user guide의 Operator Activity 설명을 따른다.
 
 `job reconcile`은 일반 retry가 아니다. Service restart 등으로 `PCV_JOB_INTERRUPTED`가 된
-`vm.rename`, `vm.delete`, `checkpoint.create`, `checkpoint.restore` job에만 사용한다. API는 먼저 Hyper-V/provider
+`vm.rename`, `vm.delete`, `checkpoint.create`, `checkpoint.restore`, `vm.create`, `vm.shutdown`, `vm.restart`, `vm.qos.storage.set`, `vm.qos.network.set` job에만 사용한다. API는 먼저 Hyper-V/provider
 readback으로 원래 mutation의 postcondition을 확인한다. Postcondition이 확정되면 기존
 mutation을 중복 제출하지 않고 기존 job을 reconciled terminal state로 저장한다. 결과가 없거나
 모호하면 `409`와 `PCV_JOB_RECONCILIATION_REQUIRED`를 반환한다. 이때 `retry`를 먼저 실행하지
@@ -487,7 +535,17 @@ $capabilities.data.console_access
 # 실제 VM별 handoff/session metadata는 기존 CLI command로 조회
 pcvcli --json vm console ubuntu-lab-01
 pcvcli --json vm vnc ubuntu-lab-01
+pcvcli console novnc-target preview --host 127.0.0.1 --port 5900 [--allow-lan-target] [--reason TEXT]
+pcvcli console novnc-target set --host 127.0.0.1 --port 5900 [--allow-lan-target] [--reason TEXT] --yes
+pcvcli console novnc-target clear --yes
 ```
+
+`console novnc-target preview`는 dry-run이다. PathName을 쓰지 않고 listener를 reload하지 않는다.
+`set`/`clear`는 queued mutation이다. `--yes`가 없으면 `PCV_CLI_CONFIRMATION_REQUIRED`다. durable source는
+`%ProgramData%\PureCVisor\desktop-node\novnc-target.json`이고, 파일이 PathName보다 이긴다. `clear`는
+파일을 지워서 PathName이 부활하게 두지 않고 `{ "enabled": false }`를 남긴다. listen 프로세스를
+stop/start 하지 않는다. LAN target은 `--allow-lan-target`과 `--reason`이 필요하고, listener에
+`--allow-lan`이 이미 있어야 한다. Web Console에 target 저장 폼은 없다.
 
 PCVCLI에 별도 `console capabilities` command를 두지 않은 것은 실제 운영 action이 VM별
 `vm console|vnc`이고, 전역 capability card는 Web Console의 연결/문제 해결 화면이 주로

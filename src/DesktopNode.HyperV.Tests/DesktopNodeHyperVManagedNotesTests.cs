@@ -39,6 +39,37 @@ public sealed class DesktopNodeHyperVManagedNotesTests
         Assert.True(DesktopNodeHyperVManagedNotes.IsManagedNotes("MANAGED-BY=purecvisor-desktop-node"));
     }
 
+    [Fact]
+    public void OperatorNotesStripsManagedMarkerAndKeepsOperatorText()
+    {
+        Assert.Null(DesktopNodeHyperVManagedNotes.OperatorNotes(null));
+        Assert.Null(DesktopNodeHyperVManagedNotes.OperatorNotes(DesktopNodeHyperVManagedNotes.Marker));
+        Assert.Equal(
+            "lab imported from workstation",
+            DesktopNodeHyperVManagedNotes.OperatorNotes(
+                "lab imported from workstation" + Environment.NewLine + DesktopNodeHyperVManagedNotes.Marker));
+        Assert.Equal("keep this", DesktopNodeHyperVManagedNotes.OperatorNotes("keep this"));
+        Assert.Null(DesktopNodeHyperVManagedNotes.OperatorNotes(DesktopNodeHyperVManagedNotes.TemplateLockMarker));
+        Assert.Equal(
+            "lab gold image",
+            DesktopNodeHyperVManagedNotes.OperatorNotes(
+                "lab gold image" + Environment.NewLine +
+                DesktopNodeHyperVManagedNotes.Marker + Environment.NewLine +
+                DesktopNodeHyperVManagedNotes.TemplateLockMarker));
+        Assert.True(DesktopNodeHyperVManagedNotes.IsTemplateLocked(
+            DesktopNodeHyperVManagedNotes.Marker + Environment.NewLine +
+            DesktopNodeHyperVManagedNotes.TemplateLockMarker));
+        Assert.False(DesktopNodeHyperVManagedNotes.IsTemplateLocked(DesktopNodeHyperVManagedNotes.Marker));
+        Assert.Equal(
+            DesktopNodeHyperVManagedNotes.Marker + Environment.NewLine + DesktopNodeHyperVManagedNotes.TemplateLockMarker,
+            DesktopNodeHyperVManagedNotes.ApplyTemplateLock(DesktopNodeHyperVManagedNotes.Marker, locked: true));
+        Assert.Equal(
+            DesktopNodeHyperVManagedNotes.Marker,
+            DesktopNodeHyperVManagedNotes.ApplyTemplateLock(
+                DesktopNodeHyperVManagedNotes.Marker + Environment.NewLine + DesktopNodeHyperVManagedNotes.TemplateLockMarker,
+                locked: false));
+    }
+
     private static int CountMarkerOccurrences(string notes)
     {
         var count = 0;

@@ -1,9 +1,67 @@
+using System.Text.Json;
+using DesktopNode.Contracts;
 using DesktopNode.HyperV;
 
 namespace DesktopNode.HyperV.Tests;
 
 public sealed class DesktopNodeHyperVWmiProviderTests
 {
+    [Fact]
+    public void WmiVmProviderReportsDvdDriveCountOnlyWhenRead()
+    {
+        var summary = new DesktopNodeHyperVWmiVmSummary(
+            Id: "alpha",
+            Name: "alpha",
+            EnabledState: 3,
+            ProcessorCount: 1,
+            StartupMemoryQuantity: 1024,
+            StartupMemoryQuantityUnits: "byte*2^20",
+            GenerationSubtype: "Microsoft:Hyper-V:SubType:2",
+            CheckpointCount: 0,
+            Notes: DesktopNodeHyperVManagedNotes.Marker,
+            DvdDriveCount: 1);
+
+        var withDvd = JsonSerializer.SerializeToElement(DesktopNodeHyperVWmiVmProvider.MapSummary(summary));
+        Assert.Equal(1, withDvd.GetProperty("dvd_drives").GetProperty("count").GetInt32());
+
+        var unread = JsonSerializer.SerializeToElement(DesktopNodeHyperVWmiVmProvider.MapSummary(summary with { DvdDriveCount = null }));
+        Assert.False(unread.TryGetProperty("dvd_drives", out _));
+    }
+
+    [Fact]
+    public void WmiVmProviderSplitsDvdMediaFromVirtualDisks()
+    {
+        var summary = new DesktopNodeHyperVWmiVmSummary(
+            Id: "alpha",
+            Name: "alpha",
+            EnabledState: 3,
+            ProcessorCount: 1,
+            StartupMemoryQuantity: 1024,
+            StartupMemoryQuantityUnits: "byte*2^20",
+            GenerationSubtype: "Microsoft:Hyper-V:SubType:2",
+            CheckpointCount: 0,
+            Notes: DesktopNodeHyperVManagedNotes.Marker,
+            Storage:
+            [
+                new DesktopNodeHyperVWmiVmStorageSummary(@"D:\VMs\alpha\disk0.vhdx", Attached: true),
+                new DesktopNodeHyperVWmiVmStorageSummary(@"D:\iso\setup.iso", Attached: true, Kind: "dvd")
+            ]);
+
+        var vm = JsonSerializer.SerializeToElement(DesktopNodeHyperVWmiVmProvider.MapSummary(summary));
+
+        var disk = Assert.Single(vm.GetProperty("storage").EnumerateArray());
+        Assert.Equal(@"D:\VMs\alpha\disk0.vhdx", disk.GetProperty("path").GetString());
+        var media = Assert.Single(vm.GetProperty("dvd_media").EnumerateArray());
+        Assert.Equal(@"D:\iso\setup.iso", media.GetProperty("path").GetString());
+
+        var noMedia = JsonSerializer.SerializeToElement(DesktopNodeHyperVWmiVmProvider.MapSummary(summary with { Storage = [summary.Storage![0]] }));
+        Assert.Empty(noMedia.GetProperty("dvd_media").EnumerateArray());
+
+        var unread = JsonSerializer.SerializeToElement(DesktopNodeHyperVWmiVmProvider.MapSummary(summary with { Storage = null }));
+        Assert.False(unread.TryGetProperty("dvd_media", out _));
+        Assert.Empty(unread.GetProperty("storage").EnumerateArray());
+    }
+
     [Fact]
     public void WmiVmProviderQueryAvoidsPowerShellOnlyNotesProjection()
     {
@@ -45,6 +103,47 @@ public sealed class DesktopNodeHyperVWmiProviderTests
         Assert.Equal("vmconnect", vm.Console.Type);
         Assert.True(vm.Console.AvailableLocal);
         Assert.True(vm.ManagedByPurecvisor);
+        Assert.Null(vm.Notes);
+    }
+
+    [Fact]
+    public void WmiVmProviderMapsOperatorNotesWithoutManagedMarker()
+    {
+        var vm = DesktopNodeHyperVWmiVmProvider.MapSummary(new DesktopNodeHyperVWmiVmSummary(
+            Id: "alpha",
+            Name: "alpha",
+            EnabledState: 3,
+            ProcessorCount: 1,
+            StartupMemoryQuantity: 1024,
+            StartupMemoryQuantityUnits: "byte*2^20",
+            GenerationSubtype: "Microsoft:Hyper-V:SubType:2",
+            CheckpointCount: 0,
+            Notes: "lab imported from workstation" + Environment.NewLine +
+                DesktopNodeHyperVManagedNotes.Marker));
+
+        Assert.True(vm.ManagedByPurecvisor);
+        Assert.Equal("lab imported from workstation", vm.Notes);
+        Assert.False(vm.TemplateLock);
+    }
+
+    [Fact]
+    public void WmiVmProviderMapsTemplateLockFromNotesMarker()
+    {
+        var vm = DesktopNodeHyperVWmiVmProvider.MapSummary(new DesktopNodeHyperVWmiVmSummary(
+            Id: "gold",
+            Name: "gold",
+            EnabledState: 3,
+            ProcessorCount: 1,
+            StartupMemoryQuantity: 1024,
+            StartupMemoryQuantityUnits: "byte*2^20",
+            GenerationSubtype: "Microsoft:Hyper-V:SubType:2",
+            CheckpointCount: 0,
+            Notes: DesktopNodeHyperVManagedNotes.Marker + Environment.NewLine +
+                DesktopNodeHyperVManagedNotes.TemplateLockMarker));
+
+        Assert.True(vm.ManagedByPurecvisor);
+        Assert.True(vm.TemplateLock);
+        Assert.Null(vm.Notes);
     }
 
     [Theory]
@@ -179,6 +278,48 @@ public sealed class DesktopNodeHyperVWmiProviderTests
     }
 
     [Fact]
+    public void WmiVmProviderMapsCreatedAtAndLastPoweredOnWhenRunning()
+    {
+        var vm = DesktopNodeHyperVWmiVmProvider.MapSummary(new DesktopNodeHyperVWmiVmSummary(
+            Id: "alpha",
+            Name: "alpha",
+            EnabledState: 2,
+            ProcessorCount: 2,
+            StartupMemoryQuantity: 4096,
+            StartupMemoryQuantityUnits: "byte*2^20",
+            GenerationSubtype: "Microsoft:Hyper-V:SubType:2",
+            CheckpointCount: 0,
+            Notes: null,
+            CreationTime: "2026-09-20T01:02:03.0000000Z",
+            TimeOfLastStateChange: "2026-09-20T04:05:06.0000000Z"));
+
+        Assert.Equal("running", vm.State);
+        Assert.Equal("2026-09-20T01:02:03.0000000Z", vm.CreatedAt);
+        Assert.Equal("2026-09-20T04:05:06.0000000Z", vm.LastPoweredOn);
+    }
+
+    [Fact]
+    public void WmiVmProviderOmitsLastPoweredOnWhenNotRunning()
+    {
+        var vm = DesktopNodeHyperVWmiVmProvider.MapSummary(new DesktopNodeHyperVWmiVmSummary(
+            Id: "alpha",
+            Name: "alpha",
+            EnabledState: 3,
+            ProcessorCount: 1,
+            StartupMemoryQuantity: 1024,
+            StartupMemoryQuantityUnits: "byte*2^20",
+            GenerationSubtype: "Microsoft:Hyper-V:SubType:2",
+            CheckpointCount: 0,
+            Notes: null,
+            CreationTime: "2026-09-20T01:02:03.0000000Z",
+            TimeOfLastStateChange: "2026-09-20T04:05:06.0000000Z"));
+
+        Assert.Equal("stopped", vm.State);
+        Assert.Equal("2026-09-20T01:02:03.0000000Z", vm.CreatedAt);
+        Assert.Null(vm.LastPoweredOn);
+    }
+
+    [Fact]
     public void WmiVmProviderUsesCurrentSettingAndResourceAssociations()
     {
         Assert.Equal("Msvm_VirtualSystemSettingData", DesktopNodeHyperVWmiVmProvider.VirtualSystemSettingClass);
@@ -264,6 +405,139 @@ public sealed class DesktopNodeHyperVWmiProviderTests
         Assert.False(info.IsDefault);
         Assert.True(info.AllowManagementOs);
         Assert.Null(info.NetAdapterInterfaceDescription);
+    }
+
+    [Fact]
+    public void WmiSwitchProviderMapsSwitchWithoutManagementPortOrExternalBindingAsPrivate()
+    {
+        var info = DesktopNodeHyperVWmiSwitchProvider.MapSwitch("pcv-lab-private");
+
+        Assert.Equal("pcv-lab-private", info.Name);
+        Assert.Equal("private", info.Type);
+        Assert.False(info.IsDefault);
+        Assert.False(info.AllowManagementOs);
+        Assert.Null(info.NetAdapterInterfaceDescription);
+    }
+
+    [Fact]
+    public void ImportPackageValidationAcceptsGenerationTwoGuestStateFile()
+    {
+        var directory = Directory.CreateTempSubdirectory("pcv-import-package-").FullName;
+        try
+        {
+            var virtualMachines = Directory.CreateDirectory(Path.Combine(directory, "Virtual Machines")).FullName;
+            File.WriteAllText(Path.Combine(virtualMachines, "vm.vmcx"), string.Empty);
+            File.WriteAllText(Path.Combine(virtualMachines, "vm.vmgs"), string.Empty);
+
+            DesktopNodeHyperVWmiVmImportProvider.ValidatePackageContent(directory);
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+
+    [Fact]
+    public void ImportDiskPlanCopiesPackageDisksInsteadOfSourcePaths()
+    {
+        var package = Directory.CreateTempSubdirectory("pcv-import-package-").FullName;
+        try
+        {
+            var disks = Directory.CreateDirectory(Path.Combine(package, "Virtual Hard Disks")).FullName;
+            File.WriteAllText(Path.Combine(disks, "disk0.vhdx"), string.Empty);
+            var target = Path.Combine(Path.GetTempPath(), "pcv-vms", "lab-vm-restored");
+
+            var plans = DesktopNodeHyperVWmiVmImportProvider.PlanDiskCopies(
+                package,
+                target,
+                [@"D:\PureCVisor\VMs\lab-vm\disk0.vhdx"]);
+
+            var plan = Assert.Single(plans);
+            Assert.Equal(Path.Combine(disks, "disk0.vhdx"), plan.PackageSource);
+            Assert.Equal(Path.Combine(target, "disk0.vhdx"), plan.Target);
+        }
+        finally
+        {
+            Directory.Delete(package, recursive: true);
+        }
+    }
+
+    [Fact]
+    public void ImportDiskPlanRejectsMissingPackageDiskAndDuplicateNames()
+    {
+        var package = Directory.CreateTempSubdirectory("pcv-import-package-").FullName;
+        try
+        {
+            var disks = Directory.CreateDirectory(Path.Combine(package, "Virtual Hard Disks")).FullName;
+            File.WriteAllText(Path.Combine(disks, "disk0.vhdx"), string.Empty);
+            var target = Path.Combine(Path.GetTempPath(), "pcv-vms", "lab-vm-restored");
+
+            var missing = Assert.Throws<DesktopNodeHyperVNativeOperationException>(() =>
+                DesktopNodeHyperVWmiVmImportProvider.PlanDiskCopies(package, target, [@"D:\PureCVisor\VMs\lab-vm\disk1.vhdx"]));
+            Assert.Equal(VmExportImportProblemCodes.PackageInvalid, missing.Code);
+
+            var duplicate = Assert.Throws<DesktopNodeHyperVNativeOperationException>(() =>
+                DesktopNodeHyperVWmiVmImportProvider.PlanDiskCopies(
+                    package,
+                    target,
+                    [@"D:\a\disk0.vhdx", @"E:\b\disk0.vhdx"]));
+            Assert.Equal(VmExportImportProblemCodes.PackageInvalid, duplicate.Code);
+        }
+        finally
+        {
+            Directory.Delete(package, recursive: true);
+        }
+    }
+
+    [Theory]
+    [InlineData("package.ovf")]
+    [InlineData("package.ova")]
+    public void ImportPackageValidationRejectsOvfAndOva(string fileName)
+    {
+        var directory = Directory.CreateTempSubdirectory("pcv-import-package-").FullName;
+        try
+        {
+            File.WriteAllText(Path.Combine(directory, fileName), string.Empty);
+
+            var error = Assert.Throws<DesktopNodeHyperVNativeOperationException>(
+                () => DesktopNodeHyperVWmiVmImportProvider.ValidatePackageContent(directory));
+            Assert.Equal(VmExportImportProblemCodes.OvfForbidden, error.Code);
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void WmiSwitchProviderMapsNamedExternalBindingAsExternal(bool hasInternalManagementPort)
+    {
+        var info = DesktopNodeHyperVWmiSwitchProvider.MapSwitch(
+            "corp-uplink",
+            hasInternalManagementPort: hasInternalManagementPort,
+            hasExternalBinding: true,
+            externalAdapterDescription: "Intel(R) Ethernet Controller");
+
+        Assert.Equal("external", info.Type);
+        Assert.False(info.IsDefault);
+        Assert.Equal(hasInternalManagementPort, info.AllowManagementOs);
+        Assert.Equal("Intel(R) Ethernet Controller", info.NetAdapterInterfaceDescription);
+    }
+
+    [Fact]
+    public void WmiSwitchProviderSelectsOnlyExternalPortHostResources()
+    {
+        Assert.Equal(
+            [@"\\HOST\root\virtualization\v2:Msvm_ExternalEthernetPort.CreationClassName=""x"""],
+            DesktopNodeHyperVWmiSwitchProvider.ExternalPortPaths(new[]
+            {
+                @"\\HOST\root\virtualization\v2:Msvm_InternalEthernetPort.Name=""y""",
+                @"\\HOST\root\virtualization\v2:Msvm_ExternalEthernetPort.CreationClassName=""x""",
+                string.Empty
+            }));
+        Assert.Empty(DesktopNodeHyperVWmiSwitchProvider.ExternalPortPaths(null));
     }
 
     [Fact]

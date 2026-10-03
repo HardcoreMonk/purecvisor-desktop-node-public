@@ -14,6 +14,10 @@
 - public trusted signing: `false`
 - external stable publication: `false`
 
+> 작업 시작 체크리스트, 검증 명령, 승인표와 종료 보고 형식은
+> `docs/DEVELOPMENT_PROCEDURE.md`에서 시작한다. 이 설계는 Lane 의미와 금지 조건의 canonical
+> owner로 유지된다.
+
 ## 1. 목적
 
 코드 검증, 설치본 한 경로 프로브, operational current 승격이 한 세션에서 섞이지 않게 한다.
@@ -282,6 +286,14 @@ writing-plans가 이 순서를 상세 작업으로 분해한다. 이 문서가 �
 4. **승격 거부.** FAIL 프로브/fail observation으로 current pass write가 열리지 않는 테스트.
    이미 닫혀 있으면 새 코드 없이 계약을 고정한다.
 5. **(별도 승인)** Lane 2 SavedOnly 재실행. 슬라이스 2 PASS 뒤에만. current write 없음.
+
+## 10. 2026-09-20 연속 실행 개정
+
+차선 의미와 FAIL≠current 금지는 이 문서가 계속 소유한다. `재개`/`계속`이 항상 한
+checkpoint로 끝나는 규칙은
+`docs/superpowers/specs/2026-09-20-purecvisor-desktop-node-campaign-continuity-design.md`가
+개정한다. 열린 campaign의 `next_step`은 재승인 없이 이어지고, 범위 밖 발견은 다음 일이
+되지 않는다.
 
 슬라이스 5는 이 설계의 구현 완료 조건이 아니다. Lane 1 가드가 먼저 닫혀야 한다.
 

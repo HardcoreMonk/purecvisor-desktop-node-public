@@ -173,6 +173,7 @@
         "diagnostics.read",
         "diagnostics.create",
         "console.view",
+        "console.configure",
         "account.manage"
       ],
       "role": "admin",
@@ -191,6 +192,7 @@
         "diagnostics.read",
         "diagnostics.create",
         "console.view",
+        "console.configure",
         "account.manage"
       ],
       "role": "admin",
@@ -217,12 +219,13 @@
         },
         {
           "description": "Full local account/RBAC administrator role.",
-          "permissions": ["*", "read", "operate", "job.control", "diagnostics.read", "diagnostics.create", "console.view", "account.manage"],
+          "permissions": ["*", "read", "operate", "job.control", "diagnostics.read", "diagnostics.create", "console.view", "console.configure", "account.manage"],
           "role": "admin"
         }
       ],
       "route_policy": {
         "account.manage": "admin",
+        "console.configure": "admin",
         "console.view": "operator",
         "diagnostics.create": "operator",
         "operate": "operator",

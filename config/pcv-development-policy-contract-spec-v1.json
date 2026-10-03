@@ -6,15 +6,15 @@
   "source_files": [
     {
       "path": "config/agent-execution-circuit-breaker.json",
-      "sha256": "4f99355cc51945d2c718fb675cde09611a46b48009ef938d4c72604a465f3029"
+      "sha256": "1a821f1b0a5f2f5bd9f639899ac72926ce667e7b679b5b875b40bbd4f3048144"
     },
     {
       "path": "docs/AGENT_EXECUTION_CIRCUIT_BREAKER.md",
-      "sha256": "901ff922818b9557a48614468003e0c4e08f896f2505c91233c4e8c463247c14"
+      "sha256": "1d576eb774b4d732ed0c9cc4e271a24913d628bf15d8ea9574412b0ec090cd2a"
     },
     {
       "path": "AGENTS.md",
-      "sha256": "f5f3459969667503d17d2572aedbf6aefa4d3bdfd974d0bc14c8de736f4016cb"
+      "sha256": "4c69dcebae4ffa0641a69ca2b80c3e74fee553db1125d5a21fa65318d1da72b7"
     },
     {
       "path": "packaging/windows-desktop-node/tests/fixtures/csharp-architecture-test-migration.json",
@@ -66,7 +66,7 @@
     },
     {
       "path": "packaging/windows-desktop-node/tests/fixtures/module-size-ratchet.json",
-      "sha256": "390f447a92430768d15946dbd0bc0b0bfa34e4c373d25b759450286c1a9e6260"
+      "sha256": "420074b3dd08b826a7229db059890d664f6cfc137af32de1c35f46c52f0e456e"
     },
     {
       "path": "packaging/windows-desktop-node/tools/PcvStrictCollection.psm1",
@@ -84,14 +84,14 @@
     {
       "key": "architecture-gap",
       "path": "packaging/windows-desktop-node/tests/PcvCSharpArchitectureGapRegistry.Tests.ps1",
-      "sha256": "2a41b2ad1e4eb37807c1eb9d9fc4ea8e914567c130afded4001f138cfe109581",
+      "sha256": "0dc4db02c16ba61d65e24507089b385629331e537687915dfd8580504e602dd6",
       "contract_count": 10,
       "should_site_count": 168
     },
     {
       "key": "gate-workflow",
       "path": "packaging/windows-desktop-node/tests/PcvDevelopmentGateWorkflow.Tests.ps1",
-      "sha256": "46084abbb67a69229559825cb63c3b05e810b8f91950fedc1194bb41d12879da",
+      "sha256": "e204a79bdb7e8af55d2834eea24aebf8d787197aba797a0954ca8b2cbc582af2",
       "contract_count": 1,
       "should_site_count": 51
     },

@@ -46,14 +46,35 @@ public sealed class DesktopNodeCliProjectContractTests
             "pcvcli vm guest-agent-ensure-channel <vm> --repair --yes",
             "pcvcli vm guest-exec <vm> --dry-run [--credential-ref <ref>] [--timeout-sec <n>] -- <command...>",
             "pcvcli vm guest-exec <vm> --credential-ref <ref> [--timeout-sec <n>] -- <command...>",
+            "pcvcli vm guest-file <vm> --host-path PATH --guest-path PATH --credential-ref REF [--timeout-sec N] --dry-run|--yes",
             "pcvcli vm set-memory <vm> <memory_mb>",
             "pcvcli vm set-vcpu <vm> <vcpu_count>",
             "pcvcli vm disk-resize <vm> <disk_gb>",
             "pcvcli vm save <vm>",
             "pcvcli vm resume-saved <vm>",
             "pcvcli vm manage <vm> --yes",
+            "pcvcli vm template-lock <vm> --yes",
+            "pcvcli vm template-unlock <vm> --yes",
+            "pcvcli vm clone <source> --name <target> --yes",
+            "pcvcli vm clone <source> --name <target> --dry-run",
             "pcvcli vm eject <vm>",
-            "pcvcli vm delete-status <vm>"
+            "pcvcli vm delete-status <vm>",
+            "pcvcli account list",
+            "pcvcli account create --username NAME --role ROLE --password-env VAR|--password-stdin --yes",
+            "pcvcli account disable NAME --yes",
+            "pcvcli console novnc-target preview --host 127.0.0.1 --port 5900 [--allow-lan-target] [--reason TEXT]",
+            "pcvcli console novnc-target set --host 127.0.0.1 --port 5900 [--allow-lan-target] [--reason TEXT] --yes",
+            "pcvcli console novnc-target clear --yes",
+            "pcvcli vm checkpoint schedule preview <vm> --interval-minutes N --retention-max N",
+            "pcvcli vm checkpoint schedule set <vm> --interval-minutes N --retention-max N --yes",
+            "pcvcli vm checkpoint schedule clear <vm> --yes",
+            "pcvcli vm export preview <vm> --directory PATH",
+            "pcvcli vm export <vm> --directory PATH --yes",
+            "pcvcli vm import preview --name TARGET --directory PATH [--package-kind hyperv-export] [--has-vmcx]",
+            "pcvcli vm import --name TARGET --directory PATH --yes",
+            "pcvcli vm network connect <vm> --switch NAME --yes",
+            "pcvcli vm device add <vm> --kind nic --switch NAME --yes",
+            "pcvcli vm device add <vm> --kind dvd --yes"
         ];
 
         foreach (var commandShape in commandShapes)
@@ -96,7 +117,7 @@ public sealed class DesktopNodeCliProjectContractTests
 
         Assert.Contains("| Diagnostics list | [ `pcv.diagnostics.bundle` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-diagnostics-bundle) | Troubleshooting bundle 목록/pagination | `pcvcli diagnostics bundle list [--limit <n>] [--offset <n>]` | `GET /diagnostics/bundles?limit=&offset=` |", featureUsage, StringComparison.Ordinal);
         Assert.Contains("| Console capability discovery | [ `pcv.console.capabilities` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-console-capabilities) | Console/Troubleshooting capability card | API/Web Console 전용 | `GET /console/capabilities` |", featureUsage, StringComparison.Ordinal);
-        Assert.Contains("| VM console/noVNC handoff | [ `pcv.vm.console-handoff` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-console-handoff) | 선택 VM Console panel | `pcvcli vm console/vnc <vm>` | `GET /vms/{id}/console` |", featureUsage, StringComparison.Ordinal);
+        Assert.Contains("| VM console/noVNC handoff | [ `pcv.vm.console-handoff` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-console-handoff) | 선택 VM Console panel (readback, no save form) | `pcvcli vm console/vnc <vm>`; `pcvcli console novnc-target preview --host 127.0.0.1 --port 5900`; `pcvcli console novnc-target set --host 127.0.0.1 --port 5900 --yes`; `pcvcli console novnc-target clear --yes` | `GET /vms/{id}/console`; `POST /console/novnc-target/preview`; `POST /console/novnc-target`; `POST /console/novnc-target/clear` |", featureUsage, StringComparison.Ordinal);
 
         Assert.Contains("pcvcli --json diagnostics bundle list --limit 10 --offset 0", userGuide, StringComparison.Ordinal);
         Assert.Contains("전역 capability discovery는 API/Web Console 전용", userGuide, StringComparison.Ordinal);
@@ -139,8 +160,8 @@ public sealed class DesktopNodeCliProjectContractTests
             }
         }
 
-        Assert.Equal(27, featureCount);
-        Assert.Equal(60, routeCount);
+        Assert.Equal(28, featureCount);
+        Assert.Equal(80, routeCount);
         string[] stageLabels =
         [
             "code_tested",

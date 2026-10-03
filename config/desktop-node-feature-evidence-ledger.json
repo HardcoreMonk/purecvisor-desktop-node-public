@@ -15,9 +15,9 @@
       ],
       "candidate_required": true,
       "current": {
-        "version": "0.42.74-admin-smoke",
+        "version": "0.42.75-admin-smoke",
         "verdict": "pass",
-        "evidence": "docs/ga-ready/evidence/service-plan-p0-actual-vm-2026-08-20-04274.md"
+        "evidence": "docs/ga-ready/evidence/service-plan-p0-actual-vm-2026-08-27-04275.md"
       }
     },
     {
@@ -33,9 +33,9 @@
       ],
       "candidate_required": true,
       "current": {
-        "version": "0.42.74-admin-smoke",
+        "version": "0.42.75-admin-smoke",
         "verdict": "pass",
-        "evidence": "docs/ga-ready/evidence/service-plan-p0-actual-vm-2026-08-20-04274.md"
+        "evidence": "docs/ga-ready/evidence/service-plan-p0-actual-vm-2026-08-27-04275.md"
       }
     },
     {
@@ -51,9 +51,9 @@
       ],
       "candidate_required": true,
       "current": {
-        "version": "0.42.74-admin-smoke",
+        "version": "0.42.75-admin-smoke",
         "verdict": "pass",
-        "evidence": "docs/ga-ready/evidence/service-plan-p0-actual-vm-2026-08-20-04274.md"
+        "evidence": "docs/ga-ready/evidence/service-plan-p0-actual-vm-2026-08-27-04275.md"
       }
     },
     {
@@ -69,9 +69,9 @@
       ],
       "candidate_required": true,
       "current": {
-        "version": "0.42.74-admin-smoke",
-        "verdict": "fail",
-        "evidence": "docs/ga-ready/evidence/service-plan-p0-actual-vm-2026-08-20-04274.md"
+        "version": "0.42.75-admin-smoke",
+        "verdict": "pass",
+        "evidence": "docs/ga-ready/evidence/service-plan-p0-actual-vm-2026-08-27-04275.md"
       }
     }
   ]

@@ -44,7 +44,7 @@ Describe 'Desktop Node feature evidence ledger' {
             @($feature.operations).Count | Should -BeGreaterThan 0
             @($feature.required_stages) | Should -Be $script:ExpectedStages
             $feature.candidate_required | Should -BeTrue
-            $feature.current.version | Should -Be '0.42.74-admin-smoke'
+            $feature.current.version | Should -Be '0.42.75-admin-smoke'
             $feature.current.verdict | Should -BeIn @('pass', 'fail', 'blocked', 'missing')
             $feature.current.evidence | Should -Match '^docs/ga-ready/evidence/.+\.md$'
             (Join-Path $script:RepoRoot $feature.current.evidence) | Should -Exist
@@ -57,7 +57,7 @@ Describe 'Desktop Node feature evidence ledger' {
         $other = @($ledger.features | Where-Object feature_id -NE 'pcv.vm.saved-lifecycle')
 
         $saved.Count | Should -Be 1
-        $saved[0].current.verdict | Should -Be 'fail'
+        $saved[0].current.verdict | Should -Be 'pass'
         @($other.current.verdict | Where-Object { $_ -ne 'pass' }).Count | Should -Be 0
     }
 }

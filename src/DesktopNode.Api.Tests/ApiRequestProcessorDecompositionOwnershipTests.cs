@@ -164,8 +164,12 @@ public sealed class ApiRequestProcessorDecompositionOwnershipTests
             "HandleVmConsoleSession",
             "BuildConsoleCapabilities",
             "BuildVmConsoleSession",
-            "FormatNoVncWebSocketPath");
+            "FormatNoVncWebSocketPath",
+            "HandleNoVncTargetPreview",
+            "HandleNoVncTargetSet",
+            "HandleNoVncTargetClear");
         AssertTypeDeclares("DesktopNodeApiConsoleRouteHandler", "TryHandle", "CreateRuntimePolicy");
+        AssertTypeDeclares("DesktopNodeNoVncTargetStore", "Apply", "CaptureReconciliation", "ResolveBridgeTarget");
         AssertTypeIsCallbackFreeOwner("DesktopNodeApiConsoleRouteHandler");
         AssertApiAssemblyDoesNotDefine("DesktopNodeApiConsoleHandler");
     }
@@ -204,16 +208,28 @@ public sealed class ApiRequestProcessorDecompositionOwnershipTests
             "ReconcileVmDeleteJob",
             "ReconcileCheckpointCreateJob",
             "ReconcileCheckpointRestoreJob",
+            "ReconcileVmCreateJob",
+            "ReconcileVmShutdownJob",
+            "ReconcileVmRestartJob",
+            "ReconcileVmQosJob",
             "RenderReconciliationResult",
             "ReconciliationRequiredError",
             "BuildVmRenameParameters",
             "BuildVmDeleteParameters",
             "BuildCheckpointCreateParameters",
             "BuildCheckpointRestoreParameters",
+            "BuildVmCreateParameters",
+            "BuildVmShutdownParameters",
+            "BuildVmRestartParameters",
+            "BuildVmQosParameters",
             "CaptureVmRenameBaseline",
             "CaptureVmDeleteBaseline",
             "CaptureCheckpointCreateBaseline",
             "CaptureCheckpointRestoreBaseline",
+            "CaptureVmCreateBaseline",
+            "CaptureVmShutdownBaseline",
+            "CaptureVmRestartBaseline",
+            "CaptureVmQosBaseline",
             "BuildVmRenameFingerprint",
             "BuildVmDeleteFingerprint",
             "IsManagedVm",
@@ -221,14 +237,32 @@ public sealed class ApiRequestProcessorDecompositionOwnershipTests
             "TryReadCapturedRenameBaseline",
             "TryReadCapturedDeleteBaseline",
             "TryReadCapturedCheckpointCreateBaseline",
-            "TryReadCapturedCheckpointRestoreBaseline");
+            "TryReadCapturedCheckpointRestoreBaseline",
+            "TryReadCapturedVmCreateBaseline",
+            "TryReadCapturedVmShutdownBaseline",
+            "TryReadCapturedVmRestartBaseline",
+            "TryReadCapturedVmQosBaseline",
+            "CreateFingerprintMatches",
+            "BuildVmShutdownIdentityFingerprint",
+            "ShutdownIdentityMatches",
+            "NormalizePowerState",
+            "TryReadTimestamp",
+            "FindQosTargets",
+            "EnumerateQosDevices",
+            "QosTargetMatches",
+            "ReadQosPolicy",
+            "QosPolicyMatches");
         AssertTypeDeclares(
             "DesktopNodeApiJobReconciliationHandler",
             "TryHandle",
             "BuildVmRenameParameters",
             "BuildVmDeleteParameters",
             "BuildCheckpointCreateParameters",
-            "BuildCheckpointRestoreParameters");
+            "BuildCheckpointRestoreParameters",
+            "BuildVmCreateParameters",
+            "BuildVmShutdownParameters",
+            "BuildVmRestartParameters",
+            "BuildVmQosParameters");
         AssertTypeIsCallbackFreeOwner("DesktopNodeApiJobReconciliationHandler");
     }
 

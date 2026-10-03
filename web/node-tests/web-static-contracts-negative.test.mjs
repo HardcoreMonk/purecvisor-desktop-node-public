@@ -522,6 +522,27 @@ const defectCases = [
     expectedLabel: "checkpoint-actions:load:source"
   },
   {
+    name: "missing checkpoint schedule preview form",
+    id: "web.static.checkpoint-actions",
+    overrides: () => removeOnce("web/src/served/render-vm-detail.ts", "checkpoint-schedule-preview"),
+    expectedCode: assertionFailed,
+    expectedLabel: "checkpoint-actions:schedule-preview:source"
+  },
+  {
+    name: "missing export preview form",
+    id: "web.static.vm-lifecycle-actions",
+    overrides: () => removeOnce("web/src/served/render-vm-detail.ts", "vm-export-preview"),
+    expectedCode: assertionFailed,
+    expectedLabel: "vm-lifecycle-actions:export-preview:source"
+  },
+  {
+    name: "missing network change readback chips",
+    id: "web.static.network-inventory",
+    overrides: () => removeOnce("web/src/served/render-inventory.ts", "no switch create form"),
+    expectedCode: assertionFailed,
+    expectedLabel: "network-inventory:no-switch-create-form:source"
+  },
+  {
     name: "missing browser job history retention authoritative source owner",
     id: "web.static.browser-job-history",
     overrides: () => removeOnce("web/src/served/state.ts", "const JOB_HISTORY_LIMIT = 50;"),
