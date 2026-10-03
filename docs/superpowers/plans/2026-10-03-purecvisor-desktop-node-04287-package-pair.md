@@ -97,7 +97,9 @@ Lane 3 승격은 하지 않는다.
 
 ## Task 3g: pair descriptor (Lane 2, non-mutating)
 
-- [ ] 여섯 bucket summary로 descriptor를 `-PlanOnly`로 만든다.
+- [x] 여섯 bucket summary로 descriptor를 `-PlanOnly`로 만든다.
+
+실행 기록(2026-10-03): `overall_status=pass`, runner `6/6`, `missing_count=0`, `not_pass_count=0`, host mutation 없음, next candidate `0.42.87-admin-smoke`. evidence `manual-admin-campaign-descriptor-2026-10-03-04286-04287`.
 
 ## Task 4: fullgate와 A 실증 (Lane 2)
 
