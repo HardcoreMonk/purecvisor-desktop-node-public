@@ -1,0 +1,8 @@
+{
+  "schema_version": 1,
+  "contract": "pcv-release-train-v1",
+  "design": "docs/superpowers/specs/2026-10-04-purecvisor-desktop-node-release-train-design.md",
+  "operational_current": "0.42.88-admin-smoke",
+  "queue": [],
+  "trains": []
+}
