@@ -34,10 +34,9 @@ latest_manual_admin_package_pair: `0.42.87-admin-smoke -> 0.42.88-admin-smoke`
 latest_manual_admin_descriptor: `manual-admin-campaign-descriptor-20261003-04287-04288`
 token_rotation_evidence: `docs/ga-ready/evidence/installed-token-rotation-smoke-2026-08-09-04272.md`
 token_rotation_status: `carry-forward-no-token-payload-change-after-04272`
-promotion_ledger_status: `not-promoted`
-installed_status: `installed_non_promoted_candidate`
-canonical_current_evidence: `0.42.87-admin-smoke`
-canonical_current_changed: `false`
+promotion_ledger_status: `promoted-current`
+canonical_current_evidence: `0.42.88-admin-smoke`
+canonical_current_changed: `true`
 public_trusted_signing: `not-claimed`
 external_stable_publication: `not-claimed`
 
@@ -56,5 +55,5 @@ external_stable_publication: `not-claimed`
 
 ## Nonclaims
 
-- 결과는 `installed_non_promoted_candidate`다. Lane 3 승격은 하지 않았고 operational current는 `0.42.87-admin-smoke`다.
+- 캡처는 Lane 3 전에 했다(artifact summary는 `not-promoted`, 캡처 당시 canonical current `0.42.87-admin-smoke`). 2026-10-03 Lane 3가 이 카드를 `0.42.88-admin-smoke` operational current의 installed current-card로 승격했다(`promoted-current`).
 - public trusted signing과 external stable publication을 주장하지 않는다.
