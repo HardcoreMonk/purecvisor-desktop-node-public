@@ -353,6 +353,102 @@ function Write-MsiLifecycleEvidence {
     Write-JsonFile -Path $Path -Value ([pscustomobject]$Lifecycle)
 }
 
+function ConvertTo-SmokeMsiProductVersion {
+    param([Parameter(Mandatory)] [string]$Version)
+
+    if ($Version -notmatch '^(\d+\.\d+\.\d+)') {
+        throw "PCV_SMOKE_VERSION_INVALID|Version must start with major.minor.build.|$Version"
+    }
+
+    $Matches[1]
+}
+
+function Get-SmokeArpProductEntries {
+    param([string]$DisplayName = 'PureCVisor Desktop Node')
+
+    # Read-only ARP scan (docs/superpowers/specs/2026-09-27-purecvisor-desktop-node-same-version-rebuild-installer-design.md, option C).
+    $entries = @()
+    foreach ($root in @(
+            'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall',
+            'HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall')) {
+        if (-not (Test-Path -LiteralPath $root)) {
+            continue
+        }
+        foreach ($key in @(Get-ChildItem -LiteralPath $root -ErrorAction SilentlyContinue)) {
+            $properties = Get-ItemProperty -LiteralPath $key.PSPath -ErrorAction SilentlyContinue
+            if ($null -eq $properties) {
+                continue
+            }
+            $name = [string](Get-ObjectPropertyValue -InputObject $properties -Name 'DisplayName')
+            if ($name -ne $DisplayName) {
+                continue
+            }
+            $entries += [pscustomobject][ordered]@{
+                product_code = [string]$key.PSChildName
+                display_name = $name
+                display_version = [string](Get-ObjectPropertyValue -InputObject $properties -Name 'DisplayVersion')
+                registry_root = $root
+            }
+        }
+    }
+
+    @($entries)
+}
+
+function Test-SmokeSameVersionResidual {
+    param(
+        [Parameter(Mandatory)] [string]$MsiProductVersion,
+        [AllowNull()] [object[]]$ArpEntries
+    )
+
+    $present = @(@($ArpEntries) | Where-Object { $null -ne $_ })
+    $residual = @($present | Where-Object { [string]$_.display_version -eq $MsiProductVersion })
+    $ok = @($residual).Count -eq 0
+    [pscustomobject][ordered]@{
+        ok = $ok
+        code = if ($ok) { $null } else { 'PCV_SMOKE_SAME_VERSION_RESIDUAL' }
+        msi_product_version = $MsiProductVersion
+        arp_entry_count = @($present).Count
+        residual_product_codes = @($residual | ForEach-Object { [string]$_.product_code })
+        recommendation = if ($ok) { $null } else { 'remove-the-same-version-product-without-REMOVE_DATA-then-rerun' }
+    }
+}
+
+function Get-SmokeBuildCommit {
+    param([AllowNull()] [string]$ProductVersion)
+
+    if ([string]::IsNullOrWhiteSpace($ProductVersion)) {
+        return $null
+    }
+    $plus = $ProductVersion.LastIndexOf('+')
+    if ($plus -lt 0 -or $plus -eq ($ProductVersion.Length - 1)) {
+        return $null
+    }
+
+    $ProductVersion.Substring($plus + 1).Trim().ToLowerInvariant()
+}
+
+function Test-SmokeInstalledBuildCommit {
+    param(
+        [AllowNull()] [string]$InstalledProductVersion,
+        [AllowNull()] [string]$GateCommit
+    )
+
+    $installedCommit = Get-SmokeBuildCommit -ProductVersion $InstalledProductVersion
+    $expectedCommit = if ([string]::IsNullOrWhiteSpace($GateCommit)) { $null } else { $GateCommit.Trim().ToLowerInvariant() }
+    $ok = [bool](
+        -not [string]::IsNullOrWhiteSpace($installedCommit) -and
+        -not [string]::IsNullOrWhiteSpace($expectedCommit) -and
+        $installedCommit -eq $expectedCommit)
+    [pscustomobject][ordered]@{
+        ok = $ok
+        code = if ($ok) { $null } else { 'PCV_SMOKE_INSTALLED_BUILD_MISMATCH' }
+        installed_product_version = $InstalledProductVersion
+        installed_commit = $installedCommit
+        gate_commit = $expectedCommit
+    }
+}
+
 if ($SelfTest) {
     Start-Step -Name 'capture-self-test'
     $script = @'
@@ -445,7 +541,44 @@ $chunk = 'x' * 4096
     $msiClassifierSelfTestStatus = if ($msiClassifierOk) { 'completed' } else { 'failed' }
     Add-Step -Name 'msi-classifier-self-test' -Ok $msiClassifierOk -Path $msiClassifierSelfTestPath -Status $msiClassifierSelfTestStatus
 
-    $ok = [bool]($captureOk -and $protectedTokenSelfTestOk -and $msiClassifierOk)
+    Start-Step -Name 'same-version-preflight-self-test'
+    $sameVersionSelfTestPath = Join-Path $ArtifactRoot 'same-version-preflight-self-test.json'
+    $selfTestArpEntries = @(
+        [pscustomobject][ordered]@{ product_code = '{00000000-0000-0000-0000-000000000001}'; display_name = 'PureCVisor Desktop Node'; display_version = '0.42.86'; registry_root = 'self-test' },
+        [pscustomobject][ordered]@{ product_code = '{00000000-0000-0000-0000-000000000002}'; display_name = 'PureCVisor Desktop Node'; display_version = '0.42.85'; registry_root = 'self-test' }
+    )
+    $residualCase = Test-SmokeSameVersionResidual -MsiProductVersion '0.42.86' -ArpEntries $selfTestArpEntries
+    $cleanCase = Test-SmokeSameVersionResidual -MsiProductVersion '0.42.87' -ArpEntries $selfTestArpEntries
+    $emptyCase = Test-SmokeSameVersionResidual -MsiProductVersion '0.42.86' -ArpEntries @()
+    $buildMatchCase = Test-SmokeInstalledBuildCommit -InstalledProductVersion '0.42.86-admin-smoke+B807803F' -GateCommit 'b807803f'
+    $buildMismatchCase = Test-SmokeInstalledBuildCommit -InstalledProductVersion '0.42.86-admin-smoke+1c488b6' -GateCommit 'b807803f'
+    $buildUnknownCase = Test-SmokeInstalledBuildCommit -InstalledProductVersion '0.42.86-admin-smoke' -GateCommit 'b807803f'
+    $liveArpEntryCount = @(Get-SmokeArpProductEntries).Count
+    $sameVersionSelfTestOk = [bool](
+        -not $residualCase.ok -and
+        [string]$residualCase.code -eq 'PCV_SMOKE_SAME_VERSION_RESIDUAL' -and
+        @($residualCase.residual_product_codes).Count -eq 1 -and
+        $cleanCase.ok -and
+        $emptyCase.ok -and
+        (ConvertTo-SmokeMsiProductVersion -Version '0.42.86-admin-smoke') -eq '0.42.86' -and
+        $buildMatchCase.ok -and
+        -not $buildMismatchCase.ok -and
+        [string]$buildMismatchCase.code -eq 'PCV_SMOKE_INSTALLED_BUILD_MISMATCH' -and
+        -not $buildUnknownCase.ok)
+    Write-JsonFile -Path $sameVersionSelfTestPath -Value ([pscustomobject][ordered]@{
+        ok = $sameVersionSelfTestOk
+        residual = $residualCase
+        clean = $cleanCase
+        empty = $emptyCase
+        build_match = $buildMatchCase
+        build_mismatch = $buildMismatchCase
+        build_unknown = $buildUnknownCase
+        live_arp_entry_count = $liveArpEntryCount
+    })
+    $sameVersionSelfTestStatus = if ($sameVersionSelfTestOk) { 'completed' } else { 'failed' }
+    Add-Step -Name 'same-version-preflight-self-test' -Ok $sameVersionSelfTestOk -Path $sameVersionSelfTestPath -Status $sameVersionSelfTestStatus
+
+    $ok = [bool]($captureOk -and $protectedTokenSelfTestOk -and $msiClassifierOk -and $sameVersionSelfTestOk)
     Write-JsonFile -Path (Join-Path $ArtifactRoot 'summary.json') -Value ([pscustomobject][ordered]@{
         schema_version = 1
         ok = $ok
@@ -656,6 +789,17 @@ try {
 
     Add-Step -Name 'initialize' -Ok $true
 
+    $sameVersionPath = Join-Path $ArtifactRoot 'same-version-preflight.json'
+    Start-Step -Name 'same-version-preflight' -Path $sameVersionPath
+    $sameVersion = Test-SmokeSameVersionResidual `
+        -MsiProductVersion (ConvertTo-SmokeMsiProductVersion -Version $Version) `
+        -ArpEntries (Get-SmokeArpProductEntries)
+    Write-JsonFile -Path $sameVersionPath -Value $sameVersion
+    if (-not $sameVersion.ok) {
+        throw "PCV_SMOKE_SAME_VERSION_RESIDUAL|ARP already lists PureCVisor Desktop Node $($sameVersion.msi_product_version); a rebuilt MSI of the same version would not replace it.|product_codes=$(@($sameVersion.residual_product_codes) -join ',')|recommendation=$($sameVersion.recommendation)"
+    }
+    Add-Step -Name 'same-version-preflight' -Ok $true -Path $sameVersionPath
+
     $buildJsonPath = Join-Path $ArtifactRoot 'build-output.json'
     Start-Step -Name 'build-current-admin-smoke-msi' -Path $buildJsonPath
     $buildArgs = @(
@@ -682,6 +826,7 @@ try {
 
     $msiPath = [string]$buildOutput.msi_path
     $payloadRoot = [string]$buildOutput.provenance.payload.root
+    $gateCommit = [string](Get-ObjectPropertyValue -InputObject $buildOutput.provenance -Name 'git_commit')
 
     $serviceActionPath = Join-Path $ArtifactRoot 'service-action-smoke.json'
     Start-Step -Name 'service-action-smoke' -Path $serviceActionPath
@@ -882,6 +1027,18 @@ try {
             $pathName.Contains('--batch-evidence-root', [System.StringComparison]::OrdinalIgnoreCase) -and
             $pathName.Contains($BatchEvidenceRoot, [System.StringComparison]::OrdinalIgnoreCase))
         Assert-True -Condition $lifecycle.service_path_has_batch_evidence_root -Message 'Final installed service path did not include the requested batch evidence root.'
+    }
+    $installedHostPath = Join-Path $env:ProgramFiles 'PureCVisor\DesktopNode\DesktopNode.Host.exe'
+    $installedHostProductVersion = if (Test-Path -LiteralPath $installedHostPath -PathType Leaf) {
+        [string](Get-Item -LiteralPath $installedHostPath).VersionInfo.ProductVersion
+    }
+    else {
+        $null
+    }
+    $lifecycle.installed_build = Test-SmokeInstalledBuildCommit -InstalledProductVersion $installedHostProductVersion -GateCommit $gateCommit
+    Write-MsiLifecycleEvidence -Path $lifecyclePath -Lifecycle $lifecycle
+    if (-not $lifecycle.installed_build.ok) {
+        throw "PCV_SMOKE_INSTALLED_BUILD_MISMATCH|Installed DesktopNode.Host.exe is not the gate build after final-restore-install.|installed=$($lifecycle.installed_build.installed_commit)|gate=$($lifecycle.installed_build.gate_commit)"
     }
     $lifecycle.ok = $true
     Write-MsiLifecycleEvidence -Path $lifecyclePath -Lifecycle $lifecycle

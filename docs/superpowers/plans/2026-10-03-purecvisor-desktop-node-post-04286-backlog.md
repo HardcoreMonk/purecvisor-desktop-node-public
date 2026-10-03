@@ -47,12 +47,14 @@
 
 **수정:** `packaging/windows-desktop-node/tools/Invoke-PcvRouteParityMutationSmoke.ps1`(또는 그 helper), 기존 테스트 파일, `docs/superpowers/specs/2026-09-27-purecvisor-desktop-node-same-version-rebuild-installer-design.md` 상태
 
-- [ ] 착수 시 smoke의 build·install 순서와 build commit 출처를 확인한다.
-- [ ] MSI install 전에 ARP(`HKLM` Uninstall 64/32bit)에서 같은 version `PureCVisor Desktop Node` 항목을 읽어, 있으면 명확한 오류 코드로 멈춘다. registry 읽기는 주입할 수 있게 한다.
-- [ ] gate 뒤 설치본 `DesktopNode.Host.exe` ProductVersion의 `+<commit>`이 gate build commit과 같은지 확인하고, 다르면 명확한 오류 코드로 멈춘다.
-- [ ] 설계 문서 상태를 C 구현으로 고친다. A는 계속 미결이다.
+- [x] 착수 시 smoke의 build·install 순서와 build commit 출처를 확인한다.
+- [x] MSI install 전에 ARP(`HKLM` Uninstall 64/32bit)에서 같은 version `PureCVisor Desktop Node` 항목을 읽어, 있으면 명확한 오류 코드로 멈춘다. registry 읽기는 주입할 수 있게 한다.
+- [x] gate 뒤 설치본 `DesktopNode.Host.exe` ProductVersion의 `+<commit>`이 gate build commit과 같은지 확인하고, 다르면 명확한 오류 코드로 멈춘다.
+- [x] 설계 문서 상태를 C 구현으로 고친다. A는 계속 미결이다.
 
 검증: 관련 Pester, `dotnet test src/DesktopNode.Delivery.Tests`, `git diff --check`. 이 호스트에서 smoke를 실행하지 않는다.
+
+실행 기록(2026-10-03): smoke는 build 전에 provenance를 모르므로 ARP 검사는 build 전, build commit 검사는 `final-restore-install` 뒤에 둔다. gate commit 출처는 build provenance `git_commit`이고 설치본 ProductVersion은 `0.42.86-admin-smoke+b807803f…` 형식이다. packaging Pester는 C# Delivery로 이관돼 legacy 개수가 고정되어 있어 Pester `It`을 더하지 않고 C# 계약 `PcvRouteParitySameVersionPreflightContractTests` 5개를 더했다. orchestration spec의 smoke SHA와 `ExpectedSpecSha256`은 `Update-PcvContractSpecPins.ps1 -Apply`로 갱신했다. `-SelfTest` exit `0`(live ARP 항목 `1`개 읽음), Delivery `749/749`. 이 호스트에서 gate는 돌리지 않았다.
 
 ## Task 3: reconcile 안내 문구 기본값
 

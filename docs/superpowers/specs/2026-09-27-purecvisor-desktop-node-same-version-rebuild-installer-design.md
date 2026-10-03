@@ -2,7 +2,7 @@
 
 - Design-ID: `pcv-same-version-rebuild-installer-v1`
 - 작성일: `2026-09-27`
-- 문서 상태: `proposed` (구현하지 않음)
+- 문서 상태: `accepted-option-c` (C는 2026-10-03 구현, A는 미결)
 - 변경 등급: L (installer lifecycle)
 - host/VM/service/package mutation: `false`
 - public trusted signing / external stable publication: `false`
@@ -57,3 +57,20 @@ MSI를 새로 build하므로 같은 version 재실행이 곧 이 조건이다.
 - 이 문서는 installer, batch supervisor, fullgate 도구를 바꾸지 않는다.
 - 이미 기록한 09-26~27 evidence의 판정을 바꾸지 않는다.
 - public trusted signing, external stable publication을 다루지 않는다.
+
+## 6. C 구현 (2026-10-03)
+
+post-0.42.86 backlog Task 2(`docs/superpowers/plans/2026-10-03-purecvisor-desktop-node-post-04286-backlog.md`)가
+`packaging/windows-desktop-node/tools/Invoke-PcvRouteParityMutationSmoke.ps1`에 C를 넣었다.
+
+- `same-version-preflight` step: gate MSI build 전에 ARP(`HKLM` Uninstall 64/32bit)를 읽기 전용으로 읽는다.
+  같은 MSI product version의 `PureCVisor Desktop Node` 항목이 있으면
+  `PCV_SMOKE_SAME_VERSION_RESIDUAL`로 멈추고 ProductCode와 권고(`REMOVE_DATA` 없이 제거 뒤 재실행)를 남긴다.
+- `msi-lifecycle-smoke` 끝: `final-restore-install` 뒤 설치본 `DesktopNode.Host.exe` ProductVersion의 `+<commit>`을
+  build provenance `git_commit`과 비교한다. 다르거나 읽을 수 없으면 `PCV_SMOKE_INSTALLED_BUILD_MISMATCH`로 멈춘다.
+- `-SelfTest`에 `same-version-preflight-self-test`를 더했다. Required CI는 PowerShell을 돌리지 않으므로 C# 계약
+  `PcvRouteParitySameVersionPreflightContractTests`가 배선을 고정한다.
+
+결과: batch supervisor가 같은 step을 재시도할 때, 앞 attempt가 설치한 같은 version 항목이 남아 있으면 재시도도
+preflight에서 멈춘다. 잘못된 PASS 대신 명확한 오류를 내는 것이 C의 목적이므로 의도한 동작이다. 운영자는 잔여 항목을
+`REMOVE_DATA` 없이 지운 뒤 다시 돌린다. A(`AllowSameVersionUpgrades`)는 계속 별도 L 등급 결정이다.

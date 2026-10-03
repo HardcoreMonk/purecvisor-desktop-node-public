@@ -13,7 +13,7 @@ internal sealed class OrchestrationContractVerifier
     internal const string SpecPath = "config/pcv-orchestration-contract-spec-v1.json";
 
     private const string ExpectedSpecSha256 =
-        "24aac99bb77373ec35a34f39ceab3ac141d6d73507b397cb286c806c57a5bf87";
+        "e0f5842dec1dbd4dde684500e825d2c80664446980cc10706c33b062d4ecc520";
 
     private static readonly string[] ExpectedKeys =
     [
