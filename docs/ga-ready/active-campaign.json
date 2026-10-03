@@ -11,15 +11,16 @@
   ],
   "mutation_allowed": false,
   "current_write_allowed": false,
-  "next_step": "Run Task 2 (final verification) from docs/superpowers/plans/2026-10-03-purecvisor-desktop-node-managed-delete-storage-cleanup.md.",
+  "next_step": "Managed delete storage cleanup complete in source (Task 1-2, local commits on lane1/managed-delete-storage-cleanup-20261003): vm.delete removes unreferenced disk images inside the deleted VM's ConfigurationDataRoot and empty directories and reports storage_cleanup. No queued task. Next steps need approval: push the branch and open one PR; a package pair with a Lane 2 delete check to verify it on an installed host.",
   "plan": "docs/superpowers/plans/2026-10-03-purecvisor-desktop-node-managed-delete-storage-cleanup.md",
   "task_queue": [
     "Task 1",
     "Task 2"
   ],
-  "next_task": "Task 2",
+  "next_task": null,
   "completed_tasks": [
-    "Task 1"
+    "Task 1",
+    "Task 2"
   ],
   "commit_policy": "local-commit-per-task",
   "push_allowed": false,

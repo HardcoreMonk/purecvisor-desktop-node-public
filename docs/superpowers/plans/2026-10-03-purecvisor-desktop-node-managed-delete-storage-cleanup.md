@@ -22,8 +22,10 @@
 
 ## Task 2: 종료 검증
 
-- [ ] clean HEAD에서 `dotnet test src/DesktopNode.sln`, Pester, `npm run test:required --prefix web`, Required CI 네 shard.
-- [ ] campaign을 닫는다.
+- [x] clean HEAD에서 `dotnet test src/DesktopNode.sln`, Pester, `npm run test:required --prefix web`, Required CI 네 shard.
+- [x] campaign을 닫는다.
+
+실행 기록(2026-10-03, clean HEAD `96e8570`): `dotnet test src/DesktopNode.sln` 실패 `0`(HyperV `255`, Delivery `752`, Verification `557`, Api `488`, Host `216`, Contracts `200`, Cli `179`, Runtime `129`, Service `11`). Pester 두 종 `116/116`. `npm run test:required --prefix web` exit `0`. Release build 뒤 Required CI 네 shard 모두 `ok=true`, `plan_only=false`. `NativeAdapter.Mutations.cs`는 라쳇 상한 `763`줄 그대로다.
 
 ## Nonclaims
 
