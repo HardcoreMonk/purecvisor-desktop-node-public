@@ -178,6 +178,7 @@ commit 승인 후 clean committed HEAD에서 다음을 확인한다.
 | package candidate 생성 | package checkpoint 승인 |
 | 설치 및 Hyper-V mutation | Lane 2 승인 또는 유효한 standing approval |
 | current evidence 쓰기 | Lane 3 별도 승인 |
+| release train 출발 | §10 출발 승인 하나. 문구에 범위를 하나씩 적은 명시 승인이며 추정이 아니다 |
 | trusted signing 및 외부 publication | 공개 배포 별도 승인 |
 
     git status --short
@@ -309,3 +310,42 @@ package나 설치본 상태를 operational current로 표현하지 않는다. �
 
 Git commit, push/PR, host mutation, current-evidence write는 각 승인 표가 그대로 적용된다.
 campaign은 이미 받은 승인을 되묻지 않을 뿐, 없는 승인을 만들지 않는다.
+
+## 10. Release train
+
+설계와 결정은 `docs/superpowers/specs/2026-10-04-purecvisor-desktop-node-release-train-design.md`가
+소유한다. 대기열과 train 이력은 `docs/ga-ready/release-train.json`이고, C# 계약
+`PcvReleaseTrainContractTests`가 구조를 본다.
+
+- product payload를 바꾸는 PR은 merge할 때 `queue`에 한 행을 더한다. docs-only, test-only,
+  tooling-only PR은 더하지 않는다.
+- 정기 출발은 주 1회다. 직전 train 출발 7일 뒤부터 정기 출발 대상이고, `queue`가 비어 있으면
+  출발하지 않는다. operational current의 데이터 손실, 설치·업그레이드 실패, 보안 결함이나
+  사용자 요청이 있으면 조기 출발한다. `queue`가 `5`행을 넘으면 출발을 제안한다.
+- 출발 commit에서 `queue`를 train의 `carriages`로 옮기고 고정한다. 그 뒤 merge된 변경은 다음 train에 탄다.
+- 한 train은 version 하나로 package, manual-admin pair 여섯 bucket, fullgate, installed current-card,
+  적재 변경별 Lane 2 probe(기능군마다 checkpoint 하나), Lane 3를 한 번씩 돈다.
+- Lane 2 probe 운반용 package를 만들지 않는다. merge 전에 실제 호스트 동작을 봐야 하면 개발
+  호스트에서 제품 Update와 Rollback으로 보는 dev probe만 허용한다. dev probe는 Lane 2 승인이
+  필요하고 승격 근거가 아니다.
+- FAIL이면 멈춘다(정차). Lane 1로 고쳐 `main`에 merge하고 다음 patch version으로 다시 출발한다.
+  환경 원인으로 판명된 일시 실패는 같은 단계를 한 번 다시 돌리고 그 사실을 evidence에 적는다.
+- 출발 승인 문구는 train version과 고정할 `queue` 행, package build, pair host mutation 범위,
+  fullgate와 current-card, Lane 2 probe 기능군, Lane 3 `current-evidence.json` 쓰기, push/PR과
+  green CI 뒤 merge를 하나씩 적는다. 정차하면 그 승인은 끝난다.
+- Lane 3에서 `current-evidence.json`을 쓰는 commit은 `release-train.json`의 `operational_current`와
+  train `status`도 함께 바꾼다.
+
+train campaign의 task 순서:
+
+| task | 내용 |
+| --- | --- |
+| 0 | 출발: `queue` 고정, 계획과 campaign |
+| 1 | package |
+| 2a~2g | readiness, ops summary, update/rollback, clean-host, Burn, MSIX, descriptor |
+| 3 | fullgate |
+| 4 | installed current-card |
+| 5.n | 적재 변경별 Lane 2 probe |
+| 6 | pair evidence PR과 merge |
+| 7 | Lane 3 evidence, `current-evidence.json`, 승격 문서 도구, `release-train.json` |
+| 8 | 종료 검증, Lane 3 PR과 merge |
