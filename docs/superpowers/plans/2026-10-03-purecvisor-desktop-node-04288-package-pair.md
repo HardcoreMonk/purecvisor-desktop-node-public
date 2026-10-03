@@ -1,0 +1,88 @@
+# 0.42.88 package pair와 managed delete Lane 2 검증 Implementation Plan
+
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+
+**Goal:** managed delete 디스크 정리(PR #30, merge `ed4a4fa`)를 담은 `0.42.88-admin-smoke`를 빌드한다. 그 package로 다음을 PASS로 만든다.
+- manual-admin pair(`0.42.87 → 0.42.88`)
+- fullgate
+- installed current-card
+- 실제 VM에서 `vm delete`가 디스크, checkpoint 차등 디스크, VM 디렉터리를 정리하고 `storage_cleanup`을 남기는지
+
+Lane 3 승격은 하지 않는다.
+
+**Architecture:** 0.42.87 pair(`2026-10-03-purecvisor-desktop-node-04287-package-pair.md`)의 Task 2~6 순서를 따른다. branch는 `lane2/04288-package-pair-20261003`(`origin/main` `ed4a4fa` 기준)이고 commit은 로컬에 쌓는다.
+
+**Tech Stack:** WiX installer `build.ps1`, `msiexec`, `Invoke-PcvDesktopNodeProduct.ps1`, manual-admin runner, `Invoke-PcvBatchSupervisor.ps1`, PCVCLI
+
+## 사용자 결정 (2026-10-03)
+
+승인 원문: `1,2` (managed delete 최종 보고의 다음 승인 1 "push/PR/merge", 2 "새 package pair와 실제 VM delete 확인(Lane 2)"). 1은 PR #30 merge `ed4a4fa`로 끝났다.
+
+| 항목 | 결정 |
+| --- | --- |
+| 호스트 작업 범위 | MSI 제거·설치, 제품 Update/Rollback, clean-host VM 생성·Windows Update·삭제, Burn, MSIX, fullgate, current-card, Lane 2 probe VM의 생성·checkpoint·삭제 |
+| 승인 밖 | 이 branch의 push/PR/merge, Lane 3 승격, `current-evidence.json` 쓰기, public trusted signing, external stable publication |
+
+## Global Constraints
+
+- 보존 VM의 전원, Notes, 디스크를 바꾸지 않는다.
+- 새 VM은 clean-host runner의 `pcv-cleanhost-*`와 Task 5 probe VM뿐이다. Task 5는 정리를 손으로 하지 않고 제품 delete 결과를 관측한다. 남으면 그 사실을 기록한 뒤 손으로 지운다.
+- token, credential, password는 command line, summary, evidence에 남기지 않는다.
+- evidence는 새 파일로만 쓴다.
+- 한도: Lane 1 30분·tool batch 18회, Lane 2 45분·tool batch 12회, clean-host 180분.
+- runner 입력 함정(memory `lane2-pair-runner-gotchas`)과 0.42.87 run의 순서를 따른다. ISO는 `artifacts/smoke-media-20261003/pcv-route-parity-smoke-20261003.iso`를 쓴다.
+- 같은 원인으로 3번 실패하거나, 범위 밖 설계가 필요하거나, 권한이 거부되면 멈춘다.
+
+## Task 1: `0.42.88-admin-smoke` package (Lane 1)
+
+- [ ] clean HEAD에서 `build.ps1 -Version 0.42.88-admin-smoke -MsiProductVersion 0.42.88 -SigningMode AllowUnsignedDev -SigningTrustModel LocalTest -OutputRoot artifacts/admin-smoke-package-20261003-04288`. update ZIP, evidence `admin-smoke-package-2026-10-03-04288`.
+
+## Task 2a: pair readiness (Lane 2)
+
+- [ ] baseline `0.42.87`(clean package `admin-smoke-package-20261003-04287`)과 target `0.42.88`로 readiness `-PlanOnly`.
+
+## Task 2f: installed runtime ops summary (Lane 2)
+
+- [ ] baseline `0.42.87`이 설치된 동안 ops summary를 캡처한다.
+
+## Task 2b: 설치본 update/rollback (Lane 2)
+
+- [ ] `0.42.88` payload로 Update 뒤 Rollback한다.
+
+## Task 2c: dedicated clean-host Windows Update (Lane 2)
+
+- [ ] baseline `0.42.87` clean MSI, target `0.42.88` update ZIP으로 clean-host runner를 실행한다.
+
+## Task 2d: Burn (Lane 2)
+
+- [ ] 제품 Update로 `0.42.88`에 맞추고 Burn lifecycle runner를 실행한다.
+
+## Task 2e: MSIX (Lane 2)
+
+- [ ] MSIX lifecycle runner를 `0.42.87 → 0.42.88`로 실행한다.
+
+## Task 2g: pair descriptor (Lane 2, non-mutating)
+
+- [ ] 여섯 bucket summary로 descriptor를 `-PlanOnly`로 만든다.
+
+## Task 3: fullgate (Lane 2)
+
+- [ ] clean `0.42.88`이 설치된 채로 fullgate를 시작한다. 사후 검사(build commit, 같은 version ARP 1개)가 통과해야 한다.
+
+## Task 4: installed current-card (Lane 2)
+
+- [ ] `0.42.88`을 설치된 채로 두고 current-card를 캡처한다. 결과는 `installed_non_promoted_candidate`다.
+
+## Task 5: managed delete 디스크 정리 Lane 2 확인 (Lane 2)
+
+- [ ] probe VM을 만들고 checkpoint 하나를 만든 뒤 `vm delete --yes`를 실행한다.
+- [ ] job 결과 `storage_cleanup`의 `removed_files`에 `disk0.vhdx`와 checkpoint 차등 디스크가 있고, VM 디렉터리가 없어졌는지 확인한다. 손 정리 없이 VM 목록이 사전 상태와 같아야 한다.
+
+## Task 6: 종료
+
+- [ ] clean HEAD 종료 검증 뒤 campaign을 닫는다. `next_step`에 push/PR/merge와 Lane 3 승격이 승인 대상이라고 적는다.
+
+## Nonclaims
+
+- 이 campaign은 operational current를 바꾸지 않는다. 결과는 `installed_non_promoted_candidate`까지다.
+- public trusted signing과 external stable publication을 주장하지 않는다.
