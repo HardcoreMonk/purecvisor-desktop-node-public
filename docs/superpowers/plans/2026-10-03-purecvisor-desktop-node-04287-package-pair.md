@@ -73,7 +73,9 @@ Lane 3 승격은 하지 않는다.
 
 ## Task 3b: 설치본 update/rollback (Lane 2)
 
-- [ ] `0.42.87` payload로 Update 뒤 Rollback한다.
+- [x] `0.42.87` payload로 Update 뒤 Rollback한다.
+
+실행 기록(2026-10-03): Update(`0.42.86 → 0.42.87`, `11`단계)와 Rollback(`7`단계) 모두 exit `0`, `ok=true`. update 직후 Host `+8d940da`, Web `200`. 최종 manifest `0.42.86`, failed `0.42.87`, service Running, Web `200`, 재부팅·VM 변화 없음. evidence `product-update-rollback-2026-10-03-04286-04287`.
 
 ## Task 3c: dedicated clean-host Windows Update (Lane 2)
 
