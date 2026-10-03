@@ -74,6 +74,8 @@ public sealed class ApiReconcileClassificationTests
             Assert.Equal(409, response.StatusCode);
             Assert.Contains("job-not-reconcilable", response.Body, StringComparison.Ordinal);
             Assert.Contains("vm.guest.exec is not a reconcile target", response.Body, StringComparison.Ordinal);
+            Assert.Contains("confirm whether the mutation applied", response.Body, StringComparison.Ordinal);
+            Assert.DoesNotContain("rename", response.Body, StringComparison.OrdinalIgnoreCase);
         }
         finally
         {

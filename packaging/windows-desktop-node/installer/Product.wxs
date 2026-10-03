@@ -7,7 +7,10 @@
     UpgradeCode="{D85593B0-1A5A-4A96-B28B-AB3FE4B96E43}"
     Scope="perMachine">
 
-    <MajorUpgrade DowngradeErrorMessage="A newer PureCVisor Desktop Node version is already installed." />
+    <MajorUpgrade
+      AllowSameVersionUpgrades="yes"
+      Schedule="afterInstallValidate"
+      DowngradeErrorMessage="A newer PureCVisor Desktop Node version is already installed." />
     <MediaTemplate EmbedCab="yes" />
 
     <StandardDirectory Id="ProgramFiles64Folder">

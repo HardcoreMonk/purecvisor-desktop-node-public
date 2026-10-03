@@ -1,18 +1,18 @@
 # 문서 통합 인덱스
 
 > 2026-08-26에 공개 저장소 Required CI 전환 이후 전체 카탈로그를 다시 생성했다. 아래 현재 기준
-> 블록과 핵심 문서 목록은 2026-09-20에 HEAD `2e63bd5` 기준으로 현행화했다. 전체 파일 재생성은
+> 블록과 핵심 문서 목록은 2026-10-03에 HEAD `2057b40` 기준으로 현행화했다. 전체 파일 재생성은
 > 이 현행화가 수행하지 않는다.
 
 ## 현재 기준
 
-- 공개 소스 권위: `HardcoreMonk/purecvisor-desktop-node-public`, HEAD `82b553f5386c79493532c425afec3b0192c92798` (PR #20, clean-host base VHD 오프라인 갱신 merge).
-- Required CI 권위: Development Gates run `36660066308`; 보호 context는 정확히 `dotnet`, `web`, `delivery`, `installer-policy`다.
-- PowerShell/Pester 경계: invocation 0은 위 Required CI 네 context에만 적용한다. 별도 Public Boundary workflow는 비필수 legacy residue로 보존한다(run `36660066317`, job `109712635173`).
+- 공개 소스 권위: `HardcoreMonk/purecvisor-desktop-node-public`, HEAD `2057b403386134ac0abc8444a81c7ec532986daf` (PR #27, `0.42.86-admin-smoke` Lane 3 승격 merge).
+- Required CI 권위: Development Gates run `36996858669`; 보호 context는 정확히 `dotnet`, `web`, `delivery`, `installer-policy`다.
+- PowerShell/Pester 경계: invocation 0은 위 Required CI 네 context에만 적용한다. 별도 Public Boundary workflow는 비필수 legacy residue로 보존한다(run `36996858460`, job `110805450371`).
 - 운영 제품 권위: `0.42.86-admin-smoke`; Web Console과 PCVCLI가 active이고 TUI는 absent다. Feature promotion은 `promotion_eligible=true`, blockers `none`이다. P0 feature ledger는 `0.42.75-admin-smoke` evidence를 유지한다.
-- 이 호스트 설치본(2026-10-02 fullgate): `0.42.86-admin-smoke`, service `Running/Automatic`. ARP `DisplayVersion`은 `0.42.86`(항목 `1`개).
-- 개발 campaign: `docs/ga-ready/active-campaign.json` intent `lane1-lane2-04285-package-pair-and-readback-actual-vm`(2026-10-01 개설, 계획 `docs/superpowers/plans/2026-10-01-purecvisor-desktop-node-04285-package-pair.md`). 선행 `lane3-04284-promotion-and-lane1-vm-list-readback`은 완료했다. clean-host base는 `current-base.json`이 고른다(`20348.5622`).
-- 진행 상황 현행화: `docs/project-status-audit-2026-09-27.md`. 직전 snapshot은 `docs/project-status-audit-2026-09-20.md`.
+- 이 호스트 설치본(2026-10-02 fullgate, 2026-10-03 재확인): `0.42.86-admin-smoke`, service `Running/Automatic`. ARP `DisplayVersion`은 `0.42.86`(항목 `1`개).
+- 개발 campaign: `docs/ga-ready/active-campaign.json` id `package-pair-04287-20261003`(intent `lane1-lane2-same-version-upgrade-and-04287-package-pair`, 2026-10-03 개설·완료, Task 1~7, `next_task=null`, 결과 `0.42.87-admin-smoke` `installed_non_promoted_candidate`, 계획 `docs/superpowers/plans/2026-10-03-purecvisor-desktop-node-04287-package-pair.md`). 선행 `post-04286-backlog-20261003`(Task 1~6)은 완료했다. 그 앞의 eject 수정(PR #26)과 `0.42.86` 승격(PR #27)은 닫힌 작업 지시서 `docs/superpowers/plans/2026-10-02-purecvisor-desktop-node-development-work-order.md`가 기록한다. clean-host base는 `current-base.json`이 고른다(`20348.5622`).
+- 진행 상황 현행화: `docs/project-status-audit-2026-10-03.md`. 직전 snapshot은 `docs/project-status-audit-2026-09-27.md`.
 - `0.42.75 -> 0.42.77` descriptor consume: `docs/ga-ready/evidence/manual-admin-campaign-2026-09-20-04275-04277.md` (`pass`, current 유지).
 - `0.42.77 -> 0.42.78` descriptor consume: `docs/ga-ready/evidence/manual-admin-campaign-2026-09-27-04277-04278.md` (`pass`, 당시 current `0.42.78-admin-smoke`).
 - `0.42.83 -> 0.42.84` descriptor consume: `docs/ga-ready/evidence/manual-admin-campaign-2026-09-30-04283-04284.md` (`pass`, 당시 current `0.42.84-admin-smoke`).
@@ -26,7 +26,7 @@
 
 - 기여자 온보딩: `docs/DEVELOPMENT_PROCEDURE.md`, `docs/DEVELOPER_INDEX.md`, `docs/CODING_GUIDE.md`, `docs/DEVELOPMENT_VERIFICATION_POLICY.md`
 - 아키텍처: `docs/ADR_INDEX.md`, `docs/adr/`, `docs/service-core-backend-frontend-implementation-evaluation-2026-07-16.md`
-- 현재 작업과 상태: `docs/project-status-audit-2026-09-20.md`, `docs/FEATURE_IMPLEMENTATION_LEDGER.md`, `docs/ga-ready/CURRENT_EVIDENCE_LEDGER.md`, `docs/ga-ready/EVIDENCE_INDEX.md`
+- 현재 작업과 상태: `docs/project-status-audit-2026-10-03.md`, `docs/FEATURE_IMPLEMENTATION_LEDGER.md`, `docs/ga-ready/CURRENT_EVIDENCE_LEDGER.md`, `docs/ga-ready/EVIDENCE_INDEX.md`
 - 버전·릴리스 증거: [docs/ga-ready/current-evidence.json](ga-ready/current-evidence.json)과 위 evidence index
 - 역사 변경 기록: Git 이력과 아래 날짜별 계획·명세·증거
 
@@ -64,6 +64,8 @@
 - [docs/project-status-audit-2026-08-05.md](project-status-audit-2026-08-05.md)
 - [docs/project-status-audit-2026-09-06.md](project-status-audit-2026-09-06.md)
 - [docs/project-status-audit-2026-09-20.md](project-status-audit-2026-09-20.md)
+- [docs/project-status-audit-2026-09-27.md](project-status-audit-2026-09-27.md)
+- [docs/project-status-audit-2026-10-03.md](project-status-audit-2026-10-03.md)
 - [docs/PUBLIC_RELEASE_BOUNDARY.md](PUBLIC_RELEASE_BOUNDARY.md)
 - [docs/PUBLIC_SOURCE_AUTHORITY.md](PUBLIC_SOURCE_AUTHORITY.md)
 - [docs/SERVICE_PLAN.md](SERVICE_PLAN.md)
