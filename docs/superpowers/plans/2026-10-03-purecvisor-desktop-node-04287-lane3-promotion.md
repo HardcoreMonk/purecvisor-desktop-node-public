@@ -27,10 +27,12 @@
 
 ## Task 1: 승격 evidence 문서
 
-- [ ] functional carry-forward `functional-correctness-actual-host-validation-2026-10-03-04287-carryforward`.
-- [ ] manual-admin single-root consume: 여섯 bucket summary JSON 7개를 `artifacts/manual-admin-campaign-20261003-04286-04287/`로 복사하고 `consume-manifest.json`, descriptor `-PlanOnly`(batch id `manual-admin-campaign-descriptor-20261003-04286-04287-consume`), evidence `manual-admin-campaign-2026-10-03-04286-04287`.
-- [ ] PR #28 merge 뒤 main push evidence `public-boundary-ci-main-push-2026-10-03-04287-pr28-postmerge-pass`.
-- [ ] current-card evidence `installed-operator-surface-current-card-2026-10-03-04287` 머리말을 `promoted-current`로 바꾼다.
+- [x] functional carry-forward `functional-correctness-actual-host-validation-2026-10-03-04287-carryforward`.
+- [x] manual-admin single-root consume: 여섯 bucket summary JSON 7개를 `artifacts/manual-admin-campaign-20261003-04286-04287/`로 복사하고 `consume-manifest.json`, descriptor `-PlanOnly`(batch id `manual-admin-campaign-descriptor-20261003-04286-04287-consume`), evidence `manual-admin-campaign-2026-10-03-04286-04287`.
+- [x] PR #28 merge 뒤 main push evidence `public-boundary-ci-main-push-2026-10-03-04287-pr28-postmerge-pass`.
+- [x] current-card evidence `installed-operator-surface-current-card-2026-10-03-04287` 머리말을 `promoted-current`로 바꾼다.
+
+실행 기록(2026-10-03): functional carry-forward(0.42.75 PASS, summary `a907535a…` 확인), consume(JSON `7`개 복사, manifest `6f0d5584…`, descriptor `-PlanOnly` `overall_status=pass` `6/6`, host mutation 없음), main push evidence(`d48de55`, Public Boundary run `37112963009`, Development Gates run `37112963018` success), current-card 머리말 `promoted-current`.
 
 ## Task 2: current-evidence와 승격 문서 도구
 
