@@ -45,11 +45,13 @@ Lane 3 승격은 하지 않는다.
 
 **수정:** `packaging/windows-desktop-node/installer/Product.wxs`, `packaging/windows-desktop-node/tools/Invoke-PcvRouteParityMutationSmoke.ps1`, 관련 C# 계약과 spec pin, 설계 문서
 
-- [ ] `MajorUpgrade`에 `AllowSameVersionUpgrades="yes"`를 더한다. 기본 `Schedule`(`afterInstallValidate`)이 이전 제품을 먼저 지우는지 확인한다.
-- [ ] A가 있으면 같은 version 잔여 항목은 gate install의 major upgrade가 지운다. smoke의 `same-version-preflight`는 차단 대신 기록(`same_version_upgrade_expected`)으로 바꾸고, `final-restore-install` 뒤 같은 version ARP 항목이 정확히 `1`개인지 검사해 아니면 멈춘다. build commit 검사는 그대로 차단한다.
-- [ ] installer 계약 테스트와 smoke 계약을 고치고 spec pin을 갱신한다. 설계 문서 상태를 A 채택으로 고친다.
+- [x] `MajorUpgrade`에 `AllowSameVersionUpgrades="yes"`를 더한다. 기본 `Schedule`(`afterInstallValidate`)이 이전 제품을 먼저 지우는지 확인한다.
+- [x] A가 있으면 같은 version 잔여 항목은 gate install의 major upgrade가 지운다. smoke의 `same-version-preflight`는 차단 대신 기록(`same_version_upgrade_expected`)으로 바꾸고, `final-restore-install` 뒤 같은 version ARP 항목이 정확히 `1`개인지 검사해 아니면 멈춘다. build commit 검사는 그대로 차단한다.
+- [x] installer 계약 테스트와 smoke 계약을 고치고 spec pin을 갱신한다. 설계 문서 상태를 A 채택으로 고친다.
 
 검증: `dotnet test src/DesktopNode.Delivery.Tests`, installer 관련 테스트, smoke `-SelfTest`, `Update-PcvContractSpecPins.ps1 -Check`, `git diff --check`.
+
+실행 기록(2026-10-03): `MajorUpgrade`에 `AllowSameVersionUpgrades="yes"`와 `Schedule="afterInstallValidate"`를 명시했다. smoke 사전 검사는 기록만 하고, 사후에 build commit과 같은 version ARP `1`개를 차단 검사한다. C# 계약 `PcvSameVersionUpgradeContractTests` `1`개와 smoke 계약 `1`개를 더하고 기존 smoke 계약 하나를 비차단으로 바꿨다. orchestration spec pin 갱신. smoke `-SelfTest` exit `0`, Delivery `752/752`. WiX build 확인은 Task 2가 한다.
 
 ## Task 2: `0.42.87-admin-smoke` package (Lane 1)
 

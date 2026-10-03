@@ -2,7 +2,7 @@
 
 - Design-ID: `pcv-same-version-rebuild-installer-v1`
 - 작성일: `2026-09-27`
-- 문서 상태: `accepted-option-c` (C는 2026-10-03 구현, A는 미결)
+- 문서 상태: `accepted-option-a-and-c` (C 2026-10-03 구현, A 2026-10-03 채택·구현, 재검증은 0.42.87 pair)
 - 변경 등급: L (installer lifecycle)
 - host/VM/service/package mutation: `false`
 - public trusted signing / external stable publication: `false`
@@ -74,3 +74,20 @@ post-0.42.86 backlog Task 2(`docs/superpowers/plans/2026-10-03-purecvisor-deskto
 결과: batch supervisor가 같은 step을 재시도할 때, 앞 attempt가 설치한 같은 version 항목이 남아 있으면 재시도도
 preflight에서 멈춘다. 잘못된 PASS 대신 명확한 오류를 내는 것이 C의 목적이므로 의도한 동작이다. 운영자는 잔여 항목을
 `REMOVE_DATA` 없이 지운 뒤 다시 돌린다. A(`AllowSameVersionUpgrades`)는 계속 별도 L 등급 결정이다.
+
+## 7. A 채택 (2026-10-03)
+
+사용자가 2026-10-03에 A를 승인했다(`1,2,3`의 3). 0.42.87 campaign Task 1
+(`docs/superpowers/plans/2026-10-03-purecvisor-desktop-node-04287-package-pair.md`)이 구현했다.
+
+- `Product.wxs` `MajorUpgrade`에 `AllowSameVersionUpgrades="yes"`와 `Schedule="afterInstallValidate"`(기본값을 명시)를
+  더했다. 같은 version의 다른 ProductCode가 major upgrade 대상이 되고, 새 파일을 쓰기 전에 이전 제품을 지운다.
+  `AllowDowngrades`는 쓰지 않으므로 downgrade 차단은 그대로다. `wix build`는 ICE 검증을 돌리지 않아 ICE61 경고가
+  build를 막지 않는다.
+- C의 사전 검사는 차단에서 기록(`same_version_upgrade_expected`)으로 바꿨다. gate install이 잔여 항목을 지운다.
+- 사후 검사는 둘 다 차단이다. 설치본 build commit이 gate build와 같아야 하고(`PCV_SMOKE_INSTALLED_BUILD_MISMATCH`),
+  `final-restore-install` 뒤 같은 version ARP 항목이 정확히 `1`개여야 한다(`PCV_SMOKE_SAME_VERSION_DUPLICATE`,
+  `PCV_SMOKE_SAME_VERSION_MISSING`).
+- C# 계약 `PcvSameVersionUpgradeContractTests`가 `MajorUpgrade` 속성을 고정한다.
+- 재검증: 0.42.87 pair의 clean-host install/update/rollback, Burn, MSIX와, 같은 version 설치본 위에서 시작하는
+  fullgate가 맡는다.

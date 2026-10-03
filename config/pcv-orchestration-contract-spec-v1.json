@@ -75,7 +75,7 @@
     },
     {
       "path": "packaging/windows-desktop-node/tools/Invoke-PcvRouteParityMutationSmoke.ps1",
-      "sha256": "9ddf771fc3d1fa9f46989068b7dc2fb2cef0eb5bf312c3a1536c8547288dae08"
+      "sha256": "cd9746b88ac7c29d8eabe22add545098c434c7a6f43ed064eb3536cb5b99b438"
     },
     {
       "path": "packaging/windows-desktop-node/tools/Invoke-PcvTargetBackedNoVncInstalledStreamingSmoke.ps1",

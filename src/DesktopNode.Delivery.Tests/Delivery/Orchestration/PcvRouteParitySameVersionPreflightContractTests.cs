@@ -2,10 +2,11 @@ using DesktopNode.Delivery.Tests.Infrastructure;
 
 namespace DesktopNode.Delivery.Tests.Delivery.Orchestration;
 
-// Option C of docs/superpowers/specs/2026-09-27-purecvisor-desktop-node-same-version-rebuild-installer-design.md:
-// the route parity admin smoke stops before a same-version residual ProductCode and after an installed
-// build that is not the gate build. Required CI runs no PowerShell, so the function behavior is exercised
-// by the smoke's -SelfTest mode and this class pins the wiring.
+// Options A and C of docs/superpowers/specs/2026-09-27-purecvisor-desktop-node-same-version-rebuild-installer-design.md:
+// the route parity admin smoke records a same-version residual ProductCode before the build (the option A
+// major upgrade replaces it), then stops on an installed build that is not the gate build or on a
+// same-version ARP count other than one. Required CI runs no PowerShell, so the function behavior is
+// exercised by the smoke's -SelfTest mode and this class pins the wiring.
 [Trait("Category", "Delivery")]
 public sealed class PcvRouteParitySameVersionPreflightContractTests
 {
@@ -14,15 +15,29 @@ public sealed class PcvRouteParitySameVersionPreflightContractTests
     private static readonly string Smoke = RepositoryContractContext.Find().ReadUtf8Text(SmokePath);
 
     [Fact]
-    public void ChecksTheArpForASameVersionResidualBeforeTheGateBuild()
+    public void RecordsASameVersionResidualBeforeTheGateBuildWithoutBlocking()
     {
         var preflight = IndexOf("Start-Step -Name 'same-version-preflight' -Path $sameVersionPath");
         var build = IndexOf("Start-Step -Name 'build-current-admin-smoke-msi'");
 
         Assert.True(preflight < build, "same-version-preflight must run before the gate MSI build.");
         Assert.Contains("-ArpEntries (Get-SmokeArpProductEntries)", Smoke, StringComparison.Ordinal);
-        Assert.Contains("throw \"PCV_SMOKE_SAME_VERSION_RESIDUAL|", Smoke, StringComparison.Ordinal);
-        Assert.Contains("remove-the-same-version-product-without-REMOVE_DATA-then-rerun", Smoke, StringComparison.Ordinal);
+        Assert.Contains("same_version_upgrade_expected = -not $ok", Smoke, StringComparison.Ordinal);
+        // Product.wxs allows same-version major upgrades (option A), so the residual no longer stops the gate.
+        Assert.DoesNotContain("throw \"PCV_SMOKE_SAME_VERSION_RESIDUAL|", Smoke, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void RequiresExactlyOneSameVersionArpEntryAfterFinalRestoreInstall()
+    {
+        var buildCheck = IndexOf("$lifecycle.installed_build = Test-SmokeInstalledBuildCommit");
+        var arpCheck = IndexOf("$lifecycle.same_version_arp = Test-SmokeSameVersionArpSingle");
+        var lifecycleOk = Smoke.IndexOf("$lifecycle.ok = $true", arpCheck, StringComparison.Ordinal);
+
+        Assert.True(buildCheck < arpCheck, "the ARP check follows the installed build check.");
+        Assert.True(arpCheck < lifecycleOk, "the ARP check must gate msi-lifecycle-smoke ok.");
+        Assert.Contains("'PCV_SMOKE_SAME_VERSION_DUPLICATE'", FunctionBody("Test-SmokeSameVersionArpSingle"), StringComparison.Ordinal);
+        Assert.Contains("throw \"$($lifecycle.same_version_arp.code)|", Smoke, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -65,6 +80,7 @@ public sealed class PcvRouteParitySameVersionPreflightContractTests
     {
         Assert.Contains("Start-Step -Name 'same-version-preflight-self-test'", Smoke, StringComparison.Ordinal);
         Assert.Contains("$buildUnknownCase = Test-SmokeInstalledBuildCommit -InstalledProductVersion '0.42.86-admin-smoke' -GateCommit 'b807803f'", Smoke, StringComparison.Ordinal);
+        Assert.Contains("[string]$duplicateCase.code -eq 'PCV_SMOKE_SAME_VERSION_DUPLICATE' -and", Smoke, StringComparison.Ordinal);
         Assert.Contains("$ok = [bool]($captureOk -and $protectedTokenSelfTestOk -and $msiClassifierOk -and $sameVersionSelfTestOk)", Smoke, StringComparison.Ordinal);
     }
 

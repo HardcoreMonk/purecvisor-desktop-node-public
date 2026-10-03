@@ -410,7 +410,24 @@ function Test-SmokeSameVersionResidual {
         msi_product_version = $MsiProductVersion
         arp_entry_count = @($present).Count
         residual_product_codes = @($residual | ForEach-Object { [string]$_.product_code })
-        recommendation = if ($ok) { $null } else { 'remove-the-same-version-product-without-REMOVE_DATA-then-rerun' }
+        same_version_upgrade_expected = -not $ok
+    }
+}
+
+function Test-SmokeSameVersionArpSingle {
+    param(
+        [Parameter(Mandatory)] [string]$MsiProductVersion,
+        [AllowNull()] [object[]]$ArpEntries
+    )
+
+    $matching = @(@($ArpEntries) | Where-Object { $null -ne $_ -and [string]$_.display_version -eq $MsiProductVersion })
+    $ok = @($matching).Count -eq 1
+    [pscustomobject][ordered]@{
+        ok = $ok
+        code = if ($ok) { $null } elseif (@($matching).Count -eq 0) { 'PCV_SMOKE_SAME_VERSION_MISSING' } else { 'PCV_SMOKE_SAME_VERSION_DUPLICATE' }
+        msi_product_version = $MsiProductVersion
+        matching_count = @($matching).Count
+        product_codes = @($matching | ForEach-Object { [string]$_.product_code })
     }
 }
 
@@ -553,11 +570,18 @@ $chunk = 'x' * 4096
     $buildMatchCase = Test-SmokeInstalledBuildCommit -InstalledProductVersion '0.42.86-admin-smoke+B807803F' -GateCommit 'b807803f'
     $buildMismatchCase = Test-SmokeInstalledBuildCommit -InstalledProductVersion '0.42.86-admin-smoke+1c488b6' -GateCommit 'b807803f'
     $buildUnknownCase = Test-SmokeInstalledBuildCommit -InstalledProductVersion '0.42.86-admin-smoke' -GateCommit 'b807803f'
+    $singleCase = Test-SmokeSameVersionArpSingle -MsiProductVersion '0.42.86' -ArpEntries $selfTestArpEntries
+    $duplicateCase = Test-SmokeSameVersionArpSingle -MsiProductVersion '0.42.86' -ArpEntries @($selfTestArpEntries[0], $selfTestArpEntries[0])
+    $missingCase = Test-SmokeSameVersionArpSingle -MsiProductVersion '0.42.87' -ArpEntries $selfTestArpEntries
     $liveArpEntryCount = @(Get-SmokeArpProductEntries).Count
     $sameVersionSelfTestOk = [bool](
         -not $residualCase.ok -and
         [string]$residualCase.code -eq 'PCV_SMOKE_SAME_VERSION_RESIDUAL' -and
+        [bool]$residualCase.same_version_upgrade_expected -and
         @($residualCase.residual_product_codes).Count -eq 1 -and
+        $singleCase.ok -and
+        [string]$duplicateCase.code -eq 'PCV_SMOKE_SAME_VERSION_DUPLICATE' -and
+        [string]$missingCase.code -eq 'PCV_SMOKE_SAME_VERSION_MISSING' -and
         $cleanCase.ok -and
         $emptyCase.ok -and
         (ConvertTo-SmokeMsiProductVersion -Version '0.42.86-admin-smoke') -eq '0.42.86' -and
@@ -573,6 +597,9 @@ $chunk = 'x' * 4096
         build_match = $buildMatchCase
         build_mismatch = $buildMismatchCase
         build_unknown = $buildUnknownCase
+        arp_single = $singleCase
+        arp_duplicate = $duplicateCase
+        arp_missing = $missingCase
         live_arp_entry_count = $liveArpEntryCount
     })
     $sameVersionSelfTestStatus = if ($sameVersionSelfTestOk) { 'completed' } else { 'failed' }
@@ -794,10 +821,9 @@ try {
     $sameVersion = Test-SmokeSameVersionResidual `
         -MsiProductVersion (ConvertTo-SmokeMsiProductVersion -Version $Version) `
         -ArpEntries (Get-SmokeArpProductEntries)
+    # Product.wxs allows same-version major upgrades (design option A), so a residual same-version
+    # product is recorded here and replaced by the gate install; the post-install checks below gate it.
     Write-JsonFile -Path $sameVersionPath -Value $sameVersion
-    if (-not $sameVersion.ok) {
-        throw "PCV_SMOKE_SAME_VERSION_RESIDUAL|ARP already lists PureCVisor Desktop Node $($sameVersion.msi_product_version); a rebuilt MSI of the same version would not replace it.|product_codes=$(@($sameVersion.residual_product_codes) -join ',')|recommendation=$($sameVersion.recommendation)"
-    }
     Add-Step -Name 'same-version-preflight' -Ok $true -Path $sameVersionPath
 
     $buildJsonPath = Join-Path $ArtifactRoot 'build-output.json'
@@ -1039,6 +1065,13 @@ try {
     Write-MsiLifecycleEvidence -Path $lifecyclePath -Lifecycle $lifecycle
     if (-not $lifecycle.installed_build.ok) {
         throw "PCV_SMOKE_INSTALLED_BUILD_MISMATCH|Installed DesktopNode.Host.exe is not the gate build after final-restore-install.|installed=$($lifecycle.installed_build.installed_commit)|gate=$($lifecycle.installed_build.gate_commit)"
+    }
+    $lifecycle.same_version_arp = Test-SmokeSameVersionArpSingle `
+        -MsiProductVersion (ConvertTo-SmokeMsiProductVersion -Version $Version) `
+        -ArpEntries (Get-SmokeArpProductEntries)
+    Write-MsiLifecycleEvidence -Path $lifecyclePath -Lifecycle $lifecycle
+    if (-not $lifecycle.same_version_arp.ok) {
+        throw "$($lifecycle.same_version_arp.code)|ARP must list exactly one PureCVisor Desktop Node $($lifecycle.same_version_arp.msi_product_version) after final-restore-install.|count=$($lifecycle.same_version_arp.matching_count)|product_codes=$(@($lifecycle.same_version_arp.product_codes) -join ',')"
     }
     $lifecycle.ok = $true
     Write-MsiLifecycleEvidence -Path $lifecyclePath -Lifecycle $lifecycle
