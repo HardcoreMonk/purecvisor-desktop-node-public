@@ -102,7 +102,9 @@ Lane 3 승격은 하지 않는다.
 
 ## Task 6: 종료
 
-- [ ] clean HEAD 종료 검증 뒤 campaign을 닫는다. `next_step`에 push/PR/merge와 Lane 3 승격이 승인 대상이라고 적는다.
+- [x] clean HEAD 종료 검증 뒤 campaign을 닫는다. `next_step`에 push/PR/merge와 Lane 3 승격이 승인 대상이라고 적는다.
+
+실행 기록(2026-10-03, clean HEAD `72aee67`): `dotnet test src/DesktopNode.sln` 실패 `0`(Delivery `752`, Verification `557`, Api `488`, HyperV `255`, Host `216`, Contracts `200`, Cli `179`, Runtime `129`, Service `11`). Pester 세 종 `144/144`. `npm run test:required --prefix web` exit `0`. Release build 뒤 Required CI 네 shard 모두 `ok=true`, `plan_only=false`. 결과: package pair PASS, fullgate PASS(같은 version major upgrade와 gate 안 managed delete 정리 관측), installed current-card PASS(`installed_non_promoted_candidate`), managed delete Lane 2 PASS.
 
 ## Nonclaims
 
