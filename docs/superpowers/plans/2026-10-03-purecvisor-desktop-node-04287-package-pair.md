@@ -85,7 +85,9 @@ Lane 3 승격은 하지 않는다.
 
 ## Task 3d: Burn (Lane 2)
 
-- [ ] 설치본을 `0.42.87`에 맞춘 뒤 Burn lifecycle runner를 실행한다.
+- [x] 설치본을 `0.42.87`에 맞춘 뒤 Burn lifecycle runner를 실행한다.
+
+실행 기록(2026-10-03): 제품 Update로 `0.42.87`에 맞추고 15초 기다린 뒤 실행했다. build, install, repair, remove, target MSI 복구 모두 exit `0`, `status=PASS`, `restoration_status=PASS`(약 `43`초, repair `3010` 없음). 최종 ARP `0.42.87` `{5EF95755-…}` 1개, Host `+8d940da`, service Running/Automatic, Web `200`. evidence `burn-bootstrapper-lifecycle-smoke-2026-10-03-04287`.
 
 ## Task 3e: MSIX (Lane 2)
 
