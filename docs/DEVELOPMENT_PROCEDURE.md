@@ -317,8 +317,8 @@ campaign은 이미 받은 승인을 되묻지 않을 뿐, 없는 승인을 만�
 소유한다. 대기열과 train 이력은 `docs/ga-ready/release-train.json`이고, C# 계약
 `PcvReleaseTrainContractTests`가 구조를 본다.
 
-- product payload를 바꾸는 PR은 merge할 때 `queue`에 한 행을 더한다. docs-only, test-only,
-  tooling-only PR은 더하지 않는다.
+- product payload를 바꾸는 PR은 그 PR 안에서 `queue`에 한 행을 더한다. `merge_commit`에는 그 변경을 담은
+  commit SHA를 적는다(PR이 merge되면 `main`에서 도달한다). docs-only, test-only, tooling-only PR은 더하지 않는다.
 - 정기 출발은 주 1회다. 직전 train 출발 7일 뒤부터 정기 출발 대상이고, `queue`가 비어 있으면
   출발하지 않는다. operational current의 데이터 손실, 설치·업그레이드 실패, 보안 결함이나
   사용자 요청이 있으면 조기 출발한다. `queue`가 `5`행을 넘으면 출발을 제안한다.

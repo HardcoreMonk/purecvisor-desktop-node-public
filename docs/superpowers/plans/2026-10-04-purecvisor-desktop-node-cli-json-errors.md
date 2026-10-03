@@ -22,5 +22,5 @@
 
 ## Task 2: queue 행, 종료 검증, PR과 merge
 
-- [ ] PR 번호로 `release-train.json` queue 행을 더한다.
+- [x] PR 번호로 `release-train.json` queue 행을 더한다. (PR #34, `merge_commit`은 수정 commit `0c95852`, Lane 2 probe `cli.json-errors`. `DEVELOPMENT_PROCEDURE.md` §10에 `merge_commit`의 뜻을 한 줄 적었다)
 - [ ] clean HEAD 종료 검증, green CI 뒤 merge.
