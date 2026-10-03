@@ -110,7 +110,9 @@ Lane 3 승격은 하지 않는다.
 
 ## Task 5: installed current-card (Lane 2)
 
-- [ ] `0.42.87`을 설치된 채로 두고 current-card를 캡처한다. 결과는 `installed_non_promoted_candidate`다.
+- [x] `0.42.87`을 설치된 채로 두고 current-card를 캡처한다. 결과는 `installed_non_promoted_candidate`다.
+
+실행 기록(2026-10-03): `status=pass`, CLI `3/3`, Web `2/2`, 설치본 Host/CLI가 fullgate operational payload와 같다. ARP `0.42.87` 1개, 테스트 VM `0`, secret 관측 없음. `promotion_ledger_status=not-promoted`, canonical current `0.42.86-admin-smoke` 유지. evidence `installed-operator-surface-current-card-2026-10-03-04287`.
 
 ## Task 6: reconcile 안내 문구 Lane 2 확인 (Lane 2)
 
