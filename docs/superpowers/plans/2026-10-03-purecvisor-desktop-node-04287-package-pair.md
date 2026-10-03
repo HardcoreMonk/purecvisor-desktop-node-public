@@ -55,7 +55,9 @@ Lane 3 승격은 하지 않는다.
 
 ## Task 2: `0.42.87-admin-smoke` package (Lane 1)
 
-- [ ] clean HEAD에서 `build.ps1 -Version 0.42.87-admin-smoke -MsiProductVersion 0.42.87 -SigningMode AllowUnsignedDev -SigningTrustModel LocalTest -OutputRoot artifacts/admin-smoke-package-20261003-04287`를 실행한다. update ZIP을 만들고 evidence `admin-smoke-package-2026-10-03-04287`을 쓴다.
+- [x] clean HEAD에서 `build.ps1 -Version 0.42.87-admin-smoke -MsiProductVersion 0.42.87 -SigningMode AllowUnsignedDev -SigningTrustModel LocalTest -OutputRoot artifacts/admin-smoke-package-20261003-04287`를 실행한다. update ZIP을 만들고 evidence `admin-smoke-package-2026-10-03-04287`을 쓴다.
+
+실행 기록(2026-10-03): clean HEAD `8d940da`에서 빌드했다(exit `0`, `40`초). MSI `a0041c9f…`, payload aggregate `7c339388…`, Host `f6916d3f…`(ProductVersion `+8d940da`), CLI `3c681733…`, payload `8`개, provenance commit이 HEAD와 같다. update ZIP `28dc8af8…`. MSI Upgrade 행이 `VersionMax=0.42.87` 포함(Attributes `513`)이고 `RemoveExistingProducts`가 `1401`이다(0.42.86은 Attributes `1`). evidence `admin-smoke-package-2026-10-03-04287`.
 
 ## Task 3a: pair readiness (Lane 2)
 
