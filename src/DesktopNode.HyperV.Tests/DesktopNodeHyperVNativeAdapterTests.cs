@@ -1041,6 +1041,34 @@ public sealed class DesktopNodeHyperVNativeAdapterTests
     }
 
     [Fact]
+    public void NativeVmDeleteAdapterReportsStorageCleanup()
+    {
+        using var parameters = JsonDocument.Parse("""{"name":"alpha"}""");
+        var cleanup = new DesktopNodeHyperVVmStorageCleanupInfo(
+            @"D:\PureCVisor\VMs\alpha",
+            [@"D:\PureCVisor\VMs\alpha\disk0.vhdx"],
+            [@"D:\PureCVisor\VMs\alpha"],
+            [new DesktopNodeHyperVRetainedStorage(@"E:\shared\data.vhdx", DesktopNodeHyperVVmStorageCleanup.OutsideConfigurationRoot)]);
+        var adapter = new DesktopNodeHyperVNativeAdapter(
+            new RecordingHyperVSwitchProvider([]),
+            new RecordingHyperVVmProvider([CompleteVm("alpha")]),
+            new RecordingHyperVCheckpointProvider([]),
+            new RecordingHyperVCheckpointMutationProvider(),
+            new RecordingHyperVVmPowerStateProvider(),
+            new RecordingHyperVVmCreateProvider(),
+            new RecordingHyperVVmDeleteProvider(cleanup));
+
+        var handled = adapter.TryInvoke("vm.delete", parameters.RootElement, CancellationToken.None, out var result);
+
+        Assert.True(handled);
+        Assert.True(result.Ok);
+        var storage = result.Data!.Value.GetProperty("storage_cleanup");
+        Assert.Equal(@"D:\PureCVisor\VMs\alpha\disk0.vhdx", Assert.Single(storage.GetProperty("removed_files").EnumerateArray()).GetString());
+        var retained = Assert.Single(storage.GetProperty("retained").EnumerateArray());
+        Assert.Equal("outside-configuration-root", retained.GetProperty("reason").GetString());
+    }
+
+    [Fact]
     public void NativeVmPowerStateAdapterReturnsCancellationFailureWhenProviderObservesToken()
     {
         using var parameters = JsonDocument.Parse("""{"name":"alpha"}""");
@@ -1558,14 +1586,14 @@ public sealed class DesktopNodeHyperVNativeAdapterTests
         }
     }
 
-    private sealed class RecordingHyperVVmDeleteProvider : IDesktopNodeHyperVVmDeleteProvider
+    private sealed class RecordingHyperVVmDeleteProvider(DesktopNodeHyperVVmStorageCleanupInfo? storageCleanup = null) : IDesktopNodeHyperVVmDeleteProvider
     {
         public int CallCount { get; private set; }
 
         public DesktopNodeHyperVVmDeleteInfo Invoke(string vmName, CancellationToken cancellationToken)
         {
             CallCount += 1;
-            return new DesktopNodeHyperVVmDeleteInfo(vmName, "delete");
+            return new DesktopNodeHyperVVmDeleteInfo(vmName, "delete", storageCleanup);
         }
     }
 

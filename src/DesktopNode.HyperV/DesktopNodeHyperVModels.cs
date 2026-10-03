@@ -306,7 +306,8 @@ public sealed record DesktopNodeHyperVVmCreateInfo(
 
 public sealed record DesktopNodeHyperVVmDeleteInfo(
     [property: JsonPropertyName("name")] string Name,
-    [property: JsonPropertyName("action")] string Action);
+    [property: JsonPropertyName("action")] string Action,
+    [property: JsonPropertyName("storage_cleanup")] DesktopNodeHyperVVmStorageCleanupInfo? StorageCleanup = null);
 
 public sealed record DesktopNodeHyperVVmRenameInfo(
     [property: JsonPropertyName("name")] string Name,

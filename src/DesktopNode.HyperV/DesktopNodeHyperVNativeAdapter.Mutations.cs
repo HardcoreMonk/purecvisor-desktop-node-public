@@ -590,7 +590,7 @@ public sealed partial class DesktopNodeHyperVNativeAdapter
             }
 
             var data = vmDeleteProvider.Invoke(vm.Name, cancellationToken);
-            result = VmDeleteResult(operation, data.Name, data.Action);
+            result = VmDeleteResult(operation, data.Name, data.Action, data.StorageCleanup);
             return true;
         }
         catch (DesktopNodeHyperVNativeOperationException ex)
@@ -615,13 +615,13 @@ public sealed partial class DesktopNodeHyperVNativeAdapter
         }
     }
 
-    private static DesktopNodeHyperVOperationResult VmDeleteResult(string operation, string vmName, string action)
+    private static DesktopNodeHyperVOperationResult VmDeleteResult(string operation, string vmName, string action, DesktopNodeHyperVVmStorageCleanupInfo? storageCleanup = null)
     {
-        var payload = new SortedDictionary<string, object?>
+        var payload = new SortedDictionary<string, object?> { ["name"] = vmName, ["action"] = action };
+        if (storageCleanup is not null)
         {
-            ["name"] = vmName,
-            ["action"] = action
-        };
+            payload["storage_cleanup"] = storageCleanup;
+        }
         return new DesktopNodeHyperVOperationResult(
             Ok: true,
             Operation: operation,
