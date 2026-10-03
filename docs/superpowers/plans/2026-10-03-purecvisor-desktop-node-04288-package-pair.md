@@ -35,7 +35,9 @@ Lane 3 승격은 하지 않는다.
 
 ## Task 1: `0.42.88-admin-smoke` package (Lane 1)
 
-- [ ] clean HEAD에서 `build.ps1 -Version 0.42.88-admin-smoke -MsiProductVersion 0.42.88 -SigningMode AllowUnsignedDev -SigningTrustModel LocalTest -OutputRoot artifacts/admin-smoke-package-20261003-04288`. update ZIP, evidence `admin-smoke-package-2026-10-03-04288`.
+- [x] clean HEAD에서 `build.ps1 -Version 0.42.88-admin-smoke -MsiProductVersion 0.42.88 -SigningMode AllowUnsignedDev -SigningTrustModel LocalTest -OutputRoot artifacts/admin-smoke-package-20261003-04288`. update ZIP, evidence `admin-smoke-package-2026-10-03-04288`.
+
+실행 기록(2026-10-03): clean HEAD `ff62e59`, exit `0`, `41`초. MSI `81ef8527…`, payload `4377cc25…`, Host `f797af94…`, CLI `91e43cbe…`, provenance == HEAD, update ZIP `7051e735…`, Upgrade `VersionMax=0.42.88` 포함. evidence `admin-smoke-package-2026-10-03-04288`.
 
 ## Task 2a: pair readiness (Lane 2)
 
