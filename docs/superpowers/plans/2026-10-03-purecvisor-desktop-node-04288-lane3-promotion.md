@@ -36,9 +36,11 @@
 
 ## Task 2: current-evidence와 승격 문서 도구
 
-- [ ] `docs/ga-ready/current-evidence.json` current를 `0.42.88-admin-smoke`로 쓴다.
-- [ ] 승격 spec `packaging/windows-desktop-node/tests/fixtures/lane3-promotion-docs-spec-04288.json`으로 `Invoke-PcvLane3PromotionDocs.ps1` dry-run, `-Apply`, `-Check`.
-- [ ] `CurrentEvidenceVerifierTests` 기대 버전, `DOCUMENTATION_INDEX`·`FEATURE_IMPLEMENTATION_LEDGER` operational 줄을 맞춘다.
+- [x] `docs/ga-ready/current-evidence.json` current를 `0.42.88-admin-smoke`로 쓴다.
+- [x] 승격 spec `packaging/windows-desktop-node/tests/fixtures/lane3-promotion-docs-spec-04288.json`으로 `Invoke-PcvLane3PromotionDocs.ps1` dry-run, `-Apply`, `-Check`.
+- [x] `CurrentEvidenceVerifierTests` 기대 버전, `DOCUMENTATION_INDEX`·`FEATURE_IMPLEMENTATION_LEDGER` operational 줄을 맞춘다.
+
+실행 기록(2026-10-03): `current-evidence.json` current `0.42.88-admin-smoke`(operational MSI `32b35113…`, payload `163ece95…`, provenance `47ff198`, descriptor `…-consume`). 승격 spec `lane3-promotion-docs-spec-04288.json`(0.42.87 fixture에서 값만 바꿔 생성, 옛 값 잔여 없음)으로 dry-run(`stale`/`planned`), `-Apply`, `-Check`(여섯 단계 모두 `current`/`ok`). 수기 정렬: `CurrentEvidenceVerifierTests` 한 줄, `DOCUMENTATION_INDEX` 권위 줄, `FEATURE_IMPLEMENTATION_LEDGER` operational 줄.
 
 ## Task 3: 종료와 merge
 
