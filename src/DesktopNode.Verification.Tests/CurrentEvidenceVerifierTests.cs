@@ -22,7 +22,7 @@ public sealed class CurrentEvidenceVerifierTests
 
         var result = CurrentEvidenceVerifier.Verify(root, CancellationToken.None);
 
-        Assert.Equal("0.42.86-admin-smoke", result.Record.Current.Version);
+        Assert.Equal("0.42.87-admin-smoke", result.Record.Current.Version);
         Assert.Equal(8, result.Targets.Count);
         Assert.All(result.Targets, target => Assert.Equal("current", target.Status));
         Assert.Equal(
