@@ -83,7 +83,9 @@ Lane 3 승격은 하지 않는다.
 
 ## Task 3: fullgate (Lane 2)
 
-- [ ] clean `0.42.88`이 설치된 채로 fullgate를 시작한다. 사후 검사(build commit, 같은 version ARP 1개)가 통과해야 한다.
+- [x] clean `0.42.88`이 설치된 채로 fullgate를 시작한다. 사후 검사(build commit, 같은 version ARP 1개)가 통과해야 한다.
+
+실행 기록(2026-10-03): clean `0.42.88` `{5B28DA82}` 위에서 시작했다. batch `ok=true`, 두 step attempt `1`, MSI 6 phase exit `0`, 약 `273`초. 같은 version major upgrade, 사후 검사 둘(build `47ff198`, ARP `{3F60088B}` 1개) 통과. route smoke의 `vm delete` 결과 `storage_cleanup`이 `disk0.vhdx`와 `Snapshots`/`Virtual Machines`/root를 지웠고 retained 없음. evidence `full-admin-host-mutation-gate-2026-10-03-04288-hostmutation`.
 
 ## Task 4: installed current-card (Lane 2)
 
