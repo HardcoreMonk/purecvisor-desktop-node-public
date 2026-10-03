@@ -11,15 +11,16 @@
   ],
   "mutation_allowed": false,
   "current_write_allowed": false,
-  "next_step": "Run Task 2 (queue row, final verification, PR and merge) from docs/superpowers/plans/2026-10-04-purecvisor-desktop-node-cli-json-errors.md.",
+  "next_step": "pcvcli --json error output fixed in source (PR #34) and queued for the next release train (release-train.json queue row 1, Lane 2 probe family cli.json-errors). No queued task. Next steps need approval: the next train's departure with its explicit scope.",
   "plan": "docs/superpowers/plans/2026-10-04-purecvisor-desktop-node-cli-json-errors.md",
   "task_queue": [
     "Task 1",
     "Task 2"
   ],
-  "next_task": "Task 2",
+  "next_task": null,
   "completed_tasks": [
-    "Task 1"
+    "Task 1",
+    "Task 2"
   ],
   "commit_policy": "local-commit-per-task",
   "push_allowed": true,

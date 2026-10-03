@@ -23,4 +23,6 @@
 ## Task 2: queue 행, 종료 검증, PR과 merge
 
 - [x] PR 번호로 `release-train.json` queue 행을 더한다. (PR #34, `merge_commit`은 수정 commit `0c95852`, Lane 2 probe `cli.json-errors`. `DEVELOPMENT_PROCEDURE.md` §10에 `merge_commit`의 뜻을 한 줄 적었다)
-- [ ] clean HEAD 종료 검증, green CI 뒤 merge.
+- [x] clean HEAD 종료 검증, green CI 뒤 merge.
+
+실행 기록(2026-10-04, clean HEAD `b8f69f5`): `dotnet test src/DesktopNode.sln` 실패 `0`(Cli `183`, Delivery `758` 등). Required CI 네 shard 모두 `ok=true`, `plan_only=false`. `npm run test:required --prefix web` exit `0`. PR #34 CI green 뒤 merge한다.
