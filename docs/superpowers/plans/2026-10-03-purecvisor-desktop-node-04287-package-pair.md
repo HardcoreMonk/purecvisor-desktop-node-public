@@ -67,7 +67,9 @@ Lane 3 승격은 하지 않는다.
 
 ## Task 3f: installed runtime ops summary (Lane 2)
 
-- [ ] baseline `0.42.86`이 설치된 동안 ops summary를 캡처한다.
+- [x] baseline `0.42.86`이 설치된 동안 ops summary를 캡처한다.
+
+실행 기록(2026-10-03): CLI exit `0`, `ok=true`, 비인증 `401 PCV_AUTH_REQUIRED`, Web `200`, errors `0`, VM `1`개, token 형태 문자열 `0`개. summary SHA `a03b8588…`. evidence `installed-runtime-ops-summary-2026-10-03-04286`.
 
 ## Task 3b: 설치본 update/rollback (Lane 2)
 
