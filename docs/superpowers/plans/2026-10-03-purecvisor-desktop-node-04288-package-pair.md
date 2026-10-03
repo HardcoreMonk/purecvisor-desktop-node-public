@@ -95,8 +95,10 @@ Lane 3 승격은 하지 않는다.
 
 ## Task 5: managed delete 디스크 정리 Lane 2 확인 (Lane 2)
 
-- [ ] probe VM을 만들고 checkpoint 하나를 만든 뒤 `vm delete --yes`를 실행한다.
-- [ ] job 결과 `storage_cleanup`의 `removed_files`에 `disk0.vhdx`와 checkpoint 차등 디스크가 있고, VM 디렉터리가 없어졌는지 확인한다. 손 정리 없이 VM 목록이 사전 상태와 같아야 한다.
+- [x] probe VM을 만들고 checkpoint 하나를 만든 뒤 `vm delete --yes`를 실행한다.
+- [x] job 결과 `storage_cleanup`의 `removed_files`에 `disk0.vhdx`와 checkpoint 차등 디스크가 있고, VM 디렉터리가 없어졌는지 확인한다. 손 정리 없이 VM 목록이 사전 상태와 같아야 한다.
+
+실행 기록(2026-10-03): probe VM을 만들고 checkpoint를 남긴 채 delete했다. job `succeeded`, `storage_cleanup`이 `disk0.vhdx`와 `Snapshots`/`Virtual Machines`/root를 지웠고 retained 없음, VM 디렉터리 없음, 손 정리 없음. checkpoint `.avhdx`는 delete 전에 있었으나 Hyper-V가 `DestroySystem` 중 먼저 없애 `removed_files`에 없다. 계획의 "removed_files에 차등 디스크" 기대는 사실과 달랐고, probe 자동 summary는 그 조건 때문에 `FAIL`, 목표 기준 재판정 `judgment.json`은 `PASS`다. evidence `lane2-managed-delete-actual-vm-2026-10-03-04288`.
 
 ## Task 6: 종료
 
