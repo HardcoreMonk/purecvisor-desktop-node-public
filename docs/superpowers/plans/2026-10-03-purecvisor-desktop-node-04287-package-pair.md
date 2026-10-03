@@ -103,8 +103,10 @@ Lane 3 승격은 하지 않는다.
 
 ## Task 4: fullgate와 A 실증 (Lane 2)
 
-- [ ] 설치본을 비우지 않고 clean `0.42.87`이 설치된 상태(ARP `0.42.87` 1개)에서 fullgate를 시작한다. gate의 첫 install이 같은 version major upgrade다.
-- [ ] gate 뒤 ARP `0.42.87` 항목 `1`개, 설치본 Host/CLI build commit이 gate build와 같음, uninstall 단계에 `another client exists`가 없음을 기록한다.
+- [x] 설치본을 비우지 않고 clean `0.42.87`이 설치된 상태(ARP `0.42.87` 1개)에서 fullgate를 시작한다. gate의 첫 install이 같은 version major upgrade다.
+- [x] gate 뒤 ARP `0.42.87` 항목 `1`개, 설치본 Host/CLI build commit이 gate build와 같음, uninstall 단계에 `another client exists`가 없음을 기록한다.
+
+실행 기록(2026-10-03): clean `0.42.87` `{5EF95755}`이 설치된 채로 시작했다. 이전 gate의 Ubuntu ISO가 호스트에 없어, OS를 부팅하지 않는 최소 ISO 9660(`artifacts/smoke-media-20261003/`)을 썼다. batch `ok=true`, 두 step `PASS`(attempt `1`), MSI lifecycle 6 phase exit `0`, 약 `212`초. install log에 `WIX_UPGRADE_DETECTED`=`{5EF95755}`와 `RemoveExistingProducts`가 있고, 네 MSI log에 `another client exists`와 `Won't Overwrite`가 없다. 사후 검사 둘 다 통과: 설치본 build `8ade930` == gate build, 같은 version ARP `{F1D32C79}` 1개. Host/CLI SHA가 gate build와 같고 Web `200`, firewall rule `0`. evidence `full-admin-host-mutation-gate-2026-10-03-04287-hostmutation`.
 
 ## Task 5: installed current-card (Lane 2)
 
