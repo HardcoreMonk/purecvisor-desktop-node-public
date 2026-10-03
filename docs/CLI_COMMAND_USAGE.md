@@ -150,7 +150,13 @@ CLI는 inline token 값을 stdout/stderr에 출력하지 않는다. `--verbose`�
 `created_at`, `last_powered_on`, `notes`를 포함한다. 값이 없으면 `-`다. `json`은 동일 응답의
 원본 envelope을 보존한다.
 
-API가 problem JSON을 반환하면 CLI는 stderr에 `PCV_*: message` 형태로 표시하고 exit code `1`을 반환한다.
+API가 오류를 반환하면 CLI는 stderr에 `code=PCV_*`, `message=…`, `detail=…`, `Next action: …` 줄을 쓰고 exit code `1`을 반환한다.
+
+`--json`(또는 `--format json`)이면 오류도 stdout에 JSON envelope 하나로 쓴다. stderr 줄과 exit code는 그대로다.
+
+- API가 `{"ok":false,"error":{...}}` envelope을 반환하면 그대로 쓴다.
+- API가 `{"code":...}` 형태만 반환하거나 JSON이 아니면 `{"ok":false,"operation":"pcvcli","error":{"code":...,"message":...}}`로 감싼다. JSON이 아닌 응답의 code는 `PCV_CLI_HTTP_<status>`다.
+- usage 오류(exit `2`), token 오류, transport 오류도 같은 envelope으로 쓴다. code는 `PCV_CLI_ARGUMENT_INVALID`, 오류 문구의 `PCV_*|` 접두사, `PCV_CLI_TRANSPORT_ERROR` 중 하나다.
 
 ## 종료 코드
 

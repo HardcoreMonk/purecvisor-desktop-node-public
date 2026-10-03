@@ -11,7 +11,7 @@
 - PowerShell/Pester 경계: invocation 0은 위 Required CI 네 context에만 적용한다. 별도 Public Boundary workflow는 비필수 legacy residue로 보존한다(run `37122873756`, job `111202298202`).
 - 운영 제품 권위: `0.42.88-admin-smoke`; Web Console과 PCVCLI가 active이고 TUI는 absent다. Feature promotion은 `promotion_eligible=true`, blockers `none`이다. P0 feature ledger는 `0.42.75-admin-smoke` evidence를 유지한다.
 - 이 호스트 설치본(2026-10-03 fullgate): `0.42.88-admin-smoke`(gate build `+47ff198`), service `Running/Automatic`. ARP `DisplayVersion`은 `0.42.88`(항목 `1`개).
-- 개발 campaign: `docs/ga-ready/active-campaign.json` id `lane3-04288-promotion-20261003`(intent `lane3-04288-promotion`, 2026-10-03 개설·완료, Task 1~3, `next_task=null`, 계획 `docs/superpowers/plans/2026-10-03-purecvisor-desktop-node-04288-lane3-promotion.md`). 선행 `package-pair-04288-20261003`(Task 1~6, PR #31 `d27086f`)은 완료했고 결과 `0.42.88-admin-smoke`를 이 campaign이 승격한다. clean-host base는 `current-base.json`이 고른다(`20348.5622`).
+- 개발 campaign: `docs/ga-ready/active-campaign.json` id `cli-json-errors-20261004`(intent `lane1-cli-json-errors`, 2026-10-04 개설, 계획 `docs/superpowers/plans/2026-10-04-purecvisor-desktop-node-cli-json-errors.md`). 선행 `lane3-04288-promotion-20261003`(Task 1~3)은 완료했다. clean-host base는 `current-base.json`이 고른다(`20348.5622`).
 - release train: 대기열과 train 이력 `docs/ga-ready/release-train.json`, 규칙 `docs/DEVELOPMENT_PROCEDURE.md` §10, 설계 `docs/superpowers/specs/2026-10-04-purecvisor-desktop-node-release-train-design.md`(2026-10-04 채택).
 - 진행 상황 현행화: `docs/project-status-audit-2026-10-03.md`. 직전 snapshot은 `docs/project-status-audit-2026-09-27.md`.
 - `0.42.75 -> 0.42.77` descriptor consume: `docs/ga-ready/evidence/manual-admin-campaign-2026-09-20-04275-04277.md` (`pass`, current 유지).
