@@ -41,7 +41,9 @@ Lane 3 승격은 하지 않는다.
 
 ## Task 2a: pair readiness (Lane 2)
 
-- [ ] baseline `0.42.87`(clean package `admin-smoke-package-20261003-04287`)과 target `0.42.88`로 readiness `-PlanOnly`.
+- [x] baseline `0.42.87`(clean package `admin-smoke-package-20261003-04287`)과 target `0.42.88`로 readiness `-PlanOnly`.
+
+실행 기록(2026-10-03): 설치본이 baseline `0.42.87`(fullgate build `+8ade930`)이라 설치 변경 없이 실행했다. campaign `manual-admin-campaign-20261003-04287-04288`, `ok=true`, `ready-current-baseline-target-package-pair`, 설치본 일치, baseline MSI `a0041c9f…`, target MSI `81ef8527…`, host mutation 없음. summary SHA `e9533680…`.
 
 ## Task 2f: installed runtime ops summary (Lane 2)
 
