@@ -83,13 +83,15 @@
 
 **수정:** git 저장소 상태, 감사 문서 §8 후속 기록
 
-- [ ] PR #5: `main`을 합쳐 CI를 다시 돌리고 green이면 merge한다. 충돌이나 red면 닫고 사유를 남긴다.
-- [ ] 병합된 worktree를 지운다: `pcv-public-wt-descriptor-chain`, Temp `pcv-fullgate-04286`. 미병합·dirty인 `04275-stage1-immutable-preflight`(5파일)와 `04277-manual-admin-promotion`(8파일)은 남긴다.
-- [ ] `origin/main`에 병합된 원격 branch를 지운다. 로컬은 `git branch -d`로 병합된 것만 지운다.
-- [ ] 로컬 `main`을 `origin/main`으로 fast-forward한다.
-- [ ] `artifacts/`: tracked 파일이 참조하는 dir과 clean-host base가 쓰는 dir은 남기고, 참조 없는 dir만 지운다. 목록과 크기를 기록한다.
+- [x] PR #5: `main`을 합쳐 CI를 다시 돌리고 green이면 merge한다. 충돌이나 red면 닫고 사유를 남긴다.
+- [x] 병합된 worktree를 지운다: `pcv-public-wt-descriptor-chain`, Temp `pcv-fullgate-04286`. 미병합·dirty인 `04275-stage1-immutable-preflight`(5파일)와 `04277-manual-admin-promotion`(8파일)은 남긴다.
+- [x] `origin/main`에 병합된 원격 branch를 지운다. 로컬은 `git branch -d`로 병합된 것만 지운다.
+- [x] 로컬 `main`을 `origin/main`으로 fast-forward한다.
+- [x] `artifacts/`: tracked 파일이 참조하는 dir과 clean-host base가 쓰는 dir은 남기고, 참조 없는 dir만 지운다. 목록과 크기를 기록한다.
 
 검증: `git worktree list`, `git branch -r`, `gh pr view 5`, 남긴 artifacts 참조 재확인.
+
+실행 기록(2026-10-03): PR #5는 `main` 병합(`28bfb68`, 충돌 없음, 로컬 Delivery `745/745`) 뒤 CI green으로 merge commit `a5fc9fa`. 원격 branch `25`→`1`, 로컬 `31`→`7`, worktree `5`→`3`, 로컬 `main` fast-forward. `artifacts/`는 참조 없음이면서 2026-09-19 이전인 `39`항목(`272` MiB)만 지웠다. 감사 문서 §13.
 
 ## Task 6: 종료 검증
 

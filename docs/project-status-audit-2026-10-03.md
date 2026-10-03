@@ -230,3 +230,24 @@ image 확인 step을 더해 돌렸다. 확인 뒤 probe branch는 원격과 로�
 결정: `ubuntu-latest`를 유지한다. 2026-10-19 이동 뒤에도 web job과 Public Boundary job은 같은
 toolchain으로 통과할 것으로 본다. workflow는 바꾸지 않았다. 이동 뒤 첫 `main` run이 실패하면
 그때 `ubuntu-24.04` pin을 다시 판단한다.
+
+## 13. 저장소 위생 실행 (backlog Task 5)
+
+2026-10-03 실행 결과다. §8 표는 감사 착수 시점 값으로 남긴다.
+
+| 항목 | 전 | 후 | 처리 |
+| --- | --- | --- | --- |
+| PR #5 | 열림(2026-08-27~, `BEHIND`) | 병합 | branch에 `main`을 합친 `28bfb68`에서 필수 검사 다섯 개와 Public Boundary가 green, `CLEAN` 확인 뒤 merge commit `a5fc9fa` |
+| remote branch | 25 (`origin/main` 포함) | 1 | `origin/main`에 병합된 `24`개 삭제(PR #5 branch 포함) |
+| local branch | 31 | 7 | `origin/main`에 병합된 것만 삭제. 남은 것: 현재 branch, `main`, worktree 두 개의 branch, 병합 안 된 `codex/pester-free-verification-cutover`(고유 `1`커밋), `docs/development-work-order-20261002`(고유 `1`커밋, 내용은 이 branch에 담김), `package/04286-admin-smoke-20261002`(고유 `2`커밋) |
+| worktree | 5 | 3 | 병합되고 clean한 `pcv-public-wt-descriptor-chain`, Temp `pcv-fullgate-04286` 제거. dirty인 `04275-stage1-immutable-preflight`(5파일, 미병합)와 `04277-manual-admin-promotion`(8파일)은 남김 |
+| 로컬 `main` | `5b84a4e` (`17` 뒤) | `a5fc9fa` | fast-forward |
+| `artifacts/` | 174항목, `12.26` GiB | 135항목, 약 `12.0` GiB | 아래 규칙으로 `39`항목, `272` MiB 삭제 |
+
+`artifacts/` 보존 규칙: tracked 파일(문서, config, 소스)이 이름을 참조하는 항목은 남긴다(`125`항목, `11.99` GiB).
+참조가 없어도 2026-09-19 이후에 바뀐 항목은 최근 campaign 산출물이므로 남긴다(`10`항목). 둘 다 아닌 항목만 지웠다.
+용량 대부분은 evidence가 참조하는 산출물이라, 더 줄이려면 evidence 보존 정책을 따로 정해야 한다.
+
+삭제한 항목: `ci-pr6`, `cutover-local-delivery-ca4820b`, `cutover-local-dotnet-ca4820b`, `cutover-local-installer-policy-ca4820b`, `cutover-local-web-ca4820b`, `local-cutover-68756f1`, `local-doc-closure-clean-delivery`, `local-doc-closure-clean-dotnet`, `local-doc-closure-clean-installer-policy`, `local-doc-closure-clean-web`, `local-doc-closure-delivery`, `local-doc-closure-delivery-r2`, `local-doc-closure-delivery-r3`, `local-doc-closure-dotnet`, `local-doc-closure-installer-policy`, `local-doc-closure-web`, `local-shadow-repair`, `ma-04275-04277-c2`, `manual-admin-campaign-20260831-04275-04277-final-service-state-r1`, `module-ratchet-merged-delivery`, `module-ratchet-merged-dotnet`, `module-ratchet-merged-installer-policy`, `module-ratchet-merged-web`, `pester-free-wave-d-aggregate-20260826-033143`, `prepare-manual-admin-campaign-20260831-04275-04277.ps1`, `service-plan-p0-actual-vm-20260827-04275-full-r2`, `service-plan-p0-actual-vm-20260827-04275-full-r3`, `service-plan-p0-actual-vm-20260827-04275-savedonly-cleantarget`, `shadow-inline-manifest-probe-r2-20260826`, `shadow-inline-node-probe-r2-20260826`, `shadow-local-delivery-20260826`, `shadow-local-delivery-r2-20260826`, `shadow-local-dotnet-20260826`, `shadow-local-dotnet-r2-20260826`, `shadow-local-installer-policy-20260826`, `shadow-local-web-20260826`, `shadow-policy-final-local-20260826`, `shadow-policy-local-20260826`, `shadow-probe-trx-20260826`
+
+남은 위생 항목(승인 밖): dirty worktree 두 개, 병합 안 된 로컬 branch 세 개, 별도 clone `D:\data\projects\codex-zone\pcv-04286-fullshard`.
