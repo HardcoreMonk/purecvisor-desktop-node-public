@@ -1,0 +1,108 @@
+# 0.42.87 package pair, 같은 version 재설치(A)와 Lane 2 검증 Implementation Plan
+
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+
+**Goal:** 같은 version 재설치 설계 권고 A(`AllowSameVersionUpgrades`)를 넣고, A와 post-0.42.86 backlog의 reconcile 문구 수정을 담은 `0.42.87-admin-smoke`를 빌드한다. 그 package로 다음을 PASS로 만든다.
+- manual-admin pair(`0.42.86 → 0.42.87`)
+- fullgate. 같은 version 설치본 위에서 시작해 A를 실증한다.
+- installed current-card
+- reconcile 안내 문구의 설치본·actual-VM 확인
+
+Lane 3 승격은 하지 않는다.
+
+**Architecture:** 0.42.85 pair(`2026-10-01-purecvisor-desktop-node-04285-package-pair.md`)와 10-02 작업 지시서(`2026-10-02-purecvisor-desktop-node-development-work-order.md`)의 순서를 따른다. branch는 PR #28의 `docs/project-status-audit-20261003`이다. PR이 아직 merge 전이므로 같은 branch에 commit을 쌓고, commit마다 push한다.
+
+**Tech Stack:** WiX v4 `Product.wxs`, installer `build.ps1`, `msiexec`, `Invoke-PcvDesktopNodeProduct.ps1`, manual-admin runner, `Invoke-PcvBatchSupervisor.ps1`, PCVCLI
+
+## 사용자 결정 (2026-10-03)
+
+승인 원문: `1,2,3` (post-0.42.86 backlog 최종 보고의 결정 1~3에 대한 답).
+
+| 항목 | 결정 |
+| --- | --- |
+| 1 push/PR | backlog branch push와 PR 하나(PR #28). 이 campaign의 commit도 같은 PR에 push한다 |
+| 2 package pair와 Lane 2 | `0.42.87` package, manual-admin pair 여섯 bucket, fullgate, current-card, reconcile 문구 Lane 2 확인 |
+| 3 설계 권고 A | `MajorUpgrade AllowSameVersionUpgrades="yes"`. 재검증은 2의 pair와 fullgate가 맡는다 |
+| 호스트 작업 범위 | MSI 제거·설치, 제품 Update/Rollback, clean-host VM 생성·Windows Update·삭제, Burn, MSIX, fullgate, current-card, Lane 2 probe VM의 생성·조작·삭제 |
+| 승인 밖 | PR merge, Lane 3 승격, `current-evidence.json` 쓰기, public trusted signing, external stable publication |
+
+## 착수 상태 (2026-10-03)
+
+- operational current와 이 호스트 설치본은 모두 `0.42.86-admin-smoke`다. 설치본은 fullgate build `+b807803`이고 ARP는 `{1994F4DF-…}` 1개, 서비스는 `Running/Automatic`이다.
+- 0.42.86 build 뒤 product payload 변경은 reconcile 안내 문구(`5b5738e`)뿐이다. Task 1이 installer `Product.wxs`를 바꾼다.
+
+## Global Constraints
+
+- 보존 VM의 전원, Notes, 디스크를 바꾸지 않는다.
+- 새 VM은 clean-host runner의 `pcv-cleanhost-*`와 Task 6 probe VM뿐이다. 성공하면 모두 지운다. managed delete가 남기는 VHD 디렉터리는 참조가 없는지 확인한 뒤 지운다.
+- token, credential, password는 command line, summary, evidence에 남기지 않는다.
+- evidence는 새 파일로만 쓴다.
+- 한도: Lane 1 30분·tool batch 18회, Lane 2 45분·tool batch 12회, clean-host 180분.
+- runner 입력 함정(memory `lane2-pair-runner-gotchas`)을 따른다: MSIX 세 자리 버전, current-card SHA 상수 전부 교체, update ZIP 직접 생성, 제품 Update 직후 Burn은 잠시 기다린다.
+- 같은 원인으로 3번 실패하거나, 범위 밖 설계가 필요하거나, 권한이 거부되면 멈춘다.
+
+## Task 1: 같은 version 재설치 A (Lane 1)
+
+**수정:** `packaging/windows-desktop-node/installer/Product.wxs`, `packaging/windows-desktop-node/tools/Invoke-PcvRouteParityMutationSmoke.ps1`, 관련 C# 계약과 spec pin, 설계 문서
+
+- [ ] `MajorUpgrade`에 `AllowSameVersionUpgrades="yes"`를 더한다. 기본 `Schedule`(`afterInstallValidate`)이 이전 제품을 먼저 지우는지 확인한다.
+- [ ] A가 있으면 같은 version 잔여 항목은 gate install의 major upgrade가 지운다. smoke의 `same-version-preflight`는 차단 대신 기록(`same_version_upgrade_expected`)으로 바꾸고, `final-restore-install` 뒤 같은 version ARP 항목이 정확히 `1`개인지 검사해 아니면 멈춘다. build commit 검사는 그대로 차단한다.
+- [ ] installer 계약 테스트와 smoke 계약을 고치고 spec pin을 갱신한다. 설계 문서 상태를 A 채택으로 고친다.
+
+검증: `dotnet test src/DesktopNode.Delivery.Tests`, installer 관련 테스트, smoke `-SelfTest`, `Update-PcvContractSpecPins.ps1 -Check`, `git diff --check`.
+
+## Task 2: `0.42.87-admin-smoke` package (Lane 1)
+
+- [ ] clean HEAD에서 `build.ps1 -Version 0.42.87-admin-smoke -MsiProductVersion 0.42.87 -SigningMode AllowUnsignedDev -SigningTrustModel LocalTest -OutputRoot artifacts/admin-smoke-package-20261003-04287`를 실행한다. update ZIP을 만들고 evidence `admin-smoke-package-2026-10-03-04287`을 쓴다.
+
+## Task 3a: pair readiness (Lane 2)
+
+- [ ] baseline `0.42.86`(clean package `admin-smoke-package-20261002-04286`)과 target `0.42.87`로 readiness를 `-PlanOnly`로 실행한다.
+
+## Task 3f: installed runtime ops summary (Lane 2)
+
+- [ ] baseline `0.42.86`이 설치된 동안 ops summary를 캡처한다.
+
+## Task 3b: 설치본 update/rollback (Lane 2)
+
+- [ ] `0.42.87` payload로 Update 뒤 Rollback한다.
+
+## Task 3c: dedicated clean-host Windows Update (Lane 2)
+
+- [ ] baseline `0.42.86` clean MSI, target `0.42.87` update ZIP, `current-base.json` base로 clean-host runner를 실행한다.
+
+## Task 3d: Burn (Lane 2)
+
+- [ ] 설치본을 `0.42.87`에 맞춘 뒤 Burn lifecycle runner를 실행한다.
+
+## Task 3e: MSIX (Lane 2)
+
+- [ ] MSIX lifecycle runner를 `0.42.86 → 0.42.87`로 실행한다.
+
+## Task 3g: pair descriptor (Lane 2, non-mutating)
+
+- [ ] 여섯 bucket summary로 descriptor를 `-PlanOnly`로 만든다.
+
+## Task 4: fullgate와 A 실증 (Lane 2)
+
+- [ ] 설치본을 비우지 않고 clean `0.42.87`이 설치된 상태(ARP `0.42.87` 1개)에서 fullgate를 시작한다. gate의 첫 install이 같은 version major upgrade다.
+- [ ] gate 뒤 ARP `0.42.87` 항목 `1`개, 설치본 Host/CLI build commit이 gate build와 같음, uninstall 단계에 `another client exists`가 없음을 기록한다.
+
+## Task 5: installed current-card (Lane 2)
+
+- [ ] `0.42.87`을 설치된 채로 두고 current-card를 캡처한다. 결과는 `installed_non_promoted_candidate`다.
+
+## Task 6: reconcile 안내 문구 Lane 2 확인 (Lane 2)
+
+- [ ] 설치본 `0.42.87`에서 비대상 operation job의 reconcile 응답이 "confirm whether the mutation applied"이고 `rename`을 말하지 않음을 확인한다.
+- [ ] probe VM 하나로 `vm.rename` job의 reconcile 응답이 계속 rename을 말하는지 확인한다. probe VM과 디렉터리를 지운다.
+
+## Task 7: 종료
+
+- [ ] clean HEAD 종료 검증 뒤 push하고 campaign을 닫는다. `next_step`에 PR merge와 Lane 3 승격이 승인 대상이라고 적는다.
+
+## Nonclaims
+
+- 이 campaign은 operational current를 바꾸지 않는다. 결과는 `installed_non_promoted_candidate`까지다.
+- A는 같은 version 재설치를 major upgrade로 바꿀 뿐 downgrade 정책을 바꾸지 않는다.
+- public trusted signing과 external stable publication을 주장하지 않는다.
