@@ -47,7 +47,10 @@ public static class DesktopNodeCliApplication
             if (!IsSuccess(response))
             {
                 var problem = DesktopNodeCliFormatter.FormatProblem(response);
-                return new DesktopNodeCliApplicationResult(1, string.Empty, verbosePrefix + problem + Environment.NewLine);
+                var json = options.Format == DesktopNodeCliOutputFormat.Json
+                    ? DesktopNodeCliErrorJson.FromResponse(response) + Environment.NewLine
+                    : string.Empty;
+                return new DesktopNodeCliApplicationResult(1, json, verbosePrefix + problem + Environment.NewLine);
             }
 
             var noColor = options.NoColor ||
@@ -60,16 +63,24 @@ public static class DesktopNodeCliApplication
         }
         catch (ArgumentException ex)
         {
-            return new DesktopNodeCliApplicationResult(2, string.Empty, Redact(ex.Message) + Environment.NewLine);
+            return Failure(args, 2, Redact(ex.Message), "PCV_CLI_ARGUMENT_INVALID");
         }
         catch (InvalidOperationException ex)
         {
-            return new DesktopNodeCliApplicationResult(1, string.Empty, Redact(ex.Message) + Environment.NewLine);
+            return Failure(args, 1, Redact(ex.Message), "PCV_CLI_OPERATION_FAILED");
         }
         catch (HttpRequestException ex)
         {
-            return new DesktopNodeCliApplicationResult(1, string.Empty, "PCV_CLI_TRANSPORT_ERROR|" + Redact(ex.Message) + Environment.NewLine);
+            return Failure(args, 1, "PCV_CLI_TRANSPORT_ERROR|" + Redact(ex.Message), "PCV_CLI_TRANSPORT_ERROR");
         }
+    }
+
+    private static DesktopNodeCliApplicationResult Failure(IReadOnlyList<string> args, int exitCode, string message, string fallbackCode)
+    {
+        var json = DesktopNodeCliErrorJson.Requested(args)
+            ? DesktopNodeCliErrorJson.FromMessage(message, fallbackCode) + Environment.NewLine
+            : string.Empty;
+        return new DesktopNodeCliApplicationResult(exitCode, json, message + Environment.NewLine);
     }
 
     private static bool IsSuccess(DesktopNodeCliTransportResponse response)

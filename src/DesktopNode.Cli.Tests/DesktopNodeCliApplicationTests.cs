@@ -1,3 +1,4 @@
+using System.Text.Json;
 using DesktopNode.Cli;
 
 namespace DesktopNode.Cli.Tests;
@@ -667,6 +668,110 @@ public sealed class DesktopNodeCliApplicationTests
 
         Assert.Equal(1, result.ExitCode);
         Assert.Contains("PCV_CLI_HTTP_502", result.StandardError);
+    }
+
+    [Fact]
+    public async Task JsonModeWritesTheApiErrorEnvelopeToStandardOutput()
+    {
+        var transport = new RecordingTransport(new DesktopNodeCliTransportResponse(
+            409,
+            "application/json",
+            "{\"ok\":false,\"operation\":\"job.reconcile\",\"error\":{\"code\":\"PCV_JOB_RECONCILIATION_REQUIRED\",\"message\":\"Job requires operator reconciliation.\",\"recommended_action\":\"Confirm whether the mutation applied.\"}}"));
+
+        var result = await DesktopNodeCliApplication.RunAsync(
+            ["--json", "job", "reconcile", "job-1"],
+            transport,
+            environment: _ => null,
+            defaultProtectedTokenFilePath: MissingDefaultProtectedTokenPath(),
+            cancellationToken: CancellationToken.None);
+
+        Assert.Equal(1, result.ExitCode);
+        using var document = JsonDocument.Parse(result.StandardOutput);
+        Assert.False(document.RootElement.GetProperty("ok").GetBoolean());
+        Assert.Equal("job.reconcile", document.RootElement.GetProperty("operation").GetString());
+        var error = document.RootElement.GetProperty("error");
+        Assert.Equal("PCV_JOB_RECONCILIATION_REQUIRED", error.GetProperty("code").GetString());
+        Assert.Equal("Confirm whether the mutation applied.", error.GetProperty("recommended_action").GetString());
+        Assert.Contains("code=PCV_JOB_RECONCILIATION_REQUIRED", result.StandardError);
+        Assert.Contains("Next action: Confirm whether the mutation applied.", result.StandardError);
+    }
+
+    [Fact]
+    public async Task JsonModeWrapsRootProblemsAndNonJsonBodies()
+    {
+        var rootProblem = await DesktopNodeCliApplication.RunAsync(
+            ["--format", "json", "host", "status"],
+            new RecordingTransport(new DesktopNodeCliTransportResponse(
+                504,
+                "application/problem+json",
+                "{\"code\":\"PCV_ROUTE_TIMEOUT\",\"message\":\"Route timed out.\"}")),
+            environment: _ => null,
+            defaultProtectedTokenFilePath: MissingDefaultProtectedTokenPath(),
+            cancellationToken: CancellationToken.None);
+        var nonJson = await DesktopNodeCliApplication.RunAsync(
+            ["--json", "host", "status"],
+            new RecordingTransport(new DesktopNodeCliTransportResponse(502, "text/plain", "bad gateway")),
+            environment: _ => null,
+            defaultProtectedTokenFilePath: MissingDefaultProtectedTokenPath(),
+            cancellationToken: CancellationToken.None);
+
+        using var root = JsonDocument.Parse(rootProblem.StandardOutput);
+        Assert.Equal(DesktopNodeCliErrorJson.Operation, root.RootElement.GetProperty("operation").GetString());
+        Assert.Equal("PCV_ROUTE_TIMEOUT", root.RootElement.GetProperty("error").GetProperty("code").GetString());
+        using var plain = JsonDocument.Parse(nonJson.StandardOutput);
+        Assert.Equal("PCV_CLI_HTTP_502", plain.RootElement.GetProperty("error").GetProperty("code").GetString());
+        Assert.Equal("bad gateway", plain.RootElement.GetProperty("error").GetProperty("message").GetString());
+    }
+
+    [Fact]
+    public async Task JsonModeReportsClientSideFailuresAsJson()
+    {
+        var argument = await DesktopNodeCliApplication.RunAsync(
+            ["--json", "no-such-command"],
+            new RecordingTransport(new DesktopNodeCliTransportResponse(200, "application/json", "{}")),
+            environment: _ => null,
+            defaultProtectedTokenFilePath: MissingDefaultProtectedTokenPath(),
+            cancellationToken: CancellationToken.None);
+        var transportFailure = await DesktopNodeCliApplication.RunAsync(
+            ["--json", "host", "status"],
+            new ThrowingTransport(),
+            environment: _ => null,
+            defaultProtectedTokenFilePath: MissingDefaultProtectedTokenPath(),
+            cancellationToken: CancellationToken.None);
+
+        Assert.Equal(2, argument.ExitCode);
+        using var argumentJson = JsonDocument.Parse(argument.StandardOutput);
+        Assert.StartsWith("PCV_CLI_", argumentJson.RootElement.GetProperty("error").GetProperty("code").GetString(), StringComparison.Ordinal);
+        Assert.Equal(1, transportFailure.ExitCode);
+        using var transportJson = JsonDocument.Parse(transportFailure.StandardOutput);
+        Assert.Equal("PCV_CLI_TRANSPORT_ERROR", transportJson.RootElement.GetProperty("error").GetProperty("code").GetString());
+        Assert.Contains("connection refused", transportJson.RootElement.GetProperty("error").GetProperty("message").GetString(), StringComparison.Ordinal);
+        Assert.StartsWith("PCV_CLI_TRANSPORT_ERROR|", transportFailure.StandardError, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task TableModeKeepsErrorsOffStandardOutput()
+    {
+        var result = await DesktopNodeCliApplication.RunAsync(
+            ["host", "status"],
+            new RecordingTransport(new DesktopNodeCliTransportResponse(504, "application/problem+json", "{\"code\":\"PCV_ROUTE_TIMEOUT\"}")),
+            environment: _ => null,
+            defaultProtectedTokenFilePath: MissingDefaultProtectedTokenPath(),
+            cancellationToken: CancellationToken.None);
+
+        Assert.Equal(1, result.ExitCode);
+        Assert.Empty(result.StandardOutput);
+        Assert.Contains("code=PCV_ROUTE_TIMEOUT", result.StandardError);
+    }
+
+    private sealed class ThrowingTransport : IDesktopNodeCliTransport
+    {
+        public Task<DesktopNodeCliTransportResponse> SendAsync(
+            DesktopNodeCliRequest request,
+            DesktopNodeCliOptions options,
+            string? bearerToken,
+            CancellationToken cancellationToken) =>
+            throw new HttpRequestException("connection refused");
     }
 
     private static string MissingDefaultProtectedTokenPath()
