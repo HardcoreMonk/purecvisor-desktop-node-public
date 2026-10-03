@@ -95,11 +95,13 @@
 
 ## Task 6: 종료 검증
 
-- [ ] clean HEAD에서 `dotnet test src/DesktopNode.sln` 실패 `0`.
-- [ ] Pester `PcvAdminSmokeEvidenceDocs`와 바뀐 영역 suite.
-- [ ] `npm run test:required --prefix web`.
-- [ ] clean HEAD에서 Required CI 네 shard.
-- [ ] campaign `next_task`를 `null`로 두고 `next_step`을 완료 상태로 고친다.
+- [x] clean HEAD에서 `dotnet test src/DesktopNode.sln` 실패 `0`.
+- [x] Pester `PcvAdminSmokeEvidenceDocs`와 바뀐 영역 suite.
+- [x] `npm run test:required --prefix web`.
+- [x] clean HEAD에서 Required CI 네 shard.
+- [x] campaign `next_task`를 `null`로 두고 `next_step`을 완료 상태로 고친다.
+
+실행 기록(2026-10-03, PR #5 병합분 `origin/main`을 합친 clean HEAD `f89b964`): `dotnet test src/DesktopNode.sln` 실패 `0`(Delivery `750`, Verification `557`, Api `488`, HyperV `245`, Host `216`, Contracts `200`, Cli `179`, Runtime `129`, Service `11`). Pester 네 종 `151/151`. `npm run test:required --prefix web` exit `0`. Release build 뒤 Required CI 네 shard(`dotnet` `39`초, `web` `23`초, `delivery` `5`초, `installer-policy` `3`초) 모두 `ok=true`, `plan_only=false`. artifact root는 repo `artifacts/` 아래여야 한다(사용자 profile 아래는 `artifact-root-invalid:user-profile`). 실행 전후 working tree clean.
 
 ## 계획 밖 (승인 필요)
 
