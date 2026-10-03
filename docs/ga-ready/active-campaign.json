@@ -11,7 +11,7 @@
   ],
   "mutation_allowed": false,
   "current_write_allowed": false,
-  "next_step": "Run Task 1 (Ubuntu 26 runner probe and decision) from docs/superpowers/plans/2026-10-03-purecvisor-desktop-node-post-04286-backlog.md, then Tasks 2-6 in order.",
+  "next_step": "Run Task 2 (same-version rebuild preflight C) from docs/superpowers/plans/2026-10-03-purecvisor-desktop-node-post-04286-backlog.md, then Tasks 3-6 in order. Task 1 kept ubuntu-latest after the Ubuntu 26 probe passed.",
   "plan": "docs/superpowers/plans/2026-10-03-purecvisor-desktop-node-post-04286-backlog.md",
   "task_queue": [
     "Task 1",
@@ -21,8 +21,10 @@
     "Task 5",
     "Task 6"
   ],
-  "next_task": "Task 1",
-  "completed_tasks": [],
+  "next_task": "Task 2",
+  "completed_tasks": [
+    "Task 1"
+  ],
   "commit_policy": "local-commit-per-task",
   "push_allowed": true,
   "checkpoint_limit": 6,

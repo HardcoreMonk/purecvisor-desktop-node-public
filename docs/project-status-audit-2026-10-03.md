@@ -214,3 +214,19 @@ Get-Service PureCVisorDesktopNode
 - `docs/superpowers/specs/2026-09-27-purecvisor-desktop-node-same-version-rebuild-installer-design.md`
 - `docs/FEATURE_IMPLEMENTATION_LEDGER.md`
 - `packaging/windows-desktop-node/tests/fixtures/module-size-ratchet.json`
+
+## 12. Ubuntu 26 runner probe (backlog Task 1)
+
+2026-10-03에 probe branch `probe/ubuntu-26-runner-20261003`(`60b44e3`, 병합하지 않음)에서
+`public-boundary.yml`과 `development-gates.yml` web job의 `runs-on`만 `ubuntu-26.04`로 바꾸고
+image 확인 step을 더해 돌렸다. 확인 뒤 probe branch는 원격과 로컬에서 지웠다.
+
+| workflow / job | run / job | runner image | 결과 |
+| --- | --- | --- | --- |
+| Public Boundary `public-boundary-ci-required` | `37101948685` / `111143061935` | Ubuntu `26.04.1 LTS`, ImageVersion `20260927.149.1`, `pwsh` `7.6.6` | success, Pester `90/90` |
+| Development Gates `web` | `37101948686` / `111143061898` | 같은 image | success |
+| Development Gates `dotnet`, `delivery`, `installer-policy` | 같은 run | `windows-latest` (바꾸지 않음) | failure. 원인은 workflow 파일 변경 자체다: `workflow-active-shell`(probe step의 `shell: bash`), orchestration `source-sha`, `policy-boundaries`. image와 무관하다 |
+
+결정: `ubuntu-latest`를 유지한다. 2026-10-19 이동 뒤에도 web job과 Public Boundary job은 같은
+toolchain으로 통과할 것으로 본다. workflow는 바꾸지 않았다. 이동 뒤 첫 `main` run이 실패하면
+그때 `ubuntu-24.04` pin을 다시 판단한다.

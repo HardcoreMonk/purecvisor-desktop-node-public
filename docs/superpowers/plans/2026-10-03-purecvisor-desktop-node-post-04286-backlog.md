@@ -34,12 +34,14 @@
 
 **수정:** probe branch `probe/ubuntu-26-runner-20261003`(병합하지 않음), 결정 기록은 `docs/project-status-audit-2026-10-03.md` 후속 절
 
-- [ ] `origin/main`에서 probe branch를 만들고, `public-boundary.yml`과 `development-gates.yml` web job의 `runs-on`을 `ubuntu-26.04`로 바꾸며 push trigger에 probe branch를 더한다.
-- [ ] push 뒤 두 workflow run의 결과, runner image 버전, `pwsh` 버전을 기록한다.
-- [ ] 둘 다 통과하면 `ubuntu-latest`를 유지한다. 실패하면 원인에 따라 이 backlog branch에서 `ubuntu-24.04` pin 또는 `pwsh` 설치 step을 넣는다(`development-gates.yml`은 검증 정책 영향을 같이 본다).
-- [ ] probe branch를 원격과 로컬에서 지운다.
+- [x] `origin/main`에서 probe branch를 만들고, `public-boundary.yml`과 `development-gates.yml` web job의 `runs-on`을 `ubuntu-26.04`로 바꾸며 push trigger에 probe branch를 더한다.
+- [x] push 뒤 두 workflow run의 결과, runner image 버전, `pwsh` 버전을 기록한다.
+- [x] 둘 다 통과하면 `ubuntu-latest`를 유지한다. 실패하면 원인에 따라 이 backlog branch에서 `ubuntu-24.04` pin 또는 `pwsh` 설치 step을 넣는다(`development-gates.yml`은 검증 정책 영향을 같이 본다).
+- [x] probe branch를 원격과 로컬에서 지운다.
 
 검증: 두 workflow run 결과, `git diff --check`. workflow를 바꾸면 `dotnet test src/DesktopNode.Delivery.Tests`.
+
+실행 기록(2026-10-03): probe `60b44e3`에서 Public Boundary run `37101948685` success(Pester `90/90`), Development Gates web job `111143061898` success. image는 Ubuntu `26.04.1 LTS` `20260927.149.1`, `pwsh` `7.6.6`. Windows shard 세 개는 workflow 파일 변경에 따른 고정 검사(`workflow-active-shell`, `source-sha`, `policy-boundaries`)로 실패했고 image와 무관하다. `ubuntu-latest`를 유지하고 workflow는 바꾸지 않았다. probe branch는 원격과 로컬에서 지웠다. 감사 문서 §12.
 
 ## Task 2: 같은 version 재빌드 preflight (설계 권고 C)
 
