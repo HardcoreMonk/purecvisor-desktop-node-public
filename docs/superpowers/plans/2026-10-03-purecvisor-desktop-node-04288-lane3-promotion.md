@@ -44,8 +44,10 @@
 
 ## Task 3: 종료와 merge
 
-- [ ] clean HEAD에서 `dotnet test src/DesktopNode.sln`, Pester, `npm run test:required --prefix web`, Required CI 네 shard.
-- [ ] campaign을 닫고 push, PR, green CI 뒤 merge.
+- [x] clean HEAD에서 `dotnet test src/DesktopNode.sln`, Pester, `npm run test:required --prefix web`, Required CI 네 shard.
+- [x] campaign을 닫고 push, PR, green CI 뒤 merge.
+
+실행 기록(2026-10-03, clean HEAD `11d4841`): `dotnet test src/DesktopNode.sln` 실패 `0`(Delivery `752`, Verification `557`, Api `488`, HyperV `255`, Host `216`, Contracts `200`, Cli `179`, Runtime `129`, Service `11`). Pester 네 종 `151/151`. `npm run test:required --prefix web` exit `0`. Required CI shard `web`, `delivery`, `installer-policy`는 첫 실행에서 `ok=true`. `dotnet` shard는 첫 실행에서 `127.0.0.1:7666` listener 등록 충돌로 실패했다(직전 솔루션 테스트 프로세스의 연결이 `FIN_WAIT_2`/`CLOSE_WAIT`로 남아 있었다). 다시 실행해 `ok=true`, `plan_only=false`로 통과했다. 이 commit 뒤 PR을 열고 CI green이면 merge한다.
 
 ## Nonclaims
 
