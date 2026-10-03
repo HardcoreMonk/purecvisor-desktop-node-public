@@ -71,7 +71,9 @@ Lane 3 승격은 하지 않는다.
 
 ## Task 2e: MSIX (Lane 2)
 
-- [ ] MSIX lifecycle runner를 `0.42.87 → 0.42.88`로 실행한다.
+- [x] MSIX lifecycle runner를 `0.42.87 → 0.42.88`로 실행한다.
+
+실행 기록(2026-10-03): 세 자리 버전으로 한 번에 PASS(`19`초). pack·sign·verify `0`, install·update·remove 통과, smoke 패키지와 서비스 없음, manifest `0.42.88` 유지. evidence `msix-package-lifecycle-smoke-2026-10-03-04287-04288`.
 
 ## Task 2g: pair descriptor (Lane 2, non-mutating)
 
