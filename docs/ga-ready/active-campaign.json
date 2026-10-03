@@ -12,7 +12,7 @@
   ],
   "mutation_allowed": true,
   "current_write_allowed": false,
-  "next_step": "Run Task 7 (final verification and close) from docs/superpowers/plans/2026-10-03-purecvisor-desktop-node-04287-package-pair.md.",
+  "next_step": "0.42.87 package pair campaign complete (Task 1-7): same-version reinstall option A (AllowSameVersionUpgrades) in Product.wxs; package 0.42.87 (MSI a0041c9f, source 8d940da); six-bucket pair 0.42.86 -> 0.42.87 PASS (descriptor manual-admin-campaign-descriptor-20261003-04286-04287); fullgate full-admin-host-mutation-gate-20261003-04287 PASS starting on the clean 0.42.87 install, which proved the same-version major upgrade (one ARP entry, installed build equal to the gate build 8ade930); installed current-card PASS as installed_non_promoted_candidate; reconcile wording Lane 2 PASS. All commits are on PR #28. No queued task. Next steps need approval: merge PR #28; Lane 3 promotion of 0.42.87-admin-smoke including the current-evidence write.",
   "plan": "docs/superpowers/plans/2026-10-03-purecvisor-desktop-node-04287-package-pair.md",
   "task_queue": [
     "Task 1",
@@ -29,7 +29,7 @@
     "Task 6",
     "Task 7"
   ],
-  "next_task": "Task 7",
+  "next_task": null,
   "completed_tasks": [
     "Task 1",
     "Task 2",
@@ -42,7 +42,8 @@
     "Task 3g",
     "Task 4",
     "Task 5",
-    "Task 6"
+    "Task 6",
+    "Task 7"
   ],
   "commit_policy": "local-commit-per-task",
   "push_allowed": true,
