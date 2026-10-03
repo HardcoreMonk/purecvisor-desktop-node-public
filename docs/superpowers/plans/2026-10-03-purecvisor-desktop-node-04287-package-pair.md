@@ -116,8 +116,10 @@ Lane 3 승격은 하지 않는다.
 
 ## Task 6: reconcile 안내 문구 Lane 2 확인 (Lane 2)
 
-- [ ] 설치본 `0.42.87`에서 비대상 operation job의 reconcile 응답이 "confirm whether the mutation applied"이고 `rename`을 말하지 않음을 확인한다.
-- [ ] probe VM 하나로 `vm.rename` job의 reconcile 응답이 계속 rename을 말하는지 확인한다. probe VM과 디렉터리를 지운다.
+- [x] 설치본 `0.42.87`에서 비대상 operation job의 reconcile 응답이 "confirm whether the mutation applied"이고 `rename`을 말하지 않음을 확인한다.
+- [x] probe VM 하나로 `vm.rename` job의 reconcile 응답이 계속 rename을 말하는지 확인한다. probe VM과 디렉터리를 지운다.
+
+실행 기록(2026-10-03): 설치본 `0.42.87`(`+8ade930`)에서 probe VM을 만들고 rename, export했다. 끝난 `vm.rename` job의 reconcile 안내는 "confirm whether the rename applied", 비대상 `vm.export` job은 "confirm whether the mutation applied"이고 `rename`이 없다. probe 자동 summary는 CLI 오류가 텍스트 형식이라 파싱하지 못해 `FAIL`로 남았고, 원본 응답으로 다시 판정한 `wording-check.json`이 `PASS`다. VM, export 디렉터리, 남은 VM 디렉터리를 지웠다. evidence `lane2-reconcile-wording-actual-vm-2026-10-03-04287`.
 
 ## Task 7: 종료
 
