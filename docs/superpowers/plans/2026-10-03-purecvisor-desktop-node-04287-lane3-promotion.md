@@ -44,8 +44,10 @@
 
 ## Task 3: 종료와 merge
 
-- [ ] clean HEAD에서 `dotnet test src/DesktopNode.sln`, Pester, `npm run test:required --prefix web`, Required CI 네 shard.
-- [ ] campaign을 닫고 push, PR, green CI 뒤 merge.
+- [x] clean HEAD에서 `dotnet test src/DesktopNode.sln`, Pester, `npm run test:required --prefix web`, Required CI 네 shard.
+- [x] campaign을 닫고 push, PR, green CI 뒤 merge.
+
+실행 기록(2026-10-03, clean HEAD `9bb038d`): `dotnet test src/DesktopNode.sln` 실패 `0`(Delivery `752`, Verification `557`, Api `488`, HyperV `245`, Host `216`, Contracts `200`, Cli `179`, Runtime `129`, Service `11`). Pester 네 종 `151/151`. `npm run test:required --prefix web` exit `0`. Release build 뒤 Required CI 네 shard(`dotnet` `39`초, `web` `22`초, `delivery` `5`초, `installer-policy` `3`초) 모두 `ok=true`, `plan_only=false`. 이 commit 뒤 PR을 열고 CI green이면 merge한다.
 
 ## Nonclaims
 
