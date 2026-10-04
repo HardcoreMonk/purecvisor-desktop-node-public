@@ -32,23 +32,33 @@
 
 ## Task 2: orchestrator 재리허설
 
-- [ ] campaign `manual-admin-campaign-20261004-04288-04289-r3b2`로 `-Execute`. `observations.json`에 `observation_error`가 없어야 한다.
+- [x] campaign `manual-admin-campaign-20261004-04288-04289-r3b2`로 `-Execute`. `observations.json`에 `observation_error`가 없어야 한다.
+
+실행 기록(2026-10-04): `-PlanOnly` `ok=true` 뒤 `-Execute`(`11:32:22Z`부터 `256`초). baseline 정렬 뒤 여섯 bucket 모두 PASS, closed descriptor, reservation 소비, restoration 불필요. `observations.json` `16`개 항목 모두 `observation_error` 없음, ARP 목록 있음(fullgate MSI `{FACF6D5F-…}`가 Burn 뒤 clean MSI `{0E27390F-…}`로 바뀐다). 끝난 뒤 설치본은 clean package `0.42.89`(Host `+b463903`), service Running/Auto, 보존 VM Off.
 
 ## Task 3: fullgate 복구
 
-- [ ] `full-admin-host-mutation-gate-20261004-04289-r3b2`.
+- [x] `full-admin-host-mutation-gate-20261004-04289-r3b2`.
+
+실행 기록(2026-10-04): orchestrator가 남긴 clean `0.42.89`(`{0E27390F-…}`) 위에서 `11:37:11Z`부터 약 `463`초, 두 step 모두 exit `0`(service-msi-hyperv `450.912s`). 사후 build commit 검사 `b7fe7b2` 일치, 같은 version ARP `{CE46D250-007C-449F-8C94-6A1C9F3DD752}` 1개, MSI log `0`/`0`, managed delete 정리 관측. fullgate MSI `feb0a3e2`, payload `f7c2bf52`. 설치본 `0.42.89-admin-smoke+b7fe7b2`, firewall rule `0`, 보존 VM Off.
 
 ## Task 4: current-card
 
-- [ ] `installed-operator-surface-current-card-20261004-04289-r3b2`.
+- [x] `installed-operator-surface-current-card-20261004-04289-r3b2`.
+
+실행 기록(2026-10-04): 새 root `artifacts/installed-operator-surface-current-card-20261004-04289-r3b2`에 캡처했다. `status=pass`, 설치본 Host/CLI가 r3b2 fullgate payload와 같음, secret 없음, `not-promoted`. summary SHA `735ed0d2…`.
 
 ## Task 5: facts 생성
 
-- [ ] pair 문서 `9`개를 `pcvverify train-facts`와 `train-evidence --write`로 만든다. 결과는 `artifacts/train-facts-rehearsal-20261004-r3b2/`로 옮기고 0.42.89 facts를 되돌린다.
+- [x] pair 문서 `9`개를 `pcvverify train-facts`와 `train-evidence --write`로 만든다. 결과는 `artifacts/train-facts-rehearsal-20261004-r3b2/`로 옮기고 0.42.89 facts를 되돌린다.
+
+실행 기록(2026-10-04): 첫 실행은 `fact-mismatch:clean-host:state`에서 멈췄다. clean-host 틀이 `base_vhd_source: current-base`를 literal로 두었는데 orchestrator는 `-BaseVhdPath`를 넘겨 runner가 `explicit`을 기록한다. 틀의 그 머리말을 값으로 바꾸고(0.42.89 facts는 `current-base` 값으로 golden 유지), 생성기는 `current-base` 또는 `explicit`을 받아 그대로 쓴다. 다시 돌려 pair 문서 `9/9` 생성(생성 값 `189`, 서술 `7`)과 렌더 `written`. 결과는 `artifacts/train-facts-rehearsal-20261004-r3b2/`로 옮겼고 0.42.89 golden `12/12` `current`. 확인 스크립트의 마지막 `git checkout`이 facts 수정까지 되돌려 백업본으로 복원했다.
 
 ## Task 6: 재리허설 evidence와 merge
 
-- [ ] `train-pair-orchestrator-rehearsal-2026-10-04-04288-04289-r2`, clean HEAD 종료 검증, push, PR, green CI 뒤 merge.
+- [x] `train-pair-orchestrator-rehearsal-2026-10-04-04288-04289-r2`, clean HEAD 종료 검증, push, PR, green CI 뒤 merge.
+
+실행 기록(2026-10-04, clean HEAD `0afa4f0`): evidence `train-pair-orchestrator-rehearsal-2026-10-04-04288-04289-r2`(`PASS`), `DOCUMENTATION_INDEX` 호스트 설치본 줄 `+b7fe7b2`. `dotnet test src/DesktopNode.sln` 실패 `0`(Delivery `763`, Verification `593`). Pester 네 종 `151/151`. `npm run test:required --prefix web` exit `0`. Required CI 네 shard 모두 `ok=true`, `plan_only=false`. 이 기록 commit 뒤 push, PR, green CI 뒤 merge한다.
 
 ## Task 7: 3c 절차 변경 PR
 

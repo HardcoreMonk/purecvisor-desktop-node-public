@@ -31,6 +31,7 @@ public sealed class TrainFactsBuilderTests
         var cleanHost = train.ReadEvidence("clean-host");
         Assert.Contains("-RemoveVmOnFailure", cleanHost, StringComparison.Ordinal);
         Assert.Contains("약 135초", cleanHost, StringComparison.Ordinal);
+        Assert.Contains("base_vhd_source: `explicit`", cleanHost, StringComparison.Ordinal);
         var package = train.ReadEvidence("package");
         Assert.Contains("(항목 구성은 0.42.89 ZIP과 같다).", package, StringComparison.Ordinal);
         var fullgate = train.ReadEvidence("fullgate");
@@ -254,7 +255,7 @@ public sealed class TrainFactsBuilderTests
                 ["install_exit_code"] = 0, ["update_exit_code"] = 0, ["rollback_exit_code"] = 0,
                 ["baseline_manifest_version"] = B, ["updated_manifest_version"] = V, ["final_manifest_version"] = B,
                 ["final_service"] = new { state = "Running", start_mode = "Auto" }, ["final_web_status_code"] = 200,
-                ["failed_root_exists_after_rollback"] = true, ["token_value_observed"] = false, ["base_vhd_source"] = "current-base",
+                ["failed_root_exists_after_rollback"] = true, ["token_value_observed"] = false, ["base_vhd_source"] = "explicit",
                 ["base_vhd_path"] = "D:\\cache\\20348.5622-20260930.vhd", ["base_vhd_ubr"] = 5622, ["vm_switch_name"] = "Default Switch",
                 ["vm_name"] = "pcv-campaign", ["baseline_msi_sha256"] = new string('7', 64), ["update_package_sha256"] = new string('6', 64),
                 ["powershell_direct"] = new { ok = true, attempts = 2 },

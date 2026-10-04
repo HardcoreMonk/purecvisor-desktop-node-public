@@ -162,7 +162,7 @@ internal sealed class TrainFactsBuilder(string repositoryRoot, TrainFactsInput i
         Require(summary.Str("final_service", "state") == "Running" && summary.Str("final_service", "start_mode") == "Auto" &&
             summary.Long("final_web_status_code") == 200, "clean-host", "final-service");
         Require(summary.Bool("failed_root_exists_after_rollback") && !summary.Bool("token_value_observed") &&
-            summary.Str("base_vhd_source") == "current-base" && summary.Bool("powershell_direct", "ok"), "clean-host", "state");
+            summary.Str("base_vhd_source") is "current-base" or "explicit" && summary.Bool("powershell_direct", "ok"), "clean-host", "state");
         var vmName = summary.Str("vm_name");
         Require(!after.ContainsVm(vmName), "clean-host", "vm-removed");
 
@@ -172,6 +172,7 @@ internal sealed class TrainFactsBuilder(string repositoryRoot, TrainFactsInput i
         Add(values, "artifact_root", root);
         Add(values, "summary_sha256", TrainFactsFiles.Sha256(repositoryRoot, summary.RelativePath));
         Add(values, "vm_name", vmName);
+        Add(values, "base_vhd_source", summary.Str("base_vhd_source"));
         Add(values, "base_vhd_file", baseFile);
         Add(values, "baseline_msi_sha256", summary.Str("baseline_msi_sha256"));
         Add(values, "update_package_sha256", summary.Str("update_package_sha256"));
