@@ -24,6 +24,7 @@
   `docs/ga-ready/active-campaign.json`이다. 지금 intent는
   `lane1-continuous-development`다.
 - 설계: `docs/superpowers/specs/2026-09-20-purecvisor-desktop-node-campaign-continuity-design.md`.
+- 러너: `docs/superpowers/specs/2026-10-04-purecvisor-desktop-node-campaign-runner-v2-design.md`(`pcv-campaign-runner-v2`, task 차선, push/PR/merge, campaign 닫기·열기).
 
 ## 2026-09-20 Lane 3 `0.42.77` 승격
 
