@@ -26,8 +26,10 @@
 
 ## Task 2: update ZIP, catalog, package facts 도구
 
-- [ ] `packaging/windows-desktop-node/tools/New-PcvAdminSmokeUpdatePackage.ps1`: package root에서 update ZIP, admin-smoke update catalog, `package-facts.json`(provenance 요약, ZIP SHA와 항목, MSI Upgrade 행과 `RemoveExistingProducts` 순서, Host/CLI ProductVersion)을 만든다. MSI는 읽기 전용으로 연다.
-- [ ] Delivery 계약 시험. 로컬 확인: 0.42.88/0.42.89 package로 임시 출력 root에 만들고, ZIP 항목과 내용 hash가 손으로 만든 ZIP과 같은지, orchestrator `-PlanOnly`가 두 catalog를 받아들이는지 본다.
+- [x] `packaging/windows-desktop-node/tools/New-PcvAdminSmokeUpdatePackage.ps1`: package root에서 update ZIP, admin-smoke update catalog, `package-facts.json`(provenance 요약, ZIP SHA와 항목, MSI Upgrade 행과 `RemoveExistingProducts` 순서, Host/CLI ProductVersion)을 만든다. MSI는 읽기 전용으로 연다.
+- [x] Delivery 계약 시험. 로컬 확인: 0.42.88/0.42.89 package로 임시 출력 root에 만들고, ZIP 항목과 내용 hash가 손으로 만든 ZIP과 같은지, orchestrator `-PlanOnly`가 두 catalog를 받아들이는지 본다.
+
+실행 기록(2026-10-04): `New-PcvAdminSmokeUpdatePackage.ps1`를 더했다. MSI는 Windows Installer automation으로 읽기 전용(open mode `0`) 연다. automation은 PowerShell이 감싼 인자와 빈 인자 배열을 `DISP_E_TYPEMISMATCH`로 거부해서, 기본 객체나 null로 넘긴다. 0.42.88과 0.42.89 package로 `artifacts/update-package-check-20261004/`에 만든 ZIP은 손으로 만든 ZIP과 항목 이름, 압축 방식, 내용 hash가 모두 같다. Upgrade 행(`VersionMax` 포함 `513`, `VersionMin` `2`)과 `RemoveExistingProducts` `1401`도 같다. orchestrator `-PlanOnly`가 두 catalog를 받아들였다(`ok=true`, host mutation 없음). Delivery 계약 시험 `PcvAdminSmokeUpdatePackageContractTests` `3`개 통과(Delivery `761`).
 
 ## Task 3: orchestrator 관측 기록
 
