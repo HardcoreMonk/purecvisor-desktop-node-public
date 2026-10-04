@@ -1,0 +1,42 @@
+# Functional correctness actual-host validation {{date}} `{{display_version}}` (carry-forward)
+
+evidence_id: `{{evidence_id}}`
+result: `PASS`
+evidence_scope: `internal-admin-smoke-only`
+version: `{{version}}`
+carry_forward_from: `docs/ga-ready/evidence/functional-correctness-actual-host-validation-2026-08-27-04275.md`
+carry_forward_chain: `{{carry_forward_chain}}`
+artifact_summary: `artifacts/functional-correctness-carryforward-20260827-04275/summary.json`
+summary_sha256: `a907535a5868d0e9a16095f2cf933dc2a8348a947d09af7537e038af4cf16ed5`
+host_mutation_performed: `false`
+canonical_current_evidence: `{{canonical_current_evidence}}`
+canonical_current_changed: `true`
+public_trusted_signing: `not-claimed`
+external_stable_publication: `not-claimed`
+
+## 판정
+
+{{judgment_intro}}
+
+| 근거 | 값 |
+| --- | --- |
+| predecessor functional | `0.42.75` PASS (`functional-correctness-actual-host-validation-2026-08-27-04275`) |
+{{previous_row}}
+{{fullgate_row}}
+{{card_row}}
+| feature evidence ledger | candidate `4`개(`pcv.checkpoint.restore`, `pcv.vm.managed-import`, `pcv.vm.media-attach`, `pcv.vm.saved-lifecycle`)는 `0.42.75` actual-VM PASS다 |
+{{payload_change_row}}
+
+{{change_context}}
+
+| 변경 | commit | 근거 |
+| --- | --- | --- |
+{{change_row}}
+
+{{change_note}}
+
+## Nonclaims
+
+- 이 문서는 actual-host functional suite를 다시 돌린 evidence가 아니다.
+- 이 문서를 쓰는 동안 호스트 설치본을 바꾸는 mutation을 하지 않았다.
+- public trusted signing과 external stable publication을 주장하지 않는다.

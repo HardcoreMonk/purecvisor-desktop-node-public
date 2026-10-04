@@ -1,0 +1,57 @@
+# Burn bootstrapper lifecycle smoke `{{version}}` ({{date}})
+
+evidence_id: `{{evidence_id}}`
+result: `PASS`
+evidence_scope: `internal-admin-smoke-only`
+artifact_root: `{{artifact_root}}`
+preupdate_root: `{{preupdate_root}}`
+bundle: `{{bundle}}`
+bundle_sha256: `{{bundle_sha256}}`
+bundle_bytes: `{{bundle_bytes}}`
+runner: `packaging/windows-desktop-node/tools/Invoke-PcvBurnBootstrapperLifecycle.ps1`
+summary_sha256: `{{summary_sha256}}`
+wix_version: `{{wix_version}}`
+signing_mode: `AllowUnsignedDev`
+host_mutation_performed: `true`
+canonical_current_evidence: `{{canonical_current_evidence}}`
+canonical_current_changed: `false`
+public_trusted_signing: `not-claimed`
+external_stable_publication: `not-claimed`
+
+## 실행
+
+{{context}}
+
+```text
+-ArtifactRoot {{artifact_root}}
+-TargetMsiPath {{target_msi_path}}
+-TargetVersion {{version}} -WixPath <user>/.dotnet/tools/wix.exe
+-ProductHelperPath packaging/windows-desktop-node/Invoke-PcvDesktopNodeProduct.ps1 -Execute
+```
+
+| 단계 | exit |
+| --- | --- |
+| bundle build | `0` |
+| `/install /quiet /norestart` | `0` |
+| `/repair /quiet /norestart` | `0` |
+| `/uninstall /quiet /norestart` | `0` |
+| target MSI 복구 | `0` |
+
+lifecycle summary는 `ok=true`, `status=PASS`, `restoration_status=PASS`다.
+
+## 최종 상태
+
+| 항목 | 값 |
+| --- | --- |
+| ARP `PureCVisor Desktop Node` | {{arp_entry}} |
+| product manifest | `{{version}}` |
+| `DesktopNode.Host.exe` ProductVersion | `{{installed_product_version}}` |
+| service | Running / Automatic |
+| Web Console | HTTP `200` |
+| VM | `pcv-guest-installed-04253-r1` Off |
+
+## Nonclaims
+
+- Burn bundle은 내부 smoke용이며 서명하지 않았다(`AllowUnsignedDev`).
+- operational current는 `{{canonical_current_evidence}}`다.
+- public trusted signing과 external stable publication을 주장하지 않는다.

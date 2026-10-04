@@ -1,0 +1,63 @@
+# Manual-admin campaign consume `{{baseline_version}}` -> `{{version}}`
+
+evidence_id: `{{evidence_id}}`
+result: `PASS`
+evidence_scope: `internal-admin-smoke-only`
+campaign_id: `{{campaign_id}}`
+artifact_root: `{{artifact_root}}`
+consume_manifest: `{{consume_manifest}}`
+consume_manifest_sha256: `{{consume_manifest_sha256}}`
+descriptor_batch_id: `{{descriptor_batch_id}}`
+descriptor_path: `{{descriptor_path}}`
+descriptor_sha256: `{{descriptor_sha256}}`
+descriptor_summary_sha256: `{{descriptor_summary_sha256}}`
+source_descriptor_batch_id: `{{source_descriptor_batch_id}}`
+baseline_version: `{{baseline_version}}`
+target_version: `{{target_version}}`
+release_train: `{{release_train}}`
+approved_target_msi_sha256: `{{approved_target_msi_sha256}}`
+update_package_sha256: `{{update_package_sha256}}`
+host_mutation_performed: `false`
+canonical_current_evidence: `{{canonical_current_evidence}}`
+canonical_current_changed: `true`
+public_trusted_signing: `not-claimed`
+external_stable_publication: `not-claimed`
+
+이 문서는 consume 기록이다. 이미 PASS한 여섯 bucket summary의 JSON을 한 root로 모은 뒤 `New-PcvManualAdminCampaignDescriptor -PlanOnly`를 실행했고, 결과는 `overall_status=pass`다.
+
+{{source_note}}
+
+{{lane3_note}}
+
+## Descriptor consume
+
+| 필드 | 값 |
+| --- | --- |
+| `ok` | `true` |
+| `overall_status` | `pass` |
+| `runner_count` | `6` |
+| `missing_count` | `0` |
+| `not_pass_count` | `0` |
+| `plan_only` | `true` |
+| `actual_execution` | `not-run` |
+| `host_mutation_performed` | `false` |
+
+## PASS Bucket (source)
+
+| Bucket | 결과 | Source root | Consume path |
+| --- | --- | --- | --- |
+{{readiness_row}}
+{{update_rollback_row}}
+{{clean_host_row}}
+{{burn_row}}
+{{msix_row}}
+{{ops_summary_row}}
+
+{{copy_note}}
+
+{{msi_note}}
+
+## Nonclaims
+
+- 이 consume은 host mutation을 하지 않았다.
+- public trusted signing과 external stable publication을 주장하지 않는다.

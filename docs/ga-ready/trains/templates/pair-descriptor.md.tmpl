@@ -1,0 +1,44 @@
+# Manual-admin campaign descriptor `{{baseline_version}}` -> `{{version}}`
+
+evidence_id: `{{evidence_id}}`
+result: `PASS`
+evidence_scope: `internal-admin-smoke-only`
+descriptor_batch_id: `{{descriptor_batch_id}}`
+artifact_root: `{{artifact_root}}`
+descriptor_path: `{{descriptor_path}}`
+descriptor_sha256: `{{descriptor_sha256}}`
+summary_sha256: `{{summary_sha256}}`
+readiness_root: `{{readiness_root}}`
+readiness_summary_sha256: `{{readiness_summary_sha256}}`
+plan_only: `true`
+host_mutation_performed: `false`
+overall_status: `pass`
+missing_count: `0`
+not_pass_count: `0`
+runner_count: `6`
+canonical_current_evidence: `{{canonical_current_evidence}}`
+canonical_current_changed: `false`
+public_trusted_signing: `not-claimed`
+external_stable_publication: `not-claimed`
+
+## 입력
+
+{{context}}
+
+| runner | status | evidence |
+| --- | --- | --- |
+| `manual-admin-readiness` | `pass` | `ready-current-baseline-target-package-pair` |
+| `installed-product-update-rollback` | `pass` | `{{update_rollback_evidence}}` |
+| `clean-host-install-update-rollback` | `pass` | `{{clean_host_evidence}}` |
+| `burn-install-repair-remove` | `pass` | `{{burn_evidence}}` |
+| `msix-build-install-update-remove` | `pass` | `{{msix_evidence}}` |
+| `installed-runtime-ops-summary` | `pass` | `{{ops_summary_evidence}}` |
+
+## 판정
+
+descriptor는 `overall_status=pass`, runner `6/6`, `missing_count=0`, `not_pass_count=0`이다. 이 생성은 로컬 evidence를 읽기만 했다. `release_candidate.next_candidate_version`은 `{{version}}`다. `docs/ga-ready/current-evidence.json`은 `{{canonical_current_evidence}}` 그대로다.
+
+## Nonclaims
+
+- public trusted signing과 external stable publication을 주장하지 않는다.
+- operational current를 `{{version}}`로 올리지 않았다.

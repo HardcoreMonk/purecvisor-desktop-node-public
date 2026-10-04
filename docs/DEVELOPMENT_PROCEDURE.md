@@ -335,6 +335,14 @@ campaign은 이미 받은 승인을 되묻지 않을 뿐, 없는 승인을 만�
   green CI 뒤 merge를 하나씩 적는다. 정차하면 그 승인은 끝난다.
 - Lane 3에서 `current-evidence.json`을 쓰는 commit은 `release-train.json`의 `operational_current`와
   train `status`도 함께 바꾼다.
+- pair, fullgate, current-card, Lane 3 evidence `12`개는 `pcvverify train-evidence`로 렌더한다(설계
+  `docs/superpowers/specs/2026-10-04-purecvisor-desktop-node-train-evidence-render-design.md`). 직전 train의
+  `docs/ga-ready/trains/<version>.evidence-facts.json`을 복사해 문서마다 값을 바꾸고 task마다 `--write`한다.
+  Lane 3는 Lane 3 문서 값과 current-card 승격 값을 넣고 `--write --allow-update <current-card evidence>`한다.
+  Lane 2 probe evidence와 계획 실행 기록은 손으로 쓴다. `TrainEvidenceGoldenTests`가 커밋된 facts 파일마다
+  문서가 렌더 결과와 같은지 본다.
+
+      dotnet run --project src/DesktopNode.Verification -c Release -- train-evidence --facts docs/ga-ready/trains/<version>.evidence-facts.json --check
 
 train campaign의 task 순서:
 
