@@ -1,0 +1,53 @@
+# Internal clean-host install/update/rollback `{{baseline_version}}` -> `{{version}}` ({{date}})
+
+evidence_id: `{{evidence_id}}`
+result: `PASS`
+evidence_scope: `internal-admin-smoke-only`
+artifact_root: `{{artifact_root}}`
+summary_sha256: `{{summary_sha256}}`
+vm_name: `{{vm_name}}`
+base_vhd_source: `current-base`
+base_vhd_file: `{{base_vhd_file}}`
+baseline_msi_sha256: `{{baseline_msi_sha256}}`
+update_package_sha256: `{{update_package_sha256}}`
+host_mutation_performed: `true`
+guest_product_mutation_performed: `true`
+token_value_observed: `false`
+canonical_current_evidence: `{{canonical_current_evidence}}`
+canonical_current_changed: `false`
+public_trusted_signing: `not-claimed`
+external_stable_publication: `not-claimed`
+
+## 실행
+
+{{context}}
+
+```text
+-ArtifactRoot {{artifact_root}}
+-BaselineMsiPath {{baseline_msi_path}}
+-UpdatePackagePath {{update_package_path}}
+-VmName {{vm_name}} -BaselineVersion {{baseline_version}} -TargetVersion {{version}}
+-UpdateChannel admin-smoke -TargetSigningMode AllowUnsignedDev -InstallWindowsUpdates -RemoveVmOnSuccess
+```
+
+base는 `current-base.json`이 골랐다(UBR `{{base_ubr}}`). guest 비밀번호는 runner 기본값을 썼고 기록하지 않았다.
+
+## 결과
+
+| 단계 | 결과 |
+| --- | --- |
+| PowerShell Direct | `ok` (시도 `{{psdirect_attempts}}`) |
+{{windows_update_row}}
+| baseline MSI 설치 | exit `0`, manifest `{{baseline_version}}` |
+| catalog update | exit `0`, manifest `{{version}}` |
+| rollback | exit `0`, manifest `{{baseline_version}}`, service Running/Auto, Web `200` |
+| failed root | 있음(`{{version}}`) |
+| VM 정리 | 삭제됨 |
+| blocker | `none` |
+
+{{host_state_note}}
+
+## Nonclaims
+
+- 전용 clean-host VM 안의 내부 smoke다.
+- public trusted signing과 external stable publication을 주장하지 않는다.

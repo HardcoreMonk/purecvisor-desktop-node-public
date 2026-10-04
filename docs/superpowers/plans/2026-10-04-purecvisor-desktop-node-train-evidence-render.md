@@ -31,8 +31,10 @@
 
 ## Task 3: 틀과 0.42.89 golden
 
-- [ ] 0.42.89 문서 `12`개에서 틀을 만들고 facts 파일을 쓴다.
-- [ ] golden 시험: facts로 렌더한 결과가 커밋된 문서와 byte 단위로 같다. `pcvverify train-evidence --check` 통과.
+- [x] 0.42.89 문서 `12`개에서 틀을 만들고 facts 파일을 쓴다.
+- [x] golden 시험: facts로 렌더한 결과가 커밋된 문서와 byte 단위로 같다. `pcvverify train-evidence --check` 통과.
+
+실행 기록(2026-10-04): 0.42.89 문서 `12`개에서 틀 `docs/ga-ready/trains/templates/*.md.tmpl`과 facts `docs/ga-ready/trains/0.42.89-admin-smoke.evidence-facts.json`(값 `243`개)을 만들었다. 머리말 값은 자리표시자로 자동 변환하고(문서마다 고정 key는 literal), 본문은 train마다 바뀌는 서술 줄을 줄 단위 값으로, 표와 명령의 값을 앞뒤 문맥으로 바꿨다. current-card 틀은 `{{?installed_status}}` 선택 줄로 Lane 3 전후 머리말을 모두 낸다. 틀에 남은 literal 날짜·hash는 token rotation evidence(`2026-08-09`)와 functional carry-forward 기준(04275)뿐이다. golden 시험 `TrainEvidenceGoldenTests` `4`개 통과, `pcvverify train-evidence --check`는 `12/12` `current`.
 
 ## Task 4: 절차 반영과 종료
 

@@ -1,0 +1,60 @@
+# Installed operator surface current-card {{date}} `{{display_version}}`
+
+evidence_id: `{{evidence_id}}`
+result: `PASS`
+evidence_scope: `internal-admin-smoke-only`
+version: `{{version}}`
+installed_manifest_version: `{{installed_manifest_version}}`
+installed_product_version: `{{installed_product_version}}`
+operator_surfaces: `web,cli`
+tui_present: `false`
+artifact_root: `{{artifact_root}}`
+artifact_summary: `{{artifact_summary}}`
+summary_sha256: `{{summary_sha256}}`
+capture_script: `{{capture_script}}`
+capture_script_sha256: `{{capture_script_sha256}}`
+fullgate_batch: `{{fullgate_batch}}`
+clean_package_msi_sha256: `{{clean_package_msi_sha256}}`
+operational_fullgate_msi_sha256: `{{operational_fullgate_msi_sha256}}`
+clean_package_payload_aggregate_sha256: `{{clean_package_payload_aggregate_sha256}}`
+operational_fullgate_payload_aggregate_sha256: `{{operational_fullgate_payload_aggregate_sha256}}`
+provenance_commit: `{{provenance_commit}}`
+cli_exit_zero_count: `{{cli_exit_zero_count}}`
+web_http_200_count: `{{web_http_200_count}}`
+service_state: `{{service_state}}`
+service_start_name: `LocalSystem`
+service_uses_credential_manager: `true`
+service_has_raw_or_protected_token_flag: `false`
+arp_entry_count: `{{arp_entry_count}}`
+arp_display_version: `{{arp_display_version}}`
+remaining_test_vm_count: `{{remaining_test_vm_count}}`
+secret_observed: `false`
+host_mutation_performed: `false`
+latest_manual_admin_package_pair: `{{latest_manual_admin_package_pair}}`
+latest_manual_admin_descriptor: `{{latest_manual_admin_descriptor}}`
+token_rotation_evidence: `docs/ga-ready/evidence/installed-token-rotation-smoke-2026-08-09-04272.md`
+token_rotation_status: `carry-forward-no-token-payload-change-after-04272`
+promotion_ledger_status: `{{promotion_ledger_status}}`
+{{?installed_status}}installed_status: `{{installed_status}}`
+canonical_current_evidence: `{{canonical_current_evidence}}`
+canonical_current_changed: `{{canonical_current_changed}}`
+public_trusted_signing: `not-claimed`
+external_stable_publication: `not-claimed`
+
+## Installed current-card
+
+| surface | readback | result |
+| --- | --- | --- |
+| CLI `host status`, `runtime policy`, `network inventory` | JSON ok, stderr empty, exit `0` (`3/3`) | `PASS` |
+| Web `/`, `/pcv-config.js` | HTTP `200` (`2/2`), token-free | `PASS` |
+| service | `Running/Automatic/LocalSystem`, credential manager target, raw/protected token flag 없음 | `PASS` |
+| TUI | `pcvtui.exe` absent | expected |
+
+{{capture_note}}
+
+{{script_note}}
+
+## Nonclaims
+
+{{promotion_note}}
+- public trusted signing과 external stable publication을 주장하지 않는다.

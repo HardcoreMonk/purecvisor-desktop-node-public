@@ -1,0 +1,88 @@
+# Full admin host mutation gate `{{version}}` ({{date}})
+
+evidence_id: `{{evidence_id}}`
+result: `PASS`
+evidence_scope: `internal-admin-smoke-only`
+version: `{{version}}`
+release_train: `{{release_train}}`
+batch_id: `{{batch_id}}`
+batch_evidence_root: `{{batch_evidence_root}}`
+batch_manifest: `{{batch_manifest}}`
+routeparity_artifact_root: `{{routeparity_artifact_root}}`
+os_mutation_artifact_root: `{{os_mutation_artifact_root}}`
+batch_summary_sha256: `{{batch_summary_sha256}}`
+routeparity_summary_sha256: `{{routeparity_summary_sha256}}`
+os_summary_sha256: `{{os_summary_sha256}}`
+operational_fullgate_msi_sha256: `{{operational_fullgate_msi_sha256}}`
+operational_fullgate_payload_aggregate_sha256: `{{operational_fullgate_payload_aggregate_sha256}}`
+service_host_sha256: `{{service_host_sha256}}`
+cli_sha256: `{{cli_sha256}}`
+product_wrapper_sha256: `{{product_wrapper_sha256}}`
+installed_product_version: `{{installed_product_version}}`
+installed_payload_matches_fullgate_build: `true`
+arp_entry_count_before: `{{arp_entry_count_before}}`
+arp_entry_count_after: `{{arp_entry_count_after}}`
+same_version_major_upgrade_observed: `true`
+managed_delete_storage_cleanup_observed: `true`
+provenance_commit: `{{provenance_commit}}`
+signing_mode: `AllowUnsignedDev`
+iso_path: `{{iso_path}}`
+lan_prefix: `http://[redacted-private-endpoint]:7777/`
+host_mutation_performed: `true`
+canonical_current_evidence: `{{canonical_current_evidence}}`
+canonical_current_changed: `false`
+public_trusted_signing: `excluded`
+external_stable_publication: `not-claimed`
+
+## 사전 상태
+
+{{prestate}}
+
+## 실행 결과
+
+{{run_context}}
+
+| step | result | exit | attempts | duration |
+| --- | --- | ---: | ---: | ---: |
+{{service_step_row}}
+{{os_step_row}}
+
+batch 결과는 `ok=true`, `status=completed`, `executed_steps=2`, `failed_step_id` 없음이다. MSI lifecycle 6 phase(Install, Repair, Uninstall preserve, InstallRemoveData, UninstallRemoveData, final restore Install)가 모두 exit `0`이고 boot time은 바뀌지 않았다.
+
+| 관측 | 값 |
+| --- | --- |
+{{preflight_row}}
+{{install_log_row}}
+| 네 MSI log의 `another client exists` / `Won't Overwrite` | `0` / `0` |
+{{build_check_row}}
+{{arp_check_row}}
+
+## managed delete 디스크 정리 (gate 안 관측)
+
+{{route_vm_context}}
+
+| 필드 | 값 |
+| --- | --- |
+{{configuration_root_row}}
+| `removed_files` | `disk0.vhdx` |
+| `removed_directories` | `Snapshots`, `Virtual Machines`, VM root |
+| `retained` | 없음 |
+
+## 최종 상태
+
+| 항목 | 값 |
+| --- | --- |
+{{final_arp_row}}
+{{final_hash_row}}
+{{final_product_version_row}}
+| service | Running / Automatic |
+| Web Console | HTTP `200` |
+| VM | `pcv-guest-installed-04253-r1` Off만 남음 |
+| `PureCVisor` firewall rule | `0` |
+
+## Nonclaims
+
+- 내부 admin smoke다. MSI는 서명하지 않았다(`AllowUnsignedDev`).
+- operational current는 `{{canonical_current_evidence}}`다.
+- route smoke VM은 OS를 부팅하지 않는 ISO로 만들었다.
+- public trusted signing과 external stable publication을 주장하지 않는다.

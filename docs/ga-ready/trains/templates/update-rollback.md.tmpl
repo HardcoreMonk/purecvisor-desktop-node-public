@@ -1,0 +1,61 @@
+# Installed update/rollback `{{baseline_version}}` -> `{{version}}`
+
+evidence_id: `{{evidence_id}}`
+result: `PASS`
+evidence_scope: `internal-admin-smoke-only`
+artifact_root: `{{artifact_root}}`
+source_payload: `{{source_payload}}`
+target_msi_sha256: `{{target_msi_sha256}}`
+target_provenance_commit: `{{target_provenance_commit}}`
+update_summary_sha256: `{{update_summary_sha256}}`
+rollback_summary_sha256: `{{rollback_summary_sha256}}`
+signing_mode: `AllowUnsignedDev`
+host_mutation_performed: `true`
+canonical_current_evidence: `{{canonical_current_evidence}}`
+canonical_current_changed: `false`
+public_trusted_signing: `not-claimed`
+external_stable_publication: `not-claimed`
+
+## 사전 상태
+
+{{prestate}}
+
+## Update
+
+```text
+command: Invoke-PcvDesktopNodeProduct.ps1 -Action Update -SourceRoot {{source_payload}} -Version {{version}} -TimeoutSec 180
+exit: 0
+ok: true
+executed: {{update_steps}} steps
+manifest_after_update: {{version}}
+host_after_update: {{host_after_update}}
+service_after_update: Running
+web_after_update: 200
+```
+
+## Rollback
+
+```text
+command: Invoke-PcvDesktopNodeProduct.ps1 -Action Rollback -TimeoutSec 180
+exit: 0
+ok: true
+executed: {{rollback_steps}} steps
+```
+
+## 최종 상태
+
+| 항목 | 값 |
+| --- | --- |
+| product manifest | `{{baseline_version}}` |
+| `DesktopNode.Host.exe` ProductVersion | `{{final_host_product_version}}` |
+| `DesktopNode.failed` | `{{version}}` |
+| `DesktopNode.previous` | 없음 |
+| service | Running / Automatic |
+| Web Console | HTTP `200` |
+| VM | Off 유지 |
+| 재부팅 | 없음 |
+
+## Nonclaims
+
+- operational current는 `{{canonical_current_evidence}}`다.
+- public trusted signing과 external stable publication을 주장하지 않는다.

@@ -1,0 +1,61 @@
+# Admin smoke package `{{version}}` ({{date}})
+
+evidence_id: `{{evidence_id}}`
+result: `PASS`
+evidence_scope: `internal-admin-smoke-only`
+version: `{{version}}`
+source_commit: `{{source_commit}}`
+release_train: `{{release_train}}`
+train_carriages: {{train_carriages}}
+artifact_root: `{{artifact_root}}`
+signing_mode: `AllowUnsignedDev`
+signing_trust_model: `LocalTest`
+clean_package_msi_sha256: `{{clean_package_msi_sha256}}`
+clean_package_payload_aggregate_sha256: `{{clean_package_payload_aggregate_sha256}}`
+product_wrapper_sha256: `{{product_wrapper_sha256}}`
+service_host_sha256: `{{service_host_sha256}}`
+cli_sha256: `{{cli_sha256}}`
+update_zip_sha256: `{{update_zip_sha256}}`
+payload_file_count: `{{payload_file_count}}`
+wix_version: `{{wix_version}}`
+build_utc: `{{build_utc}}`
+host_mutation_performed: `false`
+package_installed: `false`
+canonical_current_evidence: `{{canonical_current_evidence}}`
+canonical_current_changed: `false`
+public_trusted_signing: `not-claimed`
+external_stable_publication: `not-claimed`
+
+## 배경
+
+{{background}}
+
+빌드 중 설치, 서비스 교체, Hyper-V 변경은 하지 않았다.
+
+```powershell
+packaging/windows-desktop-node/installer/build.ps1 -Version {{version}} -MsiProductVersion {{msi_product_version}} `
+  -SigningMode AllowUnsignedDev -SigningTrustModel LocalTest -OutputRoot {{artifact_root}}
+```
+
+update ZIP은 payload {{payload_file_count}}개 파일을 root에 두고 deflate와 `/` 구분자로 직접 만들었다(항목 구성은 {{previous_display_version}} ZIP과 같다).
+
+## 빌드 결과
+
+| 항목 | 결과 |
+| --- | --- |
+| self-contained `DesktopNode.Host.exe` publish | `PASS`, ProductVersion `{{host_product_version}}` |
+| self-contained `pcvcli.exe` publish | `PASS`, ProductVersion가 Host와 같다 |
+| MSI build (WiX 5.0.2) | `PASS` (exit `0`, `{{build_seconds}}`초) |
+| provenance commit | `{{source_commit}}` (HEAD와 같음) |
+| product-manifest version | `{{version}}` |
+| MSI Upgrade 행 | `VersionMax={{msi_product_version}}` 포함(Attributes `513`), `RemoveExistingProducts` `1401` |
+| TUI payload | 없음 |
+
+## 아직 하지 않은 검증
+
+pair, fullgate, current-card, {{lane2_probes}} Lane 2 probe, current-evidence 쓰기는 `not-run`이다.
+
+## Nonclaims
+
+- operational current는 `{{canonical_current_evidence}}`다. 이 패키지는 `package_candidate`다.
+- public trusted signing과 external stable publication을 주장하지 않는다.

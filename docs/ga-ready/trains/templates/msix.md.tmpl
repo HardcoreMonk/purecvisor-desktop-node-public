@@ -1,0 +1,49 @@
+# MSIX package lifecycle smoke `{{baseline_display_version}}` -> `{{display_version}}` ({{date}})
+
+evidence_id: `{{evidence_id}}`
+result: `PASS`
+evidence_scope: `internal-admin-smoke-only`
+artifact_root: `{{artifact_root}}`
+summary_sha256: `{{summary_sha256}}`
+baseline_msix_sha256: `{{baseline_msix_sha256}}`
+baseline_msix_bytes: `{{baseline_msix_bytes}}`
+target_msix_sha256: `{{target_msix_sha256}}`
+target_msix_bytes: `{{target_msix_bytes}}`
+package_identity: `PureCVisor.DesktopNode.MsixSmoke`
+smoke_service: `PureCVisorDesktopNodeMsixSmoke`
+signer_thumbprint: `{{signer_thumbprint}}`
+signing_trust_model: `internal-root-leaf`
+runner: `packaging/windows-desktop-node/tools/Invoke-PcvMsixPackageLifecycleSmoke.ps1`
+template_layout: `packaging/windows-desktop-node/msix/template-layout`
+host_mutation_performed: `true`
+canonical_current_evidence: `{{canonical_current_evidence}}`
+canonical_current_changed: `false`
+public_trusted_signing: `not-claimed`
+external_stable_publication: `not-claimed`
+
+## 실행
+
+{{context}}
+
+{{baseline_line}}
+{{target_line}}
+
+| 단계 | exit / 상태 |
+| --- | --- |
+| pack / sign / verify baseline | `0` / `0` / `0` |
+| pack / sign / verify target | `0` / `0` / `0` |
+| install `{{baseline_display_version}}.0` | 통과 |
+| update `{{display_version}}.0` | 통과 |
+| remove | `PASS` (cleanup probe `PASS`, final absence probe `PASS`) |
+
+{{summary_note}}
+
+## 최종 상태
+
+smoke package와 `PureCVisorDesktopNodeMsixSmoke` 없음. MSI 서비스 `PureCVisorDesktopNode` Running/Automatic, product manifest `{{version}}`(변경 없음).
+
+## Nonclaims
+
+- 내부 root-leaf 서명이다. public trusted signing이 아니다.
+- operational current는 `{{canonical_current_evidence}}`다.
+- external stable publication을 주장하지 않는다.
