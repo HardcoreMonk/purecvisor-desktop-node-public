@@ -13,7 +13,7 @@
   ],
   "mutation_allowed": true,
   "current_write_allowed": true,
-  "next_step": "Run Task 2b from docs/superpowers/plans/2026-10-04-purecvisor-desktop-node-train-04289.md, then the queue in order.",
+  "next_step": "Run Task 2c from docs/superpowers/plans/2026-10-04-purecvisor-desktop-node-train-04289.md, then the queue in order.",
   "plan": "docs/superpowers/plans/2026-10-04-purecvisor-desktop-node-train-04289.md",
   "task_queue": [
     "Task 0",
@@ -32,12 +32,13 @@
     "Task 7",
     "Task 8"
   ],
-  "next_task": "Task 2b",
+  "next_task": "Task 2c",
   "completed_tasks": [
     "Task 0",
     "Task 1",
     "Task 2a",
-    "Task 2f"
+    "Task 2f",
+    "Task 2b"
   ],
   "commit_policy": "local-commit-per-task",
   "push_allowed": true,

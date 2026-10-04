@@ -48,7 +48,7 @@
 
 - [x] 2a readiness `-PlanOnly`(baseline `0.42.88`, clean package `admin-smoke-package-20261003-04288`).
 - [x] 2f ops summary(baseline 설치 상태).
-- [ ] 2b 설치본 Update와 Rollback.
+- [x] 2b 설치본 Update와 Rollback.
 - [ ] 2c clean-host(baseline `0.42.88` clean MSI, target update ZIP).
 - [ ] 2d Burn(제품 Update로 target에 맞추고 15초 뒤).
 - [ ] 2e MSIX(`0.42.88 → 0.42.89`).
@@ -57,6 +57,8 @@
 실행 기록 2a(2026-10-04): 설치본이 baseline `0.42.88`(fullgate build `+47ff198`)이라 설치 변경 없이 실행했다. campaign `manual-admin-campaign-20261004-04288-04289`, `ok=true`, `ready-current-baseline-target-package-pair`, 설치본 일치, baseline MSI `81ef8527…`, target MSI `e4574861…`, host mutation 없음. summary SHA `489958e1…`.
 
 실행 기록 2f(2026-10-04): CLI exit `0`, `ok=true`, 비인증 `401 PCV_AUTH_REQUIRED`, Web `200`, errors `0`, VM `1`개, token 형태 문자열 `0`개. summary SHA `f9d129f4…`. evidence `installed-runtime-ops-summary-2026-10-04-04288`.
+
+실행 기록 2b(2026-10-04): Update(`11`단계)와 Rollback(`7`단계) 모두 exit `0`, `ok=true`. update 직후 Host `+b463903`, Web `200`. 최종 manifest `0.42.88`, failed `0.42.89`, service Running, 재부팅·VM 변화 없음. evidence `product-update-rollback-2026-10-04-04288-04289`.
 
 ## Task 3: fullgate
 
