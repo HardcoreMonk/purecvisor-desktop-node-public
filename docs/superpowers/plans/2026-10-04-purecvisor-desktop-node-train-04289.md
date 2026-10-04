@@ -82,7 +82,9 @@
 
 ## Task 5.1: Lane 2 probe `cli.json-errors`
 
-- [ ] 설계 §3의 네 항목을 설치본 `pcvcli`로 확인한다.
+- [x] 설계 §3의 네 항목을 설치본 `pcvcli`로 확인한다.
+
+실행 기록(2026-10-04): 설치본 `pcvcli` `+a780928`로 세 case를 실행했다. case 1 exit `1`과 stdout API envelope(`PCV_VM_NOT_FOUND`)과 stderr `code=` 줄, case 2 exit `2`와 `PCV_CLI_USAGE`, case 3 table exit `1`과 빈 stdout, token 형태 `0`개. 11개 check 모두 통과. evidence `lane2-cli-json-errors-2026-10-04-04289`.
 
 ## Task 6: pair evidence PR과 merge
 
