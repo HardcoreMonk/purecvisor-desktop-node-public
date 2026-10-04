@@ -38,7 +38,9 @@
 
 ## Task 3: current-card
 
-- [ ] `installed-operator-surface-current-card-20261004-04289-r3b`(읽기 전용).
+- [x] `installed-operator-surface-current-card-20261004-04289-r3b`(읽기 전용).
+
+실행 기록(2026-10-04): 0.42.89 current-card 스크립트에서 root, evidence id, fullgate batch, 기대 SHA 상수, `canonical_current_evidence`(`0.42.89-admin-smoke`)를 바꿔 새 root `artifacts/installed-operator-surface-current-card-20261004-04289-r3b`에 캡처했다. `status=pass`, CLI `3/3`, Web `2/2`, 설치본 Host/CLI가 r3b fullgate payload와 같음, 테스트 VM `0`, secret 없음, `not-promoted`. summary SHA `d42d97fc…`. 0.42.89 card artifact는 바꾸지 않았다.
 
 ## Task 4: facts 생성 확인
 
