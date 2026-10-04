@@ -56,7 +56,9 @@
 
 ## Task 6: 재리허설 evidence와 merge
 
-- [ ] `train-pair-orchestrator-rehearsal-2026-10-04-04288-04289-r2`, clean HEAD 종료 검증, push, PR, green CI 뒤 merge.
+- [x] `train-pair-orchestrator-rehearsal-2026-10-04-04288-04289-r2`, clean HEAD 종료 검증, push, PR, green CI 뒤 merge.
+
+실행 기록(2026-10-04, clean HEAD `0afa4f0`): evidence `train-pair-orchestrator-rehearsal-2026-10-04-04288-04289-r2`(`PASS`), `DOCUMENTATION_INDEX` 호스트 설치본 줄 `+b7fe7b2`. `dotnet test src/DesktopNode.sln` 실패 `0`(Delivery `763`, Verification `593`). Pester 네 종 `151/151`. `npm run test:required --prefix web` exit `0`. Required CI 네 shard 모두 `ok=true`, `plan_only=false`. 이 기록 commit 뒤 push, PR, green CI 뒤 merge한다.
 
 ## Task 7: 3c 절차 변경 PR
 
