@@ -113,9 +113,11 @@ campaign을 한 번 연다. 허용된 lane의 `next_step`은 재승인하지 않
 - 기본 제품 개발 campaign intent는 `lane1-continuous-development`다. ledger/install/HEAD
   불일치는 상태가며 Lane 1을 멈추는 이유가 아니다.
 - campaign에 `plan`, `task_queue`, `next_task`가 있으면 캠페인 러너
-  (`docs/superpowers/specs/2026-09-27-purecvisor-desktop-node-campaign-runner-design.md`)를 따른다.
-  task 하나가 Lane 1 checkpoint 하나이고, green이면 `commit_policy`에 따라 로컬 commit한 뒤
-  같은 턴에서 다음 task로 이어 간다.
+  (`docs/superpowers/specs/2026-10-04-purecvisor-desktop-node-campaign-runner-v2-design.md`)를 따른다.
+  task 하나가 그 task 차선(`task_lanes`, 없으면 Lane 1)의 checkpoint 하나이고, green이면
+  `commit_policy`에 따라 로컬 commit한 뒤 같은 턴에서 다음 task로 이어 간다. push/PR은
+  `push_allowed`, merge는 `merge_policy`가 연다. 큐가 끝나면 campaign을 닫고 다음 승인을
+  `next_approval_required`에 적는다.
 
 ## 2. 변경 등급 결정
 

@@ -2,7 +2,7 @@
 
 - Design-ID: `pcv-campaign-runner-v1`
 - 작성일: `2026-09-27`
-- 문서 상태: `implemented-in-docs`
+- 문서 상태: `superseded` (2026-10-04 `pcv-campaign-runner-v2`, `docs/superpowers/specs/2026-10-04-purecvisor-desktop-node-campaign-runner-v2-design.md`)
 - 선행 설계: `pcv-campaign-continuity-procedure-v1` (`docs/superpowers/specs/2026-09-20-purecvisor-desktop-node-campaign-continuity-design.md`)
 - 제품 payload 변경: `false`
 - host/VM/service/package mutation: `false`

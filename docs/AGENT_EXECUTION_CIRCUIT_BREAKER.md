@@ -40,10 +40,13 @@ write, 외부 mutation 또는 하위 에이전트 시작 전에 commentary에 �
   `next_step`으로 적거나 사용자가 이름을 불렀을 때만 연다.
 - 열린 campaign이 없으면 모호한 `재개`는 다음 한 checkpoint이며, 그 checkpoint는 정확히
   한 차선에 속한다.
-- campaign에 `task_queue`가 있으면 캠페인 러너(`pcv-campaign-runner-v1`)가 checkpoint를
-  연쇄한다. checkpoint가 green으로 끝나면 같은 턴에서 새 시작 계약으로 다음 task를 연다.
-  checkpoint마다 예산이 새로 시작하며 같은 checkpoint의 소급 확장이 아니다. 연쇄 상한은
-  campaign `checkpoint_limit`이고, 한도·실패·승인 밖 작업·권한 거부에서 멈춘다.
+- campaign에 `task_queue`가 있으면 캠페인 러너(`pcv-campaign-runner-v2`)가 checkpoint를
+  연쇄한다. task마다 그 차선(`task_lanes`, 없으면 Lane 1)의 예산으로 새 시작 계약을 연다.
+  checkpoint가 green으로 끝나면 같은 턴에서 다음 task를 연다. checkpoint마다 예산이 새로
+  시작하며 같은 checkpoint의 소급 확장이 아니다. 연쇄 상한은 campaign `checkpoint_limit`이고,
+  한도·실패·승인 밖 작업·권한 거부에서 멈춘다. Lane 2/3 task, push/PR, merge는 campaign의
+  `allowed_lanes`, `mutation_allowed`, `current_write_allowed`, `push_allowed`, `merge_policy`가
+  사용자 승인 문장대로 열어 둔 것만 실행한다.
 
 ## 작업 차선
 
