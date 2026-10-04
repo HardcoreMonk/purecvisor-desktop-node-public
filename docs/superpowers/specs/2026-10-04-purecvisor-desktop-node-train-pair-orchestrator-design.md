@@ -81,7 +81,7 @@ Lane 3 spec(`lane3-promotion-docs-spec-<tag>.json`) 생성은 3c 뒤로 둔다. 
 | --- | --- |
 | 3a | Lane 1 구현, commit, PR, merge (2026-10-04 승인, 계획 `docs/superpowers/plans/2026-10-04-purecvisor-desktop-node-train-pair-orchestrator-3a.md`) |
 | 3b | Lane 2 host mutation(위 범위), 리허설 evidence PR과 merge |
-| 3c | 절차 문서 변경 PR과 merge |
+| 3c | 절차 문서 변경 PR과 merge (2026-10-04 PR 개설, merge는 검토 뒤 확인) |
 
 ## 7. Nonclaims
 

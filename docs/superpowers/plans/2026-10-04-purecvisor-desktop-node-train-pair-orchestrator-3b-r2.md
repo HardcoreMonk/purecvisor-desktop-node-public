@@ -62,7 +62,9 @@
 
 ## Task 7: 3c 절차 변경 PR
 
-- [ ] Task 5가 `9/9`이면 `DEVELOPMENT_PROCEDURE.md` §10 train task 2a~2g를 orchestrator 실행, facts 생성, 렌더 task 하나로 바꾸는 PR을 연다. merge하지 않는다.
+- [x] Task 5가 `9/9`이면 `DEVELOPMENT_PROCEDURE.md` §10 train task 2a~2g를 orchestrator 실행, facts 생성, 렌더 task 하나로 바꾸는 PR을 연다. merge하지 않는다.
+
+실행 기록(2026-10-04): Task 5가 `9/9`이어서 `DEVELOPMENT_PROCEDURE.md` §10을 바꿨다. train task 표의 2a~2g를 pair orchestrator task 하나로, task 4에 facts 생성과 렌더를 더했고, orchestrator 실행 방법과 `train-facts` 사람 값 목록을 적었다. release train 설계 §9와 orchestrator 설계 §6도 맞췄다. 이 PR은 검토용으로 열고 merge하지 않는다.
 
 ## Nonclaims
 

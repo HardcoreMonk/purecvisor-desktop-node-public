@@ -346,9 +346,16 @@ campaign은 이미 받은 승인을 되묻지 않을 뿐, 없는 승인을 만�
 
 - train task 1(package)은 build 뒤 `packaging/windows-desktop-node/tools/New-PcvAdminSmokeUpdatePackage.ps1`로 update ZIP,
   admin-smoke update catalog, `package-facts.json`을 만든다. 손으로 ZIP을 만들지 않는다.
-- pair orchestrator(`Invoke-PcvManualAdminPackagePairCampaign.ps1 -Execute`)와 그 결과로 facts를 만드는
-  `pcvverify train-facts`는 3단계 3b 리허설이 PASS할 때까지 train에 쓰지 않는다(설계
-  `docs/superpowers/specs/2026-10-04-purecvisor-desktop-node-train-pair-orchestrator-design.md`). 그때까지 pair는 bucket을 하나씩 돈다.
+- pair는 `packaging/windows-desktop-node/tools/Invoke-PcvManualAdminPackagePairCampaign.ps1`로 한 번에 돈다(설계
+  `docs/superpowers/specs/2026-10-04-purecvisor-desktop-node-train-pair-orchestrator-design.md`, 리허설
+  `train-pair-orchestrator-rehearsal-2026-10-04-04288-04289-r2`). 직전 operational package와 새 package의 update ZIP·catalog를 넘기고
+  `-PlanOnly` 뒤 `-Execute`한다. base VHD는 `current-base.json`이 고른 파일, guest 인증 정보는 clean-host runner 기본값으로 실행 경계에서
+  `PSCredential`을 만들어 넘긴다. orchestrator는 여섯 bucket, closed descriptor, `observations.json`을 campaign root에 남기고 target
+  clean package로 끝난다. 그 뒤 fullgate로 fullgate build를 설치한다.
+- pair·fullgate·current-card evidence의 facts는 `pcvverify train-facts --input <artifacts 아래 pcv-train-facts-input-v1 파일>`로 만든다.
+  사람이 쓰는 값은 package `background`, `train_carriages`, `lane2_probes`(package-facts에 build 시간이 없으면 `build_seconds`),
+  fullgate `run_context`, `vm_summary`, current-card `script_note`다. 그 뒤 `train-evidence --write`로 렌더한다. 틀의 literal과 artifact가
+  다르면 `train-facts`가 실패하므로 그 단계를 정차로 본다.
 
 train campaign의 task 순서:
 
@@ -356,9 +363,9 @@ train campaign의 task 순서:
 | --- | --- |
 | 0 | 출발: `queue` 고정, 계획과 campaign |
 | 1 | package |
-| 2a~2g | readiness, ops summary, update/rollback, clean-host, Burn, MSIX, descriptor |
+| 2 | pair orchestrator `-PlanOnly`와 `-Execute`(readiness, update/rollback, clean-host, Burn, MSIX, runtime ops, closed descriptor) |
 | 3 | fullgate |
-| 4 | installed current-card |
+| 4 | installed current-card, pair·fullgate·current-card facts 생성과 렌더 |
 | 5.n | 적재 변경별 Lane 2 probe |
 | 6 | pair evidence PR과 merge |
 | 7 | Lane 3 evidence, `current-evidence.json`, 승격 문서 도구, `release-train.json` |
