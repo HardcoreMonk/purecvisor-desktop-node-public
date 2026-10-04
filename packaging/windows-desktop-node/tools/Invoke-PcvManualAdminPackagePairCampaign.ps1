@@ -328,7 +328,8 @@ function Add-PcvObservation([string]$Point) {
         $entry.firewall_rule_count = @(Get-NetFirewallRule -DisplayName 'PureCVisor*' -ErrorAction SilentlyContinue).Count
         $entry.vms = @(Get-VM -ErrorAction SilentlyContinue | ForEach-Object { [ordered]@{ name = $_.Name; state = [string]$_.State } })
         $entry.arp = @(Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*', 'HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*' -ErrorAction SilentlyContinue |
-            Where-Object { [string]$_.DisplayName -like '*PureCVisor*' } | ForEach-Object { [ordered]@{ product_code = $_.PSChildName; display_version = [string]$_.DisplayVersion } })
+            Where-Object { $_.PSObject.Properties['DisplayName'] -and [string]$_.DisplayName -like '*PureCVisor*' } |
+            ForEach-Object { [ordered]@{ product_code = $_.PSChildName; display_version = if ($_.PSObject.Properties['DisplayVersion']) { [string]$_.DisplayVersion } else { $null } } })
     } catch {
         $entry.observation_error = $_.Exception.GetType().Name
     }
