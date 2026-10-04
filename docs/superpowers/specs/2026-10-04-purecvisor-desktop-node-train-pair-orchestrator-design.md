@@ -2,7 +2,7 @@
 
 - Design-ID: `pcv-train-pair-orchestrator-v1`
 - 작성일: `2026-10-04`
-- 문서 상태: `proposed` (설계 검토. 구현과 host 실행은 별도 승인)
+- 문서 상태: `accepted` (2026-10-04 사용자 승인 "PR #38 merge, 3a 구현 승인". 3b, 3c는 별도 승인)
 - 변경 등급: L (manual-admin host mutation 실행 경로)
 - 상위 설계: `docs/superpowers/specs/2026-10-04-purecvisor-desktop-node-release-train-design.md` §6, §9 3단계
 - 선행: 2단계 증적 렌더러 `pcv-train-evidence-render-v1` (PR #37, merge `a399c2e`)
@@ -38,8 +38,10 @@ orchestrator를 train의 pair 실행기로 채택한다. 단, 아래 네 가지�
 
 1. update 패키지 도구. `New-PcvAdminSmokeUpdatePackage.ps1`가 package root에서 update ZIP(payload `8`개 파일, deflate, `/` 구분자)과 admin-smoke update catalog를 함께 만든다. catalog는 orchestrator `Assert-PcvCatalog`가 보는 필드(`source_uri` file URI, `version`, `channel`, `release_channel`, `signing_mode=AllowUnsignedDev`, `expected_sha256`)를 쓴다. train task 1(package)이 이 도구를 부른다.
 2. 관측 기록. orchestrator가 bucket마다 앞뒤 host 상태를 `observations.json`에 남긴다. 항목은 product manifest, 설치본 Host ProductVersion, `DesktopNode.previous`/`DesktopNode.failed` version, service 상태와 시작 유형, Web 상태, VM 목록, PureCVisor ARP 항목과 시간이다. token과 guest 비밀번호는 남기지 않는다.
-3. facts 생성기. `New-PcvTrainEvidenceFacts.ps1`가 package provenance와 MSI Upgrade 표, 여섯 bucket summary, `observations.json`, fullgate batch 결과, current-card summary를 읽어 2단계 facts 파일의 pair 문서 값을 채운다. 서술 줄(`context`, `prestate` 등)은 정해진 문장 틀에 값을 넣어 만든다. MSI 표를 읽어야 하므로 PowerShell 쪽(packaging 도구)에 둔다. 결과는 `pcvverify train-evidence --write`로 렌더한다.
-4. orchestrator 의미 차이를 evidence 틀에 반영한다. update/rollback은 Update → Rollback → Update, ops summary는 target 상태 캡처다. 0.42.89 golden을 지키기 위해 기존 틀은 그대로 두고 새 틀 이름(`update-rollback-orchestrated`, `ops-summary-target`)을 더한다.
+3. facts 생성기. `pcvverify train-facts`가 `package-facts.json`, 여섯 bucket summary, `observations.json`, fullgate batch 결과, current-card summary를 읽어 2단계 facts 파일의 pair 문서 값을 채운다. 서술 줄(`context`, `prestate` 등)은 정해진 문장 틀에 값을 넣어 만들고, train마다 사람이 판단하는 서술(적재 변경 요약 등)은 별도 값 파일로 받는다. 결과는 `pcvverify train-evidence --write`로 렌더한다.
+   - 보정(2026-10-04, 3a 착수): 처음 안은 MSI 표 때문에 생성기를 PowerShell에 두었다. MSI Upgrade 표와 `RemoveExistingProducts` 순서는 1번 도구가 package를 만들 때 읽기 전용으로 읽어 `package-facts.json`에 남긴다. 그러면 생성기는 JSON만 읽으므로 C#(`DesktopNode.Verification`)에 두고 Required CI에서 실제로 실행해 시험한다.
+4. orchestrator 의미 차이를 evidence 틀에 반영한다. update/rollback은 Update → Rollback → Update, ops summary는 target 상태 캡처다.
+   - 보정(2026-10-04, 3a 착수): 새 틀 이름 대신 기존 틀을 일반화한다. Burn 사전 Update, runner 인자 블록처럼 실행 방식마다 다른 줄을 값으로 옮기고, 0.42.89 facts에는 옛 literal을 값으로 넣어 golden을 byte 단위로 유지한다.
 
 guest credential은 실행 경계에서 만든다. clean-host runner 기본값을 쓰는 지금 방식과 같은 값을 orchestrator 호출 직전에 `PSCredential`로 만들어 넘기고, 값은 명령줄, summary, evidence에 남기지 않는다.
 
