@@ -86,6 +86,35 @@ public sealed class PcvManualAdminPackagePairCampaignContractTests
         Assert.DoesNotContain("REMOVE_DATA", source, StringComparison.OrdinalIgnoreCase);
     }
 
+    [Fact]
+    public void RecordsHostObservationsAroundEveryBucketWithoutSecrets()
+    {
+        var source = Source();
+
+        RequireTokens(
+            source,
+            "contract = 'pcv-manual-admin-pair-observations-v1'",
+            "$entry.observation_error = $_.Exception.GetType().Name",
+            "$summary.observations_path = $observationsPath");
+        AssertOrdered(
+            source,
+            "if ($PlanOnly) { return [pscustomobject]$summary }",
+            "function Add-PcvObservation([string]$Point) {",
+            "Add-PcvObservation 'start'",
+            "Add-PcvObservation 'after:baseline-alignment'",
+            "Add-PcvObservation \"before:$($bucket.id)\"",
+            "Add-PcvObservation 'after:lifecycle-update'",
+            "Add-PcvObservation 'after:lifecycle-rollback'",
+            "Add-PcvObservation \"after:$($bucket.id)\"",
+            "Add-PcvObservation 'after:restoration'");
+        var start = source.IndexOf("function Add-PcvObservation", StringComparison.Ordinal);
+        var end = source.IndexOf("function Ensure-PcvReservation", StringComparison.Ordinal);
+        var observer = source[start..end];
+        Assert.DoesNotContain("GuestCredential", observer, StringComparison.Ordinal);
+        Assert.DoesNotContain("token", observer, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("pcvcli", observer, StringComparison.OrdinalIgnoreCase);
+    }
+
     private static string Source() =>
         RepositoryContractContext.Find().ReadUtf8Text(Orchestrator);
 

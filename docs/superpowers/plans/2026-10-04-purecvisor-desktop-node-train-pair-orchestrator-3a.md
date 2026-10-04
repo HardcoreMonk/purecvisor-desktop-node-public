@@ -33,7 +33,9 @@
 
 ## Task 3: orchestrator 관측 기록
 
-- [ ] `Invoke-PcvManualAdminPackagePairCampaign.ps1` `-Execute`가 bucket 앞뒤 host 상태를 `observations.json`(`pcv-manual-admin-pair-observations-v1`)에 남긴다. Delivery 계약 시험 갱신.
+- [x] `Invoke-PcvManualAdminPackagePairCampaign.ps1` `-Execute`가 bucket 앞뒤 host 상태를 `observations.json`(`pcv-manual-admin-pair-observations-v1`)에 남긴다. Delivery 계약 시험 갱신.
+
+실행 기록(2026-10-04): orchestrator `-Execute` 경로에 `Add-PcvObservation`을 더했다. 시작, baseline 정렬 뒤, bucket마다 앞뒤, update/rollback bucket의 Update와 Rollback 직후, restoration 뒤에 `observations.json`(`pcv-manual-admin-pair-observations-v1`)을 갱신한다. 항목은 manifest, Host ProductVersion, previous/failed version, service 상태와 시작 유형, Web 상태, VM, PureCVisor ARP다. 관측 실패는 `observation_error`로 남기고 던지지 않는다. 관측 함수만 떼어 실제 호스트에서 읽기 전용으로 돌려 값이 맞고 secret 형태 문자열이 없음을 확인했다. `-PlanOnly`는 관측 전에 끝나며 다시 돌려 `ok=true`, host mutation 없음. Delivery 계약 시험 `1`개 추가(Delivery `762`).
 
 ## Task 4: facts 생성기
 

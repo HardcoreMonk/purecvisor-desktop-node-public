@@ -304,6 +304,35 @@ function Invoke-PcvProduct([hashtable]$Arguments) {
     if (-not $?) { throw 'PCV_MANUAL_ADMIN_PRODUCT_FAILED' }
     try { ($output -join "`n") | ConvertFrom-Json } catch { throw 'PCV_MANUAL_ADMIN_PRODUCT_JSON_INVALID' }
 }
+# Host state around every bucket for the train evidence facts generator (design pcv-train-pair-orchestrator-v1 3a).
+# No token, credential, or guest password is read or written here; a failed probe is recorded, never thrown.
+$observationsPath = Join-Path $root 'observations.json'
+$observations = [ordered]@{ schema_version = 1; contract = 'pcv-manual-admin-pair-observations-v1'; campaign_id = $CampaignId; entries = @() }
+function Get-PcvVersionAt([string]$Path) {
+    if (Test-Path -LiteralPath $Path) { [string](Read-PcvJson $Path).version } else { $null }
+}
+function Add-PcvObservation([string]$Point) {
+    $entry = [ordered]@{ point = $Point; at = [datetimeoffset]::UtcNow.ToString('o') }
+    try {
+        $productRoot = Split-Path -Parent $script:installedManifestFull
+        $entry.manifest_version = Get-PcvVersionAt $script:installedManifestFull
+        $hostExe = Join-Path $productRoot 'DesktopNode.Host.exe'
+        $entry.host_product_version = if (Test-Path -LiteralPath $hostExe) { (Get-Item -LiteralPath $hostExe).VersionInfo.ProductVersion } else { $null }
+        $entry.previous_version = Get-PcvVersionAt (Join-Path "$productRoot.previous" 'product-manifest.json')
+        $entry.failed_version = Get-PcvVersionAt (Join-Path "$productRoot.failed" 'product-manifest.json')
+        $service = Get-CimInstance Win32_Service -Filter "Name='$ServiceName'" -ErrorAction SilentlyContinue
+        $entry.service_state = if ($service) { [string]$service.State } else { 'absent' }
+        $entry.service_start_mode = if ($service) { [string]$service.StartMode } else { $null }
+        $entry.web_status = try { [int](Invoke-WebRequest -Uri 'http://127.0.0.1/' -UseBasicParsing -TimeoutSec 20).StatusCode } catch { 0 }
+        $entry.vms = @(Get-VM -ErrorAction SilentlyContinue | ForEach-Object { [ordered]@{ name = $_.Name; state = [string]$_.State } })
+        $entry.arp = @(Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*', 'HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*' -ErrorAction SilentlyContinue |
+            Where-Object { [string]$_.DisplayName -like '*PureCVisor*' } | ForEach-Object { [ordered]@{ product_code = $_.PSChildName; display_version = [string]$_.DisplayVersion } })
+    } catch {
+        $entry.observation_error = $_.Exception.GetType().Name
+    }
+    $observations.entries += ,$entry
+    Write-PcvJson $observationsPath $observations
+}
 function Ensure-PcvReservation {
     $identity = Get-PcvHostIdentity
     if (Test-Path -LiteralPath $reservationPath) {
@@ -322,18 +351,21 @@ function Ensure-PcvReservation {
 
 $bucketResults = @()
 $stoppedAfter = $null
+Add-PcvObservation 'start'
 try {
     if ($installedVersion -eq $TargetVersion) {
         $mutationStarted = $true
         [void](Invoke-PcvProduct @{ Action = 'Update'; UpdateCatalogUri = $baselineCatalogUri; UpdateChannel = 'admin-smoke' })
         $currentVersion = $BaselineVersion
         [void](Assert-PcvInstalledState $BaselineVersion)
+        Add-PcvObservation 'after:baseline-alignment'
     }
     $hostIdentity = Ensure-PcvReservation
     foreach ($bucket in $bucketDefinitions) {
         $bucketRoot = Split-Path -Parent $bucket.summary_path
         New-Item -ItemType Directory -Force -Path $bucketRoot | Out-Null
         $mutationStarted = $true
+        Add-PcvObservation "before:$($bucket.id)"
         switch ($bucket.id) {
             'manual-admin-rebaseline-readiness' {
                 & $helpers.readiness -ArtifactRoot $bucketRoot -Version $BaselineVersion -BaselineVersion $BaselineVersion -TargetVersion $TargetVersion `
@@ -349,10 +381,12 @@ try {
                 $currentVersion = $TargetVersion; $state = Assert-PcvInstalledState $TargetVersion
                 $updateSummary = [ordered]@{ ok = [bool]$result.ok; action = 'Update'; installed_version = $state.version; service_status = $state.service_status }
                 Write-PcvJson $productUpdateSummaryPath $updateSummary
+                Add-PcvObservation 'after:lifecycle-update'
                 $result = Invoke-PcvProduct @{ Action = 'Rollback' }
                 $currentVersion = $BaselineVersion; $state = Assert-PcvInstalledState $BaselineVersion
                 $rollbackSummary = [ordered]@{ ok = [bool]$result.ok; action = 'Rollback'; installed_version = $state.version; service_status = $state.service_status }
                 Write-PcvJson $productRollbackSummaryPath $rollbackSummary
+                Add-PcvObservation 'after:lifecycle-rollback'
                 $result = Invoke-PcvProduct @{ Action = 'Update'; UpdateCatalogUri = $targetCatalogUri; UpdateChannel = 'admin-smoke' }
                 $currentVersion = $TargetVersion; $state = Assert-PcvInstalledState $TargetVersion
                 $finalSummary = [ordered]@{ ok = [bool]$result.ok; action = 'Update'; installed_version = $state.version; service_status = $state.service_status }
@@ -396,6 +430,7 @@ try {
                 })
             }
         }
+        Add-PcvObservation "after:$($bucket.id)"
         $bucketSummary = Read-PcvJson $bucket.summary_path
         $status = if (Test-PcvExactBucketPass $bucket.id $bucketSummary) { 'PASS' } else { 'FAIL' }
         $bucketResults += ,([ordered]@{ id = $bucket.id; status = $status; summary_path = $bucket.summary_path })
@@ -412,12 +447,14 @@ try {
             [void](Assert-PcvInstalledState $TargetVersion)
             $summary.restoration_status = 'PASS'
         } catch { $summary.restoration_status = 'FAIL' }
+        Add-PcvObservation 'after:restoration'
     }
 }
 
 $allPass = $bucketResults.Count -eq 6 -and @($bucketResults | Where-Object status -ne 'PASS').Count -eq 0
 $summary.bucket_results = $bucketResults; $summary.all_buckets_pass = $allPass; $summary.descriptor_eligible = $allPass
 $summary.ok = $allPass; $summary.host_mutation_performed = $mutationStarted
+$summary.observations_path = $observationsPath
 if ($allPass) {
     $descriptorRoot = Join-Path $root 'manual-admin-campaign-descriptor'
     $productUpdateSummaryPath = Join-Path $root 'lifecycle/product-update-rollback/update-summary.json'
