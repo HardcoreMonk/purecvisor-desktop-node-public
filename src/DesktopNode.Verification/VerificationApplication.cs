@@ -80,6 +80,11 @@ internal sealed class VerificationApplication(
             return TrainEvidenceCommand.Run(args, currentDirectory(), standardOutput);
         }
 
+        if (args.Count > 0 && string.Equals(args[0], TrainFactsCommand.Name, StringComparison.Ordinal))
+        {
+            return TrainFactsCommand.Run(args, currentDirectory(), standardOutput);
+        }
+
         DateTimeOffset? startedAt = null;
         VerificationRequest? request = null;
         VerificationPlan? plan = null;

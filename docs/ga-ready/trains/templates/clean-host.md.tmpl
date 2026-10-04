@@ -27,10 +27,11 @@ external_stable_publication: `not-claimed`
 -BaselineMsiPath {{baseline_msi_path}}
 -UpdatePackagePath {{update_package_path}}
 -VmName {{vm_name}} -BaselineVersion {{baseline_version}} -TargetVersion {{version}}
--UpdateChannel admin-smoke -TargetSigningMode AllowUnsignedDev -InstallWindowsUpdates -RemoveVmOnSuccess
+{{?runner_extra_line}}{{runner_extra_line}}
+{{runner_flags_line}}
 ```
 
-base는 `current-base.json`이 골랐다(UBR `{{base_ubr}}`). guest 비밀번호는 runner 기본값을 썼고 기록하지 않았다.
+{{base_note}}
 
 ## 결과
 

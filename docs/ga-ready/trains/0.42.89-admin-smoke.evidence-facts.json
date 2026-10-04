@@ -24,9 +24,9 @@
         "build_utc": "2026-10-04T02:09:37.6951388Z",
         "canonical_current_evidence": "0.42.88-admin-smoke",
         "background": "release train `0.42.89`의 첫 package다. branch `train/04289-20261004`의 clean HEAD `b463903`(`origin/main` `d6711f3` 위 출발 commit)에서 `0.42.89-admin-smoke`를 만들었다. `0.42.88` build(`ff62e59`) 뒤 product 변경은 train에 실은 PR #34 하나다. `pcvcli --json`이 오류를 stdout에 JSON envelope 하나로 쓴다(stderr와 exit code는 그대로).",
+        "zip_note": "update ZIP은 payload 8개 파일을 root에 두고 deflate와 `/` 구분자로 직접 만들었다(항목 구성은 0.42.88 ZIP과 같다).",
         "date": "2026-10-04",
         "msi_product_version": "0.42.89",
-        "previous_display_version": "0.42.88",
         "host_product_version": "0.42.89-admin-smoke+b463903153a6ffe75b438e673c231e78d4c99909",
         "build_seconds": "38",
         "lane2_probes": "`cli.json-errors`"
@@ -41,7 +41,8 @@
         "summary_sha256": "f9d129f48e089de0b787748102c48680037824bd926c17186c0ff843474c4a2b",
         "canonical_current_evidence": "0.42.88-admin-smoke",
         "context": "release train `0.42.89`의 `0.42.88 -> 0.42.89` pair에서 runtime ops bucket이다. baseline `0.42.88-admin-smoke`(fullgate build `+47ff198`)가 설치된 상태에서 캡처했다.",
-        "baseline_version": "0.42.88-admin-smoke",
+        "capture_note": "설치본 `pcvcli.exe`가 보호된 token 파일로 `ops summary`를 읽었다. 결과는 CLI exit `0`, 응답 `ok=true`, operation `ops.summary`, stderr `0` byte다. token 값은 출력하거나 기록하지 않았고, summary에 token 형태 문자열은 `0`개다.",
+        "installed_version": "0.42.88-admin-smoke",
         "date": "2026-10-04",
         "installed_product_version": "0.42.88-admin-smoke+47ff198de86d77d25aa90fa095a294254c7ffef6",
         "vm_summary": "`1` (`pcv-guest-installed-04253-r1` Off)"
@@ -60,12 +61,18 @@
         "rollback_summary_sha256": "a148b101121d94c048a6bf38275f7799161cb8ede9d7528c195a21df4a41bf7d",
         "canonical_current_evidence": "0.42.88-admin-smoke",
         "prestate": "release train `0.42.89` pair다. 설치본은 baseline `0.42.88-admin-smoke`(fullgate build `+47ff198`)였고 readiness와 같아 재설치하지 않았다. `DesktopNode.previous`는 `0.42.87`, `DesktopNode.failed`는 `0.42.88`(이전 run의 잔여)이었다. service Running/Automatic, 보존 VM Off.",
+        "update_command": "command: Invoke-PcvDesktopNodeProduct.ps1 -Action Update -SourceRoot artifacts/admin-smoke-package-20261004-04289/payload -Version 0.42.89-admin-smoke -TimeoutSec 180",
+        "update_executed": "executed: 11 steps",
+        "rollback_command": "command: Invoke-PcvDesktopNodeProduct.ps1 -Action Rollback -TimeoutSec 180",
+        "rollback_executed": "executed: 7 steps",
         "baseline_version": "0.42.88-admin-smoke",
         "version": "0.42.89-admin-smoke",
-        "update_steps": "11",
         "host_after_update": "0.42.89-admin-smoke+b463903153a6ffe75b438e673c231e78d4c99909",
-        "rollback_steps": "7",
-        "final_host_product_version": "0.42.88-admin-smoke+47ff198de86d77d25aa90fa095a294254c7ffef6"
+        "final_manifest_version": "0.42.88-admin-smoke",
+        "final_host_product_version": "0.42.88-admin-smoke+47ff198de86d77d25aa90fa095a294254c7ffef6",
+        "final_failed_version": "0.42.89-admin-smoke",
+        "final_previous_cell": "없음",
+        "vm_cell": "Off 유지"
       }
     },
     {
@@ -81,6 +88,8 @@
         "update_package_sha256": "b852641609601f77cccf015969e3135212f35562e5dc694dd690fb59ca505f71",
         "canonical_current_evidence": "0.42.88-admin-smoke",
         "context": "release train `0.42.89` pair의 clean-host bucket이다. runner는 `packaging/windows-desktop-node/tools/Invoke-PcvInternalCleanHostInstallUpdateRollbackSmoke.ps1`이고 exit `0`, 약 156초다.",
+        "runner_flags_line": "-UpdateChannel admin-smoke -TargetSigningMode AllowUnsignedDev -InstallWindowsUpdates -RemoveVmOnSuccess",
+        "base_note": "base는 `current-base.json`이 골랐다(UBR `5622`). guest 비밀번호는 runner 기본값을 썼고 기록하지 않았다.",
         "windows_update_row": "| Windows Update | 대상 `0`개, 재부팅 없음 |",
         "host_state_note": "이 호스트의 설치본은 `0.42.88-admin-smoke`로 남았다. 보존 VM `pcv-guest-installed-04253-r1`은 Off다.",
         "baseline_version": "0.42.88-admin-smoke",
@@ -88,7 +97,6 @@
         "date": "2026-10-04",
         "baseline_msi_path": "artifacts/admin-smoke-package-20261003-04288/PureCVisorDesktopNode-0.42.88-admin-smoke-windows-x64.msi",
         "update_package_path": "artifacts/admin-smoke-package-20261004-04289/PureCVisorDesktopNode-0.42.89-admin-smoke-update.zip",
-        "base_ubr": "5622",
         "psdirect_attempts": "2"
       }
     },
@@ -106,11 +114,13 @@
         "wix_version": "5.0.2+aa65968c",
         "canonical_current_evidence": "0.42.88-admin-smoke",
         "context": "release train `0.42.89` pair의 Burn bucket이다. update/rollback 뒤 설치본은 baseline `0.42.88-admin-smoke`였다. Burn prestate는 target과 같아야 하므로 제품 Update로 `0.42.89-admin-smoke`에 맞췄다(`preupdate_root/pre-update.json`, exit `0`, `ok=true`). 15초를 기다린 뒤 `Invoke-PcvBurnBootstrapperLifecycle.ps1 -Execute`를 실행했다(약 `32`초).",
+        "runner_tail_line": "-ProductHelperPath packaging/windows-desktop-node/Invoke-PcvDesktopNodeProduct.ps1 -Execute",
         "version": "0.42.89-admin-smoke",
         "date": "2026-10-04",
         "target_msi_path": "artifacts/admin-smoke-package-20261004-04289/PureCVisorDesktopNode-0.42.89-admin-smoke-windows-x64.msi",
         "arp_entry": "`{0E27390F-5A08-4F76-90FD-7694B41672A4}` `0.42.89` (1개)",
-        "installed_product_version": "0.42.89-admin-smoke+b463903153a6ffe75b438e673c231e78d4c99909"
+        "installed_product_version": "0.42.89-admin-smoke+b463903153a6ffe75b438e673c231e78d4c99909",
+        "vm_summary": "`pcv-guest-installed-04253-r1` Off"
       }
     },
     {
@@ -198,7 +208,8 @@
         "final_arp_row": "| ARP `PureCVisor Desktop Node` | `{CD234EF2-AF9A-4E62-9873-3680A14CD5C1}` `0.42.89` (1개) |",
         "final_hash_row": "| 설치본 Host / CLI SHA-256 | gate build와 같음 (`76043450…` / `de6deffd…`) |",
         "final_product_version_row": "| 설치본 Host ProductVersion | `0.42.89-admin-smoke+a780928…` |",
-        "date": "2026-10-04"
+        "date": "2026-10-04",
+        "vm_summary": "`pcv-guest-installed-04253-r1` Off만 남음"
       }
     },
     {

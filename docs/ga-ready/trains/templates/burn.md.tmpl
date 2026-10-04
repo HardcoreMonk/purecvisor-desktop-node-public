@@ -4,7 +4,7 @@ evidence_id: `{{evidence_id}}`
 result: `PASS`
 evidence_scope: `internal-admin-smoke-only`
 artifact_root: `{{artifact_root}}`
-preupdate_root: `{{preupdate_root}}`
+{{?preupdate_root}}preupdate_root: `{{preupdate_root}}`
 bundle: `{{bundle}}`
 bundle_sha256: `{{bundle_sha256}}`
 bundle_bytes: `{{bundle_bytes}}`
@@ -26,7 +26,7 @@ external_stable_publication: `not-claimed`
 -ArtifactRoot {{artifact_root}}
 -TargetMsiPath {{target_msi_path}}
 -TargetVersion {{version}} -WixPath <user>/.dotnet/tools/wix.exe
--ProductHelperPath packaging/windows-desktop-node/Invoke-PcvDesktopNodeProduct.ps1 -Execute
+{{runner_tail_line}}
 ```
 
 | 단계 | exit |
@@ -48,7 +48,7 @@ lifecycle summary는 `ok=true`, `status=PASS`, `restoration_status=PASS`다.
 | `DesktopNode.Host.exe` ProductVersion | `{{installed_product_version}}` |
 | service | Running / Automatic |
 | Web Console | HTTP `200` |
-| VM | `pcv-guest-installed-04253-r1` Off |
+| VM | {{vm_summary}} |
 
 ## Nonclaims
 

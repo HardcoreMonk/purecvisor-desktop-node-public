@@ -37,7 +37,7 @@ packaging/windows-desktop-node/installer/build.ps1 -Version {{version}} -MsiProd
   -SigningMode AllowUnsignedDev -SigningTrustModel LocalTest -OutputRoot {{artifact_root}}
 ```
 
-update ZIP은 payload {{payload_file_count}}개 파일을 root에 두고 deflate와 `/` 구분자로 직접 만들었다(항목 구성은 {{previous_display_version}} ZIP과 같다).
+{{zip_note}}
 
 ## 빌드 결과
 

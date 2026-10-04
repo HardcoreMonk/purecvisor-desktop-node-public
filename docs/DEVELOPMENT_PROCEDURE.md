@@ -344,6 +344,12 @@ campaign은 이미 받은 승인을 되묻지 않을 뿐, 없는 승인을 만�
 
       dotnet run --project src/DesktopNode.Verification -c Release -- train-evidence --facts docs/ga-ready/trains/<version>.evidence-facts.json --check
 
+- train task 1(package)은 build 뒤 `packaging/windows-desktop-node/tools/New-PcvAdminSmokeUpdatePackage.ps1`로 update ZIP,
+  admin-smoke update catalog, `package-facts.json`을 만든다. 손으로 ZIP을 만들지 않는다.
+- pair orchestrator(`Invoke-PcvManualAdminPackagePairCampaign.ps1 -Execute`)와 그 결과로 facts를 만드는
+  `pcvverify train-facts`는 3단계 3b 리허설이 PASS할 때까지 train에 쓰지 않는다(설계
+  `docs/superpowers/specs/2026-10-04-purecvisor-desktop-node-train-pair-orchestrator-design.md`). 그때까지 pair는 bucket을 하나씩 돈다.
+
 train campaign의 task 순서:
 
 | task | 내용 |

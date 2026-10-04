@@ -1,4 +1,4 @@
-# Installed runtime ops summary `{{baseline_version}}` ({{date}})
+# Installed runtime ops summary `{{installed_version}}` ({{date}})
 
 evidence_id: `{{evidence_id}}`
 result: `PASS`
@@ -18,11 +18,11 @@ external_stable_publication: `not-claimed`
 
 {{context}}
 
-설치본 `pcvcli.exe`가 보호된 token 파일로 `ops summary`를 읽었다. 결과는 CLI exit `0`, 응답 `ok=true`, operation `ops.summary`, stderr `0` byte다. token 값은 출력하거나 기록하지 않았고, summary에 token 형태 문자열은 `0`개다.
+{{capture_note}}
 
 | 항목 | 값 |
 | --- | --- |
-| product manifest | `{{baseline_version}}` |
+| product manifest | `{{installed_version}}` |
 | 설치본 Host ProductVersion | `{{installed_product_version}}` |
 | service | `PureCVisorDesktopNode` Running / Automatic |
 | Web Console `http://127.0.0.1/` | HTTP `200` |
