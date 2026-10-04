@@ -62,7 +62,7 @@ pcvverify train-evidence --facts <path> --write [--allow-update <evidence path>]
 
 - `--check`는 쓰지 않고 비교한다. 다르거나 없는 문서가 있으면 exit `1`이고 stdout JSON에 문서별 상태(`current`, `stale`, `missing`)를 적는다.
 - `--write`는 새 문서만 만든다. 이미 있는 문서의 내용이 다르면 실패한다. evidence는 새 파일로 쓴다는 규칙 때문이다. Lane 3의 current-card 머리말 승격처럼 정해진 갱신만 `--allow-update`로 문서를 하나씩 지정해 허용한다.
-- 오류는 기존 `pcvverify` 오류 형식(`PCV_DEV_VERIFY_CONFIG_INVALID`, detail `train-evidence:<reason>`)을 따른다. 기존 `verify` 문법은 바꾸지 않는다.
+- 결과와 오류는 stdout JSON 한 줄(`pcv-train-evidence-result-v1`)이다. 오류는 exit `2`, `error_code=PCV_VERIFY_CONFIG_INVALID`, `error_detail=train-evidence:<reason>:<subject>`다. 기존 `verify` 문법과 summary 계약은 바꾸지 않는다.
 
 ## 6. train 절차에서 쓰는 곳
 

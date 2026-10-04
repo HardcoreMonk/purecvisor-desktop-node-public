@@ -75,6 +75,11 @@ internal sealed class VerificationApplication(
         TextWriter standardError,
         CancellationToken cancellationToken)
     {
+        if (args.Count > 0 && string.Equals(args[0], TrainEvidenceCommand.Name, StringComparison.Ordinal))
+        {
+            return TrainEvidenceCommand.Run(args, currentDirectory(), standardOutput);
+        }
+
         DateTimeOffset? startedAt = null;
         VerificationRequest? request = null;
         VerificationPlan? plan = null;

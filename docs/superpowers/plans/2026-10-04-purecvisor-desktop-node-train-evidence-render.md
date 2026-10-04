@@ -24,8 +24,10 @@
 
 ## Task 2: 렌더러와 CLI
 
-- [ ] `TrainEvidenceRenderer`(facts 읽기, 틀 문법, 엄격한 key 검사), `TrainEvidenceCommand`(`--check`, `--write`, `--allow-update`), `VerificationApplication` 분기.
-- [ ] 엔진 시험: 치환, 선택 줄, 없는 key, 남는 key, CR/LF 값, 모르는 틀, 경로 밖 문서, 중복 path, `--write` 기존 문서 보호.
+- [x] `TrainEvidenceRenderer`(facts 읽기, 틀 문법, 엄격한 key 검사), `TrainEvidenceCommand`(`--check`, `--write`, `--allow-update`), `VerificationApplication` 분기.
+- [x] 엔진 시험: 치환, 선택 줄, 없는 key, 남는 key, CR/LF 값, 모르는 틀, 경로 밖 문서, 중복 path, `--write` 기존 문서 보호.
+
+실행 기록(2026-10-04): `src/DesktopNode.Verification/TrainEvidence/`에 `TrainEvidenceRenderer.cs`(facts 계약, 틀 문법)와 `TrainEvidenceCommand.cs`(`--check`, `--write`, `--allow-update`, 결과 계약 `pcv-train-evidence-result-v1`)를 더하고 `VerificationApplication.RunAsync` 맨 앞에서 `train-evidence`를 분기했다. 기존 `verify` 문법과 summary 계약은 그대로다. 새 시험 `TrainEvidenceRendererTests` `24`개 통과. 설계의 오류 형식 문장을 실제 계약(`PCV_VERIFY_CONFIG_INVALID`, 별도 결과 계약)으로 고쳤다.
 
 ## Task 3: 틀과 0.42.89 golden
 
