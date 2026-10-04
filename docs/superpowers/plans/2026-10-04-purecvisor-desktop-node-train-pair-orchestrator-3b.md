@@ -32,7 +32,9 @@
 
 ## Task 2: fullgate 복구
 
-- [ ] `full-admin-host-mutation-gate-20261004-04289-r3b`로 0.42.89 fullgate build를 다시 설치한다.
+- [x] `full-admin-host-mutation-gate-20261004-04289-r3b`로 0.42.89 fullgate build를 다시 설치한다.
+
+실행 기록(2026-10-04): orchestrator가 남긴 clean `0.42.89`(`{0E27390F-…}`) 위에서 `06:32:05Z`부터 약 `457`초, 두 step 모두 exit `0`(service-msi-hyperv `444.490s`). 사후 build commit 검사 `c67d22b` 일치, 같은 version ARP `{FACF6D5F-1041-4B77-92B6-7B476447ECB7}` 1개, MSI log `another client exists`/`Won't Overwrite` `0`/`0`, managed delete `storage_cleanup` 관측. fullgate MSI `dcec4e92`, payload `11228c3f`. 설치본 `0.42.89-admin-smoke+c67d22b`, service Running/Auto, Web `200`, firewall rule `0`, 보존 VM Off.
 
 ## Task 3: current-card
 
