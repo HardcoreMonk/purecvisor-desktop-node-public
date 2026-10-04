@@ -44,11 +44,15 @@
 
 ## Task 4: facts 생성 확인
 
-- [ ] 리허설 출력으로 `pcvverify train-facts`와 `train-evidence --write`를 돌려 pair 문서 `9`개를 만든다. 결과는 `artifacts/train-facts-rehearsal-20261004-r3b/`로 옮기고, 0.42.89 facts 파일과 evidence 폴더를 원래대로 둔다.
+- [x] 리허설 출력으로 `pcvverify train-facts`와 `train-evidence --write`를 돌려 pair 문서 `9`개를 만든다. 결과는 `artifacts/train-facts-rehearsal-20261004-r3b/`로 옮기고, 0.42.89 facts 파일과 evidence 폴더를 원래대로 둔다.
+
+실행 기록(2026-10-04): 0.42.89 facts를 백업하고 리허설 출력으로 네 번 돌렸다. A(9개)는 관측 결함으로 `fact-mismatch:observations:after:installed-runtime-ops-summary`, B(package, pair-descriptor, current-card)는 pair-descriptor가 bucket 문서 id를 요구해 `document-missing:update-rollback`, B2(package, current-card)와 C(fullgate)는 생성과 렌더 통과. 결과는 `artifacts/train-facts-rehearsal-20261004-r3b/`로 옮기고 0.42.89 facts를 되돌렸다(golden `ok`, 작업 트리 clean).
 
 ## Task 5: 리허설 evidence
 
-- [ ] `train-pair-orchestrator-rehearsal-2026-10-04-04288-04289`: bucket 판정을 0.42.89 수동 pair와 비교하고, facts 생성 결과와 발견을 적는다. `DOCUMENTATION_INDEX` 호스트 설치본 줄을 맞춘다.
+- [x] `train-pair-orchestrator-rehearsal-2026-10-04-04288-04289`: bucket 판정을 0.42.89 수동 pair와 비교하고, facts 생성 결과와 발견을 적는다. `DOCUMENTATION_INDEX` 호스트 설치본 줄을 맞춘다.
+
+실행 기록(2026-10-04): evidence `train-pair-orchestrator-rehearsal-2026-10-04-04288-04289`(`PARTIAL_PASS_WITH_OBSERVATION_DEFECT`). `DOCUMENTATION_INDEX` 호스트 설치본 줄을 리허설 fullgate build로 맞췄다.
 
 ## Task 6: 종료와 merge
 
