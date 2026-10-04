@@ -94,14 +94,18 @@
 
 ## Task 7: Lane 3
 
-- [ ] functional carry-forward, single-root consume, Task 6 merge의 main push evidence, current-card 머리말 `promoted-current`.
-- [ ] `current-evidence.json`, 승격 spec `lane3-promotion-docs-spec-04289.json`으로 문서 도구 dry-run, `-Apply`, `-Check`. descriptor chain의 다음 출발 조건 값은 `release-train-departure-after-04289`.
-- [ ] `release-train.json` `operational_current=0.42.89-admin-smoke`, train `status=promoted`.
-- [ ] `CurrentEvidenceVerifierTests`, `DOCUMENTATION_INDEX`, `FEATURE_IMPLEMENTATION_LEDGER` 정렬.
+- [x] functional carry-forward, single-root consume, Task 6 merge의 main push evidence, current-card 머리말 `promoted-current`.
+- [x] `current-evidence.json`, 승격 spec `lane3-promotion-docs-spec-04289.json`으로 문서 도구 dry-run, `-Apply`, `-Check`. descriptor chain의 다음 출발 조건 값은 `release-train-departure-after-04289`.
+- [x] `release-train.json` `operational_current=0.42.89-admin-smoke`, train `status=promoted`.
+- [x] `CurrentEvidenceVerifierTests`, `DOCUMENTATION_INDEX`, `FEATURE_IMPLEMENTATION_LEDGER` 정렬.
+
+실행 기록(2026-10-04): branch `lane3/04289-promotion-20261004`(`origin/main` `8631947`, PR #35 merge 기준). functional carry-forward(0.42.75 PASS), single-root consume(JSON `7`개, manifest `52062a3b…`, descriptor `-PlanOnly` `overall_status=pass` `6/6`, host mutation 없음), main push evidence(`8631947`, Public Boundary run `37171644656`, Development Gates run `37171644667` success), current-card 머리말 `promoted-current`. `current-evidence.json` current `0.42.89-admin-smoke`(operational MSI `fe5677ff…`, payload `e4f9387c…`, provenance `a780928`, descriptor `…-consume`). 승격 spec `lane3-promotion-docs-spec-04289.json`(descriptor chain 다음 출발 조건 `release-train-departure-after-04289`)으로 dry-run, `-Apply`, `-Check` 모두 통과. 첫 dry-run은 `functional_note`의 backtick 때문에 `PCV_PROMOTION_INDEX_INVALID`였고 backtick을 빼고 다시 돌렸다. `release-train.json` `operational_current=0.42.89-admin-smoke`, train `status=promoted`. 수기 정렬: `CurrentEvidenceVerifierTests`, `DOCUMENTATION_INDEX` 권위 줄, `FEATURE_IMPLEMENTATION_LEDGER` operational 줄.
 
 ## Task 8: 종료와 Lane 3 merge
 
-- [ ] clean HEAD 종료 검증, push, PR, green CI 뒤 merge.
+- [x] clean HEAD 종료 검증, push, PR, green CI 뒤 merge.
+
+실행 기록(2026-10-04, clean HEAD `a52c356`): `dotnet test src/DesktopNode.sln` 실패 `0`(Delivery `758`, Verification `557`, Api `488`, HyperV `255`, Host `216`, Contracts `200`, Cli `183`, Runtime `129`, Service `11`). Pester 네 종 `151/151`. `npm run test:required --prefix web` exit `0`. Release build 뒤 Required CI 네 shard 모두 `ok=true`, `plan_only=false`. 이 기록 commit 뒤 push, PR, green CI 뒤 merge하면 train `0.42.89`가 끝난다.
 
 ## Nonclaims
 
