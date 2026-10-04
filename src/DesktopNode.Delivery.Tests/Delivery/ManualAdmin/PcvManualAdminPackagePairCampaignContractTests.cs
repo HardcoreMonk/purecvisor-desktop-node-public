@@ -110,6 +110,14 @@ public sealed class PcvManualAdminPackagePairCampaignContractTests
         var start = source.IndexOf("function Add-PcvObservation", StringComparison.Ordinal);
         var end = source.IndexOf("function Ensure-PcvReservation", StringComparison.Ordinal);
         var observer = source[start..end];
+        // The orchestrator runs under Set-StrictMode -Version Latest: optional registry values are probed before use
+        // (the 3b rehearsal lost every ARP list to PropertyNotFoundException on uninstall keys without DisplayName).
+        AssertOrdered(source, "Set-StrictMode -Version Latest", "function Add-PcvObservation([string]$Point) {");
+        RequireTokens(
+            observer,
+            "$_.PSObject.Properties['DisplayName'] -and [string]$_.DisplayName -like '*PureCVisor*'",
+            "if ($_.PSObject.Properties['DisplayVersion']) { [string]$_.DisplayVersion } else { $null }");
+        Assert.DoesNotContain("Where-Object { [string]$_.DisplayName", observer, StringComparison.Ordinal);
         Assert.DoesNotContain("GuestCredential", observer, StringComparison.Ordinal);
         Assert.DoesNotContain("token", observer, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("pcvcli", observer, StringComparison.OrdinalIgnoreCase);
