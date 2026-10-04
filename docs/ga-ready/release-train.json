@@ -3,18 +3,16 @@
   "contract": "pcv-release-train-v1",
   "design": "docs/superpowers/specs/2026-10-04-purecvisor-desktop-node-release-train-design.md",
   "operational_current": "0.42.88-admin-smoke",
-  "queue": [
+  "queue": [],
+  "trains": [
     {
-      "pr": 34,
-      "merge_commit": "0c95852133bab4bb42f5e06ad8244e208f64a595",
-      "area": "cli",
-      "summary": "pcvcli --json writes errors as a JSON envelope on stdout",
-      "lane2_probe": {
-        "family": "cli.json-errors",
-        "design": "docs/superpowers/specs/2026-10-04-purecvisor-desktop-node-cli-json-errors-design.md"
-      },
-      "risk_tier": "M"
+      "version": "0.42.89-admin-smoke",
+      "departed_at": "2026-10-04T11:08:04+09:00",
+      "source_commit": "d6711f33ae7517bc3923f163a8021d4101ef591d",
+      "carriages": [
+        34
+      ],
+      "status": "running"
     }
-  ],
-  "trains": []
+  ]
 }
