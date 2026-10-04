@@ -205,7 +205,7 @@ Lane 2 probe는 train candidate 설치본에서 한다. probe 때문에 중간 p
 | 단계 | 내용 | 변경 |
 | --- | --- | --- |
 | 1 (2026-10-04 도입) | 절차 도입 | `docs/DEVELOPMENT_PROCEDURE.md` §10 train 절과 §4 승인 표, `docs/ga-ready/release-train.json`과 C# 구조 계약 `PcvReleaseTrainContractTests`. descriptor chain의 다음 출발 조건 값 `release-train-departure-after-<tag>`는 다음 승격의 Lane 3 spec에서 쓴다 |
-| 2 | 증적 생성 | §6 생성기와 계약 테스트. Lane 3 spec 생성 |
+| 2 (2026-10-04 도입) | 증적 생성 | `pcvverify train-evidence`, 틀 `12`개, facts 계약 `pcv-train-evidence-facts-v1`, golden 시험 `TrainEvidenceGoldenTests`(설계 `docs/superpowers/specs/2026-10-04-purecvisor-desktop-node-train-evidence-render-design.md`). facts는 사람이 채운다. facts 자동 채우기와 Lane 3 spec 생성은 3단계로 옮긴다 |
 | 3 | pair orchestrator | update catalog 생성, `Invoke-PcvManualAdminPackagePairCampaign.ps1` 사용 |
 
 1단계는 제품 동작을 바꾸지 않는다. descriptor chain의 출발 조건 값은 Lane 3 spec의 데이터라서 다음 승격 때 바꾼다.
