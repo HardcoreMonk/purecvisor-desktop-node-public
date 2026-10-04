@@ -23,10 +23,10 @@ external_stable_publication: `not-claimed`
 ## Update
 
 ```text
-command: Invoke-PcvDesktopNodeProduct.ps1 -Action Update -SourceRoot {{source_payload}} -Version {{version}} -TimeoutSec 180
+{{update_command}}
 exit: 0
 ok: true
-executed: {{update_steps}} steps
+{{update_executed}}
 manifest_after_update: {{version}}
 host_after_update: {{host_after_update}}
 service_after_update: Running
@@ -36,23 +36,32 @@ web_after_update: 200
 ## Rollback
 
 ```text
-command: Invoke-PcvDesktopNodeProduct.ps1 -Action Rollback -TimeoutSec 180
+{{rollback_command}}
 exit: 0
 ok: true
-executed: {{rollback_steps}} steps
+{{rollback_executed}}
 ```
 
+{{?final_update_command}}## 최종 Update
+{{?final_update_command}}
+{{?final_update_command}}```text
+{{?final_update_command}}{{final_update_command}}
+{{?final_update_command}}exit: 0
+{{?final_update_command}}ok: true
+{{?final_update_command}}{{final_update_state}}
+{{?final_update_command}}```
+{{?final_update_command}}
 ## 최종 상태
 
 | 항목 | 값 |
 | --- | --- |
-| product manifest | `{{baseline_version}}` |
+| product manifest | `{{final_manifest_version}}` |
 | `DesktopNode.Host.exe` ProductVersion | `{{final_host_product_version}}` |
-| `DesktopNode.failed` | `{{version}}` |
-| `DesktopNode.previous` | 없음 |
+| `DesktopNode.failed` | `{{final_failed_version}}` |
+| `DesktopNode.previous` | {{final_previous_cell}} |
 | service | Running / Automatic |
 | Web Console | HTTP `200` |
-| VM | Off 유지 |
+| VM | {{vm_cell}} |
 | 재부팅 | 없음 |
 
 ## Nonclaims

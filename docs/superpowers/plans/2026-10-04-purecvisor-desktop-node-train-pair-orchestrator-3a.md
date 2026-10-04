@@ -37,9 +37,16 @@
 
 실행 기록(2026-10-04): orchestrator `-Execute` 경로에 `Add-PcvObservation`을 더했다. 시작, baseline 정렬 뒤, bucket마다 앞뒤, update/rollback bucket의 Update와 Rollback 직후, restoration 뒤에 `observations.json`(`pcv-manual-admin-pair-observations-v1`)을 갱신한다. 항목은 manifest, Host ProductVersion, previous/failed version, service 상태와 시작 유형, Web 상태, VM, PureCVisor ARP다. 관측 실패는 `observation_error`로 남기고 던지지 않는다. 관측 함수만 떼어 실제 호스트에서 읽기 전용으로 돌려 값이 맞고 secret 형태 문자열이 없음을 확인했다. `-PlanOnly`는 관측 전에 끝나며 다시 돌려 `ok=true`, host mutation 없음. Delivery 계약 시험 `1`개 추가(Delivery `762`).
 
-## Task 4: facts 생성기
+## Task 4a: 틀 일반화와 orchestrator 기록 보강
 
-- [ ] `pcvverify train-facts`: `package-facts.json`, orchestrator campaign root, fullgate batch, current-card summary, 사람이 쓰는 서술 값 파일을 읽어 pair 문서 facts를 만든다. 틀은 orchestrated 실행도 표현하도록 일반화하고 0.42.89 golden을 유지한다.
+- [x] 수동 pair와 orchestrated pair에서 문장이 다른 줄을 값으로 옮긴다(package ZIP 문장, ops summary 캡처 문장과 설치 version, update/rollback 명령·단계 줄과 최종 표, 선택 최종 Update 절, clean-host runner 플래그·추가 인자·base 문장, Burn 선택 `preupdate_root`·runner 꼬리 줄·VM 칸, fullgate VM 칸). 0.42.89 facts에 옛 문장을 값으로 넣어 golden을 유지한다.
+- [x] orchestrator ops bucket이 원본 출력(`ops-summary.json`), stderr byte, 비인증 거부(status, error code), errors 수, VM 수, token 형태 수를 남기고, 관측에 boot time과 PureCVisor firewall rule 수를 더한다.
+
+실행 기록(2026-10-04): 틀 생성 스크립트에 줄 단위 값, 선택 머리말, 줄 삽입을 더해 틀 `7`개를 바꾸고 0.42.89 facts를 다시 만들었다(값 `254`개). golden 시험과 `train-evidence --check` `12/12` `current`. ops bucket 본문과 관측 함수만 떼어 실제 호스트에서 읽기 전용으로 돌렸다(`ok`, stderr `0` byte, errors `0`, VM `1`, token 형태 `0`, 비인증 `401 PCV_AUTH_REQUIRED`, boot time과 firewall `0`). Delivery 계약 시험 `1`개 추가.
+
+## Task 4b: facts 생성기
+
+- [ ] `pcvverify train-facts`: `package-facts.json`, orchestrator campaign root(bucket summary, `observations.json`, closed descriptor), fullgate batch, current-card summary, 사람이 쓰는 서술 값 파일을 읽어 pair 문서 facts를 만든다. 생성 값과 사람 값이 겹치면 실패한다. 틀의 literal이 사실인지(예: Upgrade 행 `513`/`1401`, 비인증 `401`, MSI log `0`/`0`) 확인하고 아니면 실패한다.
 - [ ] Verification 단위 시험(합성 fixture).
 
 ## Task 5: 절차 반영과 종료

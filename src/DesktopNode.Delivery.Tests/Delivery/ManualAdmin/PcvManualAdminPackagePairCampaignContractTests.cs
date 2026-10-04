@@ -115,6 +115,22 @@ public sealed class PcvManualAdminPackagePairCampaignContractTests
         Assert.DoesNotContain("pcvcli", observer, StringComparison.OrdinalIgnoreCase);
     }
 
+    [Fact]
+    public void OpsBucketKeepsTheRawSummaryAndTheUnauthenticatedRefusal()
+    {
+        var source = Source();
+
+        RequireTokens(
+            source,
+            "$opsOutputPath = Join-Path $bucketRoot 'ops-summary.json'",
+            "$raw = & $pcvcli --json ops summary 2> $opsStderrPath",
+            "Invoke-WebRequest -Uri 'http://127.0.0.1:7777/api/v1/ops/summary' -UseBasicParsing -TimeoutSec 15",
+            "token_like_count = [regex]::Matches($rawText, $tokenPattern).Count",
+            "unauthenticated = $unauthenticated",
+            "$entry.boot_time =",
+            "$entry.firewall_rule_count =");
+    }
+
     private static string Source() =>
         RepositoryContractContext.Find().ReadUtf8Text(Orchestrator);
 

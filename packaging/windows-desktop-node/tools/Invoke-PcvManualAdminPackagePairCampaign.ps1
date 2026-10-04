@@ -324,6 +324,8 @@ function Add-PcvObservation([string]$Point) {
         $entry.service_state = if ($service) { [string]$service.State } else { 'absent' }
         $entry.service_start_mode = if ($service) { [string]$service.StartMode } else { $null }
         $entry.web_status = try { [int](Invoke-WebRequest -Uri 'http://127.0.0.1/' -UseBasicParsing -TimeoutSec 20).StatusCode } catch { 0 }
+        $entry.boot_time = (Get-CimInstance Win32_OperatingSystem -ErrorAction SilentlyContinue).LastBootUpTime.ToUniversalTime().ToString('o')
+        $entry.firewall_rule_count = @(Get-NetFirewallRule -DisplayName 'PureCVisor*' -ErrorAction SilentlyContinue).Count
         $entry.vms = @(Get-VM -ErrorAction SilentlyContinue | ForEach-Object { [ordered]@{ name = $_.Name; state = [string]$_.State } })
         $entry.arp = @(Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*', 'HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*' -ErrorAction SilentlyContinue |
             Where-Object { [string]$_.DisplayName -like '*PureCVisor*' } | ForEach-Object { [ordered]@{ product_code = $_.PSChildName; display_version = [string]$_.DisplayVersion } })
@@ -418,14 +420,32 @@ try {
                     -SigningCertificateThumbprint $thumbprint -InstalledManifestPath $script:installedManifestFull -MsiServiceName $ServiceName -Execute | Out-Null
             }
             'installed-runtime-ops-summary' {
-                $raw = & $pcvcli --json ops summary
+                $opsOutputPath = Join-Path $bucketRoot 'ops-summary.json'
+                $opsStderrPath = Join-Path $bucketRoot 'ops-summary.stderr.txt'
+                $raw = & $pcvcli --json ops summary 2> $opsStderrPath
                 if ($LASTEXITCODE -ne 0) { throw 'PCV_MANUAL_ADMIN_RUNTIME_OPS_EXIT' }
-                $ops = ($raw -join "`n") | ConvertFrom-Json
+                $rawText = $raw -join "`n"
+                [IO.File]::WriteAllText($opsOutputPath, $rawText + "`n", [Text.UTF8Encoding]::new($false))
+                $ops = $rawText | ConvertFrom-Json
                 $state = Assert-PcvInstalledState $TargetVersion
                 $errorValue = if ($ops.PSObject.Properties.Name -contains 'error') { $ops.error } else { $null }
+                # Unauthenticated read must be refused; only the status and error code are kept.
+                $unauthenticated = try {
+                    [void](Invoke-WebRequest -Uri 'http://127.0.0.1:7777/api/v1/ops/summary' -UseBasicParsing -TimeoutSec 15)
+                    [ordered]@{ status_code = 200; error_code = $null }
+                } catch {
+                    $code = try { (($_.ErrorDetails.Message | ConvertFrom-Json).error.code) } catch { $null }
+                    [ordered]@{ status_code = [int]$_.Exception.Response.StatusCode; error_code = $code }
+                }
+                $tokenPattern = '(?i)(bearer\s+[a-z0-9._-]{16,}|"(api_)?token"\s*:\s*"[^"]{16,}"|eyJ[a-z0-9_-]{10,})'
                 Write-PcvJson $bucket.summary_path ([ordered]@{
                     ok = [bool]$ops.ok -and $null -eq $errorValue; status = 'PASS'; error = $errorValue
                     installed_version = $state.version; service_status = $state.service_status
+                    operation = [string]$ops.operation; ops_summary_sha256 = Get-PcvSha256 $opsOutputPath
+                    stderr_bytes = (Get-Item -LiteralPath $opsStderrPath).Length
+                    errors_count = @($ops.data.errors).Count; vm_total = $ops.data.vm_counts.total
+                    token_like_count = [regex]::Matches($rawText, $tokenPattern).Count
+                    unauthenticated = $unauthenticated
                     output = [ordered]@{ ok = [bool]$ops.ok; error = $errorValue }
                 })
             }
