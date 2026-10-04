@@ -51,7 +51,7 @@
 - [x] 2b 설치본 Update와 Rollback.
 - [x] 2c clean-host(baseline `0.42.88` clean MSI, target update ZIP).
 - [x] 2d Burn(제품 Update로 target에 맞추고 15초 뒤).
-- [ ] 2e MSIX(`0.42.88 → 0.42.89`).
+- [x] 2e MSIX(`0.42.88 → 0.42.89`).
 - [ ] 2g descriptor `-PlanOnly`.
 
 실행 기록 2a(2026-10-04): 설치본이 baseline `0.42.88`(fullgate build `+47ff198`)이라 설치 변경 없이 실행했다. campaign `manual-admin-campaign-20261004-04288-04289`, `ok=true`, `ready-current-baseline-target-package-pair`, 설치본 일치, baseline MSI `81ef8527…`, target MSI `e4574861…`, host mutation 없음. summary SHA `489958e1…`.
@@ -63,6 +63,8 @@
 실행 기록 2c(2026-10-04): 약 `156`초, exit `0`. base `current-base`(UBR `5622`), Windows Update 대상 `0`개. install, update, rollback 모두 exit `0`, 최종 manifest `0.42.88`, Web `200`, VM 삭제됨. evidence `internal-clean-host-install-update-rollback-smoke-2026-10-04-04288-04289`.
 
 실행 기록 2d(2026-10-04): 제품 Update로 `0.42.89`에 맞추고 15초 기다린 뒤 실행했다. build, install, repair, remove, 복구 모두 exit `0`(`32`초). 최종 ARP `0.42.89` `{0E27390F-…}` 1개, Host `+b463903`, Running/Automatic, Web `200`. evidence `burn-bootstrapper-lifecycle-smoke-2026-10-04-04289`.
+
+실행 기록 2e(2026-10-04): 세 자리 버전으로 한 번에 PASS(`20`초). pack·sign·verify `0`, install·update·remove 통과, smoke 패키지와 서비스 없음, manifest `0.42.89` 유지. evidence `msix-package-lifecycle-smoke-2026-10-04-04288-04289`.
 
 ## Task 3: fullgate
 
