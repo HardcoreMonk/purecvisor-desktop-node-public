@@ -56,7 +56,9 @@
 
 ## Task 6: 종료와 merge
 
-- [ ] clean HEAD 종료 검증, push, PR, green CI 뒤 merge.
+- [x] clean HEAD 종료 검증, push, PR, green CI 뒤 merge.
+
+실행 기록(2026-10-04, clean HEAD `992aaa8`): `dotnet test src/DesktopNode.sln` 실패 `0`(Delivery `763`, Verification `593`, Api `488`, HyperV `255`, Host `216`, Contracts `200`, Cli `183`, Runtime `129`, Service `11`). Pester 네 종 `151/151`. `npm run test:required --prefix web` exit `0`. Required CI 네 shard 모두 `ok=true`, `plan_only=false`. Task 4와 5는 commit 하나(`992aaa8`)로 묶였다. 이 기록 commit 뒤 push, PR, green CI 뒤 merge한다.
 
 ## Nonclaims
 
