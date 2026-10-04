@@ -11,7 +11,7 @@
   ],
   "mutation_allowed": false,
   "current_write_allowed": false,
-  "next_step": "Run Task 4 (procedure update and final verification) from docs/superpowers/plans/2026-10-04-purecvisor-desktop-node-train-evidence-render.md.",
+  "next_step": "Train phase 2 complete (Task 1-4): pcvverify train-evidence renders the twelve train evidence documents from docs/ga-ready/trains/<version>.evidence-facts.json, and TrainEvidenceGoldenTests checks the 0.42.89 facts in Required CI. No queued task. Train phase 3 (pair orchestrator, facts filling, Lane 3 spec generation) starts with a design review; implementation needs its own approval.",
   "plan": "docs/superpowers/plans/2026-10-04-purecvisor-desktop-node-train-evidence-render.md",
   "task_queue": [
     "Task 1",
@@ -19,11 +19,12 @@
     "Task 3",
     "Task 4"
   ],
-  "next_task": "Task 4",
+  "next_task": null,
   "completed_tasks": [
     "Task 1",
     "Task 2",
-    "Task 3"
+    "Task 3",
+    "Task 4"
   ],
   "commit_policy": "local-commit-per-task",
   "push_allowed": true,

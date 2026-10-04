@@ -38,8 +38,10 @@
 
 ## Task 4: 절차 반영과 종료
 
-- [ ] `DEVELOPMENT_PROCEDURE.md` §10 train task에 렌더러 사용을 적는다. release train 설계 §9 2단계 상태.
-- [ ] clean HEAD 종료 검증, push, PR, green CI 뒤 merge.
+- [x] `DEVELOPMENT_PROCEDURE.md` §10 train task에 렌더러 사용을 적는다. release train 설계 §9 2단계 상태.
+- [x] clean HEAD 종료 검증, push, PR, green CI 뒤 merge.
+
+실행 기록(2026-10-04, clean HEAD `19fabac`): `DEVELOPMENT_PROCEDURE.md` §10에 렌더러 사용을 적고 release train 설계 §9 2단계를 도입으로 바꿨다(facts 자동 채우기와 Lane 3 spec 생성은 3단계로). `dotnet test src/DesktopNode.sln` 실패 `0`(Verification `585`, Delivery `758`, Api `488`, HyperV `255`, Host `216`, Contracts `200`, Cli `183`, Runtime `129`, Service `11`). Pester 네 종 `151/151`. `npm run test:required --prefix web` exit `0`. Required CI 네 shard 모두 `ok=true`, `plan_only=false`. spec pin `-Check` current. 이 기록 commit 뒤 push, PR, green CI 뒤 merge한다.
 
 ## Nonclaims
 
