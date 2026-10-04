@@ -88,7 +88,9 @@
 
 ## Task 6: pair evidence PR과 merge
 
-- [ ] clean HEAD 종료 검증 뒤 push, PR, green CI 뒤 merge.
+- [x] clean HEAD 종료 검증 뒤 push, PR, green CI 뒤 merge.
+
+실행 기록(2026-10-04, clean HEAD `ceb7b77`): `dotnet test src/DesktopNode.sln` 실패 `0`(Delivery `758`, Verification `557`, Api `488`, HyperV `255`, Host `216`, Contracts `200`, Cli `183`, Runtime `129`, Service `11`). Pester 네 종 `151/151`. `npm run test:required --prefix web` exit `0`. Release build 뒤 Required CI 네 shard 모두 `ok=true`, `plan_only=false`(shard를 솔루션 테스트보다 먼저 돌렸다). 이 기록 commit 뒤 push, PR, green CI 뒤 merge한다.
 
 ## Task 7: Lane 3
 
