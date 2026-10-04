@@ -336,29 +336,37 @@ campaign은 이미 받은 승인을 되묻지 않을 뿐, 없는 승인을 만�
 - Lane 3에서 `current-evidence.json`을 쓰는 commit은 `release-train.json`의 `operational_current`와
   train `status`도 함께 바꾼다.
 - pair, fullgate, current-card, Lane 3 evidence `12`개는 `pcvverify train-evidence`로 렌더한다(설계
-  `docs/superpowers/specs/2026-10-04-purecvisor-desktop-node-train-evidence-render-design.md`). 직전 train의
-  `docs/ga-ready/trains/<version>.evidence-facts.json`을 복사해 문서마다 값을 바꾸고 task마다 `--write`한다.
-  Lane 3는 Lane 3 문서 값과 current-card 승격 값을 넣고 `--write --allow-update <current-card evidence>`한다.
-  Lane 2 probe evidence와 계획 실행 기록은 손으로 쓴다. `TrainEvidenceGoldenTests`가 커밋된 facts 파일마다
-  문서가 렌더 결과와 같은지 본다.
+  `docs/superpowers/specs/2026-10-04-purecvisor-desktop-node-train-evidence-render-design.md`). package, pair,
+  fullgate, current-card 문서 `9`개의 값은 `pcvverify train-facts --input <train-facts-input.json>`이 artifact에서
+  만들어 `docs/ga-ready/trains/<version>.evidence-facts.json`에 쓴다(입력 계약 `pcv-train-facts-input-v1`, 출처는
+  `artifacts/` 아래 상대 경로). 사람은 train마다 판단하는 서술 값(package 배경·적재 변경·Lane 2 기능군·build 시간,
+  fullgate 실행 문맥·VM 칸, current-card 스크립트 문장)만 입력의 `narrative`에 적는다. task마다 그 task의 문서만
+  입력 `documents`에 넣어 실행하고 `--write`한다. facts 파일에 이미 있는 다른 문서는 유지되고, 바뀌지 않은 문서는
+  `current`로 건너뛴다. Lane 3는 직전 train facts의 Lane 3 문서를 복사해 값을 바꾸고 current-card 승격 값을 넣어
+  `--write --allow-update <current-card evidence>`한다. Lane 2 probe evidence와 계획 실행 기록은 손으로 쓴다.
+  `TrainEvidenceGoldenTests`가 커밋된 facts 파일마다 문서가 렌더 결과와 같은지 본다.
 
       dotnet run --project src/DesktopNode.Verification -c Release -- train-evidence --facts docs/ga-ready/trains/<version>.evidence-facts.json --check
 
 - train task 1(package)은 build 뒤 `packaging/windows-desktop-node/tools/New-PcvAdminSmokeUpdatePackage.ps1`로 update ZIP,
   admin-smoke update catalog, `package-facts.json`을 만든다. 손으로 ZIP을 만들지 않는다.
-- pair orchestrator(`Invoke-PcvManualAdminPackagePairCampaign.ps1 -Execute`)와 그 결과로 facts를 만드는
-  `pcvverify train-facts`는 3단계 3b 리허설이 PASS할 때까지 train에 쓰지 않는다(설계
-  `docs/superpowers/specs/2026-10-04-purecvisor-desktop-node-train-pair-orchestrator-design.md`). 그때까지 pair는 bucket을 하나씩 돈다.
+- train task 2(pair)는 `packaging/windows-desktop-node/tools/Invoke-PcvManualAdminPackagePairCampaign.ps1`을
+  `-PlanOnly`로 확인한 뒤 `-Execute`해 여섯 bucket과 closed descriptor를 한 번에 돈다(설계
+  `docs/superpowers/specs/2026-10-04-purecvisor-desktop-node-train-pair-orchestrator-design.md`, 리허설 evidence
+  `train-pair-orchestrator-rehearsal-2026-10-04-04288-04289-r2`). update ZIP과 catalog 경로는 task 1 도구가 쓴
+  package root를 그대로 넘긴다. guest 인증 정보는 호출 직전에 `PSCredential`로 만들어 `-GuestCredential`로 넘기고
+  명령줄, summary, evidence에 남기지 않는다. 그 결과로 `train-facts`와 `--write`를 실행해 pair 문서를 만든다.
+  출발 승인 문구의 pair host mutation 범위는 bucket을 하나씩 돌던 때와 같다.
 
 train campaign의 task 순서:
 
 | task | 내용 |
 | --- | --- |
 | 0 | 출발: `queue` 고정, 계획과 campaign |
-| 1 | package |
-| 2a~2g | readiness, ops summary, update/rollback, clean-host, Burn, MSIX, descriptor |
-| 3 | fullgate |
-| 4 | installed current-card |
+| 1 | package, `train-facts`로 package 문서 |
+| 2 | pair: orchestrator `-PlanOnly`와 `-Execute`(readiness, ops summary, update/rollback, clean-host, Burn, MSIX, descriptor), `train-facts`로 pair 문서 |
+| 3 | fullgate, `train-facts`로 fullgate 문서 |
+| 4 | installed current-card, `train-facts`로 current-card 문서 |
 | 5.n | 적재 변경별 Lane 2 probe |
 | 6 | pair evidence PR과 merge |
 | 7 | Lane 3 evidence, `current-evidence.json`, 승격 문서 도구, `release-train.json` |
