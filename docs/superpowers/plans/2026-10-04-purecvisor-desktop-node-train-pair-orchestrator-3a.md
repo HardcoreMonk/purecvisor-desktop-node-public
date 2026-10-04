@@ -46,8 +46,10 @@
 
 ## Task 4b: facts 생성기
 
-- [ ] `pcvverify train-facts`: `package-facts.json`, orchestrator campaign root(bucket summary, `observations.json`, closed descriptor), fullgate batch, current-card summary, 사람이 쓰는 서술 값 파일을 읽어 pair 문서 facts를 만든다. 생성 값과 사람 값이 겹치면 실패한다. 틀의 literal이 사실인지(예: Upgrade 행 `513`/`1401`, 비인증 `401`, MSI log `0`/`0`) 확인하고 아니면 실패한다.
-- [ ] Verification 단위 시험(합성 fixture).
+- [x] `pcvverify train-facts`: `package-facts.json`, orchestrator campaign root(bucket summary, `observations.json`, closed descriptor), fullgate batch, current-card summary, 사람이 쓰는 서술 값 파일을 읽어 pair 문서 facts를 만든다. 생성 값과 사람 값이 겹치면 실패한다. 틀의 literal이 사실인지(예: Upgrade 행 `513`/`1401`, 비인증 `401`, MSI log `0`/`0`) 확인하고 아니면 실패한다.
+- [x] Verification 단위 시험(합성 fixture).
+
+실행 기록(2026-10-04): `src/DesktopNode.Verification/TrainEvidence/`에 `TrainFactsInput.cs`(입력 계약 `pcv-train-facts-input-v1`, 출처는 `artifacts/` 아래 상대 경로만), `TrainFactsBuilder.cs`(pair 문서 `9`개의 생성 값과 틀 literal 확인), `TrainFactsCommand.cs`(`pcvverify train-facts --input`, `docs/ga-ready/trains/<version>.evidence-facts.json`을 쓰고 다른 틀 문서는 유지)를 더했다. 생성 값과 사람 값이 겹치면 `narrative-conflict`, 틀이 요구하는 값이 없으면 렌더 확인에서 실패한다. 합성 orchestrated train fixture로 facts 생성, `train-evidence --write`, `--check`를 끝까지 돌리는 시험과 literal 불일치, 서술 충돌·누락, `artifacts/` 밖 출처, 기존 문서 유지 시험 `10`개가 통과했다(Verification `593`, dirty tree에서만 실패하는 `PolicyBoundary` 제외).
 
 ## Task 5: 절차 반영과 종료
 
