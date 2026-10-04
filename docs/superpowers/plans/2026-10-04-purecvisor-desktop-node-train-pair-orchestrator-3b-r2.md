@@ -50,7 +50,9 @@
 
 ## Task 5: facts 생성
 
-- [ ] pair 문서 `9`개를 `pcvverify train-facts`와 `train-evidence --write`로 만든다. 결과는 `artifacts/train-facts-rehearsal-20261004-r3b2/`로 옮기고 0.42.89 facts를 되돌린다.
+- [x] pair 문서 `9`개를 `pcvverify train-facts`와 `train-evidence --write`로 만든다. 결과는 `artifacts/train-facts-rehearsal-20261004-r3b2/`로 옮기고 0.42.89 facts를 되돌린다.
+
+실행 기록(2026-10-04): 첫 실행은 `fact-mismatch:clean-host:state`에서 멈췄다. clean-host 틀이 `base_vhd_source: current-base`를 literal로 두었는데 orchestrator는 `-BaseVhdPath`를 넘겨 runner가 `explicit`을 기록한다. 틀의 그 머리말을 값으로 바꾸고(0.42.89 facts는 `current-base` 값으로 golden 유지), 생성기는 `current-base` 또는 `explicit`을 받아 그대로 쓴다. 다시 돌려 pair 문서 `9/9` 생성(생성 값 `189`, 서술 `7`)과 렌더 `written`. 결과는 `artifacts/train-facts-rehearsal-20261004-r3b2/`로 옮겼고 0.42.89 golden `12/12` `current`. 확인 스크립트의 마지막 `git checkout`이 facts 수정까지 되돌려 백업본으로 복원했다.
 
 ## Task 6: 재리허설 evidence와 merge
 

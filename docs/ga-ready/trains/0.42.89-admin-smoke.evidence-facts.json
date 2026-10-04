@@ -83,6 +83,7 @@
         "artifact_root": "artifacts/internal-clean-host-install-update-rollback-smoke-20261004-04288-04289",
         "summary_sha256": "e16eea3d1d47efca7de09b078a77882bfac09641e5e511c56929607924108714",
         "vm_name": "pcv-cleanhost-20261004-04289",
+        "base_vhd_source": "current-base",
         "base_vhd_file": "20348.5622-20260930.vhd",
         "baseline_msi_sha256": "81ef85273cb9bbf9d813d4c3cce40f88c22e5d596c40906dab8766e4cab79b64",
         "update_package_sha256": "b852641609601f77cccf015969e3135212f35562e5dc694dd690fb59ca505f71",
