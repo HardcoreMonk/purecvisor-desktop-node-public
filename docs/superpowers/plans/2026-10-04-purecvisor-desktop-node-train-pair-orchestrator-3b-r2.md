@@ -62,7 +62,9 @@
 
 ## Task 7: 3c 절차 변경 PR
 
-- [ ] Task 5가 `9/9`이면 `DEVELOPMENT_PROCEDURE.md` §10 train task 2a~2g를 orchestrator 실행, facts 생성, 렌더 task 하나로 바꾸는 PR을 연다. merge하지 않는다.
+- [x] Task 5가 `9/9`이면 `DEVELOPMENT_PROCEDURE.md` §10 train task 2a~2g를 orchestrator 실행, facts 생성, 렌더 task 하나로 바꾸는 PR을 연다. merge하지 않는다.
+
+실행 기록(2026-10-04): Task 5 `9/9`를 확인하고 §10을 바꿨다. task 2a~2g 행을 task 2(orchestrator `-PlanOnly`와 `-Execute`, `train-facts`로 pair 문서) 하나로 줄이고, 리허설 전까지 orchestrator를 쓰지 않는다는 줄을 실행 규칙(package root 경로, guest 인증 정보 경계, 같은 host mutation 범위)으로 바꿨다. facts는 직전 train 파일을 복사하는 대신 `train-facts`가 task마다 그 task 문서를 만든다(package, pair, fullgate, current-card). Lane 3 문서는 지금처럼 복사해 값을 바꾼다. §10 문구를 pin한 계약 시험은 없어 시험은 바꾸지 않았다. 이 commit 뒤 branch를 push하고 PR을 연다. merge는 검토 뒤 별도 확인이다.
 
 ## Nonclaims
 
