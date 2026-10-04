@@ -70,7 +70,9 @@
 
 ## Task 3: fullgate
 
-- [ ] clean `0.42.89` 설치본 위에서 시작한다. 사후 검사(build commit, 같은 version ARP 1개) 통과.
+- [x] clean `0.42.89` 설치본 위에서 시작한다. 사후 검사(build commit, 같은 version ARP 1개) 통과.
+
+실행 기록(2026-10-04): clean `0.42.89`(`{0E27390F-…}`) 위에서 시작, 약 `329`초, 두 step 모두 exit `0`. 사후 build commit 검사 `a780928` 일치, 같은 version ARP `{CD234EF2-…}` 1개, fullgate MSI `fe5677ff`, payload `e4f9387c`. route smoke `vm delete`의 `storage_cleanup`이 디스크와 디렉터리를 지웠다. evidence `full-admin-host-mutation-gate-2026-10-04-04289-hostmutation`.
 
 ## Task 4: installed current-card
 
