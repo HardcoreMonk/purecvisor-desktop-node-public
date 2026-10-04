@@ -53,7 +53,9 @@
 
 ## Task 5: 절차 반영과 종료
 
-- [ ] `DEVELOPMENT_PROCEDURE.md` §10과 release train 설계 §9에 3a 도구를 적는다. clean HEAD 종료 검증, push, PR, green CI 뒤 merge.
+- [x] `DEVELOPMENT_PROCEDURE.md` §10과 release train 설계 §9에 3a 도구를 적는다. clean HEAD 종료 검증, push, PR, green CI 뒤 merge.
+
+실행 기록(2026-10-04, clean HEAD `3476b5a`): `DEVELOPMENT_PROCEDURE.md` §10에 update 패키지 도구 사용과 orchestrator·`train-facts`의 3b 전 사용 금지를 적고, release train 설계 §9와 orchestrator 설계 §6에 3a 도입을 적었다. `dotnet test src/DesktopNode.sln` 실패 `0`(Delivery `763`, Verification `593`, Api `488`, HyperV `255`, Host `216`, Contracts `200`, Cli `183`, Runtime `129`, Service `11`). Pester 네 종 `151/151`. `npm run test:required --prefix web` exit `0`. Required CI 네 shard 모두 `ok=true`, `plan_only=false`. spec pin `-Check` current. 이 기록 commit 뒤 push, PR, green CI 뒤 merge한다.
 
 ## Nonclaims
 
