@@ -76,7 +76,9 @@
 
 ## Task 4: installed current-card
 
-- [ ] `status=pass`, `not-promoted`.
+- [x] `status=pass`, `not-promoted`.
+
+실행 기록(2026-10-04): `status=pass`, CLI `3/3`, Web `2/2`, ARP `0.42.89` 1개, 설치본 Host/CLI가 fullgate payload와 같음, 테스트 VM `0`, secret 없음, `not-promoted`. summary SHA `a3d66257…`. evidence `installed-operator-surface-current-card-2026-10-04-04289`.
 
 ## Task 5.1: Lane 2 probe `cli.json-errors`
 
