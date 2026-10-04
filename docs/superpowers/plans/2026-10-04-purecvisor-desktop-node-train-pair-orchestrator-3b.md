@@ -26,7 +26,9 @@
 
 ## Task 1: orchestrator 리허설
 
-- [ ] 3a 도구가 만든 update ZIP과 catalog(`artifacts/update-package-check-20261004/`)로 `-PlanOnly`, 그 뒤 `-Execute`. campaign `manual-admin-campaign-20261004-04288-04289-r3b`.
+- [x] 3a 도구가 만든 update ZIP과 catalog(`artifacts/update-package-check-20261004/`)로 `-PlanOnly`, 그 뒤 `-Execute`. campaign `manual-admin-campaign-20261004-04288-04289-r3b`.
+
+실행 기록(2026-10-04): `-PlanOnly` `ok=true` 뒤 `-Execute`(`06:26:34Z`부터 `252`초). 설치본이 target이라 orchestrator가 baseline catalog로 `0.42.88`에 먼저 맞췄다. 여섯 bucket 모두 PASS, closed descriptor 생성, reservation 소비, restoration 불필요. 끝난 뒤 설치본은 clean package `0.42.89`(Host `+b463903`), ARP `{0E27390F-…}` 1개, service Running/Auto, 보존 VM Off. 발견: `observations.json` `16`개 항목 모두 `observation_error=PropertyNotFoundException`. orchestrator의 `Set-StrictMode -Version Latest` 아래에서 `DisplayName`이 없는 Uninstall 키를 읽어 ARP 수집만 실패했다(VM, boot time, firewall은 기록됨). 수정은 계획대로 이 campaign 밖(Lane 1)이다.
 
 ## Task 2: fullgate 복구
 
