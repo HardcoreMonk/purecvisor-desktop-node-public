@@ -44,7 +44,9 @@
 
 ## Task 4: current-card
 
-- [ ] `installed-operator-surface-current-card-20261004-04289-r3b2`.
+- [x] `installed-operator-surface-current-card-20261004-04289-r3b2`.
+
+실행 기록(2026-10-04): 새 root `artifacts/installed-operator-surface-current-card-20261004-04289-r3b2`에 캡처했다. `status=pass`, 설치본 Host/CLI가 r3b2 fullgate payload와 같음, secret 없음, `not-promoted`. summary SHA `735ed0d2…`.
 
 ## Task 5: facts 생성
 
