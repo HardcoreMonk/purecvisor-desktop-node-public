@@ -38,7 +38,9 @@
 
 ## Task 3: fullgate 복구
 
-- [ ] `full-admin-host-mutation-gate-20261004-04289-r3b2`.
+- [x] `full-admin-host-mutation-gate-20261004-04289-r3b2`.
+
+실행 기록(2026-10-04): orchestrator가 남긴 clean `0.42.89`(`{0E27390F-…}`) 위에서 `11:37:11Z`부터 약 `463`초, 두 step 모두 exit `0`(service-msi-hyperv `450.912s`). 사후 build commit 검사 `b7fe7b2` 일치, 같은 version ARP `{CE46D250-007C-449F-8C94-6A1C9F3DD752}` 1개, MSI log `0`/`0`, managed delete 정리 관측. fullgate MSI `feb0a3e2`, payload `f7c2bf52`. 설치본 `0.42.89-admin-smoke+b7fe7b2`, firewall rule `0`, 보존 VM Off.
 
 ## Task 4: current-card
 
