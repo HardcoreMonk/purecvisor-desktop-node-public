@@ -32,7 +32,9 @@
 
 ## Task 2: orchestrator 재리허설
 
-- [ ] campaign `manual-admin-campaign-20261004-04288-04289-r3b2`로 `-Execute`. `observations.json`에 `observation_error`가 없어야 한다.
+- [x] campaign `manual-admin-campaign-20261004-04288-04289-r3b2`로 `-Execute`. `observations.json`에 `observation_error`가 없어야 한다.
+
+실행 기록(2026-10-04): `-PlanOnly` `ok=true` 뒤 `-Execute`(`11:32:22Z`부터 `256`초). baseline 정렬 뒤 여섯 bucket 모두 PASS, closed descriptor, reservation 소비, restoration 불필요. `observations.json` `16`개 항목 모두 `observation_error` 없음, ARP 목록 있음(fullgate MSI `{FACF6D5F-…}`가 Burn 뒤 clean MSI `{0E27390F-…}`로 바뀐다). 끝난 뒤 설치본은 clean package `0.42.89`(Host `+b463903`), service Running/Auto, 보존 VM Off.
 
 ## Task 3: fullgate 복구
 
