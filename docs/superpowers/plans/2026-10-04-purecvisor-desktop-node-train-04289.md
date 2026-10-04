@@ -40,7 +40,9 @@
 
 ## Task 1: package
 
-- [ ] clean HEAD에서 `build.ps1 -Version 0.42.89-admin-smoke -MsiProductVersion 0.42.89 -SigningMode AllowUnsignedDev -SigningTrustModel LocalTest -OutputRoot artifacts/admin-smoke-package-20261004-04289`. update ZIP, evidence `admin-smoke-package-2026-10-04-04289`.
+- [x] clean HEAD에서 `build.ps1 -Version 0.42.89-admin-smoke -MsiProductVersion 0.42.89 -SigningMode AllowUnsignedDev -SigningTrustModel LocalTest -OutputRoot artifacts/admin-smoke-package-20261004-04289`. update ZIP, evidence `admin-smoke-package-2026-10-04-04289`.
+
+실행 기록(2026-10-04): HEAD `b463903`, MSI `e4574861`, payload `01bbfae5`, update ZIP `b8526416`, evidence `admin-smoke-package-2026-10-04-04289`.
 
 ## Task 2a~2g: pair
 
