@@ -32,7 +32,9 @@
 
 ## Task 2: 완료 정의 결정 문서
 
-- [ ] `docs/superpowers/specs/2026-10-06-purecvisor-desktop-node-completion-definition-design.md`에 측정 가능한 완료 조건, 영구 범위 밖(public trusted signing, external stable publication 등), Task 1 감사로 본 남은 일 목록을 적는다. `docs/DEVELOPER_INDEX.md`와 `docs/DOCUMENTATION_INDEX.md`에 연결한다. 검증 `dotnet test src/DesktopNode.Delivery.Tests -c Release`, `git diff --check`. 로컬 commit.
+- [x] `docs/superpowers/specs/2026-10-06-purecvisor-desktop-node-completion-definition-design.md`에 측정 가능한 완료 조건, 영구 범위 밖(public trusted signing, external stable publication 등), Task 1 감사로 본 남은 일 목록을 적는다. `docs/DEVELOPER_INDEX.md`와 `docs/DOCUMENTATION_INDEX.md`에 연결한다. 검증 `dotnet test src/DesktopNode.Delivery.Tests -c Release`, `git diff --check`. 로컬 commit.
+
+실행 기록(2026-10-06): 완료 정의 `pcv-project-completion-definition-v1`. 조건 C1(GA-ready 런타임 유지), C2(operational current가 마지막 payload, queue 비어 있음), C3(후보 승격), C4(SERVICE_PLAN `15`개 항목 설치본 evidence 또는 불필요 결정), C5(`main` Required CI green, 기한 위험 없음), C6(영구 범위 밖은 세지 않음). 2026-10-06 판정은 C1·C2·C3·C6 충족, C4·C5 미충족. 남은 일은 Lane 2 설치본 probe 두 묶음과 10-19 runner 확인이다. `DEVELOPER_INDEX`와 `DOCUMENTATION_INDEX`에 연결했다.
 
 ## Task 3: 종료 검증과 merge
 

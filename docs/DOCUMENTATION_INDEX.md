@@ -13,7 +13,8 @@
 - 이 호스트 설치본(2026-10-05 train `0.42.90` fullgate): `0.42.90-admin-smoke`(gate build `+648139d`), service `Running/Automatic`. ARP `DisplayVersion`은 `0.42.90`(항목 `1`개). operational current와 같은 build다.
 - 개발 campaign: `docs/ga-ready/active-campaign.json` id `completion-definition-20261006`(intent `lane1-completion-definition-audit`, 2026-10-06 개설, 러너 `pcv-campaign-runner-v2`, 계획 `docs/superpowers/plans/2026-10-06-purecvisor-desktop-node-completion-definition.md`). 프로젝트 완료 정의와 SERVICE_PLAN P0~P2 현황 감사다. host mutation 없음.
 - release train: 대기열과 train 이력 `docs/ga-ready/release-train.json`, 규칙 `docs/DEVELOPMENT_PROCEDURE.md` §10, 설계 `docs/superpowers/specs/2026-10-04-purecvisor-desktop-node-release-train-design.md`(2026-10-04 채택).
-- 진행 상황 현행화: `docs/project-status-audit-2026-10-03.md`. 직전 snapshot은 `docs/project-status-audit-2026-09-27.md`.
+- 진행 상황 현행화: `docs/project-status-audit-2026-10-06.md`(완료 정의 C1~C6 대조). 직전 snapshot은 `docs/project-status-audit-2026-10-03.md`.
+- 프로젝트 완료 정의: `docs/superpowers/specs/2026-10-06-purecvisor-desktop-node-completion-definition-design.md`(`pcv-project-completion-definition-v1`). 2026-10-06 판정은 C4(설치본 evidence `5`개 항목)와 C5(2026-10-19 runner 확인)만 남음. public trusted signing과 external stable publication은 영구 범위 밖이다.
 - `0.42.75 -> 0.42.77` descriptor consume: `docs/ga-ready/evidence/manual-admin-campaign-2026-09-20-04275-04277.md` (`pass`, current 유지).
 - `0.42.77 -> 0.42.78` descriptor consume: `docs/ga-ready/evidence/manual-admin-campaign-2026-09-27-04277-04278.md` (`pass`, 당시 current `0.42.78-admin-smoke`).
 - `0.42.83 -> 0.42.84` descriptor consume: `docs/ga-ready/evidence/manual-admin-campaign-2026-09-30-04283-04284.md` (`pass`, 당시 current `0.42.84-admin-smoke`).

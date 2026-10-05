@@ -18,6 +18,12 @@
 - Claims: `public_trusted_signing=false`; `external_stable_publication=false`.
 <!-- END GENERATED CURRENT EVIDENCE -->
 
+## 2026-10-06 프로젝트 완료 정의
+
+- 완료 조건 C1~C6: `docs/superpowers/specs/2026-10-06-purecvisor-desktop-node-completion-definition-design.md`.
+- 현황 감사: `docs/project-status-audit-2026-10-06.md`. C1~C3, C6 충족, C4와 C5가 남는다.
+- public trusted signing과 external stable publication은 하지 않는다(2026-10-06 사용자 결정, ADR-0004·ADR-0006).
+
 ## 2026-09-20 캠페인 연속 실행
 
 - 실행 단위는 checkpoint가 아니라 campaign이다. 열린 상태는
