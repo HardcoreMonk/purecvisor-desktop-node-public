@@ -52,7 +52,9 @@
 
 ## Task 4: 종료 검증과 merge
 
-- [ ] clean HEAD에서 `dotnet test src/DesktopNode.sln -c Release`, Pester 네 종, `npm run test:required --prefix web`, Required CI 네 shard를 로컬로 돌린다. campaign을 닫고(`next_approval_required`에 Task 1 삭제 후보) 로컬 commit한 뒤 push, PR, green CI 뒤 merge.
+- [x] clean HEAD에서 `dotnet test src/DesktopNode.sln -c Release`, Pester 네 종, `npm run test:required --prefix web`, Required CI 네 shard를 로컬로 돌린다. campaign을 닫고(`next_approval_required`에 Task 1 삭제 후보) 로컬 commit한 뒤 push, PR, green CI 뒤 merge.
+
+실행 기록(2026-10-05, clean HEAD `c216f67`): `dotnet build src/DesktopNode.sln -c Release --no-incremental` 경고 `0`, 오류 `0`. `dotnet test src/DesktopNode.sln -c Release` 실패 `0`(Verification `611`, Delivery `763`, Api `488`, HyperV `255`, Host `216`, Contracts `200`, Cli `183`, Runtime `129`, Service `11`). Pester 네 종 실패 `0`(`528`, `49`, `50`, `129`). `npm run test:required --prefix web` exit `0`. Required CI 네 shard 모두 `ok=true`, `plan_only=false`. 이 기록과 campaign 닫기 commit을 PR #48에 push하고 green CI 뒤 merge한다.
 
 ## Nonclaims
 
