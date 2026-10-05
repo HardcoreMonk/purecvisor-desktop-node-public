@@ -238,6 +238,7 @@ operator surface current-card와 feature qualification이 모두 PASS이고 별�
 2. 승격 spec 하나로 `packaging/windows-desktop-node/tools/Invoke-PcvLane3PromotionDocs.ps1`를 실행한다. dry-run으로 먼저 보고, 그 다음 `-Apply`, 끝에 `-Check`를 실행한다.
    - 도구가 처리하는 단계: 생성 블록, descriptor chain, ledger head key와 status 행, index 승격 절, contract spec pin
    - 견본 spec: `packaging/windows-desktop-node/tests/fixtures/lane3-promotion-docs-spec-04278.json`
+   - release train에서는 spec을 손으로 고치지 않고 `pcvverify lane3-spec`으로 만든다(§10, 설계 `docs/superpowers/specs/2026-10-05-purecvisor-desktop-node-train-lane3-spec-generator-design.md`).
 3. C# 계약 `PcvCurrentPromotionEvidenceContractTests`는 기대값을 `current-evidence.json`과 ledger head chain에서 읽는다. 그래서 승격할 때 C#을 고치지 않는다.
 
 ## 7. 중단 조건
@@ -350,6 +351,15 @@ campaign은 이미 받은 승인을 되묻지 않을 뿐, 없는 승인을 만�
 
       dotnet run --project src/DesktopNode.Verification -c Release -- train-evidence --facts docs/ga-ready/trains/<version>.evidence-facts.json --check
 
+- Lane 3 승격 spec `packaging/windows-desktop-node/tests/fixtures/lane3-promotion-docs-spec-<tag>.json`은
+  `pcvverify lane3-spec`이 직전 spec과 그 train facts에서 만든다(설계
+  `docs/superpowers/specs/2026-10-05-purecvisor-desktop-node-train-lane3-spec-generator-design.md`). Lane 3 문서 세 개를
+  facts에 렌더한 뒤 입력 `docs/ga-ready/trains/<version>.lane3-spec-input.json`(계약 `pcv-train-lane3-spec-input-v1`)에
+  사람 판단 값 `9`개(ledger 행 `rule` `7`, `functional_note`, `updated_at`)만 적고 `--write`한다. 경로, batch id,
+  SHA-256, run id는 손으로 옮기지 않는다. `TrainLane3SpecGoldenTests`가 커밋된 입력마다 spec이 생성 결과와 같은지 본다.
+
+      dotnet run --project src/DesktopNode.Verification -c Release -- lane3-spec --input docs/ga-ready/trains/<version>.lane3-spec-input.json --write
+
 - train task 1(package)은 build 뒤 `packaging/windows-desktop-node/tools/New-PcvAdminSmokeUpdatePackage.ps1`로 update ZIP,
   admin-smoke update catalog, `package-facts.json`을 만든다. 손으로 ZIP을 만들지 않는다.
 - train task 2(pair)는 `packaging/windows-desktop-node/tools/Invoke-PcvManualAdminPackagePairCampaign.ps1`을
@@ -371,5 +381,5 @@ train campaign의 task 순서:
 | 4 | installed current-card, `train-facts`로 current-card 문서 |
 | 5.n | 적재 변경별 Lane 2 probe |
 | 6 | pair evidence PR과 merge |
-| 7 | Lane 3 evidence, `current-evidence.json`, 승격 문서 도구, `release-train.json` |
+| 7 | Lane 3 evidence, `current-evidence.json`, `lane3-spec`으로 승격 spec, 승격 문서 도구, `release-train.json` |
 | 8 | 종료 검증, Lane 3 PR과 merge |

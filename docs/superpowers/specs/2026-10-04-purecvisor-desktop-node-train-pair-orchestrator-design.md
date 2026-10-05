@@ -57,7 +57,7 @@ host mutation은 다음과 같다: 제품 Update/Rollback, clean-host VM 생성�
 
 리허설이 PASS하면 `DEVELOPMENT_PROCEDURE.md` §10 train task 2a~2g를 task 하나(orchestrator `-Execute`, facts 생성, 렌더)로 바꾼다. 출발 승인 문구의 pair host mutation 범위는 같다.
 
-Lane 3 spec(`lane3-promotion-docs-spec-<tag>.json`) 생성은 3c 뒤로 둔다. 0.42.87~0.42.89에서 직전 spec을 읽어 값만 바꾸는 스크립트로 충분히 돌았고, 행 문구는 train마다 사람이 판단하기 때문이다.
+Lane 3 spec(`lane3-promotion-docs-spec-<tag>.json`) 생성은 3c 뒤로 둔다. 0.42.87~0.42.89에서 직전 spec을 읽어 값만 바꾸는 스크립트로 충분히 돌았고, 행 문구는 train마다 사람이 판단하기 때문이다. 보정(2026-10-05): 3c 뒤 `pcvverify lane3-spec`으로 도입했다. 행 문구 같은 사람 판단 값은 입력의 `narrative`로 받는다(설계 `docs/superpowers/specs/2026-10-05-purecvisor-desktop-node-train-lane3-spec-generator-design.md`).
 
 ## 4. 기대 효과
 

@@ -85,6 +85,11 @@ internal sealed class VerificationApplication(
             return TrainFactsCommand.Run(args, currentDirectory(), standardOutput);
         }
 
+        if (args.Count > 0 && string.Equals(args[0], TrainLane3SpecCommand.Name, StringComparison.Ordinal))
+        {
+            return TrainLane3SpecCommand.Run(args, currentDirectory(), standardOutput);
+        }
+
         DateTimeOffset? startedAt = null;
         VerificationRequest? request = null;
         VerificationPlan? plan = null;
