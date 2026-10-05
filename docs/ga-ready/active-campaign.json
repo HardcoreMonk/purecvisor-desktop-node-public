@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
   "contract": "pcv-active-campaign-v1",
-  "status": "closed",
-  "id": "train-tooling-followups-20261006",
-  "intent": "lane1-train-tooling-followups",
+  "status": "open",
+  "id": "completion-definition-20261006",
+  "intent": "lane1-completion-definition-audit",
   "working_authority": "source_head",
   "allowed_lanes": [
     "0",
@@ -11,25 +11,21 @@
   ],
   "mutation_allowed": false,
   "current_write_allowed": false,
-  "next_step": "Closed. Task 1-3 complete: New-PcvAdminSmokeUpdatePackage.ps1 keeps build_utc as ISO 8601 (-DateKind String, contract test), and DEVELOPMENT_PROCEDURE section 10 records the orchestrated train Lane 3 consume and the current-card constants. The branch merges after green CI under merge_policy after-green-ci. No approval is pending: the release train queue is empty.",
-  "plan": "docs/superpowers/plans/2026-10-06-purecvisor-desktop-node-train-tooling-followups.md",
+  "next_step": "Run Task 1 from docs/superpowers/plans/2026-10-06-purecvisor-desktop-node-completion-definition.md, then the queue in order.",
+  "plan": "docs/superpowers/plans/2026-10-06-purecvisor-desktop-node-completion-definition.md",
   "task_queue": [
     "Task 1",
     "Task 2",
     "Task 3"
   ],
   "task_lanes": {},
-  "next_task": null,
-  "completed_tasks": [
-    "Task 1",
-    "Task 2",
-    "Task 3"
-  ],
+  "next_task": "Task 1",
+  "completed_tasks": [],
   "commit_policy": "local-commit-per-task",
   "push_allowed": true,
   "merge_policy": "after-green-ci",
   "checkpoint_limit": 3,
-  "approval_locator": "User-Approval: 2026-09-27 campaign runner commit policy local-commit-per-task; 2026-10-06 \"1,2\" (train-04290-20261005 next_approval_required: 1 make New-PcvAdminSmokeUpdatePackage.ps1 write build_utc in ISO 8601 with a Delivery contract test, tooling-only without a queue row, then push, PR and merge after green CI; 2 record the orchestrated-train Lane 3 consume and the current-card provenance_commit constant in DEVELOPMENT_PROCEDURE section 10, then push, PR and merge after green CI; both Lane 1 without host mutation)",
+  "approval_locator": "User-Approval: 2026-09-27 campaign runner commit policy local-commit-per-task; 2026-10-06 \"1, public trusted signing, 외부 stable 배포는 없음\" (1 write the completion definition decision document and the per-item status audit of SERVICE_PLAN P0-P2, Lane 1 docs without host mutation, then push, PR and merge after green CI; decision: public trusted signing and external stable publication will not be done and stay permanently out of the completion definition)",
   "next_approval_required": [],
   "stop_on": [
     "same-cause-fail-3",
@@ -42,5 +38,5 @@
     "dirty-tree-at-start"
   ],
   "out_of_scope_is_not_next_step": true,
-  "closed_predecessor": "train-04290-20261005"
+  "closed_predecessor": "train-tooling-followups-20261006"
 }
