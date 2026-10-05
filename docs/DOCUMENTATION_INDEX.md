@@ -6,12 +6,12 @@
 
 ## 현재 기준
 
-- 공개 소스 권위: `HardcoreMonk/purecvisor-desktop-node-public`, HEAD `8631947ccb6329384a41a86fc1c0e94778296eef` (PR #35, release train `0.42.89` package pair merge). `0.42.89-admin-smoke` Lane 3 승격은 이 HEAD 위의 Lane 3 PR이 담는다.
+- 공개 소스 권위: `HardcoreMonk/purecvisor-desktop-node-public`, HEAD `366172a2eb7196a0c4dc5d879b0ac4d84ce6fbff` (PR #49, release train `0.42.90` package pair merge). `0.42.90-admin-smoke` Lane 3 승격은 이 HEAD 위의 Lane 3 PR이 담는다.
 - Required CI 권위: Development Gates run `37171644667`; 보호 context는 정확히 `dotnet`, `web`, `delivery`, `installer-policy`다.
 - PowerShell/Pester 경계: invocation 0은 위 Required CI 네 context에만 적용한다. 별도 Public Boundary workflow는 비필수 legacy residue로 보존한다(run `37171644656`, job `111345611153`).
-- 운영 제품 권위: `0.42.89-admin-smoke`; Web Console과 PCVCLI가 active이고 TUI는 absent다. Feature promotion은 `promotion_eligible=true`, blockers `none`이다. P0 feature ledger는 `0.42.75-admin-smoke` evidence를 유지한다.
-- 이 호스트 설치본(2026-10-05 train `0.42.90` fullgate): `0.42.90-admin-smoke`(gate build `+648139d`), service `Running/Automatic`. ARP `DisplayVersion`은 `0.42.90`(항목 `1`개). operational current는 Lane 3 전까지 `0.42.89-admin-smoke`다.
-- 개발 campaign: `docs/ga-ready/active-campaign.json` id `train-04290-20261005`(intent `release-train-04290`, 2026-10-05 출발, 러너 `pcv-campaign-runner-v2`, 계획 `docs/superpowers/plans/2026-10-05-purecvisor-desktop-node-train-04290.md`). release train `0.42.90-admin-smoke`(carriages PR #48)이며 3c 이후 첫 orchestrator train이다.
+- 운영 제품 권위: `0.42.90-admin-smoke`; Web Console과 PCVCLI가 active이고 TUI는 absent다. Feature promotion은 `promotion_eligible=true`, blockers `none`이다. P0 feature ledger는 `0.42.75-admin-smoke` evidence를 유지한다.
+- 이 호스트 설치본(2026-10-05 train `0.42.90` fullgate): `0.42.90-admin-smoke`(gate build `+648139d`), service `Running/Automatic`. ARP `DisplayVersion`은 `0.42.90`(항목 `1`개). operational current와 같은 build다.
+- 개발 campaign: `docs/ga-ready/active-campaign.json` id `train-04290-20261005`(intent `release-train-04290`, 2026-10-05 출발·승격, Task 0~8, `status=closed`, 러너 `pcv-campaign-runner-v2`, 계획 `docs/superpowers/plans/2026-10-05-purecvisor-desktop-node-train-04290.md`). release train `0.42.90-admin-smoke`(carriages PR #48)이며 pair orchestrator, `pcvverify train-facts`, `pcvverify lane3-spec`으로 돈 첫 train이다.
 - release train: 대기열과 train 이력 `docs/ga-ready/release-train.json`, 규칙 `docs/DEVELOPMENT_PROCEDURE.md` §10, 설계 `docs/superpowers/specs/2026-10-04-purecvisor-desktop-node-release-train-design.md`(2026-10-04 채택).
 - 진행 상황 현행화: `docs/project-status-audit-2026-10-03.md`. 직전 snapshot은 `docs/project-status-audit-2026-09-27.md`.
 - `0.42.75 -> 0.42.77` descriptor consume: `docs/ga-ready/evidence/manual-admin-campaign-2026-09-20-04275-04277.md` (`pass`, current 유지).
@@ -21,6 +21,7 @@
 - `0.42.86 -> 0.42.87` descriptor consume: `docs/ga-ready/evidence/manual-admin-campaign-2026-10-03-04286-04287.md` (`pass`, 당시 current `0.42.87-admin-smoke`).
 - `0.42.87 -> 0.42.88` descriptor consume: `docs/ga-ready/evidence/manual-admin-campaign-2026-10-03-04287-04288.md` (`pass`, 당시 current `0.42.88-admin-smoke`).
 - `0.42.88 -> 0.42.89` descriptor consume: `docs/ga-ready/evidence/manual-admin-campaign-2026-10-04-04288-04289.md` (`pass`, current `0.42.89-admin-smoke`). 첫 release train이다.
+- `0.42.89 -> 0.42.90` descriptor consume: `docs/ga-ready/evidence/manual-admin-campaign-2026-10-05-04289-04290.md` (`pass`, current `0.42.90-admin-smoke`). pair orchestrator로 돈 첫 train이며 consume descriptor는 orchestrator가 닫을 때 만든 `manual-admin-campaign-20261005-04289-04290-closed`다.
 - `0.42.78 -> 0.42.83` descriptor consume: `docs/ga-ready/evidence/manual-admin-campaign-2026-09-29-04278-04283.md` (`pass`, 당시 current `0.42.83-admin-smoke`).
 - 릴리스 주장 경계: `public_trusted_signing=false`, `external_stable_publication=false`.
 
