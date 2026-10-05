@@ -51,7 +51,9 @@
 
 ## Task 5: 절차 반영
 
-- [ ] `docs/DEVELOPMENT_PROCEDURE.md` §6 문서 반영 순서와 §10 train task 7, release train 설계 §9 3단계 행, pair orchestrator 설계 §3c의 Lane 3 spec 줄을 생성기 기준으로 바꾼다. 검증 `dotnet test src/DesktopNode.Delivery.Tests -c Release`, `git diff --check`. 로컬 commit.
+- [x] `docs/DEVELOPMENT_PROCEDURE.md` §6 문서 반영 순서와 §10 train task 7, release train 설계 §9 3단계 행, pair orchestrator 설계 §3c의 Lane 3 spec 줄을 생성기 기준으로 바꾼다. 검증 `dotnet test src/DesktopNode.Delivery.Tests -c Release`, `git diff --check`. 로컬 commit.
+
+실행 기록(2026-10-05): `DEVELOPMENT_PROCEDURE.md` §6 반영 순서에 train에서는 `pcvverify lane3-spec`으로 spec을 만든다는 줄, §10에 생성 절차·입력 파일·명령 bullet, train task 7 행에 `lane3-spec`을 더했다. release train 설계 §9 3단계 행과 pair orchestrator 설계 §3c에 2026-10-05 도입을 적었다. 견본 spec(04278)과 승격 문서 도구 경로는 그대로라 `PcvLane3PromotionDocsToolsContractTests` pin은 바뀌지 않는다.
 
 ## Task 6: 종료 검증과 merge
 
