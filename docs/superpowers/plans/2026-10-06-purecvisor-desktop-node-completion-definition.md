@@ -26,7 +26,9 @@
 
 ## Task 1: 현황 감사
 
-- [ ] SERVICE_PLAN §7.1 P0~P2 `15`개 항목과 완료 층 네 개를 항목마다 대조해 `docs/project-status-audit-2026-10-06.md`에 쓴다. 항목마다 상태(`설치본 actual-VM PASS`, `code-level만`, `정책상 닫힘`, `미착수`, `확인 못 함`)와 근거를 적는다. 검증 `dotnet test src/DesktopNode.Delivery.Tests -c Release`, `git diff --check`. 로컬 commit.
+- [x] SERVICE_PLAN §7.1 P0~P2 `15`개 항목과 완료 층 네 개를 항목마다 대조해 `docs/project-status-audit-2026-10-06.md`에 쓴다. 항목마다 상태(`설치본 actual-VM PASS`, `code-level만`, `정책상 닫힘`, `미착수`, `확인 못 함`)와 근거를 적는다. 검증 `dotnet test src/DesktopNode.Delivery.Tests -c Release`, `git diff --check`. 로컬 commit.
+
+실행 기록(2026-10-06): `docs/project-status-audit-2026-10-06.md`. 완료 층 세 개(GA-ready 런타임, operational current `0.42.90`, 기능 승격 후보 `4/4`)는 닫힘. P0~P2 `15`개는 모두 설계가 구현됐고(`implemented-slice-*`), 설치본 PASS `10`, 부분 `1`(P1-10), code-level만 `4`(P1-6, P1-7, P1-9, P2-11), 미착수 `0`. 기한 위험은 2026-10-19 Ubuntu 26 runner 확인 하나. Delivery `763` 통과.
 
 ## Task 2: 완료 정의 결정 문서
 
