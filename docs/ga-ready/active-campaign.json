@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "contract": "pcv-active-campaign-v1",
-  "status": "open",
+  "status": "closed",
   "id": "train-lane3-spec-generator-20261005",
   "intent": "lane1-train-lane3-spec-generator",
   "working_authority": "source_head",
@@ -11,7 +11,7 @@
   ],
   "mutation_allowed": false,
   "current_write_allowed": false,
-  "next_step": "Run Task 6 from docs/superpowers/plans/2026-10-05-purecvisor-desktop-node-train-lane3-spec-generator.md, then the queue in order.",
+  "next_step": "Closed. Task 1-6 complete: pcvverify lane3-spec builds lane3-promotion-docs-spec-<tag>.json from the previous spec and the train facts, with nine human values in docs/ga-ready/trains/<version>.lane3-spec-input.json; the 04289 golden rebuilds the committed spec byte for byte; DEVELOPMENT_PROCEDURE sections 6 and 10 route train task 7 through it. The branch merges after green CI under merge_policy after-green-ci. No approval is pending: the release train queue is empty, so the next train departure needs its own approval once a product PR adds a queue row.",
   "plan": "docs/superpowers/plans/2026-10-05-purecvisor-desktop-node-train-lane3-spec-generator.md",
   "task_queue": [
     "Task 1",
@@ -22,13 +22,14 @@
     "Task 6"
   ],
   "task_lanes": {},
-  "next_task": "Task 6",
+  "next_task": null,
   "completed_tasks": [
     "Task 1",
     "Task 2",
     "Task 3",
     "Task 4",
-    "Task 5"
+    "Task 5",
+    "Task 6"
   ],
   "commit_policy": "local-commit-per-task",
   "push_allowed": true,
