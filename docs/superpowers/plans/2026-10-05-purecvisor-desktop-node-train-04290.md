@@ -81,7 +81,9 @@
 
 ## Task 7: Lane 3
 
-- [ ] functional carry-forward, single-root consume, Task 6 merge의 main push evidence를 facts로 렌더하고 current-card 승격 값을 넣는다. `current-evidence.json`, 입력 `docs/ga-ready/trains/0.42.90-admin-smoke.lane3-spec-input.json`과 `lane3-spec --write`로 승격 spec, 문서 도구 dry-run·`-Apply`·`-Check`. `release-train.json` `operational_current=0.42.90-admin-smoke`, train `status=promoted`. 로컬 commit.
+- [x] functional carry-forward, single-root consume, Task 6 merge의 main push evidence를 facts로 렌더하고 current-card 승격 값을 넣는다. `current-evidence.json`, 입력 `docs/ga-ready/trains/0.42.90-admin-smoke.lane3-spec-input.json`과 `lane3-spec --write`로 승격 spec, 문서 도구 dry-run·`-Apply`·`-Check`. `release-train.json` `operational_current=0.42.90-admin-smoke`, train `status=promoted`. 로컬 commit.
+
+실행 기록(2026-10-05): branch `lane3/04290-promotion-20261005`(`origin/main` `366172a`, PR #49 merge 기준). Lane 3 문서 `3`개를 facts에 더해 렌더했다. functional carry-forward(0.42.75 PASS, ledger 마지막 변경 `bb15f66`), consume(orchestrator가 닫을 때 만든 `manual-admin-campaign-20261005-04289-04290-closed`를 consume descriptor로 쓰고, 그 descriptor가 읽은 summary `7`개를 `consume-manifest.json`에 SHA-256과 함께 적었다. 복사 없음, host mutation 없음), main push(`366172a`, Public Boundary run `37311188276`, Development Gates run `37311188281` success). current-card는 `promoted-current`로 `--allow-update`. `current-evidence.json` current `0.42.90-admin-smoke`(operational MSI `ac367ea4…`, payload `9031c560…`, provenance `648139d`, descriptor `…-closed`). 입력 `docs/ga-ready/trains/0.42.90-admin-smoke.lane3-spec-input.json`(사람 값 `9`개)으로 `lane3-spec --write`가 `lane3-promotion-docs-spec-04290.json`을 만들었다(첫 실사용, `--check` `current`). 문서 도구 dry-run, `-Apply`, `-Check` 모두 `ok`. `release-train.json` `operational_current=0.42.90-admin-smoke`, train `status=promoted`. 수기 정렬: `CurrentEvidenceVerifierTests`, `DOCUMENTATION_INDEX` 권위·호스트·consume 줄, `FEATURE_IMPLEMENTATION_LEDGER` operational 줄. Delivery `763` 통과, Verification `613` 중 dirty tree 전용 PolicyBoundary만 실패(commit 뒤 다시 본다).
 
 ## Task 8: 종료와 Lane 3 merge
 
