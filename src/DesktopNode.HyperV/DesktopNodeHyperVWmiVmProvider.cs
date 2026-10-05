@@ -93,7 +93,7 @@ public sealed partial class DesktopNodeHyperVWmiVmProvider : IDesktopNodeHyperVV
         string? generationSubtype = null;
         string? notes = null;
         string? creationTime = null;
-        IReadOnlyList<DesktopNodeHyperVWmiVmStorageSummary> storage = [];
+        IReadOnlyList<DesktopNodeHyperVWmiVmStorageSummary>? storage = [];
         IReadOnlyList<DesktopNodeHyperVWmiVmNetworkSummary> network = [];
         int? dvdDriveCount = null;
 
