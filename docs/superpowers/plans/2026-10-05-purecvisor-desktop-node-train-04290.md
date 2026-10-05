@@ -75,7 +75,9 @@
 
 ## Task 6: fullgate·current-card 문서와 pair evidence merge
 
-- [ ] `train-facts`에 fullgate, current-card 문서를 더해 렌더한다. clean HEAD 종료 검증 뒤 push, PR, green CI 뒤 merge.
+- [x] `train-facts`에 fullgate, current-card 문서를 더해 렌더한다. clean HEAD 종료 검증 뒤 push, PR, green CI 뒤 merge.
+
+실행 기록(2026-10-05, clean HEAD `b2429ea`): fullgate(생성 `35`, 사람 `2`)와 current-card(생성 `31`, 사람 `1`) 문서를 렌더해 pair 문서 `9`개가 모두 facts에서 나왔다. `DOCUMENTATION_INDEX` 호스트 설치본 줄을 `+648139d`로 바꿨다. `dotnet build` 경고 `0`, `dotnet test src/DesktopNode.sln -c Release` 실패 `0`(Verification `612`, Delivery `763`, Api `488`, HyperV `255`, Host `216`, Contracts `200`, Cli `183`, Runtime `129`, Service `11`). Pester 네 종 실패 `0`(`528`, `49`, `50`, `129`). `npm run test:required --prefix web` exit `0`. Required CI 네 shard 모두 `ok=true`, `plan_only=false`. 이 기록 commit 뒤 push, PR, green CI 뒤 merge한다.
 
 ## Task 7: Lane 3
 
