@@ -27,7 +27,9 @@
 
 ## Task 1: 값 출처 조사와 설계
 
-- [ ] 04289 spec의 값마다 출처를 분류한다(직전 spec에서 회전, train facts, `release-train.json`/`current-evidence.json`, Lane 3 main push 결과, 사람 판단). 04288→04289 diff로 분류를 확인하고, 설계 문서 `docs/superpowers/specs/2026-10-05-purecvisor-desktop-node-train-lane3-spec-generator-design.md`에 입력 계약, 명령 형태, golden 방법, 남는 사람 값 목록을 적는다. 검증 `dotnet test src/DesktopNode.Delivery.Tests -c Release`, `git diff --check`. 로컬 commit.
+- [x] 04289 spec의 값마다 출처를 분류한다(직전 spec에서 회전, train facts, `release-train.json`/`current-evidence.json`, Lane 3 main push 결과, 사람 판단). 04288→04289 diff로 분류를 확인하고, 설계 문서 `docs/superpowers/specs/2026-10-05-purecvisor-desktop-node-train-lane3-spec-generator-design.md`에 입력 계약, 명령 형태, golden 방법, 남는 사람 값 목록을 적는다. 검증 `dotnet test src/DesktopNode.Delivery.Tests -c Release`, `git diff --check`. 로컬 commit.
+
+실행 기록(2026-10-05): 04289 spec 말단 값 `103`개를 04288과 비교했다(same `21`, rotated `4`, new `78`). facts 파일이 Lane 3 문서 세 개(functional carry-forward, pair consume, main push)까지 문서 `12`개를 가지므로 경로, batch id, SHA-256, run/job id 대부분이 facts에서 나온다. 사람 판단 값은 ledger 행 `rule` `7`개, `functional_note`, `updated_at`의 `9`개로 남는다. `release-train.json`은 값 출처가 아니라 train 행과 상태 확인에 쓴다. 설계 `docs/superpowers/specs/2026-10-05-purecvisor-desktop-node-train-lane3-spec-generator-design.md`(`pcv-train-lane3-spec-generator-v1`)에 입력 계약 `pcv-train-lane3-spec-input-v1`, 명령 `pcvverify lane3-spec --input (--write|--check)`, golden 방법을 적었다.
 
 ## Task 2: 입력 계약과 descriptor chain 생성
 
