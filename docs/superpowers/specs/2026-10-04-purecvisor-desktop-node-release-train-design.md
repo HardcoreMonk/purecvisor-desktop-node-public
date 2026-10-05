@@ -206,7 +206,7 @@ Lane 2 probe는 train candidate 설치본에서 한다. probe 때문에 중간 p
 | --- | --- | --- |
 | 1 (2026-10-04 도입) | 절차 도입 | `docs/DEVELOPMENT_PROCEDURE.md` §10 train 절과 §4 승인 표, `docs/ga-ready/release-train.json`과 C# 구조 계약 `PcvReleaseTrainContractTests`. descriptor chain의 다음 출발 조건 값 `release-train-departure-after-<tag>`는 다음 승격의 Lane 3 spec에서 쓴다 |
 | 2 (2026-10-04 도입) | 증적 생성 | `pcvverify train-evidence`, 틀 `12`개, facts 계약 `pcv-train-evidence-facts-v1`, golden 시험 `TrainEvidenceGoldenTests`(설계 `docs/superpowers/specs/2026-10-04-purecvisor-desktop-node-train-evidence-render-design.md`). facts는 사람이 채운다. facts 자동 채우기와 Lane 3 spec 생성은 3단계로 옮긴다 |
-| 3 | pair orchestrator | update catalog 생성, `Invoke-PcvManualAdminPackagePairCampaign.ps1` 사용. 설계 `docs/superpowers/specs/2026-10-04-purecvisor-desktop-node-train-pair-orchestrator-design.md`. 3a(update 패키지 도구, orchestrator 관측, `pcvverify train-facts`) 2026-10-04 도입, 3b 리허설과 3c 절차 변경은 승인 전 |
+| 3 (2026-10-04 도입) | pair orchestrator | update catalog 생성, `Invoke-PcvManualAdminPackagePairCampaign.ps1` 사용. 설계 `docs/superpowers/specs/2026-10-04-purecvisor-desktop-node-train-pair-orchestrator-design.md`. 3a(update 패키지 도구, orchestrator 관측, `pcvverify train-facts`) 도입, 3b 리허설 PASS(evidence `train-pair-orchestrator-rehearsal-2026-10-04-04288-04289-r2`, PR #42), 3c 절차 반영(`docs/DEVELOPMENT_PROCEDURE.md` §10 train task 2, PR #44). Lane 3 spec 생성은 아직 직전 spec을 읽어 값을 바꾼다 |
 
 1단계는 제품 동작을 바꾸지 않는다. descriptor chain의 출발 조건 값은 Lane 3 spec의 데이터라서 다음 승격 때 바꾼다.
 

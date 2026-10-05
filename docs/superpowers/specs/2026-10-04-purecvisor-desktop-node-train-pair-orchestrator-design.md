@@ -2,7 +2,7 @@
 
 - Design-ID: `pcv-train-pair-orchestrator-v1`
 - 작성일: `2026-10-04`
-- 문서 상태: `accepted` (2026-10-04 사용자 승인 "PR #38 merge, 3a 구현 승인". 3b, 3c는 별도 승인)
+- 문서 상태: `implemented` (2026-10-04 사용자 승인 "PR #38 merge, 3a 구현 승인". 3b 리허설은 승인 `1,2,3`으로 다시 돌려 PASS(PR #42), 3c 절차 반영은 PR #44 merge `2c0a4c2`)
 - 변경 등급: L (manual-admin host mutation 실행 경로)
 - 상위 설계: `docs/superpowers/specs/2026-10-04-purecvisor-desktop-node-release-train-design.md` §6, §9 3단계
 - 선행: 2단계 증적 렌더러 `pcv-train-evidence-render-v1` (PR #37, merge `a399c2e`)
