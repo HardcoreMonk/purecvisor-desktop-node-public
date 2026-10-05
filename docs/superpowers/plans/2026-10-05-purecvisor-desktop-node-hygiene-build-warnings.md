@@ -40,7 +40,9 @@
 
 ## Task 2: 빌드 경고 정리
 
-- [ ] CS8622와 CS8600을 동작 변경 없이 없앤다. 검증 `dotnet build src/DesktopNode.sln -c Release --no-incremental`에서 경고 `0`, `dotnet test src/DesktopNode.Api.Tests -c Release`, `dotnet test src/DesktopNode.HyperV.Tests -c Release`. 로컬 commit.
+- [x] CS8622와 CS8600을 동작 변경 없이 없앤다. 검증 `dotnet build src/DesktopNode.sln -c Release --no-incremental`에서 경고 `0`, `dotnet test src/DesktopNode.Api.Tests -c Release`, `dotnet test src/DesktopNode.HyperV.Tests -c Release`. 로컬 commit.
+
+실행 기록(2026-10-05): CS8622(`DesktopNodeApiJobReconciliationHandler.Media.cs:108`)는 `Where`로 null·공백을 거른 `string?` 시퀀스에 method group `NormalizeMediaPath`를 넘겨서 났다. 같은 파일 193행처럼 `path => NormalizeMediaPath(path!)`로 바꿨다. CS8600(`DesktopNodeHyperVWmiVmProvider.cs:122`)은 nullable을 반환하는 `GetStorageSummaries`(WMI 예외 때 `null`)를 non-nullable 지역 변수 `storage`에 넣어서 났다. 받는 record 필드 `Storage`가 이미 nullable이고 소비자가 `null`을 다루므로, 지역 변수 선언만 `?`로 맞췄다. 두 곳 모두 실행 값은 같다. `dotnet build src/DesktopNode.sln -c Release --no-incremental` 경고 `0`, 오류 `0`. Api `488`, HyperV `255`, Delivery `763` 통과.
 
 ## Task 3: release train 대기열 행
 

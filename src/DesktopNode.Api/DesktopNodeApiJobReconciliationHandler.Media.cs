@@ -105,7 +105,7 @@ internal sealed partial class DesktopNodeApiJobReconciliationHandler
             string.Equals(DesktopNodeApiJsonReader.ReadString(value, "capture_status"), "captured", StringComparison.Ordinal) &&
             value.TryGetProperty("before_media", out var capturedMedia) &&
             capturedMedia.ValueKind == JsonValueKind.Array
-                ? capturedMedia.EnumerateArray().Select(item => item.GetString()).Where(path => !string.IsNullOrWhiteSpace(path)).Select(NormalizeMediaPath).ToArray()
+                ? capturedMedia.EnumerateArray().Select(item => item.GetString()).Where(path => !string.IsNullOrWhiteSpace(path)).Select(path => NormalizeMediaPath(path!)).ToArray()
                 : null;
         var before = metadata is { ValueKind: JsonValueKind.Object } baseline ? DesktopNodeApiJsonReader.ReadElement(baseline, "before") : null;
         var beforeId = before is { ValueKind: JsonValueKind.Object } beforeVm ? DesktopNodeApiJsonReader.GetStringProperty(beforeVm, "id") : null;
