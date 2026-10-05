@@ -369,6 +369,15 @@ campaign은 이미 받은 승인을 되묻지 않을 뿐, 없는 승인을 만�
   package root를 그대로 넘긴다. guest 인증 정보는 호출 직전에 `PSCredential`로 만들어 `-GuestCredential`로 넘기고
   명령줄, summary, evidence에 남기지 않는다. 그 결과로 `train-facts`와 `--write`를 실행해 pair 문서를 만든다.
   출발 승인 문구의 pair host mutation 범위는 bucket을 하나씩 돌던 때와 같다.
+- orchestrator train의 Lane 3 consume은 bucket을 따로 모으지 않는다. orchestrator가 닫을 때 같은 root로
+  `New-PcvManualAdminCampaignDescriptor -PlanOnly`를 실행해 만든 `<campaign>-closed` descriptor를 consume descriptor로
+  쓴다(`pair-consume` 문서의 `descriptor_batch_id`와 `source_descriptor_batch_id`). 그 descriptor가 읽은 summary JSON
+  `7`개는 `<campaign root>/consume-manifest.json`에 SHA-256, byte 수와 함께 적는다(복사 없음). 승격 도구는 `-consume`
+  접미사를 요구하지 않는다. 첫 사례는 train `0.42.90`(`manual-admin-campaign-2026-10-05-04289-04290`)이다.
+- train task 4(current-card)는 직전 train의 `capture-current-card.ps1`을 복사해 root, evidence id, fullgate batch,
+  64자리 SHA 상수 `4`개(clean·fullgate MSI, clean·fullgate payload), 40자리 `provenance_commit`(fullgate gate build
+  commit), 설치 manifest version, `canonical_current_evidence`를 바꾼다. 스크립트는 artifact root가 있으면 멈추므로
+  root 밖에서 실행하고, 끝난 뒤 root에 복사해 둔다.
 
 train campaign의 task 순서:
 
