@@ -55,6 +55,8 @@ public sealed class PcvAdminSmokeUpdatePackageContractTests
         RequireTokens(
             source,
             "contract = 'pcv-admin-smoke-package-facts-v1'",
+            "ConvertFrom-Json -Depth 64 -DateKind String",
+            "build_utc = [string]$provenance.build_utc",
             "'OpenDatabase' 'InvokeMethod' @($msiPath, 0)",
             "SELECT VersionMin, VersionMax, Attributes FROM Upgrade",
             "Action='RemoveExistingProducts'",

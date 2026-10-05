@@ -14,7 +14,9 @@ Add-Type -AssemblyName System.IO.Compression
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 
 function Get-PcvSha256([string]$Path) { (Get-FileHash -LiteralPath $Path -Algorithm SHA256).Hash.ToLowerInvariant() }
-function Read-PcvJson([string]$Path) { Get-Content -LiteralPath $Path -Raw -Encoding utf8 | ConvertFrom-Json -Depth 64 }
+# -DateKind String keeps ISO 8601 text such as provenance build_utc as written; the default turns it into DateTime and
+# [string] then prints it in the current culture.
+function Read-PcvJson([string]$Path) { Get-Content -LiteralPath $Path -Raw -Encoding utf8 | ConvertFrom-Json -Depth 64 -DateKind String }
 function Write-PcvJson([string]$Path, $Value) {
     [System.IO.File]::WriteAllText($Path, ($Value | ConvertTo-Json -Depth 32) + "`n", [System.Text.UTF8Encoding]::new($false))
 }

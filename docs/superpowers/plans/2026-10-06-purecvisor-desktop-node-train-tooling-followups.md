@@ -26,7 +26,9 @@
 
 ## Task 1: `build_utc` ISO 8601
 
-- [ ] `New-PcvAdminSmokeUpdatePackage.ps1`이 provenance의 build 시각을 culture와 무관한 ISO 8601(UTC, `Z`)로 `package-facts.json`에 쓰게 고친다. Delivery 계약 시험이 그 형식 token을 본다. 0.42.90 package로 새 출력 root에 실행해 값 형식을 확인한다. 검증 `dotnet test src/DesktopNode.Delivery.Tests -c Release`. 로컬 commit.
+- [x] `New-PcvAdminSmokeUpdatePackage.ps1`이 provenance의 build 시각을 culture와 무관한 ISO 8601(UTC, `Z`)로 `package-facts.json`에 쓰게 고친다. Delivery 계약 시험이 그 형식 token을 본다. 0.42.90 package로 새 출력 root에 실행해 값 형식을 확인한다. 검증 `dotnet test src/DesktopNode.Delivery.Tests -c Release`. 로컬 commit.
+
+실행 기록(2026-10-06): provenance 파일에는 `2026-10-05T12:07:30.9458397Z`로 있었다. pwsh 7의 `ConvertFrom-Json`이 이 문자열을 `DateTime`으로 바꾸고 `[string]`이 culture 형식으로 찍은 것이 원인이다. 도구는 이미 pwsh 전용(`-Depth`)이고 이 호스트 pwsh는 `7.6.6`이라 `Read-PcvJson`에 `-DateKind String`을 더했다. 계약 시험이 그 token과 `build_utc` 줄을 본다. 0.42.90 package를 새 출력 root `artifacts/update-package-check-20261006/20261005-04290`로 다시 돌려 `build_utc`가 `2026-10-05T12:07:30.9458397Z`이고, 다른 facts 값은 같음을 확인했다(catalog SHA는 생성 시각·경로 때문에 다름). Delivery `763` 통과.
 
 ## Task 2: §10 orchestrator Lane 3 절차
 
