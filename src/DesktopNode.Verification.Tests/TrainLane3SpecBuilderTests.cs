@@ -4,7 +4,7 @@ namespace DesktopNode.Verification.Tests;
 
 public sealed class TrainLane3SpecBuilderTests
 {
-    private const string Spec04289 = "packaging/windows-desktop-node/tests/fixtures/lane3-promotion-docs-spec-04289.json";
+    internal const string Spec04289Path = "packaging/windows-desktop-node/tests/fixtures/lane3-promotion-docs-spec-04289.json";
 
     [Fact]
     public void DescriptorChainMatchesTheCommitted04289Spec()
@@ -80,9 +80,9 @@ public sealed class TrainLane3SpecBuilderTests
     private static string Detail(JsonObject input) =>
         Assert.Throws<VerificationException>(() => TrainLane3SpecInput.Parse(input.ToJsonString())).Detail;
 
-    private static TrainLane3SpecInput Input04289() => TrainLane3SpecInput.Parse(InputJson04289().ToJsonString());
+    internal static TrainLane3SpecInput Input04289() => TrainLane3SpecInput.Parse(InputJson04289().ToJsonString());
 
-    private static JsonObject InputJson04289()
+    internal static JsonObject InputJson04289()
     {
         var rules = new JsonObject();
         foreach (var id in TrainLane3SpecInput.RuleIds)
@@ -97,7 +97,7 @@ public sealed class TrainLane3SpecBuilderTests
             ["version"] = "0.42.89-admin-smoke",
             ["previous_spec"] = "packaging/windows-desktop-node/tests/fixtures/lane3-promotion-docs-spec-04288.json",
             ["facts"] = "docs/ga-ready/trains/0.42.89-admin-smoke.evidence-facts.json",
-            ["output"] = Spec04289,
+            ["output"] = Spec04289Path,
             ["narrative"] = new JsonObject
             {
                 ["updated_at"] = "2026-10-04T11:42:00+09:00",
@@ -107,9 +107,9 @@ public sealed class TrainLane3SpecBuilderTests
         };
     }
 
-    private static JsonObject Committed04289() =>
+    internal static JsonObject Committed04289() =>
         JsonNode.Parse(File.ReadAllText(Path.Combine(
-            VerificationCatalogFixture.RepositoryRoot, Spec04289.Replace('/', Path.DirectorySeparatorChar))))!.AsObject();
+            VerificationCatalogFixture.RepositoryRoot, Spec04289Path.Replace('/', Path.DirectorySeparatorChar))))!.AsObject();
 
     private static void AssertSameJson(JsonNode? expected, JsonNode actual) =>
         Assert.Equal(expected!.ToJsonString(), actual.ToJsonString());

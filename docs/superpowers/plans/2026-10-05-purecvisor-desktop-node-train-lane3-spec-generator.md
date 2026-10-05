@@ -39,7 +39,9 @@
 
 ## Task 3: ledger 행, index 절, 명령
 
-- [ ] ledger 행(`replace`, `supersede`)과 index 절 값 생성, `pcvverify` 명령(쓰기와 확인)을 구현하고 시험을 더한다. 검증 `dotnet test src/DesktopNode.Verification.Tests -c Release`. 로컬 commit.
+- [x] ledger 행(`replace`, `supersede`)과 index 절 값 생성, `pcvverify` 명령(쓰기와 확인)을 구현하고 시험을 더한다. 검증 `dotnet test src/DesktopNode.Verification.Tests -c Release`. 로컬 commit.
+
+실행 기록(2026-10-05): `TrainLane3SpecBuilder.Rows.cs`에 ledger 행 `8`개(status·evidence는 facts로 채우는 문장 틀, closed pair candidate `rule`은 상수), index 절, 직렬화(들여쓰기 2칸, escape 없는 UTF-8, LF, 끝 줄바꿈)를 더했다. functional carry-forward predecessor(04275 evidence, summary, SHA-256)는 facts에 없어 직전 spec 행의 `predecessor` 이후를 이어 받는다. `TrainLane3SpecCommand.cs`가 `pcvverify lane3-spec --input (--write|--check)`(결과 계약 `pcv-train-lane3-spec-result-v1`)이고 `VerificationApplication`에 등록했다. 시험 `16`개(ledger 행·index 절 04289 대조, 임시 저장소 missing→written→current, usage 오류) 통과.
 
 ## Task 4: 04289 golden
 
