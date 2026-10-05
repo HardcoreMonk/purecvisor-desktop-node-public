@@ -26,7 +26,17 @@
 
 ## Task 1: 로컬 branch와 별도 clone 확인
 
-- [ ] 두 branch의 고유 commit, 그 내용이 다른 경로로 `main`에 들어갔는지(같은 patch, 같은 파일 결과), 원격 branch 유무를 확인한다. 별도 clone은 `git status`, 현재 branch, 원격에 없는 commit을 확인한다. 항목마다 "지워도 됨 / 보존 / 판단 필요"와 근거를 실행 기록에 적고, 지우는 일은 `next_approval_required`로 넘긴다. 검증 `git diff --check`. 로컬 commit.
+- [x] 두 branch의 고유 commit, 그 내용이 다른 경로로 `main`에 들어갔는지(같은 patch, 같은 파일 결과), 원격 branch 유무를 확인한다. 별도 clone은 `git status`, 현재 branch, 원격에 없는 commit을 확인한다. 항목마다 "지워도 됨 / 보존 / 판단 필요"와 근거를 실행 기록에 적고, 지우는 일은 `next_approval_required`로 넘긴다. 검증 `git diff --check`. 로컬 commit.
+
+실행 기록(2026-10-05, `git fetch --prune` 뒤):
+
+| 항목 | 상태 | 판정 |
+| --- | --- | --- |
+| `docs/train-phase3c-procedure-20261004` | 로컬과 원격에 있다. 고유 commit `bdd3f5b` 1개(base `48f7b3b`, 문서 `6`개). **열린 PR #43**(2026-10-04T11:58Z) | 지워도 됨. 같은 3c 변경이 PR #44(`2c0a4c2`)와 상태 현행화 PR #46(`2013eb4`)으로 이미 `main`에 있다. PR #43 close와 원격 branch 삭제는 외부 변경이라 별도 승인 |
+| `codex/04275-stage1-immutable-preflight` | 로컬만 있다(원격 없음). 2026-08-27 고유 commit `3`개: dual-hash preflight 설계·계획과 `CampaignToolingIntegrity.cs`(`508`줄)·시험(`341`줄), 합계 `1305`줄 | 판단 필요. 08-27 lane 분리 설계가 campaign 상태기계와 dual-hash Stage 1을 완료하지 않는다고 적었고 04275는 다른 경로로 승격됐다. 다른 곳에 없는 작업이므로 지운다면 `git bundle`로 보존한 뒤 지운다 |
+| 별도 clone `D:\data\projects\codex-zone\pcv-04286-fullshard` | 경로가 없다 | 조치 없음. 이미 정리됐다 |
+
+삭제는 이 campaign 밖이며 campaign `next_approval_required`에 적었다.
 
 ## Task 2: 빌드 경고 정리
 

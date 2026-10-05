@@ -11,7 +11,7 @@
   ],
   "mutation_allowed": false,
   "current_write_allowed": false,
-  "next_step": "Run Task 1 from docs/superpowers/plans/2026-10-05-purecvisor-desktop-node-hygiene-build-warnings.md, then the queue in order.",
+  "next_step": "Run Task 2 from docs/superpowers/plans/2026-10-05-purecvisor-desktop-node-hygiene-build-warnings.md, then the queue in order.",
   "plan": "docs/superpowers/plans/2026-10-05-purecvisor-desktop-node-hygiene-build-warnings.md",
   "task_queue": [
     "Task 1",
@@ -20,14 +20,19 @@
     "Task 4"
   ],
   "task_lanes": {},
-  "next_task": "Task 1",
-  "completed_tasks": [],
+  "next_task": "Task 2",
+  "completed_tasks": [
+    "Task 1"
+  ],
   "commit_policy": "local-commit-per-task",
   "push_allowed": true,
   "merge_policy": "after-green-ci",
   "checkpoint_limit": 4,
   "approval_locator": "User-Approval: 2026-09-27 campaign runner commit policy local-commit-per-task; 2026-10-05 \"3\" (1 fix build warnings CS8622 in DesktopNodeApiJobReconciliationHandler.Media.cs and CS8600 in DesktopNodeHyperVWmiVmProvider.cs without behavior change and add one release-train queue row, Lane 1 without host mutation, local commit per task, then push, PR and merge after green CI; 2 inspect the two unmerged local branches and the separate clone pcv-04286-fullshard and report, deleting each item only after its own confirmation; 2 first)",
-  "next_approval_required": [],
+  "next_approval_required": [
+    "Close PR #43 (branch docs/train-phase3c-procedure-20261004, a duplicate of the 3c change merged as PR #44 2c0a4c2) with a comment pointing to #44, then delete that branch on origin and locally. Lane 1, no host mutation; GitHub PR close and remote branch deletion.",
+    "Save local branch codex/04275-stage1-immutable-preflight (three 2026-08-27 dual-hash preflight commits, 1305 lines, no remote) as a git bundle under artifacts/, then delete the local branch. Local only, no push."
+  ],
   "stop_on": [
     "same-cause-fail-3",
     "budget",
