@@ -63,7 +63,9 @@
 
 ## Task 4: fullgate
 
-- [ ] clean `0.42.90` 설치본 위에서 full admin host mutation gate(`full-admin-host-mutation-gate-20261005-04290`)를 돈다. 사후 검사(build commit, 같은 version ARP 1개, MSI log) 통과. 실행 기록과 로컬 commit.
+- [x] clean `0.42.90` 설치본 위에서 full admin host mutation gate(`full-admin-host-mutation-gate-20261005-04290`)를 돈다. 사후 검사(build commit, 같은 version ARP 1개, MSI log) 통과. 실행 기록과 로컬 commit.
+
+실행 기록(2026-10-05): pair가 남긴 clean `0.42.90`(`{8AE1F6ED-…}`) 위에서 시작했다. manifest `artifacts/batch-manifests/full-admin-host-mutation-gate-20261005-04290.json`은 3b-r2 manifest에서 version, batch id, 경로만 바꿨다(LAN prefix `192.168.3.74` 확인). supervisor `-DryRun -AllowHostMutation` 뒤 `12:16:36Z`부터 `12:26:09Z`까지 실행, `ok=true`, `status=completed`, step `2`개, 실패 step 없음. 사후 검사: 설치본 Host/CLI `+648139d`가 gate build(clean HEAD `648139d`)와 같다. 같은 version ARP `{C6B0372F-7659-458E-AED3-A34334ACBDDF}` `0.42.90` 1개, service Running/Automatic, Web `200`, PureCVisor firewall 규칙 `0`, route smoke VM 정리, 보존 VM Off.
 
 ## Task 5: installed current-card
 
