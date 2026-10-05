@@ -46,7 +46,9 @@
 
 ## Task 3: release train 대기열 행
 
-- [ ] `docs/ga-ready/release-train.json` `queue`에 Task 2 변경 한 행을 더한다(`merge_commit`은 Task 2 commit SHA). 검증 `dotnet test src/DesktopNode.Delivery.Tests -c Release`(`PcvReleaseTrainContractTests` 포함). 로컬 commit.
+- [x] `docs/ga-ready/release-train.json` `queue`에 Task 2 변경 한 행을 더한다(`merge_commit`은 Task 2 commit SHA). 검증 `dotnet test src/DesktopNode.Delivery.Tests -c Release`(`PcvReleaseTrainContractTests` 포함). 로컬 commit.
+
+실행 기록(2026-10-05): 행의 `pr`은 0보다 커야 해서 PR #34 선례(PR을 연 뒤 31초 뒤 queue commit)를 따라 branch를 push하고 PR #48을 먼저 열었다(merge는 Task 4의 green CI 뒤). `queue`에 `{"pr": 48, "merge_commit": "b433c50", "area": "api, hyperv", "lane2_probe": null, "risk_tier": "S"}` 한 행을 더했다. Lane 2 probe가 없는 것은 실행 값이 바뀌지 않기 때문이다. Delivery `763` 통과(`PcvReleaseTrainContractTests` 포함).
 
 ## Task 4: 종료 검증과 merge
 
