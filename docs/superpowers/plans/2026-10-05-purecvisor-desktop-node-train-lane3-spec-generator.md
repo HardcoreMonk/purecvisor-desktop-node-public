@@ -33,7 +33,9 @@
 
 ## Task 2: 입력 계약과 descriptor chain 생성
 
-- [ ] 설계의 입력 계약 파서와 descriptor chain·ledger head 값 생성을 구현하고 단위 시험을 더한다. 검증 `dotnet test src/DesktopNode.Verification.Tests -c Release`. 로컬 commit.
+- [x] 설계의 입력 계약 파서와 descriptor chain·ledger head 값 생성을 구현하고 단위 시험을 더한다. 검증 `dotnet test src/DesktopNode.Verification.Tests -c Release`. 로컬 commit.
+
+실행 기록(2026-10-05): `TrainLane3SpecInput.cs`(입력 계약 `pcv-train-lane3-spec-input-v1`, tag 규칙 `0.42.89` → `04289`, 경로·tag·사람 값 검사)와 `TrainLane3SpecBuilder.cs`(descriptor chain 값 `45`개와 ledger head, `release-train.json` train 행 확인, facts 일관성 검사)를 더했다. 시험 `12`개가 04288 spec과 0.42.89 facts로 만든 descriptor chain과 ledger head가 커밋된 04289 spec과 같음을 본다. Verification `605` 중 dirty tree 전용 `PolicyBoundaryMatchesCanonicalActivationState` `1`개만 실패했고 commit 뒤 clean HEAD에서 다시 본다. Delivery `763` 통과(모듈 크기 라쳇 포함).
 
 ## Task 3: ledger 행, index 절, 명령
 
