@@ -51,7 +51,9 @@
 
 ## Task 2: pair 실행
 
-- [ ] 설치본·서비스·보존 VM·switch 상태를 먼저 본다. orchestrator `-PlanOnly` `ok=true` 뒤 `-Execute`(campaign `manual-admin-campaign-20261005-04289-04290`). 여섯 bucket PASS, closed descriptor, `observations.json`에 `observation_error` 없음. FAIL이면 restoration 결과를 보고하고 정차한다. 실행 기록과 로컬 commit.
+- [x] 설치본·서비스·보존 VM·switch 상태를 먼저 본다. orchestrator `-PlanOnly` `ok=true` 뒤 `-Execute`(campaign `manual-admin-campaign-20261005-04289-04290`). 여섯 bucket PASS, closed descriptor, `observations.json`에 `observation_error` 없음. FAIL이면 restoration 결과를 보고하고 정차한다. 실행 기록과 로컬 commit.
+
+실행 기록(2026-10-05): 시작 상태는 설치본 `0.42.89`(`+b7fe7b2`, 3b-r2 fullgate build), service Running/Automatic, Web `200`, 보존 VM Off, `Default Switch`. guest 인증 정보는 clean-host runner 기본값을 실행 스크립트가 runner 소스에서 읽어 `PSCredential`로 만들었고 명령줄과 출력에 남기지 않았다. `-PlanOnly` `ok=true`(host mutation 없음) 뒤 `-Execute`(`12:13Z`경 시작). baseline catalog로 `0.42.89`에 맞춘 뒤 여섯 bucket(readiness, Update/Rollback, clean-host Windows Update, Burn, MSIX, ops summary) 모두 PASS, closed descriptor 생성, restoration 불필요. `observations.json` `15`개 항목 모두 `observation_error` 없음. 끝 상태: 설치본 clean `0.42.90`(`+0bcc328`), ARP `{8AE1F6ED-2174-4484-A57B-E60378BB1F72}` `0.42.90` 1개, Web `200`, 보존 VM Off. artifact `artifacts/manual-admin-campaign-20261005-04289-04290`.
 
 ## Task 3: pair 문서
 
