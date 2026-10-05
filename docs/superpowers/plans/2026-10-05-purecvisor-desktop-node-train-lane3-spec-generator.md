@@ -45,7 +45,9 @@
 
 ## Task 4: 04289 golden
 
-- [ ] 04288 spec과 0.42.89 입력(새 입력 파일)으로 커밋된 `lane3-promotion-docs-spec-04289.json`을 byte 단위로 다시 만드는 시험을 더한다. 맞지 않는 값은 출처 분류를 고치거나 사람 값으로 옮기고 설계에 적는다. 검증 `dotnet test src/DesktopNode.Verification.Tests -c Release`. 로컬 commit.
+- [x] 04288 spec과 0.42.89 입력(새 입력 파일)으로 커밋된 `lane3-promotion-docs-spec-04289.json`을 byte 단위로 다시 만드는 시험을 더한다. 맞지 않는 값은 출처 분류를 고치거나 사람 값으로 옮기고 설계에 적는다. 검증 `dotnet test src/DesktopNode.Verification.Tests -c Release`. 로컬 commit.
+
+실행 기록(2026-10-05): 입력 `docs/ga-ready/trains/0.42.89-admin-smoke.lane3-spec-input.json`(사람 값 `9`개는 커밋된 04289 spec에서 옮겼다)으로 `lane3-spec --check`가 첫 실행에서 `status=current`였다. 04289 fixture를 byte 단위로 다시 만든다. `TrainLane3SpecGoldenTests`가 커밋된 `*.lane3-spec-input.json`마다 같은 확인을 한다. 설계 §2에 functional predecessor를 직전 spec 회전으로 고친 보정을 적었다.
 
 ## Task 5: 절차 반영
 

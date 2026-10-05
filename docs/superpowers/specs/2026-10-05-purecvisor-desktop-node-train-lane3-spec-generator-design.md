@@ -52,6 +52,9 @@ facts 문서와 spec 값의 대응(대표):
 | `current_public_boundary_main_push_*`, `index_sections.main_push_evidence` | `main-push` 문서 경로, `public_boundary_run_id`, `public_boundary_job_id`, `head_sha`, `package_candidate_decision`, `pr` |
 | `current_manual_admin_days_since_previous_closure` | facts `date` − 직전 spec `index_sections.date` |
 
+functional carry-forward 행 evidence의 predecessor 부분(04275 evidence, summary, SHA-256)은 facts에 없다. train마다 같으므로
+직전 spec의 같은 행에서 `predecessor` 이후를 이어 받는다(직전 spec 회전, Task 3 보정).
+
 `release-train.json`은 값의 출처가 아니라 확인 대상이다. 생성기는 입력 `version`이 train 행으로 있고 그 상태가
 `running`이나 `promoted`인지 본다. 다른 train을 위한 spec을 만드는 실수를 막는다.
 
@@ -103,6 +106,9 @@ PowerShell을 부르지 않으므로 생성기와 golden 시험이 CI에서 실�
 `docs/ga-ready/trains/0.42.89-admin-smoke.lane3-spec-input.json`을 더하고, Verification 시험이 `--check`와 같은 경로로
 04288 spec과 0.42.89 facts에서 04289 fixture를 byte 단위로 다시 만드는지 본다. 기존 fixture와 facts는 바꾸지 않는다.
 맞지 않는 값은 출처 분류를 고치거나, 판단이 들어간 값이면 `narrative`로 옮기고 이 문서 §2에 적는다.
+
+결과(2026-10-05): 04288 spec, 0.42.89 facts, 입력 사람 값 `9`개로 04289 fixture를 byte 단위로 다시 만들었다
+(`lane3-spec --check` `status=current`). 출처 분류를 고친 값은 functional predecessor 하나다.
 
 ### 3.4 train 절차
 
