@@ -45,7 +45,9 @@
 
 ## Task 1: package
 
-- [ ] clean HEAD에서 `build.ps1 -Version 0.42.90-admin-smoke -MsiProductVersion 0.42.90 -SigningMode AllowUnsignedDev -SigningTrustModel LocalTest -OutputRoot artifacts/admin-smoke-package-20261005-04290`, 그 뒤 `New-PcvAdminSmokeUpdatePackage.ps1`로 update ZIP, catalog, `package-facts.json`. train-facts 입력을 만들고 package 문서를 `train-facts`와 `train-evidence --write`로 쓴다. 검증 `train-evidence --check`. 로컬 commit.
+- [x] clean HEAD에서 `build.ps1 -Version 0.42.90-admin-smoke -MsiProductVersion 0.42.90 -SigningMode AllowUnsignedDev -SigningTrustModel LocalTest -OutputRoot artifacts/admin-smoke-package-20261005-04290`, 그 뒤 `New-PcvAdminSmokeUpdatePackage.ps1`로 update ZIP, catalog, `package-facts.json`. train-facts 입력을 만들고 package 문서를 `train-facts`와 `train-evidence --write`로 쓴다. 검증 `train-evidence --check`. 로컬 commit.
+
+실행 기록(2026-10-05): HEAD `0bcc328`에서 build `44`초, MSI `54277baa…`, payload `e6cec1d0…`(`8`개), update ZIP `1c91de5c…`, catalog `3169a44f…`, Host/CLI `+0bcc328`. 입력 `docs/ga-ready/trains/0.42.90-admin-smoke.train-facts-input.json`으로 package 문서(생성 `19`, 서술 `4`) `written`, `check` `current`. evidence `admin-smoke-package-2026-10-05-04290`. 도구가 `build_utc`를 culture 형식(`10/05/2026 12:07:30`)으로 썼다(report-only).
 
 ## Task 2: pair 실행
 
