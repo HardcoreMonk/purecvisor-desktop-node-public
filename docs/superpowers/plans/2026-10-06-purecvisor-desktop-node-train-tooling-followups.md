@@ -32,7 +32,9 @@
 
 ## Task 2: §10 orchestrator Lane 3 절차
 
-- [ ] §10에 orchestrator train Lane 3 consume(닫을 때 만든 `<campaign>-closed` descriptor를 consume descriptor로 쓰고, 그 descriptor가 읽은 summary `7`개를 `consume-manifest.json`에 SHA-256과 함께 적는다. 복사 없음)과 current-card 캡처 스크립트에서 바꿀 값(root, evidence id, fullgate batch, 64자리 SHA 상수 `4`개, 40자리 `provenance_commit`, 설치 manifest version, `canonical_current_evidence`)을 적는다. 검증 `dotnet test src/DesktopNode.Delivery.Tests -c Release`, `git diff --check`. 로컬 commit.
+- [x] §10에 orchestrator train Lane 3 consume(닫을 때 만든 `<campaign>-closed` descriptor를 consume descriptor로 쓰고, 그 descriptor가 읽은 summary `7`개를 `consume-manifest.json`에 SHA-256과 함께 적는다. 복사 없음)과 current-card 캡처 스크립트에서 바꿀 값(root, evidence id, fullgate batch, 64자리 SHA 상수 `4`개, 40자리 `provenance_commit`, 설치 manifest version, `canonical_current_evidence`)을 적는다. 검증 `dotnet test src/DesktopNode.Delivery.Tests -c Release`, `git diff --check`. 로컬 commit.
+
+실행 기록(2026-10-06): §10 train task 2 bullet 뒤에 두 bullet을 더했다. orchestrator train Lane 3 consume은 `<campaign>-closed` descriptor와 `consume-manifest.json`(summary `7`개, 복사 없음)으로 하고, current-card 스크립트는 40자리 `provenance_commit`을 포함한 상수를 바꿔 root 밖에서 실행한다. §10 문구를 pin한 계약 시험은 없다. Task 1 commit 뒤 작업 트리의 `.ps1` 줄바꿈을 CRLF로 맞췄다(저장소 blob은 그대로 LF 정규화).
 
 ## Task 3: 종료 검증과 merge
 
