@@ -69,7 +69,9 @@
 
 ## Task 5: installed current-card
 
-- [ ] `installed-operator-surface-current-card-20261005-04290` 캡처, `status=pass`, `not-promoted`. 실행 기록과 로컬 commit.
+- [x] `installed-operator-surface-current-card-20261005-04290` 캡처, `status=pass`, `not-promoted`. 실행 기록과 로컬 commit.
+
+실행 기록(2026-10-05): 3b-r2 캡처 스크립트에서 root, evidence id, fullgate batch, 기대 SHA 상수(clean MSI `54277baa…`, fullgate MSI `ac367ea4…`, clean payload `e6cec1d0…`, fullgate payload `9031c560…`), 설치 manifest version을 바꿨다. 첫 캡처(`12:28:01Z`)는 40자리 `provenance_commit` 상수를 바꾸지 않아 `b7fe7b2`로 나왔으므로 그 artifact를 지우고 `648139d`로 고쳐 다시 캡처했다(`12:28:26Z`). `status=pass`, CLI `3/3`, Web `2/2`, ARP `0.42.90` 1개, 설치본 Host/CLI가 fullgate payload와 같음, 테스트 VM `0`, secret 없음, `not-promoted`, `canonical_current_evidence=0.42.89-admin-smoke`. summary SHA `24618dd5…`. 스크립트는 읽기만 한다.
 
 ## Task 6: fullgate·current-card 문서와 pair evidence merge
 
