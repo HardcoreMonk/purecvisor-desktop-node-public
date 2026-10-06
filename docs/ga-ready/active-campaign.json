@@ -13,7 +13,7 @@
   ],
   "mutation_allowed": true,
   "current_write_allowed": true,
-  "next_step": "Run Task 13 from docs/superpowers/plans/2026-10-06-purecvisor-desktop-node-train-04291.md, then the queue in order. Task 12 waits until 2026-10-19.",
+  "next_step": "Run Task 12 from docs/superpowers/plans/2026-10-06-purecvisor-desktop-node-train-04291.md on or after 2026-10-19; before that date the runner stops with a deadline wait. Task 13 design pcv-interrupted-create-residue-v1 is a next-train candidate whose implementation needs its own approval.",
   "plan": "docs/superpowers/plans/2026-10-06-purecvisor-desktop-node-train-04291.md",
   "task_queue": [
     "Task 0",
@@ -40,7 +40,7 @@
     "Task 8": "2",
     "Task 10": "3"
   },
-  "next_task": "Task 13",
+  "next_task": "Task 12",
   "completed_tasks": [
     "Task 0",
     "Task 1",
@@ -53,7 +53,8 @@
     "Task 8",
     "Task 9",
     "Task 10",
-    "Task 11"
+    "Task 11",
+    "Task 13"
   ],
   "commit_policy": "local-commit-per-task",
   "push_allowed": true,

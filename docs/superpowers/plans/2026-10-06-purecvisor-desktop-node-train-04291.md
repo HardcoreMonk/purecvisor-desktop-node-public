@@ -111,7 +111,9 @@
 
 ## Task 13: 끊긴 create의 고아 디스크 처리 설계
 
-- [ ] 사용자 승인 `1,2`(2026-10-06)의 2. Task 8에서 본 결함(끊긴 `vm.create`가 VM 폴더에 `disk0.vhdx`를 남기고, reconcile `not-applied`는 그것을 언급하지 않으며, 다음 create는 `PCV_VHD_ALREADY_EXISTS`로 막힘)의 처리 방식을 설계 문서로 정하고 다음 train 후보로 올린다. Lane 1 설계, host mutation 없음. Task 11 뒤, Task 12 대기 전에 실행한다. 로컬 commit, push, PR, green CI 뒤 merge.
+- [x] 사용자 승인 `1,2`(2026-10-06)의 2. Task 8에서 본 결함(끊긴 `vm.create`가 VM 폴더에 `disk0.vhdx`를 남기고, reconcile `not-applied`는 그것을 언급하지 않으며, 다음 create는 `PCV_VHD_ALREADY_EXISTS`로 막힘)의 처리 방식을 설계 문서로 정하고 다음 train 후보로 올린다. Lane 1 설계, host mutation 없음. Task 11 뒤, Task 12 대기 전에 실행한다. 로컬 commit, push, PR, green CI 뒤 merge.
+
+실행 기록(2026-10-06): PR #55(Task 11)를 head `79f705f` 고정으로 merge(`5cf64ac`)한 뒤 branch `lane1/orphan-disk-create-design-20261006`에서 설계했다. `docs/superpowers/specs/2026-10-06-purecvisor-desktop-node-interrupted-create-residue-design.md`(`pcv-interrupted-create-residue-v1`, `proposed`): create가 `disk0.vhdx` 전에 소유 표식 `.pcv-create-pending.json`(주인 프로세스 id와 시작 시각)을 쓰고, 같은 이름의 다음 create가 표식이 있고 주인 프로세스가 끝났고 디스크가 참조되지 않을 때만 잔여물을 지우고 진행한다. 거절 이유 `6`개는 `PCV_VHD_ALREADY_EXISTS` detail에 붙인다. reconcile은 readback 전용을 유지하고 `not-applied` hint에 회수 경로를 더한다. managed delete 정리는 표식 파일도 지운다. 구현은 다음 train 후보(Lane 1 checkpoint 하나, merge 뒤 `release-train.json` `queue` 행)이고 실제 확인은 다음 train Lane 2 probe다. report-only: `DefineSystem` 뒤 장치 연결 전에 끊긴 create를 reconcile이 `postcondition-confirmed`로 판정함(지문에 연결 장치 없음). host mutation 없음.
 
 ## Task 12: C5 runner 확인 (2026-10-19 이후)
 
