@@ -79,7 +79,9 @@
 
 ## Task 9: 종료 검증과 merge
 
-- [ ] clean HEAD에서 Task 2로 바뀐 종료 검증 정의대로 돌린다. campaign을 닫고(`next_approval_required`에 train-04291 Task 12 재개와 F1 인과 확인용 fullgate 재실행 승인 후보) 로컬 commit한 뒤 push, PR, green CI 뒤 merge.
+- [x] clean HEAD에서 Task 2로 바뀐 종료 검증 정의대로 돌린다. campaign을 닫고(`next_approval_required`에 train-04291 Task 12 재개와 F1 인과 확인용 fullgate 재실행 승인 후보) 로컬 commit한 뒤 push, PR, green CI 뒤 merge.
+
+실행 기록(2026-10-07, clean HEAD `ce3f22b`): Task 2 정의로 처음 돌렸다. Release build 경고 `0`. Required CI 네 shard 모두 `ok=true`, `plan_only=false`(dotnet `61.5`초, web `31.1`초, delivery `5.7`초, installer-policy `3.1`초). dotnet shard stdout의 assembly별 결과는 모두 실패 `0`이다(Verification `620`, Delivery `769`, Api `488`, HyperV `257`, Host `216`, Contracts `200`, Cli `183`, Runtime `129`, Service `11`). Pester 네 종 실패 `0`(`528`, `49`, `50`, `129`). 전체 `341`초다. 실행 뒤 남은 `pcv-loopback-browser` 프로세스·temp 폴더 `0`(Task 1 수정 확인). 로그 `artifacts/process-optimization-final-verification.log`. campaign을 닫고 이 기록 commit 뒤 push, PR, green CI 뒤 merge한다. report-only: 이전 실행이 남긴 `%TEMP%\pcv-browser-gate-token-*.txt` `69`개, shard stdout 한국어 라벨 코드페이지 깨짐, fullgate가 MSI를 다시 빌드해 train마다 MSI identity가 두 개라 current-card SHA 상수가 `4`개 필요함.
 
 ## Nonclaims
 
