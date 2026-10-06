@@ -1,0 +1,131 @@
+Set-StrictMode -Version Latest
+$ErrorActionPreference = 'Stop'
+Set-Location '{{repo_root}}'
+
+$root = Join-Path (Get-Location).Path '{{card_root}}'
+if (Test-Path $root) { throw 'artifact root exists' }
+New-Item -ItemType Directory -Force -Path $root | Out-Null
+$productRoot = 'C:\Program Files\PureCVisor\DesktopNode'
+$cli = Join-Path $productRoot 'pcvcli.exe'
+$token = 'C:\ProgramData\PureCVisor\desktop-node\api-token.dpapi.json'
+$secretPattern = 'eyJ[A-Za-z0-9_-]{10,}|Bearer\s+[A-Za-z0-9._-]{10,}'
+$secretObserved = $false
+
+$cliResults = foreach ($item in @(
+    @{ name = 'cli-host-status'; args = @('host', 'status'); operation = 'host.status' },
+    @{ name = 'cli-runtime-policy'; args = @('runtime', 'policy'); operation = 'runtime.policy' },
+    @{ name = 'cli-network-inventory'; args = @('network', 'inventory'); operation = 'network.inventory' }
+)) {
+    $stdout = Join-Path $root "$($item.name).stdout.txt"
+    $stderr = Join-Path $root "$($item.name).stderr.txt"
+    $p = Start-Process -FilePath $cli -ArgumentList (@('--protected-token-file', $token, '--json') + $item.args) -NoNewWindow -Wait -PassThru -RedirectStandardOutput $stdout -RedirectStandardError $stderr
+    $text = Get-Content -Raw -LiteralPath $stdout
+    $err = if (Test-Path $stderr) { Get-Content -Raw -LiteralPath $stderr } else { '' }
+    if ($text -match $secretPattern -or $err -match $secretPattern) { $script:secretObserved = $true }
+    $json = $null; try { $json = $text | ConvertFrom-Json } catch { }
+    [ordered]@{
+        name = $item.name
+        exit_code = $p.ExitCode
+        json_ok = ($null -ne $json -and $json.ok -eq $true)
+        operation = if ($null -ne $json) { [string]$json.operation } else { $null }
+        stderr_empty = [string]::IsNullOrWhiteSpace($err)
+    }
+}
+
+$webResults = foreach ($item in @(
+    @{ name = 'web-root'; uri = 'http://127.0.0.1/' },
+    @{ name = 'web-config'; uri = 'http://127.0.0.1/pcv-config.js' }
+)) {
+    $r = Invoke-WebRequest -Uri $item.uri -UseBasicParsing -TimeoutSec 20
+    $body = [string]$r.Content
+    [IO.File]::WriteAllText((Join-Path $root "$($item.name).body.txt"), $body, [Text.UTF8Encoding]::new($false))
+    if ($body -match $secretPattern) { $script:secretObserved = $true }
+    $sha = [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData([Text.Encoding]::UTF8.GetBytes($body))).ToLowerInvariant()
+    [ordered]@{ name = $item.name; status_code = [int]$r.StatusCode; content_length = $body.Length; content_sha256 = $sha }
+}
+$configBody = Get-Content -Raw -LiteralPath (Join-Path $root 'web-config.body.txt')
+$configTokenFree = ($configBody -match 'apiBaseUrl') -and ($configBody -notmatch '(?i)token\s*[:=]\s*["''][^"'']+')
+
+$svc = Get-CimInstance Win32_Service -Filter "Name='PureCVisorDesktopNode'"
+$pathName = [string]$svc.PathName
+$usesCredentialManager = $pathName -match '(?i)credential'
+$rawOrProtectedToken = $pathName -match '(?i)(?<![\w-])--(token|api-token|protected-token-file|token-file)(?=\s|=|$)'
+
+$arp = @(Get-ChildItem 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall' | ForEach-Object {
+    $q = Get-ItemProperty $_.PSPath
+    if ($q.PSObject.Properties['DisplayName'] -and [string]$q.DisplayName -like '*PureCVisor*') {
+        [pscustomobject]@{ code = $_.PSChildName; version = [string]$q.DisplayVersion }
+    }
+})
+$vms = @(Get-VM | ForEach-Object Name)
+$testVms = @($vms | Where-Object { $_ -like 'pcv-spike*' -or $_ -like 'pcv-cleanhost*' -or $_ -like 'pcv-routeparity*' })
+$leftover = @($vms | Where-Object { $_ -notin $testVms })
+
+$installedHost = (Get-FileHash -Algorithm SHA256 (Join-Path $productRoot 'DesktopNode.Host.exe')).Hash.ToLowerInvariant()
+$installedCli = (Get-FileHash -Algorithm SHA256 $cli).Hash.ToLowerInvariant()
+$opPayload = '{{routeparity_payload}}'
+$cleanPayload = '{{package_payload}}'
+$opHost = (Get-FileHash -Algorithm SHA256 "$opPayload\DesktopNode.Host.exe").Hash.ToLowerInvariant()
+$opCli = (Get-FileHash -Algorithm SHA256 "$opPayload\pcvcli.exe").Hash.ToLowerInvariant()
+$cleanHost = (Get-FileHash -Algorithm SHA256 "$cleanPayload\DesktopNode.Host.exe").Hash.ToLowerInvariant()
+$cleanCli = (Get-FileHash -Algorithm SHA256 "$cleanPayload\pcvcli.exe").Hash.ToLowerInvariant()
+$manifest = Get-Content -Raw -LiteralPath (Join-Path $productRoot 'product-manifest.json') | ConvertFrom-Json
+
+$cliOk = @($cliResults | Where-Object { $_.exit_code -eq 0 -and $_.json_ok -and $_.stderr_empty }).Count
+$web200 = @($webResults | Where-Object { $_.status_code -eq 200 }).Count
+$tuiPresent = Test-Path (Join-Path $productRoot 'pcvtui.exe')
+$serviceState = "$($svc.State)/$($svc.StartMode)"
+$pass = $cliOk -eq 3 -and $web200 -eq 2 -and $configTokenFree -and $serviceState -eq 'Running/Auto' -and
+    $usesCredentialManager -and -not $rawOrProtectedToken -and -not $tuiPresent -and $arp.Count -eq 1 -and
+    $testVms.Count -eq 0 -and $installedHost -eq $opHost -and $installedCli -eq $opCli -and -not $secretObserved -and
+    $manifest.version -eq '{{version}}'
+
+$summary = [ordered]@{
+    schema_version = 1
+    status = if ($pass) { 'pass' } else { 'fail' }
+    evidence_id = '{{evidence_id}}'
+    version = '{{version}}'
+    installed_manifest_version = [string]$manifest.version
+    display_version = if ($arp.Count -eq 1) { $arp[0].version } else { $null }
+    arp_entry_count = $arp.Count
+    operator_surfaces = 'web,cli'
+    tui_present = $tuiPresent
+    fullgate_batch = '{{fullgate_batch}}'
+    clean_package_msi_sha256 = '{{clean_package_msi_sha256}}'
+    operational_fullgate_msi_sha256 = '{{operational_fullgate_msi_sha256}}'
+    clean_package_payload_aggregate_sha256 = '{{clean_package_payload_aggregate_sha256}}'
+    operational_fullgate_payload_aggregate_sha256 = '{{operational_fullgate_payload_aggregate_sha256}}'
+    provenance_commit = '{{provenance_commit}}'
+    installed_product_version = (Get-Item (Join-Path $productRoot 'DesktopNode.Host.exe')).VersionInfo.ProductVersion
+    cli_exit_zero_count = @($cliResults | Where-Object { $_.exit_code -eq 0 }).Count
+    cli_json_ok_count = @($cliResults | Where-Object { $_.json_ok }).Count
+    web_http_200_count = $web200
+    web_config_token_free = $configTokenFree
+    service_state = $serviceState
+    service_start_name = [string]$svc.StartName
+    service_uses_credential_manager = $usesCredentialManager
+    service_has_raw_or_protected_token_flag = $rawOrProtectedToken
+    remaining_test_vm_count = $testVms.Count
+    remaining_test_vms = ($testVms -join ',')
+    installed_cli_sha256 = $installedCli
+    installed_host_sha256 = $installedHost
+    operational_payload_cli_match = $installedCli -eq $opCli
+    operational_payload_host_match = $installedHost -eq $opHost
+    clean_payload_cli_match = $installedCli -eq $cleanCli
+    clean_payload_host_match = $installedHost -eq $cleanHost
+    secret_observed = $secretObserved
+    host_mutation_performed = $false
+    promotion_ledger_status = 'not-promoted'
+    canonical_current_evidence = '{{canonical_current_evidence}}'
+    canonical_current_changed = $false
+    leftover_non_spike_vms = ($leftover -join ',')
+    public_trusted_signing = 'not-claimed'
+    external_stable_publication = 'not-claimed'
+    cli_results = @($cliResults)
+    web_results = @($webResults)
+    launched_at = [DateTime]::UtcNow.ToString('o')
+}
+$summary | ConvertTo-Json -Depth 5 | Set-Content -Encoding utf8NoBOM (Join-Path $root 'summary.json')
+$summary.GetEnumerator() | Where-Object { $_.Value -isnot [array] } | ForEach-Object { '{0} = {1}' -f $_.Key, $_.Value }
+'summary_sha256 = ' + (Get-FileHash -Algorithm SHA256 (Join-Path $root 'summary.json')).Hash.ToLowerInvariant()
+if (-not $pass) { exit 1 }

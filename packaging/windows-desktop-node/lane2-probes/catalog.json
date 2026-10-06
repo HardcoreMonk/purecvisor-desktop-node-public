@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "contract": "pcv-lane2-probe-catalog-v1",
+  "design": "docs/superpowers/specs/2026-10-06-purecvisor-desktop-node-train-host-inputs-design.md",
+  "common": "packaging/windows-desktop-node/lane2-probes/PcvLane2ProbeCommon.ps1",
+  "probes": [
+    {
+      "id": "inventory-template-lock",
+      "script": "packaging/windows-desktop-node/lane2-probes/Invoke-PcvLane2ProbeInventoryTemplateLock.ps1",
+      "service_plan_items": [
+        "P1-6",
+        "P1-7"
+      ],
+      "host_mutation": "probe VM create, start, poweroff, template lock/unlock, rename, delete",
+      "first_evidence": "lane2-completion-inventory-template-lock-actual-vm-2026-10-06-04291"
+    },
+    {
+      "id": "novnc-target",
+      "script": "packaging/windows-desktop-node/lane2-probes/Invoke-PcvLane2ProbeNoVncTarget.ps1",
+      "service_plan_items": [
+        "P2-11"
+      ],
+      "host_mutation": "noVNC target set, clear, and file restored to the starting state",
+      "first_evidence": "lane2-completion-novnc-target-2026-10-06-04291"
+    },
+    {
+      "id": "family-reconcile",
+      "script": "packaging/windows-desktop-node/lane2-probes/Invoke-PcvLane2ProbeFamilyReconcile.ps1",
+      "service_plan_items": [
+        "P1-10"
+      ],
+      "host_mutation": "probe VM create/start/restart/shutdown/poweroff/QoS/delete and service process kill plus restart",
+      "first_evidence": "lane2-completion-family-reconcile-actual-vm-2026-10-06-04291"
+    }
+  ]
+}

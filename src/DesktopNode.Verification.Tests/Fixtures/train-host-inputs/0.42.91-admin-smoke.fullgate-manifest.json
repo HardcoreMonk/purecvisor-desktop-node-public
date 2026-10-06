@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "batch_id": "full-admin-host-mutation-gate-20261006-04291",
+  "created_by": "pcv-operator",
+  "repo_root": "D:\\data\\projects\\codex-zone\\purecvisor-desktop-node-public",
+  "artifact_root": "D:\\data\\projects\\codex-zone\\purecvisor-desktop-node-public\\artifacts\\batch-runs\\full-admin-host-mutation-gate-20261006-04291",
+  "heartbeat_interval_seconds": 5,
+  "gpu_snapshot_interval_seconds": 5,
+  "default_timeout_seconds": 1800,
+  "path_redactions": {
+    "192.0.2.10": "[redacted-private-endpoint]",
+    "D:\\data\\projects\\codex-zone\\purecvisor-desktop-node-public": "[REPO_ROOT]"
+  },
+  "steps": [
+    {
+      "id": "service-msi-hyperv-admin-smoke",
+      "working_directory": "D:\\data\\projects\\codex-zone\\purecvisor-desktop-node-public",
+      "file_name": "pwsh",
+      "arguments": [
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "packaging/windows-desktop-node/tools/Invoke-PcvRouteParityMutationSmoke.ps1",
+        "-Version",
+        "0.42.91-admin-smoke",
+        "-IsoPath",
+        "D:\\data\\projects\\codex-zone\\purecvisor-desktop-node-public\\artifacts\\smoke-media-20261003\\pcv-route-parity-smoke-20261003.iso",
+        "-ArtifactRoot",
+        "D:\\data\\projects\\codex-zone\\purecvisor-desktop-node-public\\artifacts\\routeparity-service-msi-hyperv-batch-profile-20261006-04291",
+        "-BatchEvidenceRoot",
+        "D:\\data\\projects\\codex-zone\\purecvisor-desktop-node-public\\artifacts\\batch-runs\\full-admin-host-mutation-gate-20261006-04291"
+      ],
+      "timeout_seconds": 3600,
+      "required": true,
+      "allow_failure": false,
+      "requires_admin": true,
+      "mutates_host": true,
+      "retry_count": 1
+    },
+    {
+      "id": "os-mutation-gate",
+      "working_directory": "D:\\data\\projects\\codex-zone\\purecvisor-desktop-node-public",
+      "file_name": "pwsh",
+      "arguments": [
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "packaging/windows-desktop-node/tools/Invoke-PcvOsMutationGateSmoke.ps1",
+        "-Version",
+        "0.42.91-admin-smoke",
+        "-RouteParityArtifactRoot",
+        "D:\\data\\projects\\codex-zone\\purecvisor-desktop-node-public\\artifacts\\routeparity-service-msi-hyperv-batch-profile-20261006-04291",
+        "-ArtifactRoot",
+        "D:\\data\\projects\\codex-zone\\purecvisor-desktop-node-public\\artifacts\\os-mutation-gates-batch-profile-20261006-04291",
+        "-LanPrefix",
+        "http://192.0.2.10:7777/"
+      ],
+      "timeout_seconds": 1800,
+      "required": true,
+      "allow_failure": false,
+      "requires_admin": true,
+      "mutates_host": true,
+      "retry_count": 0
+    }
+  ]
+}

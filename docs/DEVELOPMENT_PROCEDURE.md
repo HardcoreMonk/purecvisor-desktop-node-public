@@ -197,6 +197,13 @@ Expected: 출력 없음.
 위 .ps1 값은 changed-path 선택 데이터이며 PowerShell 실행 요청이 아니다. --plan-only는 suite
 선택 확인일 뿐 PASS 근거가 아니다. 네 shard PASS 뒤에도 push와 PR은 별도 승인을 요구한다.
 
+넓은 변경과 release train의 종료 검증은 shard 앞에 `dotnet build src/DesktopNode.sln -c Release`를,
+뒤에 Pester 네 종(`packaging/windows-desktop-node/tests`, `packaging/windows-desktop-node/installer/tests`,
+`web/tests`, `packaging/windows-desktop-node/manual-admin-tests`)을 더한다. dotnet shard가
+`dotnet test src/DesktopNode.sln`을, web shard가 `npm run test:required`를 돌리므로 그 둘을 따로 다시
+돌리지 않는다. 계획 실행 기록의 assembly별 시험 수는 dotnet shard `summary.json`의
+`results[0].standard_output`에서 `- <assembly>.dll` 줄로 읽는다.
+
 ## 5. Lane 2 설치본·Actual VM probe
 
 Lane 2는 operational promotion이 아니라 제한된 설치본 검증이다.
@@ -220,6 +227,12 @@ SavedOnly에서 Full로 넓히려면 새 checkpoint가 필요하다. 최초 하�
 
 Lane 2 FAIL은 actual_vm_tested=pass, promotion eligibility 또는 current evidence 갱신의 근거가
 될 수 없다. PASS하더라도 상태는 installed_non_promoted_candidate다.
+
+probe 스크립트는 `packaging/windows-desktop-node/lane2-probes/`에서 추적한다(카탈로그 `catalog.json`, 계약
+`pcv-lane2-probe-catalog-v1`, 설계 `docs/superpowers/specs/2026-10-06-purecvisor-desktop-node-train-host-inputs-design.md`).
+카탈로그에 있는 기능군이면 그 스크립트를 먼저 `-PlanOnly`로 돌려 계획을 확인한 뒤 같은 인자로 실행한다.
+`-PlanOnly`는 `pcvcli`와 Hyper-V를 부르지 않고 아무것도 쓰지 않는다. 카탈로그에 없는 기능군은 세션 임시 폴더가 아니라
+이 디렉터리에 스크립트를 더하고 카탈로그와 `Lane2ProbeCatalogContractTests` 계약을 맞춘 뒤 실행한다.
 
 ## 6. Lane 3 operational promotion
 
@@ -374,10 +387,25 @@ campaign은 이미 받은 승인을 되묻지 않을 뿐, 없는 승인을 만�
   쓴다(`pair-consume` 문서의 `descriptor_batch_id`와 `source_descriptor_batch_id`). 그 descriptor가 읽은 summary JSON
   `7`개는 `<campaign root>/consume-manifest.json`에 SHA-256, byte 수와 함께 적는다(복사 없음). 승격 도구는 `-consume`
   접미사를 요구하지 않는다. 첫 사례는 train `0.42.90`(`manual-admin-campaign-2026-10-05-04289-04290`)이다.
-- train task 4(current-card)는 직전 train의 `capture-current-card.ps1`을 복사해 root, evidence id, fullgate batch,
-  64자리 SHA 상수 `4`개(clean·fullgate MSI, clean·fullgate payload), 40자리 `provenance_commit`(fullgate gate build
-  commit), 설치 manifest version, `canonical_current_evidence`를 바꾼다. 스크립트는 artifact root가 있으면 멈추므로
-  root 밖에서 실행하고, 끝난 뒤 root에 복사해 둔다.
+- train task 3(fullgate)의 batch manifest는 직전 manifest를 복사하지 않고 `pcvverify train-host-inputs --kind
+  fullgate-manifest`로 만든다. 템플릿은 `docs/ga-ready/trains/host-templates/fullgate-batch-manifest.json.tmpl`이고
+  출력은 `artifacts/batch-manifests/full-admin-host-mutation-gate-<yyyymmdd>-<tag>.json`이다. os-mutation 단계의 LAN
+  prefix는 환경 변수 `PCV_TRAIN_LAN_PREFIX`로만 받고 없으면 쓰지 않는다. `created_by`는 실행 사용자다. 두 값은
+  저장소에 commit하지 않는다. 출력이 이미 있으면 쓰지 않는다.
+
+      dotnet run --project src/DesktopNode.Verification -c Release -- train-host-inputs --input docs/ga-ready/trains/<version>.host-inputs.json --kind fullgate-manifest --write
+
+- train task 4(current-card)는 캡처 스크립트를 `pcvverify train-host-inputs`로 만든다(설계
+  `docs/superpowers/specs/2026-10-06-purecvisor-desktop-node-train-host-inputs-design.md`). 입력
+  `docs/ga-ready/trains/<version>.host-inputs.json`(계약 `pcv-train-host-inputs-v1`: version, date, facts, iso)은 출발
+  task에서 commit한다. fullgate 문서를 facts에 렌더한 뒤 아래 명령이 템플릿
+  `docs/ga-ready/trains/host-templates/capture-current-card.ps1.tmpl`에서
+  `artifacts/installed-operator-surface-current-card-<yyyymmdd>-<tag>.capture.ps1`을 쓴다. SHA 상수 `4`개,
+  `provenance_commit`, fullgate batch는 facts `fullgate`·`package` 문서에서, `canonical_current_evidence`는 출발 때
+  값을 담은 `package` 문서에서 온다. 출력이 이미 있으면 쓰지 않는다. `--plan`은 쓰지 않고 출력 경로와 SHA-256만
+  보여 준다. 스크립트는 artifact root가 있으면 멈추므로 root 밖에서 실행하고, 끝난 뒤 root에 복사해 둔다.
+
+      dotnet run --project src/DesktopNode.Verification -c Release -- train-host-inputs --input docs/ga-ready/trains/<version>.host-inputs.json --kind current-card --write
 
 train campaign의 task 순서:
 
