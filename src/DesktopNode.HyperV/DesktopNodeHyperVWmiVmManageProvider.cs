@@ -31,8 +31,8 @@ public sealed class DesktopNodeHyperVWmiVmManageProvider : IDesktopNodeHyperVVmM
             return new DesktopNodeHyperVVmManageInfo(vmName, "already-managed");
         }
 
-        settings.Properties["Notes"].Value = DesktopNodeHyperVManagedNotes.AppendManagedMarker(currentNotes)
-            .Split(["\r\n", "\n"], StringSplitOptions.None);
+        settings.Properties["Notes"].Value = DesktopNodeHyperVManagedNotes.ToNotesProperty(
+            DesktopNodeHyperVManagedNotes.AppendManagedMarker(currentNotes));
 
         using var service = GetService(scope, VirtualSystemManagementServiceClass, cancellationToken);
         using var inParams = service.GetMethodParameters(ModifySystemSettingsMethod);
@@ -80,8 +80,8 @@ public sealed class DesktopNodeHyperVWmiVmManageProvider : IDesktopNodeHyperVVmM
             return new DesktopNodeHyperVVmManageInfo(vmName, "already-unlocked");
         }
 
-        settings.Properties["Notes"].Value = DesktopNodeHyperVManagedNotes.ApplyTemplateLock(currentNotes, locked)
-            .Split(["\r\n", "\n"], StringSplitOptions.None);
+        settings.Properties["Notes"].Value = DesktopNodeHyperVManagedNotes.ToNotesProperty(
+            DesktopNodeHyperVManagedNotes.ApplyTemplateLock(currentNotes, locked));
 
         using var service = GetService(scope, VirtualSystemManagementServiceClass, cancellationToken);
         using var inParams = service.GetMethodParameters(ModifySystemSettingsMethod);

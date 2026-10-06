@@ -2,8 +2,8 @@
   "schema_version": 1,
   "contract": "pcv-active-campaign-v1",
   "status": "closed",
-  "id": "completion-definition-20261006",
-  "intent": "lane1-completion-definition-audit",
+  "id": "template-lock-notes-fix-20261006",
+  "intent": "lane1-hyperv-notes-single-element-fix",
   "working_authority": "source_head",
   "allowed_lanes": [
     "0",
@@ -11,8 +11,8 @@
   ],
   "mutation_allowed": false,
   "current_write_allowed": false,
-  "next_step": "Closed. Task 1-3 complete: docs/project-status-audit-2026-10-06.md audits SERVICE_PLAN P0-P2 (10 installed PASS, 1 partial, 4 code-level only, 0 not started) and pcv-project-completion-definition-v1 defines completion as C1-C6. C1, C2, C3 and C6 hold; C4 and C5 remain. The branch merges after green CI under merge_policy after-green-ci.",
-  "plan": "docs/superpowers/plans/2026-10-06-purecvisor-desktop-node-completion-definition.md",
+  "next_step": "Closed. Task 1-3 complete: vm.template.lock and vm.manage write Hyper-V Notes as one element (c8be5bc), and release-train queue row PR #53 is added. PR #53 merges after green CI under merge_policy after-green-ci. The user's 2026-10-06 approval \"1,2\" item 2 already covers the next campaign: release train 0.42.91 in the 0.42.90 scope and the completion probes rerun on 0.42.91.",
+  "plan": "docs/superpowers/plans/2026-10-06-purecvisor-desktop-node-template-lock-notes-fix.md",
   "task_queue": [
     "Task 1",
     "Task 2",
@@ -29,12 +29,8 @@
   "push_allowed": true,
   "merge_policy": "after-green-ci",
   "checkpoint_limit": 3,
-  "approval_locator": "User-Approval: 2026-09-27 campaign runner commit policy local-commit-per-task; 2026-10-06 \"1, public trusted signing, 외부 stable 배포는 없음\" (1 write the completion definition decision document and the per-item status audit of SERVICE_PLAN P0-P2, Lane 1 docs without host mutation, then push, PR and merge after green CI; decision: public trusted signing and external stable publication will not be done and stay permanently out of the completion definition)",
-  "next_approval_required": [
-    "Lane 2 installed probe on operational current 0.42.90 without a product payload change: run P1-6 inventory timestamps and notes, P1-7 template lock, P1-9 admin account create/disable, and P2-11 noVNC target preview/set/clear at operation level; host mutation is a probe VM create/delete, a probe account create/disable, and a noVNC target set then restore. Record PASS rows in FEATURE_IMPLEMENTATION_LEDGER, then push, PR and merge after green CI.",
-    "Lane 2 installed probe of P1-10 family reconcile (create, shutdown, restart, QoS) on 0.42.90: interrupt each job by stopping and restarting the service process as in the 0.42.84 power-state probe, then reconcile; host mutation is probe VM create/delete and service restart. Record evidence, then push, PR and merge after green CI.",
-    "After 2026-10-19, confirm the first main Development Gates and Public Boundary runs on the Ubuntu 26 ubuntu-latest image (Lane 0/1, no host mutation); if they fail, decide an ubuntu-24.04 pin."
-  ],
+  "approval_locator": "User-Approval: 2026-09-27 campaign runner commit policy local-commit-per-task; 2026-10-06 \"1,2\" (1 replace the stopped completion-probes campaign with a Lane 1 fix of the template lock defect: confirm the cause, add a reproducing test, fix, add a release-train queue row, then push, PR and merge after green CI, no host mutation; 2 after that merge depart release train 0.42.91 in the 0.42.90 scope and rerun the completion probes on 0.42.91, opened as the next campaign)",
+  "next_approval_required": [],
   "stop_on": [
     "same-cause-fail-3",
     "budget",
@@ -46,5 +42,5 @@
     "dirty-tree-at-start"
   ],
   "out_of_scope_is_not_next_step": true,
-  "closed_predecessor": "train-tooling-followups-20261006"
+  "closed_predecessor": "completion-probes-20261006 (stopped at Task 1 on a Lane 2 FAIL and replaced)"
 }

@@ -70,6 +70,45 @@ public sealed class DesktopNodeHyperVManagedNotesTests
                 locked: false));
     }
 
+    [Fact]
+    public void NotesPropertyIsOneElementThatKeepsEveryMarkerLine()
+    {
+        var locked = DesktopNodeHyperVManagedNotes.ToNotesProperty(DesktopNodeHyperVManagedNotes.ApplyTemplateLock(
+            "lab gold image" + Environment.NewLine + DesktopNodeHyperVManagedNotes.Marker,
+            locked: true));
+        var lockedElement = Assert.Single(locked);
+        Assert.Equal(
+            "lab gold image\n" + DesktopNodeHyperVManagedNotes.Marker + "\n" + DesktopNodeHyperVManagedNotes.TemplateLockMarker,
+            lockedElement);
+        Assert.True(DesktopNodeHyperVManagedNotes.IsManagedNotes(lockedElement));
+        Assert.True(DesktopNodeHyperVManagedNotes.IsTemplateLocked(lockedElement));
+
+        var unlockedElement = Assert.Single(DesktopNodeHyperVManagedNotes.ToNotesProperty(
+            DesktopNodeHyperVManagedNotes.ApplyTemplateLock(lockedElement, locked: false)));
+        Assert.True(DesktopNodeHyperVManagedNotes.IsManagedNotes(unlockedElement));
+        Assert.False(DesktopNodeHyperVManagedNotes.IsTemplateLocked(unlockedElement));
+
+        var managedElement = Assert.Single(DesktopNodeHyperVManagedNotes.ToNotesProperty(
+            DesktopNodeHyperVManagedNotes.AppendManagedMarker("operator note" + Environment.NewLine + "second line")));
+        Assert.Equal("operator note\nsecond line\n" + DesktopNodeHyperVManagedNotes.Marker, managedElement);
+        Assert.Single(DesktopNodeHyperVManagedNotes.ToNotesProperty(null));
+    }
+
+    [Fact]
+    public void ManageProviderWritesNotesAsOneElement()
+    {
+        var root = new DirectoryInfo(AppContext.BaseDirectory);
+        while (root is not null && !File.Exists(Path.Combine(root.FullName, "src", "DesktopNode.sln")))
+        {
+            root = root.Parent;
+        }
+
+        Assert.NotNull(root);
+        var source = File.ReadAllText(Path.Combine(root!.FullName, "src", "DesktopNode.HyperV", "DesktopNodeHyperVWmiVmManageProvider.cs"));
+        Assert.DoesNotContain("StringSplitOptions", source, StringComparison.Ordinal);
+        Assert.Equal(2, source.Split("DesktopNodeHyperVManagedNotes.ToNotesProperty(").Length - 1);
+    }
+
     private static int CountMarkerOccurrences(string notes)
     {
         var count = 0;
