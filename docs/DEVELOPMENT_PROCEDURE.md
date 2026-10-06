@@ -197,6 +197,13 @@ Expected: 출력 없음.
 위 .ps1 값은 changed-path 선택 데이터이며 PowerShell 실행 요청이 아니다. --plan-only는 suite
 선택 확인일 뿐 PASS 근거가 아니다. 네 shard PASS 뒤에도 push와 PR은 별도 승인을 요구한다.
 
+넓은 변경과 release train의 종료 검증은 shard 앞에 `dotnet build src/DesktopNode.sln -c Release`를,
+뒤에 Pester 네 종(`packaging/windows-desktop-node/tests`, `packaging/windows-desktop-node/installer/tests`,
+`web/tests`, `packaging/windows-desktop-node/manual-admin-tests`)을 더한다. dotnet shard가
+`dotnet test src/DesktopNode.sln`을, web shard가 `npm run test:required`를 돌리므로 그 둘을 따로 다시
+돌리지 않는다. 계획 실행 기록의 assembly별 시험 수는 dotnet shard `summary.json`의
+`results[0].standard_output`에서 `- <assembly>.dll` 줄로 읽는다.
+
 ## 5. Lane 2 설치본·Actual VM probe
 
 Lane 2는 operational promotion이 아니라 제한된 설치본 검증이다.

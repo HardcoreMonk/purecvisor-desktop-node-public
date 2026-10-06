@@ -37,7 +37,9 @@
 
 ## Task 2: F2 종료 검증 중복 제거
 
-- [ ] 종료 검증 정의에서 Required CI shard가 이미 도는 직접 실행(`dotnet test src/DesktopNode.sln`, `npm run test:required`)을 뺀다. public `docs/DEVELOPMENT_PROCEDURE.md`에 같은 목록이 있으면 함께 고치고, 계획 실행 기록에 쓰는 assembly별 시험 수를 shard 결과에서 읽는 방법을 적는다. private `.claude/skills/pcv-ship/SKILL.md` 표를 맞춘다(private 저장소 로컬 commit). 검증: `dotnet test src/DesktopNode.Delivery.Tests -c Release`, `git diff --check`. 로컬 commit.
+- [x] 종료 검증 정의에서 Required CI shard가 이미 도는 직접 실행(`dotnet test src/DesktopNode.sln`, `npm run test:required`)을 뺀다. public `docs/DEVELOPMENT_PROCEDURE.md`에 같은 목록이 있으면 함께 고치고, 계획 실행 기록에 쓰는 assembly별 시험 수를 shard 결과에서 읽는 방법을 적는다. private `.claude/skills/pcv-ship/SKILL.md` 표를 맞춘다(private 저장소 로컬 commit). 검증: `dotnet test src/DesktopNode.Delivery.Tests -c Release`, `git diff --check`. 로컬 commit.
+
+실행 기록(2026-10-06): public §4 clean-HEAD 검증은 이미 네 shard만 적고 있었고, `AGENTS.md`와 `docs/DEVELOPMENT_VERIFICATION_POLICY.md`도 `test:required`를 따로 다시 돌리지 말라고 적는다. 중복은 private `pcv-ship` 표의 "위 셋과 Pester 네 종, Required CI 네 shard"에만 있었다. 그 행을 `dotnet build`, 네 shard, Pester 네 종으로 바꿨다(private 로컬 commit). public §4에는 넓은 변경·train 종료 검증에 더하는 build와 Pester 네 종의 경로, 그리고 assembly별 시험 수를 dotnet shard `summary.json` `results[0].standard_output`의 `- <assembly>.dll` 줄에서 읽는 방법을 적었다. 확인: 2026-10-06 측정 run의 dotnet shard stdout에 assembly `9`개의 통과 수가 모두 있다. 줄인 시간은 종료 검증마다 약 `68`초(solution test `42`초, `test:required` `23`초)다. contract spec pin `current`(변경 `0`), Delivery `763/763`, `git diff --check` 통과. report-only: shard stdout의 한국어 라벨이 코드페이지 문제로 깨져 기록된다(숫자와 assembly 이름은 온전함).
 
 ## Task 3: F6 설계
 
