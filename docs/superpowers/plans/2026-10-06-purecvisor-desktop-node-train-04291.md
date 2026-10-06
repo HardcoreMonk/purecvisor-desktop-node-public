@@ -57,7 +57,9 @@
 
 ## Task 3: pair 문서
 
-- [ ] `train-facts`에 pair 문서 `6`개를 더해 렌더한다. 로컬 commit.
+- [x] `train-facts`에 pair 문서 `6`개를 더해 렌더한다. 로컬 commit.
+
+실행 기록(2026-10-06): 생성 값 ops-summary `10`, update-rollback `23`, clean-host `21`, burn `16`, msix `17`, pair-descriptor `17`, 사람 값 `0`. baseline package 출처가 들어가자 package `zip_note`에 0.42.90 ZIP과의 항목 구성 비교가 붙어 Task 1 문서가 달라졌으므로 `--allow-update`로 package 문서를 갱신했다. `check` `current`(`7`개).
 
 ## Task 4: fullgate
 

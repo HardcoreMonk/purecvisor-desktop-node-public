@@ -6,10 +6,20 @@
   "canonical_current_evidence": "0.42.90-admin-smoke",
   "date": "2026-10-06",
   "documents": {
-    "package": "docs/ga-ready/evidence/admin-smoke-package-2026-10-06-04291.md"
+    "package": "docs/ga-ready/evidence/admin-smoke-package-2026-10-06-04291.md",
+    "ops-summary": "docs/ga-ready/evidence/installed-runtime-ops-summary-2026-10-06-04291.md",
+    "update-rollback": "docs/ga-ready/evidence/product-update-rollback-2026-10-06-04290-04291.md",
+    "clean-host": "docs/ga-ready/evidence/internal-clean-host-install-update-rollback-smoke-2026-10-06-04290-04291.md",
+    "burn": "docs/ga-ready/evidence/burn-bootstrapper-lifecycle-smoke-2026-10-06-04291.md",
+    "msix": "docs/ga-ready/evidence/msix-package-lifecycle-smoke-2026-10-06-04290-04291.md",
+    "pair-descriptor": "docs/ga-ready/evidence/manual-admin-campaign-descriptor-2026-10-06-04290-04291.md"
   },
   "sources": {
-    "package_root": "artifacts/admin-smoke-package-20261006-04291"
+    "package_root": "artifacts/admin-smoke-package-20261006-04291",
+    "baseline_package_root": "artifacts/admin-smoke-package-20261005-04290",
+    "campaign_root": "artifacts/manual-admin-campaign-20261006-04290-04291",
+    "target_update_catalog": "artifacts/admin-smoke-package-20261006-04291/PureCVisorDesktopNode-0.42.91-admin-smoke-update-catalog.json",
+    "signer_thumbprint": "8C5F3B5030D3A54B1150C2C30CFD9868800DF0C6"
   },
   "narrative": {
     "package": {

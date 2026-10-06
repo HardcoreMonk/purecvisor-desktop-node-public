@@ -37,7 +37,7 @@ packaging/windows-desktop-node/installer/build.ps1 -Version 0.42.91-admin-smoke 
   -SigningMode AllowUnsignedDev -SigningTrustModel LocalTest -OutputRoot artifacts/admin-smoke-package-20261006-04291
 ```
 
-update ZIP은 `New-PcvAdminSmokeUpdatePackage.ps1`가 payload 8개 파일을 root에 두고 deflate와 `/` 구분자로 만들었다.
+update ZIP은 `New-PcvAdminSmokeUpdatePackage.ps1`가 payload 8개 파일을 root에 두고 deflate와 `/` 구분자로 만들었다(항목 구성은 0.42.90 ZIP과 같다).
 
 ## 빌드 결과
 
