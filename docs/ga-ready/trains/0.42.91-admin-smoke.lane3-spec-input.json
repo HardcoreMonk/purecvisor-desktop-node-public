@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "contract": "pcv-train-lane3-spec-input-v1",
+  "version": "0.42.91-admin-smoke",
+  "previous_spec": "packaging/windows-desktop-node/tests/fixtures/lane3-promotion-docs-spec-04290.json",
+  "facts": "docs/ga-ready/trains/0.42.91-admin-smoke.evidence-facts.json",
+  "output": "packaging/windows-desktop-node/tests/fixtures/lane3-promotion-docs-spec-04291.json",
+  "narrative": {
+    "updated_at": "2026-10-06T21:20:00+09:00",
+    "functional_note": "04275 PASS를 04277, 04278, 04283, 04284, 04286, 04287, 04288, 04289, 04290에 이어 carry-forward한다. SERVICE_PLAN P0 actual-VM은 04275 evidence를 유지한다. 04291 template lock 수정은 candidate gate를 다시 열지 않는다.",
+    "rules": {
+      "full-admin-host-mutation-current": "Elevated Service/MSI/Hyper-V route와 OS mutation `2/2`가 재시도 없이 PASS했다. gate는 clean `0.42.91` 설치본 위에서 시작해 같은 version major upgrade로 교체했고, 끝난 뒤 ARP는 1개이며 설치본 Host/CLI가 gate build와 같다. route smoke의 `vm delete` 결과 `storage_cleanup`이 VM 디스크와 디렉터리를 지웠다. pair target은 clean MSI `bdef7609…`이며 operational MSI와 identity가 다르다. 직전 anchor는 `0.42.90-admin-smoke`였다.",
+      "manual-admin-package-pair-current": "release train `0.42.91`의 pair다. 여섯 bucket PASS를 한 root에 쓰고 닫을 때 descriptor가 `missing_count=0`, `not_pass_count=0`이다. 이 Lane 3는 host mutation을 하지 않았다. 직전 closure는 `0.42.89-admin-smoke -> 0.42.90-admin-smoke`였다.",
+      "package-build-current": "CLI/Web-only payload package이며 release train `0.42.91`의 package다. source commit `59cd8b6`는 PR #53의 Hyper-V Notes 수정 `c8be5bc`를 포함한다. fullgate provenance는 `990a4b2`이고 product payload는 같다. functional은 04275 carry-forward이고 `vm.template.lock` Lane 2 확인은 PASS다.",
+      "installed-operator-surface-smoke-latest": "CLI 3개 exit `0`, Web 2개 HTTP `200`, service `Running/Automatic`, `tui_present=false`, secret observation false이며 04272 token R4를 carry-forward한다. 캡처 artifact는 `not-promoted`다. 설치본 Host/CLI는 gate build(`990a4b2`)이고 clean package hash와는 다르다. 04290은 immediate predecessor다.",
+      "latest-product-payload-smoke": "CLI/Web-only package, actual-host fullgate, pair descriptor consume, installed surface current-card가 PASS했다. functional QoS/disk는 04275 carry-forward다. template lock이 Hyper-V Notes에 저장되고 잠긴 VM mutation을 거절한다.",
+      "functional-correctness-actual-host-latest": "04291 Lane 3는 QoS/disk suite를 재실행하지 않고 04275 actual-VM PASS를 04277, 04278, 04283, 04284, 04286, 04287, 04288, 04289, 04290에 이어 carry-forward한다.",
+      "manual-admin-package-pair-next": "`0.42.90-admin-smoke -> 0.42.91-admin-smoke` pair는 current closure다. 04291 fullgate build(`990a4b2`) 뒤 제품 source 변경은 없다. 다음 pair는 release train 대기열의 다음 train에서 연다."
+    }
+  }
+}
