@@ -55,7 +55,9 @@
 
 ## Task 5: 단일 PR train 2 — main push evidence
 
-- [ ] `train-facts`·`train-evidence`의 `main-push` 문서가 payload commit의 main push run을 인용하고 `payload commit..PR head` 제품 경로 확인 결과를 담게 한다. 기존 train(0.42.89~0.42.91) golden은 그대로 통과해야 한다. 검증: Verification.Tests, Delivery, `git diff --check`. 로컬 commit.
+- [x] `train-facts`·`train-evidence`의 `main-push` 문서가 payload commit의 main push run을 인용하고 `payload commit..PR head` 제품 경로 확인 결과를 담게 한다. 기존 train(0.42.89~0.42.91) golden은 그대로 통과해야 한다. 검증: Verification.Tests, Delivery, `git diff --check`. 로컬 commit.
+
+실행 기록(2026-10-07): 기존 `main-push` 템플릿은 0.42.89~0.42.91 golden이 쓰므로 그대로 두고 새 템플릿 `main-push-payload`(`head_sha`=payload commit, `train_pr_head`, `path_check_line`)를 카탈로그에 더했다. `FirstTrainFactsCoverEveryTemplateOnce`는 새 템플릿을 제외한다. 경로 확인은 `pcvverify train-path-check --payload <commit> --head <commit|HEAD>`(`pcv-train-path-check-result-v1`)가 기존 `IProcessRunner`로 `git diff --name-only`를 돌려 `src/`·`web/src/`·`config/`·`.github/` 변경이 없으면 exit `0`, 있으면 `1`이다. `TrainSinglePrTests` `4`개(템플릿 렌더, 경로 판정 두 경우, 잘못된 payload 거부). Release build 경고 `0`, Verification.Tests `623/624`(dirty tree의 PolicyBoundary), Delivery `769/769`.
 
 ## Task 6: 단일 PR train 3 — Lane 3 spec
 

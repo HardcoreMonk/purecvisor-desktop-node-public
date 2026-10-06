@@ -1,0 +1,34 @@
+# Public Boundary CI main push {{date}} `{{display_version}}` payload commit
+
+evidence_id: `{{evidence_id}}`
+result: `PASS`
+scope: `{{scope}}`
+head_sha: `{{head_sha}}`
+public_boundary_run_id: `{{public_boundary_run_id}}`
+public_boundary_job_id: `{{public_boundary_job_id}}`
+development_gates_run_id: `{{development_gates_run_id}}`
+product_payload_change_detected: `false`
+package_candidate_decision: `{{package_candidate_decision}}`
+release_train: `{{release_train}}`
+canonical_current_evidence: `{{canonical_current_evidence}}`
+canonical_current_changed: `true`
+train_pr_head: `{{train_pr_head}}`
+path_check_contract: `pcv-train-path-check-result-v1`
+host_mutation_performed: `false`
+public_trusted_signing: `not-claimed`
+external_stable_publication: `not-claimed`
+
+{{payload_note}}
+
+{{public_boundary_line}}
+{{development_gates_line}}
+
+{{path_check_line}}
+
+{{product_change_note}}
+
+{{clean_package_line}}
+{{gate_line}}
+{{reachability_line}}
+
+{{promotion_line}}
