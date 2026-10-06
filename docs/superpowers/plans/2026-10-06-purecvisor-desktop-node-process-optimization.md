@@ -61,7 +61,9 @@
 
 ## Task 6: F6 probe 스크립트 추적
 
-- [ ] 2026-10-06 완료 probe(P1-6·P1-7, P1-9·P2-11, P1-10)에 쓴 스크립트를 Task 3 설계 위치로 가져와 매개변수로 일반화하고 공통 helper로 묶는다. 실행하지 않고 plan-only/구문 시험만 한다. 검증: 영향 Pester, Delivery, `git diff --check`. 로컬 commit.
+- [x] 2026-10-06 완료 probe(P1-6·P1-7, P1-9·P2-11, P1-10)에 쓴 스크립트를 Task 3 설계 위치로 가져와 매개변수로 일반화하고 공통 helper로 묶는다. 실행하지 않고 plan-only/구문 시험만 한다. 검증: 영향 Pester, Delivery, `git diff --check`. 로컬 commit.
+
+실행 기록(2026-10-06): `packaging/windows-desktop-node/lane2-probes/`에 PASS evidence를 낸 probe 세 개(`Invoke-PcvLane2ProbeInventoryTemplateLock.ps1` P1-6·P1-7, `Invoke-PcvLane2ProbeNoVncTarget.ps1` P2-11, `Invoke-PcvLane2ProbeFamilyReconcile.ps1` P1-10)와 공통 함수 `PcvLane2ProbeCommon.ps1`, 카탈로그 `catalog.json`(`pcv-lane2-probe-catalog-v1`)을 뒀다. 원본은 세션 임시 폴더의 0.42.91 스크립트이고 판정 식은 그대로 두었다. 바꾼 것: repo·artifact root·ISO·evidence id·probe VM 접두사(기본 `pcv-probe-lane2-`)·보존 VM·VM root·pcvcli 경로를 매개변수로, CLI 호출·job 대기·단계 기록·정리를 공통 함수로 옮겼다(빈 목록은 `ConvertTo-PcvArray`, 정리는 `Join-Path`만). `-PlanOnly`는 계획만 표준 출력으로 내보내고 아무것도 쓰지 않는다. P1-9 계정 probe는 사용자 결정으로 설치본 evidence 없이 닫혔고 인증 상태를 바꾸므로 추적하지 않았다(계획 문구의 P1-9와 다름, 설계 §3.4에 반영). 확인: PowerShell 파서 오류 `0`(파일 `4`개), 세 스크립트 `-PlanOnly` 실행 결과 `plan_only=true`, `host_mutation_performed=false`, artifact root 생성 `0`. Delivery 계약 `Lane2ProbeCatalogContractTests` `6`개(카탈로그·디렉터리 일치, 매개변수와 PlanOnly가 첫 host 호출보다 먼저, 비밀 값 상수·사설 주소·train run tag·로컬 경로 없음, 공통 초기화가 기존 root를 거부)로 Delivery `769/769`. public boundary evidence guard Pester `90/90`. §5에 추적 probe 사용 규칙을 더했다. Verification.Tests `619/620`(dirty tree의 PolicyBoundary, commit 뒤 확인), contract spec pin `current`. 새 `*.Tests.ps1` 없음, probe 실행 없음.
 
 ## Task 7: F3 설계
 

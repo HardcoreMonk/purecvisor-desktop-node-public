@@ -78,9 +78,9 @@ dotnet run --project src/DesktopNode.Verification -c Release -- train-host-input
 ### 3.4 Lane 2 probe 스크립트
 
 - 위치: `packaging/windows-desktop-node/lane2-probes/`. 파일 이름은 `Invoke-PcvLane2Probe<기능군>.ps1`, 공통 함수는 `PcvLane2ProbeCommon.ps1`(dot-source)이다. 새 `*.Tests.ps1`는 만들지 않는다(Delivery inventory와 migration manifest).
-- 첫 묶음은 2026-10-06 완료 probe 세 개다. inventory·template lock(P1-6·P1-7), account·noVNC target(P1-9·P2-11), family reconcile(P1-10).
+- 첫 묶음은 2026-10-06 완료 probe 가운데 PASS evidence를 낸 세 개다. inventory·template lock(P1-6·P1-7), noVNC target(P2-11), family reconcile(P1-10). P1-9 계정 probe는 사용자 결정(2026-10-06)으로 설치본 evidence 없이 닫혔고 인증 상태를 바꾸므로 추적하지 않는다.
 - 공통 매개변수: `-RepoRoot`, `-ArtifactRoot`(있으면 멈춤), `-ProbePrefix`(probe VM·계정 이름, 기본 `pcv-probe-`), `-PlanOnly`.
-- `-PlanOnly`는 `pcvcli`나 Hyper-V를 부르지 않는다. 단계 목록과 정리 대상을 `plan.json`으로 쓰고 끝난다.
+- `-PlanOnly`는 `pcvcli`나 Hyper-V를 부르지 않고 아무것도 쓰지 않는다. 단계 목록과 정리 대상을 표준 출력으로 내보낸다. artifact root를 만들지 않으므로 같은 인자로 실제 실행을 이어서 할 수 있다.
 - 비밀 값: password, token, credential 상수를 두지 않는다. probe 계정 비밀번호는 실행 중 `RandomNumberGenerator`로 만들고 환경 변수로만 `pcvcli`에 넘기며, summary와 evidence에 남기지 않는다. guest 인증 정보는 지금처럼 clean-host runner 기본값을 runner 소스에서 읽는다.
 - 2026-10-06 r1의 `$null` 결함은 공통 함수 `ConvertTo-PcvArray`로 막는다. 정리 경로는 `Join-Path`만 쓴다(r2·r3 정리 결함).
 - 카탈로그 `packaging/windows-desktop-node/lane2-probes/catalog.json`(계약 `pcv-lane2-probe-catalog-v1`)에 probe id, 기능군, 대상 SERVICE_PLAN 항목, host mutation 종류(VM 생성·삭제, 계정 생성·비활성화, noVNC target 쓰기), 필요한 승인 문구를 적는다.

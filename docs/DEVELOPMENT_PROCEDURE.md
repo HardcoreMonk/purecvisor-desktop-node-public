@@ -228,6 +228,12 @@ SavedOnly에서 Full로 넓히려면 새 checkpoint가 필요하다. 최초 하�
 Lane 2 FAIL은 actual_vm_tested=pass, promotion eligibility 또는 current evidence 갱신의 근거가
 될 수 없다. PASS하더라도 상태는 installed_non_promoted_candidate다.
 
+probe 스크립트는 `packaging/windows-desktop-node/lane2-probes/`에서 추적한다(카탈로그 `catalog.json`, 계약
+`pcv-lane2-probe-catalog-v1`, 설계 `docs/superpowers/specs/2026-10-06-purecvisor-desktop-node-train-host-inputs-design.md`).
+카탈로그에 있는 기능군이면 그 스크립트를 먼저 `-PlanOnly`로 돌려 계획을 확인한 뒤 같은 인자로 실행한다.
+`-PlanOnly`는 `pcvcli`와 Hyper-V를 부르지 않고 아무것도 쓰지 않는다. 카탈로그에 없는 기능군은 세션 임시 폴더가 아니라
+이 디렉터리에 스크립트를 더하고 카탈로그와 `Lane2ProbeCatalogContractTests` 계약을 맞춘 뒤 실행한다.
+
 ## 6. Lane 3 operational promotion
 
 Lane 3는 대상 변경에 필요한 package, full admin host mutation, manual-admin pair, installed
