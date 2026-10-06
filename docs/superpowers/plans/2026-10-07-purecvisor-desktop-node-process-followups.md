@@ -79,7 +79,9 @@
 
 ## Task 9: integration 단계 첫 실행 (Lane 2)
 
-- [ ] standing approval 범위(`pcv-it-` 접두사 VM 생성·삭제) 안에서 integration 단계를 이 호스트에서 한 번 돌린다. 시작·끝 VM 이름 목록이 같고 `artifacts/hyperv-integration/` 아래에 남은 것이 없음을 확인하고 결과를 계획에 `hyperv-integration` 관측으로 적는다. 로컬 commit.
+- [x] standing approval 범위(`pcv-it-` 접두사 VM 생성·삭제) 안에서 integration 단계를 이 호스트에서 한 번 돌린다. 시작·끝 VM 이름 목록이 같고 `artifacts/hyperv-integration/` 아래에 남은 것이 없음을 확인하고 결과를 계획에 `hyperv-integration` 관측으로 적는다. 로컬 commit.
+
+실행 기록(2026-10-07, `hyperv-integration` 관측): `PCV_HYPERV_INTEGRATION_APPROVAL`을 campaign `approval_locator` 항목 4의 문구 "standing approval limited to pcv-it- prefixed VM create and delete"로 두고 `dotnet test src/DesktopNode.HyperV.IntegrationTests -c Release`를 한 번 돌렸다. run id `20261006180123`(UTC). `1/1` PASS, 시험 `5`초, 전체 `8`초. 제품 어댑터가 `pcv-it-20261006180123-off`를 `artifacts/hyperv-integration/20261006180123/`에 만들고, inventory가 `stopped`와 managed를 보고했고, `vm.delete`로 지웠다. summary `artifacts/hyperv-integration/20261006180123.summary.json`: 시작·끝 VM 이름 `pcv-guest-installed-04253-r1` 하나로 같음, 저장 폴더 제거 `true`, 정리 문제 `0`, `promotion_evidence=false`. 보존 VM은 Off 그대로다. 같은 종류 결함(`9402774`)을 train에서 찾는 데 걸리던 시간(재시도 없이 `43`~`50`분)과 비교하면 이 확인은 `8`초다. 승격 근거가 아니다.
 
 ## Task 10: 종료 검증과 merge (1차)
 
