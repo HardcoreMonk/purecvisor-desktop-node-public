@@ -87,7 +87,9 @@
 
 ## Task 8: probe P1-10
 
-- [ ] probe VM으로 `vm.create`, `vm.shutdown`, `vm.restart`, QoS mutation job을 진행 중에 서비스 프로세스를 끊어 `PCV_JOB_INTERRUPTED`로 만들고 `job reconcile` 판정을 확인한다. probe VM 삭제, service 상태 확인. 로컬 commit.
+- [x] probe VM으로 `vm.create`, `vm.shutdown`, `vm.restart`, QoS mutation job을 진행 중에 서비스 프로세스를 끊어 `PCV_JOB_INTERRUPTED`로 만들고 `job reconcile` 판정을 확인한다. probe VM 삭제, service 상태 확인. 로컬 commit.
+
+실행 기록(2026-10-06): 첫 checkpoint는 같은 원인 두 번과 Lane 2 예산으로 멈췄다. r1은 스크립트 결함(빈 `vm list`가 `$null`로 풀림)으로 멈췄고, r2·r3에서는 끊긴 `vm.create`가 VM 폴더에 `disk0.vhdx`(4 MB)를 남겨 다음 create가 `PCV_VHD_ALREADY_EXISTS`로 막혔다(정리 경로 결함 포함). r1과 r3의 끊긴 create는 reconcile이 `not-applied`(VM 없음)로 판정했다. 사용자 승인 `1,2`(2026-10-06)로 새 checkpoint에서 정리 경로를 `Join-Path`로 고쳐 r4(`11:49:33Z`~`11:50:21Z`)를 돌렸다. `vm.create`, `vm.restart`, `vm.shutdown`, `vm.qos.storage.set`, `vm.qos.network.set` 다섯 family 모두 첫 시도에서 running 중 서비스 프로세스 종료로 `PCV_JOB_INTERRUPTED`가 되었고, `job reconcile`이 `PCV_JOB_RECONCILIATION_REQUIRED` `Classification: not-applied`를 냈다. 다섯 판정 모두 독립 readback(VM 없음, `last_powered_on` 그대로, Running, QoS 값 없음)과 일치한다(measured `5`, fail `0`). 이번 probe는 모두 적용 전에 끊긴 not-applied 경로이고, confirmed 경로는 0.42.84 전원 상태 reconcile 설치본 evidence와 family별 code-level 시험이 덮는다. 끝 상태: probe VM·폴더 `0`, 보존 VM Off, service Running/Automatic, Web `200`. report-only: 끊긴 create의 고아 디스크(Task 13 설계), QoS readback `mutation_supported: false`. evidence `lane2-completion-family-reconcile-actual-vm-2026-10-06-04291`(artifact `-r4`, 이전 시도 r1~r3 보존).
 
 ## Task 9: 문서와 pair evidence merge
 
@@ -100,6 +102,10 @@
 ## Task 11: 종료와 Lane 3 merge
 
 - [ ] clean HEAD 종료 검증, push, PR, green CI 뒤 merge.
+
+## Task 13: 끊긴 create의 고아 디스크 처리 설계
+
+- [ ] 사용자 승인 `1,2`(2026-10-06)의 2. Task 8에서 본 결함(끊긴 `vm.create`가 VM 폴더에 `disk0.vhdx`를 남기고, reconcile `not-applied`는 그것을 언급하지 않으며, 다음 create는 `PCV_VHD_ALREADY_EXISTS`로 막힘)의 처리 방식을 설계 문서로 정하고 다음 train 후보로 올린다. Lane 1 설계, host mutation 없음. Task 11 뒤, Task 12 대기 전에 실행한다. 로컬 commit, push, PR, green CI 뒤 merge.
 
 ## Task 12: C5 runner 확인 (2026-10-19 이후)
 
