@@ -3,19 +3,7 @@
   "contract": "pcv-release-train-v1",
   "design": "docs/superpowers/specs/2026-10-04-purecvisor-desktop-node-release-train-design.md",
   "operational_current": "0.42.90-admin-smoke",
-  "queue": [
-    {
-      "pr": 53,
-      "merge_commit": "c8be5bc",
-      "area": "hyperv",
-      "summary": "Hyper-V Notes를 원소 하나로 써서 template lock marker가 저장되게 함(vm.manage 잠재 결함 포함)",
-      "lane2_probe": {
-        "family": "vm.template.lock",
-        "design": "docs/superpowers/specs/2026-09-20-purecvisor-desktop-node-p1-template-lock-design.md"
-      },
-      "risk_tier": "M"
-    }
-  ],
+  "queue": [],
   "trains": [
     {
       "version": "0.42.89-admin-smoke",
@@ -34,6 +22,15 @@
         48
       ],
       "status": "promoted"
+    },
+    {
+      "version": "0.42.91-admin-smoke",
+      "departed_at": "2026-10-06T19:40:00+09:00",
+      "source_commit": "05f42a2a7ef9fef50aea861fccdc8a3617fd15cf",
+      "carriages": [
+        53
+      ],
+      "status": "running"
     }
   ]
 }
