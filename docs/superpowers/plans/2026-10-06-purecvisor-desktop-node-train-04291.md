@@ -75,7 +75,9 @@
 
 ## Task 6: probe P1-6, P1-7 (실은 변경 `vm.template.lock`)
 
-- [ ] 0.42.90 probe 스크립트로 probe VM의 `created_at`·`last_powered_on`·`notes` readback, template-lock 뒤 `template_lock=true`와 Notes marker, rename·set-memory·poweroff 거절(`PCV_VM_TEMPLATE_LOCKED`)과 start 허용, unlock 뒤 허용, 삭제를 확인한다. 로컬 commit.
+- [x] 0.42.90 probe 스크립트로 probe VM의 `created_at`·`last_powered_on`·`notes` readback, template-lock 뒤 `template_lock=true`와 Notes marker, rename·set-memory·poweroff 거절(`PCV_VM_TEMPLATE_LOCKED`)과 start 허용, unlock 뒤 허용, 삭제를 확인한다. 로컬 commit.
+
+실행 기록(2026-10-06, `11:02:14Z`~`11:02:58Z`, 설치본 `0.42.91+990a4b2`): `16`단계 모두 PASS. P1-6: `created_at` 있음, `last_powered_on`은 running에서만, `notes`는 marker 줄을 뺌(보존 VM 운영자 메모 readback 포함). P1-7: lock 뒤 `template_lock=true`, rename·set-memory·poweroff는 `PCV_VM_TEMPLATE_LOCKED`로 거절, start는 허용, unlock 뒤 poweroff·rename 허용. 0.42.90에서 FAIL했던 P1-7이 PR #53 수정으로 닫혔다. 정리 단계가 이름이 바뀐 probe VM도 지우게 고쳤다. probe VM `0`, 보존 VM Off, service Running/Automatic, Web `200`. evidence `lane2-completion-inventory-template-lock-actual-vm-2026-10-06-04291`(artifact `artifacts/lane2-completion-inventory-template-lock-20261006-04291`).
 
 ## Task 7: probe P1-9, P2-11
 
