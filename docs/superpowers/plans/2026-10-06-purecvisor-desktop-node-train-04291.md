@@ -63,7 +63,9 @@
 
 ## Task 4: fullgate
 
-- [ ] clean `0.42.91` 위에서 `full-admin-host-mutation-gate-20261006-04291`. 사후 검사(build commit, 같은 version ARP 1개, firewall 규칙 0). 로컬 commit.
+- [x] clean `0.42.91` 위에서 `full-admin-host-mutation-gate-20261006-04291`. 사후 검사(build commit, 같은 version ARP 1개, firewall 규칙 0). 로컬 commit.
+
+실행 기록(2026-10-06): pair가 남긴 clean `0.42.91`(`{AC7292AD-…}`) 위에서 시작했다. 0.42.90 manifest에서 version, batch id, 경로만 바꿨고 supervisor `-DryRun -AllowHostMutation` 뒤 `10:47:05Z`~`11:00:40Z` 실행, `ok=true`, `status=completed`. step: service-msi-hyperv exit `0`(시도 `1`, `802.8`초), os-mutation exit `0`(`11.1`초). 사후 검사: 설치본 Host/CLI `+990a4b2`가 gate build(clean HEAD `990a4b2`)와 같다. 같은 version ARP `{ED64B13A-742B-422C-9142-DED650CB856B}` `0.42.91` 1개, service Running/Automatic, Web `200`, PureCVisor firewall 규칙 `0`, 보존 VM Off.
 
 ## Task 5: installed current-card
 
