@@ -43,7 +43,9 @@
 
 ## Task 3: F6 설계
 
-- [ ] `docs/superpowers/specs/2026-10-06-purecvisor-desktop-node-train-host-inputs-design.md`에 세 가지를 정한다. current-card 캡처를 저장소 도구로 옮겨 train facts에서 SHA 상수·provenance·version을 읽는 방법, fullgate batch manifest를 직전 manifest 복사 대신 train facts에서 만드는 방법, Lane 2 probe 스크립트의 위치·매개변수·비밀 값 경계·plan-only 시험. 검증: `dotnet test src/DesktopNode.Delivery.Tests -c Release`, `git diff --check`. 로컬 commit.
+- [x] `docs/superpowers/specs/2026-10-06-purecvisor-desktop-node-train-host-inputs-design.md`에 세 가지를 정한다. current-card 캡처를 저장소 도구로 옮겨 train facts에서 SHA 상수·provenance·version을 읽는 방법, fullgate batch manifest를 직전 manifest 복사 대신 train facts에서 만드는 방법, Lane 2 probe 스크립트의 위치·매개변수·비밀 값 경계·plan-only 시험. 검증: `dotnet test src/DesktopNode.Delivery.Tests -c Release`, `git diff --check`. 로컬 commit.
+
+실행 기록(2026-10-06): 설계 `pcv-train-host-inputs-v1`(`accepted`). 0.42.90→0.42.91 diff로 train마다 바뀌는 값을 셌다. manifest는 version `2`곳과 tag 경로 `6`곳, 캡처 스크립트는 경로·version·evidence id·batch·SHA-256 `4`개·`provenance_commit`·`canonical_current_evidence`다. 이 값은 모두 train facts(`package`, `fullgate` 문서)와 `current-evidence.json`에 이미 있다. 결정: `pcvverify train-host-inputs --kind fullgate-manifest|current-card`가 tracked 템플릿과 입력 `docs/ga-ready/trains/<version>.host-inputs.json`에서 ignored `artifacts/`로 쓴다. 사설 LAN 주소(`PCV_TRAIN_LAN_PREFIX`)와 `created_by`는 실행 값으로만 받는다. golden은 0.42.91 실제 파일을 문서용 주소 `192.0.2.10`으로 바꿔 재현한다. probe 스크립트는 `packaging/windows-desktop-node/lane2-probes/`에 세 개(P1-6·P1-7, P1-9·P2-11, P1-10)와 공통 함수, 카탈로그 `pcv-lane2-probe-catalog-v1`로 두고 `-PlanOnly`를 넣는다. 시험은 C# 계약으로만 쓰고 새 `*.Tests.ps1`는 만들지 않는다. 확인: 지난 세션 probe 스크립트 `5`개(`649`줄)는 임시 폴더에만 있었고, 계정 비밀번호는 이미 `RandomNumberGenerator`와 환경 변수로 넘기고 있었다.
 
 ## Task 4: F6 current-card 캡처 도구
 
