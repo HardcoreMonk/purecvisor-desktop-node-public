@@ -50,25 +50,26 @@ dotnet run --project src/DesktopNode.Verification -c Release -- train-host-input
 
 - 입력 `docs/ga-ready/trains/<version>.host-inputs.json`(계약 `pcv-train-host-inputs-v1`)은 version, 날짜 tag, train facts 경로, smoke ISO 상대 경로만 담는다. tracked이므로 사설 값은 없다.
 - 실행 경계 값은 명령줄이나 환경 변수로만 받는다. 저장소 root는 실행 위치에서 구하고, LAN prefix는 `PCV_TRAIN_LAN_PREFIX`, `created_by`는 실행 사용자 이름이다. 출력은 ignored `artifacts/` 아래에만 쓴다.
-- 출력 파일이 이미 있으면 쓰지 않고 멈춘다(`PCV_TRAIN_HOST_INPUT_EXISTS`). 필요한 fact가 없으면 이름을 담아 멈춘다(`PCV_TRAIN_HOST_INPUT_MISSING|<field>`). 기존 artifact를 덮어쓰지 않는 규칙과 같다.
+- 출력 파일이 이미 있으면 쓰지 않고 멈춘다(`train-host-inputs:output-exists:<output>`). 필요한 fact가 없으면 이름을 담아 멈춘다(`train-host-inputs:fact-missing:<template>.<key>`). 오류 코드는 다른 train 도구와 같은 `PCV_CONFIG_INVALID` 계열이다. 기존 artifact를 덮어쓰지 않는 규칙과 같다.
+- `--plan`은 아무것도 쓰지 않고 출력 경로와 SHA-256만 보여 준다.
 
 ### 3.2 fullgate manifest
 
-- 템플릿 `docs/ga-ready/trains/templates/fullgate-batch-manifest.json.tmpl`. 값 자리는 `{{version}}`, `{{tag}}`, `{{repo_root}}`, `{{iso}}`, `{{lan_prefix}}`, `{{created_by}}`다.
+- 템플릿 `docs/ga-ready/trains/host-templates/fullgate-batch-manifest.json.tmpl`. 값 자리는 `{{version}}`, `{{tag}}`, `{{repo_root}}`, `{{iso}}`, `{{lan_prefix}}`, `{{created_by}}`다.
 - `path_redactions`도 실행 값으로 채운다(`{{lan_prefix}}` 호스트 → `[redacted-private-endpoint]`, `{{repo_root}}` → `[REPO_ROOT]`).
 - 출력: `artifacts/batch-manifests/full-admin-host-mutation-gate-<tag>.json`.
 - fullgate 전에 만들 수 있어야 하므로 train facts가 아니라 입력 파일만 읽는다.
 
 ### 3.3 current-card 캡처 스크립트
 
-- 템플릿 `docs/ga-ready/trains/templates/capture-current-card.ps1.tmpl`. 지금 스크립트의 본문을 그대로 두고 1장의 값만 자리로 바꾼다.
+- 템플릿 `docs/ga-ready/trains/host-templates/capture-current-card.ps1.tmpl`. 지금 스크립트의 본문을 그대로 두고 1장의 값만 자리로 바꾼다.
 - 값 출처:
 
   | 값 | 출처 |
   | --- | --- |
   | clean MSI·payload SHA-256 | train facts `package` 문서 |
   | fullgate MSI·payload SHA-256, gate build commit, fullgate batch | train facts `fullgate` 문서 |
-  | `canonical_current_evidence` | `docs/ga-ready/current-evidence.json`의 승격 전 `current.version` |
+  | `canonical_current_evidence` | train facts `package` 문서. 출발 때 `docs/ga-ready/current-evidence.json`의 `current.version`을 담으므로 승격 뒤에도 같은 값을 재현한다 |
   | version, tag, evidence id | 입력 파일 |
 
 - 출력: `artifacts/installed-operator-surface-current-card-<tag>.capture.ps1`. artifact root 밖에 두는 지금 규칙(스크립트가 root가 있으면 멈춤)을 지킨다. 캡처 뒤 지금처럼 root 안에 복사본을 남긴다.
@@ -90,8 +91,8 @@ dotnet run --project src/DesktopNode.Verification -c Release -- train-host-input
 
 | 시험 | 내용 |
 | --- | --- |
-| `TrainHostInputsGoldenTests` | 0.42.91 입력으로 만든 manifest와 캡처 스크립트가 golden과 byte 단위로 같다. golden은 실제 0.42.91 파일에서 repo root를 `[REPO_ROOT]`, LAN 주소를 `192.0.2.10`(문서용 주소), 사용자를 `pcv-operator`로 바꾼 것이다 |
-| `TrainHostInputsCommandTests` | 출력이 있으면 멈춤, fact가 없으면 그 이름으로 멈춤, LAN prefix가 없으면 manifest를 쓰지 않음 |
+| `TrainHostInputsTests` (current-card) | 0.42.91 입력과 그 train의 repo root로 만든 캡처 스크립트의 SHA-256이 facts `current-card` 문서의 `capture_script_sha256`(실제로 돈 스크립트)과 같다. 임시 저장소에서 `--plan`·`--write` 뒤 다시 쓰면 멈추고, fact가 없으면 그 이름으로 멈추며 아무것도 쓰지 않는다 |
+| `TrainHostInputsTests` (fullgate manifest) | 0.42.91 입력으로 만든 manifest가 golden과 byte 단위로 같다. golden은 실제 0.42.91 manifest에서 LAN 주소를 `192.0.2.10`(문서용 주소), 사용자를 `pcv-operator`로 바꾼 것이다. LAN prefix가 없으면 manifest를 쓰지 않는다 |
 | `Lane2ProbeCatalogContractTests` | 카탈로그의 스크립트가 모두 있고, `-PlanOnly`·`-ArtifactRoot` 매개변수와 root 존재 시 멈춤이 있으며, 비밀 값 상수 패턴과 사설 주소가 없다 |
 
 ## 5. 절차 변경

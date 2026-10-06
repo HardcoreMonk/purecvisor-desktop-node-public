@@ -49,7 +49,9 @@
 
 ## Task 4: F6 current-card 캡처 도구
 
-- [ ] Task 3 설계대로 current-card 캡처를 저장소 도구로 옮기고 `docs/DEVELOPMENT_PROCEDURE.md` §10 train task 4를 새 도구로 바꾼다. 실제 캡처는 하지 않고 plan-only/Pester로 시험한다. 검증: 영향 Pester, `dotnet test src/DesktopNode.Delivery.Tests -c Release`, `git diff --check`. 로컬 commit.
+- [x] Task 3 설계대로 current-card 캡처를 저장소 도구로 옮기고 `docs/DEVELOPMENT_PROCEDURE.md` §10 train task 4를 새 도구로 바꾼다. 실제 캡처는 하지 않고 plan-only/Pester로 시험한다. 검증: 영향 Pester, `dotnet test src/DesktopNode.Delivery.Tests -c Release`, `git diff --check`. 로컬 commit.
+
+실행 기록(2026-10-06): `pcvverify train-host-inputs --input <host-inputs.json> --kind current-card (--plan|--write)`(`TrainHostInputs.cs`, `TrainHostInputsCommand.cs`)를 더했다. 템플릿 `docs/ga-ready/trains/host-templates/capture-current-card.ps1.tmpl`은 0.42.91 실제 스크립트에서 자리 `14`곳(값 `13`개)만 바꾼 것이다. evidence 템플릿 디렉터리 `templates/`는 `TemplateDirectoryMatchesTheTemplateCatalog`가 evidence 카탈로그만 허용하므로 `host-templates/`를 따로 뒀다. 입력 `docs/ga-ready/trains/0.42.91-admin-smoke.host-inputs.json`. `TrainHostInputsTests` `3`개: 0.42.91 입력과 그 train의 repo root로 만든 스크립트의 SHA-256이 facts `current-card` `capture_script_sha256`(`09d1740d…`, 실제로 돈 스크립트)과 같음, 임시 저장소에서 `--plan`·`--write` 뒤 다시 쓰면 `output-exists`로 멈춤, `fullgate.provenance_commit`이 없으면 그 이름으로 멈추고 아무것도 쓰지 않음. §10 train task 4를 새 명령으로 바꾸고 설계 문서의 오류 detail·`canonical_current_evidence` 출처(facts `package` 문서)를 구현에 맞췄다. Release build 경고 `0`, Verification.Tests `617/618`(실패 `1`은 dirty tree의 `PolicyBoundaryMatchesCanonicalActivationState`, commit 뒤 확인), Delivery `763/763`, contract spec pin `current`. PowerShell 실행이나 캡처는 하지 않았다(새 `*.Tests.ps1` 없음).
 
 ## Task 5: F6 fullgate manifest 생성
 

@@ -381,10 +381,17 @@ campaign은 이미 받은 승인을 되묻지 않을 뿐, 없는 승인을 만�
   쓴다(`pair-consume` 문서의 `descriptor_batch_id`와 `source_descriptor_batch_id`). 그 descriptor가 읽은 summary JSON
   `7`개는 `<campaign root>/consume-manifest.json`에 SHA-256, byte 수와 함께 적는다(복사 없음). 승격 도구는 `-consume`
   접미사를 요구하지 않는다. 첫 사례는 train `0.42.90`(`manual-admin-campaign-2026-10-05-04289-04290`)이다.
-- train task 4(current-card)는 직전 train의 `capture-current-card.ps1`을 복사해 root, evidence id, fullgate batch,
-  64자리 SHA 상수 `4`개(clean·fullgate MSI, clean·fullgate payload), 40자리 `provenance_commit`(fullgate gate build
-  commit), 설치 manifest version, `canonical_current_evidence`를 바꾼다. 스크립트는 artifact root가 있으면 멈추므로
-  root 밖에서 실행하고, 끝난 뒤 root에 복사해 둔다.
+- train task 4(current-card)는 캡처 스크립트를 `pcvverify train-host-inputs`로 만든다(설계
+  `docs/superpowers/specs/2026-10-06-purecvisor-desktop-node-train-host-inputs-design.md`). 입력
+  `docs/ga-ready/trains/<version>.host-inputs.json`(계약 `pcv-train-host-inputs-v1`: version, date, facts, iso)은 출발
+  task에서 commit한다. fullgate 문서를 facts에 렌더한 뒤 아래 명령이 템플릿
+  `docs/ga-ready/trains/host-templates/capture-current-card.ps1.tmpl`에서
+  `artifacts/installed-operator-surface-current-card-<yyyymmdd>-<tag>.capture.ps1`을 쓴다. SHA 상수 `4`개,
+  `provenance_commit`, fullgate batch는 facts `fullgate`·`package` 문서에서, `canonical_current_evidence`는 출발 때
+  값을 담은 `package` 문서에서 온다. 출력이 이미 있으면 쓰지 않는다. `--plan`은 쓰지 않고 출력 경로와 SHA-256만
+  보여 준다. 스크립트는 artifact root가 있으면 멈추므로 root 밖에서 실행하고, 끝난 뒤 root에 복사해 둔다.
+
+      dotnet run --project src/DesktopNode.Verification -c Release -- train-host-inputs --input docs/ga-ready/trains/<version>.host-inputs.json --kind current-card --write
 
 train campaign의 task 순서:
 
