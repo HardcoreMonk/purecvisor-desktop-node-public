@@ -105,7 +105,9 @@
 
 ## Task 11: 종료와 Lane 3 merge
 
-- [ ] clean HEAD 종료 검증, push, PR, green CI 뒤 merge.
+- [x] clean HEAD 종료 검증, push, PR, green CI 뒤 merge.
+
+실행 기록(2026-10-06, clean HEAD `32cb460`): Release build 경고 `0`. `dotnet test src/DesktopNode.sln -c Release` 실패 `0`(Verification `615`, Delivery `763`, Api `488`, HyperV `257`, Host `216`, Contracts `200`, Cli `183`, Runtime `129`, Service `11`). Pester 네 종 실패 `0`(`528`, `49`, `50`, `129`). `npm run test:required --prefix web` exit `0`. Required CI 네 shard 모두 `ok=true`, `plan_only=false`. 이 기록 commit 뒤 push, PR, green CI 뒤 merge하면 train `0.42.91`이 끝난다.
 
 ## Task 13: 끊긴 create의 고아 디스크 처리 설계
 
