@@ -353,7 +353,13 @@ campaign은 이미 받은 승인을 되묻지 않을 뿐, 없는 승인을 만�
   `pcv-single-pr-train-v1`). 출발 때 고정하는 `main` HEAD가 payload commit이고, 그 commit의 main push run(Development
   Gates와 Public Boundary)이 green이어야 출발한다. 두 run id는 출발 task 실행 기록에 적는다. Lane 3 main push evidence는
   이 run을 인용하고, `git diff --name-only <payload commit>..<PR head>`에 `src/`, `web/src/`, `config/`, `.github/`가
-  없다는 확인을 담는다. 있으면 Lane 3를 쓰지 않고 멈춘다.
+  없다는 확인을 담는다. 있으면 Lane 3를 쓰지 않고 멈춘다. 확인은 아래 명령이 하고(계약 `pcv-train-path-check-result-v1`,
+  제품 경로가 있으면 exit `1`), 그 결과를 facts의 `main-push-payload` 문서(`head_sha`는 payload commit,
+  `train_pr_head`, `path_check_line`)에 적는다. 기존 `main-push` 템플릿은 두 PR로 돈 train 기록용으로 남는다.
+  `lane3-spec`은 facts에 있는 쪽을 쓰고, 둘 다 있으면 멈춘다. Lane 3가 고치는 `DOCUMENTATION_INDEX` 공개 소스 권위
+  줄의 HEAD는 payload commit이다.
+
+      dotnet run --project src/DesktopNode.Verification -c Release -- train-path-check --payload <payload commit> --head HEAD
 - train PR은 merge 직전 base가 `origin/main`과 같아야 한다. 그 사이 다른 PR이 merge됐으면 rebase하고 PR CI를 다시
   기다린다. merge 뒤 main push run을 기다리고, red면 그 merge를 되돌리는 revert PR을 연다. operational current는 직전
   값으로 돌아가고 원인은 Lane 1로 고친 뒤 다음 version으로 다시 출발한다.

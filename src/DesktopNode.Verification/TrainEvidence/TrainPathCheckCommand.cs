@@ -15,6 +15,11 @@ internal static class TrainPathCheckCommand
 
     private static readonly Regex CommitPattern = new("^[0-9a-f]{7,40}$", RegexOptions.CultureInvariant);
 
+    // The process policy accepts only the full canonical allowlist, the same one CutoverGitBoundary passes.
+    private static readonly IReadOnlyList<string> AllowedExecutables = Array.AsReadOnly([
+        "dotnet", "dotnet.exe", "node", "node.exe", "npm", "npm.cmd", "git", "git.exe"
+    ]);
+
     internal static int Run(
         IReadOnlyList<string> args,
         string currentDirectory,
@@ -37,7 +42,7 @@ internal static class TrainPathCheckCommand
                     ["diff", "--name-only", $"{args[2]}..{args[4]}"],
                     repositoryRoot,
                     TimeSpan.FromSeconds(30),
-                    ["git", "git.exe"],
+                    AllowedExecutables,
                     OutputLimitCharacters: 1_000_000),
                 CancellationToken.None).GetAwaiter().GetResult();
             if (result.TimedOut || result.Cancelled || result.ExitCode != 0)

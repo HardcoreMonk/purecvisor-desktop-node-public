@@ -61,7 +61,9 @@
 
 ## Task 6: 단일 PR train 3 — Lane 3 spec
 
-- [ ] `lane3-spec`이 새 main push evidence id와 `DOCUMENTATION_INDEX` 공개 소스 권위 줄(payload commit)을 만들게 한다. 기존 golden 유지. 검증: Verification.Tests, Delivery, `git diff --check`. 로컬 commit.
+- [x] `lane3-spec`이 새 main push evidence id와 `DOCUMENTATION_INDEX` 공개 소스 권위 줄(payload commit)을 만들게 한다. 기존 golden 유지. 검증: Verification.Tests, Delivery, `git diff --check`. 로컬 commit.
+
+실행 기록(2026-10-07): `TrainLane3SpecBuilder`가 facts의 `main-push`와 `main-push-payload` 가운데 있는 쪽을 쓴다. 없으면 `facts-document-missing`, 둘 다 있으면 `facts-main-push-ambiguous`로 멈춘다. payload 쪽 alias는 `<tag>-payload-main-push-not-provider-required-authority`이고, main push evidence·run id·head SHA·package candidate 값과 `index_sections.main_push_evidence`를 그 문서에서 읽는다. 기존 `lane3-spec` golden(0.42.89~0.42.91)은 그대로 통과한다. `DOCUMENTATION_INDEX` 공개 소스 권위 줄은 spec 값이 아니라 Lane 3가 손으로 고치는 줄이라 §10에 "HEAD는 payload commit" 규칙으로 적었고, §10에 `train-path-check` 명령과 `main-push-payload` 사용법을 더했다. 실제 실행에서 Task 5의 `train-path-check`가 `process-command-forbidden=git`으로 거부되는 결함을 찾았다(process 정책은 정식 실행 파일 목록 8개 전체를 allowlist로 요구한다). `CutoverGitBoundary`와 같은 목록으로 고치고 실제 git으로 도는 시험 2개(같은 commit은 exit `0`, PR #57 구간 `a35ea05..dde42d8`는 exit `1`)를 더했다. 이 branch에서 `--payload dde42d8 --head HEAD`는 제품 경로 `5`개로 exit `1`이다(도구 branch라 기대한 결과). `TrainSinglePrTests` `8/8`, Verification.Tests `627/628`(dirty tree의 PolicyBoundary), Delivery `769/769`, `git diff --check` 통과.
 
 ## Task 7: ADR-0016
 

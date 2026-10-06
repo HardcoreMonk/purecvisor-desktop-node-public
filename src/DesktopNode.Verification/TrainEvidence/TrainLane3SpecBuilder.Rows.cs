@@ -85,7 +85,7 @@ internal sealed partial class TrainLane3SpecBuilder
         ["p0_feature_ledger_version"] = PreviousString("index_sections", "p0_feature_ledger_version"),
         ["pair_evidence"] = DocumentPath("pair-consume"),
         ["functional_note"] = input.FunctionalNote,
-        ["main_push_evidence"] = DocumentPath("main-push")
+        ["main_push_evidence"] = DocumentPath(mainPushTemplate)
     };
 
     internal static string Serialize(JsonObject spec)
