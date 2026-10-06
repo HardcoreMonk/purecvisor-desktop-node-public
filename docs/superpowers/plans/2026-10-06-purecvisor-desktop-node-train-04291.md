@@ -45,7 +45,9 @@
 
 ## Task 1: package
 
-- [ ] clean HEAD에서 `build.ps1 -Version 0.42.91-admin-smoke -MsiProductVersion 0.42.91 -SigningMode AllowUnsignedDev -SigningTrustModel LocalTest -OutputRoot artifacts/admin-smoke-package-20261006-04291`, `New-PcvAdminSmokeUpdatePackage.ps1`. train-facts 입력과 package 문서(`build_utc` ISO 8601 확인). 로컬 commit.
+- [x] clean HEAD에서 `build.ps1 -Version 0.42.91-admin-smoke -MsiProductVersion 0.42.91 -SigningMode AllowUnsignedDev -SigningTrustModel LocalTest -OutputRoot artifacts/admin-smoke-package-20261006-04291`, `New-PcvAdminSmokeUpdatePackage.ps1`. train-facts 입력과 package 문서(`build_utc` ISO 8601 확인). 로컬 commit.
+
+실행 기록(2026-10-06): HEAD `59cd8b6`에서 build `42`초, MSI `bdef7609…`, payload `f4503dfc…`, update ZIP `f31ae34c…`, Host/CLI `+59cd8b6`. `build_utc`는 `2026-10-06T10:39:40.0750092Z`(PR #51 수정 확인). 도구에 `-BuildSeconds 42`를 넘겨 facts가 `build_seconds`를 직접 만들므로 첫 `train-facts`가 서술 값과 겹쳐 `narrative-conflict:package:build_seconds`로 멈췄다. 서술에서 빼고 다시 돌려 package 문서 `written`, `check` `current`. evidence `admin-smoke-package-2026-10-06-04291`.
 
 ## Task 2: pair 실행
 
