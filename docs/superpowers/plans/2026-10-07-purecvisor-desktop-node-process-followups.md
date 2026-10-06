@@ -1,0 +1,88 @@
+# 개발 공정 최적화 후속 Implementation Plan
+
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+
+**Goal:** `process-optimization-20261006`의 다음 승인 다섯 개를 실행한다. Edge 누수 정리 효과를 fullgate 재실행으로 확인하고, 단일 PR train과 Hyper-V 어댑터 integration 단계(ADR-0016)를 구현하며, 끊긴 `vm.create` 잔여물 처리를 구현해 다음 train 대기열에 올린다. 2026-10-19 뒤 C5 runner 확인으로 끝낸다.
+
+**Architecture:** 설계 `pcv-single-pr-train-v1`, `pcv-hyperv-adapter-integration-tier-v1`, `pcv-interrupted-create-residue-v1`(모두 2026-10-06), 점검 기준값(fullgate `msi-lifecycle-smoke` uninstall `340`초·`342`초, 2026-10-06 0.42.91). branch는 둘이다. Task 1~10은 `lane2/process-followups-20261007`, Task 11~12는 그 PR이 merge된 뒤 `origin/main`에서 만든 `lane1/interrupted-create-residue-20261007`이다. Task 13은 2026-10-19 뒤 별도 branch다.
+
+**Tech Stack:** `Invoke-PcvBatchSupervisor.ps1`, `pcvverify train-host-inputs`, msiexec, C# xUnit(`DesktopNode.Verification`, `DesktopNode.HyperV`, 새 `DesktopNode.HyperV.IntegrationTests`), 문서(`docs/DEVELOPMENT_PROCEDURE.md`, `docs/adr/`), private `.claude/skills/pcv-ship/SKILL.md`
+
+## 사용자 결정 (2026-10-07)
+
+승인 원문: `1,2,3,4,5` (`process-optimization-20261006` 최종 보고의 다음 승인 후보에 대한 답). 2번과 4번은 두 가지로 읽혀 다시 물었고, 답은 `지금 fullgate 재실행`과 `채택으로 보고 구현`이다.
+
+| 항목 | 범위 |
+| --- | --- |
+| 1 | `train-04291-20261006` Task 12(2026-10-19 뒤 C5 runner 확인)를 2026-10-06 `1,2,3` 항목 3 승인 그대로 다시 연다(Task 13) |
+| 2 | 0.42.91 fullgate를 지금 다시 돌려 Edge 정리 효과를 확인한다. Lane 2 host mutation: MSI 설치·repair·제거·`REMOVE_DATA`, service, route parity VM. 끝에 0.42.91 운영 MSI를 다시 설치해 설치본을 operational current build로 되돌린다 |
+| 3 | `pcv-single-pr-train-v1` 구현(Lane 1), push, PR, green CI 뒤 merge |
+| 4 | ADR-0016 채택, Hyper-V 어댑터 integration 단계 2 구현. standing approval은 `pcv-it-` 접두사 VM의 생성·삭제로 한정한다(service, MSI, switch 변경 없음) |
+| 5 | `pcv-interrupted-create-residue-v1` 구현(Lane 1)과 다음 release train 대기열 행. 대기열 규칙(§10)대로 PR을 green CI 뒤 merge한 다음 행을 남긴다 |
+| 권한 | Lane 0/1/2, task마다 로컬 commit, push, PR, green CI 뒤 merge. Lane 3와 `current-evidence.json` 쓰기는 없다 |
+
+## Global Constraints
+
+- 보존 VM `pcv-guest-installed-04253-r1`의 전원, Notes, 디스크를 바꾸지 않는다. 새 VM은 fullgate route parity VM과 `pcv-it-` 접두사 VM뿐이고 끝나면 지운다.
+- fullgate 재실행은 Task 11의 제품 변경보다 먼저, 제품 payload가 0.42.91과 같은 tree에서 돈다. 새 batch와 artifact는 `-20261007-04291` 이름으로 쓰고 2026-10-06 artifact와 evidence를 고치지 않는다.
+- 사설 LAN prefix와 사용자 이름은 실행 값으로만 쓴다. token, credential, password는 command line, summary, evidence에 남기지 않는다.
+- 이 campaign은 operational current(`0.42.91-admin-smoke`)를 바꾸지 않는다. fullgate 재실행 결과는 관측이며 승격 근거가 아니다.
+- 한도: Lane 1 30분·tool batch 18회, Lane 2 45분·tool batch 12회(checkpoint마다).
+
+## Task 1: F1 확인 fullgate 실행 (Lane 2)
+
+- [ ] 사전 상태(누수 Edge `0`, `Default Switch`, ARP `0.42.91` 1개, service Running/Automatic)를 확인하고, 추적하지 않는 host-inputs(date `2026-10-07`)로 `train-host-inputs --kind fullgate-manifest`가 manifest를 만들게 한다. supervisor `-DryRun` 뒤 실행하고, 사후 검사(같은 version ARP 1개, build commit, firewall 규칙 `0`)와 `msi-lifecycle-smoke` 단계별 시간을 기록한다. 로컬 commit.
+
+## Task 2: 운영 build 복원 (Lane 2)
+
+- [ ] 0.42.91 운영 MSI(`46dddccb…`, `artifacts/routeparity-service-msi-hyperv-batch-profile-20261006-04291`)를 설치해 설치본을 operational current build(`+990a4b2`)로 되돌린다. 설치본 Host·CLI SHA-256이 0.42.91 fullgate payload와 같은지, ARP 1개, service Running/Automatic, Web `200`을 확인한다. 로컬 commit.
+
+## Task 3: F1 확인 기록
+
+- [ ] Task 1·2 결과를 새 evidence `docs/ga-ready/evidence/fullgate-msi-uninstall-f1-check-2026-10-07-04291.md`에 적는다(2026-10-06 기준값과 비교, 누수 Edge 수, 결론). `EVIDENCE_INDEX`에 관측 줄을 더한다. 검증: Delivery, `git diff --check`. 로컬 commit.
+
+## Task 4: 단일 PR train 1 — 절차
+
+- [ ] `docs/DEVELOPMENT_PROCEDURE.md` §10 task 순서를 PR 하나로 바꾸고, 출발 조건에 고정할 `main` HEAD의 push run green을, 승인 문구에 post-merge red면 revert PR을 더한다. train 설계 §4.7과 `pcv-single-pr-train-v1` 상태를 맞추고 private `pcv-ship`에 train branch base 일치 확인을 더한다(private 로컬 commit). 검증: Delivery, `git diff --check`. 로컬 commit.
+
+## Task 5: 단일 PR train 2 — main push evidence
+
+- [ ] `train-facts`·`train-evidence`의 `main-push` 문서가 payload commit의 main push run을 인용하고 `payload commit..PR head` 제품 경로 확인 결과를 담게 한다. 기존 train(0.42.89~0.42.91) golden은 그대로 통과해야 한다. 검증: Verification.Tests, Delivery, `git diff --check`. 로컬 commit.
+
+## Task 6: 단일 PR train 3 — Lane 3 spec
+
+- [ ] `lane3-spec`이 새 main push evidence id와 `DOCUMENTATION_INDEX` 공개 소스 권위 줄(payload commit)을 만들게 한다. 기존 golden 유지. 검증: Verification.Tests, Delivery, `git diff --check`. 로컬 commit.
+
+## Task 7: ADR-0016
+
+- [ ] `docs/adr/0016-hyperv-adapter-integration-tier.md`(accepted, 2026-10-07 승인 4)와 `docs/ADR_INDEX.md` 현재 기준 절을 쓴다. 허용 범위, 금지, 승인 방식, 실패 처리는 설계 §4대로다. 설계 상태를 `accepted`로 바꾼다. 검증: Delivery, `git diff --check`. 로컬 commit.
+
+## Task 8: integration 단계 구현
+
+- [ ] `src/DesktopNode.HyperV.IntegrationTests`(solution·Required CI 밖), 실행 가드, 정리, 첫 시험(Off VM의 inventory `stopped`와 export·network connect 정책 수용), `InternalsVisibleTo`, 그리고 project가 solution과 Required CI 밖에 있음을 고정하는 Delivery 계약을 만든다. VM은 만들지 않는다(가드 없이 돌리면 전부 실패하는지 확인). 검증: 새 project build, Delivery, Verification.Tests, `git diff --check`. 로컬 commit.
+
+## Task 9: integration 단계 첫 실행 (Lane 2)
+
+- [ ] standing approval 범위(`pcv-it-` 접두사 VM 생성·삭제) 안에서 integration 단계를 이 호스트에서 한 번 돌린다. 시작·끝 VM 이름 목록이 같고 `artifacts/hyperv-integration/` 아래에 남은 것이 없음을 확인하고 결과를 계획에 `hyperv-integration` 관측으로 적는다. 로컬 commit.
+
+## Task 10: 종료 검증과 merge (1차)
+
+- [ ] clean HEAD 종료 검증(build, 네 shard, Pester 네 종) 뒤 push, PR, green CI 뒤 merge.
+
+## Task 11: 끊긴 create 잔여물 처리 구현
+
+- [ ] Task 10 merge 뒤 `origin/main`에서 branch를 만들고 `pcv-interrupted-create-residue-v1`을 구현한다(소유 표식, 회수 조건, `PCV_VHD_ALREADY_EXISTS` detail, reconcile hint, managed delete 정리). 설계의 report-only(`DefineSystem` 직후 끊긴 create의 reconcile 판정)는 같은 checkpoint에서 다룰 수 있으면 함께 고친다. 검증: HyperV.Tests, Api.Tests, `git diff --check`. 로컬 commit.
+
+## Task 12: 대기열과 merge (2차)
+
+- [ ] 종료 검증, push, PR, green CI 뒤 merge, 그리고 `docs/ga-ready/release-train.json` `queue`에 이 PR 행을 더한다(§10 대기열 규칙과 같은 방식).
+
+## Task 13: C5 runner 확인 (2026-10-19 이후)
+
+- [ ] 2026-10-19 이후에만 실행한다. 그 전에 오면 기한 대기로 멈춘다. Ubuntu 26 runner의 첫 `main` Development Gates와 Public Boundary run이 green이면 완료 정의 §4에 C5 충족과 프로젝트 완료 판정을 적고 campaign을 닫는다. 실패하면 `ubuntu-24.04` pin을 판단해 보고하고 멈춘다. push, PR, green CI 뒤 merge.
+
+## Nonclaims
+
+- operational current는 `0.42.91-admin-smoke` 그대로다. Lane 3와 `current-evidence.json` 쓰기는 없다.
+- fullgate 재실행과 integration 단계 결과는 관측이다. 승격 근거가 아니다.
+- public trusted signing과 external stable publication을 주장하지 않는다.
