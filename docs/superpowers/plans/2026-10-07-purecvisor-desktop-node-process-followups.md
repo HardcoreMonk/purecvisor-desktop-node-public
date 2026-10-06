@@ -97,7 +97,9 @@
 
 ## Task 12: 대기열과 merge (2차)
 
-- [ ] 종료 검증, push, PR, green CI 뒤 merge, 그리고 `docs/ga-ready/release-train.json` `queue`에 이 PR 행을 더한다(§10 대기열 규칙과 같은 방식).
+- [x] 종료 검증, push, PR, green CI 뒤 merge, 그리고 `docs/ga-ready/release-train.json` `queue`에 이 PR 행을 더한다(§10 대기열 규칙과 같은 방식).
+
+실행 기록(2026-10-07): §10 규칙("product payload를 바꾸는 PR은 그 PR 안에서 `queue`에 한 행")대로 `queue`에 PR #59 행(변경 commit `ee90474`, area `hyperv`, Lane 2 probe 기능군 `vm.create`, 설계 `pcv-interrupted-create-residue-v1`, risk `M`)을 `5210f18`로 더했다. PR 번호는 저장소 마지막 번호 #58에서 예측했다. `PcvReleaseTrainContractTests` `6/6`. clean HEAD `5210f18` 종료 검증: Release build 경고 `0`, 네 shard `ok=true`·`plan_only=false`, assembly 실패 `0`(HyperV `271`, Api `490`, Delivery `771`, Verification `628` 등), Pester 네 종 실패 `0`, `228`초. 이 기록 commit 뒤 push, PR, green CI 뒤 merge한다. merge commit은 Task 13 기록에 적는다.
 
 ## Task 13: C5 runner 확인 (2026-10-19 이후)
 
