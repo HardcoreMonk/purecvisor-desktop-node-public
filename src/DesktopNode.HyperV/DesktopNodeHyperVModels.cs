@@ -302,7 +302,9 @@ public sealed record DesktopNodeHyperVVmCreateInfo(
     [property: JsonPropertyName("iso_path")] string IsoPath,
     [property: JsonPropertyName("switch")] string SwitchName,
     [property: JsonPropertyName("generation")] int Generation,
-    [property: JsonPropertyName("steps")] IReadOnlyList<string> Steps);
+    [property: JsonPropertyName("steps")] IReadOnlyList<string> Steps,
+    [property: JsonPropertyName("recovered_residue"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    DesktopNodeHyperVRecoveredResidue? RecoveredResidue = null);
 
 public sealed record DesktopNodeHyperVVmDeleteInfo(
     [property: JsonPropertyName("name")] string Name,

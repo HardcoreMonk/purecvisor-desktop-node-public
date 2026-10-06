@@ -370,7 +370,8 @@ internal sealed partial class DesktopNodeApiJobReconciliationHandler
         string jobId,
         string classification,
         string detail,
-        string? operation = null)
+        string? operation = null,
+        string? extraHint = null)
     {
         var mutation = operation switch
         {
@@ -407,7 +408,8 @@ internal sealed partial class DesktopNodeApiJobReconciliationHandler
             $"Job '{jobId}' requires operator reconciliation.",
             $"{detail} Classification: {classification}.",
             false,
-            $"Inspect provider readback and Event Log/diagnostics, confirm whether the {mutation} applied, and do not submit a duplicate mutation until the side effect is known.");
+            $"Inspect provider readback and Event Log/diagnostics, confirm whether the {mutation} applied, and do not submit a duplicate mutation until the side effect is known." +
+            (extraHint is null ? string.Empty : " " + extraHint));
     }
 
     public JsonElement BuildVmRenameParameters(

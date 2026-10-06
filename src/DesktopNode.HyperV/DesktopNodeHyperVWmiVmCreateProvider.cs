@@ -6,7 +6,7 @@ using static DesktopNode.HyperV.DesktopNodeHyperVWmiCommon;
 
 namespace DesktopNode.HyperV;
 
-public sealed class DesktopNodeHyperVWmiVmCreateProvider : IDesktopNodeHyperVVmCreateProvider
+public sealed partial class DesktopNodeHyperVWmiVmCreateProvider : IDesktopNodeHyperVVmCreateProvider
 {
     private const string VirtualSystemManagementServiceClass = "Msvm_VirtualSystemManagementService";
     private const string ImageManagementServiceClass = "Msvm_ImageManagementService";
@@ -50,13 +50,13 @@ public sealed class DesktopNodeHyperVWmiVmCreateProvider : IDesktopNodeHyperVVmC
         }
 
         var vmDirectory = Path.Combine(request.VmRoot, request.Name);
-        var vhdPath = Path.Combine(vmDirectory, "disk0.vhdx");
+        var vhdPath = Path.Combine(vmDirectory, DesktopNodeHyperVVmCreateResidue.VhdFileName);
+        var markerPath = DesktopNodeHyperVVmCreateResidue.MarkerPath(vmDirectory);
         var steps = new List<string>();
-        var vmDirectoryPreExisting = Directory.Exists(vmDirectory);
-        var vhdPreExisting = File.Exists(vhdPath);
         var vmCreated = false;
         var vmDirectoryCreated = false;
         var vhdCreated = false;
+        var markerWritten = false;
 
         var scope = CreateScope(connect: true);
 
@@ -69,6 +69,15 @@ public sealed class DesktopNodeHyperVWmiVmCreateProvider : IDesktopNodeHyperVVmC
                 false);
         }
 
+        var recovered = RecoverInterruptedCreate(scope, request.Name, vmDirectory, vhdPath, markerPath);
+        if (recovered is not null)
+        {
+            steps.Add("Remove interrupted create residue");
+        }
+
+        var vmDirectoryPreExisting = Directory.Exists(vmDirectory);
+        var vhdPreExisting = File.Exists(vhdPath);
+
         try
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -76,6 +85,8 @@ public sealed class DesktopNodeHyperVWmiVmCreateProvider : IDesktopNodeHyperVVmC
             cancellationToken.ThrowIfCancellationRequested();
             vmDirectoryCreated = true;
             steps.Add("Create VM folder");
+
+            markerWritten = WriteCreateMarker(markerPath, request.Name, !vmDirectoryPreExisting);
 
             CreateVirtualHardDisk(scope, vhdPath, request.DiskGb, cancellationToken);
             vhdCreated = true;
@@ -110,6 +121,11 @@ public sealed class DesktopNodeHyperVWmiVmCreateProvider : IDesktopNodeHyperVVmC
                 steps.Add("Configure Gen2 firmware");
             }
 
+            if (!TryDeleteCreateMarker(markerPath))
+            {
+                steps.Add("Create marker left in VM folder");
+            }
+
             return new DesktopNodeHyperVVmCreateInfo(
                 request.Name,
                 vmDirectory,
@@ -117,21 +133,22 @@ public sealed class DesktopNodeHyperVWmiVmCreateProvider : IDesktopNodeHyperVVmC
                 request.IsoPath,
                 DefaultSwitchName,
                 request.Generation,
-                steps);
+                steps,
+                recovered);
         }
         catch (DesktopNodeHyperVNativeOperationException)
         {
-            Cleanup(scope, request.Name, vmCreated, vmDirectoryCreated, vmDirectoryPreExisting, vmDirectory, vhdCreated, vhdPreExisting, vhdPath, CancellationToken.None);
+            Cleanup(scope, request.Name, vmCreated, vmDirectoryCreated, vmDirectoryPreExisting, vmDirectory, vhdCreated, vhdPreExisting, vhdPath, markerWritten, markerPath, CancellationToken.None);
             throw;
         }
         catch (OperationCanceledException)
         {
-            Cleanup(scope, request.Name, vmCreated, vmDirectoryCreated, vmDirectoryPreExisting, vmDirectory, vhdCreated, vhdPreExisting, vhdPath, CancellationToken.None);
+            Cleanup(scope, request.Name, vmCreated, vmDirectoryCreated, vmDirectoryPreExisting, vmDirectory, vhdCreated, vhdPreExisting, vhdPath, markerWritten, markerPath, CancellationToken.None);
             throw;
         }
         catch (Exception ex)
         {
-            Cleanup(scope, request.Name, vmCreated, vmDirectoryCreated, vmDirectoryPreExisting, vmDirectory, vhdCreated, vhdPreExisting, vhdPath, CancellationToken.None);
+            Cleanup(scope, request.Name, vmCreated, vmDirectoryCreated, vmDirectoryPreExisting, vmDirectory, vhdCreated, vhdPreExisting, vhdPath, markerWritten, markerPath, CancellationToken.None);
             throw new DesktopNodeHyperVNativeOperationException(
                 "PCV_VM_CREATE_FAILED",
                 $"VM '{request.Name}' creation failed.",
@@ -625,51 +642,4 @@ public sealed class DesktopNodeHyperVWmiVmCreateProvider : IDesktopNodeHyperVVmC
     {
         return value.Replace("'", "''", StringComparison.Ordinal);
     }
-
-    private static void Cleanup(
-        ManagementScope scope,
-        string vmName,
-        bool vmCreated,
-        bool vmDirectoryCreated,
-        bool vmDirectoryPreExisting,
-        string vmDirectory,
-        bool vhdCreated,
-        bool vhdPreExisting,
-        string vhdPath,
-        CancellationToken cancellationToken)
-    {
-        cancellationToken.ThrowIfCancellationRequested();
-        if (vmCreated)
-        {
-            try
-            {
-                using var vm = FindVm(scope, vmName, cancellationToken);
-                if (vm is not null)
-                {
-                    using var service = GetService(scope, VirtualSystemManagementServiceClass, cancellationToken);
-                    using var inParams = service.GetMethodParameters(DestroySystemMethod);
-                    inParams["AffectedSystem"] = vm.Path.Path;
-                    cancellationToken.ThrowIfCancellationRequested();
-                    using var outParams = service.InvokeMethod(DestroySystemMethod, inParams, null);
-                    WaitForMethodResult(outParams, "vm.create.cleanup", cancellationToken);
-                }
-            }
-            catch
-            {
-                // Best-effort cleanup preserves the primary create failure detail.
-            }
-        }
-
-        if (vmDirectoryCreated && !vmDirectoryPreExisting && Directory.Exists(vmDirectory))
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            try { Directory.Delete(vmDirectory, recursive: true); } catch { }
-        }
-        else if (vhdCreated && !vhdPreExisting && File.Exists(vhdPath))
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            try { File.Delete(vhdPath); } catch { }
-        }
-    }
-
 }

@@ -185,8 +185,21 @@ internal sealed partial class DesktopNodeApiJobReconciliationHandler
                 jobId,
                 classification,
                 "Provider vm.list readback did not prove exactly one managed VM with the captured create postcondition.",
-                "vm.create"));
+                "vm.create",
+                classification == "not-applied" ? InterruptedCreateResidueHint(job.Parameters, vmName) : null));
         return RenderReconciliationResult(jobRuntime.Reconcile(jobId, requiredAssessment));
+    }
+
+    // Design pcv-interrupted-create-residue-v1: reconcile stays readback-only, so it only tells the operator where an
+    // interrupted create may have left its disk and that the next create of the same name recovers marked residue.
+    internal static string InterruptedCreateResidueHint(JsonElement parameters, string vmName)
+    {
+        var vmRoot = DesktopNodeApiJsonReader.ReadString(parameters, "vm_root");
+        var directory = Path.Combine(
+            string.IsNullOrWhiteSpace(vmRoot) ? DesktopNode.HyperV.DesktopNodeHyperVVmImportRequest.DefaultVmRoot : vmRoot,
+            vmName);
+        return $"A create interrupted before VM registration can leave a disk in {directory}; the next vm.create with the same name " +
+            "removes residue that carries the PureCVisor create marker, otherwise inspect and remove the files by hand.";
     }
 
     private DesktopNodeApiResponse ReconcileVmShutdownJob(

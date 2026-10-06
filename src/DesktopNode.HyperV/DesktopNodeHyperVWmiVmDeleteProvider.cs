@@ -121,7 +121,7 @@ public sealed class DesktopNodeHyperVWmiVmDeleteProvider : IDesktopNodeHyperVVmD
 
     // Every virtual hard disk still attached to a remaining VM or checkpoint, or null when unreadable
     // (the cleanup then keeps everything).
-    private static IReadOnlyList<string>? ReadRemainingVmDisks(ManagementScope scope)
+    internal static IReadOnlyList<string>? ReadRemainingVmDisks(ManagementScope scope)
     {
         try
         {
