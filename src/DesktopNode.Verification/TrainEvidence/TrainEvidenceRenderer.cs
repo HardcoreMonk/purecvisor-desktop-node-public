@@ -20,7 +20,9 @@ internal static class TrainEvidenceFactsReader
     [
         "package", "ops-summary", "update-rollback", "clean-host", "burn", "msix",
         "pair-descriptor", "fullgate", "current-card",
-        "functional-carryforward", "pair-consume", "main-push"
+        "functional-carryforward", "pair-consume", "main-push",
+        // Single-PR trains (pcv-single-pr-train-v1) cite the payload commit main push run instead of a post-merge one.
+        "main-push-payload"
     ];
 
     private static readonly Regex VersionPattern = new(

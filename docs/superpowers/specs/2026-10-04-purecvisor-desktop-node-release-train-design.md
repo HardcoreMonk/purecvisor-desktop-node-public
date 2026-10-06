@@ -110,6 +110,8 @@ Lane 2 probe는 train candidate 설치본에서 한다. probe 때문에 중간 p
 
 정차하면 그 승인은 끝난다. 다시 출발하려면 새 승인이 필요하다.
 
+2026-10-07부터는 `pcv-single-pr-train-v1`(`docs/superpowers/specs/2026-10-06-purecvisor-desktop-node-single-pr-train-design.md`)로 train이 PR 하나다. 그래서 문구의 마지막 항목은 "push, PR, green CI 뒤 merge, merge 뒤 main push가 red면 revert PR"이다.
+
 ## 5. 대기열 파일
 
 `docs/ga-ready/release-train.json`(새 파일)이 대기열과 train 이력을 갖는다.

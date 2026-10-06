@@ -16,6 +16,10 @@ internal sealed partial class TrainLane3SpecBuilder
     private readonly JsonObject previous;
     private readonly IReadOnlyDictionary<string, TrainEvidenceDocument> documents;
 
+    // main-push cites the post-merge run of a two-PR train; main-push-payload cites the payload commit run of a single-PR
+    // train (design pcv-single-pr-train-v1). A facts file carries exactly one of them.
+    private readonly string mainPushTemplate;
+
     internal TrainLane3SpecBuilder(string repositoryRoot, TrainLane3SpecInput input)
     {
         this.input = input;
@@ -37,6 +41,13 @@ internal sealed partial class TrainLane3SpecBuilder
         }
 
         documents = byTemplate;
+        var mainPush = new[] { "main-push", "main-push-payload" }.Where(byTemplate.ContainsKey).ToList();
+        mainPushTemplate = mainPush.Count switch
+        {
+            1 => mainPush[0],
+            0 => throw TrainLane3SpecInput.Invalid("facts-document-missing", "main-push"),
+            _ => throw TrainLane3SpecInput.Invalid("facts-main-push-ambiguous", input.Facts)
+        };
         if (PreviousString("descriptor_chain", "next_previous_tag") != input.PreviousTag)
         {
             throw TrainLane3SpecInput.Invalid("previous-spec-tag-mismatch", input.PreviousSpec);
@@ -56,7 +67,7 @@ internal sealed partial class TrainLane3SpecBuilder
 
     private string Pair => $"{BaselineVersion} -> {Version}";
 
-    private string Date => Value("main-push", "date");
+    private string Date => Value(mainPushTemplate, "date");
 
     private string ConsumeRoot => Value("pair-consume", "artifact_root");
 
@@ -108,13 +119,14 @@ internal sealed partial class TrainLane3SpecBuilder
             ["current_full_admin_host_mutation_routeparity_artifact_root"] = Value("fullgate", "routeparity_artifact_root"),
             ["current_full_admin_host_mutation_os_mutation_artifact_root"] = Value("fullgate", "os_mutation_artifact_root"),
             ["current_required_ci_docs_only_package_candidate_decision"] = $"retain-{Version}-no-new-candidate",
-            ["current_public_boundary_main_push_compatibility_alias_semantics"] =
-                $"{Tag}-pr{Value("main-push", "pr")}-postmerge-not-provider-required-authority",
-            ["current_public_boundary_main_push_evidence"] = DocumentPath("main-push"),
-            ["current_public_boundary_main_push_run_id"] = Value("main-push", "public_boundary_run_id"),
-            ["current_public_boundary_main_push_job_id"] = Value("main-push", "public_boundary_job_id"),
-            ["current_public_boundary_main_push_head_sha"] = Value("main-push", "head_sha"),
-            ["current_public_boundary_main_push_package_candidate_decision"] = Value("main-push", "package_candidate_decision")
+            ["current_public_boundary_main_push_compatibility_alias_semantics"] = mainPushTemplate == "main-push"
+                ? $"{Tag}-pr{Value("main-push", "pr")}-postmerge-not-provider-required-authority"
+                : $"{Tag}-payload-main-push-not-provider-required-authority",
+            ["current_public_boundary_main_push_evidence"] = DocumentPath(mainPushTemplate),
+            ["current_public_boundary_main_push_run_id"] = Value(mainPushTemplate, "public_boundary_run_id"),
+            ["current_public_boundary_main_push_job_id"] = Value(mainPushTemplate, "public_boundary_job_id"),
+            ["current_public_boundary_main_push_head_sha"] = Value(mainPushTemplate, "head_sha"),
+            ["current_public_boundary_main_push_package_candidate_decision"] = Value(mainPushTemplate, "package_candidate_decision")
         };
         return Rotation(values);
     }

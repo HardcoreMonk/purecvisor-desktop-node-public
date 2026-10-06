@@ -1,18 +1,19 @@
 {
   "schema_version": 1,
   "contract": "pcv-active-campaign-v1",
-  "status": "closed",
-  "id": "process-optimization-20261006",
-  "intent": "development-process-optimization",
+  "status": "open",
+  "id": "process-followups-20261007",
+  "intent": "development-process-optimization-followups",
   "working_authority": "source_head",
   "allowed_lanes": [
     "0",
-    "1"
+    "1",
+    "2"
   ],
-  "mutation_allowed": false,
+  "mutation_allowed": true,
   "current_write_allowed": false,
-  "next_step": "Closed on 2026-10-07 after Tasks 1-9: the Host.Tests loopback browser no longer leaks (47 leaked instances and 80 profiles cleaned up), the broad final verification no longer reruns the solution tests and test:required, pcvverify train-host-inputs renders the current-card capture script and the fullgate manifest from train facts, the three completion probes are tracked with a catalog and -PlanOnly, and pcv-single-pr-train-v1 and pcv-hyperv-adapter-integration-tier-v1 are proposed designs. Next work needs a new approval.",
-  "plan": "docs/superpowers/plans/2026-10-06-purecvisor-desktop-node-process-optimization.md",
+  "next_step": "After the Task 10 PR merges, branch lane1/interrupted-create-residue-20261007 from origin/main and run Task 11 from docs/superpowers/plans/2026-10-07-purecvisor-desktop-node-process-followups.md.",
+  "plan": "docs/superpowers/plans/2026-10-07-purecvisor-desktop-node-process-followups.md",
   "task_queue": [
     "Task 1",
     "Task 2",
@@ -22,10 +23,18 @@
     "Task 6",
     "Task 7",
     "Task 8",
-    "Task 9"
+    "Task 9",
+    "Task 10",
+    "Task 11",
+    "Task 12",
+    "Task 13"
   ],
-  "task_lanes": {},
-  "next_task": null,
+  "task_lanes": {
+    "Task 1": "2",
+    "Task 2": "2",
+    "Task 9": "2"
+  },
+  "next_task": "Task 11",
   "completed_tasks": [
     "Task 1",
     "Task 2",
@@ -35,20 +44,15 @@
     "Task 6",
     "Task 7",
     "Task 8",
-    "Task 9"
+    "Task 9",
+    "Task 10"
   ],
   "commit_policy": "local-commit-per-task",
   "push_allowed": true,
   "merge_policy": "after-green-ci",
-  "checkpoint_limit": 9,
-  "approval_locator": "User-Approval: 2026-09-27 campaign runner commit policy local-commit-per-task; 2026-10-06 \"1,2,3,4\" (process optimization review: 1 fix the Host.Tests loopback browser Edge leak in Lane 1 and clean up the leaked pcv-loopback-browser headless Edge on this host; 2 remove the pcv-ship final verification duplication; 3 generate current-card and fullgate inputs from train facts and track the Lane 2 probe scripts; 4 design documents only for a single-PR train with Lane 3 and a real Hyper-V adapter integration tier); 2026-10-06 follow-up answers \"replace, keep Task 12\" and \"push, PR, merge after green CI\"",
-  "next_approval_required": [
-    "Reopen train-04291-20261006 Task 12 (C5 runner check on or after 2026-10-19) under its existing 2026-10-06 \"1,2,3\" item 3 approval.",
-    "Confirm F1 on the host: record the fullgate msi-lifecycle uninstall durations against the 340 s baseline at the next release train fullgate, or approve a dedicated 0.42.91 fullgate rerun now (Lane 2 host mutation: MSI install, repair, uninstall, REMOVE_DATA, service, route parity VM).",
-    "Implement pcv-single-pr-train-v1 (Lane 1: DEVELOPMENT_PROCEDURE section 10, train-facts and train-evidence main-push input, lane3-spec, pcv-ship), then push, PR and merge after green CI.",
-    "Decide ADR-0016 for the Hyper-V adapter integration tier, then implement its stage 2 under a standing approval limited to pcv-it- prefixed VM create and delete (Lane 1 code, no service, MSI or switch change).",
-    "Implement pcv-interrupted-create-residue-v1 (Lane 1) and queue it for the next release train."
-  ],
+  "checkpoint_limit": 13,
+  "approval_locator": "User-Approval: 2026-09-27 campaign runner commit policy local-commit-per-task; 2026-10-07 \"1,2,3,4,5\" (1 reopen train-04291-20261006 Task 12, the C5 runner check on or after 2026-10-19, under its 2026-10-06 \"1,2,3\" item 3 approval; 2 dedicated 0.42.91 fullgate rerun now to confirm F1, clarified by the user as the rerun now, Lane 2 host mutation: MSI install, repair, uninstall, REMOVE_DATA, service, route parity VM, ending with the 0.42.91 operational MSI reinstalled; 3 implement pcv-single-pr-train-v1 in Lane 1, push, PR and merge after green CI; 4 adopt ADR-0016, clarified by the user as adoption, and implement the Hyper-V adapter integration tier stage 2 under a standing approval limited to pcv-it- prefixed VM create and delete; 5 implement pcv-interrupted-create-residue-v1 in Lane 1 and queue it for the next release train)",
+  "next_approval_required": [],
   "stop_on": [
     "same-cause-fail-3",
     "budget",
@@ -60,5 +64,5 @@
     "dirty-tree-at-start"
   ],
   "out_of_scope_is_not_next_step": true,
-  "closed_predecessor": "train-04291-20261006"
+  "closed_predecessor": "process-optimization-20261006"
 }

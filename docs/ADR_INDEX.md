@@ -1,5 +1,13 @@
 # Desktop Node ADR 인덱스
 
+## 2026-10-07 현재 기준
+
+ADR-0016을 채택해 Hyper-V 어댑터 integration 단계를 둔다. 제품과 같은 WMI 어댑터를 in-process로 `pcv-it-` 접두사
+일회용 VM에 돌리는 opt-in 시험이며, `DesktopNode.sln`과 Required CI 밖에서 명시 실행만 한다. standing approval은
+접두사 VM의 생성·설정·삭제로 한정하고 service, MSI, firewall, switch, 보존 VM은 다루지 않는다. 결과는 관측이며 승격
+근거가 아니다. 적용 문서는 `docs/adr/0016-hyperv-adapter-integration-tier.md`, 설계는
+`docs/superpowers/specs/2026-10-06-purecvisor-desktop-node-hyperv-adapter-integration-tier-design.md`다.
+
 ## 2026-09-21 현재 기준
 
 ADR-0010을 적용해 noVNC target 설정을 durable `novnc-target.json`, in-process reload,

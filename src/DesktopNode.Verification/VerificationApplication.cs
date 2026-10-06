@@ -95,6 +95,11 @@ internal sealed class VerificationApplication(
             return TrainHostInputsCommand.Run(args, currentDirectory(), standardOutput);
         }
 
+        if (args.Count > 0 && string.Equals(args[0], TrainPathCheckCommand.Name, StringComparison.Ordinal))
+        {
+            return TrainPathCheckCommand.Run(args, currentDirectory(), standardOutput);
+        }
+
         DateTimeOffset? startedAt = null;
         VerificationRequest? request = null;
         VerificationPlan? plan = null;

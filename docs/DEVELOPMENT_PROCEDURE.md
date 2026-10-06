@@ -348,7 +348,21 @@ campaign은 이미 받은 승인을 되묻지 않을 뿐, 없는 승인을 만�
   환경 원인으로 판명된 일시 실패는 같은 단계를 한 번 다시 돌리고 그 사실을 evidence에 적는다.
 - 출발 승인 문구는 train version과 고정할 `queue` 행, package build, pair host mutation 범위,
   fullgate와 current-card, Lane 2 probe 기능군, Lane 3 `current-evidence.json` 쓰기, push/PR과
-  green CI 뒤 merge를 하나씩 적는다. 정차하면 그 승인은 끝난다.
+  green CI 뒤 merge, merge 뒤 main push가 red면 revert PR을 하나씩 적는다. 정차하면 그 승인은 끝난다.
+- train은 PR 하나다(설계 `docs/superpowers/specs/2026-10-06-purecvisor-desktop-node-single-pr-train-design.md`,
+  `pcv-single-pr-train-v1`). 출발 때 고정하는 `main` HEAD가 payload commit이고, 그 commit의 main push run(Development
+  Gates와 Public Boundary)이 green이어야 출발한다. 두 run id는 출발 task 실행 기록에 적는다. Lane 3 main push evidence는
+  이 run을 인용하고, `git diff --name-only <payload commit>..<PR head>`에 `src/`, `web/src/`, `config/`, `.github/`가
+  없다는 확인을 담는다. 있으면 Lane 3를 쓰지 않고 멈춘다. 확인은 아래 명령이 하고(계약 `pcv-train-path-check-result-v1`,
+  제품 경로가 있으면 exit `1`), 그 결과를 facts의 `main-push-payload` 문서(`head_sha`는 payload commit,
+  `train_pr_head`, `path_check_line`)에 적는다. 기존 `main-push` 템플릿은 두 PR로 돈 train 기록용으로 남는다.
+  `lane3-spec`은 facts에 있는 쪽을 쓰고, 둘 다 있으면 멈춘다. Lane 3가 고치는 `DOCUMENTATION_INDEX` 공개 소스 권위
+  줄의 HEAD는 payload commit이다.
+
+      dotnet run --project src/DesktopNode.Verification -c Release -- train-path-check --payload <payload commit> --head HEAD
+- train PR은 merge 직전 base가 `origin/main`과 같아야 한다. 그 사이 다른 PR이 merge됐으면 rebase하고 PR CI를 다시
+  기다린다. merge 뒤 main push run을 기다리고, red면 그 merge를 되돌리는 revert PR을 연다. operational current는 직전
+  값으로 돌아가고 원인은 Lane 1로 고친 뒤 다음 version으로 다시 출발한다.
 - Lane 3에서 `current-evidence.json`을 쓰는 commit은 `release-train.json`의 `operational_current`와
   train `status`도 함께 바꾼다.
 - pair, fullgate, current-card, Lane 3 evidence `12`개는 `pcvverify train-evidence`로 렌더한다(설계
@@ -411,12 +425,13 @@ train campaign의 task 순서:
 
 | task | 내용 |
 | --- | --- |
-| 0 | 출발: `queue` 고정, 계획과 campaign |
+| 0 | 출발: `queue` 고정, payload commit main push run green 확인과 run id 기록, 계획과 campaign |
 | 1 | package, `train-facts`로 package 문서 |
 | 2 | pair: orchestrator `-PlanOnly`와 `-Execute`(readiness, ops summary, update/rollback, clean-host, Burn, MSIX, descriptor), `train-facts`로 pair 문서 |
 | 3 | fullgate, `train-facts`로 fullgate 문서 |
 | 4 | installed current-card, `train-facts`로 current-card 문서 |
 | 5.n | 적재 변경별 Lane 2 probe |
-| 6 | pair evidence PR과 merge |
-| 7 | Lane 3 evidence, `current-evidence.json`, `lane3-spec`으로 승격 spec, 승격 문서 도구, `release-train.json` |
-| 8 | 종료 검증, Lane 3 PR과 merge |
+| 6 | Lane 3 evidence(main push는 payload commit run과 경로 확인), `current-evidence.json`, `lane3-spec`으로 승격 spec, 승격 문서 도구, `release-train.json` |
+| 7 | 종료 검증, train PR 하나와 merge(base 일치), merge 뒤 main push 확인 |
+
+2026-10-06까지의 train(0.42.89~0.42.91)은 pair evidence PR과 Lane 3 PR 두 개로 돌았다. 그 기록과 golden은 그대로 둔다.

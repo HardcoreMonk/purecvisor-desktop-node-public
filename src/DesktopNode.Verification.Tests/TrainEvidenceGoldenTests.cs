@@ -74,7 +74,7 @@ public sealed class TrainEvidenceGoldenTests
 
         Assert.Equal("0.42.89-admin-smoke", facts.Version);
         Assert.Equal(
-            TrainEvidenceFactsReader.Templates.Order(StringComparer.Ordinal),
+            TrainEvidenceFactsReader.Templates.Where(template => template != "main-push-payload").Order(StringComparer.Ordinal),
             facts.Documents.Select(document => document.Template).Order(StringComparer.Ordinal));
     }
 }

@@ -2,7 +2,7 @@
 
 - Design-ID: `pcv-single-pr-train-v1`
 - 작성일: `2026-10-06`
-- 문서 상태: `proposed` (2026-10-06 사용자 승인 `1,2,3,4`의 4, 설계만. 구현은 별도 승인)
+- 문서 상태: `accepted` (2026-10-07 사용자 승인 `1,2,3,4,5`의 3으로 구현. 2026-10-06에는 `proposed`였다)
 - 변경 등급: M (train 절차. 제품 동작 변경 없음)
 - host/VM/service/package mutation: `false`
 - public trusted signing / external stable publication: `false`
