@@ -49,7 +49,9 @@
 
 ## Task 4: 단일 PR train 1 — 절차
 
-- [ ] `docs/DEVELOPMENT_PROCEDURE.md` §10 task 순서를 PR 하나로 바꾸고, 출발 조건에 고정할 `main` HEAD의 push run green을, 승인 문구에 post-merge red면 revert PR을 더한다. train 설계 §4.7과 `pcv-single-pr-train-v1` 상태를 맞추고 private `pcv-ship`에 train branch base 일치 확인을 더한다(private 로컬 commit). 검증: Delivery, `git diff --check`. 로컬 commit.
+- [x] `docs/DEVELOPMENT_PROCEDURE.md` §10 task 순서를 PR 하나로 바꾸고, 출발 조건에 고정할 `main` HEAD의 push run green을, 승인 문구에 post-merge red면 revert PR을 더한다. train 설계 §4.7과 `pcv-single-pr-train-v1` 상태를 맞추고 private `pcv-ship`에 train branch base 일치 확인을 더한다(private 로컬 commit). 검증: Delivery, `git diff --check`. 로컬 commit.
+
+실행 기록(2026-10-07): §10에 단일 PR 규칙 두 항목을 더했다. 하나는 출발 때 payload commit main push run green과 run id 기록, Lane 3 main push evidence의 인용 run과 경로 확인이다. 다른 하나는 merge 직전 base 일치, merge 뒤 main push 대기, red면 revert PR이다. 승인 문구 항목에 revert PR을 더했다. task 순서 표를 `0`~`7`로 바꿨다(pair evidence PR task 삭제, Lane 3와 종료 검증·PR 하나). 0.42.89~0.42.91의 두 PR 기록과 golden은 그대로 둔다는 줄을 붙였다. train 설계 §4.7에 2026-10-07 단일 PR 문구를 더했다. `pcv-single-pr-train-v1` 상태를 `accepted`로 바꿨다. private `pcv-ship` §3에 train PR base 확인(`merge-base --is-ancestor origin/main`)과 merge 뒤 main push 대기·revert를 더했다(private 로컬 commit). 도구 변경은 Task 5·6이다. contract spec pin `current`, Delivery `769/769`, Verification.Tests `619/620`(dirty tree의 PolicyBoundary), `git diff --check` 통과.
 
 ## Task 5: 단일 PR train 2 — main push evidence
 
