@@ -73,7 +73,9 @@
 
 ## Task 8: integration 단계 구현
 
-- [ ] `src/DesktopNode.HyperV.IntegrationTests`(solution·Required CI 밖), 실행 가드, 정리, 첫 시험(Off VM의 inventory `stopped`와 export·network connect 정책 수용), `InternalsVisibleTo`, 그리고 project가 solution과 Required CI 밖에 있음을 고정하는 Delivery 계약을 만든다. VM은 만들지 않는다(가드 없이 돌리면 전부 실패하는지 확인). 검증: 새 project build, Delivery, Verification.Tests, `git diff --check`. 로컬 commit.
+- [x] `src/DesktopNode.HyperV.IntegrationTests`(solution·Required CI 밖), 실행 가드, 정리, 첫 시험(Off VM의 inventory `stopped`와 export·network connect 정책 수용), `InternalsVisibleTo`, 그리고 project가 solution과 Required CI 밖에 있음을 고정하는 Delivery 계약을 만든다. VM은 만들지 않는다(가드 없이 돌리면 전부 실패하는지 확인). 검증: 새 project build, Delivery, Verification.Tests, `git diff --check`. 로컬 commit.
+
+실행 기록(2026-10-07): `src/DesktopNode.HyperV.IntegrationTests`를 만들었다(solution, `development-verification-suites.json`, workflow 밖). `HyperVIntegrationFixture`가 ADR-0016 가드를 맡는다. 가드는 `PCV_HYPERV_INTEGRATION_APPROVAL`(20자 이상, campaign `approval_locator` 안의 문자열), 관리자 또는 `Hyper-V Administrators`(SID `S-1-5-32-578`), `Msvm_VirtualEthernetSwitch`의 `Default Switch`, ISO 존재, 이전 run이 남긴 `pcv-it-` VM 없음이다. VM 이름은 `pcv-it-<UTC run id>-`, 저장 위치는 `artifacts/hyperv-integration/<run id>/`다. 정리는 이 run 접두사 VM을 어댑터 `vm.delete`로 지우고 저장 폴더를 지운 뒤 시작·끝 VM 이름 목록을 비교한다. 결과는 `artifacts/hyperv-integration/<run id>.summary.json`(`promotion_evidence=false`)에 쓴다. 첫 시험 `CreatedOffVmReadsAsStoppedAndPassesTheSharedOffCheck`는 제품 어댑터 `vm.create`(Gen2, 1 vCPU, 1024 MB, 8 GB, `vm_root`)로 만든 VM의 inventory 상태가 `stopped`이고 `VmPowerStates.IsOff`(export·network connect·device add 정책이 함께 씀)가 참이며 managed인지 본다(`9402774` 결함 종류). 어댑터와 `VmPowerStates`가 public이라 설계의 `InternalsVisibleTo`는 필요 없었다. Delivery 계약 `HyperVIntegrationTierContractTests` `2`개(solution·suite·workflow 밖, 가드 문자열 유지). 확인: 승인 없이 실행하면 가드 예외로 `1/1` 실패하고 VM 목록(`pcv-guest-installed-04253-r1`만)과 `artifacts/hyperv-integration` 폴더 수(`0`)가 그대로다. 새 project build 경고 `0`, solution Release build 경고 `0`, Delivery `771/771`, Verification.Tests `627/628`(dirty tree의 PolicyBoundary), contract spec pin `current`. VM은 만들지 않았다.
 
 ## Task 9: integration 단계 첫 실행 (Lane 2)
 
