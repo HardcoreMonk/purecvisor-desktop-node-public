@@ -93,7 +93,9 @@
 
 ## Task 9: 문서와 pair evidence merge
 
-- [ ] `train-facts`에 fullgate, current-card 문서를 더해 렌더한다. probe evidence `3`개와 `FEATURE_IMPLEMENTATION_LEDGER` 비후보 관측 행, 완료 정의 §4 C4 보정을 쓴다. clean HEAD 종료 검증 뒤 push, PR, green CI 뒤 merge.
+- [x] `train-facts`에 fullgate, current-card 문서를 더해 렌더한다. probe evidence `3`개와 `FEATURE_IMPLEMENTATION_LEDGER` 비후보 관측 행, 완료 정의 §4 C4 보정을 쓴다. clean HEAD 종료 검증 뒤 push, PR, green CI 뒤 merge.
+
+실행 기록(2026-10-06, clean HEAD `804c772`): fullgate(생성 `35`, 사람 `2`)와 current-card(생성 `31`, 사람 `1`) 문서를 렌더해 pair 문서 `9`개가 모두 facts에서 나왔다. probe evidence `3`개, `FEATURE_IMPLEMENTATION_LEDGER` 비후보 관측 행 `4`개, 완료 정의 §4 C4 보정(C4 충족), `DOCUMENTATION_INDEX` 호스트 줄 `+990a4b2`. Release build 경고 `0`, `dotnet test src/DesktopNode.sln -c Release` 실패 `0`(Verification `614`, Delivery `763`, Api `488`, HyperV `257`, Host `216`, Contracts `200`, Cli `183`, Runtime `129`, Service `11`), Pester 네 종 실패 `0`, `npm run test:required --prefix web` exit `0`, Required CI 네 shard `ok=true`·`plan_only=false`. 이 기록 commit 뒤 push, PR, green CI 뒤 merge한다.
 
 ## Task 10: Lane 3
 
