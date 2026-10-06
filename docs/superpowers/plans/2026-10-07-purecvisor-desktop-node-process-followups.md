@@ -31,7 +31,9 @@
 
 ## Task 1: F1 확인 fullgate 실행 (Lane 2)
 
-- [ ] 사전 상태(누수 Edge `0`, `Default Switch`, ARP `0.42.91` 1개, service Running/Automatic)를 확인하고, 추적하지 않는 host-inputs(date `2026-10-07`)로 `train-host-inputs --kind fullgate-manifest`가 manifest를 만들게 한다. supervisor `-DryRun` 뒤 실행하고, 사후 검사(같은 version ARP 1개, build commit, firewall 규칙 `0`)와 `msi-lifecycle-smoke` 단계별 시간을 기록한다. 로컬 commit.
+- [x] 사전 상태(누수 Edge `0`, `Default Switch`, ARP `0.42.91` 1개, service Running/Automatic)를 확인하고, 추적하지 않는 host-inputs(date `2026-10-07`)로 `train-host-inputs --kind fullgate-manifest`가 manifest를 만들게 한다. supervisor `-DryRun` 뒤 실행하고, 사후 검사(같은 version ARP 1개, build commit, firewall 규칙 `0`)와 `msi-lifecycle-smoke` 단계별 시간을 기록한다. 로컬 commit.
+
+실행 기록(2026-10-07): 사전 상태는 누수 Edge `0`, 전체 프로세스 `539`(2026-10-06 점검 때 `1059`), `Default Switch`, ARP `{ED64B13A-…}` `0.42.91` 1개, service Running/Auto, 설치본 `+990a4b2`, PureCVisor firewall 규칙 `0`, VM은 보존 VM Off 하나였다. `train-host-inputs --kind fullgate-manifest`가 manifest를 처음 실제로 만들었다(`artifacts/batch-manifests/full-admin-host-mutation-gate-20261007-04291.json`, `written`). os-mutation 단계는 firewall 규칙·Event Log source·LAN listener를 바꿔 승인 2 범위 밖이고 F1 확인에 필요 없으므로 manifest에서 빼고 `service-msi-hyperv-admin-smoke` 단계만 돌렸다. 그래서 LAN prefix는 문서용 주소를 넣었다. supervisor `-DryRun` 통과 뒤 실행(`00:55:01`~`01:00:23` KST): `ok=true`, `status=completed`, 시도 `1`, 단계 `321.3`초(2026-10-06 `802.8`초). `msi-lifecycle-smoke` `232`초(2026-10-06 `710`초). msiexec 로그 기준 uninstall-preserve `340`→`91`초, uninstall-remove-data `342`→`90`초다. 두 번 모두 아직 `DesktopNode.Host.exe` 1개를 files-in-use로 잡는다. 사후 검사: 같은 version ARP `{8D07CE80-…}` 1개, 설치본 `+2e05cc1` == gate build(`2e05cc1`, 제품 payload는 0.42.91과 같은 tree), firewall 규칙 `0`, VM 보존 VM Off 하나, service Running/Auto, PathName batch root는 새 batch다. artifact `artifacts/batch-runs/full-admin-host-mutation-gate-20261007-04291`, `artifacts/routeparity-service-msi-hyperv-batch-profile-20261007-04291`.
 
 ## Task 2: 운영 build 복원 (Lane 2)
 
