@@ -73,7 +73,9 @@
 
 ## Task 8: F5 설계
 
-- [ ] 실제 Hyper-V 어댑터를 in-process로 일회용 VM에 돌리는 opt-in integration 단계 설계를 `docs/superpowers/specs/2026-10-06-purecvisor-desktop-node-hyperv-adapter-integration-tier-design.md`에 쓴다. 09-27 뒤 제품 수정 `9`건이 모두 실제 Hyper-V에서 발견된 근거, host mutation 정책과 ADR 필요 여부, 승인 경계를 적는다. 설계만, `proposed`. 검증: Delivery, `git diff --check`. 로컬 commit.
+- [x] 실제 Hyper-V 어댑터를 in-process로 일회용 VM에 돌리는 opt-in integration 단계 설계를 `docs/superpowers/specs/2026-10-06-purecvisor-desktop-node-hyperv-adapter-integration-tier-design.md`에 쓴다. 09-27 뒤 제품 수정 `9`건이 모두 실제 Hyper-V에서 발견된 근거, host mutation 정책과 ADR 필요 여부, 승인 경계를 적는다. 설계만, `proposed`. 검증: Delivery, `git diff --check`. 로컬 commit.
+
+실행 기록(2026-10-06): 설계 `pcv-hyperv-adapter-integration-tier-v1`(`proposed`). 수정 `9`건과 발견 위치를 표로 적었다(FAIL evidence와 commit 메시지로 확인). guest OS가 필요 없는 `8`건의 결함 종류를 첫 시험 묶음 `6`개로 묶었다. 결정 사항: `src/DesktopNode.HyperV.IntegrationTests`는 `DesktopNode.sln`과 Required CI 밖에 두고 명시 실행만 한다. 어댑터는 제품과 같은 `DesktopNodeHyperVProviderSet.CreateDefaultWmi()`로 만든다. 실행 가드는 승인 locator 환경 변수, 권한, 호스트 switch 상태, `pcv-it-<run id>-` 접두사, `artifacts/hyperv-integration/` 저장 위치다. 정리는 시작·끝 VM 이름 목록 비교로 확인한다. 지금 standing approval은 checkpoint 하나·기능군 하나만 허용하므로 구현 전에 ADR(후보 ADR-0016)이 필요하다. 읽기 전용 호스트 확인: 이 세션은 관리자이고 `Hyper-V Administrators` 구성원이 아니다. `Msvm_ComputerSystem` 읽기 성공(`2`개). 구현과 ADR은 별도 승인이다.
 
 ## Task 9: 종료 검증과 merge
 
