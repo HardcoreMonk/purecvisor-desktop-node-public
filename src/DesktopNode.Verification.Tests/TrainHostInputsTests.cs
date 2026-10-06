@@ -7,6 +7,8 @@ public sealed class TrainHostInputsTests
 {
     private const string InputPath = "docs/ga-ready/trains/0.42.91-admin-smoke.host-inputs.json";
     private const string FactsPath = "docs/ga-ready/trains/0.42.91-admin-smoke.evidence-facts.json";
+    private const string ManifestGoldenPath =
+        "src/DesktopNode.Verification.Tests/Fixtures/train-host-inputs/0.42.91-admin-smoke.fullgate-manifest.json";
 
     // The 0.42.91 train ran its hand-edited capture script from this checkout; the facts pin that script's SHA-256.
     private const string OriginalRepositoryRoot = @"D:\data\projects\codex-zone\purecvisor-desktop-node-public";
@@ -23,14 +25,49 @@ public sealed class TrainHostInputsTests
     }
 
     [Fact]
+    public void FullgateManifestTemplateRebuildsThe04291ManifestWithDocumentationValues()
+    {
+        var input = TrainHostInputs.Parse(File.ReadAllText(Full(VerificationCatalogFixture.RepositoryRoot, InputPath)));
+
+        var text = input.RenderFullgateManifest(
+            VerificationCatalogFixture.RepositoryRoot, OriginalRepositoryRoot, "http://192.0.2.10:7777/", "pcv-operator");
+
+        Assert.Equal(File.ReadAllText(Full(VerificationCatalogFixture.RepositoryRoot, ManifestGoldenPath)), text);
+        Assert.Equal(
+            "full-admin-host-mutation-gate-20261006-04291",
+            JsonDocument.Parse(text).RootElement.GetProperty("batch_id").GetString());
+        Assert.Equal("artifacts/batch-manifests/full-admin-host-mutation-gate-20261006-04291.json", input.FullgateManifestOutput);
+    }
+
+    [Fact]
+    public void FullgateManifestWithoutTheLanPrefixStopsAndWritesNothing()
+    {
+        var root = TemporaryRepository(facts => facts);
+        try
+        {
+            var result = Run(root, "fullgate-manifest", "--write", _ => null);
+
+            Assert.False(result.GetProperty("ok").GetBoolean());
+            Assert.Equal(
+                "train-host-inputs:lan-prefix-missing:" + TrainHostInputs.LanPrefixVariable,
+                result.GetProperty("error_detail").GetString());
+            Assert.False(Directory.Exists(Full(root, "artifacts")));
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Fact]
     public void WriteCreatesTheCaptureScriptOnceInATemporaryRepository()
     {
         var root = TemporaryRepository(facts => facts);
         try
         {
-            var planned = Run(root, "--plan");
-            var written = Run(root, "--write");
-            var again = Run(root, "--write");
+            var planned = Run(root, "current-card", "--plan");
+            var written = Run(root, "current-card", "--write");
+            var again = Run(root, "current-card", "--write");
 
             Assert.Equal("planned", planned.GetProperty("status").GetString());
             Assert.Equal("written", written.GetProperty("status").GetString());
@@ -59,7 +96,7 @@ public sealed class TrainHostInputsTests
         });
         try
         {
-            var result = Run(root, "--write");
+            var result = Run(root, "current-card", "--write");
 
             Assert.False(result.GetProperty("ok").GetBoolean());
             Assert.Equal("train-host-inputs:fact-missing:fullgate.provenance_commit", result.GetProperty("error_detail").GetString());
@@ -71,10 +108,10 @@ public sealed class TrainHostInputsTests
         }
     }
 
-    private static JsonElement Run(string root, string mode)
+    private static JsonElement Run(string root, string kind, string mode, Func<string, string?>? environment = null)
     {
         using var output = new StringWriter();
-        TrainHostInputsCommand.Run(["train-host-inputs", "--input", InputPath, "--kind", "current-card", mode], root, output);
+        TrainHostInputsCommand.Run(["train-host-inputs", "--input", InputPath, "--kind", kind, mode], root, output, environment);
         return JsonDocument.Parse(output.ToString()).RootElement.Clone();
     }
 
@@ -83,7 +120,7 @@ public sealed class TrainHostInputsTests
         var root = Path.Combine(Path.GetTempPath(), "pcv-host-inputs-" + Guid.NewGuid().ToString("N"));
         Write(root, "src/DesktopNode.sln", string.Empty);
         Write(root, "config/development-verification-suites.json", "{}");
-        foreach (var path in new[] { InputPath, TrainHostInputs.CurrentCardTemplate })
+        foreach (var path in new[] { InputPath, TrainHostInputs.CurrentCardTemplate, TrainHostInputs.FullgateManifestTemplate })
         {
             Write(root, path, File.ReadAllText(Full(VerificationCatalogFixture.RepositoryRoot, path)));
         }

@@ -4,7 +4,7 @@ using System.Text.Json;
 
 namespace DesktopNode.Verification;
 
-// pcvverify train-host-inputs --input <host-inputs.json> --kind current-card (--plan | --write)
+// pcvverify train-host-inputs --input <host-inputs.json> --kind (current-card | fullgate-manifest) (--plan | --write)
 // Renders a release train host input from its tracked template and the train facts into the ignored artifacts/ tree
 // (design pcv-train-host-inputs-v1). --write never replaces an existing file; --plan reports the output and its SHA-256.
 internal static class TrainHostInputsCommand
@@ -14,8 +14,13 @@ internal static class TrainHostInputsCommand
 
     private static readonly UTF8Encoding Utf8NoBom = new(encoderShouldEmitUTF8Identifier: false);
 
-    internal static int Run(IReadOnlyList<string> args, string currentDirectory, TextWriter standardOutput)
+    internal static int Run(
+        IReadOnlyList<string> args,
+        string currentDirectory,
+        TextWriter standardOutput,
+        Func<string, string?>? environment = null)
     {
+        environment ??= Environment.GetEnvironmentVariable;
         try
         {
             if (args.Count != 6 || args[1] != "--input" || args[3] != "--kind" || args[5] is not ("--plan" or "--write"))
@@ -34,6 +39,13 @@ internal static class TrainHostInputsCommand
             var (output, text) = args[4] switch
             {
                 "current-card" => (input.CurrentCardOutput, input.RenderCurrentCard(repositoryRoot, repositoryRoot)),
+                "fullgate-manifest" => (
+                    input.FullgateManifestOutput,
+                    input.RenderFullgateManifest(
+                        repositoryRoot,
+                        repositoryRoot,
+                        environment(TrainHostInputs.LanPrefixVariable),
+                        Environment.UserName)),
                 _ => throw TrainHostInputs.Invalid("kind-unknown", args[4])
             };
 

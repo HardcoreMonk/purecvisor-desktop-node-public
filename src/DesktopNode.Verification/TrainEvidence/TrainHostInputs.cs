@@ -13,6 +13,13 @@ internal sealed record TrainHostInputs(string Version, string Date, string Facts
 {
     internal const string Contract = "pcv-train-host-inputs-v1";
     internal const string CurrentCardTemplate = "docs/ga-ready/trains/host-templates/capture-current-card.ps1.tmpl";
+    internal const string FullgateManifestTemplate = "docs/ga-ready/trains/host-templates/fullgate-batch-manifest.json.tmpl";
+    internal const string LanPrefixVariable = "PCV_TRAIN_LAN_PREFIX";
+
+    private static readonly Regex LanPrefixPattern = new(
+        "^https?://[A-Za-z0-9.-]+:[0-9]{1,5}/$", RegexOptions.CultureInvariant);
+
+    private static readonly Regex OperatorPattern = new("^[A-Za-z0-9._-]+$", RegexOptions.CultureInvariant);
 
     private static readonly Regex VersionPattern = new(
         "^[0-9]+\\.[0-9]+\\.[0-9]+-admin-smoke$", RegexOptions.CultureInvariant);
@@ -37,6 +44,8 @@ internal sealed record TrainHostInputs(string Version, string Date, string Facts
     internal string RunTag => Date.Replace("-", "", StringComparison.Ordinal) + "-" + VersionTag;
 
     internal string CurrentCardOutput => $"artifacts/installed-operator-surface-current-card-{RunTag}.capture.ps1";
+
+    internal string FullgateManifestOutput => $"artifacts/batch-manifests/full-admin-host-mutation-gate-{RunTag}.json";
 
     internal static TrainHostInputs Parse(string json)
     {
@@ -117,6 +126,40 @@ internal sealed record TrainHostInputs(string Version, string Date, string Facts
         return Render(ReadTemplate(repositoryRoot, CurrentCardTemplate), values);
     }
 
+    // The LAN prefix and the operator are private run values; they reach only the ignored manifest, never the repository.
+    internal string RenderFullgateManifest(string repositoryRoot, string repositoryRootValue, string? lanPrefix, string createdBy)
+    {
+        if (string.IsNullOrEmpty(lanPrefix))
+        {
+            throw Invalid("lan-prefix-missing", LanPrefixVariable);
+        }
+
+        if (!LanPrefixPattern.IsMatch(lanPrefix))
+        {
+            throw Invalid("lan-prefix-invalid", LanPrefixVariable);
+        }
+
+        if (!OperatorPattern.IsMatch(createdBy))
+        {
+            throw Invalid("operator-invalid", "created_by");
+        }
+
+        var values = new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["created_by"] = createdBy,
+            ["lan_prefix"] = lanPrefix,
+            ["lan_host"] = new Uri(lanPrefix).Host,
+            ["iso"] = WindowsPath(Iso),
+            ["repo_root"] = repositoryRootValue,
+            ["run_tag"] = RunTag,
+            ["version"] = Version
+        };
+
+        return Render(
+            ReadTemplate(repositoryRoot, FullgateManifestTemplate),
+            values.ToDictionary(pair => pair.Key, pair => JsonString(pair.Value), StringComparer.Ordinal));
+    }
+
     internal static VerificationException Invalid(string reason, string subject) =>
         new(VerificationErrorCodes.ConfigInvalid, $"train-host-inputs:{reason}:{subject}");
 
@@ -182,6 +225,13 @@ internal sealed record TrainHostInputs(string Version, string Date, string Facts
     }
 
     private static string WindowsPath(string path) => path.Replace('/', '\\');
+
+    // The manifest template places values inside JSON strings, so a value is written as JSON string content.
+    private static string JsonString(string value)
+    {
+        var quoted = JsonSerializer.Serialize(value);
+        return quoted[1..^1];
+    }
 
     private static string Text(JsonObject root, string name) =>
         root[name] is JsonValue value && value.TryGetValue<string>(out var text) ? text : throw Invalid("input-invalid", name);

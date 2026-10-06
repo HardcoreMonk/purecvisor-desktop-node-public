@@ -55,7 +55,9 @@
 
 ## Task 5: F6 fullgate manifest 생성
 
-- [ ] Task 3 설계대로 fullgate batch manifest 생성을 도구로 만들고 §10 fullgate 단계를 바꾼다. 0.42.91 manifest를 golden으로 재현하는 시험을 둔다. fullgate는 실행하지 않는다. 검증: 영향 Pester 또는 C# 시험, Delivery, `git diff --check`. 로컬 commit.
+- [x] Task 3 설계대로 fullgate batch manifest 생성을 도구로 만들고 §10 fullgate 단계를 바꾼다. 0.42.91 manifest를 golden으로 재현하는 시험을 둔다. fullgate는 실행하지 않는다. 검증: 영향 Pester 또는 C# 시험, Delivery, `git diff --check`. 로컬 commit.
+
+실행 기록(2026-10-06): `train-host-inputs --kind fullgate-manifest`를 더했다. 템플릿 `docs/ga-ready/trains/host-templates/fullgate-batch-manifest.json.tmpl`은 0.42.91 실제 manifest에서 자리 `22`곳(repo root `10`, run tag `6`, version `2`, ISO·LAN prefix·LAN host·`created_by` 각 `1`)만 바꿨다. 값은 JSON 문자열 내용으로 넣는다. LAN prefix는 `PCV_TRAIN_LAN_PREFIX`(없거나 `http(s)://host:port/` 꼴이 아니면 멈춤), `created_by`는 실행 사용자다. golden `src/DesktopNode.Verification.Tests/Fixtures/train-host-inputs/0.42.91-admin-smoke.fullgate-manifest.json`은 실제 manifest에서 사설 LAN 주소를 `192.0.2.10`, 사용자를 `pcv-operator`로만 바꾼 것이고, 0.42.91 입력이 이것을 그대로 재현한다. LAN prefix가 없으면 `lan-prefix-missing`으로 멈추고 아무것도 쓰지 않는다. tracked 파일에 사설 주소와 사용자 이름은 없다. §10에 train task 3 manifest 단계를 더했다. `TrainHostInputsTests` `5/5`, Release build 경고 `0`. fullgate는 실행하지 않았다.
 
 ## Task 6: F6 probe 스크립트 추적
 

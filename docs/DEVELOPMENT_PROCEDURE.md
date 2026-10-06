@@ -381,6 +381,14 @@ campaign은 이미 받은 승인을 되묻지 않을 뿐, 없는 승인을 만�
   쓴다(`pair-consume` 문서의 `descriptor_batch_id`와 `source_descriptor_batch_id`). 그 descriptor가 읽은 summary JSON
   `7`개는 `<campaign root>/consume-manifest.json`에 SHA-256, byte 수와 함께 적는다(복사 없음). 승격 도구는 `-consume`
   접미사를 요구하지 않는다. 첫 사례는 train `0.42.90`(`manual-admin-campaign-2026-10-05-04289-04290`)이다.
+- train task 3(fullgate)의 batch manifest는 직전 manifest를 복사하지 않고 `pcvverify train-host-inputs --kind
+  fullgate-manifest`로 만든다. 템플릿은 `docs/ga-ready/trains/host-templates/fullgate-batch-manifest.json.tmpl`이고
+  출력은 `artifacts/batch-manifests/full-admin-host-mutation-gate-<yyyymmdd>-<tag>.json`이다. os-mutation 단계의 LAN
+  prefix는 환경 변수 `PCV_TRAIN_LAN_PREFIX`로만 받고 없으면 쓰지 않는다. `created_by`는 실행 사용자다. 두 값은
+  저장소에 commit하지 않는다. 출력이 이미 있으면 쓰지 않는다.
+
+      dotnet run --project src/DesktopNode.Verification -c Release -- train-host-inputs --input docs/ga-ready/trains/<version>.host-inputs.json --kind fullgate-manifest --write
+
 - train task 4(current-card)는 캡처 스크립트를 `pcvverify train-host-inputs`로 만든다(설계
   `docs/superpowers/specs/2026-10-06-purecvisor-desktop-node-train-host-inputs-design.md`). 입력
   `docs/ga-ready/trains/<version>.host-inputs.json`(계약 `pcv-train-host-inputs-v1`: version, date, facts, iso)은 출발

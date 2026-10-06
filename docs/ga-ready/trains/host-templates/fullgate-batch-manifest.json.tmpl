@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "batch_id": "full-admin-host-mutation-gate-{{run_tag}}",
+  "created_by": "{{created_by}}",
+  "repo_root": "{{repo_root}}",
+  "artifact_root": "{{repo_root}}\\artifacts\\batch-runs\\full-admin-host-mutation-gate-{{run_tag}}",
+  "heartbeat_interval_seconds": 5,
+  "gpu_snapshot_interval_seconds": 5,
+  "default_timeout_seconds": 1800,
+  "path_redactions": {
+    "{{lan_host}}": "[redacted-private-endpoint]",
+    "{{repo_root}}": "[REPO_ROOT]"
+  },
+  "steps": [
+    {
+      "id": "service-msi-hyperv-admin-smoke",
+      "working_directory": "{{repo_root}}",
+      "file_name": "pwsh",
+      "arguments": [
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "packaging/windows-desktop-node/tools/Invoke-PcvRouteParityMutationSmoke.ps1",
+        "-Version",
+        "{{version}}",
+        "-IsoPath",
+        "{{repo_root}}\\{{iso}}",
+        "-ArtifactRoot",
+        "{{repo_root}}\\artifacts\\routeparity-service-msi-hyperv-batch-profile-{{run_tag}}",
+        "-BatchEvidenceRoot",
+        "{{repo_root}}\\artifacts\\batch-runs\\full-admin-host-mutation-gate-{{run_tag}}"
+      ],
+      "timeout_seconds": 3600,
+      "required": true,
+      "allow_failure": false,
+      "requires_admin": true,
+      "mutates_host": true,
+      "retry_count": 1
+    },
+    {
+      "id": "os-mutation-gate",
+      "working_directory": "{{repo_root}}",
+      "file_name": "pwsh",
+      "arguments": [
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "packaging/windows-desktop-node/tools/Invoke-PcvOsMutationGateSmoke.ps1",
+        "-Version",
+        "{{version}}",
+        "-RouteParityArtifactRoot",
+        "{{repo_root}}\\artifacts\\routeparity-service-msi-hyperv-batch-profile-{{run_tag}}",
+        "-ArtifactRoot",
+        "{{repo_root}}\\artifacts\\os-mutation-gates-batch-profile-{{run_tag}}",
+        "-LanPrefix",
+        "{{lan_prefix}}"
+      ],
+      "timeout_seconds": 1800,
+      "required": true,
+      "allow_failure": false,
+      "requires_admin": true,
+      "mutates_host": true,
+      "retry_count": 0
+    }
+  ]
+}
