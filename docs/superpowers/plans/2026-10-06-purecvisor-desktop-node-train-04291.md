@@ -51,7 +51,9 @@
 
 ## Task 2: pair 실행
 
-- [ ] orchestrator `-PlanOnly` 뒤 `-Execute`(campaign `manual-admin-campaign-20261006-04290-04291`). 여섯 bucket PASS, closed descriptor, `observation_error` 없음. 로컬 commit.
+- [x] orchestrator `-PlanOnly` 뒤 `-Execute`(campaign `manual-admin-campaign-20261006-04290-04291`). 여섯 bucket PASS, closed descriptor, `observation_error` 없음. 로컬 commit.
+
+실행 기록(2026-10-06): 시작 상태 설치본 `0.42.90`(`+648139d`). `-PlanOnly` `ok=true` 뒤 `-Execute`(`10:40:59Z`~`10:45:20Z`, 약 `261`초). baseline `0.42.90` 정렬 뒤 여섯 bucket 모두 PASS, closed descriptor, restoration 불필요. `observations.json` `15`개 모두 `observation_error` 없음. 끝 상태: 설치본 clean `0.42.91`(`+59cd8b6`), ARP `{AC7292AD-3E1D-4512-BF63-996F831EF90B}` `0.42.91` 1개, service Running/Automatic, Web `200`, 보존 VM Off. artifact `artifacts/manual-admin-campaign-20261006-04290-04291`.
 
 ## Task 3: pair 문서
 
