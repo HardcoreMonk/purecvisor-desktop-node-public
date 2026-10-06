@@ -67,7 +67,9 @@
 
 ## Task 7: ADR-0016
 
-- [ ] `docs/adr/0016-hyperv-adapter-integration-tier.md`(accepted, 2026-10-07 승인 4)와 `docs/ADR_INDEX.md` 현재 기준 절을 쓴다. 허용 범위, 금지, 승인 방식, 실패 처리는 설계 §4대로다. 설계 상태를 `accepted`로 바꾼다. 검증: Delivery, `git diff --check`. 로컬 commit.
+- [x] `docs/adr/0016-hyperv-adapter-integration-tier.md`(accepted, 2026-10-07 승인 4)와 `docs/ADR_INDEX.md` 현재 기준 절을 쓴다. 허용 범위, 금지, 승인 방식, 실패 처리는 설계 §4대로다. 설계 상태를 `accepted`로 바꾼다. 검증: Delivery, `git diff --check`. 로컬 commit.
+
+실행 기록(2026-10-07): ADR-0016(`채택 / 단계 2 구현 중`)을 썼다. 결정 마커 `4`개, 허용 범위(`pcv-it-<run id>-` VM 생성·설정·삭제, 저장 위치 `artifacts/hyperv-integration/<run id>/`), 금지, 승인 방식(`PCV_HYPERV_INTEGRATION_APPROVAL`이 campaign `approval_locator` 안의 문자열), 실행 가드, 정리, 결과의 지위(관측)를 정했다. `ADR_INDEX`에 2026-10-07 현재 기준 절을 더했다(구조를 고정하는 계약은 없음). 설계 상태를 `accepted`로 바꿨다. Delivery `769/769`, `git diff --check` 통과.
 
 ## Task 8: integration 단계 구현
 

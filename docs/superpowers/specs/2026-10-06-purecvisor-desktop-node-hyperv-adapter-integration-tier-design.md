@@ -2,7 +2,7 @@
 
 - Design-ID: `pcv-hyperv-adapter-integration-tier-v1`
 - 작성일: `2026-10-06`
-- 문서 상태: `proposed` (2026-10-06 사용자 승인 `1,2,3,4`의 4, 설계만. 구현과 ADR은 별도 승인)
+- 문서 상태: `accepted` (2026-10-07 사용자 승인 `1,2,3,4,5`의 4, ADR-0016 채택과 단계 2 구현. 2026-10-06에는 `proposed`였다)
 - 변경 등급: L (host mutation 경계를 다룬다. 제품 동작 변경 없음)
 - host/VM/service/package mutation: `false` (이 문서 작성 중)
 - public trusted signing / external stable publication: `false`
