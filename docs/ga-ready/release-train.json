@@ -3,7 +3,19 @@
   "contract": "pcv-release-train-v1",
   "design": "docs/superpowers/specs/2026-10-04-purecvisor-desktop-node-release-train-design.md",
   "operational_current": "0.42.91-admin-smoke",
-  "queue": [],
+  "queue": [
+    {
+      "pr": 59,
+      "merge_commit": "ee90474",
+      "area": "hyperv",
+      "summary": "VM 등록 전에 끊긴 vm.create가 남긴 disk0.vhdx를 같은 이름의 다음 create가 표식 확인 뒤 회수하고, reconcile not-applied 안내에 위치와 회수 경로를 더함",
+      "lane2_probe": {
+        "family": "vm.create",
+        "design": "docs/superpowers/specs/2026-10-06-purecvisor-desktop-node-interrupted-create-residue-design.md"
+      },
+      "risk_tier": "M"
+    }
+  ],
   "trains": [
     {
       "version": "0.42.89-admin-smoke",
