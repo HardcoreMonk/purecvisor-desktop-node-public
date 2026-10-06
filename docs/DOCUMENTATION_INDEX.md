@@ -10,7 +10,7 @@
 - Required CI 권위: Development Gates run `37171644667`; 보호 context는 정확히 `dotnet`, `web`, `delivery`, `installer-policy`다.
 - PowerShell/Pester 경계: invocation 0은 위 Required CI 네 context에만 적용한다. 별도 Public Boundary workflow는 비필수 legacy residue로 보존한다(run `37171644656`, job `111345611153`).
 - 운영 제품 권위: `0.42.90-admin-smoke`; Web Console과 PCVCLI가 active이고 TUI는 absent다. Feature promotion은 `promotion_eligible=true`, blockers `none`이다. P0 feature ledger는 `0.42.75-admin-smoke` evidence를 유지한다.
-- 이 호스트 설치본(2026-10-05 train `0.42.90` fullgate): `0.42.90-admin-smoke`(gate build `+648139d`), service `Running/Automatic`. ARP `DisplayVersion`은 `0.42.90`(항목 `1`개). operational current와 같은 build다.
+- 이 호스트 설치본(2026-10-06 train `0.42.91` fullgate): `0.42.91-admin-smoke`(gate build `+990a4b2`), service `Running/Automatic`. ARP `DisplayVersion`은 `0.42.91`(항목 `1`개). operational current는 Lane 3 전까지 `0.42.90-admin-smoke`다.
 - 개발 campaign: `docs/ga-ready/active-campaign.json` id `train-04291-20261006`(intent `release-train-04291-and-completion-probes`, 2026-10-06 출발, 러너 `pcv-campaign-runner-v2`, 계획 `docs/superpowers/plans/2026-10-06-purecvisor-desktop-node-train-04291.md`). release train `0.42.91-admin-smoke`(carriages PR #53)과 완료 probe 재실행, 2026-10-19 뒤 C5 확인.
 - release train: 대기열과 train 이력 `docs/ga-ready/release-train.json`, 규칙 `docs/DEVELOPMENT_PROCEDURE.md` §10, 설계 `docs/superpowers/specs/2026-10-04-purecvisor-desktop-node-release-train-design.md`(2026-10-04 채택).
 - 진행 상황 현행화: `docs/project-status-audit-2026-10-06.md`(완료 정의 C1~C6 대조). 직전 snapshot은 `docs/project-status-audit-2026-10-03.md`.

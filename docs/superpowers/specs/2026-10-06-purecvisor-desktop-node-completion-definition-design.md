@@ -54,6 +54,8 @@ Desktop Node 프로젝트는 아래 C1~C6이 동시에 참일 때 완료다. 각
 | C5 | 미충족(기한 대기) | 2026-10-19 GitHub `ubuntu-latest` Ubuntu 26 이동 뒤 첫 `main` run 확인 |
 | C6 | 충족 | 없음 |
 
+보정(2026-10-06, release train `0.42.91`): C4의 남은 항목을 설치본 `0.42.91`에서 확인했다. P1-6과 P1-7은 PASS다(`lane2-completion-inventory-template-lock-actual-vm-2026-10-06-04291`). P1-7은 0.42.90에서 FAIL했고 PR #53 수정으로 닫혔다. P2-11은 PASS다(`lane2-completion-novnc-target-2026-10-06-04291`). P1-10은 다섯 family 모두 끊긴 job의 reconcile 판정이 실제 상태와 일치했다(`lane2-completion-family-reconcile-actual-vm-2026-10-06-04291`, not-applied 경로. confirmed 경로는 0.42.84 evidence와 code-level 시험). P1-9는 사용자 결정(2026-10-06)으로 설치본 evidence 불필요다(계정 없는 bootstrap이 의도된 기본값이고 probe가 인증 상태를 바꾼다). 그래서 C4는 충족이다. C2는 train `0.42.91` Lane 3 merge로 다시 충족된다. C5는 2026-10-19 확인을 기다린다.
+
 ## 5. 남은 일
 
 C4와 C5만 남는다. 새 기능 구현은 필요 없다.

@@ -203,6 +203,10 @@ feature promotion 결정과 동일하지 않다. 현재 feature promotion은
 | `pcv.vm.rename` | `vm.rename` | `0.42.84-admin-smoke` | `lane2-development-completion-actual-vm-2026-09-30-04284` |
 | `pcv.vm.telemetry` | `vm.memory-stats`, `vm.cpu-stats` | `0.42.84-admin-smoke` | `lane2-development-completion-actual-vm-2026-09-30-04284` |
 | `pcv.vm.media-eject` | `vm.eject` | `0.42.86-admin-smoke` | `lane2-vm-media-eject-attach-2026-10-02-04286` |
+| `pcv.vm.inventory` | `vm.list` `created_at`, `last_powered_on`, `notes` | `0.42.91-admin-smoke` | `lane2-completion-inventory-template-lock-actual-vm-2026-10-06-04291` |
+| `pcv.vm.clone` | `vm.template.lock` (lock, unlock, 잠긴 VM mutation 거절) | `0.42.91-admin-smoke` | `lane2-completion-inventory-template-lock-actual-vm-2026-10-06-04291` |
+| `pcv.vm.console-handoff` | `console.novnc-target.preview`, `.set`, `.clear` | `0.42.91-admin-smoke` | `lane2-completion-novnc-target-2026-10-06-04291` |
+| `pcv.job.lifecycle` | `job.reconcile` (끊긴 `vm.create`, `vm.restart`, `vm.shutdown`, `vm.qos.storage.set`, `vm.qos.network.set`의 `not-applied`) | `0.42.91-admin-smoke` | `lane2-completion-family-reconcile-actual-vm-2026-10-06-04291` |
 
 ## 현재 blocker
 
