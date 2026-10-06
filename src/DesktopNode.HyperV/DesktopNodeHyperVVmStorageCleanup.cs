@@ -110,6 +110,22 @@ public static class DesktopNodeHyperVVmStorageCleanup
             }
         }
 
+        // The vm.create marker is the one non-disk file managed delete removes (design pcv-interrupted-create-residue-v1).
+        foreach (var marker in fileSystem.EnumerateFiles(root)
+                     .Where(file => string.Equals(Path.GetFileName(file), DesktopNodeHyperVVmCreateResidue.MarkerFileName, StringComparison.OrdinalIgnoreCase))
+                     .ToArray())
+        {
+            try
+            {
+                fileSystem.DeleteFile(marker);
+                removedFiles.Add(marker);
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                retained.Add(new DesktopNodeHyperVRetainedStorage(marker, DeleteFailedPrefix + ex.Message));
+            }
+        }
+
         if (!RemoveEmptyDirectories(root, fileSystem, removedDirectories))
         {
             retained.Add(new DesktopNodeHyperVRetainedStorage(root, DirectoryNotEmpty));
