@@ -31,7 +31,9 @@
 
 ## Task 1: F1 browser 시험 누수 수정과 정리
 
-- [ ] `src/DesktopNode.Host.Tests/DesktopNodeHostLoopbackBootstrapBrowserTests.cs`가 띄운 브라우저를 끝에 확실히 닫게 한다(DevTools `Browser.close`, 남은 프로세스는 그 user-data-dir를 command line에 가진 것만 종료, 폴더 삭제 재시도). 검증: `dotnet test src/DesktopNode.Host.Tests -c Release` 두 번 실행 뒤 새로 남은 `pcv-loopback-browser` 프로세스·폴더 `0`. 그다음 이 호스트에 남은 누수 인스턴스와 temp 폴더를 정리하고 개수를 기록한다. 로컬 commit.
+- [x] `src/DesktopNode.Host.Tests/DesktopNodeHostLoopbackBootstrapBrowserTests.cs`가 띄운 브라우저를 끝에 확실히 닫게 한다(DevTools `Browser.close`, 남은 프로세스는 그 user-data-dir를 command line에 가진 것만 종료, 폴더 삭제 재시도). 검증: `dotnet test src/DesktopNode.Host.Tests -c Release` 두 번 실행 뒤 새로 남은 `pcv-loopback-browser` 프로세스·폴더 `0`. 그다음 이 호스트에 남은 누수 인스턴스와 temp 폴더를 정리하고 개수를 기록한다. 로컬 commit.
+
+실행 기록(2026-10-06): 남은 브라우저 main의 부모 프로세스는 모두 이미 없었다(예: PID `29616`의 부모 `38064`). `Process.Start`로 띄운 `msedge.exe`가 실제 브라우저를 다른 프로세스로 넘기고 끝나서 `finally`의 `HasExited`가 참이 되고 `Kill`이 돌지 않았다. 수정: 끝에 DevTools 브라우저 연결로 `Browser.close`를 보내고 10초 기다린 뒤, 그 user-data-dir를 command line에 가진 `msedge.exe`·`chrome.exe`만 `Win32_Process`(Host→HyperV 참조로 들어오는 `System.Management`)로 찾아 종료한다. 폴더 삭제는 재시도하고 시험 token 파일도 지운다. 본문이 PASS하면 남은 프로세스 `0`을 `Assert.Empty`로 확인한다. Release build 경고 `0`. `dotnet test src/DesktopNode.Host.Tests -c Release` 두 번 `216/216`, 실행 뒤 새 `pcv-loopback-browser` 프로세스 `0`, temp 폴더 `80`→`80`(새 폴더는 지워짐), token 파일 `69`→`69`. 정리: 누수 인스턴스 `47`개(프로세스 `470`개, 이 호스트 `msedge` `475`→`5`)와 temp 폴더 `80`개를 지웠다. report-only: 이전 실행이 남긴 `%TEMP%\pcv-browser-gate-token-*.txt` `69`개(합성 시험 token)는 승인한 정리 범위 밖이라 두었다. service, MSI, VM 변경 없음.
 
 ## Task 2: F2 종료 검증 중복 제거
 

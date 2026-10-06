@@ -1,4 +1,6 @@
+using System.ComponentModel;
 using System.Diagnostics;
+using System.Management;
 using System.Net;
 using System.Net.Sockets;
 using System.Net.WebSockets;
@@ -18,13 +20,14 @@ public sealed class DesktopNodeHostLoopbackBootstrapBrowserTests
     {
         var browser = FindBrowser();
         var webRoot = FindWebRoot();
+        var tokenFile = WriteServiceTokenFile();
         using var host = await DesktopNodeHostApplication.StartAsync(new DesktopNodeHostOptions
         {
             Mode = DesktopNodeHostMode.Listen,
             Prefix = "http://127.0.0.1:0/",
             WebPrefix = "http://127.0.0.1:0/",
             WebRootPath = webRoot,
-            ApiTokenFile = WriteServiceTokenFile(),
+            ApiTokenFile = tokenFile,
             AccountAuthOptions = new DesktopNodeAccountAuthOptions(
                 Enabled: true,
                 Issuer: "pcv-test",
@@ -52,6 +55,9 @@ public sealed class DesktopNodeHostLoopbackBootstrapBrowserTests
         }
         finally
         {
+            // msedge.exe can hand the browser to a new process and exit, so the started
+            // process is not a reliable handle. Close through DevTools and the user-data-dir.
+            await CloseBrowserAsync(debugPort, userData);
             if (process is not null && !process.HasExited)
             {
                 try
@@ -64,12 +70,95 @@ public sealed class DesktopNodeHostLoopbackBootstrapBrowserTests
             }
 
             process?.Dispose();
+            DeleteDirectoryWithRetry(userData);
             try
             {
-                Directory.Delete(userData, recursive: true);
+                File.Delete(tokenFile);
             }
             catch (IOException)
             {
+            }
+        }
+
+        Assert.Empty(FindBrowserProcessIds(userData));
+    }
+
+    private static async Task CloseBrowserAsync(int debugPort, string userData)
+    {
+        try
+        {
+            using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(2) };
+            using var version = JsonDocument.Parse(await http.GetStringAsync($"http://127.0.0.1:{debugPort}/json/version"));
+            var browserUrl = version.RootElement.GetProperty("webSocketDebuggerUrl").GetString();
+            if (!string.IsNullOrWhiteSpace(browserUrl))
+            {
+                using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(3));
+                using var webSocket = new ClientWebSocket();
+                await webSocket.ConnectAsync(new Uri(browserUrl), timeout.Token);
+                await webSocket.SendAsync(
+                    Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new { id = 1, method = "Browser.close" })),
+                    WebSocketMessageType.Text,
+                    endOfMessage: true,
+                    timeout.Token);
+            }
+        }
+        catch (Exception exception) when (exception is HttpRequestException or OperationCanceledException or
+            WebSocketException or JsonException or KeyNotFoundException or InvalidOperationException or UriFormatException)
+        {
+        }
+
+        var deadline = DateTime.UtcNow.AddSeconds(10);
+        while (DateTime.UtcNow < deadline && FindBrowserProcessIds(userData).Count > 0)
+        {
+            await Task.Delay(200);
+        }
+
+        foreach (var processId in FindBrowserProcessIds(userData))
+        {
+            try
+            {
+                using var leftover = Process.GetProcessById(processId);
+                leftover.Kill(entireProcessTree: true);
+                leftover.WaitForExit(5000);
+            }
+            catch (Exception exception) when (exception is ArgumentException or InvalidOperationException or Win32Exception)
+            {
+            }
+        }
+    }
+
+    private static List<int> FindBrowserProcessIds(string userData)
+    {
+        using var searcher = new ManagementObjectSearcher(
+            "SELECT ProcessId, CommandLine FROM Win32_Process WHERE Name = 'msedge.exe' OR Name = 'chrome.exe'");
+        using var results = searcher.Get();
+        var processIds = new List<int>();
+        foreach (var item in results)
+        {
+            using (item)
+            {
+                if (item["CommandLine"] is string commandLine &&
+                    commandLine.Contains(userData, StringComparison.OrdinalIgnoreCase))
+                {
+                    processIds.Add((int)(uint)item["ProcessId"]);
+                }
+            }
+        }
+
+        return processIds;
+    }
+
+    private static void DeleteDirectoryWithRetry(string path)
+    {
+        for (var attempt = 0; attempt < 10 && Directory.Exists(path); attempt++)
+        {
+            try
+            {
+                Directory.Delete(path, recursive: true);
+            }
+            catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+            {
+                Thread.Sleep(300);
             }
         }
     }
