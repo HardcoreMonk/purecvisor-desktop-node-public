@@ -30,6 +30,13 @@ public static class DesktopNodeHyperVManagedNotes
         return notes + Environment.NewLine + Marker;
     }
 
+    // Hyper-V keeps only the first element of Msvm_VirtualSystemSettingData.Notes and stores multi-line notes as one
+    // element with \n line breaks. Writers pass exactly one element so later marker lines survive.
+    public static string[] ToNotesProperty(string? notes)
+    {
+        return [(notes ?? string.Empty).Replace("\r\n", "\n", StringComparison.Ordinal)];
+    }
+
     public static string? OperatorNotes(string? notes)
     {
         if (string.IsNullOrWhiteSpace(notes))

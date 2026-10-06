@@ -25,7 +25,11 @@
 
 ## Task 1: 원소 하나로 쓰기
 
-- [ ] `DesktopNodeHyperVManagedNotes`에 Notes 쓰기 값(원소 하나 배열)을 만드는 helper를 두고, `vm.manage`와 `vm.template.lock`이 그것을 쓰게 한다. 시험: helper가 lock·unlock·manage 결과를 원소 하나로 만들고 그 원소에 marker 줄이 모두 들어 있다. provider source에 Notes를 `Split`해서 쓰는 형태가 없다. 검증 `dotnet build src/DesktopNode.sln -c Release`(경고 `0`), `dotnet test src/DesktopNode.HyperV.Tests -c Release`, `dotnet test src/DesktopNode.Delivery.Tests -c Release`. 로컬 commit.
+- [x] `DesktopNodeHyperVManagedNotes`에 Notes 쓰기 값(원소 하나 배열)을 만드는 helper를 두고, `vm.manage`와 `vm.template.lock`이 그것을 쓰게 한다. 시험: helper가 lock·unlock·manage 결과를 원소 하나로 만들고 그 원소에 marker 줄이 모두 들어 있다. provider source에 Notes를 `Split`해서 쓰는 형태가 없다. 검증 `dotnet build src/DesktopNode.sln -c Release`(경고 `0`), `dotnet test src/DesktopNode.HyperV.Tests -c Release`, `dotnet test src/DesktopNode.Delivery.Tests -c Release`. 로컬 commit.
+
+실행 기록(2026-10-06): `DesktopNodeHyperVManagedNotes.ToNotesProperty`가 메모를 `
+`으로 잇는 원소 하나 배열로 만든다. `DesktopNodeHyperVWmiVmManageProvider`의 `vm.manage`와 `vm.template.lock`이 줄을 `Split`한 여러 원소 대신 이것을 쓴다. 시험 `2`개: lock·unlock·manage 결과가 원소 하나이고 marker 줄이 모두 남는다, provider source에 `StringSplitOptions`가 없고 `ToNotesProperty(`가 두 번 쓰인다. Release build 경고 `0`, HyperV `257`, Delivery `763` 통과. 원인 확인은 CIM 읽기(보존 VM Notes 원소 `1`개, `
+` `3`개)로 했고 host mutation은 없다.
 
 ## Task 2: PR과 대기열 행
 
