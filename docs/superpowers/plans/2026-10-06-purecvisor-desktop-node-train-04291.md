@@ -69,7 +69,9 @@
 
 ## Task 5: installed current-card
 
-- [ ] 0.42.90 스크립트에서 root, evidence id, fullgate batch, SHA 상수 `4`개, 40자리 `provenance_commit`, manifest version을 바꿔 root 밖에서 실행. `status=pass`, `not-promoted`. 로컬 commit.
+- [x] 0.42.90 스크립트에서 root, evidence id, fullgate batch, SHA 상수 `4`개, 40자리 `provenance_commit`, manifest version을 바꿔 root 밖에서 실행. `status=pass`, `not-promoted`. 로컬 commit.
+
+실행 기록(2026-10-06, `11:01:36Z`): 0.42.90 스크립트에서 root, evidence id, fullgate batch, SHA 상수(clean MSI `bdef7609…`, fullgate MSI `46dddccb…`, clean payload `f4503dfc…`, fullgate payload `c79dff87…`), `provenance_commit` `990a4b2`, manifest version, `canonical_current_evidence` `0.42.90-admin-smoke`를 바꿔 root 밖에서 실행했다(§10 절차, 한 번에 맞음). `status=pass`, CLI `3/3`, Web `2/2`, ARP 1개, 설치본 Host/CLI가 fullgate payload와 같음, 테스트 VM `0`, secret 없음, `not-promoted`. summary SHA `0b49c396…`.
 
 ## Task 6: probe P1-6, P1-7 (실은 변경 `vm.template.lock`)
 
