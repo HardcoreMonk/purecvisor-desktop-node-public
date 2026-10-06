@@ -43,7 +43,9 @@
 
 ## Task 3: F1 확인 기록
 
-- [ ] Task 1·2 결과를 새 evidence `docs/ga-ready/evidence/fullgate-msi-uninstall-f1-check-2026-10-07-04291.md`에 적는다(2026-10-06 기준값과 비교, 누수 Edge 수, 결론). `EVIDENCE_INDEX`에 관측 줄을 더한다. 검증: Delivery, `git diff --check`. 로컬 commit.
+- [x] Task 1·2 결과를 새 evidence `docs/ga-ready/evidence/fullgate-msi-uninstall-f1-check-2026-10-07-04291.md`에 적는다(2026-10-06 기준값과 비교, 누수 Edge 수, 결론). `EVIDENCE_INDEX`에 관측 줄을 더한다. 검증: Delivery, `git diff --check`. 로컬 commit.
+
+실행 기록(2026-10-07): evidence `fullgate-msi-uninstall-f1-check-2026-10-07-04291`(`PASS`, `observation-only`)를 썼다. 단계·uninstall 시간 비교, 사전 상태, 사후 검사와 복원, 남은 files-in-use(service process)는 report-only로 적었다. `EVIDENCE_INDEX`는 Lane 3 도구가 만드는 승격 절로만 이루어져 있고 관측 evidence(예: `default-switch-recovery-2026-09-20-04277`)는 올리지 않으므로 계획과 달리 줄을 더하지 않았다. public boundary evidence guard Pester `90/90`, Delivery `769/769`, `git diff --check` 통과.
 
 ## Task 4: 단일 PR train 1 — 절차
 
