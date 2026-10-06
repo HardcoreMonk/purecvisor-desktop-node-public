@@ -37,7 +37,9 @@
 
 ## Task 2: 운영 build 복원 (Lane 2)
 
-- [ ] 0.42.91 운영 MSI(`46dddccb…`, `artifacts/routeparity-service-msi-hyperv-batch-profile-20261006-04291`)를 설치해 설치본을 operational current build(`+990a4b2`)로 되돌린다. 설치본 Host·CLI SHA-256이 0.42.91 fullgate payload와 같은지, ARP 1개, service Running/Automatic, Web `200`을 확인한다. 로컬 commit.
+- [x] 0.42.91 운영 MSI(`46dddccb…`, `artifacts/routeparity-service-msi-hyperv-batch-profile-20261006-04291`)를 설치해 설치본을 operational current build(`+990a4b2`)로 되돌린다. 설치본 Host·CLI SHA-256이 0.42.91 fullgate payload와 같은지, ARP 1개, service Running/Automatic, Web `200`을 확인한다. 로컬 commit.
+
+실행 기록(2026-10-07): 2026-10-06 fullgate `final-restore-install` 로그의 명령줄과 같은 속성으로 설치했다(`BATCH_EVIDENCE_ROOT`=2026-10-06 batch root, `REBOOT=ReallySuppress`, `MSIRESTARTMANAGERCONTROL=Disable`, `/qn /norestart`). 설치 전 MSI SHA-256 `46dddccb…` 일치. msiexec exit `0`, `10`초(같은 version upgrade로 `{8D07CE80-…}` 제거). 끝 상태: ARP `{ED64B13A-742B-422C-9142-DED650CB856B}` `0.42.91` 1개(Task 1 전과 같은 ProductCode), 설치본 Host `a935701e…`·CLI `2c249f0d…`는 0.42.91 fullgate payload와 같다. ProductVersion `+990a4b2`, service Running/Auto, PathName batch root는 `full-admin-host-mutation-gate-20261006-04291`, Web `200`, VM은 보존 VM Off 하나, PureCVisor firewall 규칙 `0`. 설치본이 operational current와 다시 같다. 로그 `artifacts/f1-check-20261007/restore-operational-04291.log`.
 
 ## Task 3: F1 확인 기록
 
