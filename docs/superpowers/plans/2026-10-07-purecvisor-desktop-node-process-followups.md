@@ -85,7 +85,9 @@
 
 ## Task 10: 종료 검증과 merge (1차)
 
-- [ ] clean HEAD 종료 검증(build, 네 shard, Pester 네 종) 뒤 push, PR, green CI 뒤 merge.
+- [x] clean HEAD 종료 검증(build, 네 shard, Pester 네 종) 뒤 push, PR, green CI 뒤 merge.
+
+실행 기록(2026-10-07, clean HEAD `f3f11d1`): Release build 경고 `0`. Required CI 네 shard `ok=true`, `plan_only=false`(dotnet `38.8`초, web `28.0`초, delivery `3.0`초, installer-policy `2.0`초). dotnet shard stdout 기준 실패 `0`(Verification `628`, Delivery `771`, Api `488`, HyperV `257`, Host `216`, Contracts `200`, Cli `183`, Runtime `129`, Service `11`). Pester 네 종 실패 `0`(`528`, `49`, `50`, `129`). 전체 `249`초. 남은 loopback Edge `0`. 이 기록 commit 뒤 push, PR, green CI 뒤 merge한다. merge commit은 Task 11 기록에 적는다.
 
 ## Task 11: 끊긴 create 잔여물 처리 구현
 
