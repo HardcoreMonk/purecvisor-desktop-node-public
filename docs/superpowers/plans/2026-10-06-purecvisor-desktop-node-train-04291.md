@@ -119,6 +119,8 @@
 
 - [ ] 2026-10-19 이후에만 실행한다. 그 전에 오면 기한 대기로 멈춘다. Ubuntu 26 runner의 첫 `main` Development Gates와 Public Boundary run이 green이면 완료 정의 §4에 C5 충족과 프로젝트 완료 판정을 적고 campaign을 닫는다. 실패하면 `ubuntu-24.04` pin을 판단해 보고하고 멈춘다. push, PR, green CI 뒤 merge.
 
+대기 기록(2026-10-06): 사용자 결정(`1,2,3,4`와 `교체, Task 12 보존`)으로 이 campaign을 닫고 `process-optimization-20261006`을 열었다. Task 12는 실행하지 않았고, 2026-10-06 `1,2,3` 항목 3 승인 그대로 새 campaign의 `next_approval_required`에 남겨 2026-10-19 뒤 다시 연다.
+
 ## Nonclaims
 
 - train은 internal admin-smoke 범위다. public trusted signing과 external stable publication을 주장하지 않는다.

@@ -2,21 +2,18 @@
   "schema_version": 1,
   "contract": "pcv-active-campaign-v1",
   "status": "open",
-  "id": "train-04291-20261006",
-  "intent": "release-train-04291-and-completion-probes",
+  "id": "process-optimization-20261006",
+  "intent": "development-process-optimization",
   "working_authority": "source_head",
   "allowed_lanes": [
     "0",
-    "1",
-    "2",
-    "3"
+    "1"
   ],
-  "mutation_allowed": true,
-  "current_write_allowed": true,
-  "next_step": "Run Task 12 from docs/superpowers/plans/2026-10-06-purecvisor-desktop-node-train-04291.md on or after 2026-10-19; before that date the runner stops with a deadline wait. Task 13 design pcv-interrupted-create-residue-v1 is a next-train candidate whose implementation needs its own approval.",
-  "plan": "docs/superpowers/plans/2026-10-06-purecvisor-desktop-node-train-04291.md",
+  "mutation_allowed": false,
+  "current_write_allowed": false,
+  "next_step": "Run Task 1 from docs/superpowers/plans/2026-10-06-purecvisor-desktop-node-process-optimization.md, then the queue in order.",
+  "plan": "docs/superpowers/plans/2026-10-06-purecvisor-desktop-node-process-optimization.md",
   "task_queue": [
-    "Task 0",
     "Task 1",
     "Task 2",
     "Task 3",
@@ -25,43 +22,19 @@
     "Task 6",
     "Task 7",
     "Task 8",
-    "Task 9",
-    "Task 10",
-    "Task 11",
-    "Task 13",
-    "Task 12"
+    "Task 9"
   ],
-  "task_lanes": {
-    "Task 2": "2",
-    "Task 4": "2",
-    "Task 5": "2",
-    "Task 6": "2",
-    "Task 7": "2",
-    "Task 8": "2",
-    "Task 10": "3"
-  },
-  "next_task": "Task 12",
-  "completed_tasks": [
-    "Task 0",
-    "Task 1",
-    "Task 2",
-    "Task 3",
-    "Task 4",
-    "Task 5",
-    "Task 6",
-    "Task 7",
-    "Task 8",
-    "Task 9",
-    "Task 10",
-    "Task 11",
-    "Task 13"
-  ],
+  "task_lanes": {},
+  "next_task": "Task 1",
+  "completed_tasks": [],
   "commit_policy": "local-commit-per-task",
   "push_allowed": true,
   "merge_policy": "after-green-ci",
-  "checkpoint_limit": 15,
-  "approval_locator": "User-Approval: 2026-09-27 campaign runner commit policy local-commit-per-task; 2026-10-06 \"1,2\" item 2 (after the template lock fix merge, depart release train 0.42.91 in the 0.42.90 scope: queue row PR #53, package build, pair host mutation of product Update/Rollback, clean-host VM create/Windows Update/delete, Burn and MSIX, fullgate, installed current-card, Lane 3 current-evidence.json write, push, PR and merge after green CI; rerun the completion probes on 0.42.91 in the scope approved on 2026-10-06 \"1,2,3\"); 2026-10-06 \"1,2,3\" item 3 (after 2026-10-19 confirm the first main runs on the Ubuntu 26 runner); 2026-10-06 \"1,2\" (1 rerun Task 8 as a new checkpoint and continue Task 9-11; 2 design the orphan disk handling of an interrupted vm.create as a next-train candidate, Lane 1 design only, as Task 13)",
-  "next_approval_required": [],
+  "checkpoint_limit": 9,
+  "approval_locator": "User-Approval: 2026-09-27 campaign runner commit policy local-commit-per-task; 2026-10-06 \"1,2,3,4\" (process optimization review: 1 fix the Host.Tests loopback browser Edge leak in Lane 1 and clean up the leaked pcv-loopback-browser headless Edge on this host; 2 remove the pcv-ship final verification duplication; 3 generate current-card and fullgate inputs from train facts and track the Lane 2 probe scripts; 4 design documents only for a single-PR train with Lane 3 and a real Hyper-V adapter integration tier); 2026-10-06 follow-up answers \"replace, keep Task 12\" and \"push, PR, merge after green CI\"",
+  "next_approval_required": [
+    "Reopen train-04291-20261006 Task 12 (C5 runner check on or after 2026-10-19) under its existing 2026-10-06 \"1,2,3\" item 3 approval."
+  ],
   "stop_on": [
     "same-cause-fail-3",
     "budget",
@@ -73,5 +46,5 @@
     "dirty-tree-at-start"
   ],
   "out_of_scope_is_not_next_step": true,
-  "closed_predecessor": "template-lock-notes-fix-20261006"
+  "closed_predecessor": "train-04291-20261006"
 }
