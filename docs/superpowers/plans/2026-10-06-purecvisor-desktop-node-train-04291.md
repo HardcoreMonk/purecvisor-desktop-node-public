@@ -99,7 +99,9 @@
 
 ## Task 10: Lane 3
 
-- [ ] functional carry-forward, consume(`…-closed` descriptor와 consume manifest), Task 9 merge의 main push evidence, current-card `promoted-current`. `current-evidence.json`, `lane3-spec` 입력과 spec `04291`, 문서 도구 dry-run·`-Apply`·`-Check`, `release-train.json` 승격, 수기 정렬. 로컬 commit.
+- [x] functional carry-forward, consume(`…-closed` descriptor와 consume manifest), Task 9 merge의 main push evidence, current-card `promoted-current`. `current-evidence.json`, `lane3-spec` 입력과 spec `04291`, 문서 도구 dry-run·`-Apply`·`-Check`, `release-train.json` 승격, 수기 정렬. 로컬 commit.
+
+실행 기록(2026-10-06): branch `lane3/04291-promotion-20261006`(`origin/main` `4b04653`, PR #54 merge 기준). Lane 3 문서 `3`개를 facts로 렌더했다: functional carry-forward(0.42.75 PASS, ledger 마지막 변경 `bb15f66`), consume(`manual-admin-campaign-20261006-04290-04291-closed`, consume manifest `e6c7db31…`, 복사 없음), main push(`4b04653`, Public Boundary run `37460495186`, Development Gates run `37460494865` success). current-card `promoted-current`로 `--allow-update`. `current-evidence.json` current `0.42.91-admin-smoke`(provenance `990a4b2`, descriptor `…-closed`). `lane3-spec`이 `lane3-promotion-docs-spec-04291.json`을 만들었고(사람 값 `9`개) 문서 도구 dry-run·`-Apply`·`-Check` 모두 `ok`. `release-train.json` `operational_current=0.42.91-admin-smoke`, train `status=promoted`. 수기 정렬: `CurrentEvidenceVerifierTests`, `DOCUMENTATION_INDEX` 권위·호스트·consume 줄, `FEATURE_IMPLEMENTATION_LEDGER` operational 줄.
 
 ## Task 11: 종료와 Lane 3 merge
 
