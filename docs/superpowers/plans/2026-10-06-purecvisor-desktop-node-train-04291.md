@@ -81,7 +81,9 @@
 
 ## Task 7: probe P1-9, P2-11
 
-- [ ] 계정 목록 확인(enabled admin이 probe 밖에 있어야 함), probe 계정 `pcv-probe-c4-operator` 생성·목록·disable. noVNC target loopback preview·set·capabilities readback·clear로 원복(파일 없음). 로컬 commit.
+- [x] 계정 목록 확인(enabled admin이 probe 밖에 있어야 함), probe 계정 `pcv-probe-c4-operator` 생성·목록·disable. noVNC target loopback preview·set·capabilities readback·clear로 원복(파일 없음). 로컬 commit.
+
+실행 기록(2026-10-06): P1-9는 계정 목록이 비어 있었다(`accounts: []`, `bootstrap_state: no-default-account`, `artifacts/lane2-completion-account-novnc-target-20261006-04291/01-account-list.json`). 첫 계정은 admin이 되고 마지막 enabled admin은 비활성화가 거절되므로 안전장치가 계정을 만들기 전에 멈췄다. 사용자 결정(2026-10-06): P1-9는 설치본 evidence 불필요로 닫는다(계정 없는 bootstrap이 의도된 기본값이고 probe가 인증 상태를 바꾸므로). P2-11은 `11:05:08Z`~`11:05:13Z` PASS: preview는 파일을 만들지 않음, set이 `127.0.0.1:5901`을 저장, clear가 `enabled=false`를 남김, 그 파일을 지워 시작 상태(파일 없음, PathName에 noVNC 인자 없음)로 원복, service Running/Automatic, Web `200`. evidence `lane2-completion-novnc-target-2026-10-06-04291`.
 
 ## Task 8: probe P1-10
 
