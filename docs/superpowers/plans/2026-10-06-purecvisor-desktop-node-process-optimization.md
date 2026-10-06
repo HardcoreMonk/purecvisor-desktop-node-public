@@ -67,7 +67,9 @@
 
 ## Task 7: F3 설계
 
-- [ ] train과 Lane 3를 PR 하나로 합치는 설계를 `docs/superpowers/specs/2026-10-06-purecvisor-desktop-node-single-pr-train-design.md`에 쓴다. 지금 Lane 3가 소비하는 main push CI evidence를 merge 전 PR CI run(head SHA 고정)으로 바꿀 때의 위험과 대안을 적는다. 설계만, `proposed`. 검증: Delivery, `git diff --check`. 로컬 commit.
+- [x] train과 Lane 3를 PR 하나로 합치는 설계를 `docs/superpowers/specs/2026-10-06-purecvisor-desktop-node-single-pr-train-design.md`에 쓴다. 지금 Lane 3가 소비하는 main push CI evidence를 merge 전 PR CI run(head SHA 고정)으로 바꿀 때의 위험과 대안을 적는다. 설계만, `proposed`. 검증: Delivery, `git diff --check`. 로컬 commit.
+
+실행 기록(2026-10-06): 설계 `pcv-single-pr-train-v1`(`proposed`). 확인한 제약: Lane 3 main push evidence는 문서만이 아니라 설치본 Ops Summary `public_boundary.latest_main_push`가 `public-boundary-ci-main-push-*/summary.json`(scope `public-boundary-ci-required-main-push`)으로 읽는다. 그래서 계획 문구의 "merge 전 PR CI run 인용" 대신 출발 때 고정한 payload commit(carriage 마지막 merge)의 main push run을 인용하고, `payload commit..PR head`에 `src/`·`web/src/`·`config/`·`.github/` 변경이 없음을 기계 확인하는 안을 골랐다. merge 전 PR CI와 base 일치로 같은 tree를 보장하고, merge 뒤 main push가 red면 revert PR을 연다. 측정(commit·PR 시각): 0.42.90 Lane 3 준비부터 merge까지 `16`분, 0.42.91 `19`분. 그중 종료 검증 `7`분·`6`분 20초. 합치면 train마다 약 `10`분이 준다. 기각한 대안 두 개(Lane 3 로컬 종료 검증만 생략 — manual-admin Pester 확인이 빠짐, main push evidence 미루기 — Ops Summary가 승격 시점 값을 못 보여 줌)와 구현 때 바꿀 곳 `5`개를 적었다. 구현은 별도 승인이다.
 
 ## Task 8: F5 설계
 
