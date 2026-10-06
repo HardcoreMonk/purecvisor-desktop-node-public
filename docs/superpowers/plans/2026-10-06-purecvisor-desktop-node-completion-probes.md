@@ -31,8 +31,7 @@
 
 - [ ] probe VM을 만든다. `vm list`의 `created_at`, `last_powered_on`, `notes` readback(시작·종료 전후)을 확인한다. template-lock 뒤 start는 허용되고 직접 mutation(예: rename, memory 변경)은 거절되는지, template-unlock 뒤 다시 허용되는지 확인한다. probe VM을 지운다. evidence `lane2-completion-inventory-template-lock-actual-vm-2026-10-06-04290`. 로컬 commit.
 
-정차 기록(2026-10-06, `16:43:41Z`~`16:44:22Z`, 설치본 `0.42.90+648139d`): P1-6은 PASS다. probe VM의 `created_at`이 나오고, `last_powered_on`은 running일 때만 나오며, `notes`는 marker 줄을 뺀다(보존 VM 운영자 메모 readback 포함). P1-7은 FAIL이다. `vm template-lock` job은 `succeeded`(`"locked": true`)인데 `vm list`에 `template_lock`이 없고 Hyper-V Notes에는 `managed-by=purecvisor-desktop-node`만 남아 rename이 허용됐다. rename으로 이름이 바뀌어 뒤 단계가 `PCV_VM_NOT_FOUND`로 이어졌고, 남은 probe VM `pcv-probe-c4-inv2`는 승인 범위 안에서 지웠다(probe VM·폴더 `0`, 보존 VM Off, service Running/Automatic, Web `200`). 원인: Hyper-V Notes는 여러 줄을 원소 하나 안의 `
-`으로 저장하는데(보존 VM 원소 `1`개), `vm.template.lock`과 `vm.manage`만 줄을 나눈 여러 원소로 써서 첫 원소만 남는다. Lane 2 FAIL로 이 campaign을 멈추고 사용자 승인 `1,2`로 `template-lock-notes-fix-20261006`이 교체했다. artifact `artifacts/lane2-completion-inventory-template-lock-20261006-04290`.
+정차 기록(2026-10-06, `16:43:41Z`~`16:44:22Z`, 설치본 `0.42.90+648139d`): P1-6은 PASS다. probe VM의 `created_at`이 나오고, `last_powered_on`은 running일 때만 나오며, `notes`는 marker 줄을 뺀다(보존 VM 운영자 메모 readback 포함). P1-7은 FAIL이다. `vm template-lock` job은 `succeeded`(`"locked": true`)인데 `vm list`에 `template_lock`이 없고 Hyper-V Notes에는 `managed-by=purecvisor-desktop-node`만 남아 rename이 허용됐다. rename으로 이름이 바뀌어 뒤 단계가 `PCV_VM_NOT_FOUND`로 이어졌고, 남은 probe VM `pcv-probe-c4-inv2`는 승인 범위 안에서 지웠다(probe VM·폴더 `0`, 보존 VM Off, service Running/Automatic, Web `200`). 원인: Hyper-V Notes는 여러 줄을 원소 하나 안의 `\n`으로 저장하는데(보존 VM 원소 `1`개), `vm.template.lock`과 `vm.manage`만 줄을 나눈 여러 원소로 써서 첫 원소만 남는다. Lane 2 FAIL로 이 campaign을 멈추고 사용자 승인 `1,2`로 `template-lock-notes-fix-20261006`이 교체했다. artifact `artifacts/lane2-completion-inventory-template-lock-20261006-04290`.
 
 ## Task 2: P1-9, P2-11 probe
 
