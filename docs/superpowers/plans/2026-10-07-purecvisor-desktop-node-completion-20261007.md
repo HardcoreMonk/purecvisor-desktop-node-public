@@ -41,7 +41,9 @@
 
 ## Task 0: 출발
 
-- [ ] `release-train.json`의 queue 행(PR #59)을 train `0.42.92-admin-smoke`의 `carriages`로 옮기고 `status=running`, payload commit `ad8b5c2`와 main push run id 두 개를 출발 기록에 적는다. 검증: `PcvReleaseTrainContractTests`, `git diff --check`. 로컬 commit.
+- [x] `release-train.json`의 queue 행(PR #59)을 train `0.42.92-admin-smoke`의 `carriages`로 옮기고 `status=running`, payload commit `ad8b5c2`와 main push run id 두 개를 출발 기록에 적는다. 검증: `PcvReleaseTrainContractTests`, `git diff --check`. 로컬 commit.
+
+실행 기록(2026-10-07): 출발 `2026-10-07T23:19:00+09:00`, source(payload) `ad8b5c2488568581505b8e1d2f9cdd39db23b2ff`, carriages `[59]`, queue 비움, train `status=running`. payload commit의 main push run: Development Gates `37634988986` success, Public Boundary Contract `37634988899` success.
 
 ## Task 1: package
 
