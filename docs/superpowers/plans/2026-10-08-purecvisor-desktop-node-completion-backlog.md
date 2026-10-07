@@ -64,7 +64,10 @@ ADR-0016 standing approval(`pcv-it-` 접두사 VM 생성·삭제)은 그대로 �
 
 ## Task 5: 종료 검증과 merge (PR 1)
 
-- [ ] clean HEAD 종료 검증(solution), push, PR, green CI 뒤 merge. 도구·시험 PR이라 queue 행은 없다.
+- [x] clean HEAD 종료 검증(solution), push, PR, green CI 뒤 merge. 도구·시험 PR이라 queue 행은 없다.
+
+
+실행 기록(2026-10-08): clean HEAD `cc59c8c`에서 `dotnet test src/DesktopNode.sln -c Release` 실패 `0`(Verification `660`, Delivery `775`, Api `490`, HyperV `271`, Host `216`, Contracts `200`, Cli `183`, Runtime `129`, Service `11`), `git diff --check origin/main...HEAD` 통과, product payload 경로 변경 `0`(queue 행 없음). 이 기록 commit 뒤 push, PR, green CI 뒤 merge한다. PR 번호와 merge commit은 Task 6 기록에 적는다.
 
 ## Task 6: BL-0005 단일 PR train 설계 개정
 
