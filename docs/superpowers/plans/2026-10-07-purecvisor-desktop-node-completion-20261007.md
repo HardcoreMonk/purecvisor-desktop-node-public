@@ -67,7 +67,9 @@
 
 ## Task 4: fullgate
 
-- [ ] clean `0.42.92` 위에서 `full-admin-host-mutation-gate-20261007-04292`(manifest는 `pcvverify train-host-inputs`). 사후 검사(build commit, 같은 version ARP 1개, firewall 규칙 0). 로컬 commit.
+- [x] clean `0.42.92` 위에서 `full-admin-host-mutation-gate-20261007-04292`(manifest는 `pcvverify train-host-inputs`). 사후 검사(build commit, 같은 version ARP 1개, firewall 규칙 0). 로컬 commit.
+
+실행 기록(2026-10-07~08): 첫 시도는 `os-mutation-gate`(firewall 규칙, Event Log source, LAN listener)가 승인 범위 밖이라 실행 전에 멈췄고(`approval-required-mutation`), 사용자 추가 승인 `1`(`c2a842f`) 뒤 다시 시작했다. host-inputs 입력을 commit(`b51b8cf`)하고 `train-host-inputs --kind fullgate-manifest --write`로 manifest를 만들었다(`sha256 de6e0002…`, LAN prefix는 직전 manifest artifact에서 읽어 실행 환경 변수로만 넘김). pair가 남긴 clean `0.42.92`(`+e250950`) 위에서 supervisor `-DryRun -AllowHostMutation`(두 단계 planned) 뒤 `2026-10-07T15:01:01Z`~`15:04:57Z` 실행, `ok=true`, `status=completed`. step: service-msi-hyperv exit `0`(시도 `1`, `224.1`초), os-mutation exit `0`(`11.1`초). 사후 검사: 설치본 Host/CLI `+b51b8cf` == gate build(clean HEAD `b51b8cf`, product source는 `ad8b5c2`와 같고 그 뒤는 문서뿐), 같은 version ARP `{7D82F2ED-575E-41B2-89E8-BE2B51976E4C}` `0.42.92` 1개, PureCVisor firewall 규칙 `0`, service Running/Automatic, Web `200`, 보존 VM Off. artifact `artifacts/batch-runs/full-admin-host-mutation-gate-20261007-04292`.
 
 ## Task 5: installed current-card
 
