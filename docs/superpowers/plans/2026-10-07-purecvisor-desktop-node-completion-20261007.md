@@ -119,6 +119,8 @@
 
 판정 기록(2026-10-08): Task 12 PR #64 merge `1b0b19f`(main push Development Gates `37646608396`, Public Boundary `37646608390` success) 뒤 clean `main`에서 `pcvverify completion`(`artifacts/completion/20261008/result.json`): `complete=false met=5/7 gaps=8` exit `1`. train `0.42.92` 승격으로 C2가 충족됐다(current·operational `0.42.92-admin-smoke`, train `promoted`, queue `0`). 남은 갭은 `C5-risk-ubuntu-26-runner`(`deadline-wait` 2026-10-19, Task 10이 덮음)와 `C7-BL-0001`~`0007`(`user-decision`)이다. 정책 안 갭이 Task 10이 덮는 `deadline-wait`뿐이므로 Global Constraints대로 새 campaign을 열지 않고 `deadline-wait`로 멈춘다. backlog 분류 일곱 건은 `next_approval_required`에 둔다.
 
+이관(2026-10-08): 사용자 승인 `1,2,3,4,5,6,7`로 backlog `BL-0001`~`0007`을 `counts`로 분류했다. 남은 Task 10·11은 미래 `not_before` task뿐이어서 carry-over로 이 campaign을 닫고 `completion-backlog-20261008`(plan `docs/superpowers/plans/2026-10-08-purecvisor-desktop-node-completion-backlog.md`) Task 14·15로 옮겼다.
+
 ## Nonclaims
 
 - train `0.42.92`가 Lane 3까지 PASS해야 operational current가 바뀐다. FAIL이면 `0.42.91-admin-smoke` 그대로다.

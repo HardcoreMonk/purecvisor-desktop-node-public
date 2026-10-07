@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "contract": "pcv-active-campaign-v1",
-  "status": "open",
+  "status": "closed",
   "id": "completion-20261007",
   "intent": "project-completion-gaps",
   "working_authority": "source_head",
@@ -13,7 +13,7 @@
   ],
   "mutation_allowed": true,
   "current_write_allowed": true,
-  "next_step": "Stopped with deadline-wait on 2026-10-08: judgment on main 1b0b19f is 5/7 (C5 deadline 2026-10-19 covered by Task 10, C7 seven undecided backlog rows). Run Task 10 and Task 11 on or after 2026-10-19; backlog classification is in next_approval_required.",
+  "next_step": "Closed by carry-over on 2026-10-08 after the user approved \"1,2,3,4,5,6,7\" (backlog BL-0001 to BL-0007 counted): Tasks 10 and 11 move to completion-backlog-20261008 Tasks 14 and 15. Train 0.42.92 promoted (PR #62, #63), policy updated (PR #64), judgment 5/7 (PR #65).",
   "plan": "docs/superpowers/plans/2026-10-07-purecvisor-desktop-node-completion-20261007.md",
   "task_queue": [
     "Task 0",
@@ -41,7 +41,7 @@
     "Task 10": "2026-10-19",
     "Task 11": "2026-10-19"
   },
-  "next_task": "Task 10",
+  "next_task": null,
   "completed_tasks": [
     "Task 0",
     "Task 1",
@@ -71,15 +71,7 @@
       "C7-BL-0003"
     ]
   },
-  "next_approval_required": [
-    "BL-0001을 counts로 분류하고 새 설계를 승인한다: vm.create reconcile 지문에 디스크·ISO·switch 연결을 넣는 설계와 구현(Lane 1, push, PR, green CI 뒤 merge, product payload면 다음 train queue 행, host mutation 없음)",
-    "BL-0002를 counts로 분류한다: QoS readback mutation_supported: false 원인 조사와 수정(Lane 1, push, PR, green CI 뒤 merge, 다음 train queue 행, host mutation 없음)",
-    "BL-0003을 counts로 분류한다: VerificationExecutorTests 타이밍 시험 안정화(Lane 1, push, PR, green CI 뒤 merge, host mutation 없음)",
-    "BL-0004를 counts로 분류한다: train-facts fullgate와 train-host-inputs current-card의 순환 제거(Lane 1, push, PR, green CI 뒤 merge, host mutation 없음)",
-    "BL-0005를 counts로 분류하고 새 설계를 승인한다: 단일 PR train path check가 Lane 3 pin(config spec 3개, Delivery verifier 3개, CurrentEvidenceVerifierTests)을 허용하도록 pcv-single-pr-train 개정과 구현(Lane 1, push, PR, green CI 뒤 merge, host mutation 없음)",
-    "BL-0006을 counts로 분류한다: pcvverify completion C2가 operational 뒤 running train을 미충족으로 보도록 수정(Lane 1, push, PR, green CI 뒤 merge, host mutation 없음)",
-    "BL-0007을 counts로 분류한다: DesktopNodeHttpTransportContractTests raw HTTP 시한 안정화(Lane 1, push, PR, green CI 뒤 merge, host mutation 없음)"
-  ],
+  "next_approval_required": [],
   "stop_on": [
     "same-cause-fail-3",
     "budget",
@@ -93,5 +85,9 @@
     "no-progress"
   ],
   "out_of_scope_is_not_next_step": true,
-  "closed_predecessor": "completion-autopilot-20261007"
+  "closed_predecessor": "completion-autopilot-20261007",
+  "carried_tasks": {
+    "Task 10": "completion-backlog-20261008",
+    "Task 11": "completion-backlog-20261008"
+  }
 }
