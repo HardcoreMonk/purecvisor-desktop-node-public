@@ -13,7 +13,7 @@ internal sealed class DevelopmentPolicyContractVerifier
     internal const string SpecPath = "config/pcv-development-policy-contract-spec-v1.json";
 
     private const string ExpectedSpecSha256 =
-        "59bf0d405f13d8e137399b1472ba1cfcd0617687f2307d72bafd81969b77a9ba";
+        "ae9dfa7d37a20b8fe752896fd79fbe188246493775a716f00886a505a62ef666";
 
     private static readonly string[] ExpectedKeys =
     [

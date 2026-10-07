@@ -34,10 +34,10 @@ latest_manual_admin_package_pair: `0.42.91-admin-smoke -> 0.42.92-admin-smoke`
 latest_manual_admin_descriptor: `manual-admin-campaign-20261007-04291-04292-closed`
 token_rotation_evidence: `docs/ga-ready/evidence/installed-token-rotation-smoke-2026-08-09-04272.md`
 token_rotation_status: `carry-forward-no-token-payload-change-after-04272`
-promotion_ledger_status: `not-promoted`
+promotion_ledger_status: `promoted-current`
 installed_status: `installed_non_promoted_candidate`
-canonical_current_evidence: `0.42.91-admin-smoke`
-canonical_current_changed: `false`
+canonical_current_evidence: `0.42.92-admin-smoke`
+canonical_current_changed: `true`
 public_trusted_signing: `not-claimed`
 external_stable_publication: `not-claimed`
 

@@ -62,6 +62,18 @@
       "needs_design": true,
       "status": "open",
       "closed_by": null
+    },
+    {
+      "id": "BL-0006",
+      "found_on": "2026-10-08",
+      "source": "docs/superpowers/plans/2026-10-07-purecvisor-desktop-node-completion-20261007.md Task 8; src/DesktopNode.Verification/Completion/ProjectCompletionEvaluator.cs C2",
+      "summary": "pcvverify completion의 C2는 operational_current train과 queue만 본다. 그 뒤에 running train(carriages가 아직 승격 전)이 있어도 충족으로 판정한다. PR A merge와 Lane 3 사이의 main에서 C2가 잘못 충족된다",
+      "classification": "undecided",
+      "basis": null,
+      "out_of_scope_ref": null,
+      "needs_design": false,
+      "status": "open",
+      "closed_by": null
     }
   ]
 }
