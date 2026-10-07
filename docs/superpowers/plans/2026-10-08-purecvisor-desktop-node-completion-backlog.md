@@ -36,7 +36,10 @@ ADR-0016 standing approval(`pcv-it-` 접두사 VM 생성·삭제)은 그대로 �
 
 ## Task 1: BL-0006 판정기 C2
 
-- [ ] `ProjectCompletionEvaluator` C2가 `operational_current` 뒤의 train 중 `status≠promoted`인 것이 있으면 미충족과 `train-departure` 갭(`C2-train-running`, 그 version)을 내게 한다. fixture 시험을 더한다. 검증: Verification.Tests, `git diff --check`. `BL-0006` 닫기. 로컬 commit.
+- [x] `ProjectCompletionEvaluator` C2가 `operational_current` 뒤의 train 중 `status≠promoted`인 것이 있으면 미충족과 `train-departure` 갭(`C2-train-running`, 그 version)을 내게 한다. fixture 시험을 더한다. 검증: Verification.Tests, `git diff --check`. `BL-0006` 닫기. 로컬 commit.
+
+
+실행 기록(2026-10-08): `ProjectCompletionEvaluator` C2가 `operational_current` train 뒤에 `status≠promoted`인 train을 찾아 미충족과 `train-departure` 갭 `C2-train-running-<version>`(lane `2`, refs `train:<version>`)을 내고, detail에 `unfinished_trains=<n>`을 더했다. 시험 `TrainDepartedAfterTheOperationalOneKeepsC2Open`(`running`, `stopped`) `2`개, completion 시험 `27/27`. `BL-0006` 닫음.
 
 ## Task 2: BL-0004 train 도구 순환
 

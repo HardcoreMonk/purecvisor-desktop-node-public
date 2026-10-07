@@ -140,10 +140,24 @@ internal static class ProjectCompletionEvaluator
         var current = String(Object(inputs.CurrentEvidence, "current", "current-evidence"), "version", "current-evidence.current");
         var operational = String(inputs.ReleaseTrain, "operational_current", "release-train");
         var queue = Array(inputs.ReleaseTrain, "queue", "release-train");
-        var train = Array(inputs.ReleaseTrain, "trains", "release-train")
-            .OfType<JsonObject>()
-            .LastOrDefault(row => row["version"]?.GetValue<string>() == operational);
-        var trainStatus = train?["status"]?.GetValue<string>() ?? "missing";
+        var trains = Array(inputs.ReleaseTrain, "trains", "release-train").OfType<JsonObject>().ToList();
+        var operationalIndex = trains.FindLastIndex(row => row["version"]?.GetValue<string>() == operational);
+        var trainStatus = operationalIndex < 0 ? "missing" : trains[operationalIndex]["status"]?.GetValue<string>() ?? "missing";
+
+        // A train that departed after the operational one but is not promoted still carries unreleased payload (BL-0006).
+        var unfinished = trains
+            .Skip(operationalIndex + 1)
+            .Where(row => row["status"]?.GetValue<string>() != "promoted")
+            .ToList();
+        foreach (var row in unfinished)
+        {
+            var version = String(row, "version", "release-train.trains");
+            var status = row["status"]?.GetValue<string>() ?? "missing";
+            gaps.Add(new CompletionGap(
+                $"C2-train-running-{version}", "C2", "train-departure", "2",
+                $"train {version} departed after {operational} and is {status}; finish or re-depart it",
+                [$"train:{version}"], null));
+        }
 
         if (current != operational)
         {
@@ -177,9 +191,10 @@ internal static class ProjectCompletionEvaluator
                 null));
         }
 
-        var met = current == operational && trainStatus == "promoted" && queue.Count == 0;
+        var met = current == operational && trainStatus == "promoted" && queue.Count == 0 && unfinished.Count == 0;
         return new CompletionCondition(
-            "C2", met, $"current={current}, operational_current={operational}, train={trainStatus}, queue={queue.Count}");
+            "C2", met,
+            $"current={current}, operational_current={operational}, train={trainStatus}, queue={queue.Count}, unfinished_trains={unfinished.Count}");
     }
 
     private static CompletionCondition EvaluateC3(ProjectCompletionInputs inputs, List<CompletionGap> gaps)
