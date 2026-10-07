@@ -109,10 +109,12 @@
 | `lane1-fix` | 예 | 0, 1 | 없음 | 아니요 | 예, green CI 뒤 merge |
 | `deadline-wait` | 예 | 0, 1 | 없음 | 아니요 | 예, green CI 뒤 merge |
 | `ci-wait` | 예 | 0 | 없음 | 아니요 | 아니요 |
-| `train-departure` | 예 | 0, 1, 2, 3 | train 표준 범위: MSI 설치·repair·제거·`REMOVE_DATA`, service, pair 여섯 bucket, fullgate route parity VM, probe VM 생성·삭제 | 예 | 예, green CI 뒤 merge |
+| `train-departure` | 예 | 0, 1, 2, 3 | train 표준 범위: MSI 설치·repair·제거·`REMOVE_DATA`, service, pair 여섯 bucket, fullgate route parity VM, fullgate `os-mutation-gate`(firewall 규칙, Event Log source, LAN listener, 2026-10-08 추가 승인), probe VM 생성·삭제 | 예 | 예, green CI 뒤 merge |
 | `lane2-probe` | 예 | 0, 1, 2 | probe VM 생성·삭제, service 중지·시작 | 아니요 | 예, green CI 뒤 merge |
 | `new-design` | 아니요 | | | | |
 | `user-decision` | 아니요 | | | | |
+
+2026-10-08 추가 승인(`completion-20261007` Task 4 정지 보고의 1)으로 `os-mutation-gate`를 `train-departure` 범위에 더했다. LAN prefix는 실행 값으로만 쓰고 저장소에 남기지 않으며, 끝 상태는 PureCVisor firewall 규칙 `0`이다.
 
 항상 멈추는 조건: FAIL(train 정차 포함), `new-design`, backlog `undecided` 행의 분류, 새 `Add-Type`/`P/Invoke`/native ACL/installer
 handoff, 영구 범위 밖 항목, 보존 VM `pcv-guest-installed-04253-r1` 변경, 정책에 없는 갭 종류.

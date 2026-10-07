@@ -13,7 +13,7 @@
   ],
   "mutation_allowed": true,
   "current_write_allowed": true,
-  "next_step": "Run Task 12 from docs/superpowers/plans/2026-10-07-purecvisor-desktop-node-completion-20261007.md after the PR B merge; Tasks 10 and 11 not before 2026-10-19.",
+  "next_step": "Tasks 10 and 11 are not before 2026-10-19; run Task 10 (C5 runner check) and then Task 11 (completion judgment) on or after that date.",
   "plan": "docs/superpowers/plans/2026-10-07-purecvisor-desktop-node-completion-20261007.md",
   "task_queue": [
     "Task 0",
@@ -41,7 +41,7 @@
     "Task 10": "2026-10-19",
     "Task 11": "2026-10-19"
   },
-  "next_task": "Task 12",
+  "next_task": "Task 10",
   "completed_tasks": [
     "Task 0",
     "Task 1",
@@ -52,7 +52,8 @@
     "Task 6",
     "Task 7",
     "Task 8",
-    "Task 9"
+    "Task 9",
+    "Task 12"
   ],
   "commit_policy": "local-commit-per-task",
   "push_allowed": true,

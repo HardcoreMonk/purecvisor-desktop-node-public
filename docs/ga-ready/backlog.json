@@ -74,6 +74,18 @@
       "needs_design": false,
       "status": "open",
       "closed_by": null
+    },
+    {
+      "id": "BL-0007",
+      "found_on": "2026-10-08",
+      "source": "docs/superpowers/plans/2026-10-07-purecvisor-desktop-node-completion-20261007.md Task 9 (PR #63 run 37644663040 attempt 1)",
+      "summary": "DesktopNodeHttpTransportContractTests.RawTargetProjectionAndRepresentative404And405ResponsesMatchFixture가 GitHub runner에서 raw HTTP 요청 15초 시한을 넘겨 TaskCanceledException으로 실패했다. 같은 commit의 로컬 clean HEAD와 재실행 attempt 2는 pass다",
+      "classification": "undecided",
+      "basis": null,
+      "out_of_scope_ref": null,
+      "needs_design": false,
+      "status": "open",
+      "closed_by": null
     }
   ]
 }

@@ -113,7 +113,9 @@
 
 ## Task 12: 정책 파일 갱신
 
-- [ ] Task 9 merge 뒤 `origin/main`에서 branch를 만들어 `config/completion-autopilot-policy.json` `train-departure` `mutation_scope`에 `fullgate os-mutation-gate (firewall rule, Event Log source, LAN listener)`를 더하고 `approval_locator`에 추가 승인 문장을 붙인다. 설계 `pcv-completion-autopilot-v1` §2.5 표에 같은 줄을 더한다. 검증: `PcvProjectCompletionInputsContractTests`, Delivery, `git diff --check`. push, PR, green CI 뒤 merge.
+- [x] Task 9 merge 뒤 `origin/main`에서 branch를 만들어 `config/completion-autopilot-policy.json` `train-departure` `mutation_scope`에 `fullgate os-mutation-gate (firewall rule, Event Log source, LAN listener)`를 더하고 `approval_locator`에 추가 승인 문장을 붙인다. 설계 `pcv-completion-autopilot-v1` §2.5 표에 같은 줄을 더한다. 검증: `PcvProjectCompletionInputsContractTests`, Delivery, `git diff --check`. push, PR, green CI 뒤 merge.
+
+실행 기록(2026-10-08): Task 9 PR B #63(head `4246880`)은 첫 CI에서 `dotnet` shard의 `DesktopNodeHttpTransportContractTests` 하나가 raw HTTP 15초 시한 초과(`TaskCanceledException`, Host `215/216`)로 실패했다. PR B는 Host 코드를 바꾸지 않았고 로컬 clean HEAD는 `216/216`이어서 환경 원인 일시 실패 규칙대로 실패 job만 한 번 다시 돌렸고 attempt 2는 success다(backlog `BL-0007`). Required check 다섯 개 pass 뒤 head 고정 merge `864ea01`, merge 뒤 main push Development Gates `37645518002`·Public Boundary `37645517955` success. operational current는 `0.42.92-admin-smoke`다. `origin/main`에서 `lane1/completion-policy-os-mutation-20261008`을 만들어 정책 `train-departure` `mutation_scope`에 `fullgate os-mutation-gate (firewall rule, Event Log source, LAN listener)`를 더하고 `approval_locator`에 2026-10-08 승인 문장을 붙였다. 설계 §2.5 표와 추가 승인 문단도 고쳤다. 이 기록 commit 뒤 push, PR, green CI 뒤 merge한다.
 
 ## Nonclaims
 
