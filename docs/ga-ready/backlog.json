@@ -50,6 +50,18 @@
       "needs_design": false,
       "status": "open",
       "closed_by": null
+    },
+    {
+      "id": "BL-0005",
+      "found_on": "2026-10-08",
+      "source": "docs/superpowers/plans/2026-10-07-purecvisor-desktop-node-completion-20261007.md Task 8; docs/superpowers/specs/2026-10-06-purecvisor-desktop-node-single-pr-train-design.md §3.1",
+      "summary": "단일 PR train의 train-path-check는 payload commit 뒤 src/·config/ 변경을 금지하지만 Lane 3 승격은 config spec pin 3개, Delivery verifier spec SHA 상수 3개, CurrentEvidenceVerifierTests version 줄을 바꾼다. 첫 단일 PR train 0.42.92가 Lane 3에서 막혀 두 PR 방식으로 마쳤다",
+      "classification": "undecided",
+      "basis": null,
+      "out_of_scope_ref": null,
+      "needs_design": true,
+      "status": "open",
+      "closed_by": null
     }
   ]
 }

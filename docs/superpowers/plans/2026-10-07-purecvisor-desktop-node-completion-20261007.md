@@ -22,6 +22,8 @@
 
 추가 승인(2026-10-07): `1` (Task 4 정지 보고의 다음 승인 1). 정책 `train-departure` 범위에 fullgate `os-mutation-gate`를 더하고 Task 4부터 다시 진행한다. 이 단계는 PureCVisor firewall 규칙 추가·삭제, Event Log source 등록, LAN listener를 다룬다. LAN prefix는 직전 manifest(`artifacts/batch-manifests/full-admin-host-mutation-gate-20261006-04291.json`)의 값을 실행 때 환경 변수로만 쓰고 저장소에 남기지 않는다. 끝 상태는 PureCVisor firewall 규칙 `0`이다. 정책 파일은 `config/` 아래라 단일 PR train의 `train-path-check` 범위에 걸리므로 train merge 뒤 Task 12에서 고친다.
 
+추가 승인 2(2026-10-08): `1` (Task 8 정지 보고의 다음 승인 1). 단일 PR train의 path check가 Lane 3의 `config/`·`src/` pin 변경과 충돌해(`new-design-required`, backlog `BL-0005`) 이 train은 두 PR 방식(0.42.89~0.42.91과 같음)으로 마친다. PR A는 Task 0~7 branch(evidence, docs)를 push, PR, green CI 뒤 merge한다. PR B는 `origin/main`에서 만든 Lane 3 branch로, PR A merge의 main push run을 `main-push` 템플릿으로 인용하고 pin 갱신을 포함해 push, PR, green CI 뒤 merge한다. host mutation은 없다.
+
 출발은 정기 출발일(직전 출발 2026-10-06의 7일 뒤) 전이다. 2026-10-07 승인 4를 고를 때 사용자는 "이번 run에서 0.42.92 train까지 이어 갈 수 있다"는 설명을 받고 그 선택지를 골랐다. 그래서 이 출발은 사용자 요청에 의한 조기 출발로 본다. 정차하면 이 campaign의 train 권한은 끝난다.
 
 ## 적재 변경
@@ -91,11 +93,11 @@
 
 ## Task 8: Lane 3
 
-- [ ] functional carry-forward, consume(`…-closed` descriptor와 consume manifest), payload main push 문서(`main-push-payload`, `train-path-check --payload ad8b5c2 --head HEAD`), current-card `promoted-current`. `current-evidence.json`, `lane3-spec` 입력과 spec `04292`, 문서 도구 dry-run·`-Apply`·`-Check`, `release-train.json` 승격(`operational_current`, train `status=promoted`, queue 빈 목록). 로컬 commit.
+- [ ] (추가 승인 2) 먼저 PR A(이 branch)를 clean HEAD 종료 검증, push, PR, green CI 뒤 merge하고 merge의 main push run을 기다린다. 그 뒤 `origin/main`에서 `lane3/04292-promotion-20261008`을 만들어 functional carry-forward, consume(`…-closed` descriptor와 consume manifest), main push 문서(`main-push`, PR A merge의 run), current-card `promoted-current`. `current-evidence.json`, `lane3-spec` 입력과 spec `04292`, 문서 도구 dry-run·`-Apply`·`-Check`, `release-train.json` 승격(`operational_current`, train `status=promoted`, queue 빈 목록). 로컬 commit.
 
-## Task 9: 종료와 train PR merge
+## Task 9: 종료와 Lane 3 PR(PR B) merge
 
-- [ ] clean HEAD 종료 검증, push, PR, green CI 뒤 merge(merge 직전 base가 `origin/main`인지 확인). merge 뒤 main push run(Development Gates, Public Boundary)을 기다린다. red면 revert PR을 열고 멈춘다.
+- [ ] clean HEAD 종료 검증, push, PR, green CI 뒤 merge. merge 뒤 main push run(Development Gates, Public Boundary)을 기다린다. red면 revert PR을 열고 멈춘다.
 
 ## Task 10: C5 runner 확인 (2026-10-19 이후)
 
