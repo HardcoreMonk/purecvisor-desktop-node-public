@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "contract": "pcv-active-campaign-v1",
-  "status": "open",
+  "status": "closed",
   "id": "completion-autopilot-20261007",
   "intent": "project-completion-autopilot",
   "working_authority": "source_head",
@@ -11,7 +11,7 @@
   ],
   "mutation_allowed": false,
   "current_write_allowed": false,
-  "next_step": "Task 9 is not before 2026-10-19; carry it over into the completion-mode campaign opened from the first judgment (pcv-completion-autopilot-v1 §2.7).",
+  "next_step": "Closed by carry-over on 2026-10-07: Tasks 1-8 done (PR #60 ebecd74, PR #61 ad8b5c2); first judgment 4/7. Task 9 moved to completion-20261007 Task 10.",
   "plan": "docs/superpowers/plans/2026-10-07-purecvisor-desktop-node-completion-autopilot.md",
   "task_queue": [
     "Task 1",
@@ -28,7 +28,7 @@
   "task_not_before": {
     "Task 9": "2026-10-19"
   },
-  "next_task": "Task 9",
+  "next_task": null,
   "completed_tasks": [
     "Task 1",
     "Task 2",
@@ -58,5 +58,8 @@
     "no-progress"
   ],
   "out_of_scope_is_not_next_step": true,
-  "closed_predecessor": "process-followups-20261007"
+  "closed_predecessor": "process-followups-20261007",
+  "carried_tasks": {
+    "Task 9": "completion-20261007"
+  }
 }
