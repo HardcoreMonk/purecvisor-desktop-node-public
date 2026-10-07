@@ -13,7 +13,8 @@
     "burn": "docs/ga-ready/evidence/burn-bootstrapper-lifecycle-smoke-2026-10-07-04292.md",
     "msix": "docs/ga-ready/evidence/msix-package-lifecycle-smoke-2026-10-07-04291-04292.md",
     "pair-descriptor": "docs/ga-ready/evidence/manual-admin-campaign-descriptor-2026-10-07-04291-04292.md",
-    "fullgate": "docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-10-07-04292-hostmutation.md"
+    "fullgate": "docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-10-07-04292-hostmutation.md",
+    "current-card": "docs/ga-ready/evidence/installed-operator-surface-current-card-2026-10-07-04292.md"
   },
   "sources": {
     "package_root": "artifacts/admin-smoke-package-20261007-04292",
@@ -35,6 +36,9 @@
     "fullgate": {
       "run_context": "gate는 branch `train/04292-20261007`의 clean HEAD `b51b8cf`에서 빌드했다(product source는 payload `ad8b5c2`와 같고, 그 뒤 commit은 문서뿐이다). manifest는 `pcvverify train-host-inputs --kind fullgate-manifest`로 만들었다. supervisor `-DryRun -AllowHostMutation` 확인 뒤 `2026-10-07T15:01:01Z`부터 약 236초 실행했다. `os-mutation-gate`는 2026-10-07 사용자 추가 승인 `1` 뒤 실행했다.",
       "vm_summary": "`pcv-guest-installed-04253-r1` Off만 남음"
+    },
+    "current-card": {
+      "script_note": "capture 스크립트는 `pcvverify train-host-inputs --kind current-card`가 train facts에서 렌더했다. fullgate 문서가 current-card summary를 요구해 순환하므로, 스크립트가 읽는 fullgate 값 다섯 개를 fullgate artifact에서 계산해 facts에 잠시 넣고 렌더한 뒤 되돌렸다(나중에 렌더한 fullgate 값과 같음, backlog `BL-0004`). root 밖에서 실행했고 읽기만 한다."
     }
   }
 }

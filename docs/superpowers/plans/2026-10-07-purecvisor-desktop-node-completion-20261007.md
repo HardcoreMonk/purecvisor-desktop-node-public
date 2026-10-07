@@ -85,7 +85,9 @@
 
 ## Task 7: 문서
 
-- [ ] `train-facts`에 fullgate, current-card 문서를 더해 렌더한다. probe evidence와 `FEATURE_IMPLEMENTATION_LEDGER` 비후보 관측 행을 쓴다. 로컬 commit.
+- [x] `train-facts`에 fullgate, current-card 문서를 더해 렌더한다. probe evidence와 `FEATURE_IMPLEMENTATION_LEDGER` 비후보 관측 행을 쓴다. 로컬 commit.
+
+실행 기록(2026-10-08): fullgate 문서는 Task 5에서 렌더했다. current-card는 card root에 `capture-current-card.ps1`(생성 스크립트 사본)이 있어야 해서 그 이름으로 복사한 뒤 렌더했다(생성 값 `31`, 서술 `1`, `written`). facts 문서 `9`개 모두 `--check` `current`. probe evidence `lane2-vm-create-residue-actual-vm-2026-10-07-04292`를 손으로 쓰고 `FEATURE_IMPLEMENTATION_LEDGER` 비후보 관측 절에 `pcv.vm.create` 행을 더했다. TrainEvidenceGolden `7/7`, Delivery `775/775`.
 
 ## Task 8: Lane 3
 
