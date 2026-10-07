@@ -65,7 +65,9 @@ ADR-0016 standing approval(`pcv-it-` 접두사 VM 생성·삭제)은 철회 지�
 
 ## Task 6: 종료 검증과 merge (1차)
 
-- [ ] clean HEAD 종료 검증(`pcv-ship`), push, PR, green CI 뒤 merge, 로컬 `main` 동기화. tooling·docs PR이므로 `release-train.json` `queue` 행은 더하지 않는다. merge commit은 Task 8 기록에 적는다.
+- [x] clean HEAD 종료 검증(`pcv-ship`), push, PR, green CI 뒤 merge, 로컬 `main` 동기화. tooling·docs PR이므로 `release-train.json` `queue` 행은 더하지 않는다. merge commit은 Task 8 기록에 적는다.
+
+실행 기록(2026-10-07): clean HEAD `d77c68d`에서 `git diff --check origin/main...HEAD` 통과, `dotnet test src/DesktopNode.sln -c Release` 실패 `0`(Service `11`, Contracts `200`, Cli `183`, Runtime `129`, Delivery `775`, HyperV `271`, Host `216`, Api `490`, Verification `653`), `49`초. tooling·docs PR이라 `release-train.json` `queue` 행은 더하지 않는다. 이 기록 commit 뒤 push, PR, green CI 뒤 merge한다. PR 번호와 merge commit은 Task 8 기록에 적는다.
 
 ## Task 7: private skill 갱신
 
