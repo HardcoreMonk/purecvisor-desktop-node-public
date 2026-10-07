@@ -23,6 +23,8 @@
 | 7 | `BL-0007` counts: `DesktopNodeHttpTransportContractTests` raw HTTP 시한 안정화. Lane 1, push, PR, green CI 뒤 merge |
 | 권한 | Lane 0/1, task마다 로컬 commit, push, PR, green CI 뒤 merge. host mutation과 Lane 3 쓰기는 없다. Task 13의 연쇄로 열리는 train campaign은 정책 `config/completion-autopilot-policy.json`(2026-10-07 승인 4, 2026-10-08 os-mutation 추가)을 따른다 |
 
+추가 승인(2026-10-08): `1` (Task 8 정지 보고의 1). main push `dotnet` job을 한 번 더 재실행하고 green이면 Task 9부터 계속한다. runner 시간 의존 시험 두 개를 `BL-0008`·`BL-0009`로 등록해 `counts`로 두고 Lane 1에서 안정화한다(Task 16·17, PR 3에 포함, push, PR, green CI 뒤 merge, host mutation 없음).
+
 ADR-0016 standing approval(`pcv-it-` 접두사 VM 생성·삭제)은 그대로 옮긴다. `BL-0001` 구현에서 실제 WMI 확인이 필요하면 그 단계만 쓴다.
 
 ## Global Constraints
@@ -101,6 +103,14 @@ ADR-0016 standing approval(`pcv-it-` 접두사 VM 생성·삭제)은 그대로 �
 ## Task 11: BL-0001 구현
 
 - [ ] 설계대로 Api reconcile handler와 필요한 readback을 고치고 시험을 더한다. product payload이므로 `queue` 행(Lane 2 probe 기능군 `vm.create` reconcile)을 더한다. 검증: Api.Tests, HyperV.Tests, `git diff --check`. `BL-0001` 닫기. 로컬 commit.
+
+## Task 16: BL-0008 cancellation bridge 시험
+
+- [ ] `CallbackCanWaitForDisposeWithoutDeadlockAndLaterSignalsAreNoOps`의 dispose 대기(2초)를 runner 속도에 기대지 않게 고친다(교착 없음 판정은 유지). 검증: Verification.Tests. `BL-0008` 닫기. 로컬 commit.
+
+## Task 17: BL-0009 loopback bootstrap 브라우저 시험
+
+- [ ] `ChromiumOpensLoopbackConsoleWithoutServiceTokenPaste`의 bootstrap 대기 시한을 runner 속도에 기대지 않게 고친다(판정 조건은 유지). 검증: Host.Tests. `BL-0009` 닫기. 로컬 commit.
 
 ## Task 12: 종료 검증과 merge (PR 3)
 
