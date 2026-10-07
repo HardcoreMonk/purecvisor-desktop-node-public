@@ -85,6 +85,8 @@ ADR-0016 standing approval(`pcv-it-` 접두사 VM 생성·삭제)은 철회 지�
 
 - [ ] `not_before` 2026-10-19. 이관 전 `process-followups-20261007` Task 13이다. Ubuntu 26 runner의 첫 `main` Development Gates와 Public Boundary run이 green이면 criteria 위험 행을 닫고 C5 충족을 기록한다. 프로젝트 완료 판정은 `pcvverify completion` exit `0`일 때만 적는다. 실패하면 `ubuntu-24.04` pin을 판단해 보고하고 멈춘다. push, PR, green CI 뒤 merge.
 
+이관(2026-10-07): Task 8 PR #61 merge(`ad8b5c2`) 뒤 남은 task가 미래 `not_before`인 이 task뿐이어서 carry-over했다. clean `main` `ad8b5c2` 판정(`artifacts/completion/20261007-r3/result.json`): `met=4/7 gaps=5`(정책 안 `C2-queue` `train-departure`·`C5-risk-ubuntu-26-runner` `deadline-wait`, 정책 밖 `C7-BL-0001`~`0003` `user-decision`). 정책 안 갭으로 completion 모드 campaign `completion-20261007`(plan `docs/superpowers/plans/2026-10-07-purecvisor-desktop-node-completion-20261007.md`)을 열고 이 task를 그 Task 10으로 옮겼다.
+
 ## Nonclaims
 
 - operational current는 `0.42.91-admin-smoke` 그대로다. 이 campaign에는 Lane 3와 `current-evidence.json` 쓰기가 없다.

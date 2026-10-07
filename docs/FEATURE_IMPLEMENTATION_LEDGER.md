@@ -207,6 +207,7 @@ feature promotion 결정과 동일하지 않다. 현재 feature promotion은
 | `pcv.vm.clone` | `vm.template.lock` (lock, unlock, 잠긴 VM mutation 거절) | `0.42.91-admin-smoke` | `lane2-completion-inventory-template-lock-actual-vm-2026-10-06-04291` |
 | `pcv.vm.console-handoff` | `console.novnc-target.preview`, `.set`, `.clear` | `0.42.91-admin-smoke` | `lane2-completion-novnc-target-2026-10-06-04291` |
 | `pcv.job.lifecycle` | `job.reconcile` (끊긴 `vm.create`, `vm.restart`, `vm.shutdown`, `vm.qos.storage.set`, `vm.qos.network.set`의 `not-applied`) | `0.42.91-admin-smoke` | `lane2-completion-family-reconcile-actual-vm-2026-10-06-04291` |
+| `pcv.vm.create` | `vm.create` (끊긴 create 잔여물 표식, 같은 이름 create 회수, 표식 없는 폴더 거절), `job.reconcile` not-applied 잔여물 안내 | `0.42.92-admin-smoke` | `lane2-vm-create-residue-actual-vm-2026-10-07-04292` |
 
 ## 현재 blocker
 

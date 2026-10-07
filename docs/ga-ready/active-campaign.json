@@ -2,18 +2,21 @@
   "schema_version": 1,
   "contract": "pcv-active-campaign-v1",
   "status": "open",
-  "id": "completion-autopilot-20261007",
-  "intent": "project-completion-autopilot",
+  "id": "completion-20261007",
+  "intent": "project-completion-gaps",
   "working_authority": "source_head",
   "allowed_lanes": [
     "0",
-    "1"
+    "1",
+    "2",
+    "3"
   ],
-  "mutation_allowed": false,
-  "current_write_allowed": false,
-  "next_step": "Task 9 is not before 2026-10-19; carry it over into the completion-mode campaign opened from the first judgment (pcv-completion-autopilot-v1 §2.7).",
-  "plan": "docs/superpowers/plans/2026-10-07-purecvisor-desktop-node-completion-autopilot.md",
+  "mutation_allowed": true,
+  "current_write_allowed": true,
+  "next_step": "Run Task 8 from docs/superpowers/plans/2026-10-07-purecvisor-desktop-node-completion-20261007.md: ship PR A, then Lane 3 as PR B; Tasks 10 and 11 not before 2026-10-19; Task 12 after the PR B merge.",
+  "plan": "docs/superpowers/plans/2026-10-07-purecvisor-desktop-node-completion-20261007.md",
   "task_queue": [
+    "Task 0",
     "Task 1",
     "Task 2",
     "Task 3",
@@ -22,29 +25,54 @@
     "Task 6",
     "Task 7",
     "Task 8",
-    "Task 9"
+    "Task 9",
+    "Task 10",
+    "Task 11",
+    "Task 12"
   ],
-  "task_lanes": {},
-  "task_not_before": {
-    "Task 9": "2026-10-19"
+  "task_lanes": {
+    "Task 2": "2",
+    "Task 4": "2",
+    "Task 5": "2",
+    "Task 6": "2",
+    "Task 8": "3"
   },
-  "next_task": "Task 9",
+  "task_not_before": {
+    "Task 10": "2026-10-19",
+    "Task 11": "2026-10-19"
+  },
+  "next_task": "Task 8",
   "completed_tasks": [
+    "Task 0",
     "Task 1",
     "Task 2",
     "Task 3",
     "Task 4",
     "Task 5",
     "Task 6",
-    "Task 7",
-    "Task 8"
+    "Task 7"
   ],
   "commit_policy": "local-commit-per-task",
   "push_allowed": true,
   "merge_policy": "after-green-ci",
-  "checkpoint_limit": 9,
-  "approval_locator": "User-Approval: 2026-09-27 campaign runner commit policy local-commit-per-task; 2026-10-07 \"1,2,3,4,5\" (1 Lane 0/1 completion definition amendment decision (C7 backlog, criteria JSON, deadline risk list moved from the audit) and pcvverify completion design, push, PR, merge after green CI; 2 Lane 1 implement the criteria JSON, the backlog with the 2 current report-only rows, pcvverify completion and tests, push, PR, merge after green CI; 3 private repository skills pcv-campaign, pcv-campaign-open and pcv-goal for completion mode, not_before and backlog writes, local commit only; 4 approve completion-autopilot-policy, clarified by the user as Lane 2/3 fully automatic: campaigns generated under the policy may run the release train standard host mutation scope (MSI install, repair, uninstall, REMOVE_DATA, service, pair six buckets, fullgate route parity VM, probe VM create and delete), Lane 3 current-evidence write, push, PR and merge after green CI, and stop on FAIL, new-design, undecided backlog rows, new Add-Type/P/Invoke/native ACL/installer handoff and permanent out-of-scope items; 5 replace process-followups-20261007 and move its Task 13 here as a not_before 2026-10-19 task); carried ADR-0016 standing approval from process-followups-20261007 item 4: standing approval limited to pcv-it- prefixed VM create and delete",
-  "next_approval_required": [],
+  "checkpoint_limit": 13,
+  "approval_locator": "User-Approval: 2026-09-27 campaign runner commit policy local-commit-per-task; User-Approval: 2026-10-07 \"1,2,3,4,5\" item 4, approve completion-autopilot-policy, clarified by the user as Lane 2/3 fully automatic: campaigns generated under the policy may run the release train standard host mutation scope (MSI install, repair, uninstall, REMOVE_DATA, service, pair six buckets, fullgate route parity VM, probe VM create and delete), Lane 3 current-evidence write, push, PR and merge after green CI, and stop on FAIL, new-design, undecided backlog rows, new Add-Type/P/Invoke/native ACL/installer handoff and permanent out-of-scope items; carried ADR-0016 standing approval from process-followups-20261007 item 4: standing approval limited to pcv-it- prefixed VM create and delete; 2026-10-07 \"1\" (completion-20261007 Task 4 stop report item 1: add fullgate os-mutation-gate (PureCVisor firewall rule add and remove, Event Log source registration, LAN listener; LAN prefix from the previous manifest as an execution value only; ending with PureCVisor firewall rules 0) to the train-departure policy scope and resume from Task 4; the policy file update follows the train merge as Task 12); 2026-10-08 \"1\" (completion-20261007 Task 8 stop report item 1: finish train 0.42.92 as two PRs, PR A the Task 0-7 evidence branch and PR B the Lane 3 promotion citing the PR A merge main push run with the main-push template and the config/src pin updates, each push, PR and merge after green CI, no host mutation; register BL-0005)",
+  "generated_from": {
+    "result": "artifacts/completion/20261007-r3/result.json",
+    "head": "ad8b5c2488568581505b8e1d2f9cdd39db23b2ff",
+    "gaps": [
+      "C2-queue",
+      "C5-risk-ubuntu-26-runner",
+      "C7-BL-0001",
+      "C7-BL-0002",
+      "C7-BL-0003"
+    ]
+  },
+  "next_approval_required": [
+    "BL-0001 분류: vm.create reconcile 지문에 장치 연결이 없는 문제를 counts(새 설계 필요: Lane 1 설계 문서, push, PR, green CI 뒤 merge, host mutation 없음) 또는 out-of-scope(hyperv-exactly-once-reconcile-completeness)로 정한다",
+    "BL-0002 분류: QoS readback mutation_supported: false를 counts(Lane 1 수정, push, PR, green CI 뒤 merge, 다음 train queue 행, host mutation 없음) 또는 out-of-scope로 정한다",
+    "BL-0003 분류: 타이밍 시험 NonCooperativeManagedRunnerCannotBlockPerSuiteDeadline의 CI 일시 실패를 counts(Lane 1 시험 안정화, push, PR, green CI 뒤 merge, host mutation 없음)로 정한다"
+  ],
   "stop_on": [
     "same-cause-fail-3",
     "budget",
@@ -58,5 +86,5 @@
     "no-progress"
   ],
   "out_of_scope_is_not_next_step": true,
-  "closed_predecessor": "process-followups-20261007"
+  "closed_predecessor": "completion-autopilot-20261007"
 }
