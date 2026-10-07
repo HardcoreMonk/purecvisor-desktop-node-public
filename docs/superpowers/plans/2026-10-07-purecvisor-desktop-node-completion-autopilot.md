@@ -77,7 +77,9 @@ ADR-0016 standing approval(`pcv-it-` 접두사 VM 생성·삭제)은 철회 지�
 
 ## Task 8: 첫 판정과 연쇄
 
-- [ ] clean `main` HEAD에서 `gh run list` 입력으로 `pcvverify completion`을 돌려 결과(조건별 판정, 갭, exit)를 기록하고 push, PR, green CI 뒤 merge한다. 그 뒤 남은 큐가 미래 `not_before` task뿐이면 설계의 carry-over로 이 campaign을 닫고, 정책 안 갭(train `0.42.92` 등)은 `pcv-campaign-open` completion 모드로 다음 campaign을 연다. `user-decision`·`new-design` 갭은 `next_approval_required`에 번호로 남긴다.
+- [x] clean `main` HEAD에서 `gh run list` 입력으로 `pcvverify completion`을 돌려 결과(조건별 판정, 갭, exit)를 기록하고 push, PR, green CI 뒤 merge한다. 그 뒤 남은 큐가 미래 `not_before` task뿐이면 설계의 carry-over로 이 campaign을 닫고, 정책 안 갭(train `0.42.92` 등)은 `pcv-campaign-open` completion 모드로 다음 campaign을 연다. `user-decision`·`new-design` 갭은 `next_approval_required`에 번호로 남긴다.
+
+실행 기록(2026-10-07): PR #60 merge commit `ebecd74`의 main push Development Gates(run `37633554390`)가 attempt 1에서 `dotnet` shard 실패였다. 실패 시험은 `VerificationExecutorTests.NonCooperativeManagedRunnerCannotBlockPerSuiteDeadline` `1`개(`TimeoutException`, Verification `652/653`)이고 이 변경과 무관한 타이밍 시험이다. 같은 코드의 PR run과 로컬 clean HEAD는 통과했다. 절차의 환경 원인 일시 실패 규칙대로 실패 job만 한 번 다시 돌렸고 attempt 2는 success다. 이 발견은 backlog `BL-0003`(`undecided`)으로 등록했다. 첫 판정(clean `main` `ebecd74`, `gh run list` 30행 `artifacts/completion/20261007-r2/main-runs.json`, 결과 `artifacts/completion/20261007-r2/result.json`): `complete=false met=4/7 gaps=4` exit `1`. 충족 C1·C3·C4·C6. 갭 `C2-queue`(`train-departure` lane `2`, `0.42.92-admin-smoke`, 기능군 `vm.create`, `pr:59`), `C5-risk-ubuntu-26-runner`(`deadline-wait`, `not_before` 2026-10-19), `C7-BL-0001`·`C7-BL-0002`(`user-decision`). 이 기록 commit 뒤 push, PR, green CI 뒤 merge한다. 그 뒤 남은 Task 9는 미래 `not_before`이므로 carry-over로 이 campaign을 닫고, 정책 안 갭(`train-departure`, `deadline-wait`)으로 completion 모드 campaign을 열며, `user-decision` 갭은 그 campaign `next_approval_required`에 둔다.
 
 ## Task 9: C5 runner 확인 (2026-10-19 이후)
 

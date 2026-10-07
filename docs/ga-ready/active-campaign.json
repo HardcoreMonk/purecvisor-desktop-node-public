@@ -11,7 +11,7 @@
   ],
   "mutation_allowed": false,
   "current_write_allowed": false,
-  "next_step": "Run Task 8 from docs/superpowers/plans/2026-10-07-purecvisor-desktop-node-completion-autopilot.md, then the queue in order; Task 9 not before 2026-10-19.",
+  "next_step": "Task 9 is not before 2026-10-19; carry it over into the completion-mode campaign opened from the first judgment (pcv-completion-autopilot-v1 §2.7).",
   "plan": "docs/superpowers/plans/2026-10-07-purecvisor-desktop-node-completion-autopilot.md",
   "task_queue": [
     "Task 1",
@@ -28,7 +28,7 @@
   "task_not_before": {
     "Task 9": "2026-10-19"
   },
-  "next_task": "Task 8",
+  "next_task": "Task 9",
   "completed_tasks": [
     "Task 1",
     "Task 2",
@@ -36,7 +36,8 @@
     "Task 4",
     "Task 5",
     "Task 6",
-    "Task 7"
+    "Task 7",
+    "Task 8"
   ],
   "commit_policy": "local-commit-per-task",
   "push_allowed": true,
