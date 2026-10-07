@@ -43,7 +43,10 @@ ADR-0016 standing approval(`pcv-it-` 접두사 VM 생성·삭제)은 그대로 �
 
 ## Task 2: BL-0004 train 도구 순환
 
-- [ ] `TrainFactsBuilder` fullgate의 current-card 검사(설치 hash, product version)를 current-card 문서 쪽으로 옮겨 fullgate facts가 current-card 없이 렌더되게 한다. 렌더 값과 golden은 바뀌지 않아야 한다. `DEVELOPMENT_PROCEDURE.md` §10의 순서 문장을 맞춘다. 검증: Verification.Tests(TrainEvidenceGolden 포함), Delivery, `git diff --check`. `BL-0004` 닫기. 로컬 commit.
+- [x] `TrainFactsBuilder` fullgate의 current-card 검사(설치 hash, product version)를 current-card 문서 쪽으로 옮겨 fullgate facts가 current-card 없이 렌더되게 한다. 렌더 값과 golden은 바뀌지 않아야 한다. `DEVELOPMENT_PROCEDURE.md` §10의 순서 문장을 맞춘다. 검증: Verification.Tests(TrainEvidenceGolden 포함), Delivery, `git diff --check`. `BL-0004` 닫기. 로컬 commit.
+
+
+실행 기록(2026-10-08): `TrainFactsBuilder` fullgate에서 current-card `summary.json` 검사(설치 Host/CLI hash, product version)를 빼고 current-card 문서로 옮겼다. current-card는 fullgate batch id의 route artifact provenance를 직접 읽어 같은 검사를 한다(실패 이유 `current-card:installed-hashes`, `current-card:installed-product-version`). 렌더 값은 바뀌지 않아 golden이 그대로다. 시험 `FullgateRendersBeforeTheCurrentCardExists`, `CurrentCardRejectsAnInstalledBuildOtherThanTheFullgateBuild`(2) `3`개, train 도구 시험 `44/44`. `DEVELOPMENT_PROCEDURE.md` §10에 복사 이름 `capture-current-card.ps1`, 렌더 순서, supervisor 결과 파일 경로를 적었다. `BL-0004` 닫음.
 
 ## Task 3: BL-0003 타이밍 시험
 

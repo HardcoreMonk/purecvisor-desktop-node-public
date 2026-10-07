@@ -429,7 +429,9 @@ campaign은 이미 받은 승인을 되묻지 않을 뿐, 없는 승인을 만�
   `artifacts/installed-operator-surface-current-card-<yyyymmdd>-<tag>.capture.ps1`을 쓴다. SHA 상수 `4`개,
   `provenance_commit`, fullgate batch는 facts `fullgate`·`package` 문서에서, `canonical_current_evidence`는 출발 때
   값을 담은 `package` 문서에서 온다. 출력이 이미 있으면 쓰지 않는다. `--plan`은 쓰지 않고 출력 경로와 SHA-256만
-  보여 준다. 스크립트는 artifact root가 있으면 멈추므로 root 밖에서 실행하고, 끝난 뒤 root에 복사해 둔다.
+  보여 준다. 스크립트는 artifact root가 있으면 멈추므로 root 밖에서 실행하고, 끝난 뒤 root에 복사해 둔다. 복사 이름은 `capture-current-card.ps1`이다. fullgate 문서는 current-card 없이 렌더되고, 설치본 Host/CLI가
+  fullgate build와 같은지는 current-card 문서가 확인한다(backlog `BL-0004`). supervisor stdout은
+  `artifacts/batch-manifests/<batch id>.result.json`(stderr는 `.stderr.txt`)에 저장해야 fullgate 문서가 읽는다.
 
       dotnet run --project src/DesktopNode.Verification -c Release -- train-host-inputs --input docs/ga-ready/trains/<version>.host-inputs.json --kind current-card --write
 
