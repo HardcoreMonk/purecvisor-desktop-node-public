@@ -71,11 +71,15 @@ ADR-0016 standing approval(`pcv-it-` 접두사 VM 생성·삭제)은 철회 지�
 
 ## Task 7: private skill 갱신
 
-- [ ] private 저장소 `.claude/skills/pcv-campaign`(`task_not_before`, backlog 쓰기, 닫을 때 `pcvverify completion`과 정책 안 연쇄, carry-over), `pcv-campaign-open`(completion 모드: 갭 → task 템플릿, 정책 승인 인용), `pcv-goal`(완료 goal 템플릿: `pcvverify completion` exit `0` 또는 정지 절)을 설계대로 고친다. 검증: private `git diff --check`, skill 본문이 설계의 필드 이름과 같은지 Grep. private 로컬 commit, public은 plan checkbox와 campaign 전진만 로컬 commit.
+- [x] private 저장소 `.claude/skills/pcv-campaign`(`task_not_before`, backlog 쓰기, 닫을 때 `pcvverify completion`과 정책 안 연쇄, carry-over), `pcv-campaign-open`(completion 모드: 갭 → task 템플릿, 정책 승인 인용), `pcv-goal`(완료 goal 템플릿: `pcvverify completion` exit `0` 또는 정지 절)을 설계대로 고친다. 검증: private `git diff --check`, skill 본문이 설계의 필드 이름과 같은지 Grep. private 로컬 commit, public은 plan checkbox와 campaign 전진만 로컬 commit.
+
+실행 기록(2026-10-07): Task 6 PR #60(head `87c6afc`, Required check 다섯 개 pass)을 head 고정으로 merge했다(`ebecd74`). private 저장소 commit `1d536798`(로컬만, push 없음)으로 skill 세 개를 고쳤다. `pcv-campaign`: `task_not_before` 건너뛰기, 범위 밖 발견의 backlog `undecided` 행 쓰기, 닫는 merge 뒤 §6 판정(`gh run list` → `completion`, exit `0` 완료 감사, `2` red, `1` 정책 분류), `ci-wait` 재판정, carry-over, 정지 이유 `deadline-wait`·`no-progress`, `goal-evidence`의 `completion=` 칸. `pcv-campaign-open`: completion 모드 §5(갭 순서와 템플릿, train은 직전 train plan을 따름, 권한은 들어간 갭 종류 정책 행의 합, `generated_from`, ADR-0016 standing approval 문장 승계, carry-over). `pcv-goal`: 틀 E 프로젝트 완료(`334`자). 세 skill과 설계의 필드 이름(`task_not_before`, `carried_tasks`, `generated_from`, `deadline-wait`, `no-progress`, `pcv-backlog-v1`, 정책 파일)이 일치함을 Grep으로 확인했고 private `git diff --check` 통과.
 
 ## Task 8: 첫 판정과 연쇄
 
-- [ ] clean `main` HEAD에서 `gh run list` 입력으로 `pcvverify completion`을 돌려 결과(조건별 판정, 갭, exit)를 기록하고 push, PR, green CI 뒤 merge한다. 그 뒤 남은 큐가 미래 `not_before` task뿐이면 설계의 carry-over로 이 campaign을 닫고, 정책 안 갭(train `0.42.92` 등)은 `pcv-campaign-open` completion 모드로 다음 campaign을 연다. `user-decision`·`new-design` 갭은 `next_approval_required`에 번호로 남긴다.
+- [x] clean `main` HEAD에서 `gh run list` 입력으로 `pcvverify completion`을 돌려 결과(조건별 판정, 갭, exit)를 기록하고 push, PR, green CI 뒤 merge한다. 그 뒤 남은 큐가 미래 `not_before` task뿐이면 설계의 carry-over로 이 campaign을 닫고, 정책 안 갭(train `0.42.92` 등)은 `pcv-campaign-open` completion 모드로 다음 campaign을 연다. `user-decision`·`new-design` 갭은 `next_approval_required`에 번호로 남긴다.
+
+실행 기록(2026-10-07): PR #60 merge commit `ebecd74`의 main push Development Gates(run `37633554390`)가 attempt 1에서 `dotnet` shard 실패였다. 실패 시험은 `VerificationExecutorTests.NonCooperativeManagedRunnerCannotBlockPerSuiteDeadline` `1`개(`TimeoutException`, Verification `652/653`)이고 이 변경과 무관한 타이밍 시험이다. 같은 코드의 PR run과 로컬 clean HEAD는 통과했다. 절차의 환경 원인 일시 실패 규칙대로 실패 job만 한 번 다시 돌렸고 attempt 2는 success다. 이 발견은 backlog `BL-0003`(`undecided`)으로 등록했다. 첫 판정(clean `main` `ebecd74`, `gh run list` 30행 `artifacts/completion/20261007-r2/main-runs.json`, 결과 `artifacts/completion/20261007-r2/result.json`): `complete=false met=4/7 gaps=4` exit `1`. 충족 C1·C3·C4·C6. 갭 `C2-queue`(`train-departure` lane `2`, `0.42.92-admin-smoke`, 기능군 `vm.create`, `pr:59`), `C5-risk-ubuntu-26-runner`(`deadline-wait`, `not_before` 2026-10-19), `C7-BL-0001`·`C7-BL-0002`(`user-decision`). 이 기록 commit 뒤 push, PR, green CI 뒤 merge한다. 그 뒤 남은 Task 9는 미래 `not_before`이므로 carry-over로 이 campaign을 닫고, 정책 안 갭(`train-departure`, `deadline-wait`)으로 completion 모드 campaign을 열며, `user-decision` 갭은 그 campaign `next_approval_required`에 둔다.
 
 ## Task 9: C5 runner 확인 (2026-10-19 이후)
 
