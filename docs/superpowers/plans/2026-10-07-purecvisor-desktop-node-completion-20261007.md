@@ -93,11 +93,15 @@
 
 ## Task 8: Lane 3
 
-- [ ] (추가 승인 2) 먼저 PR A(이 branch)를 clean HEAD 종료 검증, push, PR, green CI 뒤 merge하고 merge의 main push run을 기다린다. 그 뒤 `origin/main`에서 `lane3/04292-promotion-20261008`을 만들어 functional carry-forward, consume(`…-closed` descriptor와 consume manifest), main push 문서(`main-push`, PR A merge의 run), current-card `promoted-current`. `current-evidence.json`, `lane3-spec` 입력과 spec `04292`, 문서 도구 dry-run·`-Apply`·`-Check`, `release-train.json` 승격(`operational_current`, train `status=promoted`, queue 빈 목록). 로컬 commit.
+- [x] (추가 승인 2) 먼저 PR A(이 branch)를 clean HEAD 종료 검증, push, PR, green CI 뒤 merge하고 merge의 main push run을 기다린다. 그 뒤 `origin/main`에서 `lane3/04292-promotion-20261008`을 만들어 functional carry-forward, consume(`…-closed` descriptor와 consume manifest), main push 문서(`main-push`, PR A merge의 run), current-card `promoted-current`. `current-evidence.json`, `lane3-spec` 입력과 spec `04292`, 문서 도구 dry-run·`-Apply`·`-Check`, `release-train.json` 승격(`operational_current`, train `status=promoted`, queue 빈 목록). 로컬 commit.
+
+실행 기록(2026-10-08): PR A #62(head `923353b`, clean HEAD solution 실패 `0`, product 경로 변경 `0`, Required check 다섯 개 pass)를 head 고정으로 merge했다(`34b2b16`). main push run: Development Gates `37643151377`(dotnet `112866923201`, web `112866923489`, delivery `112866923522`, installer-policy `112866924129`), Public Boundary `37643151392`(job `112866922673`) 모두 success. `origin/main`에서 `lane3/04292-promotion-20261008`을 만들었다. consume manifest(`artifacts/manual-admin-campaign-20261007-04291-04292/consume-manifest.json`, summary JSON `7`개, 복사 없음)를 쓰고, facts에 Lane 3 문서 `3`개(functional carry-forward `…-2026-10-08-04292-carryforward`, consume `manual-admin-campaign-2026-10-07-04291-04292`, main push `public-boundary-ci-main-push-2026-10-08-04292-pr62-postmerge-pass`, 두 PR 방식의 `main-push` 템플릿)를 더하고 current-card를 `promoted-current`로 바꿔 `--write --allow-update`했다. `current-evidence.json` current `0.42.92-admin-smoke`(clean MSI `dc79fdd1…`, operational MSI `67b257a3…`, payload `dda8eb7f…`, provenance `b51b8cf`, descriptor `…-20261007-04291-04292-closed`). `lane3-spec`이 `lane3-promotion-docs-spec-04292.json`을 만들었고(사람 값 `9`개) 문서 도구 dry-run·`-Apply`·`-Check` 모두 `ok`(여섯 단계). `release-train.json` `operational_current=0.42.92-admin-smoke`, train `status=promoted`. 수기 정렬: `CurrentEvidenceVerifierTests` version 줄, `DOCUMENTATION_INDEX` 공개 소스 권위·운영 권위·호스트·consume 줄, `FEATURE_IMPLEMENTATION_LEDGER` operational 줄. Task 4에서 쓴 `ProjectCompletionEvaluatorTests`가 다음 train version을 하드코딩해 승격 뒤 깨졌으므로 입력의 `operational_current`에서 계산하도록 고쳤다. 판정기 C2가 running train을 보지 않는 문제를 backlog `BL-0006`으로 등록했다. Delivery `775/775`, Verification `654/655`(dirty tree PolicyBoundary `1`).
 
 ## Task 9: 종료와 Lane 3 PR(PR B) merge
 
-- [ ] clean HEAD 종료 검증, push, PR, green CI 뒤 merge. merge 뒤 main push run(Development Gates, Public Boundary)을 기다린다. red면 revert PR을 열고 멈춘다.
+- [x] clean HEAD 종료 검증, push, PR, green CI 뒤 merge. merge 뒤 main push run(Development Gates, Public Boundary)을 기다린다. red면 revert PR을 열고 멈춘다.
+
+실행 기록(2026-10-08): clean HEAD `2fc1934`에서 `dotnet test src/DesktopNode.sln -c Release` 실패 `0`(Verification `655`, Delivery `775`, Api `490`, HyperV `271`, Host `216`, Contracts `200`, Cli `183`, Runtime `129`, Service `11`), manual-admin Pester(`PcvLane3PromotionDocs`, `PcvContractSpecPins`, `PcvCurrentEvidenceLedgerRows`) `17/17`, `git diff --check origin/main...HEAD` 통과. 이 기록 commit 뒤 push, PR, green CI 뒤 merge하고 merge의 main push run을 확인한다. PR 번호와 merge commit은 Task 12 기록에 적는다.
 
 ## Task 10: C5 runner 확인 (2026-10-19 이후)
 

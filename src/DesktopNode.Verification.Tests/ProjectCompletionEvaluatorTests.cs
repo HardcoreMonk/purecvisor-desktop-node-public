@@ -31,10 +31,13 @@ public sealed class ProjectCompletionEvaluatorTests
             ["lane2_probe"] = new JsonObject { ["family"] = "vm.create" }
         });
 
+        var operational = inputs.ReleaseTrain["operational_current"]!.GetValue<string>();
+
         var gap = Assert.Single(ProjectCompletionEvaluator.Evaluate(inputs).Gaps);
 
         Assert.Equal(("C2-queue", "train-departure", "2"), (gap.Id, gap.Kind, gap.Lane));
-        Assert.Contains("0.42.92-admin-smoke", gap.Summary, StringComparison.Ordinal);
+        Assert.Equal("0.42.92-admin-smoke", ProjectCompletionEvaluator.NextTrainVersion("0.42.91-admin-smoke"));
+        Assert.Contains(ProjectCompletionEvaluator.NextTrainVersion(operational), gap.Summary, StringComparison.Ordinal);
         Assert.Contains("vm.create", gap.Summary, StringComparison.Ordinal);
         Assert.Equal(["pr:59"], gap.Refs);
     }

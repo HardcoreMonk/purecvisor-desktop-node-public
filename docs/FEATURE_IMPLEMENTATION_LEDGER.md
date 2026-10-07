@@ -151,7 +151,7 @@ feature promotion evidence를 서로 다른 계약으로 유지한다.
 
 ## Evidence stage 투영
 
-Operational current package/service anchor는 `0.42.91-admin-smoke`다. 이것은 별도의
+Operational current package/service anchor는 `0.42.92-admin-smoke`다. 이것은 별도의
 feature promotion 결정과 동일하지 않다. 현재 feature promotion은
 `promotion_eligible=true`, `blocker_count=0`이다.
 
