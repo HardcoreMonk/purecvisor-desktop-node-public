@@ -108,8 +108,8 @@
       "basis": "2026-10-08 사용자 승인 \"1\" (completion-backlog-20261008 Task 8 정지 보고의 1): Lane 1 안정화, push, PR, green CI 뒤 merge, host mutation 없음",
       "out_of_scope_ref": null,
       "needs_design": false,
-      "status": "open",
-      "closed_by": null
+      "status": "closed",
+      "closed_by": "completion-backlog-20261008 Task 17"
     }
   ]
 }

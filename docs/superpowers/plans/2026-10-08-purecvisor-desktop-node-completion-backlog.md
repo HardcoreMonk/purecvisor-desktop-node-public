@@ -122,7 +122,10 @@ ADR-0016 standing approval(`pcv-it-` 접두사 VM 생성·삭제)은 그대로 �
 
 ## Task 17: BL-0009 loopback bootstrap 브라우저 시험
 
-- [ ] `ChromiumOpensLoopbackConsoleWithoutServiceTokenPaste`의 bootstrap 대기 시한을 runner 속도에 기대지 않게 고친다(판정 조건은 유지). 검증: Host.Tests. `BL-0009` 닫기. 로컬 commit.
+- [x] `ChromiumOpensLoopbackConsoleWithoutServiceTokenPaste`의 bootstrap 대기 시한을 runner 속도에 기대지 않게 고친다(판정 조건은 유지). 검증: Host.Tests. `BL-0009` 닫기. 로컬 commit.
+
+
+실행 기록(2026-10-08): `DesktopNodeHostLoopbackBootstrapBrowserTests`의 DevTools 대기 20초와 bootstrap 대기 25초를 상수 `DevToolsDeadline` `60`초, `BootstrapDeadline` `90`초로 바꿨다. 실패 당시 snapshot은 `Connection=Idle`, session 없음으로 아직 bootstrap 전이었고, 시험은 bootstrap 완료 여부만 판정한다. Host `216/216`, Delivery `775/775`. `BL-0009` 닫음.
 
 ## Task 12: 종료 검증과 merge (PR 3)
 

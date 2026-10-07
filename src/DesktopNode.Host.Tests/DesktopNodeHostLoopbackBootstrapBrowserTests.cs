@@ -218,10 +218,15 @@ public sealed class DesktopNodeHostLoopbackBootstrapBrowserTests
         return process!;
     }
 
+    // Deadlines only bound a hang: the test checks that the bootstrap completes, not how fast. A GitHub runner needed more
+    // than 25 seconds to load the console (backlog BL-0009).
+    private static readonly TimeSpan DevToolsDeadline = TimeSpan.FromSeconds(60);
+    private static readonly TimeSpan BootstrapDeadline = TimeSpan.FromSeconds(90);
+
     private static async Task WaitForDevToolsAsync(int debugPort)
     {
         using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(2) };
-        var deadline = DateTime.UtcNow.AddSeconds(20);
+        var deadline = DateTime.UtcNow.Add(DevToolsDeadline);
         while (DateTime.UtcNow < deadline)
         {
             try
@@ -258,7 +263,7 @@ public sealed class DesktopNodeHostLoopbackBootstrapBrowserTests
 
         using var webSocket = new ClientWebSocket();
         await webSocket.ConnectAsync(new Uri(debuggerUrl!), CancellationToken.None);
-        var deadline = DateTime.UtcNow.AddSeconds(25);
+        var deadline = DateTime.UtcNow.Add(BootstrapDeadline);
         BrowserSnapshot? last = null;
         while (DateTime.UtcNow < deadline)
         {
