@@ -121,6 +121,11 @@ public sealed class VerificationExecutorTests
         Assert.All(report.Results, AssertCancelled);
     }
 
+    // Hang guard only: the fake runners never finish until the finally block releases them, so a blocked executor still
+    // fails here. The suite deadlines under test are one or two seconds; the guard must not depend on runner speed
+    // (backlog BL-0003, a GitHub runner exceeded a three-second guard).
+    private static readonly TimeSpan HangGuard = TimeSpan.FromSeconds(30);
+
     [Fact]
     public async Task AbandonedRunnerRetainsPermitUntilUnderlyingTaskCompletes()
     {
@@ -138,7 +143,7 @@ public sealed class VerificationExecutorTests
 
         try
         {
-            var report = await ExecuteAsync(catalog, process).WaitAsync(TimeSpan.FromSeconds(4));
+            var report = await ExecuteAsync(catalog, process).WaitAsync(HangGuard);
 
             Assert.Equal(2, report.Results.Count);
             Assert.All(report.Results, row =>
@@ -173,7 +178,7 @@ public sealed class VerificationExecutorTests
                 VerificationPlanFixture.ForCatalog(catalog, planOnly: false),
                 catalog,
                 RepositoryRoot,
-                CancellationToken.None).WaitAsync(TimeSpan.FromSeconds(3));
+                CancellationToken.None).WaitAsync(HangGuard);
 
             var row = Assert.Single(report.Results);
             Assert.Equal(SuiteStatus.TimedOut, row.Status);

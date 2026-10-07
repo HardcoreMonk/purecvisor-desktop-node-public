@@ -315,10 +315,6 @@ internal sealed class TrainFactsBuilder(string repositoryRoot, TrainFactsInput i
             lifecycle.Str("installed_build", "gate_commit") == commit, "fullgate", "installed-build");
         var arpCodes = lifecycle.Array("same_version_arp", "product_codes").Select(TrainFactsFiles.Scalar).OfType<string>().ToList();
         Require(lifecycle.Bool("same_version_arp", "ok") && arpCodes.Count == 1, "fullgate", "same-version-arp");
-        var card = Load(Source("current_card_root") + "/summary.json");
-        Require(card.Str("installed_host_sha256") == provenance.Str("service_host", "sha256") &&
-            card.Str("installed_cli_sha256") == provenance.Str("cli", "sha256"), "fullgate", "installed-hashes");
-        Require(card.Str("installed_product_version") == V + "+" + commit, "fullgate", "installed-product-version");
         Require(Source("fullgate_final_firewall_rule_count") == "0", "fullgate", "final-firewall");
         var cleanup = FindStorageCleanup(Load(routeRoot + "/hyperv-api-route-smoke.json").Get());
         var configurationRoot = TrainFactsFiles.Scalar(cleanup?["configuration_root"]) ?? throw TrainFactsInput.Invalid("artifact-field-missing", "storage_cleanup");
@@ -384,6 +380,16 @@ internal sealed class TrainFactsBuilder(string repositoryRoot, TrainFactsInput i
             !card.Bool("service_has_raw_or_protected_token_flag"), "current-card", "service");
         Require(card.Str("promotion_ledger_status") == "not-promoted" && card.Str("canonical_current_evidence") == input.CanonicalCurrent,
             "current-card", "promotion");
+
+        // The installed build check lives here, not in the fullgate document: the capture script is rendered from the
+        // fullgate facts, so the fullgate document must render before the current-card exists (backlog BL-0004).
+        var batchId = Source("fullgate_batch_id");
+        const string batchPrefix = "full-admin-host-mutation-gate-";
+        Require(batchId.StartsWith(batchPrefix, StringComparison.Ordinal), "current-card", "batch-id");
+        var provenance = Load(SingleFile("artifacts/routeparity-service-msi-hyperv-batch-profile-" + batchId[batchPrefix.Length..], "*.provenance.json"));
+        Require(card.Str("installed_host_sha256") == provenance.Str("service_host", "sha256") &&
+            card.Str("installed_cli_sha256") == provenance.Str("cli", "sha256"), "current-card", "installed-hashes");
+        Require(card.Str("installed_product_version") == V + "+" + provenance.Str("git_commit"), "current-card", "installed-product-version");
 
         var values = Common("current-card");
         Add(values, "display_version", Train);

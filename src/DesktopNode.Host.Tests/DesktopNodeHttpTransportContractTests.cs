@@ -467,7 +467,7 @@ public sealed class DesktopNodeHttpTransportContractTests
     public async Task NoVncHandshakeBinaryProxyAndNormalCloseMatchFixture()
     {
         using var fixture = LoadFixture();
-        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        using var timeout = new CancellationTokenSource(RawHttpHangGuard);
         var noVnc = fixture.RootElement.GetProperty("novnc");
         var success = noVnc.GetProperty("success");
         var payload = Encoding.ASCII.GetBytes(success.GetProperty("payload_ascii").GetString()!);
@@ -626,13 +626,17 @@ public sealed class DesktopNodeHttpTransportContractTests
         }
     }
 
+    // Hang guard only: these tests compare response content, not latency. A GitHub runner needed more than ten seconds
+    // for the first raw request after host start (backlog BL-0007).
+    private static readonly TimeSpan RawHttpHangGuard = TimeSpan.FromSeconds(60);
+
     private static async Task<ObservedResponse> SendRawHttpAsync(
         Uri baseUri,
         string method,
         string rawTarget,
         IReadOnlyDictionary<string, string>? headers = null)
     {
-        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        using var timeout = new CancellationTokenSource(RawHttpHangGuard);
         using var tcp = new TcpClient();
         await tcp.ConnectAsync(IPAddress.Loopback, baseUri.Port, timeout.Token);
         await using var stream = tcp.GetStream();

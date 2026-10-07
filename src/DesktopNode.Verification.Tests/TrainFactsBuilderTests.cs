@@ -55,6 +55,37 @@ public sealed class TrainFactsBuilderTests
         Assert.False(File.Exists(train.FactsPath));
     }
 
+    [Fact]
+    public void FullgateRendersBeforeTheCurrentCardExists()
+    {
+        using var train = OrchestratedTrain.Create();
+        Directory.Delete(Path.Combine(train.Root, "artifacts", "card"), recursive: true);
+        train.EditJson(OrchestratedTrain.InputPath, json =>
+        {
+            json["documents"]!.AsObject().Remove("current-card");
+            json["narrative"]!.AsObject().Remove("current-card");
+        });
+
+        var (exitCode, result) = train.RunFacts();
+
+        Assert.Equal(0, exitCode);
+        Assert.Contains(result.GetProperty("documents").EnumerateArray(), document => document.GetProperty("template").GetString() == "fullgate");
+    }
+
+    [Theory]
+    [InlineData("installed_host_sha256", "installed-hashes")]
+    [InlineData("installed_product_version", "installed-product-version")]
+    public void CurrentCardRejectsAnInstalledBuildOtherThanTheFullgateBuild(string key, string reason)
+    {
+        using var train = OrchestratedTrain.Create();
+        train.EditJson("artifacts/card/summary.json", json => json[key] = new string('e', 64));
+
+        var (exitCode, result) = train.RunFacts();
+
+        Assert.Equal(2, exitCode);
+        Assert.Equal("train-facts:fact-mismatch:current-card:" + reason, result.GetProperty("error_detail").GetString());
+    }
+
     [Theory]
     [InlineData("package", "version", "x", "train-facts:narrative-conflict:package:version")]
     [InlineData("fullgate", "run_context", null, "train-evidence:missing-value:")]

@@ -60,6 +60,30 @@ public sealed class ProjectCompletionEvaluatorTests
     }
 
     [Theory]
+    [InlineData("running")]
+    [InlineData("stopped")]
+    public void TrainDepartedAfterTheOperationalOneKeepsC2Open(string status)
+    {
+        var inputs = Cleared();
+        var operational = inputs.ReleaseTrain["operational_current"]!.GetValue<string>();
+        var next = ProjectCompletionEvaluator.NextTrainVersion(operational);
+        inputs.ReleaseTrain["trains"]!.AsArray().Add(new JsonObject
+        {
+            ["version"] = next,
+            ["carriages"] = new JsonArray(59),
+            ["status"] = status
+        });
+
+        var result = ProjectCompletionEvaluator.Evaluate(inputs);
+
+        Assert.False(Condition(result, "C2").Met);
+        Assert.EndsWith("unfinished_trains=1", Condition(result, "C2").Detail, StringComparison.Ordinal);
+        var gap = Assert.Single(result.Gaps);
+        Assert.Equal(($"C2-train-running-{next}", "train-departure", "2"), (gap.Id, gap.Kind, gap.Lane));
+        Assert.Equal([$"train:{next}"], gap.Refs);
+    }
+
+    [Theory]
     [InlineData(null, null, "ci-wait", "0")]
     [InlineData("in_progress", "", "ci-wait", "0")]
     [InlineData("completed", "failure", "lane1-fix", "1")]
