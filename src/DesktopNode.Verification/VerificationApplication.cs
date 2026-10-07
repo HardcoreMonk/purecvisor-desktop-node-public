@@ -100,6 +100,11 @@ internal sealed class VerificationApplication(
             return TrainPathCheckCommand.Run(args, currentDirectory(), standardOutput);
         }
 
+        if (args.Count > 0 && string.Equals(args[0], ProjectCompletionCommand.Name, StringComparison.Ordinal))
+        {
+            return ProjectCompletionCommand.Run(args, currentDirectory(), standardOutput);
+        }
+
         DateTimeOffset? startedAt = null;
         VerificationRequest? request = null;
         VerificationPlan? plan = null;
