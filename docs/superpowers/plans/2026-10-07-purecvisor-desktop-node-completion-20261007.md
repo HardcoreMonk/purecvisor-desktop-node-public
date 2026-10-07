@@ -47,7 +47,9 @@
 
 ## Task 1: package
 
-- [ ] clean HEAD에서 `build.ps1 -Version 0.42.92-admin-smoke -MsiProductVersion 0.42.92 -SigningMode AllowUnsignedDev -SigningTrustModel LocalTest -OutputRoot artifacts/admin-smoke-package-20261007-04292`, `New-PcvAdminSmokeUpdatePackage.ps1`. train-facts 입력과 package 문서. 로컬 commit.
+- [x] clean HEAD에서 `build.ps1 -Version 0.42.92-admin-smoke -MsiProductVersion 0.42.92 -SigningMode AllowUnsignedDev -SigningTrustModel LocalTest -OutputRoot artifacts/admin-smoke-package-20261007-04292`, `New-PcvAdminSmokeUpdatePackage.ps1`. train-facts 입력과 package 문서. 로컬 commit.
+
+실행 기록(2026-10-07): clean HEAD `e250950`에서 `packaging/windows-desktop-node/installer/build.ps1` build `36`초, MSI `dc79fdd1…`, payload `efbbbb16…`(파일 `8`), Host `ede0af77…`, CLI `052993a3…`, `build_utc` `2026-10-07T14:21:03.0191697Z`(ISO 8601). `New-PcvAdminSmokeUpdatePackage.ps1 -BuildSeconds 36`으로 update ZIP `fcaf13dc…`, catalog `7f170c8d…`, `package-facts.json`(host mutation 없음). train-facts 입력 `docs/ga-ready/trains/0.42.92-admin-smoke.train-facts-input.json`(documents는 package만, 서술 `3`개)으로 `train-facts`(생성 값 `20`), `train-evidence --write` → `admin-smoke-package-2026-10-07-04292` `written`, `--check` `current`. TrainEvidenceGolden `7/7`, Delivery `775/775`.
 
 ## Task 2: pair 실행
 

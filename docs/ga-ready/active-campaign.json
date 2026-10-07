@@ -13,7 +13,7 @@
   ],
   "mutation_allowed": true,
   "current_write_allowed": true,
-  "next_step": "Run Task 1 from docs/superpowers/plans/2026-10-07-purecvisor-desktop-node-completion-20261007.md (release train 0.42.92 package), then the queue in order; Tasks 10 and 11 not before 2026-10-19.",
+  "next_step": "Run Task 2 from docs/superpowers/plans/2026-10-07-purecvisor-desktop-node-completion-20261007.md (release train 0.42.92 pair), then the queue in order; Tasks 10 and 11 not before 2026-10-19.",
   "plan": "docs/superpowers/plans/2026-10-07-purecvisor-desktop-node-completion-20261007.md",
   "task_queue": [
     "Task 0",
@@ -40,9 +40,10 @@
     "Task 10": "2026-10-19",
     "Task 11": "2026-10-19"
   },
-  "next_task": "Task 1",
+  "next_task": "Task 2",
   "completed_tasks": [
-    "Task 0"
+    "Task 0",
+    "Task 1"
   ],
   "commit_policy": "local-commit-per-task",
   "push_allowed": true,
