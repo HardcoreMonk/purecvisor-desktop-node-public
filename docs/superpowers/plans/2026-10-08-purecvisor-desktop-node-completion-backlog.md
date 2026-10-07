@@ -115,7 +115,10 @@ ADR-0016 standing approval(`pcv-it-` 접두사 VM 생성·삭제)은 그대로 �
 
 ## Task 16: BL-0008 cancellation bridge 시험
 
-- [ ] `CallbackCanWaitForDisposeWithoutDeadlockAndLaterSignalsAreNoOps`의 dispose 대기(2초)를 runner 속도에 기대지 않게 고친다(교착 없음 판정은 유지). 검증: Verification.Tests. `BL-0008` 닫기. 로컬 commit.
+- [x] `CallbackCanWaitForDisposeWithoutDeadlockAndLaterSignalsAreNoOps`의 dispose 대기(2초)를 runner 속도에 기대지 않게 고친다(교착 없음 판정은 유지). 검증: Verification.Tests. `BL-0008` 닫기. 로컬 commit.
+
+
+실행 기록(2026-10-08): `ConsoleCancellationBridgeTests`의 dispose 대기(2초)와 같은 class의 동시 signal·dispose 대기(5초)를 hang guard 상수 `HangGuard` `30`초로 바꿨다. 교착은 끝나지 않으므로 여전히 guard에서 실패한다. `ConsoleCancellationBridgeTests` `4/4`, Delivery `775/775`. `BL-0008` 닫음.
 
 ## Task 17: BL-0009 loopback bootstrap 브라우저 시험
 
