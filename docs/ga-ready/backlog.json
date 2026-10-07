@@ -60,8 +60,8 @@
       "basis": "2026-10-08 사용자 승인 \"1,2,3,4,5,6,7\"의 5 (completion-20261007 next_approval_required): BL-0005를 counts로 분류하고 새 설계를 승인한다: 단일 PR train path check가 Lane 3 pin(config spec 3개, Delivery verifier 3개, CurrentEvidenceVerifierTests)을 허용하도록 pcv-single-pr-train 개정과 구현(Lane 1, push, PR, green CI 뒤 merge, host mutation 없음)",
       "out_of_scope_ref": null,
       "needs_design": true,
-      "status": "open",
-      "closed_by": null
+      "status": "closed",
+      "closed_by": "completion-backlog-20261008 Task 7"
     },
     {
       "id": "BL-0006",

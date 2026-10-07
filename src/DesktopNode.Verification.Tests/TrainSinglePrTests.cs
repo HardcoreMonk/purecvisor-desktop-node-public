@@ -138,6 +138,55 @@ public sealed class TrainSinglePrTests
     }
 
     [Fact]
+    public void PathCheckAllowsLane3PinFilesThatOnlyReplaceShaValues()
+    {
+        const string spec = "config/pcv-installed-smoke-contract-spec-v1.json";
+        const string verifier = "src/DesktopNode.Delivery.Tests/Delivery/Installed/InstalledContractVerifier.cs";
+        var pins = new Dictionary<string, string>
+        {
+            [spec] = PinDiff(spec, $"      \"sha256\": \"{new string('a', 64)}\"", $"      \"sha256\": \"{new string('b', 64)}\""),
+            [verifier] = PinDiff(verifier, $"            \"{new string('c', 64)}\",", $"            \"{new string('d', 64)}\",")
+        };
+        using var output = new StringWriter();
+
+        var code = TrainPathCheckCommand.Run(
+            ["train-path-check", "--payload", "05f42a2", "--head", "HEAD"],
+            VerificationCatalogFixture.RepositoryRoot,
+            output,
+            new ScriptedRunner($"docs/a.md\n{spec}\n{verifier}\n", pins));
+
+        var result = JsonDocument.Parse(output.ToString()).RootElement;
+        Assert.Equal(0, code);
+        Assert.Equal(0, result.GetProperty("product_paths").GetArrayLength());
+        Assert.Equal([spec, verifier], result.GetProperty("allowed_pin_paths").EnumerateArray().Select(path => path.GetString()));
+    }
+
+    [Theory]
+    [InlineData("-        \"4c384252ec1da91738b29fb54c85ba0490094d326db8779479df535f874e889b\";\n+        return true;\n")]
+    [InlineData("+        \"59bf0d405f13d8e137399b1472ba1cfcd0617687f2307d72bafd81969b77a9ba\";\n")]
+    [InlineData("-        \"4c384252ec1da91738b29fb54c85ba0490094d326db8779479df535f874e889b\";\n+        \"59bf0d40\";\n")]
+    public void PathCheckKeepsAPinFileWithOtherChangesAsAProductPath(string changedLines)
+    {
+        const string verifier = "src/DesktopNode.Delivery.Tests/Delivery/Verification/DevelopmentPolicyContractVerifier.cs";
+        var pins = new Dictionary<string, string>
+        {
+            [verifier] = $"diff --git a/{verifier} b/{verifier}\n--- a/{verifier}\n+++ b/{verifier}\n@@ -1 +1 @@\n{changedLines}"
+        };
+        using var output = new StringWriter();
+
+        var code = TrainPathCheckCommand.Run(
+            ["train-path-check", "--payload", "05f42a2", "--head", "HEAD"],
+            VerificationCatalogFixture.RepositoryRoot,
+            output,
+            new ScriptedRunner($"{verifier}\nsrc/DesktopNode.Verification.Tests/CurrentEvidenceVerifierTests.cs\n", pins));
+
+        var result = JsonDocument.Parse(output.ToString()).RootElement;
+        Assert.Equal(1, code);
+        Assert.Contains(verifier, result.GetProperty("product_paths").EnumerateArray().Select(path => path.GetString()));
+        Assert.Equal(0, result.GetProperty("allowed_pin_paths").GetArrayLength());
+    }
+
+    [Fact]
     public void PathCheckRejectsAnInvalidPayload()
     {
         using var output = new StringWriter();
@@ -149,6 +198,19 @@ public sealed class TrainSinglePrTests
             new FixedRunner(string.Empty));
 
         Assert.Equal(2, code);
+    }
+
+    private static string PinDiff(string path, string removed, string added) =>
+        $"diff --git a/{path} b/{path}\nindex 1111111..2222222 100644\n--- a/{path}\n+++ b/{path}\n@@ -12 +12 @@\n-{removed}\n+{added}\n";
+
+    // Answers the name-only diff with the changed path list and each "diff -U0 <range> -- <path>" with that path's diff.
+    private sealed class ScriptedRunner(string nameOnly, IReadOnlyDictionary<string, string> pinDiffs) : IProcessRunner
+    {
+        public Task<ProcessExecutionResult> RunAsync(ProcessInvocation invocation, CancellationToken cancellationToken)
+        {
+            var output = invocation.Arguments.Contains("--name-only") ? nameOnly : pinDiffs[invocation.Arguments[^1]];
+            return Task.FromResult(new ProcessExecutionResult(0, 1, false, false, output, string.Empty, string.Empty));
+        }
     }
 
     private sealed class FixedRunner(string standardOutput) : IProcessRunner
