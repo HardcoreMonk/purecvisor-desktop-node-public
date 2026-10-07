@@ -73,7 +73,9 @@
 
 ## Task 5: installed current-card
 
-- [ ] train facts에서 렌더한 capture 스크립트를 root 밖에서 실행한다. `status=pass`, `not-promoted`. 로컬 commit.
+- [x] train facts에서 렌더한 capture 스크립트를 root 밖에서 실행한다. `status=pass`, `not-promoted`. 로컬 commit.
+
+실행 기록(2026-10-08): 절차 순서(fullgate 문서 렌더 → capture 스크립트)가 도구에서 순환했다. `train-facts` fullgate는 current-card `summary.json`을 요구하고(`artifact-missing`), `train-host-inputs --kind current-card`는 facts fullgate 값을 요구한다(`fact-missing:fullgate`). supervisor stdout을 `artifacts/batch-manifests/full-admin-host-mutation-gate-20261007-04292.result.json`(빈 `.stderr.txt`)에 두고, capture 스크립트가 읽는 fullgate 값 다섯 개(`batch_id`, `routeparity_artifact_root`, MSI `67b257a3…`, payload `dda8eb7f…`, `provenance_commit` `b51b8cf`)를 route artifact provenance에서 계산해 facts에 잠시 넣고 스크립트를 만든 뒤 facts를 되돌렸다(commit 없음). capture 스크립트(`sha256 c1285063…`)를 root 밖에서 실행해 `5`초, `status=pass`, `promotion_ledger_status=not-promoted`, 설치본 `0.42.92-admin-smoke+b51b8cf`, ARP `1`, CLI/Host payload 일치, 남은 시험 VM `0`. 스크립트는 root에 복사했다. 그 뒤 train-facts 입력에 fullgate 문서와 서술 `2`개를 더해 렌더(생성 값 `35`, `written`)했고, 렌더된 fullgate 값 다섯 개가 임시 값과 모두 같음을 확인했다. 이 순환은 backlog `BL-0004`(`undecided`)로 등록했다. Task 7의 fullgate 렌더는 여기서 끝났다.
 
 ## Task 6: probe `vm.create` 잔여물 회수 (PR #59)
 
