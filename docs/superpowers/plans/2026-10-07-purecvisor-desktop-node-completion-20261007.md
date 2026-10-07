@@ -59,7 +59,9 @@
 
 ## Task 3: pair 문서
 
-- [ ] `train-facts`에 pair 문서 `6`개를 더해 렌더한다. 로컬 commit.
+- [x] `train-facts`에 pair 문서 `6`개를 더해 렌더한다. 로컬 commit.
+
+실행 기록(2026-10-07): train-facts 입력 documents에 pair 문서 `6`개(ops-summary, update-rollback, clean-host, burn, msix, pair-descriptor)를 더했다. `train-facts` 생성 값 ops-summary `10`, update-rollback `23`, clean-host `21`, burn `16`, msix `17`, pair-descriptor `17`(서술 `0`). `train-evidence --write` 여섯 문서 `written`, package `current`, `--check` 일곱 문서 `current`. TrainEvidenceGolden `7/7`, Delivery `775/775`.
 
 ## Task 4: fullgate
 
