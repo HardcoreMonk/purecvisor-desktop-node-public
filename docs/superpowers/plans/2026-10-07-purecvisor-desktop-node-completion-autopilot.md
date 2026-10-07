@@ -53,7 +53,9 @@ ADR-0016 standing approval(`pcv-it-` 접두사 VM 생성·삭제)은 철회 지�
 
 ## Task 4: 판정기 1 (결과 계약, C2·C5·C6·C7)
 
-- [ ] `pcvverify completion`을 더한다. 결과 계약, CI run 입력 파일(`gh run list --json` 출력), C2(`current-evidence.json`과 `release-train.json`), C5(main HEAD Required CI와 위험 목록 기한), C6, C7(backlog), 갭 목록과 exit code. fixture 시험을 더한다. 검증: Verification.Tests, `git diff --check`. 로컬 commit.
+- [x] `pcvverify completion`을 더한다. 결과 계약, CI run 입력 파일(`gh run list --json` 출력), C2(`current-evidence.json`과 `release-train.json`), C5(main HEAD Required CI와 위험 목록 기한), C6, C7(backlog), 갭 목록과 exit code. fixture 시험을 더한다. 검증: Verification.Tests, `git diff --check`. 로컬 commit.
+
+실행 기록(2026-10-07): `src/DesktopNode.Verification/Completion/`에 순수 판정 `ProjectCompletionEvaluator`(프로세스·네트워크·시계 없음)와 CLI `ProjectCompletionCommand`(`completion --ci-runs [--head] [--today] [--output]`, `--output`은 `artifacts/` 아래 `.json`만, head 기본값은 `git rev-parse HEAD`)를 더하고 `VerificationApplication`에 연결했다. 판정 규칙을 한 class에 두려고 C1·C3·C4 판정 코드도 이 checkpoint에 넣었고, 그 fixture 시험과 절차 문서 줄은 Task 5가 맡는다. Development Gates 갭은 C1에서 한 번만 내고 C5는 같은 workflow 갭을 되풀이하지 않는다. 시험 `ProjectCompletionEvaluatorTests` `20`개(전부 충족, queue → `train-departure` `0.42.92-admin-smoke`, version 불일치·미승격 train, run 없음·진행 중·실패, 최신 run 우선, Public Boundary 실패, 위험 기한 전·당일·뒤, backlog 분류 여섯 경우, 입력 오류, run 파싱, `--output` 경계, CLI 오류 다섯). 실제 저장소 판정(`main` `3f55831`, `gh run list` 30행 입력 `artifacts/completion/20261007/main-runs.json`, today 2026-10-07): `complete=false met=4/7 gaps=4` exit `1`. 갭은 `C2-queue`(`train-departure`, `0.42.92-admin-smoke`, 기능군 `vm.create`, `pr:59`), `C5-risk-ubuntu-26-runner`(`deadline-wait` 2026-10-19), `C7-BL-0001`·`C7-BL-0002`(`user-decision`)이며 v2 §4 사람 판정과 같다. Verification `647/648`(실패 `1`은 dirty tree의 PolicyBoundary), build 경고 `0`, `git diff --check` 통과.
 
 ## Task 5: 판정기 2 (C1·C3·C4, 저장소 판정)
 
