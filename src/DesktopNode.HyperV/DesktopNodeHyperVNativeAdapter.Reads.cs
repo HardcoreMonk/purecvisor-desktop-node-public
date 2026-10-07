@@ -229,7 +229,8 @@ public sealed partial class DesktopNodeHyperVNativeAdapter
                     {
                         ["contract"] = "hyperv-storage-inventory-readback-v1",
                         ["linux_blkio_compatible"] = false,
-                        ["mutation_supported"] = false,
+                        ["mutation_operation"] = "vm.qos.storage.set",
+                        ["mutation_supported"] = IsCatalogMutation("vm.qos.storage.set"),
                         ["disks"] = vm.Storage
                     };
                     break;
@@ -238,7 +239,8 @@ public sealed partial class DesktopNodeHyperVNativeAdapter
                     {
                         ["contract"] = "hyperv-network-inventory-readback-v1",
                         ["linux_bandwidth_compatible"] = false,
-                        ["mutation_supported"] = false,
+                        ["mutation_operation"] = "vm.qos.network.set",
+                        ["mutation_supported"] = IsCatalogMutation("vm.qos.network.set"),
                         ["adapters"] = vm.Network
                     };
                     break;
@@ -567,4 +569,9 @@ public sealed partial class DesktopNodeHyperVNativeAdapter
         }
     }
 
+    // The QoS readbacks tell clients whether the matching queued set operation exists. The value used to be a constant
+    // false from before vm.qos.storage.set and vm.qos.network.set were added (backlog BL-0002).
+    private static bool IsCatalogMutation(string operation) =>
+        DesktopNodeHyperVAdapterDispatchCatalog.TryGetEntry(operation, out var entry) &&
+        entry.Kind == DesktopNodeHyperVOperationKind.Mutation;
 }

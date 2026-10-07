@@ -94,7 +94,10 @@ ADR-0016 standing approval(`pcv-it-` 접두사 VM 생성·삭제)은 그대로 �
 
 ## Task 9: BL-0002 QoS readback
 
-- [ ] `vm.blkio-get`·`vm.bandwidth` readback의 `mutation_supported`가 상수 `false`인데 제품에 `vm.blkio-set`·`vm.bandwidth-set` mutation이 있는 원인을 확인하고, readback이 실제 mutation 지원을 말하도록 고친다. CLI/Web/parity fixture와 문서의 영향 확인. product payload이므로 `queue` 행(Lane 2 probe 기능군 `vm.qos`)을 같은 PR에 더한다. 검증: HyperV.Tests, Api.Tests, 영향 범위의 web 시험, `git diff --check`. `BL-0002` 닫기. 로컬 commit.
+- [x] `vm.blkio-get`·`vm.bandwidth` readback의 `mutation_supported`가 상수 `false`인데 제품에 `vm.blkio-set`·`vm.bandwidth-set` mutation이 있는 원인을 확인하고, readback이 실제 mutation 지원을 말하도록 고친다. CLI/Web/parity fixture와 문서의 영향 확인. product payload이므로 `queue` 행(Lane 2 probe 기능군 `vm.qos`)을 같은 PR에 더한다. 검증: HyperV.Tests, Api.Tests, 영향 범위의 web 시험, `git diff --check`. `BL-0002` 닫기. 로컬 commit.
+
+
+실행 기록(2026-10-08): Task 8 PR 2 #67(head `c24eb52`)을 merge했다(`fc7e462`). main push `dotnet` shard가 attempt 1(`ConsoleCancellationBridge` 계열 2초 대기)과 attempt 2(Chromium loopback bootstrap 시한)에서 서로 다른 runner 시간 의존 시험으로 red였고, 사용자 추가 승인 뒤 attempt 3이 green이다(run `37650610001`, `BL-0008`·`BL-0009` 등록). 원인: `vm.blkio-get`·`vm.bandwidth` readback의 `mutation_supported`가 `vm.qos.storage.set`·`vm.qos.network.set`이 생기기 전의 상수 `false`였다. Web QoS 카드는 이 값을 그대로 보여 준다. 수정: 값을 dispatch catalog에서 계산(`IsCatalogMutation`, 해당 operation이 Mutation이면 `true`)하고 `mutation_operation`을 더했다(계약 이름은 그대로, 필드 추가). Web·CLI fixture와 계약 문서에 이 값의 pin은 없다. 시험 `NativeVmQosReadbacksReportTheCatalogMutation`(2), HyperV `273/273`, Api `490/490`. product payload이므로 queue 행은 Task 12에서 이 commit SHA로 더한다. `BL-0002` 닫음.
 
 ## Task 10: BL-0001 설계
 
