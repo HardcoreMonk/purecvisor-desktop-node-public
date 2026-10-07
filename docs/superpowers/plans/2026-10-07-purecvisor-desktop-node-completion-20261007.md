@@ -79,7 +79,9 @@
 
 ## Task 6: probe `vm.create` 잔여물 회수 (PR #59)
 
-- [ ] 설치본 `0.42.92`에서 probe VM `pcv-probe-c2-*`로 (1) `vm.create` 진행 중 서비스 프로세스를 끊어 잔여 `disk0.vhdx`와 표식 `.pcv-create-pending.json`을 남기고 `job reconcile` not-applied hint에 위치·회수 경로가 나오는지, (2) 같은 이름 재 `vm.create`가 잔여물을 회수(`Remove interrupted create residue`, `recovered_residue`)하는지, (3) 표식 없는 폴더는 `PCV_VHD_ALREADY_EXISTS` detail `no-create-marker`로 거절하고 지우지 않는지 확인한다. probe VM·폴더 삭제, service Running 확인. evidence `lane2-vm-create-residue-actual-vm-2026-10-07-04292`. 로컬 commit.
+- [x] 설치본 `0.42.92`에서 probe VM `pcv-probe-c2-*`로 (1) `vm.create` 진행 중 서비스 프로세스를 끊어 잔여 `disk0.vhdx`와 표식 `.pcv-create-pending.json`을 남기고 `job reconcile` not-applied hint에 위치·회수 경로가 나오는지, (2) 같은 이름 재 `vm.create`가 잔여물을 회수(`Remove interrupted create residue`, `recovered_residue`)하는지, (3) 표식 없는 폴더는 `PCV_VHD_ALREADY_EXISTS` detail `no-create-marker`로 거절하고 지우지 않는지 확인한다. probe VM·폴더 삭제, service Running 확인. evidence `lane2-vm-create-residue-actual-vm-2026-10-07-04292`. 로컬 commit.
+
+실행 기록(2026-10-08): 설치본 `0.42.92-admin-smoke+b51b8cf`. r1은 판정과 정리를 모두 돌았으나 스크립트 결함(판정 아닌 항목을 summary 판정에 넣음)으로 `summary.json`을 쓰지 못했다(r1 artifact 보존, 같은 판정 결과). 고친 r2(`18`초)가 PASS다. 끊김: running 중 표식과 `disk0.vhdx`가 생긴 순간 서비스 프로세스를 종료해 첫 시도에 `PCV_JOB_INTERRUPTED`, VM 행 `0`, 잔여물 `disk0.vhdx` `4194304` B와 `.pcv-create-pending.json` `283` B(필드 `7`개, `pcv-vm-create-pending/v1`, `directory_created=true`). reconcile: `PCV_JOB_RECONCILIATION_REQUIRED` not-applied, hint에 위치와 회수 경로(`can leave a disk in`), 파일은 그대로. 같은 이름 create: `succeeded`, 단계 `Remove interrupted create residue`, `recovered_residue`, managed, 표식 삭제. 표식 없는 폴더(빈 `disk0.vhdx`): `PCV_VHD_ALREADY_EXISTS` detail `no-create-marker`, 파일 유지, VM 없음. managed delete 뒤 폴더 없음. 끝 상태: probe VM·폴더 `0`, 보존 VM stopped(시작과 같음), service Running/Automatic, Web `200`. artifact `artifacts/lane2-vm-create-residue-20261007-04292-r2`(스크립트 사본 포함).
 
 ## Task 7: 문서
 
