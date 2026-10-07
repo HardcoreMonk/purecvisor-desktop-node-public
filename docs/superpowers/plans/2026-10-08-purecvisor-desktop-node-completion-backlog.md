@@ -129,7 +129,10 @@ ADR-0016 standing approval(`pcv-it-` 접두사 VM 생성·삭제)은 그대로 �
 
 ## Task 12: 종료 검증과 merge (PR 3)
 
-- [ ] clean HEAD 종료 검증(solution), push, PR, green CI 뒤 merge.
+- [x] clean HEAD 종료 검증(solution), push, PR, green CI 뒤 merge.
+
+
+실행 기록(2026-10-08): §10 대기열 규칙대로 `release-train.json` `queue`에 PR #68 행 두 개를 더했다(PR 번호는 마지막 #67에서 예측). `92146da`(area `hyperv`, QoS readback `mutation_supported`, Lane 2 probe 기능군 `vm.qos`, risk `S`)와 `65c376d`(area `api`, `vm.create` reconcile 장치 지문, 기능군 `vm.create reconcile`, 설계 `pcv-vm-create-reconcile-devices-v1`, risk `M`). 이 기록 commit 뒤 clean HEAD 종료 검증, push, PR, green CI 뒤 merge한다. merge commit은 Task 13 기록에 적는다.
 
 ## Task 13: 판정과 연쇄
 
