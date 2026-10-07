@@ -105,6 +105,11 @@
 
 - [ ] 2026-10-19 이후에만 실행한다. 그 전에 오면 기한 대기로 멈춘다. Ubuntu 26 runner의 첫 `main` Development Gates와 Public Boundary run이 green이면 완료 정의 §4에 C5 충족과 프로젝트 완료 판정을 적고 campaign을 닫는다. 실패하면 `ubuntu-24.04` pin을 판단해 보고하고 멈춘다. push, PR, green CI 뒤 merge.
 
+이관(2026-10-07): 사용자 승인 `1,2,3,4,5`의 5로 이 campaign을 `completion-autopilot-20261007`로 교체하고 이 task를
+그 plan(`docs/superpowers/plans/2026-10-07-purecvisor-desktop-node-completion-autopilot.md`) Task 9(`not_before`
+2026-10-19)로 옮겼다. 위 문장의 "프로젝트 완료 판정"은 C2 재미충족(queue PR #59) 때문에 틀리므로, Task 9는 C5만 기록하고
+완료 판정은 `pcvverify completion` exit `0`일 때만 적는다.
+
 ## Nonclaims
 
 - operational current는 `0.42.91-admin-smoke` 그대로다. Lane 3와 `current-evidence.json` 쓰기는 없다.
