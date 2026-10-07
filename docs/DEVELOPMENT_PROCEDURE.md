@@ -118,6 +118,15 @@ campaign을 한 번 연다. 허용된 lane의 `next_step`은 재승인하지 않
   `commit_policy`에 따라 로컬 commit한 뒤 같은 턴에서 다음 task로 이어 간다. push/PR은
   `push_allowed`, merge는 `merge_policy`가 연다. 큐가 끝나면 campaign을 닫고 다음 승인을
   `next_approval_required`에 적는다.
+- 완료 기준 autopilot(`docs/superpowers/specs/2026-10-07-purecvisor-desktop-node-completion-autopilot-design.md`,
+  `pcv-completion-autopilot-v1`): 범위 밖 발견은 그 task commit에서 `docs/ga-ready/backlog.json`에 `undecided` 행으로
+  쓴다. `task_not_before`가 미래인 task는 건너뛴다. campaign을 닫는 merge 뒤 clean `main`에서 아래 판정을 돌린다.
+  exit `0`이면 결과를 인용해 날짜별 감사 문서에 완료를 적는다. exit `1`이면 `config/completion-autopilot-policy.json`이
+  자동으로 연 갭 종류로 같은 턴에 다음 campaign을 열고(completion 모드), 정책 밖 갭(`user-decision`, `new-design`)은
+  `next_approval_required`에 번호로 둔다. 프로젝트 완료는 이 판정이 exit `0`일 때만 적는다.
+
+      gh run list --branch main --event push --limit 30 --json databaseId,workflowName,status,conclusion,headSha,createdAt > artifacts/completion/<yyyymmdd>/main-runs.json
+      dotnet run --project src/DesktopNode.Verification -c Release -- completion --ci-runs artifacts/completion/<yyyymmdd>/main-runs.json --output artifacts/completion/<yyyymmdd>/result.json
 
 ## 2. 변경 등급 결정
 
@@ -322,10 +331,13 @@ package나 설치본 상태를 operational current로 표현하지 않는다. �
 | Lane 3 PASS | `align-install` | 이미 승인된 product Update | 이름 없는 current-card 재캡처 |
 | Lane 2 install PASS | `align-install` | campaign을 닫고 기본 `lane1-continuous-development`를 연다 | FAIL 프로브를 이어서 열기 |
 | Lane 2 FAIL | 모두 | STOP. `next_approval_required`만 보고 | FAIL를 current에 쓰기, 다른 family 프로브 |
-| 범위 밖 발견 | 모두 | report-only | 그것을 다음 checkpoint로 승격 |
+| 범위 밖 발견 | 모두 | report-only, backlog `undecided` 행 | 그것을 다음 checkpoint로 승격 |
+| campaign 큐 끝, 닫는 merge 뒤 | 모두 | `pcvverify completion` 판정. 정책 안 갭은 completion 모드로 다음 campaign | 판정 없이 완료 적기, 정책 밖 갭 자동 실행 |
 
 Git commit, push/PR, host mutation, current-evidence write는 각 승인 표가 그대로 적용된다.
 campaign은 이미 받은 승인을 되묻지 않을 뿐, 없는 승인을 만들지 않는다.
+`config/completion-autopilot-policy.json`은 사용자 승인 문장(2026-10-07 승인 4)을 갭 종류별 권한으로 옮긴 것이다.
+정책이 연 campaign도 그 정책 행 밖 권한을 열지 않는다.
 
 ## 10. Release train
 

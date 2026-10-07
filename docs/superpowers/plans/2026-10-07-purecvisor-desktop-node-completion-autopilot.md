@@ -59,7 +59,9 @@ ADR-0016 standing approval(`pcv-it-` 접두사 VM 생성·삭제)은 철회 지�
 
 ## Task 5: 판정기 2 (C1·C3·C4, 저장소 판정)
 
-- [ ] C1(Required CI `dotnet`·`delivery` shard), C3(feature evidence ledger 후보 stage), C4(criteria 항목의 evidence id 해석과 면제 결정 문서 존재)를 더하고, 현재 저장소 입력으로 기대 갭(C2 `train-departure`, C5 `deadline-wait` 2026-10-19, C7 `user-decision` 2건)을 내는 시험을 둔다. `DEVELOPMENT_PROCEDURE.md` §1.4·§9에 판정 명령 줄을 더한다. 검증: Verification.Tests, Delivery.Tests, `git diff --check`. 로컬 commit.
+- [x] C1(Required CI `dotnet`·`delivery` shard), C3(feature evidence ledger 후보 stage), C4(criteria 항목의 evidence id 해석과 면제 결정 문서 존재)를 더하고, 현재 저장소 입력으로 기대 갭(C2 `train-departure`, C5 `deadline-wait` 2026-10-19, C7 `user-decision` 2건)을 내는 시험을 둔다. `DEVELOPMENT_PROCEDURE.md` §1.4·§9에 판정 명령 줄을 더한다. 검증: Verification.Tests, Delivery.Tests, `git diff --check`. 로컬 commit.
+
+실행 기록(2026-10-07): 판정 코드는 Task 4에 들어갔으므로 이 checkpoint는 시험과 절차 문서다. `ProjectCompletionRepositoryConditionTests` `5`개(C1이 criteria workflow 목록을 따름, C3 후보 feature 실패와 `promotion_eligible=false`, 비후보 실패 무시, C4 evidence 없음·빈 항목·없는 waiver 문서 → `items=15, closed=12`, C4 항목 수 `14` 입력 오류, 옵션 없는 호출의 exit `2` 결과 계약). 설계 §3대로 저장소 상태 snapshot 시험은 두지 않았다. `VerificationApplication` 연결은 Task 4의 `dotnet run ... completion` 실행으로 확인했다. `DEVELOPMENT_PROCEDURE.md` §1.4에 autopilot 단락(backlog 쓰기, `task_not_before`, 닫는 merge 뒤 판정과 연쇄, 판정 명령 두 줄)을, §9 표에 "campaign 큐 끝" 행과 정책 문장을 더했다. Verification `652/653`(dirty tree PolicyBoundary `1`), Delivery `775/775`, `git diff --check` 통과.
 
 ## Task 6: 종료 검증과 merge (1차)
 
