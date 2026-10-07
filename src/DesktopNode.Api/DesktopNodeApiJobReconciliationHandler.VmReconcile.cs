@@ -147,7 +147,10 @@ internal sealed partial class DesktopNodeApiJobReconciliationHandler
             .Where(vm => string.Equals(DesktopNodeApiJsonReader.GetStringProperty(vm, "name"), vmName, StringComparison.OrdinalIgnoreCase))
             .ToArray();
 
-        if (matching.Length == 1 && CreateFingerprintMatches(baseline, matching[0]))
+        var missingDevices = matching.Length == 1 && CreateFingerprintMatches(baseline, matching[0])
+            ? MissingCreateDevices(job.Parameters, vmName, matching[0])
+            : null;
+        if (missingDevices is { Count: 0 })
         {
             var result = DesktopNodeApiResponseFactory.JsonFromObject(new SortedDictionary<string, object?>
             {
@@ -159,6 +162,7 @@ internal sealed partial class DesktopNodeApiJobReconciliationHandler
                     ["classification"] = "postcondition-confirmed",
                     ["before"] = null,
                     ["expected_after"] = baseline.ExpectedAfter,
+                    ["expected_devices"] = ExpectedCreateDevices(job.Parameters, vmName),
                     ["observed"] = matching[0]
                 }
             });
@@ -184,9 +188,13 @@ internal sealed partial class DesktopNodeApiJobReconciliationHandler
             ReconciliationRequiredError(
                 jobId,
                 classification,
-                "Provider vm.list readback did not prove exactly one managed VM with the captured create postcondition.",
+                missingDevices is { Count: > 0 }
+                    ? $"Provider vm.list readback found the managed VM without its create devices (missing_devices={string.Join(",", missingDevices)}); no mutation was attempted."
+                    : "Provider vm.list readback did not prove exactly one managed VM with the captured create postcondition.",
                 "vm.create",
-                classification == "not-applied" ? InterruptedCreateResidueHint(job.Parameters, vmName) : null));
+                classification == "not-applied"
+                    ? InterruptedCreateResidueHint(job.Parameters, vmName)
+                    : missingDevices is { Count: > 0 } ? IncompleteCreateHint(vmName, missingDevices) : null));
         return RenderReconciliationResult(jobRuntime.Reconcile(jobId, requiredAssessment));
     }
 

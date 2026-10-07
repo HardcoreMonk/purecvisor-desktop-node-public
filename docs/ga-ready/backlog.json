@@ -12,8 +12,8 @@
       "basis": "2026-10-08 사용자 승인 \"1,2,3,4,5,6,7\"의 1 (completion-20261007 next_approval_required): BL-0001을 counts로 분류하고 새 설계를 승인한다: vm.create reconcile 지문에 디스크·ISO·switch 연결을 넣는 설계와 구현(Lane 1, push, PR, green CI 뒤 merge, product payload면 다음 train queue 행, host mutation 없음)",
       "out_of_scope_ref": null,
       "needs_design": true,
-      "status": "open",
-      "closed_by": null
+      "status": "closed",
+      "closed_by": "completion-backlog-20261008 Task 11"
     },
     {
       "id": "BL-0002",

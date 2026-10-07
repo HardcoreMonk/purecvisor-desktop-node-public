@@ -3429,6 +3429,7 @@ public sealed partial class ApiRuntimePolicyRequestProcessorTests
                   "status": "failed",
                   "params": {
                     "name": "lab-vm",
+                    "iso_path": "D:\\isos\\lab.iso",
                     "generation": 2,
                     "reconciliation": {
                       "schema": "pcv-vm-create-reconciliation/v1",
@@ -3459,7 +3460,7 @@ public sealed partial class ApiRuntimePolicyRequestProcessorTests
                 nativeAdapter: new RecordingNativeHyperVAdapter(nativeCalls, new Dictionary<string, string>
                 {
                     ["vm.list"] = """
-                    {"ok":true,"operation":"vm.list","data":[{"id":"vm-id","name":"lab-vm","platform":"hyperv","guest_family":"windows","state":"off","cpu":{"count":1},"memory":{"startup_mb":1024},"generation":2,"managed_by_purecvisor":true}],"error":null}
+                    {"ok":true,"operation":"vm.list","data":[{"id":"vm-id","name":"lab-vm","platform":"hyperv","guest_family":"windows","state":"off","cpu":{"count":1},"memory":{"startup_mb":1024},"generation":2,"managed_by_purecvisor":true,"storage":[{"kind":"vhdx","path":"D:\\PureCVisor\\VMs\\lab-vm\\disk0.vhdx","attached":true}],"dvd_media":[{"path":"D:\\isos\\lab.iso"}],"network":[{"switch":"Default Switch","mode":"default-switch"}]}],"error":null}
                     """
                 }));
 
@@ -3474,7 +3475,9 @@ public sealed partial class ApiRuntimePolicyRequestProcessorTests
             var data = document.RootElement.GetProperty("data");
             Assert.Equal("succeeded", data.GetProperty("status").GetString());
             Assert.Equal("vm.create", data.GetProperty("result").GetProperty("operation").GetString());
-            Assert.Equal("postcondition-confirmed", data.GetProperty("result").GetProperty("reconciliation").GetProperty("classification").GetString());
+            var reconciliation = data.GetProperty("result").GetProperty("reconciliation");
+            Assert.Equal("postcondition-confirmed", reconciliation.GetProperty("classification").GetString());
+            Assert.Equal(@"D:\PureCVisor\VMs\lab-vm\disk0.vhdx", reconciliation.GetProperty("expected_devices").GetProperty("disk").GetString());
         }
         finally
         {

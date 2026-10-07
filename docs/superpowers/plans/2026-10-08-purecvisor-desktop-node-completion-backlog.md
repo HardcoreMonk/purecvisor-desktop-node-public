@@ -108,7 +108,10 @@ ADR-0016 standing approval(`pcv-it-` 접두사 VM 생성·삭제)은 그대로 �
 
 ## Task 11: BL-0001 구현
 
-- [ ] 설계대로 Api reconcile handler와 필요한 readback을 고치고 시험을 더한다. product payload이므로 `queue` 행(Lane 2 probe 기능군 `vm.create` reconcile)을 더한다. 검증: Api.Tests, HyperV.Tests, `git diff --check`. `BL-0001` 닫기. 로컬 commit.
+- [x] 설계대로 Api reconcile handler와 필요한 readback을 고치고 시험을 더한다. product payload이므로 `queue` 행(Lane 2 probe 기능군 `vm.create` reconcile)을 더한다. 검증: Api.Tests, HyperV.Tests, `git diff --check`. `BL-0001` 닫기. 로컬 commit.
+
+
+실행 기록(2026-10-08): 새 partial `DesktopNodeApiJobReconciliationHandler.CreateDevices.cs`(`ExpectedCreateDevices`, `MissingCreateDevices`, `IncompleteCreateHint`)를 더하고 `VmReconcile.cs`의 create 판정이 지문 일치 뒤 장치까지 맞아야 `postcondition-confirmed`가 되게 했다. 확정 결과의 `reconciliation`에 `expected_devices`를 넣고, 장치가 빠지면 `target-fingerprint-mismatch` 메시지에 `missing_devices=<목록>`과 회수 hint(managed `vm.delete` 뒤 같은 이름 create)를 붙인다. 설계 §2.2의 `missing_devices`는 실패 경로에 결과 객체가 없어 메시지 문자열로 남겼다. 경로는 `GetFullPath`로 정규화하고 대소문자를 무시한다. 시험: `ApiVmCreateReconcileDevicesTests` `12`개(완전, 장치별 누락 7, 셋 다 누락, `vm_root`와 대소문자, `iso_path` 없음, hint), end-to-end `ReconcileKeepsAManagedVmWithoutDevicesFailed`(partial `CreateDevicesReconcile.cs`), 기존 성공 시험 fixture에 세 장치와 `iso_path`·`expected_devices` 확인. Api `503/503`, HyperV `273/273`, Delivery `775/775`(ratchet 포함, `VmReconcile.cs`와 시험 파일은 ratchet 대상 아님). product payload이므로 queue 행은 Task 12에서 이 commit SHA로 더한다. `BL-0001` 닫음.
 
 ## Task 16: BL-0008 cancellation bridge 시험
 
