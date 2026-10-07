@@ -78,7 +78,10 @@ ADR-0016 standing approval(`pcv-it-` 접두사 VM 생성·삭제)은 그대로 �
 
 ## Task 7: BL-0005 구현
 
-- [ ] `train-path-check`에 Lane 3 pin 허용 목록(결과 계약에 허용된 경로를 따로 보고)과 시험, `CurrentEvidenceVerifierTests` 수정, `DEVELOPMENT_PROCEDURE.md` §10, private `pcv-ship`·`pcv-campaign-open` train 문장(필요하면). 검증: Verification.Tests, Delivery, `git diff --check`. `BL-0005` 닫기. 로컬 commit.
+- [x] `train-path-check`에 Lane 3 pin 허용 목록(결과 계약에 허용된 경로를 따로 보고)과 시험, `CurrentEvidenceVerifierTests` 수정, `DEVELOPMENT_PROCEDURE.md` §10, private `pcv-ship`·`pcv-campaign-open` train 문장(필요하면). 검증: Verification.Tests, Delivery, `git diff --check`. `BL-0005` 닫기. 로컬 commit.
+
+
+실행 기록(2026-10-08): `TrainPathCheckCommand`에 Lane 3 pin 허용 목록 여섯 파일과 `OnlyPinLinesChanged`(파일별 `git diff -U0`의 바뀐 줄이 모두 SHA-256 한 줄이고 `+`·`-` 수가 같음)를 더하고 결과에 `allowed_pin_paths`를 넣었다. `CurrentEvidenceVerifierTests`는 기대 version을 `current-evidence.json`에서 읽는다. 시험 `PathCheckAllowsLane3PinFilesThatOnlyReplaceShaValues`, `PathCheckKeepsAPinFileWithOtherChangesAsAProductPath`(3) `4`개, path check·current-evidence 시험 `25/25`. 실제 0.42.92 Lane 3 범위 `34b2b16..4246880`에서 pin 여섯 개가 모두 허용되고 남은 product path는 이 변경으로 Lane 3가 더 고치지 않는 시험 두 개뿐임을 확인했다. `DEVELOPMENT_PROCEDURE.md` §10 문장을 고쳤다. private skill은 train 문장에 path check 예외를 적지 않으므로 바꾸지 않았다. `BL-0005` 닫음.
 
 ## Task 8: 종료 검증과 merge (PR 2)
 

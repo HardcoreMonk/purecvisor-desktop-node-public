@@ -365,7 +365,9 @@ campaign은 이미 받은 승인을 되묻지 않을 뿐, 없는 승인을 만�
   `pcv-single-pr-train-v1`). 출발 때 고정하는 `main` HEAD가 payload commit이고, 그 commit의 main push run(Development
   Gates와 Public Boundary)이 green이어야 출발한다. 두 run id는 출발 task 실행 기록에 적는다. Lane 3 main push evidence는
   이 run을 인용하고, `git diff --name-only <payload commit>..<PR head>`에 `src/`, `web/src/`, `config/`, `.github/`가
-  없다는 확인을 담는다. 있으면 Lane 3를 쓰지 않고 멈춘다. 확인은 아래 명령이 하고(계약 `pcv-train-path-check-result-v1`,
+  없다는 확인을 담는다. 있으면 Lane 3를 쓰지 않고 멈춘다. 예외는 Lane 3 문서 도구가 바꾸는 pin 여섯 파일(config spec 3개,
+  Delivery verifier 3개)이고, 바뀐 줄이 모두 SHA-256 한 줄일 때만 `allowed_pin_paths`로 허용한다(`pcv-single-pr-train-v2`).
+  `CurrentEvidenceVerifierTests`는 version을 `current-evidence.json`에서 읽으므로 Lane 3가 고치지 않는다. 확인은 아래 명령이 하고(계약 `pcv-train-path-check-result-v1`,
   제품 경로가 있으면 exit `1`), 그 결과를 facts의 `main-push-payload` 문서(`head_sha`는 payload commit,
   `train_pr_head`, `path_check_line`)에 적는다. 기존 `main-push` 템플릿은 두 PR로 돈 train 기록용으로 남는다.
   `lane3-spec`은 facts에 있는 쪽을 쓰고, 둘 다 있으면 멈춘다. Lane 3가 고치는 `DOCUMENTATION_INDEX` 공개 소스 권위

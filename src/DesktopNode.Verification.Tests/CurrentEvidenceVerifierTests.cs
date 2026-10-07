@@ -22,7 +22,13 @@ public sealed class CurrentEvidenceVerifierTests
 
         var result = CurrentEvidenceVerifier.Verify(root, CancellationToken.None);
 
-        Assert.Equal("0.42.92-admin-smoke", result.Record.Current.Version);
+        // Design pcv-single-pr-train-v2: the expected version comes from the file, so Lane 3 does not edit this test.
+        using var current = System.Text.Json.JsonDocument.Parse(
+            File.ReadAllText(Path.Combine(root, "docs", "ga-ready", "current-evidence.json")));
+        Assert.Equal(
+            current.RootElement.GetProperty("current").GetProperty("version").GetString(),
+            result.Record.Current.Version);
+        Assert.Matches(@"^0\.\d+\.\d+-admin-smoke$", result.Record.Current.Version);
         Assert.Equal(8, result.Targets.Count);
         Assert.All(result.Targets, target => Assert.Equal("current", target.Status));
         Assert.Equal(
