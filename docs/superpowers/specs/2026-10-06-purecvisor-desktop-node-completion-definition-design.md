@@ -3,6 +3,7 @@
 - Design-ID: `pcv-project-completion-definition-v1`
 - 작성일: `2026-10-06`
 - 문서 상태: `accepted` (2026-10-06 사용자 승인 `1, public trusted signing, 외부 stable 배포는 없음`)
+- 대체: 2026-10-07 `pcv-project-completion-definition-v2`(`docs/superpowers/specs/2026-10-07-purecvisor-desktop-node-completion-definition-v2-design.md`). 현재 기준은 v2다.
 - 변경 등급: S (판정 기준 문서. 제품 동작 변경 없음)
 - 입력: `docs/project-status-audit-2026-10-06.md`
 - 관련: ADR-0004(GA-ready 제품 런타임), ADR-0006(내부 사설망 배포), ADR-0015(기능 evidence 승격), `docs/SERVICE_PLAN.md` §7.1·§9·§10

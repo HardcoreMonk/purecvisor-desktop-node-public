@@ -18,6 +18,13 @@
 - Claims: `public_trusted_signing=false`; `external_stable_publication=false`.
 <!-- END GENERATED CURRENT EVIDENCE -->
 
+## 2026-10-07 프로젝트 완료 정의 v2
+
+- 완료 조건 C1~C7: `docs/superpowers/specs/2026-10-07-purecvisor-desktop-node-completion-definition-v2-design.md`
+  (`pcv-project-completion-definition-v2`). v1에 C7(backlog `counts`·`undecided` 행 `0`)을 더하고 기계 판정 출처를
+  `config/project-completion-criteria.json`으로 정했다. 완료는 `pcvverify completion` exit `0`일 때만 적는다.
+- 2026-10-07 판정: C2(queue PR #59), C5(2026-10-19 runner 확인), C7(backlog `undecided` 2행)이 남는다.
+
 ## 2026-10-06 프로젝트 완료 정의
 
 - 완료 조건 C1~C6: `docs/superpowers/specs/2026-10-06-purecvisor-desktop-node-completion-definition-design.md`.

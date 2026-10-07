@@ -35,7 +35,9 @@ ADR-0016 standing approval(`pcv-it-` 접두사 VM 생성·삭제)은 철회 지�
 
 ## Task 1: 완료 정의 v2 결정
 
-- [ ] `docs/superpowers/specs/2026-10-07-purecvisor-desktop-node-completion-definition-v2-design.md`(`pcv-project-completion-definition-v2`)를 쓴다. C1~C6을 유지하고, C7(backlog의 `counts`·`undecided` 행 `0`)을 더하며, 기계 판정 출처를 `config/project-completion-criteria.json`으로 정하고, 감사 2026-10-06 §4 위험 목록을 그 파일로 옮긴다는 결정과 2026-10-07 판정(C2 재미충족: queue PR #59)을 적는다. v1 문서 상단에 v2 대체 줄만 더하고 `DOCUMENTATION_INDEX.md`에 v2를 건다. 검증: `git diff --check`, Delivery 문서 시험(`EfficientDevelopmentProcedureDocumentationTests` 등 index를 읽는 시험). 로컬 commit.
+- [x] `docs/superpowers/specs/2026-10-07-purecvisor-desktop-node-completion-definition-v2-design.md`(`pcv-project-completion-definition-v2`)를 쓴다. C1~C6을 유지하고, C7(backlog의 `counts`·`undecided` 행 `0`)을 더하며, 기계 판정 출처를 `config/project-completion-criteria.json`으로 정하고, 감사 2026-10-06 §4 위험 목록을 그 파일로 옮긴다는 결정과 2026-10-07 판정(C2 재미충족: queue PR #59)을 적는다. v1 문서 상단에 v2 대체 줄만 더하고 `DOCUMENTATION_INDEX.md`에 v2를 건다. 검증: `git diff --check`, Delivery 문서 시험(`EfficientDevelopmentProcedureDocumentationTests` 등 index를 읽는 시험). 로컬 commit.
+
+실행 기록(2026-10-07): v2 결정 문서를 새로 썼다. C1~C6 뜻은 v1 그대로이고 C7(backlog `status=open`이면서 `counts`·`undecided`인 행 `0`)을 더했다. 기계 판정 출처는 `config/project-completion-criteria.json`(`pcv-project-completion-criteria-v1`), backlog 계약은 `pcv-backlog-v1`, 완료는 `pcvverify completion` exit `0`인 `main` HEAD에서만 적는다. 감사 2026-10-06 §4 위험 행은 criteria `deadline_risks`로 옮기고 감사는 고치지 않았다. 2026-10-07 판정(사람 대조, `main` `3f55831`): C1·C3·C4·C6 충족, C2(queue PR #59)·C5(기한 대기)·C7(backlog `undecided` 2행) 미충족, `4/7`. v1에는 상단 대체 줄만 더했고 `DOCUMENTATION_INDEX.md`·`DEVELOPER_INDEX.md`가 v2를 가리킨다. 검증: `git diff --check` 통과, Delivery `771/771`.
 
 ## Task 2: autopilot 설계
 
