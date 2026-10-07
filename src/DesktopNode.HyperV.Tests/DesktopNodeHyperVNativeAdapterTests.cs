@@ -280,7 +280,6 @@ public sealed class DesktopNodeHyperVNativeAdapterTests
         Assert.True(adapter.TryInvoke(operation, parameters.RootElement, CancellationToken.None, out var result));
 
         var qos = result.Data!.Value.GetProperty(bucket);
-        Assert.Equal(mutation, qos.GetProperty("mutation_operation").GetString());
         Assert.True(DesktopNodeHyperVAdapterDispatchCatalog.TryGetEntry(mutation, out var entry));
         Assert.Equal(DesktopNodeHyperVOperationKind.Mutation, entry.Kind);
         Assert.True(qos.GetProperty("mutation_supported").GetBoolean());

@@ -309,4 +309,10 @@ public sealed partial class DesktopNodeHyperVNativeAdapter
             detail,
             false);
     }
+
+    // The QoS readbacks report whether the matching queued set operation exists. They used to return a constant false
+    // from before vm.qos.storage.set and vm.qos.network.set were added (backlog BL-0002).
+    private static bool IsCatalogMutation(string operation) =>
+        DesktopNodeHyperVAdapterDispatchCatalog.TryGetEntry(operation, out var entry) &&
+        entry.Kind == DesktopNodeHyperVOperationKind.Mutation;
 }
