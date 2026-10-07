@@ -50,7 +50,10 @@ ADR-0016 standing approval(`pcv-it-` 접두사 VM 생성·삭제)은 그대로 �
 
 ## Task 3: BL-0003 타이밍 시험
 
-- [ ] `VerificationExecutorTests.NonCooperativeManagedRunnerCannotBlockPerSuiteDeadline`의 hang guard(`WaitAsync` 3초)를 runner 속도에 기대지 않게 고친다(검증 의미는 유지). 검증: Verification.Tests. `BL-0003` 닫기. 로컬 commit.
+- [x] `VerificationExecutorTests.NonCooperativeManagedRunnerCannotBlockPerSuiteDeadline`의 hang guard(`WaitAsync` 3초)를 runner 속도에 기대지 않게 고친다(검증 의미는 유지). 검증: Verification.Tests. `BL-0003` 닫기. 로컬 commit.
+
+
+실행 기록(2026-10-08): `NonCooperativeManagedRunnerCannotBlockPerSuiteDeadline`(3초)와 같은 위험의 옆 시험(4초, 비협조 process runner와 overall 시한)의 `WaitAsync` hang guard를 상수 `HangGuard` `30`초로 바꿨다. 가짜 runner는 `finally`에서만 풀리므로 executor가 막히면 여전히 guard에서 실패하고, 검증하는 suite 시한(1·2초)과 판정은 그대로다. `VerificationExecutorTests` `55/55`. `BL-0003` 닫음.
 
 ## Task 4: BL-0007 Host transport 시험
 
