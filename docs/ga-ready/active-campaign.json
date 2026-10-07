@@ -13,7 +13,7 @@
   ],
   "mutation_allowed": true,
   "current_write_allowed": true,
-  "next_step": "Tasks 10 and 11 are not before 2026-10-19; run Task 10 (C5 runner check) and then Task 11 (completion judgment) on or after that date.",
+  "next_step": "Stopped with deadline-wait on 2026-10-08: judgment on main 1b0b19f is 5/7 (C5 deadline 2026-10-19 covered by Task 10, C7 seven undecided backlog rows). Run Task 10 and Task 11 on or after 2026-10-19; backlog classification is in next_approval_required.",
   "plan": "docs/superpowers/plans/2026-10-07-purecvisor-desktop-node-completion-20261007.md",
   "task_queue": [
     "Task 0",
@@ -72,9 +72,13 @@
     ]
   },
   "next_approval_required": [
-    "BL-0001 분류: vm.create reconcile 지문에 장치 연결이 없는 문제를 counts(새 설계 필요: Lane 1 설계 문서, push, PR, green CI 뒤 merge, host mutation 없음) 또는 out-of-scope(hyperv-exactly-once-reconcile-completeness)로 정한다",
-    "BL-0002 분류: QoS readback mutation_supported: false를 counts(Lane 1 수정, push, PR, green CI 뒤 merge, 다음 train queue 행, host mutation 없음) 또는 out-of-scope로 정한다",
-    "BL-0003 분류: 타이밍 시험 NonCooperativeManagedRunnerCannotBlockPerSuiteDeadline의 CI 일시 실패를 counts(Lane 1 시험 안정화, push, PR, green CI 뒤 merge, host mutation 없음)로 정한다"
+    "BL-0001을 counts로 분류하고 새 설계를 승인한다: vm.create reconcile 지문에 디스크·ISO·switch 연결을 넣는 설계와 구현(Lane 1, push, PR, green CI 뒤 merge, product payload면 다음 train queue 행, host mutation 없음)",
+    "BL-0002를 counts로 분류한다: QoS readback mutation_supported: false 원인 조사와 수정(Lane 1, push, PR, green CI 뒤 merge, 다음 train queue 행, host mutation 없음)",
+    "BL-0003을 counts로 분류한다: VerificationExecutorTests 타이밍 시험 안정화(Lane 1, push, PR, green CI 뒤 merge, host mutation 없음)",
+    "BL-0004를 counts로 분류한다: train-facts fullgate와 train-host-inputs current-card의 순환 제거(Lane 1, push, PR, green CI 뒤 merge, host mutation 없음)",
+    "BL-0005를 counts로 분류하고 새 설계를 승인한다: 단일 PR train path check가 Lane 3 pin(config spec 3개, Delivery verifier 3개, CurrentEvidenceVerifierTests)을 허용하도록 pcv-single-pr-train 개정과 구현(Lane 1, push, PR, green CI 뒤 merge, host mutation 없음)",
+    "BL-0006을 counts로 분류한다: pcvverify completion C2가 operational 뒤 running train을 미충족으로 보도록 수정(Lane 1, push, PR, green CI 뒤 merge, host mutation 없음)",
+    "BL-0007을 counts로 분류한다: DesktopNodeHttpTransportContractTests raw HTTP 시한 안정화(Lane 1, push, PR, green CI 뒤 merge, host mutation 없음)"
   ],
   "stop_on": [
     "same-cause-fail-3",
