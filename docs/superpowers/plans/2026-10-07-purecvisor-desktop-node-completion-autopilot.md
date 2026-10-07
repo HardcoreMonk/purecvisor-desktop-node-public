@@ -71,7 +71,9 @@ ADR-0016 standing approval(`pcv-it-` 접두사 VM 생성·삭제)은 철회 지�
 
 ## Task 7: private skill 갱신
 
-- [ ] private 저장소 `.claude/skills/pcv-campaign`(`task_not_before`, backlog 쓰기, 닫을 때 `pcvverify completion`과 정책 안 연쇄, carry-over), `pcv-campaign-open`(completion 모드: 갭 → task 템플릿, 정책 승인 인용), `pcv-goal`(완료 goal 템플릿: `pcvverify completion` exit `0` 또는 정지 절)을 설계대로 고친다. 검증: private `git diff --check`, skill 본문이 설계의 필드 이름과 같은지 Grep. private 로컬 commit, public은 plan checkbox와 campaign 전진만 로컬 commit.
+- [x] private 저장소 `.claude/skills/pcv-campaign`(`task_not_before`, backlog 쓰기, 닫을 때 `pcvverify completion`과 정책 안 연쇄, carry-over), `pcv-campaign-open`(completion 모드: 갭 → task 템플릿, 정책 승인 인용), `pcv-goal`(완료 goal 템플릿: `pcvverify completion` exit `0` 또는 정지 절)을 설계대로 고친다. 검증: private `git diff --check`, skill 본문이 설계의 필드 이름과 같은지 Grep. private 로컬 commit, public은 plan checkbox와 campaign 전진만 로컬 commit.
+
+실행 기록(2026-10-07): Task 6 PR #60(head `87c6afc`, Required check 다섯 개 pass)을 head 고정으로 merge했다(`ebecd74`). private 저장소 commit `1d536798`(로컬만, push 없음)으로 skill 세 개를 고쳤다. `pcv-campaign`: `task_not_before` 건너뛰기, 범위 밖 발견의 backlog `undecided` 행 쓰기, 닫는 merge 뒤 §6 판정(`gh run list` → `completion`, exit `0` 완료 감사, `2` red, `1` 정책 분류), `ci-wait` 재판정, carry-over, 정지 이유 `deadline-wait`·`no-progress`, `goal-evidence`의 `completion=` 칸. `pcv-campaign-open`: completion 모드 §5(갭 순서와 템플릿, train은 직전 train plan을 따름, 권한은 들어간 갭 종류 정책 행의 합, `generated_from`, ADR-0016 standing approval 문장 승계, carry-over). `pcv-goal`: 틀 E 프로젝트 완료(`334`자). 세 skill과 설계의 필드 이름(`task_not_before`, `carried_tasks`, `generated_from`, `deadline-wait`, `no-progress`, `pcv-backlog-v1`, 정책 파일)이 일치함을 Grep으로 확인했고 private `git diff --check` 통과.
 
 ## Task 8: 첫 판정과 연쇄
 
