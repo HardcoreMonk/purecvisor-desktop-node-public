@@ -85,7 +85,10 @@ ADR-0016 standing approval(`pcv-it-` 접두사 VM 생성·삭제)은 그대로 �
 
 ## Task 8: 종료 검증과 merge (PR 2)
 
-- [ ] clean HEAD 종료 검증, push, PR, green CI 뒤 merge.
+- [x] clean HEAD 종료 검증, push, PR, green CI 뒤 merge.
+
+
+실행 기록(2026-10-08): clean HEAD `f6b5945`에서 solution 실패 `0`(Verification `664`, Delivery `775`), `git diff --check origin/main...HEAD` 통과, product payload 경로 변경 `0`. 이 기록 commit 뒤 push, PR, green CI 뒤 merge한다. PR 번호와 merge commit은 Task 9 기록에 적는다.
 
 ## Task 9: BL-0002 QoS readback
 
