@@ -99,7 +99,9 @@
 
 ## Task 9: 종료와 Lane 3 PR(PR B) merge
 
-- [ ] clean HEAD 종료 검증, push, PR, green CI 뒤 merge. merge 뒤 main push run(Development Gates, Public Boundary)을 기다린다. red면 revert PR을 열고 멈춘다.
+- [x] clean HEAD 종료 검증, push, PR, green CI 뒤 merge. merge 뒤 main push run(Development Gates, Public Boundary)을 기다린다. red면 revert PR을 열고 멈춘다.
+
+실행 기록(2026-10-08): clean HEAD `2fc1934`에서 `dotnet test src/DesktopNode.sln -c Release` 실패 `0`(Verification `655`, Delivery `775`, Api `490`, HyperV `271`, Host `216`, Contracts `200`, Cli `183`, Runtime `129`, Service `11`), manual-admin Pester(`PcvLane3PromotionDocs`, `PcvContractSpecPins`, `PcvCurrentEvidenceLedgerRows`) `17/17`, `git diff --check origin/main...HEAD` 통과. 이 기록 commit 뒤 push, PR, green CI 뒤 merge하고 merge의 main push run을 확인한다. PR 번호와 merge commit은 Task 12 기록에 적는다.
 
 ## Task 10: C5 runner 확인 (2026-10-19 이후)
 
