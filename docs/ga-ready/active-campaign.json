@@ -11,7 +11,7 @@
   ],
   "mutation_allowed": false,
   "current_write_allowed": false,
-  "next_step": "Run Task 10 from docs/superpowers/plans/2026-10-08-purecvisor-desktop-node-completion-backlog.md, then the queue in order; Tasks 14 and 15 not before 2026-10-19.",
+  "next_step": "Run Task 11 from docs/superpowers/plans/2026-10-08-purecvisor-desktop-node-completion-backlog.md, then the queue in order; Tasks 14 and 15 not before 2026-10-19.",
   "plan": "docs/superpowers/plans/2026-10-08-purecvisor-desktop-node-completion-backlog.md",
   "task_queue": [
     "Task 1",
@@ -37,7 +37,7 @@
     "Task 14": "2026-10-19",
     "Task 15": "2026-10-19"
   },
-  "next_task": "Task 10",
+  "next_task": "Task 11",
   "completed_tasks": [
     "Task 1",
     "Task 2",
@@ -47,7 +47,8 @@
     "Task 6",
     "Task 7",
     "Task 8",
-    "Task 9"
+    "Task 9",
+    "Task 10"
   ],
   "commit_policy": "local-commit-per-task",
   "push_allowed": true,

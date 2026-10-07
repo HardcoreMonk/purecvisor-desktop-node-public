@@ -101,7 +101,10 @@ ADR-0016 standing approval(`pcv-it-` 접두사 VM 생성·삭제)은 그대로 �
 
 ## Task 10: BL-0001 설계
 
-- [ ] `vm.create` reconcile 지문(`CreateFingerprintMatches`)에 디스크(`disk0.vhdx` 연결), ISO, switch 연결을 넣어 `DefineSystem` 뒤 장치 연결 전에 끊긴 create를 `postcondition-confirmed`로 판정하지 않게 하는 설계를 쓴다(판정 표, readback 필드, 시험, 다음 train Lane 2 probe). 검증: `git diff --check`. 로컬 commit.
+- [x] `vm.create` reconcile 지문(`CreateFingerprintMatches`)에 디스크(`disk0.vhdx` 연결), ISO, switch 연결을 넣어 `DefineSystem` 뒤 장치 연결 전에 끊긴 create를 `postcondition-confirmed`로 판정하지 않게 하는 설계를 쓴다(판정 표, readback 필드, 시험, 다음 train Lane 2 probe). 검증: `git diff --check`. 로컬 commit.
+
+
+실행 기록(2026-10-08): 설계 `pcv-vm-create-reconcile-devices-v1`을 썼다. 근거: create provider는 항상 `<vm_root>\<name>\disk0.vhdx` 연결, 필수 인자 `iso_path` ISO 연결, 상수 `Default Switch` 연결을 하고, 0.42.92 probe의 실제 `vm.list` 행에 `storage[].path/attached`, `dvd_media[].path`, `network[].switch`가 있다. 결정: 기대 장치를 baseline에 저장하지 않고 reconcile 때 job 인자(`vm_root`, `iso_path`)에서 계산해 업그레이드 전 job에도 적용하고 baseline 계약 v1을 유지한다. 장치가 하나라도 빠지면 `target-fingerprint-mismatch`와 `missing_devices`, 회수 hint. `DOCUMENTATION_INDEX`에 줄을 더했다.
 
 ## Task 11: BL-0001 구현
 
