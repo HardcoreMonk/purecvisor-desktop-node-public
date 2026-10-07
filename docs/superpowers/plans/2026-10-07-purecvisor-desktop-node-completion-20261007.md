@@ -16,9 +16,11 @@
 
 | 갭 | 종류 | 정책 행 |
 | --- | --- | --- |
-| `C2-queue` | `train-departure` | Lane 0~3. train `0.42.92-admin-smoke` 출발, queue 행 PR #59 고정, package build, pair host mutation(여섯 bucket: 제품 Update/Rollback, clean-host VM 생성·Windows Update·삭제, Burn, MSIX. bucket을 하나씩 돌던 때와 같은 범위), fullgate(MSI 설치·repair·제거·`REMOVE_DATA`, service, route parity VM), installed current-card, Lane 2 probe 기능군 `vm.create`(probe VM 생성·삭제, service 중지·시작), Lane 3 `current-evidence.json` 쓰기, push, PR, green CI 뒤 merge, merge 뒤 main push가 red면 revert PR |
+| `C2-queue` | `train-departure` | Lane 0~3. train `0.42.92-admin-smoke` 출발, queue 행 PR #59 고정, package build, pair host mutation(여섯 bucket: 제품 Update/Rollback, clean-host VM 생성·Windows Update·삭제, Burn, MSIX. bucket을 하나씩 돌던 때와 같은 범위), fullgate(MSI 설치·repair·제거·`REMOVE_DATA`, service, route parity VM, 추가 승인 뒤 `os-mutation-gate`의 firewall 규칙·Event Log source·LAN listener), installed current-card, Lane 2 probe 기능군 `vm.create`(probe VM 생성·삭제, service 중지·시작), Lane 3 `current-evidence.json` 쓰기, push, PR, green CI 뒤 merge, merge 뒤 main push가 red면 revert PR |
 | `C5-risk-ubuntu-26-runner` | `deadline-wait` | Lane 0/1. `not_before` 2026-10-19. push, PR, green CI 뒤 merge |
 | `C7-BL-0001`, `C7-BL-0002`, `C7-BL-0003` | `user-decision` | 정책 밖. `next_approval_required` |
+
+추가 승인(2026-10-07): `1` (Task 4 정지 보고의 다음 승인 1). 정책 `train-departure` 범위에 fullgate `os-mutation-gate`를 더하고 Task 4부터 다시 진행한다. 이 단계는 PureCVisor firewall 규칙 추가·삭제, Event Log source 등록, LAN listener를 다룬다. LAN prefix는 직전 manifest(`artifacts/batch-manifests/full-admin-host-mutation-gate-20261006-04291.json`)의 값을 실행 때 환경 변수로만 쓰고 저장소에 남기지 않는다. 끝 상태는 PureCVisor firewall 규칙 `0`이다. 정책 파일은 `config/` 아래라 단일 PR train의 `train-path-check` 범위에 걸리므로 train merge 뒤 Task 12에서 고친다.
 
 출발은 정기 출발일(직전 출발 2026-10-06의 7일 뒤) 전이다. 2026-10-07 승인 4를 고를 때 사용자는 "이번 run에서 0.42.92 train까지 이어 갈 수 있다"는 설명을 받고 그 선택지를 골랐다. 그래서 이 출발은 사용자 요청에 의한 조기 출발로 본다. 정차하면 이 campaign의 train 권한은 끝난다.
 
@@ -94,6 +96,10 @@
 ## Task 11: 완료 판정
 
 - [ ] `not_before` 2026-10-19. clean `main`에서 `pcvverify completion`을 돌린다. exit `0`이면 결과를 인용한 감사 문서 `docs/project-status-audit-<date>.md`로 완료를 적고 push, PR, green CI 뒤 merge한다. exit `1`이면 결과를 기록하고 `pcv-campaign` §6 연쇄로 넘긴다.
+
+## Task 12: 정책 파일 갱신
+
+- [ ] Task 9 merge 뒤 `origin/main`에서 branch를 만들어 `config/completion-autopilot-policy.json` `train-departure` `mutation_scope`에 `fullgate os-mutation-gate (firewall rule, Event Log source, LAN listener)`를 더하고 `approval_locator`에 추가 승인 문장을 붙인다. 설계 `pcv-completion-autopilot-v1` §2.5 표에 같은 줄을 더한다. 검증: `PcvProjectCompletionInputsContractTests`, Delivery, `git diff --check`. push, PR, green CI 뒤 merge.
 
 ## Nonclaims
 
