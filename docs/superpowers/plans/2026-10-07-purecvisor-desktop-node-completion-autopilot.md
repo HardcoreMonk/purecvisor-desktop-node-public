@@ -47,7 +47,9 @@ ADR-0016 standing approval(`pcv-it-` 접두사 VM 생성·삭제)은 철회 지�
 
 ## Task 3: 기준·backlog·정책 파일
 
-- [ ] `config/project-completion-criteria.json`(C1~C7 판정 출처, C4 `15`개 항목의 evidence id 또는 면제 결정, C5 위험 목록), `docs/ga-ready/backlog.json`(현재 `report-only` 2건: `vm.create` reconcile 지문의 장치 연결 누락, QoS readback `mutation_supported: false`, 둘 다 `undecided`), `config/completion-autopilot-policy.json`(승인 4)을 만들고 구조 계약 시험을 `DesktopNode.Verification.Tests`에 더한다. 검증: Verification.Tests, Delivery.Tests, `git diff --check`. 로컬 commit.
+- [x] `config/project-completion-criteria.json`(C1~C7 판정 출처, C4 `15`개 항목의 evidence id 또는 면제 결정, C5 위험 목록), `docs/ga-ready/backlog.json`(현재 `report-only` 2건: `vm.create` reconcile 지문의 장치 연결 누락, QoS readback `mutation_supported: false`, 둘 다 `undecided`), `config/completion-autopilot-policy.json`(승인 4)을 만들고 구조 계약 시험을 `DesktopNode.Verification.Tests`에 더한다. 검증: Verification.Tests, Delivery.Tests, `git diff --check`. 로컬 commit.
+
+실행 기록(2026-10-07): criteria(`pcv-project-completion-criteria-v1`, C4 항목 `15`개: evidence id `13`종 모두 `docs/ga-ready/evidence/<id>.md`로 존재, P1-9는 v1 문서 `waiver`; 위험 `ubuntu-26-runner` 기한 2026-10-19 `open`; 영구 범위 밖 `5`개), backlog(`pcv-backlog-v1`, `BL-0001` `vm.create` reconcile 지문 `needs_design=true`, `BL-0002` QoS `mutation_supported: false` 출처 train-04291 Task 8, 둘 다 `undecided`), 정책(`pcv-completion-autopilot-policy-v1`, 갭 종류 `7`개, 설계 §2.5 표 그대로)을 만들었다. 구조 계약 시험은 plan의 Verification.Tests 대신 저장소 파일 계약이 모인 `DesktopNode.Delivery.Tests` `Delivery/Evidence/PcvProjectCompletionInputsContractTests`(`4`개, `PcvReleaseTrainContractTests`와 같은 위치)에 두었다. Delivery `775/775`, Verification `627/628`(실패 `1`은 dirty tree의 `PolicyBoundaryMatchesCanonicalActivationState`, commit 뒤 clean HEAD에서 다시 돈다), `git diff --check` 통과.
 
 ## Task 4: 판정기 1 (결과 계약, C2·C5·C6·C7)
 

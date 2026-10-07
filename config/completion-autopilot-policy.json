@@ -1,0 +1,95 @@
+{
+  "schema_version": 1,
+  "contract": "pcv-completion-autopilot-policy-v1",
+  "design": "docs/superpowers/specs/2026-10-07-purecvisor-desktop-node-completion-autopilot-design.md",
+  "approval_locator": "User-Approval: 2026-10-07 \"1,2,3,4,5\" item 4, approve completion-autopilot-policy, clarified by the user as Lane 2/3 fully automatic: campaigns generated under the policy may run the release train standard host mutation scope (MSI install, repair, uninstall, REMOVE_DATA, service, pair six buckets, fullgate route parity VM, probe VM create and delete), Lane 3 current-evidence write, push, PR and merge after green CI, and stop on FAIL, new-design, undecided backlog rows, new Add-Type/P/Invoke/native ACL/installer handoff and permanent out-of-scope items",
+  "gap_kinds": {
+    "lane1-fix": {
+      "auto": true,
+      "allowed_lanes": [
+        "0",
+        "1"
+      ],
+      "mutation_scope": [],
+      "current_write_allowed": false,
+      "push_allowed": true,
+      "merge_policy": "after-green-ci"
+    },
+    "deadline-wait": {
+      "auto": true,
+      "allowed_lanes": [
+        "0",
+        "1"
+      ],
+      "mutation_scope": [],
+      "current_write_allowed": false,
+      "push_allowed": true,
+      "merge_policy": "after-green-ci"
+    },
+    "ci-wait": {
+      "auto": true,
+      "allowed_lanes": [
+        "0"
+      ],
+      "mutation_scope": [],
+      "current_write_allowed": false,
+      "push_allowed": false,
+      "merge_policy": "none"
+    },
+    "train-departure": {
+      "auto": true,
+      "allowed_lanes": [
+        "0",
+        "1",
+        "2",
+        "3"
+      ],
+      "mutation_scope": [
+        "MSI install",
+        "MSI repair",
+        "MSI uninstall",
+        "REMOVE_DATA",
+        "service",
+        "pair six buckets",
+        "fullgate route parity VM",
+        "probe VM create and delete"
+      ],
+      "current_write_allowed": true,
+      "push_allowed": true,
+      "merge_policy": "after-green-ci"
+    },
+    "lane2-probe": {
+      "auto": true,
+      "allowed_lanes": [
+        "0",
+        "1",
+        "2"
+      ],
+      "mutation_scope": [
+        "probe VM create and delete",
+        "service stop and start"
+      ],
+      "current_write_allowed": false,
+      "push_allowed": true,
+      "merge_policy": "after-green-ci"
+    },
+    "new-design": {
+      "auto": false
+    },
+    "user-decision": {
+      "auto": false
+    }
+  },
+  "always_stop": [
+    "fail",
+    "new-design",
+    "undecided-backlog-classification",
+    "new-add-type-pinvoke-native-acl-installer-handoff",
+    "permanent-out-of-scope",
+    "preserved-vm-change",
+    "gap-kind-not-in-policy"
+  ],
+  "preserved_vms": [
+    "pcv-guest-installed-04253-r1"
+  ]
+}

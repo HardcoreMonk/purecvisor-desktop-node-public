@@ -1,0 +1,170 @@
+{
+  "schema_version": 1,
+  "contract": "pcv-project-completion-criteria-v1",
+  "definition": "pcv-project-completion-definition-v2",
+  "design": "docs/superpowers/specs/2026-10-07-purecvisor-desktop-node-completion-definition-v2-design.md",
+  "workflows": {
+    "c1": [
+      "Development Gates"
+    ],
+    "c5": [
+      "Development Gates",
+      "Public Boundary Contract"
+    ]
+  },
+  "service_plan_items": [
+    {
+      "id": "P0-1",
+      "title": "미디어 재장착",
+      "evidence_ids": [
+        "service-plan-p0-actual-vm-2026-08-27-04275",
+        "lane2-vm-media-eject-attach-2026-10-02-04286"
+      ],
+      "waiver": null
+    },
+    {
+      "id": "P0-2",
+      "title": "checkpoint restore 추적",
+      "evidence_ids": [
+        "service-plan-p0-actual-vm-2026-08-27-04275"
+      ],
+      "waiver": null
+    },
+    {
+      "id": "P0-3",
+      "title": "Hyper-V Saved",
+      "evidence_ids": [
+        "service-plan-p0-actual-vm-2026-08-27-04275"
+      ],
+      "waiver": null
+    },
+    {
+      "id": "P0-4",
+      "title": "기존 VM 들이기",
+      "evidence_ids": [
+        "service-plan-p0-actual-vm-2026-08-27-04275"
+      ],
+      "waiver": null
+    },
+    {
+      "id": "P1-5",
+      "title": "managed full clone",
+      "evidence_ids": [
+        "service-plan-p1-clone-actual-vm-2026-08-29-04277-r2"
+      ],
+      "waiver": null
+    },
+    {
+      "id": "P1-6",
+      "title": "inventory 시각·메모",
+      "evidence_ids": [
+        "lane2-completion-inventory-template-lock-actual-vm-2026-10-06-04291"
+      ],
+      "waiver": null
+    },
+    {
+      "id": "P1-7",
+      "title": "template lock",
+      "evidence_ids": [
+        "lane2-completion-inventory-template-lock-actual-vm-2026-10-06-04291"
+      ],
+      "waiver": null
+    },
+    {
+      "id": "P1-8",
+      "title": "제한적 guest 파일 job",
+      "evidence_ids": [
+        "service-plan-p1-guest-file-actual-vm-2026-09-28-04282"
+      ],
+      "waiver": null
+    },
+    {
+      "id": "P1-9",
+      "title": "admin account CRUD",
+      "evidence_ids": [],
+      "waiver": "docs/superpowers/specs/2026-10-06-purecvisor-desktop-node-completion-definition-design.md"
+    },
+    {
+      "id": "P1-10",
+      "title": "나머지 조건부 reconcile",
+      "evidence_ids": [
+        "lane2-development-completion-actual-vm-2026-09-30-04284",
+        "lane2-reconcile-wording-actual-vm-2026-10-03-04287",
+        "lane2-completion-family-reconcile-actual-vm-2026-10-06-04291"
+      ],
+      "waiver": null
+    },
+    {
+      "id": "P2-11",
+      "title": "noVNC target 설정",
+      "evidence_ids": [
+        "lane2-completion-novnc-target-2026-10-06-04291"
+      ],
+      "waiver": null
+    },
+    {
+      "id": "P2-12",
+      "title": "주기 checkpoint",
+      "evidence_ids": [
+        "service-plan-p2-offvm-checkpoint-schedule-actual-vm-2026-09-27-04278"
+      ],
+      "waiver": null
+    },
+    {
+      "id": "P2-13",
+      "title": "Hyper-V export/import",
+      "evidence_ids": [
+        "service-plan-p2-offvm-export-import-actual-vm-2026-09-28-04281"
+      ],
+      "waiver": null
+    },
+    {
+      "id": "P2-14",
+      "title": "네트워크 변경",
+      "evidence_ids": [
+        "service-plan-p2-offvm-network-connect-actual-vm-2026-09-28-04281"
+      ],
+      "waiver": null
+    },
+    {
+      "id": "P2-15",
+      "title": "NIC/DVD 추가",
+      "evidence_ids": [
+        "service-plan-p2-offvm-device-add-actual-vm-2026-09-27-04278-r2"
+      ],
+      "waiver": null
+    }
+  ],
+  "deadline_risks": [
+    {
+      "id": "ubuntu-26-runner",
+      "summary": "GitHub ubuntu-latest가 Ubuntu 26으로 이동한다. 이동 뒤 첫 main Development Gates와 Public Boundary run이 green인지 확인한다. 실패하면 ubuntu-24.04 pin을 판단한다",
+      "deadline": "2026-10-19",
+      "source": "docs/project-status-audit-2026-10-06.md",
+      "status": "open",
+      "closed_by": null
+    }
+  ],
+  "permanent_out_of_scope": [
+    {
+      "id": "public-trusted-signing",
+      "summary": "public trusted signing (2026-10-06 사용자 결정, ADR-0004·ADR-0006)"
+    },
+    {
+      "id": "external-stable-publication",
+      "summary": "external stable publication, 일반 사용자용 public release"
+    },
+    {
+      "id": "workstation-parity-100",
+      "summary": "VMware Workstation 기능 패리티 100% (SERVICE_PLAN §10)"
+    },
+    {
+      "id": "hyperv-exactly-once-reconcile-completeness",
+      "summary": "Hyper-V exactly-once 보장, reconcile 완전성 주장"
+    },
+    {
+      "id": "linux-kvm-stack",
+      "summary": "Linux purecvisor-single, KVM/libvirt/LXC/ZFS/OVS/OVN 기능"
+    }
+  ]
+}
