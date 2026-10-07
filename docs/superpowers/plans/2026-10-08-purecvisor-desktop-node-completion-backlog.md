@@ -57,7 +57,10 @@ ADR-0016 standing approval(`pcv-it-` 접두사 VM 생성·삭제)은 그대로 �
 
 ## Task 4: BL-0007 Host transport 시험
 
-- [ ] `DesktopNodeHttpTransportContractTests.RawTargetProjectionAndRepresentative404And405ResponsesMatchFixture`의 raw HTTP 시한 초과 원인을 확인하고 시한·준비 대기를 runner 속도에 기대지 않게 고친다. 검증: Host.Tests, `git diff --check`. `BL-0007` 닫기. 로컬 commit.
+- [x] `DesktopNodeHttpTransportContractTests.RawTargetProjectionAndRepresentative404And405ResponsesMatchFixture`의 raw HTTP 시한 초과 원인을 확인하고 시한·준비 대기를 runner 속도에 기대지 않게 고친다. 검증: Host.Tests, `git diff --check`. `BL-0007` 닫기. 로컬 commit.
+
+
+실행 기록(2026-10-08): `DesktopNodeHttpTransportContractTests`의 요청별 `CancellationTokenSource` 10초 두 곳(raw HTTP helper, noVNC handshake)을 hang guard 상수 `RawHttpHangGuard` `60`초로 바꿨다. 이 시험들은 응답 내용을 비교하고 지연 시간을 판정하지 않는다. PR #63 attempt 1의 실패는 host 시작 직후 첫 raw 요청이 runner에서 10초를 넘긴 것이다. Host.Tests `216/216`. `BL-0007` 닫음.
 
 ## Task 5: 종료 검증과 merge (PR 1)
 
