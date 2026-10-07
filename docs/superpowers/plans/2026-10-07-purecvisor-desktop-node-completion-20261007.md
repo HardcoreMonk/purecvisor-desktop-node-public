@@ -53,7 +53,9 @@
 
 ## Task 2: pair 실행
 
-- [ ] orchestrator `-PlanOnly` 뒤 `-Execute`(campaign `manual-admin-campaign-20261007-04291-04292`). 여섯 bucket PASS, closed descriptor, `observation_error` 없음. 로컬 commit.
+- [x] orchestrator `-PlanOnly` 뒤 `-Execute`(campaign `manual-admin-campaign-20261007-04291-04292`). 여섯 bucket PASS, closed descriptor, `observation_error` 없음. 로컬 commit.
+
+실행 기록(2026-10-07): 시작 상태 설치본 `0.42.91`, service Running/Automatic, VM은 보존 VM(Off)뿐. 0.42.91 실행 스크립트와 같은 형식(guest 인증 정보는 clean-host runner 소스에서 실행 경계에 만들어 `-GuestCredential`로 넘김)으로 `-PlanOnly` `ok=true`(host mutation 없음) 뒤 `-Execute`(`2026-10-07T14:24:09Z`부터 `238`초). 여섯 bucket 모두 PASS, `descriptor_eligible`, closed descriptor, restoration 불필요. `observations.json` `15`개 모두 `observation_error` 없음. 끝 상태: 설치본 `0.42.92`(`0.42.92-admin-smoke+e25095029463943ad75b166f95718a77f7661467`), ARP `{0FDC43BE-E4C0-4D10-A574-781A9F060D4C}` `0.42.92` 1개, service Running/Automatic, Web `200`, 보존 VM Off. artifact `artifacts/manual-admin-campaign-20261007-04291-04292`.
 
 ## Task 3: pair 문서
 
