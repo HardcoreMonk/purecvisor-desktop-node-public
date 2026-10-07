@@ -1,6 +1,7 @@
 # Release train 단일 PR 설계
 
 - Design-ID: `pcv-single-pr-train-v1`
+- 개정: §3.1 경로 확인은 2026-10-08 `pcv-single-pr-train-v2`(`docs/superpowers/specs/2026-10-08-purecvisor-desktop-node-single-pr-train-v2-design.md`)가 대체한다(Lane 3 pin 허용).
 - 작성일: `2026-10-06`
 - 문서 상태: `accepted` (2026-10-07 사용자 승인 `1,2,3,4,5`의 3으로 구현. 2026-10-06에는 `proposed`였다)
 - 변경 등급: M (train 절차. 제품 동작 변경 없음)

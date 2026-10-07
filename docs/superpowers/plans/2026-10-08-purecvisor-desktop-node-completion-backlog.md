@@ -71,7 +71,10 @@ ADR-0016 standing approval(`pcv-it-` 접두사 VM 생성·삭제)은 그대로 �
 
 ## Task 6: BL-0005 단일 PR train 설계 개정
 
-- [ ] `pcv-single-pr-train-v1`을 대체하는 개정 설계를 쓴다. Lane 3가 바꾸는 pin(config spec 3개, Delivery verifier spec SHA 상수 3개)을 path check 허용 목록으로 두고, `CurrentEvidenceVerifierTests`는 `current-evidence.json`에서 version을 읽어 Lane 3가 고치지 않게 한다. 허용 목록 밖 경로는 지금처럼 멈춘다. 검증: `git diff --check`, Delivery 문서 시험. 로컬 commit.
+- [x] `pcv-single-pr-train-v1`을 대체하는 개정 설계를 쓴다. Lane 3가 바꾸는 pin(config spec 3개, Delivery verifier spec SHA 상수 3개)을 path check 허용 목록으로 두고, `CurrentEvidenceVerifierTests`는 `current-evidence.json`에서 version을 읽어 Lane 3가 고치지 않게 한다. 허용 목록 밖 경로는 지금처럼 멈춘다. 검증: `git diff --check`, Delivery 문서 시험. 로컬 commit.
+
+
+실행 기록(2026-10-08): Task 5 PR 1 #66(head `9637db9`, Required check 다섯 개 pass)을 head 고정으로 merge했다(`a2bdd20`, main push Development Gates `37649278790` success). `origin/main`에서 `lane1/single-pr-train-lane3-pins-20261008`을 만들어 설계 `pcv-single-pr-train-v2`를 썼다. 0.42.91 PR #55와 0.42.92 PR #63의 pin 변경이 모두 64자리 SHA 한 줄씩임을 `git diff -U0`로 확인해, 허용 목록 여섯 파일에서 바뀐 줄이 모두 SHA 값 한 줄이고 `+`·`-` 수가 같을 때만 허용하는 규칙으로 정했다. `CurrentEvidenceVerifierTests`는 version을 `current-evidence.json`에서 읽는다. v1 문서에 개정 줄, `DOCUMENTATION_INDEX`에 v2 줄을 더했다.
 
 ## Task 7: BL-0005 구현
 
