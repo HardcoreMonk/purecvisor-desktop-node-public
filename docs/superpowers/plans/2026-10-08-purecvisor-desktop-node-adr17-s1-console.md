@@ -93,7 +93,9 @@
 
 ## Task 11: Web 키 입력
 
-- [ ] 콘솔 패널에 키보드 capture(포커스, 특수 키, Ctrl+Alt+Del 버튼)를 더하고 `console.input`이 없으면 읽기 전용으로 둔다. 검증 web tests, parity, web Pester. 로컬 commit.
+- [x] 콘솔 패널에 키보드 capture(포커스, 특수 키, Ctrl+Alt+Del 버튼)를 더하고 `console.input`이 없으면 읽기 전용으로 둔다. 검증 web tests, parity, web Pester. 로컬 commit.
+
+실행 기록(2026-10-08): 화면 canvas에 `tabindex`를 주고, 포커스된 canvas의 `keydown`/`keyup`을 `event.code` → Windows virtual-key 표(문자·숫자·F1~F12·숫자패드·특수 키)로 `press`/`release` 입력으로 보낸다(반복 keydown은 건너뜀). `Send text`(최대 256자)와 `Ctrl+Alt+Del` 버튼을 더했고, `console.input`이 없으면 읽기 전용 문구만 보인다. key binding은 `vm-detail-panel`에 한 번만 건다(`served-app.ts`는 바꾸지 않음). surface ledger `console.input`을 Web present(`coverage_id=console.input`)로 바꾸고 parity 78/4, Web 제외 목록, 기능 문서를 맞췄다. 확인: 빌드된 `app.js`의 키 표를 Node로 확인(KeyA=65, F5=116, Escape=27, Numpad3=99 등). 시험: web required exit 0, web Pester 50/0, Api 517, Cli 183, Delivery 775. host mutation 없음.
 
 ## Task 12: S1 시나리오 스크립트
 

@@ -75,6 +75,7 @@ interface PcvRouteRegistry {
   diagnosticBundleDownload(bundleId: string): string;
   vmConsole(vmId: string): string;
   vmConsoleFrame(vmId: string, size: string): string;
+  vmConsoleInput(vmId: string): string;
 }
 
 interface PcvRouteCoverageItem {
@@ -155,6 +156,7 @@ interface PcvDesktopApi {
   getConsoleCapabilities(options?: RequestInit): Promise<any>;
   getVmConsole(vmId: string, options?: RequestInit): Promise<any>;
   getVmConsoleFrame(vmId: string, size: string, options?: RequestInit): Promise<any>;
+  sendVmConsoleInput(vmId: string, payload: Record<string, unknown>): Promise<any>;
 }
 
 interface Window {

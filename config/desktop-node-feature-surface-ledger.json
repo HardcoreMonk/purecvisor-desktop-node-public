@@ -879,19 +879,20 @@
           "route_template": "/api/v1/vms/{vmId}/console/input",
           "required_permission": "console.input",
           "present_surfaces": [
-            "api"
+            "api",
+            "web"
           ],
           "excluded_surfaces": [
             {
               "surface": "cli",
               "reason": "Console keyboard input follows the browser canvas; PCVCLI keeps the vm console handoff."
-            },
-            {
-              "surface": "web",
-              "reason": "Web keyboard capture for the VM screen lands with the S1 console input task."
             }
           ],
-          "surface_bindings": {}
+          "surface_bindings": {
+            "web": {
+              "coverage_id": "console.input"
+            }
+          }
         }
       ]
     },

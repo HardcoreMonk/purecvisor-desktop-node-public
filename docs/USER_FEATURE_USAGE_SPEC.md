@@ -69,7 +69,7 @@ PureCVisor Desktop Node는 Windows 10/11 Pro/Enterprise + Hyper-V host를 로컬
 | Account/RBAC/JWT | [ `pcv.account.session` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-account-session) | Account login과 create/disable | `pcvcli account list/create/disable` | `/auth/...`, `/accounts` |
 | Console capability discovery | [ `pcv.console.capabilities` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-console-capabilities) | Console/Troubleshooting capability card | API/Web Console 전용 | `GET /console/capabilities` |
 | VM console/noVNC handoff | [ `pcv.vm.console-handoff` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-console-handoff) | 선택 VM Console panel (readback, no save form) | `pcvcli vm console/vnc <vm>`; `pcvcli console novnc-target preview --host 127.0.0.1 --port 5900`; `pcvcli console novnc-target set --host 127.0.0.1 --port 5900 --yes`; `pcvcli console novnc-target clear --yes` | `GET /vms/{id}/console`; `POST /console/novnc-target/preview`; `POST /console/novnc-target`; `POST /console/novnc-target/clear` |
-| VM browser console | [ `pcv.vm.browser-console` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-browser-console) | VM 상세 Browser console 카드(VM Screen canvas, 크기·fps 선택, Start/Pause screen) | 제외: 브라우저 canvas stream이라 PCVCLI는 `vm console` handoff를 유지 | `GET /vms/{id}/console/frame/{size}`; `POST /vms/{id}/console/input` |
+| VM browser console | [ `pcv.vm.browser-console` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-browser-console) | VM 상세 Browser console 카드(VM Screen canvas, 크기·fps 선택, Start/Pause screen, 화면 클릭 뒤 키 입력, Send text, Ctrl+Alt+Del) | 제외: 브라우저 canvas stream이라 PCVCLI는 `vm console` handoff를 유지 | `GET /vms/{id}/console/frame/{size}`; `POST /vms/{id}/console/input` |
 
 ## Feature ID 추적
 

@@ -45,7 +45,7 @@ async function queueVmRename(vmId, newName) {
   }
 }
 
-const VM_DETAIL_EXTENSION_CLICK_ACTIONS = new Set(['checkpoint-schedule-clear', 'vm-console-frame-start', 'vm-console-frame-stop']);
+const VM_DETAIL_EXTENSION_CLICK_ACTIONS = new Set(['checkpoint-schedule-clear', 'vm-console-frame-start', 'vm-console-frame-stop', 'vm-console-input-cad']);
 
 function readCheckpointSchedulePayload(data) {
   const payload = {};
@@ -260,6 +260,10 @@ async function handleVmDetailExtensionSubmit(form, data, submitterAction) {
   } else if (form?.dataset.action === 'vm-network-connect' || form?.dataset.action === 'vm-device-add') {
     const kind = form.dataset.action === 'vm-network-connect' ? 'connect' : 'device';
     await queueVmNetworkChange(form.dataset.vmId, kind, readVmNetworkChangePayload(kind, data));
+  } else if (form?.dataset.action === 'vm-console-text') {
+    const text = String(data.get('text') || '');
+    if (text) await sendVmConsoleKeyboard(form.dataset.vmId, { kind: 'text', text });
+    form.reset();
   } else if (form?.dataset.action === 'checkpoint-schedule') {
     await queueCheckpointScheduleControl(
       form.dataset.vmId,
@@ -276,6 +280,8 @@ async function handleVmDetailExtensionClick(button) {
   } else if (button.dataset.action === 'vm-console-frame-stop') {
     stopVmConsoleFrame();
     render();
+  } else if (button.dataset.action === 'vm-console-input-cad') {
+    await sendVmConsoleKeyboard(button.dataset.vmId, { kind: 'ctrl-alt-del' });
   }
 }
 
@@ -335,13 +341,15 @@ function renderVmConsoleFrameCard(vm, vmId, canViewConsole) {
           <button data-action="vm-console-frame-stop" data-vm-id="${escapeHtml(vmId)}"${running ? '' : ' disabled'}>Pause screen</button>
         </div>
       </div>
-      <canvas id="vm-console-frame-canvas" class="vm-console-frame-canvas" width="${escapeHtml(width)}" height="${escapeHtml(height)}" style="width:100%;max-width:${escapeHtml(width)}px;background:#000"></canvas>
+      <canvas id="vm-console-frame-canvas" class="vm-console-frame-canvas" tabindex="0" width="${escapeHtml(width)}" height="${escapeHtml(height)}" style="width:100%;max-width:${escapeHtml(width)}px;background:#000"></canvas>
       <p id="vm-console-frame-status" class="muted">${escapeHtml(status)}</p>
+      ${renderVmConsoleInputControls(vmId)}
       <p class="muted">Screen view needs console.view. vmconnect handoff stays available from the Console button.</p>
     </div>`;
 }
 
 function paintVmConsoleFrame() {
+  ensureVmConsoleKeyBinding();
   const control = state.vmConsoleFrame;
   const canvas = document.getElementById('vm-console-frame-canvas');
   if (!control?.image || !canvas || canvas.width !== control.image.width || canvas.height !== control.image.height) return;
@@ -398,4 +406,65 @@ function stopVmConsoleFrame() {
   if (control.timer) window.clearTimeout(control.timer);
   control.running = false;
   control.timer = null;
+}
+
+// S1 console input (design pcv-s1-browser-console-v1 §6): a focused screen canvas sends key press/release by Windows
+// virtual-key code; Ctrl+Alt+Del and short text go through buttons. Without console.input the screen stays read-only.
+const VM_CONSOLE_VIRTUAL_KEYS = Object.freeze({
+  Backspace: 0x08, Tab: 0x09, Enter: 0x0d, NumpadEnter: 0x0d, ShiftLeft: 0x10, ShiftRight: 0x10, ControlLeft: 0x11,
+  ControlRight: 0x11, AltLeft: 0x12, AltRight: 0x12, Pause: 0x13, CapsLock: 0x14, Escape: 0x1b, Space: 0x20, PageUp: 0x21,
+  PageDown: 0x22, End: 0x23, Home: 0x24, ArrowLeft: 0x25, ArrowUp: 0x26, ArrowRight: 0x27, ArrowDown: 0x28, Insert: 0x2d,
+  Delete: 0x2e, MetaLeft: 0x5b, MetaRight: 0x5c, Semicolon: 0xba, Equal: 0xbb, Comma: 0xbc, Minus: 0xbd, Period: 0xbe,
+  Slash: 0xbf, Backquote: 0xc0, BracketLeft: 0xdb, Backslash: 0xdc, BracketRight: 0xdd, Quote: 0xde
+});
+
+function getVmConsoleVirtualKey(code) {
+  if (/^Key[A-Z]$/.test(code)) return code.charCodeAt(3);
+  if (/^Digit[0-9]$/.test(code)) return code.charCodeAt(5);
+  if (/^Numpad[0-9]$/.test(code)) return 0x60 + Number(code.slice(6));
+  if (/^F([1-9]|1[0-2])$/.test(code)) return 0x6f + Number(code.slice(1));
+  return VM_CONSOLE_VIRTUAL_KEYS[code] || null;
+}
+
+async function sendVmConsoleKeyboard(vmId, payload) {
+  requireRbac('console.input', 'VM console input');
+  try {
+    await desktopApi.sendVmConsoleInput(vmId, payload);
+  } catch (error) {
+    const normalized = normalizeError(error);
+    if (normalized.code === 'PCV_CONSOLE_RATE_LIMITED') return;
+    const control = getVmConsoleFrameControl(vmId);
+    if (control) control.error = normalized;
+    setVmConsoleFrameStatus(`${normalized.code}: ${normalized.message}`);
+  }
+}
+
+function handleVmConsoleKeyEvent(event) {
+  if (event.target?.id !== 'vm-console-frame-canvas' || !rbacAllows('console.input')) return;
+  const keyCode = getVmConsoleVirtualKey(event.code);
+  if (!keyCode) return;
+  event.preventDefault();
+  if (event.type === 'keydown' && event.repeat) return;
+  const vmId = getVmId(state.selectedVm || {});
+  if (!vmId) return;
+  sendVmConsoleKeyboard(vmId, { kind: 'key', action: event.type === 'keydown' ? 'press' : 'release', key_code: keyCode });
+}
+
+function ensureVmConsoleKeyBinding() {
+  if (state.vmConsoleKeysBound || !els.vmDetailPanel) return;
+  els.vmDetailPanel.addEventListener('keydown', handleVmConsoleKeyEvent);
+  els.vmDetailPanel.addEventListener('keyup', handleVmConsoleKeyEvent);
+  state.vmConsoleKeysBound = true;
+}
+
+function renderVmConsoleInputControls(vmId) {
+  if (!rbacAllows('console.input')) {
+    return '<p class="muted">Keyboard input needs console.input; the screen stays read-only.</p>';
+  }
+  return `<form class="vm-resource-form" data-action="vm-console-text" data-vm-id="${escapeHtml(vmId)}">
+        <p class="muted">Click the screen to type into the VM. Keys go as press and release; passwords are not recorded.</p>
+        <input name="text" maxlength="256" autocomplete="off" placeholder="Text to type (printable ASCII)" aria-label="console text">
+        <button type="submit" data-action="vm-console-text">Send text</button>
+        <button type="button" data-action="vm-console-input-cad" data-vm-id="${escapeHtml(vmId)}">Ctrl+Alt+Del</button>
+      </form>`;
 }
