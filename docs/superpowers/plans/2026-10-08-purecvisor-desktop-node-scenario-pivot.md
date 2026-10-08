@@ -50,7 +50,9 @@
 
 ## Task 4: 판단 기록
 
-- [ ] spike 문서에 결론을 쓴다. 브라우저 콘솔 구현 방식 권장안 하나, S1 구현 task 초안, VMware 26H1 설치 재판단(승인 3), 남은 위험과 다음 승인 문장. 검증 Delivery tests, `git diff --check`. 로컬 commit.
+- [x] spike 문서에 결론을 쓴다. 브라우저 콘솔 구현 방식 권장안 하나, S1 구현 task 초안, VMware 26H1 설치 재판단(승인 3), 남은 위험과 다음 승인 문장. 검증 Delivery tests, `git diff --check`. 로컬 commit.
+
+실행 기록(2026-10-08): 결론은 E(WMI 화면 + `Msvm_Keyboard` 입력) 권장이다. S1 구현 task 초안 6개, VMware 26H1 설치 보류 유지, 남은 위험 3개, 다음 승인 문장 3개를 spike 문서에 썼다. host mutation 없음.
 
 ## Task 5: 종료와 PR
 

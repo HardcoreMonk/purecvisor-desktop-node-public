@@ -1,7 +1,7 @@
 # Hyper-V 브라우저 콘솔 spike
 
 campaign: `scenario-pivot-20261008` (Task 2 조사, Task 3 probe, Task 4 판단)
-상태: probe 완료, 판단 대기
+상태: 완료(판단 기록)
 일자: 2026-10-08
 
 ## 목적
@@ -72,7 +72,46 @@ A와 E만 저장소 경계 안이다. A는 화면 품질이 좋고 E는 인증·
 
 ## 결론
 
-(Task 4에서 쓴다)
+### 권장: E(WMI 화면 + 입력)로 S1 브라우저 콘솔을 만든다
+
+- 화면 경로가 실제 VM에서 동작했다. 제품이 이미 쓰는 WMI adapter와 Local API, Web Console만으로 firmware 화면부터
+  OS 설치 화면까지 브라우저에 옮길 수 있다. 외부 설치, 2179 노출, 브라우저의 Windows 계정 입력이 모두 필요 없다.
+- A(2179 RDP)는 이번 probe로 표준 협상 다음 단계를 확인하지 못했고, 확인되더라도 CredSSP 처리라는 새 보안 설계가 남는다.
+  화면 품질이 E로 부족할 때만 다시 본다.
+- 한계: 갱신률은 polling 기반 수 fps에서 최대 약 20 fps이고, 소리·클립보드·USB는 없다. 마우스는 guest 통합 서비스가
+  올라온 뒤에만 기대할 수 있어 OS 설치 단계는 키보드 위주다. 입력 경로(`Msvm_Keyboard`)는 아직 실제로 시험하지 않았다.
+
+### S1 구현 task 초안
+
+1. 설계 문서 한 장: 화면·입력 route, RBAC(`console.view`, 새 `console.input`), 입력 audit, LAN 노출 경계(ADR-0010 방식).
+   입력은 guest 상태를 바꾸는 mutation이라 새 설계가 필요하다.
+2. Hyper-V adapter: 화면 읽기 operation. RGB565 원본을 그대로 넘기고 PNG 변환은 브라우저 canvas에서 한다.
+3. Local API: `GET /api/v1/vms/{vm}/console/frame`(width, height), 입력 route는 1의 설계를 따른다.
+4. Web Console: VM 상세에 콘솔 패널(canvas, 2~10 fps polling, 일시 정지). `vmconnect` handoff 문구는 보조 경로로 낮춘다.
+5. 입력: `Msvm_Keyboard` `TypeKey`/`PressKey`/`ReleaseKey`/`TypeText`/`TypeCtrlAltDel`을 `pcv-it-` VM에서 ADR-0016
+   integration 단계로 먼저 확인한다.
+6. S1 시나리오 스크립트: 설치본에서 ISO로 VM 생성 → 콘솔 화면에 설치 화면 → 키 입력 → 결과 캡처를 한 번 통과시키고 시연
+   기록을 남긴다.
+
+### VMware Workstation 26H1 재판단(승인 3)
+
+VMware를 검토한 가장 큰 이유인 브라우저 콘솔은 E로 Hyper-V 안에서 풀린다. 설치 보류를 유지하고, 3D·USB passthrough 같은
+데스크톱 기능이 요구사항이 되거나 E의 입력 경로가 실패할 때만 다시 판단한다.
+
+### 남은 위험
+
+- `Msvm_Keyboard`가 Gen 2 firmware와 OS 설치 화면에서 기대대로 동작하는지 미확인이다.
+- 여러 사용자가 같은 VM 화면을 polling할 때의 WMI 부하는 측정하지 않았다.
+- 2179 경로의 실제 협상 순서는 모른다.
+
+### 다음 승인 문장
+
+1. ADR-0017을 채택하고 계약 변경(완료 기준·autopilot 정책·`pcvverify completion`·train 출발 조건·AGENTS.md·pcv skill)을
+   Lane 1 task로 나눠 진행한다. push, PR, green CI 뒤 merge.
+2. S1 브라우저 콘솔(E 방식) campaign을 연다. 설계 문서 → 화면 읽기 adapter·route·Web 패널 → `pcv-it-` VM 입력 확인 →
+   S1 시나리오 스크립트 순서다. Lane 1과 Lane 2(`pcv-it-` 접두사 VM 생성·시작·중지·삭제와 그 VM의 키 입력만). push, PR,
+   green CI 뒤 merge.
+3. VMware Workstation 26H1 설치는 보류를 유지한다(결정만, 작업 없음).
 
 ## 출처
 
