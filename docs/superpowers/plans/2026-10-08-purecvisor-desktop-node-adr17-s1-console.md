@@ -57,7 +57,9 @@
 
 ## Task 5: S1 콘솔 설계
 
-- [ ] PR A merge 뒤 `origin/main`에서 `lane1/s1-console-20261008`을 만든다. 설계 문서 `docs/superpowers/specs/2026-10-08-purecvisor-desktop-node-s1-browser-console-design.md` 한 장에 화면 route(`GET /api/v1/vms/{vm}/console/frame`, 크기·형식·호출 상한), 입력 route와 job 여부, RBAC(`console.view`, 새 `console.input`), 입력 audit, LAN 노출 경계(ADR-0010 방식), Web 패널 동작을 정한다. 검증 Delivery tests. 로컬 commit.
+- [x] PR A merge 뒤 `origin/main`에서 `lane1/s1-console-20261008`을 만든다. 설계 문서 `docs/superpowers/specs/2026-10-08-purecvisor-desktop-node-s1-browser-console-design.md` 한 장에 화면 route(`GET /api/v1/vms/{vm}/console/frame`, 크기·형식·호출 상한), 입력 route와 job 여부, RBAC(`console.view`, 새 `console.input`), 입력 audit, LAN 노출 경계(ADR-0010 방식), Web 패널 동작을 정한다. 검증 Delivery tests. 로컬 commit.
+
+실행 기록(2026-10-08): PR #73이 green CI 뒤 `6e9686f`로 merge됐고, 그 `main`에서 branch를 만들었다. 설계 `pcv-s1-browser-console-v1`에 화면 route(`GET .../console/frame`, 640×480 기본, deflate, 100ms rate), 동기 입력 route(`POST .../console/input`, key/text/ctrl-alt-del), 새 권한 `console.input`(operator), remote 입력은 account JWT만, data root `console-input-audit.jsonl`(내용과 hash 없음, 1 MiB 회전), Web 패널, 시험, 범위 밖을 정했다. host mutation 없음.
 
 ## Task 6: 화면 읽기 adapter
 
