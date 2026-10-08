@@ -61,6 +61,7 @@ const state: PcvState = {
   consoleCapabilities: null,
   consoleSession: null,
   consoleError: null,
+  vmConsoleFrame: null,
   pendingDiagnosticAction: '',
   lastDiagnosticAction: '',
   tokenActionMessage: '',

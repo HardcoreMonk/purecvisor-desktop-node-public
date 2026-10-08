@@ -106,6 +106,7 @@ function renderVmDetail() {
     <div class="details-grid detail-grid">
       ${details.map(([label, value]) => `<div class="kv"><span>${escapeHtml(label)}</span><strong>${escapeHtml(formatObjectValue(value))}</strong></div>`).join('')}
     </div>
+    ${renderVmConsoleFrameCard(vm, vmId, canViewConsole)}
     ${renderExportImportReadback(vm, vmId, actionDisabled)}
     ${renderVmQosGuestReadback(vmId)}
     ${renderVmQosDirectControl(vmId)}

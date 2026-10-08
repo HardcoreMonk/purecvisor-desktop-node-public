@@ -75,7 +75,9 @@
 
 ## Task 8: Web 화면 패널
 
-- [ ] VM 상세에 콘솔 패널(canvas, RGB565→RGBA 변환, 2~10 fps polling, 일시 정지, 오류 표시)을 더하고 `npm run build:served --prefix web`로 `web/app.js`를 만든다. 검증 `npm run test:required --prefix web`, `npm run verify:parity --prefix web`, web Pester. 로컬 commit.
+- [x] VM 상세에 콘솔 패널(canvas, RGB565→RGBA 변환, 2~10 fps polling, 일시 정지, 오류 표시)을 더하고 `npm run build:served --prefix web`로 `web/app.js`를 만든다. 검증 `npm run test:required --prefix web`, `npm run verify:parity --prefix web`, web Pester. 로컬 commit.
+
+실행 기록(2026-10-08): VM 상세에 Browser console 카드(VM Screen canvas, 크기 `640x480`/`800x600`/`1024x768`, 1/2/5 fps, Start/Pause screen)를 더했다. frame은 `DecompressionStream('deflate')`로 풀고 `decodeRgb565ToRgba`로 그리며, polling은 canvas만 다시 그리고 탭이 숨거나 VM 선택이 바뀌면 멈춘다. 429는 건너뛰고 다른 오류는 멈춘 뒤 표시한다. `served-app.ts`(ratchet 423/429)는 건드리지 않고 `vm-detail-extensions.ts` click 확장 지점과 `render()` 뒤 repaint로 연결했다. surface ledger는 Web present(`coverage_id=console.frame`), parity 77/4, Web 제외 목록과 기능 문서 두 곳을 맞췄다. 확인: 빌드된 `app.js`에서 변환(빨강·초록·파랑·흰색)과 zlib 해제를 Node로 확인(commit하지 않음). 시험: web required exit 0, web Pester 50/0, Api, Cli, Delivery 통과. host mutation 없음.
 
 ## Task 9: 키 입력 adapter와 route
 

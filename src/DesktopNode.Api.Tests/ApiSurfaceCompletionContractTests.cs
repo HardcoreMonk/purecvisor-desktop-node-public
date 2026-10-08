@@ -11,7 +11,7 @@ public sealed class ApiSurfaceCompletionContractTests
     public void WebExclusionsAreOnlyThePolicyBackedRoutes()
     {
         Assert.Equal(
-            ["console.frame", "console.novnc-target.clear", "console.novnc-target.preview", "console.novnc-target.set", "vm.limit"],
+            ["console.novnc-target.clear", "console.novnc-target.preview", "console.novnc-target.set", "vm.limit"],
             ExcludedOperations("web"));
     }
 

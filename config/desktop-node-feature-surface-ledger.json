@@ -858,19 +858,20 @@
           "route_template": "/api/v1/vms/{vmId}/console/frame/{size}",
           "required_permission": "console.view",
           "present_surfaces": [
-            "api"
+            "api",
+            "web"
           ],
           "excluded_surfaces": [
             {
               "surface": "cli",
               "reason": "The console frame is a browser canvas stream; PCVCLI keeps the vm console handoff."
-            },
-            {
-              "surface": "web",
-              "reason": "The Web Console canvas panel for console frames lands with the S1 browser console panel task."
             }
           ],
-          "surface_bindings": {}
+          "surface_bindings": {
+            "web": {
+              "coverage_id": "console.frame"
+            }
+          }
         }
       ]
     },
