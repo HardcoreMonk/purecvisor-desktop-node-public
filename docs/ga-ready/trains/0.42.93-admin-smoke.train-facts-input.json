@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "contract": "pcv-train-facts-input-v1",
+  "version": "0.42.93-admin-smoke",
+  "baseline_version": "0.42.92-admin-smoke",
+  "canonical_current_evidence": "0.42.92-admin-smoke",
+  "date": "2026-10-08",
+  "documents": {
+    "package": "docs/ga-ready/evidence/admin-smoke-package-2026-10-08-04293.md"
+  },
+  "sources": {
+    "package_root": "artifacts/admin-smoke-package-20261008-04293",
+    "baseline_package_root": "artifacts/admin-smoke-package-20261007-04292",
+    "campaign_root": "artifacts/manual-admin-campaign-20261008-04292-04293",
+    "target_update_catalog": "artifacts/admin-smoke-package-20261008-04293/PureCVisorDesktopNode-0.42.93-admin-smoke-update-catalog.json",
+    "signer_thumbprint": "8C5F3B5030D3A54B1150C2C30CFD9868800DF0C6",
+    "fullgate_batch_id": "full-admin-host-mutation-gate-20261008-04293",
+    "iso_path": "artifacts/smoke-media-20261003/pcv-route-parity-smoke-20261003.iso",
+    "current_card_root": "artifacts/installed-operator-surface-current-card-20261008-04293",
+    "fullgate_final_firewall_rule_count": "0"
+  },
+  "narrative": {
+    "package": {
+      "background": "release train `0.42.93`의 package다. completion autopilot(`pcv-completion-autopilot-v1`)이 판정 갭 `C2-queue`로 연 campaign `completion-20261008`의 train이며, PR #68의 `vm.qos` readback과 `vm.create` reconcile을 싣는다.",
+      "train_carriages": "`PR #68` (변경 `92146da` QoS `mutation_supported`, `65c376d` `vm.create` reconcile, merge `d9e7d03`, payload `56e7cd0`)",
+      "lane2_probes": "`vm.qos`(readback `mutation_supported`), `vm.create reconcile`(디스크·ISO·Default Switch)"
+    }
+  }
+}

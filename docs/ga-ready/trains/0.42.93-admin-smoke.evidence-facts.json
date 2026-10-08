@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "contract": "pcv-train-evidence-facts-v1",
+  "version": "0.42.93-admin-smoke",
+  "documents": [
+    {
+      "template": "package",
+      "path": "docs/ga-ready/evidence/admin-smoke-package-2026-10-08-04293.md",
+      "values": {
+        "evidence_id": "admin-smoke-package-2026-10-08-04293",
+        "canonical_current_evidence": "0.42.92-admin-smoke",
+        "date": "2026-10-08",
+        "version": "0.42.93-admin-smoke",
+        "source_commit": "41421d8bf3272dbdbb8dcf384bcf1ff3f329726a",
+        "release_train": "0.42.93-admin-smoke",
+        "artifact_root": "artifacts/admin-smoke-package-20261008-04293",
+        "clean_package_msi_sha256": "13d7f0d476828f865b0d4aca7331a2dcd1a10a8dbe157b9d6a93dc2217f9fb49",
+        "clean_package_payload_aggregate_sha256": "2a071cd2c6298e289b940a37ef124a1c3d3502fd9a476033174251884a0f2cf7",
+        "product_wrapper_sha256": "8c0bf982097881f56e60354f53961e54ea4d7a49e566a1e1eee861cd309403c3",
+        "service_host_sha256": "6fcd3af260d14b21a88352cf2fe8568c9c91df561072ab28da34688439e50661",
+        "cli_sha256": "fed6d209af02f0f8185c8f674dd3badf38860aefaf8e9db3d36d9239c69e13af",
+        "update_zip_sha256": "97e4ec6a6376fea970cd2f084ec4352d062bb00cb42e2fdfc0f08d1cb7dfd181",
+        "payload_file_count": "8",
+        "wix_version": "5.0.2+aa65968c",
+        "build_utc": "2026-10-08T05:42:52.3292771Z",
+        "msi_product_version": "0.42.93",
+        "zip_note": "update ZIP은 `New-PcvAdminSmokeUpdatePackage.ps1`가 payload 8개 파일을 root에 두고 deflate와 `/` 구분자로 만들었다(항목 구성은 0.42.92 ZIP과 같다).",
+        "host_product_version": "0.42.93-admin-smoke+41421d8bf3272dbdbb8dcf384bcf1ff3f329726a",
+        "build_seconds": "35",
+        "background": "release train `0.42.93`의 package다. completion autopilot(`pcv-completion-autopilot-v1`)이 판정 갭 `C2-queue`로 연 campaign `completion-20261008`의 train이며, PR #68의 `vm.qos` readback과 `vm.create` reconcile을 싣는다.",
+        "train_carriages": "`PR #68` (변경 `92146da` QoS `mutation_supported`, `65c376d` `vm.create` reconcile, merge `d9e7d03`, payload `56e7cd0`)",
+        "lane2_probes": "`vm.qos`(readback `mutation_supported`), `vm.create reconcile`(디스크·ISO·Default Switch)"
+      }
+    }
+  ]
+}

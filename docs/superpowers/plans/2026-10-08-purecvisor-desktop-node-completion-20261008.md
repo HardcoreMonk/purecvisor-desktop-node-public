@@ -44,7 +44,9 @@
 
 ## Task 1: package
 
-- [ ] clean HEAD에서 `build.ps1 -Version 0.42.93-admin-smoke -MsiProductVersion 0.42.93 -SigningMode AllowUnsignedDev -SigningTrustModel LocalTest -OutputRoot artifacts/admin-smoke-package-20261008-04293`, `New-PcvAdminSmokeUpdatePackage.ps1`. `train-facts`로 package 문서. 로컬 commit.
+- [x] clean HEAD에서 `build.ps1 -Version 0.42.93-admin-smoke -MsiProductVersion 0.42.93 -SigningMode AllowUnsignedDev -SigningTrustModel LocalTest -OutputRoot artifacts/admin-smoke-package-20261008-04293`, `New-PcvAdminSmokeUpdatePackage.ps1`. `train-facts`로 package 문서. 로컬 commit.
+
+실행 기록(2026-10-08): build `35`초, `build_utc` `2026-10-08T05:42:52.3292771Z`, provenance `41421d8bf3272dbdbb8dcf384bcf1ff3f329726a`. MSI SHA-256 `13d7f0d476828f865b0d4aca7331a2dcd1a10a8dbe157b9d6a93dc2217f9fb49`, payload SHA-256 `2a071cd2c6298e289b940a37ef124a1c3d3502fd9a476033174251884a0f2cf7`, payload `8`, WiX `5.0.2+aa65968c`, update ZIP SHA-256 `97e4ec6a6376fea970cd2f084ec4352d062bb00cb42e2fdfc0f08d1cb7dfd181`. `train-facts` package `generated=20` `narrative=3`, `train-evidence --check` `current`. `TrainEvidenceGoldenTests`와 `TrainFactsBuilderTests` `19/19`. host mutation 없음. operational current는 `0.42.92-admin-smoke` 그대로다.
 
 ## Task 2: pair
 
