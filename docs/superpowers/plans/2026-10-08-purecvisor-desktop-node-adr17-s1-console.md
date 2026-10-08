@@ -99,7 +99,9 @@
 
 ## Task 12: S1 시나리오 스크립트
 
-- [ ] 설치본에서 S1(ISO로 VM 생성 → 콘솔에 설치 화면 → 키 입력 → 화면 캡처 → 정리)을 도는 스크립트를 쓰고 `-PlanOnly`로 확인한다. 설치본 실행은 다음 승인(새 build 설치)으로 둔다. 검증 plan-only 실행, 관련 시험. 로컬 commit.
+- [x] 설치본에서 S1(ISO로 VM 생성 → 콘솔에 설치 화면 → 키 입력 → 화면 캡처 → 정리)을 도는 스크립트를 쓰고 `-PlanOnly`로 확인한다. 설치본 실행은 다음 승인(새 build 설치)으로 둔다. 검증 plan-only 실행, 관련 시험. 로컬 commit.
+
+실행 기록(2026-10-08): `web/scripts/run-s1-console-scenario.mjs`(`npm run scenario:s1-console`)를 썼다. Web Console과 같은 Local API 경로로 loopback session → ISO로 VM 생성(Gen 2) → 시작 → 화면 캡처(BMP) → 키 입력 → 바뀐 화면 캡처 → 전원 끔 → 삭제를 돌고 `summary.json`(`pcv-s1-console-scenario-v1`)을 남긴다. 기본은 plan-only이고 `--execute`는 별도 host mutation 승인이 필요하다. token은 메모리에만 두고 출력하지 않는다. 확인: plan-only 8단계 출력 exit 0, ISO 없으면 exit 2. 시험: web required exit 0, public source safety, web Pester 50/0, Delivery 775. 설치본 실행은 새 build 설치가 필요해 다음 승인으로 둔다. host mutation 없음.
 
 ## Task 13: PR B 종료
 
