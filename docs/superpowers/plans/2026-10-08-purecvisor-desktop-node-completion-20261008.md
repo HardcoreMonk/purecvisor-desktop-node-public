@@ -38,7 +38,9 @@
 
 ## Task 0: 출발
 
-- [ ] payload commit의 main push Development Gates와 Public Boundary가 green인지 확인하고 run id를 적는다. `release-train.json` `queue` 두 행을 train `0.42.93-admin-smoke`의 `carriages` `[68]`로 옮기고 `status=running`, `queue`는 빈 목록. 검증: `PcvReleaseTrainContractTests`, `git diff --check`. 로컬 commit.
+- [x] payload commit의 main push Development Gates와 Public Boundary가 green인지 확인하고 run id를 적는다. `release-train.json` `queue` 두 행을 train `0.42.93-admin-smoke`의 `carriages` `[68]`로 옮기고 `status=running`, `queue`는 빈 목록. 검증: `PcvReleaseTrainContractTests`, `git diff --check`. 로컬 commit.
+
+실행 기록(2026-10-08): 출발 `2026-10-08T14:33:00+09:00`, payload `56e7cd0ff0df3a4ac2688ff2f4030fa10e72936c`, carriages `[68]`, queue 비움, train `status=running`. payload main push Development Gates `37732628393` success, Public Boundary `37732628401` success. operational current는 `0.42.92-admin-smoke` 그대로다.
 
 ## Task 1: package
 

@@ -3,30 +3,7 @@
   "contract": "pcv-release-train-v1",
   "design": "docs/superpowers/specs/2026-10-04-purecvisor-desktop-node-release-train-design.md",
   "operational_current": "0.42.92-admin-smoke",
-  "queue": [
-    {
-      "pr": 68,
-      "merge_commit": "92146da",
-      "area": "hyperv",
-      "summary": "QoS readback(vm.blkio-get, vm.bandwidth)의 mutation_supported를 상수 false 대신 dispatch catalog의 vm.qos.storage.set·vm.qos.network.set 존재로 판정",
-      "lane2_probe": {
-        "family": "vm.qos",
-        "design": "docs/superpowers/plans/2026-10-08-purecvisor-desktop-node-completion-backlog.md"
-      },
-      "risk_tier": "S"
-    },
-    {
-      "pr": 68,
-      "merge_commit": "65c376d",
-      "area": "api",
-      "summary": "vm.create reconcile이 디스크·ISO·Default Switch 연결까지 맞을 때만 postcondition-confirmed, 빠지면 target-fingerprint-mismatch와 missing_devices",
-      "lane2_probe": {
-        "family": "vm.create reconcile",
-        "design": "docs/superpowers/specs/2026-10-08-purecvisor-desktop-node-vm-create-reconcile-devices-design.md"
-      },
-      "risk_tier": "M"
-    }
-  ],
+  "queue": [],
   "trains": [
     {
       "version": "0.42.89-admin-smoke",
@@ -63,6 +40,15 @@
         59
       ],
       "status": "promoted"
+    },
+    {
+      "version": "0.42.93-admin-smoke",
+      "departed_at": "2026-10-08T14:33:00+09:00",
+      "source_commit": "56e7cd0ff0df3a4ac2688ff2f4030fa10e72936c",
+      "carriages": [
+        68
+      ],
+      "status": "running"
     }
   ]
 }
