@@ -1,7 +1,7 @@
 # Hyper-V 브라우저 콘솔 spike
 
 campaign: `scenario-pivot-20261008` (Task 2 조사, Task 3 probe, Task 4 판단)
-상태: 조사 완료, probe 대기
+상태: probe 완료, 판단 대기
 일자: 2026-10-08
 
 ## 목적
@@ -49,7 +49,26 @@ A와 E만 저장소 경계 안이다. A는 화면 품질이 좋고 E는 인증·
 
 ## Probe 결과
 
-(Task 3에서 쓴다)
+2026-10-08 20:47~21:00(KST), 설치본 `0.42.93-admin-smoke`, 관리자 세션. VM `pcv-it-console-spike`(Gen 2, vCPU 1, 1024MB,
+디스크 8GB, smoke ISO)를 PCVCLI로 만들고 켠 뒤 probe하고 끄고 지웠다. 4회 중 앞 2회는 VM을 만들기 전에 멈췄다. scratch
+함수 이름이 PowerShell 기본 alias `cli`(`Clear-Item`)와 겹쳤고, 디스크 2GB가 제품 범위(8~4096GB, `PCV_DISK_OUT_OF_RANGE`)
+밖이었다. r3·r4는 create, start, stop, delete job이 모두 `succeeded`였다. 끝 상태는 `pcv-it-` VM `0`개이고 보존 VM은
+바뀌지 않았다. raw 결과는 `artifacts/console-spike-20261008-r3/`, `artifacts/console-spike-20261008-r4/`(`summary.json`,
+`probe-log.txt`, thumbnail)에 있다.
+
+| 2179 사례 | 결과 |
+| --- | --- |
+| 맞는 GUID, PDU와 X.224를 한 번에 전송(requestedProtocols `0x0B`, `0x01`, `0x00`) | 연결은 유지되지만 5~8초 안에 응답 없음 |
+| 맞는 GUID, PDU와 X.224 사이 200ms(`0x0B`, `0x01`, `0x00`) | 같음 |
+| PCB 없음 | 서버가 즉시 연결을 끊음 |
+| 틀린 GUID | 즉시 끊음 |
+
+- 2179: vmms는 preconnection PDU의 VM GUID로 대상을 고르고, 맞지 않으면 바로 끊는다. 맞는 GUID 뒤에는 표준 X.224
+  Connection Confirm을 돌려주지 않았다. 표준 RDP 협상만으로는 다음 단계를 확인하지 못했다. 참조 client(FreeRDP `/pcb` 등)의
+  통신 캡처가 필요하고, 그 client 설치는 이 campaign 승인 밖이다.
+- WMI 화면(E): `GetVirtualSystemThumbnailImage` 640×480이 반환 `0`, ImageData 614,404 byte(RGB565 614,400 + 4)였다.
+  호출당 37~59ms(r3·r4 10회)다. 변환한 PNG에 Gen 2 firmware 화면("Start PXE over IPv4", Hyper-V 로고)이 그대로 보였다.
+  캡처만으로 초당 15~25장 수준이다(인코딩·전송 제외). 입력(`Msvm_Keyboard`, 마우스)은 이번에 보내지 않았다.
 
 ## 결론
 

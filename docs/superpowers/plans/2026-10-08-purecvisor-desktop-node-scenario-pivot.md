@@ -44,7 +44,9 @@
 
 ## Task 3: 2179 probe (Lane 2)
 
-- [ ] PCVCLI(설치본 service 경로)로 `pcv-it-console-spike` VM을 만들고 켠다. 저장소 밖 scratch probe로 `127.0.0.1:2179`에 preconnection PDU v2(VM GUID)와 X.224 Connection Request(RDP_NEG_REQ)를 보내 응답(선택 protocol, 실패 코드)을 기록하고, GUID 없음·틀린 GUID와 대조한다. VM을 끄고 지워 `pcv-it-` VM `0`개를 확인한다. raw 결과는 `artifacts/console-spike-20261008/`, 요약은 spike 문서 probe 절에 적는다. 로컬 commit.
+- [x] PCVCLI(설치본 service 경로)로 `pcv-it-console-spike` VM을 만들고 켠다. 저장소 밖 scratch probe로 `127.0.0.1:2179`에 preconnection PDU v2(VM GUID)와 X.224 Connection Request(RDP_NEG_REQ)를 보내 응답(선택 protocol, 실패 코드)을 기록하고, GUID 없음·틀린 GUID와 대조한다. VM을 끄고 지워 `pcv-it-` VM `0`개를 확인한다. raw 결과는 `artifacts/console-spike-20261008/`, 요약은 spike 문서 probe 절에 적는다. 로컬 commit.
+
+실행 기록(2026-10-08): 4회 실행, r3·r4에서 `pcv-it-console-spike` create·start·stop·delete job 모두 `succeeded`, 끝 상태 `pcv-it-` VM `0`개, 보존 VM 변경 없음. 2179는 맞는 GUID면 연결을 유지하지만 X.224 응답이 없고(한 번에·200ms 분리 모두), PCB 없음·틀린 GUID는 즉시 끊는다. WMI thumbnail 640×480은 반환 `0`, 37~59ms, firmware 화면이 보였다. 앞 2회는 scratch alias 충돌과 디스크 2GB(`PCV_DISK_OUT_OF_RANGE`)로 VM 생성 전에 멈췄다. raw 결과 `artifacts/console-spike-20261008-r3/`, `-r4/`.
 
 ## Task 4: 판단 기록
 
