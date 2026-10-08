@@ -87,7 +87,9 @@
 
 ## Task 10: `pcv-it-` VM 확인 (Lane 2)
 
-- [ ] `DesktopNode.HyperV.IntegrationTests`에 콘솔 시험을 더해 `pcv-it-` VM을 만들고 켠 뒤 화면 읽기와 firmware 화면 키 입력(예: `Esc`)을 보내 화면 변화를 확인하고, 끄고 지운다. 끝 상태 `pcv-it-` VM `0`개. 결과는 plan 실행 기록에 적는다. 로컬 commit.
+- [x] `DesktopNode.HyperV.IntegrationTests`에 콘솔 시험을 더해 `pcv-it-` VM을 만들고 켠 뒤 화면 읽기와 firmware 화면 키 입력(예: `Esc`)을 보내 화면 변화를 확인하고, 끄고 지운다. 끝 상태 `pcv-it-` VM `0`개. 결과는 plan 실행 기록에 적는다. 로컬 commit.
+
+실행 기록(2026-10-08 21:47~21:51 KST): `VmConsoleBrowserPathTests`(ADR-0016 integration 단계, 제품 adapter in-process)를 3회 돌렸다. 1회차는 43초 뒤 실패했고 메시지를 잡지 못했다(정리 정상). 2회차와 3회차는 통과했다. 3회차 기록(`artifacts/hyperv-integration/console-browser-path/20261008125048.json`): Gen 2 firmware 화면이 4.6초 만에 안정(non-black 1,286 pixel, frame 읽기 최대 920ms, 3회), 키 입력 Esc·Shift press/release·text·Ctrl+Alt+Del 모두 반환 0, Ctrl+Alt+Del 뒤 1.46초 만에 화면 변화, VM 삭제 확인. 끝 상태 `pcv-it-` VM `0`개, 보존 VM 변경 없음, guest OS 접속 없음. 남은 위험: 1회차 실패는 PXE 단계 타이밍으로 추정하며, 다시 나오면 안정 화면 판정을 길게 잡는다.
 
 ## Task 11: Web 키 입력
 
