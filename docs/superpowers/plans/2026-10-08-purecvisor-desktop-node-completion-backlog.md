@@ -136,7 +136,9 @@ ADR-0016 standing approval(`pcv-it-` 접두사 VM 생성·삭제)은 그대로 �
 
 ## Task 13: 판정과 연쇄
 
-- [ ] clean `main`에서 `pcvverify completion`을 돌려 기록한다. 기대 갭은 C2 `train-departure`(queue 행 두 개, `0.42.93-admin-smoke`)와 C5 `deadline-wait`다. 기록 PR을 merge한 뒤 `pcv-campaign` §6대로 정책 안 갭으로 completion 모드 campaign을 열고 Task 14·15를 carry-over한다.
+- [x] clean `main`에서 `pcvverify completion`을 돌려 기록한다. 기대 갭은 C2 `train-departure`(queue 행 두 개, `0.42.93-admin-smoke`)와 C5 `deadline-wait`다. 기록 PR을 merge한 뒤 `pcv-campaign` §6대로 정책 안 갭으로 completion 모드 campaign을 열고 Task 14·15를 carry-over한다.
+
+실행 기록(2026-10-08): PR #68(head `44e51dd`, Required check 다섯 개 pass)을 merge commit `d9e7d03`로 합쳤다. main push Development Gates `37731917467`(dotnet `113162747497`, web `113162747455`, delivery `113162747233`, installer-policy `113162747525`)와 Public Boundary `37731917482`가 success다. clean `main` `d9e7d03`에서 `pcvverify completion`(`artifacts/completion/20261008/result.json`). 첫 판정은 Development Gates `in_progress`라 `met=4/7` `gaps=3`(C1 `ci-wait` 포함)이었고, 그 run이 success가 된 뒤 같은 head에서 다시 판정했다. `complete=false met=5/7 gaps=2` exit `1`. 갭은 `C2-queue`(`train-departure`, queue `2`, `0.42.93-admin-smoke`, probe `vm.qos`, `vm.create reconcile`)와 `C5-risk-ubuntu-26-runner`(`deadline-wait`, `not_before=2026-10-19`)다. 기대 갭과 같다. host mutation 없음. operational current는 `0.42.92-admin-smoke` 그대로다. 이 기록 commit 뒤 push, PR, green CI 뒤 merge하고, merge 뒤 completion 모드 campaign을 연다.
 
 ## Task 14: C5 runner 확인 (2026-10-19 이후)
 
