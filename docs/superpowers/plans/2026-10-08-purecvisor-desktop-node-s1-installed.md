@@ -1,0 +1,80 @@
+# S1 설치본 확인과 시연 Implementation Plan
+
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+
+**Goal:** `main` `6b76274`(S1 브라우저 콘솔 포함) build를 이 호스트에 dev probe로 설치해 S1 시나리오 스크립트를 통과시키고, Ubuntu 26.04.1 live server ISO로 브라우저에서 VM 생성 → 화면·키 입력으로 OS 설치 → 네트워크 확인을 시연한 뒤 0.42.93으로 되돌린다. web public source safety 기존 실패(BL-0010)도 고친다.
+
+**Architecture:** 근거는 ADR-0017(시나리오 S1), 설계 `pcv-s1-browser-console-v1`, `docs/DEVELOPMENT_PROCEDURE.md` §10 dev probe(제품 Update와 Rollback, 승격 근거 아님)다. 설치·되돌리기는 `packaging/windows-desktop-node/Invoke-PcvDesktopNodeProduct.ps1 -Action Update|Rollback`, package는 `build.ps1`과 `New-PcvAdminSmokeUpdatePackage.ps1`, 시연은 Web Console(브라우저 자동화)과 `npm run scenario:s1-console`이다. branch는 `lane1/s1-installed-20261008` 하나, PR 하나다.
+
+**Tech Stack:** `build.ps1`, `New-PcvAdminSmokeUpdatePackage.ps1`, `Invoke-PcvDesktopNodeProduct.ps1`, Web Console + 브라우저 자동화, `npm run scenario:s1-console`, `pcvverify completion`, `gh`
+
+## 사용자 결정 (2026-10-08)
+
+승인 원문: `1, D:\Downloads\ubuntu-26.04.1-live-server-amd64.iso, 3` (campaign `adr17-s1-console-20261008` 최종 보고 `next_approval_required` 1~3과 승인 2의 ISO 경로). 남은 C5 task는 직전 결정들과 같이 이관한다.
+
+| 항목 | 범위 |
+| --- | --- |
+| 1 | "S1 설치본 smoke: PR B merge 뒤 main build로 이 호스트에서 dev probe를 한다(제품 Update로 새 build 설치, service 재시작, `npm run scenario:s1-console -- --execute`를 pcv-it- 접두사 VM과 smoke ISO로 실행, 끝에 제품 Rollback으로 0.42.93 복귀). Lane 2 host mutation은 제품 Update/Rollback, service 재시작, pcv-it- VM 생성·시작·키 입력·중지·삭제만. 결과 기록 push, PR, green CI 뒤 merge." |
+| 2 | "S1 시연 기록: 실제 OS 설치 ISO(사용자가 경로 제공)로 브라우저에서 VM 생성 → 화면·키 입력으로 OS 설치 → 네트워크 확인을 한 번 하고, 짧은 시연 기록 문서와 criteria S1 `status=passed`, `demo_record`를 쓴다. Lane 2(pcv-it- 접두사 VM, guest OS 설치 포함), push, PR, green CI 뒤 merge." ISO `D:\Downloads\ubuntu-26.04.1-live-server-amd64.iso` |
+| 3 | "backlog BL-0010(web public source safety 기존 실패 4곳) 분류: counts면 Lane 1로 고치고 push, PR, green CI 뒤 merge." 승인으로 `counts` 분류 |
+| 이관 | `adr17-s1-console-20261008` Task 14(C5 runner, `not_before` 2026-10-19)를 Task 11로 옮긴다. Lane 0/1, push, PR, green CI 뒤 merge |
+| ADR-0016 | standing approval은 `pcv-it-` 접두사 VM 생성·삭제로 한정 |
+
+## Global Constraints
+
+- 보존 VM `pcv-guest-installed-04253-r1`을 바꾸지 않는다. 새 VM은 `pcv-it-` 접두사뿐이고 Task 9에서 모두 지운다.
+- 설치본은 Task 3에서 dev build로 바뀌고 Task 9 Rollback으로 `0.42.93-admin-smoke`에 돌아간다. MSI 설치·제거, REMOVE_DATA, 방화벽, LAN, Event Log 변경은 범위 밖이다. Rollback이 실패하면 멈추고 보고한다.
+- guest 계정 비밀번호는 실행 중에 만들어 키 입력으로만 보내고 문서·summary·명령줄에 남기지 않는다. 입력 audit은 길이만 남긴다.
+- dev probe는 승격 근거가 아니다. `current-evidence.json`, operational current, release train은 바꾸지 않는다.
+- 산출물은 `artifacts/s1-installed-20261008/` 아래에 둔다.
+- 한도: Lane 1 30분·tool batch 18회, Lane 2 45분·tool batch 12회, Lane 3 30분·tool batch 12회(checkpoint마다).
+
+## Task 1: BL-0010 수정
+
+- [ ] web public source safety가 기존 파일 4곳(train-04290 plan 68행, noVNC 시험 3곳)에서 내는 실패를 고치고 backlog `BL-0010`을 `counts`(근거 승인 3)로 분류한 뒤 닫는다. 검증 `npm run test:public-source-safety --prefix web`, `npm run test:required --prefix web`, 관련 .NET 시험, Delivery. 로컬 commit.
+
+## Task 2: dev package
+
+- [ ] `main` `6b76274` 기준 worktree나 clean HEAD에서 `build.ps1`(version `0.42.94-admin-smoke`, `AllowUnsignedDev`, `LocalTest`)과 `New-PcvAdminSmokeUpdatePackage.ps1`로 package와 update catalog를 `artifacts/s1-installed-20261008/package`에 만든다. host mutation 없음. 실행 기록과 로컬 commit.
+
+## Task 3: dev build 설치 (Lane 2)
+
+- [ ] `Invoke-PcvDesktopNodeProduct.ps1 -Action Update`(가능하면 먼저 계획·WhatIf)로 dev build를 설치하고 service가 Running, 설치본 version, Web `200`, `GET .../console/frame/640x480`이 꺼진 VM에 `409`를 주는지 확인한다. 로컬 commit.
+
+## Task 4: S1 시나리오 스크립트 (Lane 2)
+
+- [ ] `npm run scenario:s1-console -- --execute --iso=<smoke ISO>`를 `pcv-it-s1-` VM으로 돌려 `summary.json` `result=pass`와 화면 캡처 2장을 얻는다. 끝에 VM이 지워졌는지 확인한다. 로컬 commit.
+
+## Task 5: Ubuntu 시연 1 — 생성과 부팅 (Lane 2)
+
+- [ ] 브라우저(Web Console)에서 Ubuntu ISO로 `pcv-it-s1-ubuntu` VM(vCPU 2, 4096MB, 32GB)을 만들고 켠 뒤 VM Screen으로 설치 프로그램 첫 화면까지 간다. Gen 2 Secure Boot로 부팅이 막히면 Gen 1로 다시 만든다. 화면 캡처를 남긴다. 로컬 commit.
+
+## Task 6: Ubuntu 시연 2 — 설치 설정 (Lane 2)
+
+- [ ] VM Screen 키 입력으로 언어, 키보드, 네트워크(DHCP), 저장소(guided)를 진행하고 프로필(비밀번호는 실행 중 생성)과 SSH 선택까지 마쳐 설치를 시작한다. 화면 캡처를 남긴다. 로컬 commit.
+
+## Task 7: Ubuntu 시연 3 — 설치 완료와 재부팅 (Lane 2)
+
+- [ ] 설치 완료를 기다려 재부팅하고 로그인 화면까지 간다. 화면 캡처를 남긴다. 로컬 commit.
+
+## Task 8: Ubuntu 시연 4 — 로그인과 네트워크 (Lane 2)
+
+- [ ] VM Screen으로 로그인해 `ip -4 addr`와 외부 이름 해석·ping으로 네트워크를 확인하고 화면 캡처를 남긴다. 로컬 commit.
+
+## Task 9: 정리와 Rollback (Lane 2)
+
+- [ ] 데모 VM을 끄고 지우고, `-Action Rollback`으로 `0.42.93-admin-smoke`에 돌아가 service Running, Web `200`, 설치본 version, `pcv-it-` VM `0`개, 보존 VM Off를 확인한다. 로컬 commit.
+
+## Task 10: 기록과 PR
+
+- [ ] 시연 기록 `docs/ga-ready/demo/s1-browser-console-demo-2026-10-08.md`(시나리오, 설치본 version, 스크립트 결과, 화면 캡처 경로)를 쓰고 criteria S1을 `status=passed`, `demo_record`로 바꾼다. `pcvverify completion`을 읽기 전용으로 돌려 결과를 적는다. clean HEAD에서 솔루션 시험, web required, `git diff --check origin/main...HEAD` 뒤 push, PR, green CI 뒤 merge한다.
+
+## Task 11: C5 runner 확인 (2026-10-19 이후)
+
+- [ ] `not_before` 2026-10-19. 이관 전 `adr17-s1-console-20261008` Task 14(그 전 `scenario-pivot-20261008` Task 6, `completion-20261008` Task 10)이다. Ubuntu 26 runner의 첫 `main` Development Gates와 Public Boundary run이 green이면 `config/project-completion-criteria.json` 위험 행을 `status=closed`, `closed_by`에 run id로 닫는다. 실패하면 `ubuntu-24.04` pin을 판단해 보고하고 멈춘다. push, PR, green CI 뒤 merge.
+
+## Nonclaims
+
+- dev probe 설치는 승격 근거가 아니다. operational current는 `0.42.93-admin-smoke` 그대로이고 끝에 설치본도 그 version으로 돌아간다.
+- S1 통과는 이 시연과 스크립트 결과로만 주장하고, S2~S4는 주장하지 않는다.
+- public trusted signing과 external stable publication을 주장하지 않는다.
