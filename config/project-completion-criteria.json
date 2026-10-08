@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "contract": "pcv-project-completion-criteria-v1",
-  "definition": "pcv-project-completion-definition-v2",
-  "design": "docs/superpowers/specs/2026-10-07-purecvisor-desktop-node-completion-definition-v2-design.md",
+  "definition": "pcv-project-completion-definition-v3",
+  "design": "docs/adr/0017-scenario-delivery-completion.md",
   "workflows": {
     "c1": [
       "Development Gates"
@@ -12,6 +12,32 @@
       "Public Boundary Contract"
     ]
   },
+  "scenarios": [
+    {
+      "id": "S1",
+      "title": "브라우저에서 ISO로 VM을 만들고, 브라우저 콘솔로 OS를 설치하고, 네트워크 연결을 확인한다",
+      "status": "open",
+      "demo_record": null
+    },
+    {
+      "id": "S2",
+      "title": "설치한 VM을 template으로 만들고 복제해 새 VM을 1분 안에 받는다",
+      "status": "open",
+      "demo_record": null
+    },
+    {
+      "id": "S3",
+      "title": "checkpoint 생성·복원과 예약 실행을 브라우저에서 한다",
+      "status": "open",
+      "demo_record": null
+    },
+    {
+      "id": "S4",
+      "title": "LAN의 다른 PC에서 계정으로 로그인해 S1~S3을 쓴다",
+      "status": "open",
+      "demo_record": null
+    }
+  ],
   "service_plan_items": [
     {
       "id": "P0-1",

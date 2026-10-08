@@ -37,18 +37,30 @@ internal sealed record ProjectCompletionResult(
     IReadOnlyList<CompletionCondition> Conditions,
     IReadOnlyList<CompletionGap> Gaps)
 {
+    internal string Definition { get; init; } = ProjectCompletionEvaluator.DefinitionV2;
+
+    // v3 keeps the v2 train, ledger, service-plan and backlog checks as hygiene: reported, never gating.
+    internal IReadOnlyList<CompletionCondition> Hygiene { get; init; } = [];
+
+    internal IReadOnlyList<CompletionGap> HygieneGaps { get; init; } = [];
+
     internal bool Complete => Conditions.All(condition => condition.Met);
 
     internal int MetCount => Conditions.Count(condition => condition.Met);
 }
 
-// Judges the completion definition pcv-project-completion-definition-v2 from repository files and a CI run list
-// (design pcv-completion-autopilot-v1 §2.2). Pure: no process, network or clock access.
+// Judges the completion definition named by the criteria file from repository files and a CI run list
+// (design pcv-completion-autopilot-v1 §2.2). v3 (ADR-0017) gates on the scenarios S1-S4, the GA-ready CI (C1),
+// CI and deadline risks (C5) and the permanent scope (C6). Pure: no process, network or clock access.
 internal static class ProjectCompletionEvaluator
 {
     internal const string CriteriaContract = "pcv-project-completion-criteria-v1";
     internal const string BacklogContract = "pcv-backlog-v1";
+    internal const string DefinitionV2 = "pcv-project-completion-definition-v2";
+    internal const string DefinitionV3 = "pcv-project-completion-definition-v3";
     internal const int ServicePlanItemCount = 15;
+
+    internal static readonly IReadOnlyList<string> ScenarioIds = ["S1", "S2", "S3", "S4"];
 
     internal static readonly IReadOnlyList<string> PermanentOutOfScopeIds =
     [
@@ -63,20 +75,85 @@ internal static class ProjectCompletionEvaluator
         RequireContract(inputs.Criteria, CriteriaContract, "criteria");
         RequireContract(inputs.Backlog, BacklogContract, "backlog");
 
+        var definition = String(inputs.Criteria, "definition", "criteria");
         var conditions = new List<CompletionCondition>();
         var gaps = new List<CompletionGap>();
         var workflows = Object(inputs.Criteria, "workflows", "criteria");
         var c1Workflows = Strings(workflows, "c1", "criteria.workflows");
         var c5Workflows = Strings(workflows, "c5", "criteria.workflows");
 
+        if (definition == DefinitionV2)
+        {
+            conditions.Add(EvaluateWorkflows("C1", c1Workflows, [], inputs, gaps));
+            conditions.Add(EvaluateC2(inputs, gaps));
+            conditions.Add(EvaluateC3(inputs, gaps));
+            conditions.Add(EvaluateC4(inputs, gaps));
+            conditions.Add(EvaluateC5(c5Workflows, c1Workflows, inputs, gaps));
+            conditions.Add(EvaluateC6(inputs));
+            conditions.Add(EvaluateC7(inputs, gaps));
+            return new ProjectCompletionResult(conditions, gaps);
+        }
+
+        if (definition != DefinitionV3)
+        {
+            throw Invalid("definition-unknown", definition);
+        }
+
+        var hygiene = new List<CompletionCondition>();
+        var hygieneGaps = new List<CompletionGap>();
         conditions.Add(EvaluateWorkflows("C1", c1Workflows, [], inputs, gaps));
-        conditions.Add(EvaluateC2(inputs, gaps));
-        conditions.Add(EvaluateC3(inputs, gaps));
-        conditions.Add(EvaluateC4(inputs, gaps));
+        conditions.AddRange(EvaluateScenarios(inputs, gaps));
         conditions.Add(EvaluateC5(c5Workflows, c1Workflows, inputs, gaps));
         conditions.Add(EvaluateC6(inputs));
-        conditions.Add(EvaluateC7(inputs, gaps));
-        return new ProjectCompletionResult(conditions, gaps);
+        hygiene.Add(EvaluateC2(inputs, hygieneGaps));
+        hygiene.Add(EvaluateC3(inputs, hygieneGaps));
+        hygiene.Add(EvaluateC4(inputs, hygieneGaps));
+        hygiene.Add(EvaluateC7(inputs, hygieneGaps));
+        return new ProjectCompletionResult(conditions, gaps)
+        {
+            Definition = DefinitionV3,
+            Hygiene = hygiene,
+            HygieneGaps = hygieneGaps
+        };
+    }
+
+    private static IEnumerable<CompletionCondition> EvaluateScenarios(ProjectCompletionInputs inputs, List<CompletionGap> gaps)
+    {
+        var rows = Array(inputs.Criteria, "scenarios", "criteria").OfType<JsonObject>().ToList();
+        var ids = rows.Select(row => String(row, "id", "criteria.scenarios")).ToList();
+        if (!ids.SequenceEqual(ScenarioIds, StringComparer.Ordinal))
+        {
+            throw Invalid("scenario-ids", string.Join(",", ids));
+        }
+
+        foreach (var row in rows)
+        {
+            var id = String(row, "id", "criteria.scenarios");
+            var title = String(row, "title", $"criteria.{id}");
+            var status = String(row, "status", $"criteria.{id}");
+            if (status is not ("open" or "passed"))
+            {
+                throw Invalid("scenario-status", $"{id}:{status}");
+            }
+
+            var record = row["demo_record"]?.GetValue<string>();
+            var recorded = !string.IsNullOrEmpty(record) && inputs.RepositoryFileExists(record);
+            if (status == "open")
+            {
+                gaps.Add(new CompletionGap(
+                    $"{id}-scenario", id, "scenario", "1",
+                    $"scenario {id} is not demonstrated on an installed build: {title}", [$"scenario:{id}"], null));
+            }
+            else if (!recorded)
+            {
+                gaps.Add(new CompletionGap(
+                    $"{id}-demo-record", id, "lane1-fix", "1",
+                    $"scenario {id} is passed but its demo record {record ?? "null"} is missing", [$"scenario:{id}"], null));
+            }
+
+            yield return new CompletionCondition(
+                id, status == "passed" && recorded, $"status={status}, demo_record={record ?? "none"}");
+        }
     }
 
     internal static string NextTrainVersion(string version)

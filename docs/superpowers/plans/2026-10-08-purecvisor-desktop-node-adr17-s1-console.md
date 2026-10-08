@@ -39,7 +39,9 @@
 
 ## Task 2: 완료 판정 v3
 
-- [ ] `config/project-completion-criteria.json`을 `pcv-project-completion-definition-v3`로 바꾸고 시나리오 S1~S4 행(`status`, `demo_record`)을 더한다. `pcvverify completion`이 S1~S4 통과, `main` Required CI green, 제품 런타임 GA-ready(v2 C1), 기한 위험으로 판정하고 v2 C2·C3·C7은 판정에 넣지 않고 위생 줄로만 출력하게 한다. `DesktopNode.Verification.Tests`와 Delivery 계약 시험을 고친다. 검증 `dotnet test src/DesktopNode.Verification.Tests -c Release`, Delivery tests. 로컬 commit.
+- [x] `config/project-completion-criteria.json`을 `pcv-project-completion-definition-v3`로 바꾸고 시나리오 S1~S4 행(`status`, `demo_record`)을 더한다. `pcvverify completion`이 S1~S4 통과, `main` Required CI green, 제품 런타임 GA-ready(v2 C1), 기한 위험으로 판정하고 v2 C2·C3·C7은 판정에 넣지 않고 위생 줄로만 출력하게 한다. `DesktopNode.Verification.Tests`와 Delivery 계약 시험을 고친다. 검증 `dotnet test src/DesktopNode.Verification.Tests -c Release`, Delivery tests. 로컬 commit.
+
+실행 기록(2026-10-08): criteria `definition`을 v3, `design`을 ADR-0017로 바꾸고 `scenarios` S1~S4(`status=open`, `demo_record=null`)를 더했다. `ProjectCompletionEvaluator`는 definition으로 v2/v3를 나누고, v3는 C1·S1~S4·C5·C6 일곱 조건으로 판정하며 C2·C3·C4·C7은 `hygiene`/`hygiene_gaps`로만 낸다. 열린 시나리오 갭 종류는 `scenario`(lane 1)다. command는 `hygiene`, `hygiene-gap` 줄과 result JSON 필드를 더했다. v3 시험 4개 추가, Verification 669 통과(실패 1은 dirty tree의 `PolicyBoundaryMatchesCanonicalActivationState`, Task 4 clean HEAD에서 확인), Delivery 통과. host mutation 없음.
 
 ## Task 3: autopilot 정지와 pcv skill
 

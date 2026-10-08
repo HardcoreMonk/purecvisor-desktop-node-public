@@ -6,14 +6,15 @@ using System.Text.RegularExpressions;
 namespace DesktopNode.Verification;
 
 // pcvverify completion --ci-runs <gh run list JSON> [--head <commit>] [--today <yyyy-mm-dd>] [--output <artifacts/...json>]
-// Read-only judgment of pcv-project-completion-definition-v2 (design pcv-completion-autopilot-v1 §2.1). The CI run list
+// Read-only judgment of the completion definition the criteria file names (v3 since ADR-0017, design
+// pcv-completion-autopilot-v1 §2.1). The CI run list
 // comes from `gh run list --branch main --event push --json databaseId,workflowName,status,conclusion,headSha,createdAt`.
-// Exit 0 when C1-C7 are all met, 1 when gaps remain, 2 on an input error.
+// Exit 0 when every gating condition is met, 1 when gaps remain, 2 on an input error. v3 hygiene lines never gate.
 internal static class ProjectCompletionCommand
 {
     internal const string Name = "completion";
     internal const string ResultContract = "pcv-project-completion-result-v1";
-    internal const string Definition = "pcv-project-completion-definition-v2";
+    internal const string Definition = ProjectCompletionEvaluator.DefinitionV3;
 
     internal const string CriteriaPath = "config/project-completion-criteria.json";
     internal const string CurrentEvidencePath = "docs/ga-ready/current-evidence.json";
@@ -69,6 +70,16 @@ internal static class ProjectCompletionCommand
                 standardOutput.WriteLine($"gap {gap.Id} kind={gap.Kind} lane={gap.Lane}{notBefore} {gap.Summary}");
             }
 
+            foreach (var condition in result.Hygiene)
+            {
+                standardOutput.WriteLine($"hygiene {condition.Id} met={Bool(condition.Met)} {condition.Detail}");
+            }
+
+            foreach (var gap in result.HygieneGaps)
+            {
+                standardOutput.WriteLine($"hygiene-gap {gap.Id} kind={gap.Kind} lane={gap.Lane} {gap.Summary}");
+            }
+
             standardOutput.WriteLine(
                 $"completion: complete={Bool(result.Complete)} met={result.MetCount}/{result.Conditions.Count} gaps={result.Gaps.Count} head={head}");
             return result.Complete ? 0 : 1;
@@ -91,7 +102,7 @@ internal static class ProjectCompletionCommand
     {
         ["schema_version"] = 1,
         ["contract"] = ResultContract,
-        ["definition"] = Definition,
+        ["definition"] = result.Definition,
         ["head_sha"] = head,
         ["evaluated_on"] = today.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
         ["complete"] = result.Complete,
@@ -112,6 +123,19 @@ internal static class ProjectCompletionCommand
             ["summary"] = gap.Summary,
             ["refs"] = new JsonArray(gap.Refs.Select(reference => (JsonNode)JsonValue.Create(reference)!).ToArray()),
             ["not_before"] = gap.NotBefore
+        }).ToArray()),
+        ["hygiene"] = new JsonArray(result.Hygiene.Select(condition => (JsonNode)new JsonObject
+        {
+            ["id"] = condition.Id,
+            ["met"] = condition.Met,
+            ["detail"] = condition.Detail
+        }).ToArray()),
+        ["hygiene_gaps"] = new JsonArray(result.HygieneGaps.Select(gap => (JsonNode)new JsonObject
+        {
+            ["id"] = gap.Id,
+            ["condition"] = gap.Condition,
+            ["kind"] = gap.Kind,
+            ["summary"] = gap.Summary
         }).ToArray())
     };
 
