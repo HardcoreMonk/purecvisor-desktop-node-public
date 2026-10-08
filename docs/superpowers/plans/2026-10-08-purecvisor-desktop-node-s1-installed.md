@@ -49,7 +49,9 @@
 
 ## Task 4: S1 시나리오 스크립트 (Lane 2)
 
-- [ ] `npm run scenario:s1-console -- --execute --iso=<smoke ISO>`를 `pcv-it-s1-` VM으로 돌려 `summary.json` `result=pass`와 화면 캡처 2장을 얻는다. 끝에 VM이 지워졌는지 확인한다. 로컬 commit.
+- [x] `npm run scenario:s1-console -- --execute --iso=<smoke ISO>`를 `pcv-it-s1-` VM으로 돌려 `summary.json` `result=pass`와 화면 캡처 2장을 얻는다. 끝에 VM이 지워졌는지 확인한다. 로컬 commit.
+
+실행 기록(2026-10-08 23:30~23:31 UTC+9 기준 14:30:40~14:31:53Z): 설치본 `0.42.94-admin-smoke`에서 `run-s1-console-scenario.mjs --execute`를 VM `pcv-it-s1-smoke-20261008`과 smoke ISO로 돌려 `result=pass`(`73`초). session `200`, create·start·poweroff·delete job 모두 `succeeded`, 화면 캡처 2장(BMP), Enter 입력 `200`. 바뀐 화면은 37번째 읽기(약 60초 뒤)에 잡혀 Enter 효과가 아니라 firmware PXE 진행일 수 있다(키 입력 효과는 Task 10 integration과 Task 5~8 시연이 본다). 결과 `artifacts/s1-installed-20261008/scenario-smoke/`. 끝 상태 `pcv-it-` VM `0`개.
 
 ## Task 5: Ubuntu 시연 1 — 생성과 부팅 (Lane 2)
 
