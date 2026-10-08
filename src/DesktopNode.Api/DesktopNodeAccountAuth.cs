@@ -671,7 +671,7 @@ public sealed class DesktopNodeAccountAuthService
                 ["read"] = "viewer",
                 ["operate"] = "operator",
                 ["diagnostics.create"] = "operator",
-                ["console.view"] = "operator",
+                ["console.view"] = "operator", ["console.input"] = "operator",
                 ["console.configure"] = "admin",
                 ["account.manage"] = "admin"
             }
@@ -851,8 +851,8 @@ public sealed class DesktopNodeAccountAuthService
     {
         return NormalizeRole(role) switch
         {
-            "admin" => ["*", "read", "operate", "job.control", "diagnostics.read", "diagnostics.create", "console.view", "console.configure", "account.manage"],
-            "operator" => ["read", "operate", "job.control", "diagnostics.read", "diagnostics.create", "console.view"],
+            "admin" => ["*", "read", "operate", "job.control", "diagnostics.read", "diagnostics.create", "console.view", "console.input", "console.configure", "account.manage"],
+            "operator" => ["read", "operate", "job.control", "diagnostics.read", "diagnostics.create", "console.view", "console.input"],
             _ => ["read"]
         };
     }

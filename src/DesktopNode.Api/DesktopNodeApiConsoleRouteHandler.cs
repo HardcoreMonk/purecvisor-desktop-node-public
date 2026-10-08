@@ -45,6 +45,11 @@ internal sealed partial class DesktopNodeApiConsoleRouteHandler
             return HandleVmConsoleFrame(frameMatch.Parameters["vmId"], frameMatch.Parameters["size"]);
         }
 
+        if (DesktopNodeApiRuntimeRoutes.TryMatchOperation(method, normalizedPath, "SendVmConsoleInput", out var inputMatch))
+        {
+            return HandleVmConsoleInput(request, inputMatch.Parameters["vmId"]);
+        }
+
         if (DesktopNodeApiRuntimeRoutes.TryMatchOperation(method, normalizedPath, "PreviewNoVncTarget", out _))
         {
             return HandleNoVncTargetPreview(request);

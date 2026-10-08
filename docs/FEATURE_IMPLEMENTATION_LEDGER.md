@@ -27,7 +27,7 @@ flowchart LR
     I -->|"1 blocker"| J["promotion_eligible=false"]
 ```
 
-API는 모든 81개 route의 backend 경계다. Web Console과 PCVCLI는 각 route에 대해 실제
+API는 모든 82개 route의 backend 경계다. Web Console과 PCVCLI는 각 route에 대해 실제
 binding 또는 이유가 있는 제외 중 하나를 가져야 한다. 이 흐름은 surface 존재 여부와
 feature promotion evidence를 서로 다른 계약으로 유지한다.
 
@@ -46,7 +46,7 @@ feature promotion evidence를 서로 다른 계약으로 유지한다.
 | <a id="pcv-network-inventory"></a>`pcv.network.inventory` | Network inventory | 3 | 3 present / 0 excluded | 3 present / 0 excluded |
 | <a id="pcv-vm-delete"></a>`pcv.vm.delete` | VM delete lifecycle | 2 | 2 present / 0 excluded | 2 present / 0 excluded |
 | <a id="pcv-vm-console-handoff"></a>`pcv.vm.console-handoff` | VM console handoff | 4 | 1 present / 3 excluded | 4 present / 0 excluded |
-| <a id="pcv-vm-browser-console"></a>`pcv.vm.browser-console` | VM browser console | 1 | 1 present / 0 excluded | 0 present / 1 excluded |
+| <a id="pcv-vm-browser-console"></a>`pcv.vm.browser-console` | VM browser console | 2 | 1 present / 1 excluded | 0 present / 2 excluded |
 | <a id="pcv-vm-telemetry"></a>`pcv.vm.telemetry` | VM telemetry | 2 | 2 present / 0 excluded | 2 present / 0 excluded |
 | <a id="pcv-vm-qos"></a>`pcv.vm.qos` | VM QoS | 6 | 6 present / 0 excluded | 6 present / 0 excluded |
 | <a id="pcv-vm-guest-service-readback"></a>`pcv.vm.guest-service-readback` | Guest service readback | 2 | 2 present / 0 excluded | 2 present / 0 excluded |
@@ -65,7 +65,7 @@ feature promotion evidence를 서로 다른 계약으로 유지한다.
 | <a id="pcv-vm-media-attach"></a>`pcv.vm.media-attach` | VM media attach | 1 | 1 present / 0 excluded | 1 present / 0 excluded |
 | <a id="pcv-vm-resource-limits"></a>`pcv.vm.resource-limits` | VM resource limits | 4 | 3 present / 1 excluded | 4 present / 0 excluded |
 
-## 81-route surface 투영
+## 82-route surface 투영
 
 | Feature ID | Operation ID | Canonical API route | Permission | Web Console | PCVCLI |
 |---|---|---|---|---|---|
@@ -99,6 +99,7 @@ feature promotion evidence를 서로 다른 계약으로 유지한다.
 | `pcv.vm.delete` | `vm.delete` | `DELETE /api/v1/vms/{vmId}` | `operate` | present — `vm.delete` | present — `pcvcli vm delete vm-01 --yes` |
 | `pcv.vm.console-handoff` | `console.session` | `GET /api/v1/vms/{vmId}/console` | `console.view` | present — `console.session` | present — `pcvcli vm console vm-01` |
 | `pcv.vm.browser-console` | `console.frame` | `GET /api/v1/vms/{vmId}/console/frame/{size}` | `console.view` | present — `console.frame` | excluded — The console frame is a browser canvas stream; PCVCLI keeps the vm console handoff. |
+| `pcv.vm.browser-console` | `console.input` | `POST /api/v1/vms/{vmId}/console/input` | `console.input` | excluded — Web keyboard capture for the VM screen lands with the S1 console input task. | excluded — Console keyboard input follows the browser canvas; PCVCLI keeps the vm console handoff. |
 | `pcv.vm.console-handoff` | `console.novnc-target.preview` | `POST /api/v1/console/novnc-target/preview` | `console.configure` | excluded — noVNC target configuration stays CLI/API; Web Console keeps Console Access Card readback without a save form. | present — `pcvcli console novnc-target preview --host 127.0.0.1 --port 5900` |
 | `pcv.vm.console-handoff` | `console.novnc-target.set` | `POST /api/v1/console/novnc-target` | `console.configure` | excluded — noVNC target configuration stays CLI/API; Web Console keeps Console Access Card readback without a save form. | present — `pcvcli console novnc-target set --host 127.0.0.1 --port 5900 --yes` |
 | `pcv.vm.console-handoff` | `console.novnc-target.clear` | `POST /api/v1/console/novnc-target/clear` | `console.configure` | excluded — noVNC target configuration stays CLI/API; Web Console keeps Console Access Card readback without a save form. | present — `pcvcli console novnc-target clear --yes` |

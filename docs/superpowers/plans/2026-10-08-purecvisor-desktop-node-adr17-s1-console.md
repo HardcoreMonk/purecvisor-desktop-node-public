@@ -81,7 +81,9 @@
 
 ## Task 9: 키 입력 adapter와 route
 
-- [ ] `Msvm_Keyboard`(`TypeKey`, `PressKey`, `ReleaseKey`, `TypeText`, `TypeCtrlAltDel`) 입력 operation과 설계대로의 입력 route, `console.input` 권한, audit을 더한다. 단위 시험을 쓴다. 검증 HyperV, Api, Contracts tests. 로컬 commit.
+- [x] `Msvm_Keyboard`(`TypeKey`, `PressKey`, `ReleaseKey`, `TypeText`, `TypeCtrlAltDel`) 입력 operation과 설계대로의 입력 route, `console.input` 권한, audit을 더한다. 단위 시험을 쓴다. 검증 HyperV, Api, Contracts tests. 로컬 commit.
+
+실행 기록(2026-10-08): `vm.console.input`을 adapter(`PlanConsoleInput`: key type/press/release 1~254, text 1~256자 출력 가능 ASCII, ctrl-alt-del; running 확인; ReturnValue≠0이면 `PCV_CONSOLE_INPUT_FAILED`)와 WMI provider(VM의 `Msvm_Keyboard` method 호출)에 더하고 catalog, invoker에 등록했다. route `POST /api/v1/vms/{vmId}/console/input`(`console.input`, 동기)는 검증, remote service bearer 거부(403), VM당 초당 50회(429), data root `console-input-audit.jsonl` 선기록(내용·hash 없음, 1 MiB 회전, 실패 시 503) 뒤 보낸다. 권한 `console.input`을 operator·admin에 더하고 RBAC golden, reconcile 비대상 분류, surface ledger(API present, CLI·Web 제외), route 82·ProductOperation 21·snapshot SHA, CLI 제외 9, Web 제외 5(parity 77/5), 기능 문서를 맞췄다. ratchet 때문에 adapter switch의 readback 네 줄을 한 줄로 합치고 `DesktopNodeHyperVModels.cs`·`DesktopNodeAccountAuth.cs`를 한 줄씩 줄였다. 시험: HyperV 275(새 1), Api 517(새 9), Contracts 200, Cli 183, Delivery 775, web required exit 0, web Pester 50/0. host mutation 없음.
 
 ## Task 10: `pcv-it-` VM 확인 (Lane 2)
 

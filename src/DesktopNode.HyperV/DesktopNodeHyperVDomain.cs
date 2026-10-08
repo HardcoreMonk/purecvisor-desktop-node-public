@@ -34,6 +34,7 @@ public static class DesktopNodeHyperVDomain
         new("vm.blkio-get", DesktopNodeHyperVOperationKind.Read, DesktopNodeHyperVOperationDomain.VmInventory, "vm-provider"),
         new("vm.disk.inspect", DesktopNodeHyperVOperationKind.Read, DesktopNodeHyperVOperationDomain.VmInventory, "vm-provider"),
         new("vm.console.frame", DesktopNodeHyperVOperationKind.Read, DesktopNodeHyperVOperationDomain.VmInventory, "vm-provider"),
+        new("vm.console.input", DesktopNodeHyperVOperationKind.Mutation, DesktopNodeHyperVOperationDomain.VmInventory, "vm-provider"),
         new("vm.bandwidth", DesktopNodeHyperVOperationKind.Read, DesktopNodeHyperVOperationDomain.VmInventory, "vm-provider"),
         new("vm.qos.storage.preview", DesktopNodeHyperVOperationKind.Read, DesktopNodeHyperVOperationDomain.VmInventory, "vm-provider"),
         new("vm.qos.network.preview", DesktopNodeHyperVOperationKind.Read, DesktopNodeHyperVOperationDomain.VmInventory, "vm-provider"),

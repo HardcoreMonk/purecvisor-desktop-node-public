@@ -15,6 +15,7 @@ internal sealed partial class DesktopNodeApiJobReconciliationHandler
         ["vm.device.add"] = "A repeated add creates another NIC or DVD drive, and vm.list cannot tell which add applied.",
         ["vm.nic.add"] = "A repeated add creates another NIC, and vm.list cannot tell which add applied.",
         ["vm.dvd.add"] = "A repeated add creates another DVD drive, and vm.list cannot tell which add applied.",
+        ["console.input"] = "Console keystrokes are sent synchronously and leave no host-side postcondition to reconcile.",
         ["vm.guest.exec"] = "Guest command side effects are not observable from the host and repeating them is unsafe.",
         ["vm.guest.file"] = "Guest file transfer outcomes are not observable from vm.list; verify the guest path and resubmit.",
         ["vm.guest.channel.verify"] = "Verification is a probe without a host-side postcondition; submit a new probe.",

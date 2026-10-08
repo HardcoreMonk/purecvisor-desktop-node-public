@@ -219,13 +219,11 @@ public sealed partial class DesktopNodeHyperVNativeAdapter : IDesktopNodeHyperVN
         return operation switch
         {
             "vm.memory-stats" or "vm.cpu-stats" => TryInvokeVmStats(operation, parameters, cancellationToken, out result),
-            "vm.blkio-get" => TryInvokeVmInventoryReadback(operation, parameters, cancellationToken, out result),
+            "vm.blkio-get" or "vm.bandwidth" or "vm.guest-agent-status" or "vm.guest-ping" => TryInvokeVmInventoryReadback(operation, parameters, cancellationToken, out result),
             "vm.disk.inspect" => TryInvokeVmDiskInspect(operation, parameters, cancellationToken, out result),
             "vm.console.frame" => TryInvokeVmConsoleFrame(operation, parameters, cancellationToken, out result),
-            "vm.bandwidth" => TryInvokeVmInventoryReadback(operation, parameters, cancellationToken, out result),
+            "vm.console.input" => TryInvokeVmConsoleInput(operation, parameters, cancellationToken, out result),
             "vm.qos.storage.preview" or "vm.qos.network.preview" => TryInvokeVmQosPreview(operation, parameters, cancellationToken, out result),
-            "vm.guest-agent-status" => TryInvokeVmInventoryReadback(operation, parameters, cancellationToken, out result),
-            "vm.guest-ping" => TryInvokeVmInventoryReadback(operation, parameters, cancellationToken, out result),
             _ => TryInvokeVmList(operation, cancellationToken, out result)
         };
     }

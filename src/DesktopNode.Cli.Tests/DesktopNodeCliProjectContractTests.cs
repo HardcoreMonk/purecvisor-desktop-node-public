@@ -161,7 +161,7 @@ public sealed class DesktopNodeCliProjectContractTests
         }
 
         Assert.Equal(29, featureCount);
-        Assert.Equal(81, routeCount);
+        Assert.Equal(82, routeCount);
         string[] stageLabels =
         [
             "code_tested",

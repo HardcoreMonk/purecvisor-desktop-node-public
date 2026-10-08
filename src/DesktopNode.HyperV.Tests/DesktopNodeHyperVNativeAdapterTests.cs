@@ -253,6 +253,57 @@ public sealed class DesktopNodeHyperVNativeAdapterTests
         Assert.Equal("PCV_CONSOLE_FRAME_FAILED", unavailable.Error!.Code);
     }
 
+    [Fact]
+    public void NativeVmConsoleInputPicksTheKeyboardMethodAndRejectsBadInput()
+    {
+        var calls = new List<(string Method, object? Argument)>();
+        var adapter = new DesktopNodeHyperVNativeAdapter(
+            new RecordingHyperVSwitchProvider([]),
+            new KeyboardHyperVVmProvider([CompleteVm("alpha") with { State = "running" }], calls, 0));
+
+        foreach (var (body, method) in new[]
+        {
+            ("""{"name":"alpha","kind":"key","action":"type","key_code":13}""", "TypeKey"),
+            ("""{"name":"alpha","kind":"key","action":"press","key_code":17}""", "PressKey"),
+            ("""{"name":"alpha","kind":"key","action":"release","key_code":17}""", "ReleaseKey"),
+            ("""{"name":"alpha","kind":"text","text":"setup"}""", "TypeText"),
+            ("""{"name":"alpha","kind":"ctrl-alt-del"}""", "TypeCtrlAltDel")
+        })
+        {
+            using var document = JsonDocument.Parse(body);
+            Assert.True(adapter.TryInvoke("vm.console.input", document.RootElement, CancellationToken.None, out var result));
+            Assert.True(result.Ok, body);
+            Assert.Equal(method, calls[^1].Method);
+        }
+
+        Assert.Equal(13u, calls[0].Argument);
+        Assert.Equal("setup", calls[3].Argument);
+        Assert.Null(calls[4].Argument);
+
+        using var bad = JsonDocument.Parse("""{"name":"alpha","kind":"key","action":"type","key_code":300}""");
+        Assert.True(adapter.TryInvoke("vm.console.input", bad.RootElement, CancellationToken.None, out var invalid));
+        Assert.Equal("PCV_CONSOLE_INPUT_INVALID", invalid.Error!.Code);
+
+        var failing = new DesktopNodeHyperVNativeAdapter(
+            new RecordingHyperVSwitchProvider([]),
+            new KeyboardHyperVVmProvider([CompleteVm("alpha") with { State = "running" }], calls, 32775));
+        using var enter = JsonDocument.Parse("""{"name":"alpha","kind":"key","action":"type","key_code":13}""");
+        Assert.True(failing.TryInvoke("vm.console.input", enter.RootElement, CancellationToken.None, out var refused));
+        Assert.Equal("PCV_CONSOLE_INPUT_FAILED", refused.Error!.Code);
+        Assert.Contains("32775", refused.Error.Detail, StringComparison.Ordinal);
+    }
+
+    private sealed class KeyboardHyperVVmProvider(IReadOnlyList<DesktopNodeHyperVVmInfo> vms, List<(string Method, object? Argument)> calls, uint returnValue) : IDesktopNodeHyperVVmProvider
+    {
+        public IReadOnlyList<DesktopNodeHyperVVmInfo> GetVms(CancellationToken cancellationToken) => vms;
+
+        public uint? SendConsoleKeyboard(string vmId, string method, object? argument, CancellationToken cancellationToken)
+        {
+            calls.Add((method, argument));
+            return returnValue;
+        }
+    }
+
     private sealed class FramedHyperVVmProvider(IReadOnlyList<DesktopNodeHyperVVmInfo> vms, byte[] frame) : IDesktopNodeHyperVVmProvider
     {
         public IReadOnlyList<DesktopNodeHyperVVmInfo> GetVms(CancellationToken cancellationToken) => vms;
