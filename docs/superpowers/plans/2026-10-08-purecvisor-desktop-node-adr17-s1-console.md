@@ -51,7 +51,9 @@
 
 ## Task 4: PR A 종료
 
-- [ ] clean HEAD에서 `dotnet test src/DesktopNode.sln -c Release`와 `git diff --check origin/main...HEAD`를 돌리고 push, PR, green CI 뒤 merge한다.
+- [x] clean HEAD에서 `dotnet test src/DesktopNode.sln -c Release`와 `git diff --check origin/main...HEAD`를 돌리고 push, PR, green CI 뒤 merge한다.
+
+실행 기록(2026-10-08): clean HEAD `4aa6b39`에서 솔루션 시험 9개 assembly 모두 통과(Service 11, Contracts 200, Cli 183, Runtime 129, Delivery 775, HyperV 273, Host 216, Api 503, Verification 670), `git diff --check origin/main...HEAD` 통과. branch `lane1/adr17-adoption-20261008`을 push하고 PR을 열어 green CI 뒤 merge한다.
 
 ## Task 5: S1 콘솔 설계
 
