@@ -1,5 +1,12 @@
 # Desktop Node ADR 인덱스
 
+## 2026-10-08 현재 기준
+
+ADR-0017을 채택해 완료 정의를 시연 가능한 사용자 시나리오 S1~S4(v3)로 바꾼다. 평소 기능 PR은 Lane 1 + Required CI +
+설치본 smoke로 merge하고, release train은 시나리오 단계가 끝날 때만 출발하며, completion autopilot은 v3 판정이 들어갈 때까지
+멈춘다. 계약 전환은 campaign `adr17-s1-console-20261008` PR A가 한다. 적용 문서는
+`docs/adr/0017-scenario-delivery-completion.md`이고, 완료 정의 v2 설계는 역사 기록이다.
+
 ## 2026-10-07 현재 기준
 
 ADR-0016을 채택해 Hyper-V 어댑터 integration 단계를 둔다. 제품과 같은 WMI 어댑터를 in-process로 `pcv-it-` 접두사
@@ -209,6 +216,7 @@ run `25984814303`, job `76380096421`, head `26ae50fa7bef11b4919b441e706bde505463
 | `docs/adr/0011-cli-web-only-operator-surface.md` | 적용 중 | 활성 운영자 표면을 Web Console과 PCVCLI로 제한하고 TUI source/package/smoke/current 문서 계약 제거. Local API/backend 유지 | `docs/ga-ready/evidence/tui-removal-cli-web-only-code-level-2026-07-14.md`, `docs/ga-ready/CURRENT_EVIDENCE_LEDGER.md` |
 | `docs/adr/0013-job-store-single-writer-transaction-lease.md` | 적용 중 | schema v1/v2를 유지하면서 canonical-path transaction mutex와 loaded-base SHA/length CAS로 stale current writer의 lost update를 거절. lifetime/mixed-version writer와 exactly-once는 비주장 | `docs/superpowers/specs/2026-08-02-purecvisor-desktop-node-job-store-durability-decision.md`, `docs/ga-ready/evidence/csharp-architecture-wave2a-job-durability-completion-2026-08-02.md`, `docs/ga-ready/evidence/csharp-architecture-wave2a-legacy-installed-checkpoint-2026-08-03.md` |
 | `docs/adr/0015-feature-evidence-promotion-policy.md` | 채택 / evaluator 구현 전 | operational current와 기능별 qualification을 분리하고 mandatory stage가 모두 PASS일 때만 candidate promotion eligibility를 허용 | `config/desktop-node-feature-evidence-ledger.schema.json`, `config/desktop-node-feature-evidence-ledger.json`, `docs/ga-ready/evidence/service-plan-p0-actual-vm-2026-08-20-04274.md` |
+| `docs/adr/0017-scenario-delivery-completion.md` | 채택 / 계약 전환 중 | 완료 정의를 시나리오 S1~S4(v3)로 바꾸고 기능 PR은 Lane 1 + Required CI + 설치본 smoke, train은 시나리오 단계 완료 때만, completion autopilot은 v3 전까지 정지 | `docs/superpowers/specs/2026-10-08-purecvisor-desktop-node-hyperv-browser-console-spike.md`, `docs/superpowers/plans/2026-10-08-purecvisor-desktop-node-adr17-s1-console.md` |
 
 ## 적용 전/대체 ADR 후보
 
@@ -251,10 +259,7 @@ ADR-0004 supporting evidence:
 
 ## 제안 중인 ADR 후보
 
-- `docs/adr/0017-scenario-delivery-completion.md` (2026-10-08 제안): 완료 정의를 시연 가능한 사용자 시나리오
-  S1~S4(v3)로 바꾸고, 평소 기능 PR을 Lane 1 + Required CI + 설치본 smoke로 줄이며, release train은 시나리오 단계가
-  끝날 때만 출발한다. 채택 전까지 완료 정의 v2와 autopilot 정책은 그대로다. campaign `scenario-pivot-20261008`.
-
+현재 제안 중인 ADR 후보는 없다. `ADR-0017`은 2026-10-08 제안 뒤 같은 날 채택돼 위 적용 결정 표가 소유한다.
 `ADR-0015`는 2026-08-23 채택돼 위 적용 결정 표가 소유한다.
 2026-08-03 번호 감사에서 `ADR-0013`은 이미 적용 중인
 `docs/adr/0013-job-store-single-writer-transaction-lease.md`가 소유하는 것을 재확인했다. Wave 6

@@ -33,7 +33,9 @@
 
 ## Task 1: ADR-0017 채택 문서
 
-- [ ] ADR-0017 상태를 `채택`으로 바꾸고 `docs/ADR_INDEX.md`(현재 기준 절, 적용 표, 제안 후보 줄), `docs/DEVELOPMENT_PROCEDURE.md` §10(train 출발은 시나리오 단계 완료 때, 평소 기능 PR은 Lane 1 + Required CI + 설치본 smoke), `AGENTS.md` 현재 기준 줄, 완료 정의 v2 설계 머리말(역사 기록)을 고친다. 검증 `dotnet test src/DesktopNode.Delivery.Tests -c Release`, `git diff --check`. 로컬 commit.
+- [x] ADR-0017 상태를 `채택`으로 바꾸고 `docs/ADR_INDEX.md`(현재 기준 절, 적용 표, 제안 후보 줄), `docs/DEVELOPMENT_PROCEDURE.md` §10(train 출발은 시나리오 단계 완료 때, 평소 기능 PR은 Lane 1 + Required CI + 설치본 smoke), `AGENTS.md` 현재 기준 줄, 완료 정의 v2 설계 머리말(역사 기록)을 고친다. 검증 `dotnet test src/DesktopNode.Delivery.Tests -c Release`, `git diff --check`. 로컬 commit.
+
+실행 기록(2026-10-08): ADR-0017 상태 `채택 / 계약 전환 중`, 결정 마커 4개 확정. `docs/ADR_INDEX.md`에 2026-10-08 현재 기준 절과 적용 표 행을 더하고 제안 후보 줄을 비웠다. `docs/DEVELOPMENT_PROCEDURE.md` §10은 주 1회 정기 출발을 시나리오 단계 완료 출발로 바꾸고 평소 기능 PR 경로(Lane 1 + Required CI + 설치본 smoke, dev probe는 Lane 2 승인)를 적었다. `AGENTS.md` 회로 차단기 절에 한 줄을 더했고, 그 SHA pin(`config/pcv-development-policy-contract-spec-v1.json`)과 spec SHA 상수(`DevelopmentPolicyContractVerifier.ExpectedSpecSha256`)를 갱신했다. 완료 정의 v2 설계 머리말에 역사 기록 줄을 더했다. Delivery 775 통과. host mutation 없음.
 
 ## Task 2: 완료 판정 v3
 
