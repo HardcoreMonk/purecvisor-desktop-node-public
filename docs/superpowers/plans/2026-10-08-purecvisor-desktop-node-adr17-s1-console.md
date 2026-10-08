@@ -1,0 +1,102 @@
+# ADR-0017 채택과 S1 브라우저 콘솔 Implementation Plan
+
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+
+**Goal:** ADR-0017(시나리오 기준 완료 정의 v3, 절차 축소)을 채택해 계약을 바꾸고, 시나리오 S1의 공백인 브라우저 콘솔을 WMI 화면(`GetVirtualSystemThumbnailImage`)과 `Msvm_Keyboard` 입력으로 만든다.
+
+**Architecture:** 근거는 `docs/adr/0017-scenario-delivery-completion.md`와 spike `docs/superpowers/specs/2026-10-08-purecvisor-desktop-node-hyperv-browser-console-spike.md`(E 권장)다. PR은 둘이다. PR A(Task 1~4)는 branch `lane1/adr17-adoption-20261008`에서 계약을 바꾸고, PR B(Task 5~13)는 PR A merge 뒤 `origin/main`에서 만든 `lane1/s1-console-20261008`에서 콘솔을 만든다. 화면 읽기 operation은 `vm.disk.inspect`(adapter·dispatch catalog·WMI provider·RuntimePolicy) 형식을 따른다.
+
+**Tech Stack:** `dotnet test`, `pcvverify completion`, WMI(`root\virtualization\v2`), Local API route, `web/src/served/*.ts`(`npm run build:served --prefix web`), `DesktopNode.HyperV.IntegrationTests`(ADR-0016), `gh`
+
+## 사용자 결정 (2026-10-08)
+
+승인 원문: `1,2,3` (campaign `scenario-pivot-20261008` 최종 보고 `next_approval_required` 1~3). 같은 날 직전 결정(`Task 10만 이관`)과 같이 남은 C5 task를 이관한다.
+
+| 항목 | 범위 |
+| --- | --- |
+| 1 | "ADR-0017을 채택하고 계약 변경(완료 기준, autopilot 정책, pcvverify completion, train 출발 조건, AGENTS.md, pcv skill)을 Lane 1 task로 나눠 진행한다. push, PR, green CI 뒤 merge." Lane 0/1. host mutation 없음. pcv skill은 private 저장소 로컬 commit(push 없음) |
+| 2 | "S1 브라우저 콘솔(E 방식: WMI 화면 + Msvm_Keyboard 입력) campaign을 연다. 설계 문서, 화면 읽기 adapter와 route와 Web 패널, pcv-it- VM 입력 확인, S1 시나리오 스크립트 순서. Lane 1과 Lane 2(pcv-it- 접두사 VM 생성, 시작, 중지, 삭제와 그 VM의 키 입력만). push, PR, green CI 뒤 merge." 설계 문서는 이 승인으로 연다 |
+| 3 | "VMware Workstation 26H1 설치 보류를 유지한다(결정만, 작업 없음)." task 없음 |
+| 이관 | `scenario-pivot-20261008` Task 6(C5 runner, `not_before` 2026-10-19)을 Task 14로 옮긴다. Lane 0/1, push, PR, green CI 뒤 merge |
+| ADR-0016 | standing approval은 `pcv-it-` 접두사 VM 생성·삭제로 한정. 키 입력은 승인 2가 연다 |
+
+## Global Constraints
+
+- 보존 VM `pcv-guest-installed-04253-r1`의 전원, Notes, 디스크를 바꾸지 않는다. 키 입력은 `pcv-it-` VM의 firmware 화면에만 보내고 guest OS에 로그인하지 않는다.
+- MSI 설치·업그레이드, service 재시작, release train은 이 campaign 범위 밖이다. 설치본 S1 smoke가 필요해지면 다음 승인으로 둔다.
+- 새 `Add-Type`/`P/Invoke`/native ACL/installer handoff가 필요해지면 멈춘다. 화면 변환(RGB565→RGBA)은 브라우저에서 하고 서버에 `System.Drawing`을 들이지 않는다.
+- ADR-0017 절차 축소를 따른다. 기능 PR에 plan 밖 문서는 설계 문서 하나뿐이고 evidence 문서와 ledger 행은 만들지 않는다.
+- Web 문구·binding을 바꾸면 pin된 곳과 web Pester를 함께 고친다. 새 packaging `*.Tests.ps1`은 만들지 않는다.
+- token, credential, password는 command line, summary, 문서에 남기지 않는다.
+- 범위 밖 발견은 backlog `undecided` 행으로 쓴다.
+- 한도: Lane 1 30분·tool batch 18회, Lane 2 45분·tool batch 12회, Lane 3 30분·tool batch 12회(checkpoint마다).
+
+## Task 1: ADR-0017 채택 문서
+
+- [x] ADR-0017 상태를 `채택`으로 바꾸고 `docs/ADR_INDEX.md`(현재 기준 절, 적용 표, 제안 후보 줄), `docs/DEVELOPMENT_PROCEDURE.md` §10(train 출발은 시나리오 단계 완료 때, 평소 기능 PR은 Lane 1 + Required CI + 설치본 smoke), `AGENTS.md` 현재 기준 줄, 완료 정의 v2 설계 머리말(역사 기록)을 고친다. 검증 `dotnet test src/DesktopNode.Delivery.Tests -c Release`, `git diff --check`. 로컬 commit.
+
+실행 기록(2026-10-08): ADR-0017 상태 `채택 / 계약 전환 중`, 결정 마커 4개 확정. `docs/ADR_INDEX.md`에 2026-10-08 현재 기준 절과 적용 표 행을 더하고 제안 후보 줄을 비웠다. `docs/DEVELOPMENT_PROCEDURE.md` §10은 주 1회 정기 출발을 시나리오 단계 완료 출발로 바꾸고 평소 기능 PR 경로(Lane 1 + Required CI + 설치본 smoke, dev probe는 Lane 2 승인)를 적었다. `AGENTS.md` 회로 차단기 절에 한 줄을 더했고, 그 SHA pin(`config/pcv-development-policy-contract-spec-v1.json`)과 spec SHA 상수(`DevelopmentPolicyContractVerifier.ExpectedSpecSha256`)를 갱신했다. 완료 정의 v2 설계 머리말에 역사 기록 줄을 더했다. Delivery 775 통과. host mutation 없음.
+
+## Task 2: 완료 판정 v3
+
+- [x] `config/project-completion-criteria.json`을 `pcv-project-completion-definition-v3`로 바꾸고 시나리오 S1~S4 행(`status`, `demo_record`)을 더한다. `pcvverify completion`이 S1~S4 통과, `main` Required CI green, 제품 런타임 GA-ready(v2 C1), 기한 위험으로 판정하고 v2 C2·C3·C7은 판정에 넣지 않고 위생 줄로만 출력하게 한다. `DesktopNode.Verification.Tests`와 Delivery 계약 시험을 고친다. 검증 `dotnet test src/DesktopNode.Verification.Tests -c Release`, Delivery tests. 로컬 commit.
+
+실행 기록(2026-10-08): criteria `definition`을 v3, `design`을 ADR-0017로 바꾸고 `scenarios` S1~S4(`status=open`, `demo_record=null`)를 더했다. `ProjectCompletionEvaluator`는 definition으로 v2/v3를 나누고, v3는 C1·S1~S4·C5·C6 일곱 조건으로 판정하며 C2·C3·C4·C7은 `hygiene`/`hygiene_gaps`로만 낸다. 열린 시나리오 갭 종류는 `scenario`(lane 1)다. command는 `hygiene`, `hygiene-gap` 줄과 result JSON 필드를 더했다. v3 시험 4개 추가, Verification 669 통과(실패 1은 dirty tree의 `PolicyBoundaryMatchesCanonicalActivationState`, Task 4 clean HEAD에서 확인), Delivery 통과. host mutation 없음.
+
+## Task 3: autopilot 정지와 pcv skill
+
+- [x] `config/completion-autopilot-policy.json`에 정지 상태(`status=paused`, 근거 ADR-0017)를 넣고 시나리오 갭 종류를 `user-decision`으로 둔다. private 저장소 `.claude/skills/pcv-campaign`(§6 연쇄 정지), `pcv-campaign-open`(completion 모드 정지), `pcv-goal`(v3 판정 표기)을 고쳐 private 저장소에 로컬 commit한다. 검증 Delivery tests, `git diff --check`. 로컬 commit.
+
+실행 기록(2026-10-08): 정책에 `status=paused`, `paused_by`(ADR-0017), `paused_on`과 갭 종류 `scenario`(`auto=false`, Lane 0/1)를 더하고 Delivery 계약 시험을 맞췄다(775 통과). private 저장소 `pcv-campaign`(v3 판정, hygiene 줄은 보고만, `autopilot-paused` 정지), `pcv-campaign-open`(paused면 completion 모드 금지), `pcv-goal`(E는 정책 active일 때만)을 고쳐 로컬 commit했다(push 없음). host mutation 없음.
+
+## Task 4: PR A 종료
+
+- [x] clean HEAD에서 `dotnet test src/DesktopNode.sln -c Release`와 `git diff --check origin/main...HEAD`를 돌리고 push, PR, green CI 뒤 merge한다.
+
+실행 기록(2026-10-08): clean HEAD `4aa6b39`에서 솔루션 시험 9개 assembly 모두 통과(Service 11, Contracts 200, Cli 183, Runtime 129, Delivery 775, HyperV 273, Host 216, Api 503, Verification 670), `git diff --check origin/main...HEAD` 통과. branch `lane1/adr17-adoption-20261008`을 push하고 PR을 열어 green CI 뒤 merge한다.
+
+## Task 5: S1 콘솔 설계
+
+- [ ] PR A merge 뒤 `origin/main`에서 `lane1/s1-console-20261008`을 만든다. 설계 문서 `docs/superpowers/specs/2026-10-08-purecvisor-desktop-node-s1-browser-console-design.md` 한 장에 화면 route(`GET /api/v1/vms/{vm}/console/frame`, 크기·형식·호출 상한), 입력 route와 job 여부, RBAC(`console.view`, 새 `console.input`), 입력 audit, LAN 노출 경계(ADR-0010 방식), Web 패널 동작을 정한다. 검증 Delivery tests. 로컬 commit.
+
+## Task 6: 화면 읽기 adapter
+
+- [ ] `vm.console.frame` 읽기 operation을 Hyper-V adapter(모델, domain, dispatch catalog, WMI provider, RuntimePolicy)에 더한다. 반환은 RGB565 원본과 width·height다. fake WMI 단위 시험을 쓴다. 검증 `dotnet test src/DesktopNode.HyperV.Tests -c Release`, `src/DesktopNode.Contracts.Tests`. 로컬 commit.
+
+## Task 7: 화면 route
+
+- [ ] 설계대로 Local API 화면 route를 더하고 `console.view` 권한, 크기 검증, 없는 VM·꺼진 VM 오류를 처리한다. route 계약과 API 시험을 고친다. 검증 `dotnet test src/DesktopNode.Api.Tests -c Release`, Contracts tests. 로컬 commit.
+
+## Task 8: Web 화면 패널
+
+- [ ] VM 상세에 콘솔 패널(canvas, RGB565→RGBA 변환, 2~10 fps polling, 일시 정지, 오류 표시)을 더하고 `npm run build:served --prefix web`로 `web/app.js`를 만든다. 검증 `npm run test:required --prefix web`, `npm run verify:parity --prefix web`, web Pester. 로컬 commit.
+
+## Task 9: 키 입력 adapter와 route
+
+- [ ] `Msvm_Keyboard`(`TypeKey`, `PressKey`, `ReleaseKey`, `TypeText`, `TypeCtrlAltDel`) 입력 operation과 설계대로의 입력 route, `console.input` 권한, audit을 더한다. 단위 시험을 쓴다. 검증 HyperV, Api, Contracts tests. 로컬 commit.
+
+## Task 10: `pcv-it-` VM 확인 (Lane 2)
+
+- [ ] `DesktopNode.HyperV.IntegrationTests`에 콘솔 시험을 더해 `pcv-it-` VM을 만들고 켠 뒤 화면 읽기와 firmware 화면 키 입력(예: `Esc`)을 보내 화면 변화를 확인하고, 끄고 지운다. 끝 상태 `pcv-it-` VM `0`개. 결과는 plan 실행 기록에 적는다. 로컬 commit.
+
+## Task 11: Web 키 입력
+
+- [ ] 콘솔 패널에 키보드 capture(포커스, 특수 키, Ctrl+Alt+Del 버튼)를 더하고 `console.input`이 없으면 읽기 전용으로 둔다. 검증 web tests, parity, web Pester. 로컬 commit.
+
+## Task 12: S1 시나리오 스크립트
+
+- [ ] 설치본에서 S1(ISO로 VM 생성 → 콘솔에 설치 화면 → 키 입력 → 화면 캡처 → 정리)을 도는 스크립트를 쓰고 `-PlanOnly`로 확인한다. 설치본 실행은 다음 승인(새 build 설치)으로 둔다. 검증 plan-only 실행, 관련 시험. 로컬 commit.
+
+## Task 13: PR B 종료
+
+- [ ] clean HEAD에서 `dotnet test src/DesktopNode.sln -c Release`, `npm run test:required --prefix web`, `git diff --check origin/main...HEAD`를 돌리고 push, PR, green CI 뒤 merge한다. 설치본 S1 smoke 승인 문장을 campaign `next_approval_required`에 둔다.
+
+## Task 14: C5 runner 확인 (2026-10-19 이후)
+
+- [ ] `not_before` 2026-10-19. 이관 전 `scenario-pivot-20261008` Task 6(그 전 `completion-20261008` Task 10)이다. Ubuntu 26 runner의 첫 `main` Development Gates와 Public Boundary run이 green이면 `config/project-completion-criteria.json` 위험 행을 `status=closed`, `closed_by`에 run id로 닫는다. 실패하면 `ubuntu-24.04` pin을 판단해 보고하고 멈춘다. push, PR, green CI 뒤 merge.
+
+## Nonclaims
+
+- operational current는 `0.42.93-admin-smoke` 그대로다. 이 campaign은 MSI를 설치하지 않고 current를 쓰지 않는다.
+- S1 시나리오 통과는 설치본 smoke 승인 뒤에만 주장한다.
+- public trusted signing과 external stable publication을 주장하지 않는다.

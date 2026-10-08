@@ -347,9 +347,11 @@ campaign은 이미 받은 승인을 되묻지 않을 뿐, 없는 승인을 만�
 
 - product payload를 바꾸는 PR은 그 PR 안에서 `queue`에 한 행을 더한다. `merge_commit`에는 그 변경을 담은
   commit SHA를 적는다(PR이 merge되면 `main`에서 도달한다). docs-only, test-only, tooling-only PR은 더하지 않는다.
-- 정기 출발은 주 1회다. 직전 train 출발 7일 뒤부터 정기 출발 대상이고, `queue`가 비어 있으면
+- 출발은 ADR-0017 시나리오 단계(S1~S4)가 끝날 때다(2026-10-08 채택, 주 1회 정기 출발을 대체). `queue`가 비어 있으면
   출발하지 않는다. operational current의 데이터 손실, 설치·업그레이드 실패, 보안 결함이나
-  사용자 요청이 있으면 조기 출발한다. `queue`가 `5`행을 넘으면 출발을 제안한다.
+  사용자 요청이 있으면 조기 출발한다.
+- 평소 기능 PR은 Lane 1 + Required CI + 설치본 smoke(해당 단계 시나리오 스크립트) 하나로 merge한다. 설치본 smoke는
+  아래 dev probe(제품 Update와 Rollback)로 보고 Lane 2 승인이 필요하다. 기능 PR 하나에 plan 또는 evidence 문서는 1개 이하다.
 - 출발 commit에서 `queue`를 train의 `carriages`로 옮기고 고정한다. 그 뒤 merge된 변경은 다음 train에 탄다.
 - 한 train은 version 하나로 package, manual-admin pair 여섯 bucket, fullgate, installed current-card,
   적재 변경별 Lane 2 probe(기능군마다 checkpoint 하나), Lane 3를 한 번씩 돈다.

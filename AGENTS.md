@@ -33,6 +33,7 @@
 - 차선: Lane 0 권위 읽기, Lane 1 계약, Lane 2 설치본 프로브, Lane 3 승격. 한 checkpoint는 한 차선만.
 - 열린 campaign의 `next_step`은 재승인 없이 이어서 실행한다. 범위 밖 발견은 `next_step`이 아니다.
 - FAIL 프로브는 current를 못 쓴다.
+- 완료 정의는 ADR-0017 시나리오 S1~S4(v3)다. 평소 기능 PR은 Lane 1 + Required CI + 설치본 smoke, release train은 시나리오 단계 완료 때만 출발한다(`docs/DEVELOPMENT_PROCEDURE.md` §10). completion autopilot은 v3 판정 전까지 멈춘다.
 - canonical operator id는 `GET /api/v1/vms/{id}`가 받는 문자열이며 현행은 VM 표시 이름이다.
 - 먼저 도달한 한도 또는 동일 원인 3회 실패 시 추가 구현을 중단하고 stop protocol만 수행한다.
 - 사용자의 명시적 승인 없이는 예산, 범위 또는 checkpoint를 연장하지 않는다.

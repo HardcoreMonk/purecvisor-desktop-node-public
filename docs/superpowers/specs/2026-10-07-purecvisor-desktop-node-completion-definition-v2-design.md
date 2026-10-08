@@ -2,7 +2,8 @@
 
 - Design-ID: `pcv-project-completion-definition-v2`
 - 작성일: `2026-10-07`
-- 문서 상태: `accepted` (2026-10-07 사용자 승인 `1,2,3,4,5`의 1)
+- 문서 상태: `accepted` (2026-10-07 사용자 승인 `1,2,3,4,5`의 1). 2026-10-08 ADR-0017(`docs/adr/0017-scenario-delivery-completion.md`)
+  채택으로 역사 기록이 된다. `pcvverify completion`은 v3 전환(campaign `adr17-s1-console-20261008` Task 2)까지 이 문서를 따른다.
 - 대체: `pcv-project-completion-definition-v1`(`docs/superpowers/specs/2026-10-06-purecvisor-desktop-node-completion-definition-design.md`).
   v1 §6("이 정의를 바꾸려면 새 결정 문서를 쓴다")에 따른 새 문서다. v1은 고치지 않는다.
 - 변경 등급: S (판정 기준 문서. 제품 동작 변경 없음)

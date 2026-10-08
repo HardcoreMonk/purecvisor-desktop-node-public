@@ -2,8 +2,8 @@
   "schema_version": 1,
   "contract": "pcv-active-campaign-v1",
   "status": "open",
-  "id": "scenario-pivot-20261008",
-  "intent": "scenario-delivery-pivot",
+  "id": "adr17-s1-console-20261008",
+  "intent": "adopt-adr-0017-and-build-s1-browser-console",
   "working_authority": "source_head",
   "allowed_lanes": [
     "0",
@@ -12,40 +12,43 @@
   ],
   "mutation_allowed": true,
   "current_write_allowed": false,
-  "next_step": "Tasks 1-5 are done and ship in one PR. Task 6 waits until 2026-10-19. Do not chain a completion campaign before ADR-0017 is decided; the next approvals are in next_approval_required.",
-  "plan": "docs/superpowers/plans/2026-10-08-purecvisor-desktop-node-scenario-pivot.md",
+  "next_step": "Run Task 1 from docs/superpowers/plans/2026-10-08-purecvisor-desktop-node-adr17-s1-console.md, then the queue in order. PR A is Tasks 1-4; PR B starts from origin/main after PR A merges. Task 14 waits until 2026-10-19.",
+  "plan": "docs/superpowers/plans/2026-10-08-purecvisor-desktop-node-adr17-s1-console.md",
   "task_queue": [
     "Task 1",
     "Task 2",
     "Task 3",
     "Task 4",
     "Task 5",
-    "Task 6"
+    "Task 6",
+    "Task 7",
+    "Task 8",
+    "Task 9",
+    "Task 10",
+    "Task 11",
+    "Task 12",
+    "Task 13",
+    "Task 14"
   ],
   "task_lanes": {
-    "Task 3": "2"
+    "Task 10": "2"
   },
   "task_not_before": {
-    "Task 6": "2026-10-19"
+    "Task 14": "2026-10-19"
   },
-  "next_task": "Task 6",
+  "next_task": "Task 5",
   "completed_tasks": [
     "Task 1",
     "Task 2",
     "Task 3",
-    "Task 4",
-    "Task 5"
+    "Task 4"
   ],
   "commit_policy": "local-commit-per-task",
   "push_allowed": true,
   "merge_policy": "after-green-ci",
-  "checkpoint_limit": 6,
-  "approval_locator": "User-Approval: 2026-09-27 campaign runner commit policy local-commit-per-task; User-Approval: 2026-10-08 \"1,2,3\" (1 document the ADR-0017 proposal with the scenario-based completion definition v3 and the process reduction in Lane 1 with push, PR and merge after green CI, contracts unchanged; 2 Hyper-V browser console spike over the 2179 RDP preconnection path, real VMs only with the pcv-it- prefix: create, start, stop and delete, no third-party software install; 3 VMware Workstation 26H1 install deferred until the spike result); User-Approval: 2026-10-08 carry completion-20261008 Task 10 only under its deadline-wait policy row (Lane 0/1, push, PR and merge after green CI), Task 11 dropped; carried ADR-0016 standing approval from process-followups-20261007 item 4: standing approval limited to pcv-it- prefixed VM create and delete",
-  "next_approval_required": [
-    "1. ADR-0017을 채택하고 계약 변경(완료 기준, autopilot 정책, pcvverify completion, train 출발 조건, AGENTS.md, pcv skill)을 Lane 1 task로 나눠 진행한다. push, PR, green CI 뒤 merge.",
-    "2. S1 브라우저 콘솔(E 방식: WMI 화면 + Msvm_Keyboard 입력) campaign을 연다. 설계 문서, 화면 읽기 adapter와 route와 Web 패널, pcv-it- VM 입력 확인, S1 시나리오 스크립트 순서. Lane 1과 Lane 2(pcv-it- 접두사 VM 생성, 시작, 중지, 삭제와 그 VM의 키 입력만). push, PR, green CI 뒤 merge.",
-    "3. VMware Workstation 26H1 설치 보류를 유지한다(결정만, 작업 없음)."
-  ],
+  "checkpoint_limit": 14,
+  "approval_locator": "User-Approval: 2026-09-27 campaign runner commit policy local-commit-per-task; User-Approval: 2026-10-08 \"1,2,3\" on scenario-pivot-20261008 next_approval_required (1 adopt ADR-0017 and split the contract changes (completion criteria, autopilot policy, pcvverify completion, train departure, AGENTS.md, pcv skills) into Lane 1 tasks with push, PR and merge after green CI; 2 open the S1 browser console campaign on the WMI frame plus Msvm_Keyboard path: design document, frame adapter, route and Web panel, pcv-it- VM input check, S1 scenario script; Lane 1 and Lane 2 limited to pcv-it- prefixed VM create, start, stop and delete and key input to that VM; push, PR and merge after green CI; 3 keep the VMware Workstation 26H1 install deferred, decision only); carry scenario-pivot-20261008 Task 6 (C5 runner, not before 2026-10-19) as Task 14 under the deadline-wait row (Lane 0/1, push, PR and merge after green CI); carried ADR-0016 standing approval from process-followups-20261007 item 4: standing approval limited to pcv-it- prefixed VM create and delete",
+  "next_approval_required": [],
   "stop_on": [
     "same-cause-fail-3",
     "budget",
@@ -58,8 +61,8 @@
     "deadline-wait"
   ],
   "out_of_scope_is_not_next_step": true,
-  "closed_predecessor": "completion-20261008",
+  "closed_predecessor": "scenario-pivot-20261008",
   "carried_from": {
-    "Task 6": "completion-20261008 Task 10"
+    "Task 14": "scenario-pivot-20261008 Task 6"
   }
 }

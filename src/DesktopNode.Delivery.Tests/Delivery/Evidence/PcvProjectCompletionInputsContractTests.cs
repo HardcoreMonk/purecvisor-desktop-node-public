@@ -19,7 +19,7 @@ public sealed class PcvProjectCompletionInputsContractTests
 
     private static readonly string[] GapKinds =
     [
-        "train-departure", "lane2-probe", "lane1-fix", "new-design", "deadline-wait", "user-decision", "ci-wait",
+        "train-departure", "lane2-probe", "lane1-fix", "new-design", "deadline-wait", "user-decision", "ci-wait", "scenario",
     ];
 
     [Fact]
@@ -30,7 +30,15 @@ public sealed class PcvProjectCompletionInputsContractTests
 
         Assert.Equal(1, root.GetProperty("schema_version").GetInt32());
         Assert.Equal("pcv-project-completion-criteria-v1", root.GetProperty("contract").GetString());
-        Assert.Equal("pcv-project-completion-definition-v2", root.GetProperty("definition").GetString());
+        Assert.Equal("pcv-project-completion-definition-v3", root.GetProperty("definition").GetString());
+        var scenarios = root.GetProperty("scenarios").EnumerateArray().ToList();
+        Assert.Equal(["S1", "S2", "S3", "S4"], scenarios.Select(scenario => scenario.GetProperty("id").GetString()));
+        foreach (var scenario in scenarios)
+        {
+            Assert.Contains(scenario.GetProperty("status").GetString(), new[] { "open", "passed" });
+            var record = scenario.GetProperty("demo_record");
+            Assert.True(record.ValueKind == JsonValueKind.Null || Exists(record.GetString()!), scenario.GetProperty("id").GetString());
+        }
         Assert.True(Exists(root.GetProperty("design").GetString()!));
 
         var items = root.GetProperty("service_plan_items").EnumerateArray().ToList();
@@ -135,6 +143,12 @@ public sealed class PcvProjectCompletionInputsContractTests
             kinds.EnumerateObject().Select(kind => kind.Name).Order(StringComparer.Ordinal));
         Assert.False(kinds.GetProperty("new-design").GetProperty("auto").GetBoolean());
         Assert.False(kinds.GetProperty("user-decision").GetProperty("auto").GetBoolean());
+        Assert.False(kinds.GetProperty("scenario").GetProperty("auto").GetBoolean());
+        Assert.Contains(root.GetProperty("status").GetString(), new[] { "active", "paused" });
+        if (root.GetProperty("status").GetString() == "paused")
+        {
+            Assert.True(Exists(root.GetProperty("paused_by").GetString()!));
+        }
         foreach (var kind in kinds.EnumerateObject().Where(kind => kind.Value.GetProperty("auto").GetBoolean()))
         {
             var lanes = Strings(kind.Value.GetProperty("allowed_lanes"));

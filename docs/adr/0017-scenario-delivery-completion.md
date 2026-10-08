@@ -1,15 +1,15 @@
 # ADR-0017: 시나리오 기준 완료 정의와 절차 축소
 
-상태: 제안
-일자: 2026-10-08
+상태: 채택 / 계약 전환 중
+일자: 2026-10-08 (제안·채택 같은 날, 채택은 사용자 승인 `1,2,3`의 1)
 
 ## 결정 마커
 
 ```text
-DESKTOP_NODE_COMPLETION_DEFINITION: scenario-based-v3 (proposed)
-DESKTOP_NODE_FEATURE_PR_PATH: lane1-required-ci-installed-smoke (proposed)
-DESKTOP_NODE_RELEASE_TRAIN_TRIGGER: scenario-stage-complete (proposed)
-DESKTOP_NODE_COMPLETION_AUTOPILOT: paused-until-v3 (proposed)
+DESKTOP_NODE_COMPLETION_DEFINITION: scenario-based-v3
+DESKTOP_NODE_FEATURE_PR_PATH: lane1-required-ci-installed-smoke
+DESKTOP_NODE_RELEASE_TRAIN_TRIGGER: scenario-stage-complete
+DESKTOP_NODE_COMPLETION_AUTOPILOT: paused-until-v3
 ```
 
 ## 맥락
@@ -29,7 +29,7 @@ DESKTOP_NODE_COMPLETION_AUTOPILOT: paused-until-v3 (proposed)
 - 핵심 사용자 흐름이 끊겨 있다. Web Console의 콘솔은 `vmconnect` handoff뿐이고 noVNC는 기본 `not_configured`라,
   브라우저에서 만든 VM의 화면을 브라우저에서 볼 수 없다.
 
-## 결정 (제안)
+## 결정
 
 ### 1. 완료 정의 v3: 시연 가능한 사용자 시나리오
 
@@ -66,7 +66,7 @@ DESKTOP_NODE_COMPLETION_AUTOPILOT: paused-until-v3 (proposed)
 - 완료 정의 v2 설계 `docs/superpowers/specs/2026-10-07-purecvisor-desktop-node-completion-definition-v2-design.md`는
   역사 기록으로 낮춘다
 
-이 제안 단계에서는 위 계약을 바꾸지 않는다. 채택은 사용자 승인으로 하고, 계약 변경은 채택 뒤 Lane 1 task로 나눈다.
+계약 변경은 campaign `adr17-s1-console-20261008` Task 1~3(PR A)이 한다. 바뀌기 전까지 남은 계약은 그 campaign plan이 정한 순서로 전환한다.
 
 ## 결과
 
@@ -76,6 +76,6 @@ DESKTOP_NODE_COMPLETION_AUTOPILOT: paused-until-v3 (proposed)
 
 ## Nonclaims
 
-- 이 ADR은 제안이다. 완료 정의 v2, `pcvverify completion`, autopilot 정책은 채택 전까지 그대로다.
+- 채택은 계약 전환을 시작할 뿐이다. 시나리오 S1~S4 통과는 설치본 시나리오 스크립트와 시연 기록이 생긴 뒤에만 주장한다.
 - S1의 브라우저 콘솔 구현 방식은 이 ADR이 정하지 않는다(campaign `scenario-pivot-20261008` spike).
 - public trusted signing과 external stable publication을 주장하지 않는다.

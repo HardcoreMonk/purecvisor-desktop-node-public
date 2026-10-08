@@ -283,7 +283,76 @@ public sealed class ProjectCompletionEvaluatorTests
         var risk = Risk(inputs);
         risk["status"] = "closed";
         risk["closed_by"] = "run:1";
+        inputs.Criteria["definition"] = ProjectCompletionEvaluator.DefinitionV2;
         return inputs;
+    }
+
+    // v3 (ADR-0017): the committed criteria with every scenario passed and recorded.
+    internal static ProjectCompletionInputs ClearedV3()
+    {
+        var inputs = Cleared();
+        inputs.Criteria["definition"] = ProjectCompletionEvaluator.DefinitionV3;
+        foreach (var scenario in inputs.Criteria["scenarios"]!.AsArray().OfType<JsonObject>())
+        {
+            scenario["status"] = "passed";
+            scenario["demo_record"] = "docs/adr/0017-scenario-delivery-completion.md";
+        }
+
+        return inputs;
+    }
+
+    [Fact]
+    public void V3GatesOnScenariosWithTheCiAndScopeConditions()
+    {
+        var result = ProjectCompletionEvaluator.Evaluate(ClearedV3());
+
+        Assert.True(result.Complete);
+        Assert.Equal(ProjectCompletionEvaluator.DefinitionV3, result.Definition);
+        Assert.Equal(["C1", "S1", "S2", "S3", "S4", "C5", "C6"], result.Conditions.Select(condition => condition.Id));
+        Assert.Equal(["C2", "C3", "C4", "C7"], result.Hygiene.Select(condition => condition.Id));
+        Assert.Empty(result.Gaps);
+    }
+
+    [Fact]
+    public void V3OpenScenarioIsTheGapAndTrainQueueStaysHygiene()
+    {
+        var inputs = ClearedV3();
+        var s1 = inputs.Criteria["scenarios"]!.AsArray().OfType<JsonObject>().First();
+        s1["status"] = "open";
+        s1["demo_record"] = null;
+        inputs.ReleaseTrain["queue"] = new JsonArray(new JsonObject { ["pr"] = 73, ["merge_commit"] = "abc1234" });
+        inputs.Backlog["rows"] = new JsonArray(Row("BL-9001", "undecided", needsDesign: false));
+
+        var result = ProjectCompletionEvaluator.Evaluate(inputs);
+
+        Assert.False(result.Complete);
+        Assert.Equal(6, result.MetCount);
+        var gap = Assert.Single(result.Gaps);
+        Assert.Equal(("S1-scenario", "S1", "scenario", "1"), (gap.Id, gap.Condition, gap.Kind, gap.Lane));
+        Assert.Equal(["C2-queue", "C7-BL-9001"], result.HygieneGaps.Select(hygieneGap => hygieneGap.Id));
+        Assert.False(Condition(result, "S1").Met);
+    }
+
+    [Fact]
+    public void V3PassedScenarioNeedsAnExistingDemoRecord()
+    {
+        var inputs = ClearedV3();
+        inputs.Criteria["scenarios"]!.AsArray().OfType<JsonObject>().Last()["demo_record"] = "docs/no-such-demo-2026-10-08.md";
+
+        var gap = Assert.Single(ProjectCompletionEvaluator.Evaluate(inputs).Gaps);
+
+        Assert.Equal(("S4-demo-record", "lane1-fix"), (gap.Id, gap.Kind));
+    }
+
+    [Fact]
+    public void V3RejectsScenarioIdsOtherThanS1ToS4()
+    {
+        var inputs = ClearedV3();
+        inputs.Criteria["scenarios"]!.AsArray().RemoveAt(3);
+
+        Assert.Equal(
+            "completion:scenario-ids:S1,S2,S3",
+            Assert.Throws<VerificationException>(() => ProjectCompletionEvaluator.Evaluate(inputs)).Detail);
     }
 
     internal static CompletionCondition Condition(ProjectCompletionResult result, string id) =>
