@@ -92,7 +92,9 @@
 
 ## Task 9: 판정
 
-- [ ] clean `main`에서 `pcvverify completion`을 돌린다. exit `0`이면 감사 문서로 완료를 적고 push, PR, green CI 뒤 merge한다. exit `1`이고 남은 갭이 Task 10이 덮는 `deadline-wait`뿐이면 기록하고 `deadline-wait`로 멈춘다. 그 밖이면 `pcv-campaign` §6 연쇄로 넘긴다.
+- [x] clean `main`에서 `pcvverify completion`을 돌린다. exit `0`이면 감사 문서로 완료를 적고 push, PR, green CI 뒤 merge한다. exit `1`이고 남은 갭이 Task 10이 덮는 `deadline-wait`뿐이면 기록하고 `deadline-wait`로 멈춘다. 그 밖이면 `pcv-campaign` §6 연쇄로 넘긴다.
+
+실행 기록(2026-10-08): clean main `8de4384`에서 `pcvverify completion` exit `1`. `complete=false met=6/7 gaps=1` head `8de4384e1a11f260133d7447db7f9c502d67fbf9`. C2는 `current=0.42.93-admin-smoke`, `operational_current=0.42.93-admin-smoke`, `train=promoted`, `queue=0`, `unfinished_trains=0`으로 충족이다. 남은 갭은 `C5-risk-ubuntu-26-runner`(`deadline-wait`, `not_before=2026-10-19`)뿐이고 Task 10이 덮는다. 새 campaign을 열지 않고 `deadline-wait`로 멈춘다. host mutation 없음.
 
 ## Task 10: C5 runner 확인 (2026-10-19 이후)
 

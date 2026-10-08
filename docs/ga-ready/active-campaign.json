@@ -13,7 +13,7 @@
   ],
   "mutation_allowed": true,
   "current_write_allowed": true,
-  "next_step": "Run Task 9 from docs/superpowers/plans/2026-10-08-purecvisor-desktop-node-completion-20261008.md, then the queue in order; Tasks 10 and 11 not before 2026-10-19.",
+  "next_step": "Wait until 2026-10-19, then run Task 10 from docs/superpowers/plans/2026-10-08-purecvisor-desktop-node-completion-20261008.md; Task 11 follows. The only remaining completion gap is C5-risk-ubuntu-26-runner (deadline-wait). Do not open another campaign.",
   "plan": "docs/superpowers/plans/2026-10-08-purecvisor-desktop-node-completion-20261008.md",
   "task_queue": [
     "Task 0",
@@ -41,7 +41,7 @@
     "Task 10": "2026-10-19",
     "Task 11": "2026-10-19"
   },
-  "next_task": "Task 9",
+  "next_task": "Task 10",
   "completed_tasks": [
     "Task 0",
     "Task 1",
@@ -51,7 +51,8 @@
     "Task 5",
     "Task 6",
     "Task 7",
-    "Task 8"
+    "Task 8",
+    "Task 9"
   ],
   "commit_policy": "local-commit-per-task",
   "push_allowed": true,
