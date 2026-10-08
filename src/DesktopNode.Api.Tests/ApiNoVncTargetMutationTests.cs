@@ -165,6 +165,7 @@ public sealed class ApiNoVncTargetMutationTests
         }
         """);
 
+        // public-safety: synthetic-rfc1918
         var fromFile = DesktopNodeNoVncTargetStore.ResolveBridgeTarget(root.FilePath, "192.168.1.20", 5900);
         Assert.True(fromFile.Enabled);
         Assert.Equal("127.0.0.1", fromFile.Host);

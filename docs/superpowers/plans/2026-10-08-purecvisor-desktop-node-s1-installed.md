@@ -31,7 +31,9 @@
 
 ## Task 1: BL-0010 수정
 
-- [ ] web public source safety가 기존 파일 4곳(train-04290 plan 68행, noVNC 시험 3곳)에서 내는 실패를 고치고 backlog `BL-0010`을 `counts`(근거 승인 3)로 분류한 뒤 닫는다. 검증 `npm run test:public-source-safety --prefix web`, `npm run test:required --prefix web`, 관련 .NET 시험, Delivery. 로컬 commit.
+- [x] web public source safety가 기존 파일 4곳(train-04290 plan 68행, noVNC 시험 3곳)에서 내는 실패를 고치고 backlog `BL-0010`을 `counts`(근거 승인 3)로 분류한 뒤 닫는다. 검증 `npm run test:public-source-safety --prefix web`, `npm run test:required --prefix web`, 관련 .NET 시험, Delivery. 로컬 commit.
+
+실행 기록(2026-10-08): train-04290 plan 68행의 실제 LAN 주소를 가렸고(주소는 실행 값으로만 쓴다는 문장으로 바꿈), noVNC 시험 3개 파일의 합성 사설 IP 줄 7곳에 `public-safety: synthetic-rfc1918` 표시를 더했다(검사는 첫 줄만 보고하지만 파일의 모든 IP 줄을 본다). backlog `BL-0010`을 `counts`(승인 3)로 분류하고 닫았다. 시험: `npm run test:public-source-safety` 20/0(exit 0), web required exit 0, Api 517, Contracts 200, Delivery 775. host mutation 없음.
 
 ## Task 2: dev package
 

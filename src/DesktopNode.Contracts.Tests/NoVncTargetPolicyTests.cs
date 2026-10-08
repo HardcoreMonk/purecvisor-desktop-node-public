@@ -48,6 +48,7 @@ public sealed class NoVncTargetPolicyTests
         Assert.False(result.Loopback);
         Assert.True(result.AllowLanTarget);
         Assert.Equal("lab streaming", result.Reason);
+        // public-safety: synthetic-rfc1918
         Assert.Equal("192.168.1.20", result.Host);
         Assert.Equal(5901, result.Port);
     }
@@ -152,6 +153,7 @@ public sealed class NoVncTargetPolicyTests
         Assert.True(NoVncTargetPolicy.IsLoopbackHost("127.0.0.1"));
         Assert.True(NoVncTargetPolicy.IsLoopbackHost("localhost"));
         Assert.True(NoVncTargetPolicy.IsLoopbackHost("::1"));
+        // public-safety: synthetic-rfc1918
         Assert.False(NoVncTargetPolicy.IsLoopbackHost("192.168.1.20"));
         Assert.False(NoVncTargetPolicy.IsLoopbackHost("127.0.0.2"));
     }
@@ -177,6 +179,7 @@ public sealed class NoVncTargetPolicyTests
     private static NoVncTargetRequest LanRequest()
     {
         return new NoVncTargetRequest(
+            // public-safety: synthetic-rfc1918
             Host: "192.168.1.20",
             Port: 5901,
             Auth: new NoVncTargetAuthContext(HasConsoleConfigure: true),
