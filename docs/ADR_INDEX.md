@@ -251,7 +251,11 @@ ADR-0004 supporting evidence:
 
 ## 제안 중인 ADR 후보
 
-현재 제안 중인 ADR 후보는 없다. `ADR-0015`는 2026-08-23 채택돼 위 적용 결정 표가 소유한다.
+- `docs/adr/0017-scenario-delivery-completion.md` (2026-10-08 제안): 완료 정의를 시연 가능한 사용자 시나리오
+  S1~S4(v3)로 바꾸고, 평소 기능 PR을 Lane 1 + Required CI + 설치본 smoke로 줄이며, release train은 시나리오 단계가
+  끝날 때만 출발한다. 채택 전까지 완료 정의 v2와 autopilot 정책은 그대로다. campaign `scenario-pivot-20261008`.
+
+`ADR-0015`는 2026-08-23 채택돼 위 적용 결정 표가 소유한다.
 2026-08-03 번호 감사에서 `ADR-0013`은 이미 적용 중인
 `docs/adr/0013-job-store-single-writer-transaction-lease.md`가 소유하는 것을 재확인했다. Wave 6
 ASP.NET Core server/rollout 결정은 Wave 5A와 ADR-0012 concurrency policy가 종결된 뒤

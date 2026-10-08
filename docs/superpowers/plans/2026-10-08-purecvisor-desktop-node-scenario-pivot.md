@@ -32,7 +32,9 @@
 
 ## Task 1: ADR-0017 제안
 
-- [ ] `docs/adr/0017-scenario-delivery-completion.md`를 상태 `제안`으로 쓰고 `docs/ADR_INDEX.md`의 제안 후보 줄을 고친다. 맥락(위 수치), 결정(완료 정의 v3: 시나리오 S1~S4, 단계 완료는 설치본 시나리오 스크립트 1회 통과와 시연 기록), 절차 축소안(train은 단계 완료 때만, 평소 기능 PR은 Lane 1 + Required CI + 설치본 smoke 하나, 기능 PR당 plan/evidence 문서 1개 이하, pin·ledger·index 동기화의 자동화나 폐지 후보, completion autopilot 정지), 채택 때 바뀌는 계약 목록을 적는다. 검증 `dotnet test src/DesktopNode.Delivery.Tests -c Release`, `git diff --check`. 로컬 commit.
+- [x] `docs/adr/0017-scenario-delivery-completion.md`를 상태 `제안`으로 쓰고 `docs/ADR_INDEX.md`의 제안 후보 줄을 고친다. 맥락(위 수치), 결정(완료 정의 v3: 시나리오 S1~S4, 단계 완료는 설치본 시나리오 스크립트 1회 통과와 시연 기록), 절차 축소안(train은 단계 완료 때만, 평소 기능 PR은 Lane 1 + Required CI + 설치본 smoke 하나, 기능 PR당 plan/evidence 문서 1개 이하, pin·ledger·index 동기화의 자동화나 폐지 후보, completion autopilot 정지), 채택 때 바뀌는 계약 목록을 적는다. 검증 `dotnet test src/DesktopNode.Delivery.Tests -c Release`, `git diff --check`. 로컬 commit.
+
+실행 기록(2026-10-08): `docs/adr/0017-scenario-delivery-completion.md`(상태 `제안`, 결정 마커 4개, 시나리오 S1~S4, 절차 축소 6항, 채택 때 바뀌는 계약 6묶음)와 `docs/ADR_INDEX.md` 제안 후보 줄을 썼다. 계약 파일은 바꾸지 않았다. host mutation 없음.
 
 ## Task 2: 브라우저 콘솔 방식 조사
 
