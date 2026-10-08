@@ -37,6 +37,9 @@ public interface IDesktopNodeHyperVVmProvider
 
     // vm.disk.inspect 이 쓰는 VHD 최대 내부 크기다. 크기를 모르는 provider 는 null 을 돌려준다.
     ulong? GetVirtualDiskMaxInternalSize(string diskPath, CancellationToken cancellationToken) => null;
+
+    // vm.console.frame 이 쓰는 화면 thumbnail(RGB565)이다. 읽지 못하는 provider 는 null 을 돌려준다.
+    byte[]? GetConsoleFrame(string vmId, int width, int height, CancellationToken cancellationToken) => null;
 }
 
 public interface IDesktopNodeHyperVCheckpointProvider

@@ -218,6 +218,48 @@ public sealed class DesktopNodeHyperVNativeAdapterTests
         Assert.Equal("PCV_VM_DISK_INSPECT_UNAVAILABLE", unavailable.Error!.Code);
     }
 
+    [Fact]
+    public void NativeVmConsoleFrameTrimsTheThumbnailAndChecksStateAndSize()
+    {
+        var running = CompleteVm("alpha") with { State = "running" };
+        var frame = new byte[(160 * 120 * 2) + 4];
+        frame[0] = 0x1F;
+        var adapter = new DesktopNodeHyperVNativeAdapter(
+            new RecordingHyperVSwitchProvider([]),
+            new FramedHyperVVmProvider([running, CompleteVm("beta") with { State = "stopped" }], frame));
+
+        using var ok = JsonDocument.Parse("""{"name":"alpha","width":160,"height":120}""");
+        Assert.True(adapter.TryInvoke("vm.console.frame", ok.RootElement, CancellationToken.None, out var result));
+        Assert.True(result.Ok);
+        Assert.Equal("rgb565le", result.Data!.Value.GetProperty("format").GetString());
+        var bytes = Convert.FromBase64String(result.Data.Value.GetProperty("frame_base64").GetString()!);
+        Assert.Equal(160 * 120 * 2, bytes.Length);
+        Assert.Equal(0x1F, bytes[0]);
+
+        using var stopped = JsonDocument.Parse("""{"name":"beta"}""");
+        Assert.True(adapter.TryInvoke("vm.console.frame", stopped.RootElement, CancellationToken.None, out var notRunning));
+        Assert.Equal("PCV_CONSOLE_VM_NOT_RUNNING", notRunning.Error!.Code);
+
+        using var huge = JsonDocument.Parse("""{"name":"alpha","width":4096,"height":120}""");
+        Assert.True(adapter.TryInvoke("vm.console.frame", huge.RootElement, CancellationToken.None, out var invalid));
+        Assert.Equal("PCV_CONSOLE_FRAME_SIZE_INVALID", invalid.Error!.Code);
+
+        using var missing = JsonDocument.Parse("""{"name":"gamma"}""");
+        Assert.True(adapter.TryInvoke("vm.console.frame", missing.RootElement, CancellationToken.None, out var absent));
+        Assert.Equal("PCV_VM_NOT_FOUND", absent.Error!.Code);
+
+        var blind = new DesktopNodeHyperVNativeAdapter(new RecordingHyperVSwitchProvider([]), new RecordingHyperVVmProvider([running]));
+        Assert.True(blind.TryInvoke("vm.console.frame", ok.RootElement, CancellationToken.None, out var unavailable));
+        Assert.Equal("PCV_CONSOLE_FRAME_FAILED", unavailable.Error!.Code);
+    }
+
+    private sealed class FramedHyperVVmProvider(IReadOnlyList<DesktopNodeHyperVVmInfo> vms, byte[] frame) : IDesktopNodeHyperVVmProvider
+    {
+        public IReadOnlyList<DesktopNodeHyperVVmInfo> GetVms(CancellationToken cancellationToken) => vms;
+
+        public byte[]? GetConsoleFrame(string vmId, int width, int height, CancellationToken cancellationToken) => frame;
+    }
+
     private sealed class SizedHyperVVmProvider(IReadOnlyList<DesktopNodeHyperVVmInfo> vms, ulong bytes) : IDesktopNodeHyperVVmProvider
     {
         public IReadOnlyList<DesktopNodeHyperVVmInfo> GetVms(CancellationToken cancellationToken) => vms;

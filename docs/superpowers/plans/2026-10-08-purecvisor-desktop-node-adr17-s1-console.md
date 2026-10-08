@@ -63,7 +63,9 @@
 
 ## Task 6: 화면 읽기 adapter
 
-- [ ] `vm.console.frame` 읽기 operation을 Hyper-V adapter(모델, domain, dispatch catalog, WMI provider, RuntimePolicy)에 더한다. 반환은 RGB565 원본과 width·height다. fake WMI 단위 시험을 쓴다. 검증 `dotnet test src/DesktopNode.HyperV.Tests -c Release`, `src/DesktopNode.Contracts.Tests`. 로컬 commit.
+- [x] `vm.console.frame` 읽기 operation을 Hyper-V adapter(모델, domain, dispatch catalog, WMI provider, RuntimePolicy)에 더한다. 반환은 RGB565 원본과 width·height다. fake WMI 단위 시험을 쓴다. 검증 `dotnet test src/DesktopNode.HyperV.Tests -c Release`, `src/DesktopNode.Contracts.Tests`. 로컬 commit.
+
+실행 기록(2026-10-08): `vm.console.frame`을 Hyper-V adapter(`DesktopNodeHyperVNativeAdapter.ConsoleFrame.cs`: 이름·크기 160~1024×120~768 검증, running 확인, `width×height×2` byte로 자름, base64 RGB565)와 WMI provider(`DesktopNodeHyperVWmiVmProvider.ConsoleFrame.cs`: 실현된 설정으로 `GetVirtualSystemThumbnailImage`)에 더하고 domain·dispatch·WMI catalog, `RuntimePolicy` native probe 목록, Api invoker 허용 목록에 등록했다. adapter read switch의 QoS preview 두 줄을 합쳐 module 크기 ratchet(315줄) 안에 두었다. 시험: HyperV 274(새 1), Contracts 200, Api 503, Delivery 775 통과. host mutation 없음.
 
 ## Task 7: 화면 route
 

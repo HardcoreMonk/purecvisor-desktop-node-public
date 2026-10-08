@@ -53,6 +53,7 @@ public static class DesktopNodeHyperVAdapterDispatchCatalog
         new("vm.cpu-stats", DesktopNodeHyperVOperationKind.Read, DesktopNodeHyperVOperationDomain.VmInventory, "vm-provider", DesktopNodeHyperVAdapterDispatchHandler.VmList),
         new("vm.blkio-get", DesktopNodeHyperVOperationKind.Read, DesktopNodeHyperVOperationDomain.VmInventory, "vm-provider", DesktopNodeHyperVAdapterDispatchHandler.VmList),
         new("vm.disk.inspect", DesktopNodeHyperVOperationKind.Read, DesktopNodeHyperVOperationDomain.VmInventory, "vm-provider", DesktopNodeHyperVAdapterDispatchHandler.VmList),
+        new("vm.console.frame", DesktopNodeHyperVOperationKind.Read, DesktopNodeHyperVOperationDomain.VmInventory, "vm-provider", DesktopNodeHyperVAdapterDispatchHandler.VmList),
         new("vm.bandwidth", DesktopNodeHyperVOperationKind.Read, DesktopNodeHyperVOperationDomain.VmInventory, "vm-provider", DesktopNodeHyperVAdapterDispatchHandler.VmList),
         new("vm.guest-agent-status", DesktopNodeHyperVOperationKind.Read, DesktopNodeHyperVOperationDomain.VmInventory, "vm-provider", DesktopNodeHyperVAdapterDispatchHandler.VmList),
         new("vm.guest-ping", DesktopNodeHyperVOperationKind.Read, DesktopNodeHyperVOperationDomain.VmInventory, "vm-provider", DesktopNodeHyperVAdapterDispatchHandler.VmList),
