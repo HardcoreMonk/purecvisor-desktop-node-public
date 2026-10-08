@@ -45,7 +45,9 @@
 
 ## Task 3: autopilot 정지와 pcv skill
 
-- [ ] `config/completion-autopilot-policy.json`에 정지 상태(`status=paused`, 근거 ADR-0017)를 넣고 시나리오 갭 종류를 `user-decision`으로 둔다. private 저장소 `.claude/skills/pcv-campaign`(§6 연쇄 정지), `pcv-campaign-open`(completion 모드 정지), `pcv-goal`(v3 판정 표기)을 고쳐 private 저장소에 로컬 commit한다. 검증 Delivery tests, `git diff --check`. 로컬 commit.
+- [x] `config/completion-autopilot-policy.json`에 정지 상태(`status=paused`, 근거 ADR-0017)를 넣고 시나리오 갭 종류를 `user-decision`으로 둔다. private 저장소 `.claude/skills/pcv-campaign`(§6 연쇄 정지), `pcv-campaign-open`(completion 모드 정지), `pcv-goal`(v3 판정 표기)을 고쳐 private 저장소에 로컬 commit한다. 검증 Delivery tests, `git diff --check`. 로컬 commit.
+
+실행 기록(2026-10-08): 정책에 `status=paused`, `paused_by`(ADR-0017), `paused_on`과 갭 종류 `scenario`(`auto=false`, Lane 0/1)를 더하고 Delivery 계약 시험을 맞췄다(775 통과). private 저장소 `pcv-campaign`(v3 판정, hygiene 줄은 보고만, `autopilot-paused` 정지), `pcv-campaign-open`(paused면 completion 모드 금지), `pcv-goal`(E는 정책 active일 때만)을 고쳐 로컬 commit했다(push 없음). host mutation 없음.
 
 ## Task 4: PR A 종료
 

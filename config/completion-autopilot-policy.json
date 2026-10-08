@@ -2,6 +2,9 @@
   "schema_version": 1,
   "contract": "pcv-completion-autopilot-policy-v1",
   "design": "docs/superpowers/specs/2026-10-07-purecvisor-desktop-node-completion-autopilot-design.md",
+  "status": "paused",
+  "paused_by": "docs/adr/0017-scenario-delivery-completion.md",
+  "paused_on": "2026-10-08",
   "approval_locator": "User-Approval: 2026-10-07 \"1,2,3,4,5\" item 4, approve completion-autopilot-policy, clarified by the user as Lane 2/3 fully automatic: campaigns generated under the policy may run the release train standard host mutation scope (MSI install, repair, uninstall, REMOVE_DATA, service, pair six buckets, fullgate route parity VM, probe VM create and delete), Lane 3 current-evidence write, push, PR and merge after green CI, and stop on FAIL, new-design, undecided backlog rows, new Add-Type/P/Invoke/native ACL/installer handoff and permanent out-of-scope items; User-Approval: 2026-10-08 \"1\" (completion-20261007 Task 4 stop report item 1: add the fullgate os-mutation-gate, PureCVisor firewall rule add and remove, Event Log source registration and LAN listener with the LAN prefix only as an execution value and ending with zero PureCVisor firewall rules, to the train-departure scope)",
   "gap_kinds": {
     "lane1-fix": {
@@ -79,6 +82,17 @@
     },
     "user-decision": {
       "auto": false
+    },
+    "scenario": {
+      "auto": false,
+      "allowed_lanes": [
+        "0",
+        "1"
+      ],
+      "mutation_scope": [],
+      "current_write_allowed": false,
+      "push_allowed": false,
+      "merge_policy": "none"
     }
   },
   "always_stop": [

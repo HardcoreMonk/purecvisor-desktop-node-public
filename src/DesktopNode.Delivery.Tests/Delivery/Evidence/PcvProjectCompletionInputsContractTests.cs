@@ -19,7 +19,7 @@ public sealed class PcvProjectCompletionInputsContractTests
 
     private static readonly string[] GapKinds =
     [
-        "train-departure", "lane2-probe", "lane1-fix", "new-design", "deadline-wait", "user-decision", "ci-wait",
+        "train-departure", "lane2-probe", "lane1-fix", "new-design", "deadline-wait", "user-decision", "ci-wait", "scenario",
     ];
 
     [Fact]
@@ -143,6 +143,12 @@ public sealed class PcvProjectCompletionInputsContractTests
             kinds.EnumerateObject().Select(kind => kind.Name).Order(StringComparer.Ordinal));
         Assert.False(kinds.GetProperty("new-design").GetProperty("auto").GetBoolean());
         Assert.False(kinds.GetProperty("user-decision").GetProperty("auto").GetBoolean());
+        Assert.False(kinds.GetProperty("scenario").GetProperty("auto").GetBoolean());
+        Assert.Contains(root.GetProperty("status").GetString(), new[] { "active", "paused" });
+        if (root.GetProperty("status").GetString() == "paused")
+        {
+            Assert.True(Exists(root.GetProperty("paused_by").GetString()!));
+        }
         foreach (var kind in kinds.EnumerateObject().Where(kind => kind.Value.GetProperty("auto").GetBoolean()))
         {
             var lanes = Strings(kind.Value.GetProperty("allowed_lanes"));
