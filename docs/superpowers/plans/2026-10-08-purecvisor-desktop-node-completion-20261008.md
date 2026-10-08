@@ -86,7 +86,9 @@
 
 ## Task 8: 종료와 train PR merge
 
-- [ ] clean HEAD 종료 검증, `train-path-check` exit `0`, push, PR 하나, green CI 뒤 merge. merge 직전 base는 `origin/main`과 같다. merge 뒤 main push run을 기다리고, red면 revert PR을 열고 멈춘다.
+- [x] clean HEAD 종료 검증, `train-path-check` exit `0`, push, PR 하나, green CI 뒤 merge. merge 직전 base는 `origin/main`과 같다. merge 뒤 main push run을 기다리고, red면 revert PR을 열고 멈춘다.
+
+실행 기록(2026-10-08): clean HEAD `87918a2`에서 Release build 경고 0. shard `dotnet` Full/M `50615ms` ok, `web` Full/M `31921ms` ok, `delivery` Full/M `3494ms` ok, `installer-policy`는 요청 Full/M에 대해 effective Release/L(`tier-l-requires-release`) `2201ms` ok. 모두 `plan_only=false`. dotnet assembly는 Service 11, Contracts 200, Cli 183, Runtime 129, HyperV 273, Delivery 775, Host 216, Api 503, Verification 666, 실패 0. Pester는 wrapper 528, installer 49, web 50, manual-admin 129, 실패 0. `train-path-check`는 payload `56e7cd0`에서 exit 0이고 제품 경로는 pin 여섯 파일의 SHA-256 한 줄뿐이다. `git diff --check origin/main...HEAD` 통과. 이 기록 commit 뒤 push, PR, green CI merge와 main push 확인을 잇는다.
 
 ## Task 9: 판정
 
