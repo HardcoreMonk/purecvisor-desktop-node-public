@@ -68,7 +68,9 @@
 
 ## Task 5: probe `vm.qos`
 
-- [ ] 설치본 `0.42.93`에서 `vm.blkio-get`·`vm.bandwidth` readback의 `mutation_supported`가 catalog mutation과 같은지 확인한다. probe VM은 끝나면 지운다. evidence `lane2-vm-qos-actual-vm-2026-10-08-04293`. 보존 VM은 그대로 둔다. 로컬 commit.
+- [x] 설치본 `0.42.93`에서 `vm.blkio-get`·`vm.bandwidth` readback의 `mutation_supported`가 catalog mutation과 같은지 확인한다. probe VM은 끝나면 지운다. evidence `lane2-vm-qos-actual-vm-2026-10-08-04293`. 보존 VM은 그대로 둔다. 로컬 commit.
+
+실행 기록(2026-10-08): 설치본 `0.42.93-admin-smoke+818d00f`에서 probe VM `pcv-probe-qos-1008`을 Generation 2, CPU 2, memory 2048 MB, disk 20 GB로 만들고 켜지 않았다. `2026-10-08T15:57:34+09:00`부터 `10`초. create job `succeeded`(`3`초). `vm blkio-get` `storage_qos.mutation_supported=true`, `vm bandwidth` `network_qos.mutation_supported=true`. 설치 빌드 catalog의 `vm.qos.storage.set`와 `vm.qos.network.set`는 `Mutation`이라 readback과 같다. delete job `succeeded`(`3`초) 뒤 VM과 `D:\PureCVisor\VMs\pcv-probe-qos-1008`은 없었다. 보존 VM은 Off 그대로다. operational current는 `0.42.92-admin-smoke` 그대로다.
 
 ## Task 6: probe `vm.create reconcile`
 
