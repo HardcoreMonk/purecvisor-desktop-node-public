@@ -97,6 +97,7 @@ public sealed record ApiHandlerAdapterContract(
                 RuntimeReadOnly("/api/v1/vms/{vmId}/delete-status", "vm.delete-status", "GetVmDeleteStatus", "pcv.vm.delete", "jobs"),
                 NativeReadOnly("/api/v1/vms/{vmId}", "vm.detail", "GetVm", "pcv.vm.inventory", "hyperv-vm"),
                 RuntimeReadOnly("/api/v1/vms/{vmId}/console", "console.session", "GetVmConsoleSession", "pcv.vm.console-handoff", "console", "console.view"),
+                RuntimeReadOnly("/api/v1/vms/{vmId}/console/frame/{size}", "console.frame", "GetVmConsoleFrame", "pcv.vm.browser-console", "console", "console.view"),
                 RuntimeProductOperation("/api/v1/console/novnc-target/preview", "console.novnc-target.preview", "PreviewNoVncTarget", "pcv.vm.console-handoff", "console", requiredPermission: "console.configure"),
                 RuntimeQueuedMutation("/api/v1/console/novnc-target", "console.novnc-target.set", "QueueSetNoVncTarget", "pcv.vm.console-handoff", "console", requiredPermission: "console.configure"),
                 RuntimeQueuedMutation("/api/v1/console/novnc-target/clear", "console.novnc-target.clear", "QueueClearNoVncTarget", "pcv.vm.console-handoff", "console", requiredPermission: "console.configure"),

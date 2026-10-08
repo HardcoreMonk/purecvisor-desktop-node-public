@@ -70,9 +70,9 @@ public sealed class ApiHandlerAdapterContractTests
         }
 
         var contract = ApiHandlerAdapterContract.CreateDefault();
-        Assert.Equal(28, featureIds.Count);
-        Assert.Equal(80, ledgerRoutes.Count);
-        Assert.Equal(80, contract.Routes.Count);
+        Assert.Equal(29, featureIds.Count);
+        Assert.Equal(81, ledgerRoutes.Count);
+        Assert.Equal(81, contract.Routes.Count);
         foreach (var route in contract.Routes)
         {
             Assert.Matches("^pcv\\.[a-z0-9._-]+$", route.FeatureId);
@@ -111,8 +111,8 @@ public sealed class ApiHandlerAdapterContractTests
         var contract = ApiHandlerAdapterContract.CreateDefault();
         var routes = contract.Routes.ToDictionary(route => (route.Method, route.RouteTemplate));
 
-        Assert.Equal(80, contract.Routes.Count);
-        Assert.Equal(80, routes.Count);
+        Assert.Equal(81, contract.Routes.Count);
+        Assert.Equal(81, routes.Count);
 
         AssertRoute(routes[("GET", "/api/v1/runtime/policy")], "GET", "RuntimePolicy", MutationStance.ReadOnly);
         AssertRoute(routes[("GET", "/api/v1/host/status")], "GET", "HostStatus", MutationStance.ReadOnly);
@@ -229,8 +229,8 @@ public sealed class ApiHandlerAdapterContractTests
                 System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(snapshot)))
             .ToLowerInvariant();
 
-        Assert.Equal("40fb6cd685c3f1d8fb8afd6f75677a8ec7054b7072347bc09a7ea6930b966b89", digest);
-        Assert.Equal(23, routes.Count(route => route.MutationStance == MutationStance.ReadOnly));
+        Assert.Equal("a18de279ebcca89185662c2a18ca58e4264c471e1f3f69a14fcd69d817e11f41", digest);
+        Assert.Equal(24, routes.Count(route => route.MutationStance == MutationStance.ReadOnly));
         Assert.Equal(20, routes.Count(route => route.MutationStance == MutationStance.ProductOperation));
         Assert.Equal(37, routes.Count(route => route.MutationStance == MutationStance.QueuedMutation));
         Assert.Equal(14, routes.Select(route => route.RouteFamily).Distinct(StringComparer.Ordinal).Count());

@@ -847,7 +847,7 @@ public sealed class DesktopNodeCliCommandCatalogTests
         }
 
         Assert.Equal(73, presentCount);
-        Assert.Equal(7, excludedCount);
+        Assert.Equal(8, excludedCount);
     }
 
     [Fact]

@@ -14,12 +14,14 @@
 
 ## 2. 화면 route
 
-`GET /api/v1/vms/{vmId}/console/frame?width=<w>&height=<h>&encoding=<deflate|raw>`
+`GET /api/v1/vms/{vmId}/console/frame/{size}` (`{size}`는 `<width>x<height>`, 예 `640x480`)
 
-- 계약: `RuntimeReadOnly`, operation `console.frame`, 이름 `GetVmConsoleFrame`, feature `pcv.vm.console-frame`,
+host listener가 API에 query string을 넘기지 않으므로 크기는 경로로 받는다(Task 7에서 확정).
+
+- 계약: `RuntimeReadOnly`, operation `console.frame`, 이름 `GetVmConsoleFrame`, feature `pcv.vm.browser-console`,
   route family `console`, 권한 `console.view`.
-- 크기: 기본 `640×480`. width `160~1024`, height `120~768`. 범위 밖이면 `400 PCV_CONSOLE_FRAME_SIZE_INVALID`.
-- encoding: 기본 `deflate`(`System.IO.Compression.DeflateStream`, 서버 native 호출 없음). `raw`도 받는다.
+- 크기: Web 기본 `640x480`. width `160~1024`, height `120~768`. 형식이나 범위가 틀리면 `400 PCV_CONSOLE_FRAME_SIZE_INVALID`.
+- encoding: `deflate` 하나다. zlib 형식(RFC 1950, `System.IO.Compression.ZLibStream`)이라 브라우저 `DecompressionStream('deflate')`로 푼다.
 - 응답 `data`: `vm`, `width`, `height`, `format=rgb565le`, `encoding`, `byte_length`(압축 전), `frame_base64`, `captured_at`.
 - 오류: 없는 VM `404 PCV_VM_NOT_FOUND`, 켜져 있지 않음 `409 PCV_CONSOLE_VM_NOT_RUNNING`, WMI 실패
   `502 PCV_CONSOLE_FRAME_FAILED`, 같은 VM에 100ms 안 재요청 `429 PCV_CONSOLE_RATE_LIMITED`.
@@ -30,7 +32,7 @@
 
 `POST /api/v1/vms/{vmId}/console/input`
 
-- 계약: `RuntimeProductOperation`, operation `console.input`, 이름 `SendVmConsoleInput`, feature `pcv.vm.console-input`,
+- 계약: `RuntimeProductOperation`, operation `console.input`, 이름 `SendVmConsoleInput`, feature `pcv.vm.browser-console`,
   route family `console`, 권한 새 `console.input`. job이 아니라 동기 처리다(키 입력 지연 때문).
 - body:
   - `{"kind":"key","action":"type|press|release","key_code":<1~254 Windows virtual-key>}`

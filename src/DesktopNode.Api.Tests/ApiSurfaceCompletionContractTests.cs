@@ -11,7 +11,7 @@ public sealed class ApiSurfaceCompletionContractTests
     public void WebExclusionsAreOnlyThePolicyBackedRoutes()
     {
         Assert.Equal(
-            ["console.novnc-target.clear", "console.novnc-target.preview", "console.novnc-target.set", "vm.limit"],
+            ["console.frame", "console.novnc-target.clear", "console.novnc-target.preview", "console.novnc-target.set", "vm.limit"],
             ExcludedOperations("web"));
     }
 
@@ -19,7 +19,7 @@ public sealed class ApiSurfaceCompletionContractTests
     public void CliExclusionsAreOnlyAccountSessionAndConsoleDiscovery()
     {
         Assert.Equal(
-            ["auth.login", "auth.logout", "auth.loopback-session", "auth.rbac", "auth.refresh", "auth.session", "console.capabilities"],
+            ["auth.login", "auth.logout", "auth.loopback-session", "auth.rbac", "auth.refresh", "auth.session", "console.capabilities", "console.frame"],
             ExcludedOperations("cli"));
     }
 

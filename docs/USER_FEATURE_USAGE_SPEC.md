@@ -69,6 +69,7 @@ PureCVisor Desktop Node는 Windows 10/11 Pro/Enterprise + Hyper-V host를 로컬
 | Account/RBAC/JWT | [ `pcv.account.session` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-account-session) | Account login과 create/disable | `pcvcli account list/create/disable` | `/auth/...`, `/accounts` |
 | Console capability discovery | [ `pcv.console.capabilities` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-console-capabilities) | Console/Troubleshooting capability card | API/Web Console 전용 | `GET /console/capabilities` |
 | VM console/noVNC handoff | [ `pcv.vm.console-handoff` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-console-handoff) | 선택 VM Console panel (readback, no save form) | `pcvcli vm console/vnc <vm>`; `pcvcli console novnc-target preview --host 127.0.0.1 --port 5900`; `pcvcli console novnc-target set --host 127.0.0.1 --port 5900 --yes`; `pcvcli console novnc-target clear --yes` | `GET /vms/{id}/console`; `POST /console/novnc-target/preview`; `POST /console/novnc-target`; `POST /console/novnc-target/clear` |
+| VM browser console | [ `pcv.vm.browser-console` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-browser-console) | API 전용(Web canvas 패널은 S1 콘솔 패널 task) | 제외: 브라우저 canvas stream이라 PCVCLI는 `vm console` handoff를 유지 | `GET /vms/{id}/console/frame/{size}` |
 
 ## Feature ID 추적
 
@@ -85,6 +86,7 @@ PureCVisor Desktop Node는 Windows 10/11 Pro/Enterprise + Hyper-V host를 로컬
 | [ `pcv.network.inventory` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-network-inventory) | 네트워크 inventory와 VM 스위치 연결 |
 | [ `pcv.vm.delete` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-delete) | VM 삭제와 삭제 상태 |
 | [ `pcv.vm.console-handoff` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-console-handoff) | VM console/noVNC handoff |
+| [ `pcv.vm.browser-console` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-browser-console) | VM browser console |
 | [ `pcv.vm.telemetry` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-telemetry) | VM CPU·memory telemetry |
 | [ `pcv.vm.qos` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-qos) | Storage·network QoS |
 | [ `pcv.vm.guest-service-readback` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-guest-service-readback) | Guest service 상태와 ping |

@@ -7,17 +7,20 @@ namespace DesktopNode.Api;
 // console 경로가 지금은 Func 두 개를 processor 로 되돌려 보내는
 // callback adapter 로 dispatch 된다. wave 1 이 diagnostics/auth/ops 에서 없앤 그 형태다.
 // 이 소유자가 라우팅과 구현을 함께 갖는다.
-internal sealed class DesktopNodeApiConsoleRouteHandler
+internal sealed partial class DesktopNodeApiConsoleRouteHandler
 {
     private readonly DesktopNodeNoVncTargetStore noVncTargetStore;
     private readonly DesktopNodeApiAuthSessionHandler authSessionHandler;
     private readonly DesktopNodeJobRuntime jobRuntime;
+    private readonly DesktopNodeApiHyperVOperationInvoker operationInvoker;
 
     public DesktopNodeApiConsoleRouteHandler(
         DesktopNodeNoVncTargetStore noVncTargetStore,
         DesktopNodeApiAuthSessionHandler authSessionHandler,
-        DesktopNodeJobRuntime jobRuntime)
+        DesktopNodeJobRuntime jobRuntime,
+        DesktopNodeApiHyperVOperationInvoker operationInvoker)
     {
+        this.operationInvoker = operationInvoker;
         this.noVncTargetStore = noVncTargetStore;
         this.authSessionHandler = authSessionHandler;
         this.jobRuntime = jobRuntime;
@@ -35,6 +38,11 @@ internal sealed class DesktopNodeApiConsoleRouteHandler
         if (DesktopNodeApiRuntimeRoutes.TryMatchOperation(method, normalizedPath, "GetVmConsoleSession", out var consoleMatch))
         {
             return HandleVmConsoleSession(consoleMatch.Parameters["vmId"]);
+        }
+
+        if (DesktopNodeApiRuntimeRoutes.TryMatchOperation(method, normalizedPath, "GetVmConsoleFrame", out var frameMatch))
+        {
+            return HandleVmConsoleFrame(frameMatch.Parameters["vmId"], frameMatch.Parameters["size"]);
         }
 
         if (DesktopNodeApiRuntimeRoutes.TryMatchOperation(method, normalizedPath, "PreviewNoVncTarget", out _))

@@ -69,7 +69,9 @@
 
 ## Task 7: 화면 route
 
-- [ ] 설계대로 Local API 화면 route를 더하고 `console.view` 권한, 크기 검증, 없는 VM·꺼진 VM 오류를 처리한다. route 계약과 API 시험을 고친다. 검증 `dotnet test src/DesktopNode.Api.Tests -c Release`, Contracts tests. 로컬 commit.
+- [x] 설계대로 Local API 화면 route를 더하고 `console.view` 권한, 크기 검증, 없는 VM·꺼진 VM 오류를 처리한다. route 계약과 API 시험을 고친다. 검증 `dotnet test src/DesktopNode.Api.Tests -c Release`, Contracts tests. 로컬 commit.
+
+실행 기록(2026-10-08): host listener가 query string을 넘기지 않아 route를 `GET /api/v1/vms/{vmId}/console/frame/{size}`(`640x480` 형식)로 바꾸고 설계 §2를 고쳤다. 새 feature `pcv.vm.browser-console`(화면·입력 공용)로 route 계약을 더하고, handler(`DesktopNodeApiConsoleRouteHandler.Frame.cs`)는 크기 검증, VM당 100ms rate limit(`429 PCV_CONSOLE_RATE_LIMITED`), `vm.console.frame` 호출, zlib 압축을 한다. surface ledger에는 API present, CLI·Web 제외(사유 포함)로 넣었다. 고정 지점: route 81·feature 29, route snapshot SHA, ReadOnly 24, Web 제외 5(`verify-feature-surface-parity.mjs`), CLI 제외 8, `FEATURE_IMPLEMENTATION_LEDGER.md`(요약·route·단계 표), `USER_FEATURE_USAGE_SPEC.md` 링크. 시험: Api 508(새 5), Cli 183, Contracts 200, Delivery 775, web required exit 0, web Pester 50/0. host mutation 없음.
 
 ## Task 8: Web 화면 패널
 
