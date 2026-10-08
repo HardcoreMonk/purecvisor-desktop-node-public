@@ -18,7 +18,15 @@
 - Claims: `public_trusted_signing=false`; `external_stable_publication=false`.
 <!-- END GENERATED CURRENT EVIDENCE -->
 
-## 2026-10-07 프로젝트 완료 정의 v2
+## 2026-10-09 프로젝트 완료 정의 v3 (ADR-0017)
+
+- 완료 조건: 시나리오 S1~S4와 C1(GA-ready CI), C5(CI와 기한 위험), C6(영구 범위 밖). 결정 `docs/adr/0017-scenario-delivery-completion.md`,
+  기계 판정 출처 `config/project-completion-criteria.json`(`pcv-project-completion-definition-v3`). v2의 C2·C3·C4·C7은 `hygiene` 줄로만 낸다.
+- 2026-10-09 판정(`main` `6b76274`): `met=1/7`. 현황 감사 `docs/project-status-audit-2026-10-09.md`.
+- 평소 기능 PR은 Lane 1 + Required CI + 설치본 smoke(dev probe), release train은 시나리오 단계 완료 때만 출발한다.
+- S1 브라우저 콘솔 설계 `docs/superpowers/specs/2026-10-08-purecvisor-desktop-node-s1-browser-console-design.md`, 시나리오 스크립트 `npm run scenario:s1-console --prefix web`.
+
+## 2026-10-07 프로젝트 완료 정의 v2 (역사 기록)
 
 - 완료 조건 C1~C7: `docs/superpowers/specs/2026-10-07-purecvisor-desktop-node-completion-definition-v2-design.md`
   (`pcv-project-completion-definition-v2`). v1에 C7(backlog `counts`·`undecided` 행 `0`)을 더하고 기계 판정 출처를

@@ -150,6 +150,7 @@ evidence다.
 - Network는 inventory만. Web/CLI가 switch/IP/firewall을 바꾸지 않음
 - LAN은 preview. 기본 loopback, TLS는 외부 reverse-proxy
 - noVNC는 기본 off. target mutation은 ADR-0010 후보
+- 2026-10-08: 브라우저 콘솔은 noVNC가 아니라 WMI 화면과 `Msvm_Keyboard` 입력으로 제공한다(ADR-0017 시나리오 S1, PR #74)
 - 계정 CRUD API 없음. 기본 계정 없음
 - TUI 없음
 - Linux runtime, public signing, 외부 publication 없음

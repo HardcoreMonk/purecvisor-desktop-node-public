@@ -13,8 +13,8 @@
 - 이 호스트 설치본(2026-10-08 train `0.42.93` fullgate): `0.42.93-admin-smoke`(gate build `+818d00f`), service `Running/Automatic`. ARP `DisplayVersion`은 `0.42.93`(항목 `1`개). operational current와 같은 version이고 설치본은 gate build다.
 - 개발 campaign: `docs/ga-ready/active-campaign.json` id `s1-installed-20261008`(intent `s1-installed-dev-probe-and-demo`, 2026-10-08 열림, 계획 `docs/superpowers/plans/2026-10-08-purecvisor-desktop-node-s1-installed.md`). `main` `6b76274` build를 dev probe로 설치해 S1 시나리오 스크립트와 Ubuntu 26.04.1 브라우저 시연을 하고 0.42.93으로 되돌리며, backlog BL-0010을 고친다. 직전 `adr17-s1-console-20261008`(ADR-0017 채택 PR #73, S1 브라우저 콘솔 PR #74)은 닫고 Task 14(C5, 2026-10-19 뒤)를 Task 11로 이관했다.
 - release train: 대기열과 train 이력 `docs/ga-ready/release-train.json`, 규칙 `docs/DEVELOPMENT_PROCEDURE.md` §10, 설계 `docs/superpowers/specs/2026-10-04-purecvisor-desktop-node-release-train-design.md`(2026-10-04 채택).
-- 진행 상황 현행화: `docs/project-status-audit-2026-10-06.md`(완료 정의 C1~C6 대조). 직전 snapshot은 `docs/project-status-audit-2026-10-03.md`.
-- 프로젝트 완료 정의: `docs/superpowers/specs/2026-10-07-purecvisor-desktop-node-completion-definition-v2-design.md`(`pcv-project-completion-definition-v2`, v1 `docs/superpowers/specs/2026-10-06-purecvisor-desktop-node-completion-definition-design.md` 대체). C1~C7, 기계 판정 출처 `config/project-completion-criteria.json`, 완료는 `pcvverify completion` exit `0`일 때만. 2026-10-07 판정은 C2(queue PR #59), C5(2026-10-19 runner 확인), C7(backlog `undecided` 2행)이 남음. public trusted signing과 external stable publication은 영구 범위 밖이다.
+- 진행 상황 현행화: `docs/project-status-audit-2026-10-09.md`(완료 정의 v3, `main` `6b76274` 판정 `met=1/7`). 직전 snapshot은 `docs/project-status-audit-2026-10-06.md`(v1 C1~C6), 그 전은 `docs/project-status-audit-2026-10-03.md`.
+- 프로젝트 완료 정의: `docs/adr/0017-scenario-delivery-completion.md`(v3, 2026-10-08 채택). 시나리오 S1~S4와 C1·C5·C6, 기계 판정 출처 `config/project-completion-criteria.json`, 완료는 `pcvverify completion` exit `0`일 때만. v2 설계 `docs/superpowers/specs/2026-10-07-purecvisor-desktop-node-completion-definition-v2-design.md`와 v1 설계는 역사 기록이다. completion autopilot은 `config/completion-autopilot-policy.json` `status=paused`.
 - `vm.create` reconcile 장치 지문: `docs/superpowers/specs/2026-10-08-purecvisor-desktop-node-vm-create-reconcile-devices-design.md`(`pcv-vm-create-reconcile-devices-v1`). 디스크·ISO·`Default Switch` 연결이 맞아야 `postcondition-confirmed`(backlog `BL-0001`).
 - 단일 PR train v2: `docs/superpowers/specs/2026-10-08-purecvisor-desktop-node-single-pr-train-v2-design.md`(`pcv-single-pr-train-v2`). `train-path-check`가 Lane 3 pin 여섯 파일의 SHA 한 줄 변경만 허용하고 `CurrentEvidenceVerifierTests`는 version을 파일에서 읽는다(backlog `BL-0005`).
 - 완료 기준 autopilot: `docs/superpowers/specs/2026-10-07-purecvisor-desktop-node-completion-autopilot-design.md`(`pcv-completion-autopilot-v1`). 판정 명령 `pcvverify completion`(결과 `pcv-project-completion-result-v1`, 갭 종류 일곱 가지), backlog `pcv-backlog-v1`, 정책 `config/completion-autopilot-policy.json`(2026-10-07 승인 4, Lane 2/3 자동), campaign 필드 `task_not_before`·`carried_tasks`·`generated_from`.
@@ -36,7 +36,7 @@
 
 - 기여자 온보딩: `docs/DEVELOPMENT_PROCEDURE.md`, `docs/DEVELOPER_INDEX.md`, `docs/CODING_GUIDE.md`, `docs/DEVELOPMENT_VERIFICATION_POLICY.md`
 - 아키텍처: `docs/ADR_INDEX.md`, `docs/adr/`, `docs/service-core-backend-frontend-implementation-evaluation-2026-07-16.md`
-- 현재 작업과 상태: `docs/project-status-audit-2026-10-03.md`, `docs/FEATURE_IMPLEMENTATION_LEDGER.md`, `docs/ga-ready/CURRENT_EVIDENCE_LEDGER.md`, `docs/ga-ready/EVIDENCE_INDEX.md`
+- 현재 작업과 상태: `docs/project-status-audit-2026-10-09.md`, `docs/FEATURE_IMPLEMENTATION_LEDGER.md`, `docs/ga-ready/CURRENT_EVIDENCE_LEDGER.md`, `docs/ga-ready/EVIDENCE_INDEX.md`
 - 버전·릴리스 증거: [docs/ga-ready/current-evidence.json](ga-ready/current-evidence.json)과 위 evidence index
 - 역사 변경 기록: Git 이력과 아래 날짜별 계획·명세·증거
 
@@ -76,6 +76,8 @@
 - [docs/project-status-audit-2026-09-20.md](project-status-audit-2026-09-20.md)
 - [docs/project-status-audit-2026-09-27.md](project-status-audit-2026-09-27.md)
 - [docs/project-status-audit-2026-10-03.md](project-status-audit-2026-10-03.md)
+- [docs/project-status-audit-2026-10-06.md](project-status-audit-2026-10-06.md)
+- [docs/project-status-audit-2026-10-09.md](project-status-audit-2026-10-09.md)
 - [docs/PUBLIC_RELEASE_BOUNDARY.md](PUBLIC_RELEASE_BOUNDARY.md)
 - [docs/PUBLIC_SOURCE_AUTHORITY.md](PUBLIC_SOURCE_AUTHORITY.md)
 - [docs/SERVICE_PLAN.md](SERVICE_PLAN.md)

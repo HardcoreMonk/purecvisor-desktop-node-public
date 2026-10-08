@@ -122,6 +122,30 @@
       "needs_design": false,
       "status": "closed",
       "closed_by": "s1-installed-20261008 Task 1"
+    },
+    {
+      "id": "BL-0011",
+      "found_on": "2026-10-09",
+      "source": "docs/project-status-audit-2026-10-09.md (main push Development Gates run 37781431209, head 6b76274)",
+      "summary": "ApiConsoleFrameRouteTests.FrameRouteLimitsTheSameVmTo100Milliseconds가 느린 runner에서 실패한다(두 번째 요청이 100ms 뒤라 429 대신 200). 같은 시간 의존이 ApiConsoleInputRouteTests의 초당 50회 시험에도 있다. 시계 주입으로 결정적 시험이 필요하다",
+      "classification": "undecided",
+      "basis": null,
+      "out_of_scope_ref": null,
+      "needs_design": false,
+      "status": "open",
+      "closed_by": null
+    },
+    {
+      "id": "BL-0012",
+      "found_on": "2026-10-09",
+      "source": "docs/project-status-audit-2026-10-09.md (main push Development Gates run 37773881084, head 7f6c751)",
+      "summary": "DesktopNodeHostLoopbackBootstrapBrowserTests.ChromiumOpensLoopbackConsoleWithoutServiceTokenPaste가 BL-0009 안정화 뒤에도 main push에서 다시 실패했다(23초)",
+      "classification": "undecided",
+      "basis": null,
+      "out_of_scope_ref": null,
+      "needs_design": false,
+      "status": "open",
+      "closed_by": null
     }
   ]
 }

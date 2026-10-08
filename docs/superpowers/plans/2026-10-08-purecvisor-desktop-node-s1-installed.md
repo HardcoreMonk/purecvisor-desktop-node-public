@@ -81,6 +81,12 @@
 
 - [ ] `not_before` 2026-10-19. 이관 전 `adr17-s1-console-20261008` Task 14(그 전 `scenario-pivot-20261008` Task 6, `completion-20261008` Task 10)이다. Ubuntu 26 runner의 첫 `main` Development Gates와 Public Boundary run이 green이면 `config/project-completion-criteria.json` 위험 행을 `status=closed`, `closed_by`에 run id로 닫는다. 실패하면 `ubuntu-24.04` pin을 판단해 보고하고 멈춘다. push, PR, green CI 뒤 merge.
 
+## Task 12: 문서 현행화 (2026-10-09 사용자 지시)
+
+- [x] 사용자 지시 `모든 문서 현행화`. 현재 상태 문서를 ADR-0017, S1 브라우저 콘솔, 이 호스트 dev probe 상태에 맞춘다. 과거 evidence, plan, spec은 바꾸지 않는다.
+
+실행 기록(2026-10-09): `pcvverify completion`(v3)을 `main` `6b76274`에 읽기 전용으로 돌려 `met=1/7`을 얻고 새 감사 `docs/project-status-audit-2026-10-09.md`를 썼다. `docs/DOCUMENTATION_INDEX.md`(현황, 완료 정의, 감사 목록), `docs/DEVELOPER_INDEX.md`(v3 절, v2는 역사 기록), `README.md`(제품 API 목록), `docs/USER_GUIDE.md`(Browser console), `docs/OPERATIONS_GUIDE.md`(입력 audit 파일), `docs/ga-ready/ROUTE_PROMOTION_MATRIX.md`, `docs/SERVICE_PLAN.md`를 고쳤다. 판정 중 `main` push Development Gates가 두 번 간헐 실패한 것을 찾아 backlog `BL-0011`(콘솔 rate limit 시험 시간 의존), `BL-0012`(loopback bootstrap browser 시험 재발)를 `undecided`로 남겼다. host mutation 없음.
+
 ## Nonclaims
 
 - dev probe 설치는 승격 근거가 아니다. operational current는 `0.42.93-admin-smoke` 그대로이고 끝에 설치본도 그 version으로 돌아간다.
