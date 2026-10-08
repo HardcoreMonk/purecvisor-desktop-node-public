@@ -100,9 +100,13 @@
 
 - [ ] `not_before` 2026-10-19. 이관 전 `completion-backlog-20261008` Task 14다. Ubuntu 26 runner의 첫 `main` Development Gates와 Public Boundary run이 green이면 `config/project-completion-criteria.json` 위험 행을 `status=closed`, `closed_by`에 run id로 닫는다. 실패하면 `ubuntu-24.04` pin을 판단해 보고하고 멈춘다. push, PR, green CI 뒤 merge.
 
+이관(2026-10-08): `scenario-pivot-20261008` Task 6으로 옮긴다. 이 campaign은 그 opening에서 닫는다.
+
 ## Task 11: 완료 판정
 
 - [ ] `not_before` 2026-10-19. 이관 전 `completion-backlog-20261008` Task 15다. clean `main`에서 `pcvverify completion`을 돌린다. exit `0`이면 결과를 인용한 감사 문서로 완료를 적고 push, PR, green CI 뒤 merge한다. exit `1`이면 결과를 기록하고 `pcv-campaign` §6 연쇄로 넘긴다.
+
+폐기(2026-10-08): 사용자 결정으로 옮기지 않는다. 완료 판정은 ADR-0017(제안)의 시나리오 기준 완료 정의 v3가 대체한다. 이 campaign은 `scenario-pivot-20261008` opening에서 닫는다.
 
 ## Nonclaims
 

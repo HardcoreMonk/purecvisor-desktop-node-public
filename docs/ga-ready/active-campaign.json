@@ -2,63 +2,39 @@
   "schema_version": 1,
   "contract": "pcv-active-campaign-v1",
   "status": "open",
-  "id": "completion-20261008",
-  "intent": "project-completion",
+  "id": "scenario-pivot-20261008",
+  "intent": "scenario-delivery-pivot",
   "working_authority": "source_head",
   "allowed_lanes": [
     "0",
     "1",
-    "2",
-    "3"
+    "2"
   ],
   "mutation_allowed": true,
-  "current_write_allowed": true,
-  "next_step": "Wait until 2026-10-19, then run Task 10 from docs/superpowers/plans/2026-10-08-purecvisor-desktop-node-completion-20261008.md; Task 11 follows. The only remaining completion gap is C5-risk-ubuntu-26-runner (deadline-wait). Do not open another campaign.",
-  "plan": "docs/superpowers/plans/2026-10-08-purecvisor-desktop-node-completion-20261008.md",
+  "current_write_allowed": false,
+  "next_step": "Run Task 1 from docs/superpowers/plans/2026-10-08-purecvisor-desktop-node-scenario-pivot.md, then the queue in order. Task 6 waits until 2026-10-19. Do not chain a completion campaign before ADR-0017 is decided.",
+  "plan": "docs/superpowers/plans/2026-10-08-purecvisor-desktop-node-scenario-pivot.md",
   "task_queue": [
-    "Task 0",
     "Task 1",
     "Task 2",
     "Task 3",
     "Task 4",
     "Task 5",
-    "Task 6",
-    "Task 7",
-    "Task 8",
-    "Task 9",
-    "Task 10",
-    "Task 11"
+    "Task 6"
   ],
   "task_lanes": {
-    "Task 2": "2",
-    "Task 3": "2",
-    "Task 4": "2",
-    "Task 5": "2",
-    "Task 6": "2",
-    "Task 7": "3"
+    "Task 3": "2"
   },
   "task_not_before": {
-    "Task 10": "2026-10-19",
-    "Task 11": "2026-10-19"
+    "Task 6": "2026-10-19"
   },
-  "next_task": "Task 10",
-  "completed_tasks": [
-    "Task 0",
-    "Task 1",
-    "Task 2",
-    "Task 3",
-    "Task 4",
-    "Task 5",
-    "Task 6",
-    "Task 7",
-    "Task 8",
-    "Task 9"
-  ],
+  "next_task": "Task 1",
+  "completed_tasks": [],
   "commit_policy": "local-commit-per-task",
   "push_allowed": true,
   "merge_policy": "after-green-ci",
-  "checkpoint_limit": 12,
-  "approval_locator": "User-Approval: 2026-09-27 campaign runner commit policy local-commit-per-task; User-Approval: 2026-10-07 \"1,2,3,4,5\" item 4, approve completion-autopilot-policy, clarified by the user as Lane 2/3 fully automatic: campaigns generated under the policy may run the release train standard host mutation scope (MSI install, repair, uninstall, REMOVE_DATA, service, pair six buckets, fullgate route parity VM, probe VM create and delete), Lane 3 current-evidence write, push, PR and merge after green CI, and stop on FAIL, new-design, undecided backlog rows, new Add-Type/P/Invoke/native ACL/installer handoff and permanent out-of-scope items; User-Approval: 2026-10-08 \"1\" (completion-20261007 Task 4 stop report item 1: add the fullgate os-mutation-gate, PureCVisor firewall rule add and remove, Event Log source registration and LAN listener with the LAN prefix only as an execution value and ending with zero PureCVisor firewall rules, to the train-departure scope); carried ADR-0016 standing approval from process-followups-20261007 item 4: standing approval limited to pcv-it- prefixed VM create and delete",
+  "checkpoint_limit": 6,
+  "approval_locator": "User-Approval: 2026-09-27 campaign runner commit policy local-commit-per-task; User-Approval: 2026-10-08 \"1,2,3\" (1 document the ADR-0017 proposal with the scenario-based completion definition v3 and the process reduction in Lane 1 with push, PR and merge after green CI, contracts unchanged; 2 Hyper-V browser console spike over the 2179 RDP preconnection path, real VMs only with the pcv-it- prefix: create, start, stop and delete, no third-party software install; 3 VMware Workstation 26H1 install deferred until the spike result); User-Approval: 2026-10-08 carry completion-20261008 Task 10 only under its deadline-wait policy row (Lane 0/1, push, PR and merge after green CI), Task 11 dropped; carried ADR-0016 standing approval from process-followups-20261007 item 4: standing approval limited to pcv-it- prefixed VM create and delete",
   "next_approval_required": [],
   "stop_on": [
     "same-cause-fail-3",
@@ -69,17 +45,11 @@
     "new-design-required",
     "permission-denied",
     "dirty-tree-at-start",
-    "deadline-wait",
-    "no-progress"
+    "deadline-wait"
   ],
   "out_of_scope_is_not_next_step": true,
-  "closed_predecessor": "completion-backlog-20261008",
-  "generated_from": {
-    "result": "artifacts/completion/20261008/result.json",
-    "head": "d9e7d0331757c593fcd1c997f2348157b1046acb",
-    "gaps": [
-      "C2-queue",
-      "C5-risk-ubuntu-26-runner"
-    ]
+  "closed_predecessor": "completion-20261008",
+  "carried_from": {
+    "Task 6": "completion-20261008 Task 10"
   }
 }
