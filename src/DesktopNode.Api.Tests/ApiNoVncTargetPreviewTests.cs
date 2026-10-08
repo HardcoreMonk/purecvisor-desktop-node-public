@@ -63,6 +63,7 @@ public sealed class ApiNoVncTargetPreviewTests
         var response = processor.Handle(new DesktopNodeApiRequest(
             "POST",
             "/api/v1/console/novnc-target/preview",
+            // public-safety: synthetic-rfc1918
             """{"host":"192.168.1.20","port":5901}""",
             ServiceBearerAccepted: true));
 
@@ -78,6 +79,7 @@ public sealed class ApiNoVncTargetPreviewTests
         var response = processor.Handle(new DesktopNodeApiRequest(
             "POST",
             "/api/v1/console/novnc-target/preview",
+            // public-safety: synthetic-rfc1918
             """{"host":"192.168.1.20","port":5901,"allow_lan_target":true,"reason":"lab streaming"}""",
             ServiceBearerAccepted: true));
 
@@ -87,6 +89,7 @@ public sealed class ApiNoVncTargetPreviewTests
         Assert.False(data.GetProperty("loopback").GetBoolean());
         Assert.True(data.GetProperty("allow_lan_target").GetBoolean());
         Assert.True(data.GetProperty("dry_run").GetBoolean());
+        // public-safety: synthetic-rfc1918
         Assert.Equal("192.168.1.20", data.GetProperty("host").GetString());
         Assert.Equal("lab streaming", data.GetProperty("reason").GetString());
     }

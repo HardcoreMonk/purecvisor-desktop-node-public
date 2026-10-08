@@ -113,6 +113,7 @@ Web Console은 선택된 VM의 console capability를 표시한다. 현재 Window
 | 항목 | 상태 |
 |------|------|
 | Windows console | `vmconnect` handoff |
+| Browser console | VM 상세 Browser console 카드. 화면은 `console.view`, 키 입력은 `console.input` 권한 |
 | noVNC | Explicit noVNC target host/port가 구성되기 전까지 `not_configured`; 구성되면 WebSocket-to-VNC TCP bridge |
 | Required permission | `console.view` |
 
@@ -131,6 +132,7 @@ noVNC bridge는 Windows Desktop Node listener의 opt-in bridge이며 기본 disa
 
 - host status와 dashboard summary
 - VM create/list/detail
+- Browser console: VM 상세 VM Screen(640x480/800x600/1024x768, 1/2/5 fps), 화면 클릭 뒤 키 입력, Send text, Ctrl+Alt+Del
 - VM start/shutdown/poweroff/restart/delete queued job
 - VM media attach/eject queued job
 - checkpoint create/list/restore/delete queued job

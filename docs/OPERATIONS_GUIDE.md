@@ -148,6 +148,7 @@ provenance commit `69aba3eb3ff08c843f1a481818ddc86eac2f019b`,
 | JWT signing key file | `%ProgramData%\PureCVisor\desktop-node\jwt-signing-key.txt` |
 | Job store | `%ProgramData%\PureCVisor\desktop-node\jobs.json` |
 | Event log JSONL | `%ProgramData%\PureCVisor\desktop-node\events.jsonl` |
+| Console input audit | `%ProgramData%\PureCVisor\desktop-node\console-input-audit.jsonl`(키 입력 요청마다 한 줄, 입력 내용과 hash 없음, 1 MiB에서 `.1.jsonl`로 회전) |
 | Diagnostic root | `%ProgramData%\PureCVisor\desktop-node\diagnostics` |
 | Install log | `%ProgramData%\PureCVisor\desktop-node\install.jsonl` |
 

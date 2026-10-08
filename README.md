@@ -302,7 +302,7 @@ pcvcli runtime policy
 
 기본 설치 경로는 `C:\Program Files\PureCVisor\DesktopNode`, 데이터 루트는 `%ProgramData%\PureCVisor\desktop-node`, service host는 `C:\Program Files\PureCVisor\DesktopNode\DesktopNode.Host.exe`다. Web Console static root는 loopback port 80에서 바로 열 수 있고, Local API route는 port 7777에서 bearer token을 요구한다. 활성 명령행 운영자 표면은 `pcvcli.exe`이며 token source를 생략하면 `%ProgramData%\PureCVisor\desktop-node\api-token.dpapi.json` protected token file을 사용한다. TUI는 ADR-0011에 따라 source/package/smoke에서 제거됐다. Account/RBAC/JWT bootstrap file은 `accounts.json`와 `jwt-signing-key.txt`이며, 기본 상태는 `no-default-account`라서 계정 구성 전에는 기존 bearer token gate가 계속 적용된다.
 
-현재 제품 API는 host status, ops summary, network inventory, VM list/detail, VM create/start/restart/shutdown/poweroff/delete, checkpoint create/list/restore/delete, job get/cancel/retry, diagnostic bundle list/create/download, Account/RBAC/JWT session, console capability/`vmconnect` handoff를 제공한다. LAN exposure는 기본값이 아니며 관리자 opt-in, `-AllowLan`, token source, firewall approval gate가 있을 때만 실행한다.
+현재 제품 API는 host status, ops summary, network inventory, VM list/detail, VM create/start/restart/shutdown/poweroff/delete, checkpoint create/list/restore/delete, job get/cancel/retry, diagnostic bundle list/create/download, Account/RBAC/JWT session, console capability/`vmconnect` handoff, S1 브라우저 콘솔(VM 화면 `GET /api/v1/vms/{vmId}/console/frame/{size}`와 키보드 입력 `POST /api/v1/vms/{vmId}/console/input`)을 제공한다. LAN exposure는 기본값이 아니며 관리자 opt-in, `-AllowLan`, token source, firewall approval gate가 있을 때만 실행한다.
 
 전체 사용자 절차는 `docs/USER_GUIDE.md`를 따르고, 기능별 사용 계약/권한/차단 메시지 기준은 `docs/USER_FEATURE_USAGE_SPEC.md`를 따른다. 설치본 운영, incident 대응, evidence 판정, host mutation guard는 `docs/OPERATIONS_GUIDE.md`를 따른다.
 
