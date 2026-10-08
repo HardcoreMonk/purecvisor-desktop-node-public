@@ -38,7 +38,9 @@
 
 ## Task 2: 브라우저 콘솔 방식 조사
 
-- [ ] `docs/superpowers/specs/2026-10-08-purecvisor-desktop-node-hyperv-browser-console-spike.md`를 쓴다. Hyper-V `vmconnect` 경로(TCP `2179`, RDP preconnection PDU의 VM GUID, CredSSP)와 브라우저 쪽 후보(기존 noVNC WebSocket-to-TCP bridge + 브라우저 RDP client, Windows용 HTML5 RDP gateway, Apache Guacamole)를 라이선스, Windows service 적합성, 인증 처리, 저장소 경계(ADR-0006, ADR-0010, Linux stack 금지)로 비교하고 Task 3 probe 절차를 확정한다. 검증 Delivery tests, `git diff --check`. 로컬 commit.
+- [x] `docs/superpowers/specs/2026-10-08-purecvisor-desktop-node-hyperv-browser-console-spike.md`를 쓴다. Hyper-V `vmconnect` 경로(TCP `2179`, RDP preconnection PDU의 VM GUID, CredSSP)와 브라우저 쪽 후보(기존 noVNC WebSocket-to-TCP bridge + 브라우저 RDP client, Windows용 HTML5 RDP gateway, Apache Guacamole)를 라이선스, Windows service 적합성, 인증 처리, 저장소 경계(ADR-0006, ADR-0010, Linux stack 금지)로 비교하고 Task 3 probe 절차를 확정한다. 검증 Delivery tests, `git diff --check`. 로컬 commit.
+
+실행 기록(2026-10-08): spike 문서에 `2179` 경로 사실(MS-RDPEPS PCB 필드, VM GUID, 접근 권한, CredSSP 사례)과 후보 5개(A IronRDP web + 제품 relay, B Myrtille, C Guacamole, D 자체 RDP client, E WMI thumbnail·`Msvm_Keyboard`)를 비교했다. 저장소 경계 안은 A와 E다. Task 3 probe는 2179 협상 4사례와, 읽기만 하는 E의 thumbnail 1회로 확정했다. 외부 설치와 host mutation 없음.
 
 ## Task 3: 2179 probe (Lane 2)
 
