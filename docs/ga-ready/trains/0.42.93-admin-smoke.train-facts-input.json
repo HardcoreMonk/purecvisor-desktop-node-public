@@ -6,7 +6,13 @@
   "canonical_current_evidence": "0.42.92-admin-smoke",
   "date": "2026-10-08",
   "documents": {
-    "package": "docs/ga-ready/evidence/admin-smoke-package-2026-10-08-04293.md"
+    "package": "docs/ga-ready/evidence/admin-smoke-package-2026-10-08-04293.md",
+    "ops-summary": "docs/ga-ready/evidence/installed-runtime-ops-summary-2026-10-08-04293.md",
+    "update-rollback": "docs/ga-ready/evidence/product-update-rollback-2026-10-08-04292-04293.md",
+    "clean-host": "docs/ga-ready/evidence/internal-clean-host-install-update-rollback-smoke-2026-10-08-04292-04293.md",
+    "burn": "docs/ga-ready/evidence/burn-bootstrapper-lifecycle-smoke-2026-10-08-04293.md",
+    "msix": "docs/ga-ready/evidence/msix-package-lifecycle-smoke-2026-10-08-04292-04293.md",
+    "pair-descriptor": "docs/ga-ready/evidence/manual-admin-campaign-descriptor-2026-10-08-04292-04293.md"
   },
   "sources": {
     "package_root": "artifacts/admin-smoke-package-20261008-04293",

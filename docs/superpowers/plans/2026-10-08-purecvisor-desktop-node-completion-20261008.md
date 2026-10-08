@@ -50,7 +50,9 @@
 
 ## Task 2: pair
 
-- [ ] orchestrator `-PlanOnly` 뒤 `-Execute`(campaign `manual-admin-campaign-20261008-04292-04293`). 여섯 bucket PASS, closed descriptor, `observation_error` 없음. `train-facts`로 pair 문서 6개. 로컬 commit.
+- [x] orchestrator `-PlanOnly` 뒤 `-Execute`(campaign `manual-admin-campaign-20261008-04292-04293`). 여섯 bucket PASS, closed descriptor, `observation_error` 없음. `train-facts`로 pair 문서 6개. 로컬 commit.
+
+실행 기록(2026-10-08): `-PlanOnly` `ok=true`, host mutation 없음. `-Execute` `2026-10-08T15:02:56+09:00`부터 `238`초. 여섯 bucket PASS, closed descriptor `manual-admin-campaign-20261008-04292-04293-closed`, observations `15`개 `observation_error` 없음, restoration 없음. 끝 상태: 설치본 `0.42.93-admin-smoke`(`0.42.93-admin-smoke+41421d8bf3272dbdbb8dcf384bcf1ff3f329726a`), ARP `{867BA47E-0553-4B74-8E46-8C803008F61C}` `0.42.93` 1개, service Running/Automatic, Web `200`, 보존 VM Off. `train-evidence --check` pair 문서 6개 `current`. `TrainEvidenceGoldenTests`와 `TrainFactsBuilderTests` `19/19`. operational current는 `0.42.92-admin-smoke` 그대로다.
 
 ## Task 3: fullgate
 
