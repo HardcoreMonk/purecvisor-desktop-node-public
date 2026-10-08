@@ -74,7 +74,9 @@
 
 ## Task 6: probe `vm.create reconcile`
 
-- [ ] 설치본 `0.42.93`에서 설계 `pcv-vm-create-reconcile-devices-v1`대로, 디스크·ISO·Default Switch가 빠진 create는 `postcondition-confirmed`가 아니고 `missing_devices`가 보이는지 확인한다. probe VM·폴더는 끝나면 지운다. evidence `lane2-vm-create-reconcile-devices-actual-vm-2026-10-08-04293`. 로컬 commit.
+- [x] 설치본 `0.42.93`에서 설계 `pcv-vm-create-reconcile-devices-v1`대로, 디스크·ISO·Default Switch가 빠진 create는 `postcondition-confirmed`가 아니고 `missing_devices`가 보이는지 확인한다. probe VM·폴더는 끝나면 지운다. evidence `lane2-vm-create-reconcile-devices-actual-vm-2026-10-08-04293`. 로컬 commit.
+
+실행 기록(2026-10-08): 설치본 `0.42.93-admin-smoke+818d00f`에서 probe VM `pcv-probe-reconcile-1008` create를 큐에 넣고, VM이 보인 직후(1561 ms, 디스크·ISO·Default Switch 0) `DesktopNode.Host`를 종료했다. 서비스는 1초 만에 Running. job `job-a25d2b4676714642a16e5440f193cce5`는 `PCV_JOB_INTERRUPTED`. reconcile은 `target-fingerprint-mismatch`, `missing_devices=disk,iso,switch`이고 `postcondition-confirmed`는 없었다. managed delete 뒤 같은 이름 create가 `succeeded`로 세 장치를 붙였고, 최종 delete 뒤 VM과 폴더는 없었다. `2026-10-08T16:10:54+09:00`부터 `16`초. 보존 VM은 Off 그대로다. operational current는 `0.42.92-admin-smoke` 그대로다.
 
 ## Task 7: Lane 3
 
