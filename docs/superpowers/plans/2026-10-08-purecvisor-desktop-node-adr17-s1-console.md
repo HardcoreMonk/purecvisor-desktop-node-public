@@ -105,7 +105,9 @@
 
 ## Task 13: PR B 종료
 
-- [ ] clean HEAD에서 `dotnet test src/DesktopNode.sln -c Release`, `npm run test:required --prefix web`, `git diff --check origin/main...HEAD`를 돌리고 push, PR, green CI 뒤 merge한다. 설치본 S1 smoke 승인 문장을 campaign `next_approval_required`에 둔다.
+- [x] clean HEAD에서 `dotnet test src/DesktopNode.sln -c Release`, `npm run test:required --prefix web`, `git diff --check origin/main...HEAD`를 돌리고 push, PR, green CI 뒤 merge한다. 설치본 S1 smoke 승인 문장을 campaign `next_approval_required`에 둔다.
+
+실행 기록(2026-10-08): Task 5~12 commit을 branch `lane1/s1-console-20261008`에서 clean HEAD로 검증하고 push, PR, green CI 뒤 merge로 넘긴다. 범위 밖 발견 1건을 backlog `BL-0010`(`undecided`, web public source safety 기존 실패 4곳)으로 남겼다. 다음 승인 3개를 campaign `next_approval_required`에 두었다.
 
 ## Task 14: C5 runner 확인 (2026-10-19 이후)
 
