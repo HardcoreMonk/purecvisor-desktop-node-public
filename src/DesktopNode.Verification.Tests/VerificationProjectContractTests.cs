@@ -129,6 +129,10 @@ public sealed class VerificationProjectContractTests
 
 public sealed class ConsoleCancellationBridgeTests
 {
+    // Hang guard only: a real deadlock never completes, so it still fails here, while a slow GitHub runner may need more
+    // than two seconds to schedule Task.Run (backlog BL-0008).
+    private static readonly TimeSpan HangGuard = TimeSpan.FromSeconds(30);
+
     [Fact]
     public void CallbackCanWaitForDisposeWithoutDeadlockAndLaterSignalsAreNoOps()
     {
@@ -137,7 +141,7 @@ public sealed class ConsoleCancellationBridgeTests
         using var registration = bridge.Token.Register(() =>
         {
             var dispose = Task.Run(bridge.Dispose);
-            disposeCompletedBeforeCallbackReturned = dispose.Wait(TimeSpan.FromSeconds(2));
+            disposeCompletedBeforeCallbackReturned = dispose.Wait(HangGuard);
         });
 
         bridge.Signal();
@@ -192,7 +196,7 @@ public sealed class ConsoleCancellationBridgeTests
                 .ToArray();
             var dispose = Task.Run(() => bridge.Dispose());
 
-            await Task.WhenAll(signals.Append(dispose)).WaitAsync(TimeSpan.FromSeconds(5));
+            await Task.WhenAll(signals.Append(dispose)).WaitAsync(HangGuard);
             bridge.Dispose();
             Assert.True(token.IsCancellationRequested || !token.CanBeCanceled || dispose.IsCompletedSuccessfully);
         }

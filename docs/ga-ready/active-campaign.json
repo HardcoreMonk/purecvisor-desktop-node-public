@@ -11,7 +11,7 @@
   ],
   "mutation_allowed": false,
   "current_write_allowed": false,
-  "next_step": "Run Task 9 from docs/superpowers/plans/2026-10-08-purecvisor-desktop-node-completion-backlog.md, then the queue in order; Tasks 14 and 15 not before 2026-10-19.",
+  "next_step": "Run Task 13 from docs/superpowers/plans/2026-10-08-purecvisor-desktop-node-completion-backlog.md, then the queue in order; Tasks 14 and 15 not before 2026-10-19.",
   "plan": "docs/superpowers/plans/2026-10-08-purecvisor-desktop-node-completion-backlog.md",
   "task_queue": [
     "Task 1",
@@ -25,6 +25,8 @@
     "Task 9",
     "Task 10",
     "Task 11",
+    "Task 16",
+    "Task 17",
     "Task 12",
     "Task 13",
     "Task 14",
@@ -35,7 +37,7 @@
     "Task 14": "2026-10-19",
     "Task 15": "2026-10-19"
   },
-  "next_task": "Task 9",
+  "next_task": "Task 13",
   "completed_tasks": [
     "Task 1",
     "Task 2",
@@ -44,13 +46,19 @@
     "Task 5",
     "Task 6",
     "Task 7",
-    "Task 8"
+    "Task 8",
+    "Task 9",
+    "Task 10",
+    "Task 11",
+    "Task 16",
+    "Task 17",
+    "Task 12"
   ],
   "commit_policy": "local-commit-per-task",
   "push_allowed": true,
   "merge_policy": "after-green-ci",
-  "checkpoint_limit": 15,
-  "approval_locator": "User-Approval: 2026-09-27 campaign runner commit policy local-commit-per-task; 2026-10-08 \"1,2,3,4,5,6,7\" (completion-20261007 next_approval_required: 1 BL-0001을 counts로 분류하고 새 설계를 승인한다: vm.create reconcile 지문에 디스크·ISO·switch 연결을 넣는 설계와 구현(Lane 1, push, PR, green CI 뒤 merge, product payload면 다음 train queue 행, host mutation 없음); 2 BL-0002를 counts로 분류한다: QoS readback mutation_supported: false 원인 조사와 수정(Lane 1, push, PR, green CI 뒤 merge, 다음 train queue 행, host mutation 없음); 3 BL-0003을 counts로 분류한다: VerificationExecutorTests 타이밍 시험 안정화(Lane 1, push, PR, green CI 뒤 merge, host mutation 없음); 4 BL-0004를 counts로 분류한다: train-facts fullgate와 train-host-inputs current-card의 순환 제거(Lane 1, push, PR, green CI 뒤 merge, host mutation 없음); 5 BL-0005를 counts로 분류하고 새 설계를 승인한다: 단일 PR train path check가 Lane 3 pin(config spec 3개, Delivery verifier 3개, CurrentEvidenceVerifierTests)을 허용하도록 pcv-single-pr-train 개정과 구현(Lane 1, push, PR, green CI 뒤 merge, host mutation 없음); 6 BL-0006을 counts로 분류한다: pcvverify completion C2가 operational 뒤 running train을 미충족으로 보도록 수정(Lane 1, push, PR, green CI 뒤 merge, host mutation 없음); 7 BL-0007을 counts로 분류한다: DesktopNodeHttpTransportContractTests raw HTTP 시한 안정화(Lane 1, push, PR, green CI 뒤 merge, host mutation 없음)); carried ADR-0016 standing approval from process-followups-20261007 item 4: standing approval limited to pcv-it- prefixed VM create and delete",
+  "checkpoint_limit": 17,
+  "approval_locator": "User-Approval: 2026-09-27 campaign runner commit policy local-commit-per-task; 2026-10-08 \"1,2,3,4,5,6,7\" (completion-20261007 next_approval_required: 1 BL-0001을 counts로 분류하고 새 설계를 승인한다: vm.create reconcile 지문에 디스크·ISO·switch 연결을 넣는 설계와 구현(Lane 1, push, PR, green CI 뒤 merge, product payload면 다음 train queue 행, host mutation 없음); 2 BL-0002를 counts로 분류한다: QoS readback mutation_supported: false 원인 조사와 수정(Lane 1, push, PR, green CI 뒤 merge, 다음 train queue 행, host mutation 없음); 3 BL-0003을 counts로 분류한다: VerificationExecutorTests 타이밍 시험 안정화(Lane 1, push, PR, green CI 뒤 merge, host mutation 없음); 4 BL-0004를 counts로 분류한다: train-facts fullgate와 train-host-inputs current-card의 순환 제거(Lane 1, push, PR, green CI 뒤 merge, host mutation 없음); 5 BL-0005를 counts로 분류하고 새 설계를 승인한다: 단일 PR train path check가 Lane 3 pin(config spec 3개, Delivery verifier 3개, CurrentEvidenceVerifierTests)을 허용하도록 pcv-single-pr-train 개정과 구현(Lane 1, push, PR, green CI 뒤 merge, host mutation 없음); 6 BL-0006을 counts로 분류한다: pcvverify completion C2가 operational 뒤 running train을 미충족으로 보도록 수정(Lane 1, push, PR, green CI 뒤 merge, host mutation 없음); 7 BL-0007을 counts로 분류한다: DesktopNodeHttpTransportContractTests raw HTTP 시한 안정화(Lane 1, push, PR, green CI 뒤 merge, host mutation 없음)); carried ADR-0016 standing approval from process-followups-20261007 item 4: standing approval limited to pcv-it- prefixed VM create and delete; 2026-10-08 \"1\" (completion-backlog-20261008 Task 8 stop report item 1: rerun the main push dotnet job once more, continue from Task 9 when green, and register the runner-timing tests ConsoleCancellationBridgeTests and DesktopNodeHostLoopbackBootstrapBrowserTests as BL-0008 and BL-0009 counted for Lane 1 stabilization with push, PR and merge after green CI and no host mutation)",
   "next_approval_required": [],
   "stop_on": [
     "same-cause-fail-3",

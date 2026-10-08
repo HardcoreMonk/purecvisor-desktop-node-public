@@ -23,6 +23,8 @@
 | 7 | `BL-0007` counts: `DesktopNodeHttpTransportContractTests` raw HTTP 시한 안정화. Lane 1, push, PR, green CI 뒤 merge |
 | 권한 | Lane 0/1, task마다 로컬 commit, push, PR, green CI 뒤 merge. host mutation과 Lane 3 쓰기는 없다. Task 13의 연쇄로 열리는 train campaign은 정책 `config/completion-autopilot-policy.json`(2026-10-07 승인 4, 2026-10-08 os-mutation 추가)을 따른다 |
 
+추가 승인(2026-10-08): `1` (Task 8 정지 보고의 1). main push `dotnet` job을 한 번 더 재실행하고 green이면 Task 9부터 계속한다. runner 시간 의존 시험 두 개를 `BL-0008`·`BL-0009`로 등록해 `counts`로 두고 Lane 1에서 안정화한다(Task 16·17, PR 3에 포함, push, PR, green CI 뒤 merge, host mutation 없음).
+
 ADR-0016 standing approval(`pcv-it-` 접두사 VM 생성·삭제)은 그대로 옮긴다. `BL-0001` 구현에서 실제 WMI 확인이 필요하면 그 단계만 쓴다.
 
 ## Global Constraints
@@ -92,19 +94,45 @@ ADR-0016 standing approval(`pcv-it-` 접두사 VM 생성·삭제)은 그대로 �
 
 ## Task 9: BL-0002 QoS readback
 
-- [ ] `vm.blkio-get`·`vm.bandwidth` readback의 `mutation_supported`가 상수 `false`인데 제품에 `vm.blkio-set`·`vm.bandwidth-set` mutation이 있는 원인을 확인하고, readback이 실제 mutation 지원을 말하도록 고친다. CLI/Web/parity fixture와 문서의 영향 확인. product payload이므로 `queue` 행(Lane 2 probe 기능군 `vm.qos`)을 같은 PR에 더한다. 검증: HyperV.Tests, Api.Tests, 영향 범위의 web 시험, `git diff --check`. `BL-0002` 닫기. 로컬 commit.
+- [x] `vm.blkio-get`·`vm.bandwidth` readback의 `mutation_supported`가 상수 `false`인데 제품에 `vm.blkio-set`·`vm.bandwidth-set` mutation이 있는 원인을 확인하고, readback이 실제 mutation 지원을 말하도록 고친다. CLI/Web/parity fixture와 문서의 영향 확인. product payload이므로 `queue` 행(Lane 2 probe 기능군 `vm.qos`)을 같은 PR에 더한다. 검증: HyperV.Tests, Api.Tests, 영향 범위의 web 시험, `git diff --check`. `BL-0002` 닫기. 로컬 commit.
+
+
+실행 기록(2026-10-08): Task 8 PR 2 #67(head `c24eb52`)을 merge했다(`fc7e462`). main push `dotnet` shard가 attempt 1(`ConsoleCancellationBridge` 계열 2초 대기)과 attempt 2(Chromium loopback bootstrap 시한)에서 서로 다른 runner 시간 의존 시험으로 red였고, 사용자 추가 승인 뒤 attempt 3이 green이다(run `37650610001`, `BL-0008`·`BL-0009` 등록). 원인: `vm.blkio-get`·`vm.bandwidth` readback의 `mutation_supported`가 `vm.qos.storage.set`·`vm.qos.network.set`이 생기기 전의 상수 `false`였다. Web QoS 카드는 이 값을 그대로 보여 준다. 수정: 값을 dispatch catalog에서 계산(`IsCatalogMutation`, 해당 operation이 Mutation이면 `true`)한다. 처음 commit(`24be288`)은 `mutation_operation` 필드도 더했으나 `Reads.cs`가 module-size ratchet 한도(`570`줄)를 넘어 Delivery 계약 `50`개가 실패했다. 그 실패를 Task 10 commit 뒤 Delivery 실행에서 발견해, 필드를 빼고 helper를 `ResourceMutations.cs`로 옮겨 `Reads.cs`를 값 두 줄 변경으로 되돌렸다(HyperV `273/273`, Delivery `775/775`). Web·CLI fixture와 계약 문서에 이 값의 pin은 없다. 시험 `NativeVmQosReadbacksReportTheCatalogMutation`(2), HyperV `273/273`, Api `490/490`. product payload이므로 queue 행은 Task 12에서 이 commit SHA로 더한다. `BL-0002` 닫음.
 
 ## Task 10: BL-0001 설계
 
-- [ ] `vm.create` reconcile 지문(`CreateFingerprintMatches`)에 디스크(`disk0.vhdx` 연결), ISO, switch 연결을 넣어 `DefineSystem` 뒤 장치 연결 전에 끊긴 create를 `postcondition-confirmed`로 판정하지 않게 하는 설계를 쓴다(판정 표, readback 필드, 시험, 다음 train Lane 2 probe). 검증: `git diff --check`. 로컬 commit.
+- [x] `vm.create` reconcile 지문(`CreateFingerprintMatches`)에 디스크(`disk0.vhdx` 연결), ISO, switch 연결을 넣어 `DefineSystem` 뒤 장치 연결 전에 끊긴 create를 `postcondition-confirmed`로 판정하지 않게 하는 설계를 쓴다(판정 표, readback 필드, 시험, 다음 train Lane 2 probe). 검증: `git diff --check`. 로컬 commit.
+
+
+실행 기록(2026-10-08): 설계 `pcv-vm-create-reconcile-devices-v1`을 썼다. 근거: create provider는 항상 `<vm_root>\<name>\disk0.vhdx` 연결, 필수 인자 `iso_path` ISO 연결, 상수 `Default Switch` 연결을 하고, 0.42.92 probe의 실제 `vm.list` 행에 `storage[].path/attached`, `dvd_media[].path`, `network[].switch`가 있다. 결정: 기대 장치를 baseline에 저장하지 않고 reconcile 때 job 인자(`vm_root`, `iso_path`)에서 계산해 업그레이드 전 job에도 적용하고 baseline 계약 v1을 유지한다. 장치가 하나라도 빠지면 `target-fingerprint-mismatch`와 `missing_devices`, 회수 hint. `DOCUMENTATION_INDEX`에 줄을 더했다.
 
 ## Task 11: BL-0001 구현
 
-- [ ] 설계대로 Api reconcile handler와 필요한 readback을 고치고 시험을 더한다. product payload이므로 `queue` 행(Lane 2 probe 기능군 `vm.create` reconcile)을 더한다. 검증: Api.Tests, HyperV.Tests, `git diff --check`. `BL-0001` 닫기. 로컬 commit.
+- [x] 설계대로 Api reconcile handler와 필요한 readback을 고치고 시험을 더한다. product payload이므로 `queue` 행(Lane 2 probe 기능군 `vm.create` reconcile)을 더한다. 검증: Api.Tests, HyperV.Tests, `git diff --check`. `BL-0001` 닫기. 로컬 commit.
+
+
+실행 기록(2026-10-08): 새 partial `DesktopNodeApiJobReconciliationHandler.CreateDevices.cs`(`ExpectedCreateDevices`, `MissingCreateDevices`, `IncompleteCreateHint`)를 더하고 `VmReconcile.cs`의 create 판정이 지문 일치 뒤 장치까지 맞아야 `postcondition-confirmed`가 되게 했다. 확정 결과의 `reconciliation`에 `expected_devices`를 넣고, 장치가 빠지면 `target-fingerprint-mismatch` 메시지에 `missing_devices=<목록>`과 회수 hint(managed `vm.delete` 뒤 같은 이름 create)를 붙인다. 설계 §2.2의 `missing_devices`는 실패 경로에 결과 객체가 없어 메시지 문자열로 남겼다. 경로는 `GetFullPath`로 정규화하고 대소문자를 무시한다. 시험: `ApiVmCreateReconcileDevicesTests` `12`개(완전, 장치별 누락 7, 셋 다 누락, `vm_root`와 대소문자, `iso_path` 없음, hint), end-to-end `ReconcileKeepsAManagedVmWithoutDevicesFailed`(partial `CreateDevicesReconcile.cs`), 기존 성공 시험 fixture에 세 장치와 `iso_path`·`expected_devices` 확인. Api `503/503`, HyperV `273/273`, Delivery `775/775`(ratchet 포함, `VmReconcile.cs`와 시험 파일은 ratchet 대상 아님). product payload이므로 queue 행은 Task 12에서 이 commit SHA로 더한다. `BL-0001` 닫음.
+
+## Task 16: BL-0008 cancellation bridge 시험
+
+- [x] `CallbackCanWaitForDisposeWithoutDeadlockAndLaterSignalsAreNoOps`의 dispose 대기(2초)를 runner 속도에 기대지 않게 고친다(교착 없음 판정은 유지). 검증: Verification.Tests. `BL-0008` 닫기. 로컬 commit.
+
+
+실행 기록(2026-10-08): `ConsoleCancellationBridgeTests`의 dispose 대기(2초)와 같은 class의 동시 signal·dispose 대기(5초)를 hang guard 상수 `HangGuard` `30`초로 바꿨다. 교착은 끝나지 않으므로 여전히 guard에서 실패한다. `ConsoleCancellationBridgeTests` `4/4`, Delivery `775/775`. `BL-0008` 닫음.
+
+## Task 17: BL-0009 loopback bootstrap 브라우저 시험
+
+- [x] `ChromiumOpensLoopbackConsoleWithoutServiceTokenPaste`의 bootstrap 대기 시한을 runner 속도에 기대지 않게 고친다(판정 조건은 유지). 검증: Host.Tests. `BL-0009` 닫기. 로컬 commit.
+
+
+실행 기록(2026-10-08): `DesktopNodeHostLoopbackBootstrapBrowserTests`의 DevTools 대기 20초와 bootstrap 대기 25초를 상수 `DevToolsDeadline` `60`초, `BootstrapDeadline` `90`초로 바꿨다. 실패 당시 snapshot은 `Connection=Idle`, session 없음으로 아직 bootstrap 전이었고, 시험은 bootstrap 완료 여부만 판정한다. Host `216/216`, Delivery `775/775`. `BL-0009` 닫음.
 
 ## Task 12: 종료 검증과 merge (PR 3)
 
-- [ ] clean HEAD 종료 검증(solution), push, PR, green CI 뒤 merge.
+- [x] clean HEAD 종료 검증(solution), push, PR, green CI 뒤 merge.
+
+
+실행 기록(2026-10-08): §10 대기열 규칙대로 `release-train.json` `queue`에 PR #68 행 두 개를 더했다(PR 번호는 마지막 #67에서 예측). `92146da`(area `hyperv`, QoS readback `mutation_supported`, Lane 2 probe 기능군 `vm.qos`, risk `S`)와 `65c376d`(area `api`, `vm.create` reconcile 장치 지문, 기능군 `vm.create reconcile`, 설계 `pcv-vm-create-reconcile-devices-v1`, risk `M`). 이 기록 commit 뒤 clean HEAD 종료 검증, push, PR, green CI 뒤 merge한다. merge commit은 Task 13 기록에 적는다.
 
 ## Task 13: 판정과 연쇄
 

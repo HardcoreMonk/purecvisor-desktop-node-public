@@ -268,7 +268,25 @@ public sealed class DesktopNodeHyperVNativeAdapterTests
     }
 
     [Theory]
-    [InlineData("vm.qos.storage.preview", """{"name":"alpha","disk":"disk0","maximum_iops":1200,"minimum_iops":100,"request_id":"req-preview"}""", "storage", "target_disk", "disk0", "maximum_iops")]
+    [InlineData("vm.blkio-get", "storage_qos", "vm.qos.storage.set")]
+    [InlineData("vm.bandwidth", "network_qos", "vm.qos.network.set")]
+    public void NativeVmQosReadbacksReportTheCatalogMutation(string operation, string bucket, string mutation)
+    {
+        using var parameters = JsonDocument.Parse("""{"vm_name":"alpha"}""");
+        var adapter = new DesktopNodeHyperVNativeAdapter(
+            new RecordingHyperVSwitchProvider([]),
+            new RecordingHyperVVmProvider([CompleteVm("alpha")]));
+
+        Assert.True(adapter.TryInvoke(operation, parameters.RootElement, CancellationToken.None, out var result));
+
+        var qos = result.Data!.Value.GetProperty(bucket);
+        Assert.True(DesktopNodeHyperVAdapterDispatchCatalog.TryGetEntry(mutation, out var entry));
+        Assert.Equal(DesktopNodeHyperVOperationKind.Mutation, entry.Kind);
+        Assert.True(qos.GetProperty("mutation_supported").GetBoolean());
+    }
+
+    [Theory]
+    [InlineData("vm.qos.storage.preview","""{"name":"alpha","disk":"disk0","maximum_iops":1200,"minimum_iops":100,"request_id":"req-preview"}""", "storage", "target_disk", "disk0", "maximum_iops")]
     [InlineData("vm.qos.network.preview", """{"name":"alpha","adapter":"adapter0","maximum_kbps":2048,"minimum_kbps":256,"request_id":"req-preview"}""", "network", "adapter", "adapter0", "maximum_kbps")]
     public void NativeVmQosPreviewAdapterReturnsDryRunContract(
         string operation,

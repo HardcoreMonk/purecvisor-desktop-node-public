@@ -229,7 +229,7 @@ public sealed partial class DesktopNodeHyperVNativeAdapter
                     {
                         ["contract"] = "hyperv-storage-inventory-readback-v1",
                         ["linux_blkio_compatible"] = false,
-                        ["mutation_supported"] = false,
+                        ["mutation_supported"] = IsCatalogMutation("vm.qos.storage.set"),
                         ["disks"] = vm.Storage
                     };
                     break;
@@ -238,7 +238,7 @@ public sealed partial class DesktopNodeHyperVNativeAdapter
                     {
                         ["contract"] = "hyperv-network-inventory-readback-v1",
                         ["linux_bandwidth_compatible"] = false,
-                        ["mutation_supported"] = false,
+                        ["mutation_supported"] = IsCatalogMutation("vm.qos.network.set"),
                         ["adapters"] = vm.Network
                     };
                     break;
