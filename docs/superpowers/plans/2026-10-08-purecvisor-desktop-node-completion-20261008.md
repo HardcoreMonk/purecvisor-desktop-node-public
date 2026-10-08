@@ -62,7 +62,9 @@
 
 ## Task 4: installed current-card
 
-- [ ] fullgate 문서를 렌더한 뒤 `train-host-inputs --kind current-card` 스크립트를 root 밖에서 실행한다. `status=pass`, `not-promoted`. 복사 이름은 `capture-current-card.ps1`. `train-facts`로 current-card 문서. 로컬 commit.
+- [x] fullgate 문서를 렌더한 뒤 `train-host-inputs --kind current-card` 스크립트를 root 밖에서 실행한다. `status=pass`, `not-promoted`. 복사 이름은 `capture-current-card.ps1`. `train-facts`로 current-card 문서. 로컬 commit.
+
+실행 기록(2026-10-08): capture 스크립트 sha256 `730b2e5c0c29556fc0325a17a02d0eba760d8c86a4c76e4769f2ce07a572261f`를 root 밖에서 `6`초 실행했다. `status=pass`, `promotion_ledger_status=not-promoted`, 설치본 `0.42.93-admin-smoke+818d00f`, ARP `1`, CLI `3`/`3`, Web `2`, service Running/Auto LocalSystem, 남은 시험 VM `0`, secret 없음, host mutation 없음. 스크립트를 root에 `capture-current-card.ps1`로 복사했다. `train-facts` current-card `generated=31` `narrative=1`, `--check` `current`. 시험 `24/24`. operational current는 `0.42.92-admin-smoke` 그대로다.
 
 ## Task 5: probe `vm.qos`
 
