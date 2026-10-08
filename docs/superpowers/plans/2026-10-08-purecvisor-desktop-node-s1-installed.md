@@ -37,7 +37,9 @@
 
 ## Task 2: dev package
 
-- [ ] `main` `6b76274` 기준 worktree나 clean HEAD에서 `build.ps1`(version `0.42.94-admin-smoke`, `AllowUnsignedDev`, `LocalTest`)과 `New-PcvAdminSmokeUpdatePackage.ps1`로 package와 update catalog를 `artifacts/s1-installed-20261008/package`에 만든다. host mutation 없음. 실행 기록과 로컬 commit.
+- [x] `main` `6b76274` 기준 worktree나 clean HEAD에서 `build.ps1`(version `0.42.94-admin-smoke`, `AllowUnsignedDev`, `LocalTest`)과 `New-PcvAdminSmokeUpdatePackage.ps1`로 package와 update catalog를 `artifacts/s1-installed-20261008/package`에 만든다. host mutation 없음. 실행 기록과 로컬 commit.
+
+실행 기록(2026-10-08 23:29 KST): clean HEAD `235ecf7`에서 build `45`초(`build_utc` `2026-10-08T14:29:20Z`). 제품 코드는 `main` `6b76274`와 같다(branch 차이는 시험 주석 3개 파일과 문서뿐). MSI `PureCVisorDesktopNode-0.42.94-admin-smoke-windows-x64.msi` SHA-256 `ea9d6c432b2cca3320ec12a14b0382b1e598a5b301c9f087429739d693a3bbae`, payload `8`개 aggregate `3a48514de76257980e769fa6c1706bedb58f32cef90ce5fbe929434325b3bf85`, update ZIP SHA-256 `8013672f45f64cfb7a7063941a4290cc3a4b754c8293b4edbe9562aa7a618c73`, catalog `PureCVisorDesktopNode-0.42.94-admin-smoke-update-catalog.json`. 모두 `artifacts/s1-installed-20261008/package`에 있고 승격 근거가 아니다. host mutation 없음.
 
 ## Task 3: dev build 설치 (Lane 2)
 
