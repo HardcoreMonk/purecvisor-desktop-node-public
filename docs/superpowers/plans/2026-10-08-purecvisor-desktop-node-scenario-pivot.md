@@ -56,7 +56,9 @@
 
 ## Task 5: 종료와 PR
 
-- [ ] clean HEAD에서 `dotnet test src/DesktopNode.Delivery.Tests -c Release`와 `git diff --check origin/main...HEAD`를 돌리고 push, PR, green CI 뒤 merge한다. Task 4의 다음 승인 문장을 campaign `next_approval_required`에 둔다.
+- [x] clean HEAD에서 `dotnet test src/DesktopNode.Delivery.Tests -c Release`와 `git diff --check origin/main...HEAD`를 돌리고 push, PR, green CI 뒤 merge한다. Task 4의 다음 승인 문장을 campaign `next_approval_required`에 둔다.
+
+실행 기록(2026-10-08): Task 1~4 commit(`17d311b`, `87c569e`, `972f559`, `065983c`)을 branch `lane1/scenario-pivot-20261008`에서 clean HEAD로 검증하고 push, PR, green CI 뒤 merge로 넘긴다. 다음 승인 3개를 campaign `next_approval_required`에 두었다. Task 6은 2026-10-19까지 기다린다.
 
 ## Task 6: C5 runner 확인 (2026-10-19 이후)
 
