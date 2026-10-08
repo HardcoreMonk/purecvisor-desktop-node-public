@@ -34,10 +34,10 @@ latest_manual_admin_package_pair: `0.42.92-admin-smoke -> 0.42.93-admin-smoke`
 latest_manual_admin_descriptor: `manual-admin-campaign-20261008-04292-04293-closed`
 token_rotation_evidence: `docs/ga-ready/evidence/installed-token-rotation-smoke-2026-08-09-04272.md`
 token_rotation_status: `carry-forward-no-token-payload-change-after-04272`
-promotion_ledger_status: `not-promoted`
+promotion_ledger_status: `promoted-current`
 installed_status: `installed_non_promoted_candidate`
-canonical_current_evidence: `0.42.92-admin-smoke`
-canonical_current_changed: `false`
+canonical_current_evidence: `0.42.93-admin-smoke`
+canonical_current_changed: `true`
 public_trusted_signing: `not-claimed`
 external_stable_publication: `not-claimed`
 
@@ -56,5 +56,5 @@ capture 스크립트는 `pcvverify train-host-inputs --kind current-card`가 렌
 
 ## Nonclaims
 
-결과는 `installed_non_promoted_candidate`다. Lane 3 승격은 하지 않았고 operational current는 `0.42.92-admin-smoke`다.
+캡처 결과는 `installed_non_promoted_candidate`였다. 2026-10-08 Lane 3가 operational current를 `0.42.93-admin-smoke`로 썼다.
 - public trusted signing과 external stable publication을 주장하지 않는다.

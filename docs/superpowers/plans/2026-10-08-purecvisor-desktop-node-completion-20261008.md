@@ -80,7 +80,9 @@
 
 ## Task 7: Lane 3
 
-- [ ] functional carry-forward, consume(`…-closed` descriptor와 consume manifest), payload commit의 main push를 `train-path-check`로 확인한 `main-push-payload` 문서, current-card `promoted-current`. `current-evidence.json`, `lane3-spec`, 문서 도구 dry-run·`-Apply`·`-Check`, `release-train.json` 승격(`operational_current`, train `status=promoted`). 로컬 commit.
+- [x] functional carry-forward, consume(`…-closed` descriptor와 consume manifest), payload commit의 main push를 `train-path-check`로 확인한 `main-push-payload` 문서, current-card `promoted-current`. `current-evidence.json`, `lane3-spec`, 문서 도구 dry-run·`-Apply`·`-Check`, `release-train.json` 승격(`operational_current`, train `status=promoted`). 로컬 commit.
+
+실행 기록(2026-10-08): payload `56e7cd0`에서 train head `b6ecb7f`까지 `train-path-check`가 exit 0이다(제품 경로 없음). functional carry-forward, consume manifest(요약 7개, 복사 없음), `main-push-payload`(Development Gates `37732628393`, Public Boundary `37732628401`)를 렌더하고 current-card를 `promoted-current`로 고쳤다. `current-evidence.json`과 `release-train.json`의 operational current는 `0.42.93-admin-smoke`이고 train `status`는 `promoted`다. `lane3-spec` 생성 뒤 문서 도구 dry-run, `-Apply`, `-Check`가 ok다. 호스트 mutation은 하지 않았다.
 
 ## Task 8: 종료와 train PR merge
 

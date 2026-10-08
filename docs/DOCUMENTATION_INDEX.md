@@ -6,11 +6,11 @@
 
 ## 현재 기준
 
-- 공개 소스 권위: `HardcoreMonk/purecvisor-desktop-node-public`, HEAD `34b2b1697f3ac42bf11a85fd1ff1ab8d4673547c` (PR #62, release train `0.42.92` package pair merge). `0.42.92-admin-smoke` Lane 3 승격은 이 HEAD 위의 Lane 3 PR이 담는다(단일 PR train path check와 Lane 3 pin 충돌로 두 PR 방식, backlog `BL-0005`).
+- 공개 소스 권위: `HardcoreMonk/purecvisor-desktop-node-public`, HEAD `56e7cd0ff0df3a4ac2688ff2f4030fa10e72936c` (PR #69 merge, release train `0.42.93` payload commit). 이 HEAD 뒤 train branch의 제품 경로는 없고, Lane 3 pin은 SHA-256 한 줄만 허용한다.
 - Required CI 권위: Development Gates run `37171644667`; 보호 context는 정확히 `dotnet`, `web`, `delivery`, `installer-policy`다.
 - PowerShell/Pester 경계: invocation 0은 위 Required CI 네 context에만 적용한다. 별도 Public Boundary workflow는 비필수 legacy residue로 보존한다(run `37171644656`, job `111345611153`).
-- 운영 제품 권위: `0.42.92-admin-smoke`; Web Console과 PCVCLI가 active이고 TUI는 absent다. Feature promotion은 `promotion_eligible=true`, blockers `none`이다. P0 feature ledger는 `0.42.75-admin-smoke` evidence를 유지한다.
-- 이 호스트 설치본(2026-10-07 train `0.42.92` fullgate): `0.42.92-admin-smoke`(gate build `+b51b8cf`), service `Running/Automatic`. ARP `DisplayVersion`은 `0.42.92`(항목 `1`개). operational current와 같은 build다.
+- 운영 제품 권위: `0.42.93-admin-smoke`; Web Console과 PCVCLI가 active이고 TUI는 absent다. Feature promotion은 `promotion_eligible=true`, blockers `none`이다. P0 feature ledger는 `0.42.75-admin-smoke` evidence를 유지한다.
+- 이 호스트 설치본(2026-10-08 train `0.42.93` fullgate): `0.42.93-admin-smoke`(gate build `+818d00f`), service `Running/Automatic`. ARP `DisplayVersion`은 `0.42.93`(항목 `1`개). operational current와 같은 version이고 설치본은 gate build다.
 - 개발 campaign: `docs/ga-ready/active-campaign.json` id `completion-20261008`(intent `project-completion`, 2026-10-08 열림, 계획 `docs/superpowers/plans/2026-10-08-purecvisor-desktop-node-completion-20261008.md`). 판정 head `56e7cd0`의 갭 `C2-queue`로 release train `0.42.93-admin-smoke`를 출발하고, `C5-risk-ubuntu-26-runner`와 완료 판정은 2026-10-19 뒤다. 직전 `completion-backlog-20261008`은 Task 13 기록 뒤 닫고 Task 14·15를 이관했다.
 - release train: 대기열과 train 이력 `docs/ga-ready/release-train.json`, 규칙 `docs/DEVELOPMENT_PROCEDURE.md` §10, 설계 `docs/superpowers/specs/2026-10-04-purecvisor-desktop-node-release-train-design.md`(2026-10-04 채택).
 - 진행 상황 현행화: `docs/project-status-audit-2026-10-06.md`(완료 정의 C1~C6 대조). 직전 snapshot은 `docs/project-status-audit-2026-10-03.md`.
