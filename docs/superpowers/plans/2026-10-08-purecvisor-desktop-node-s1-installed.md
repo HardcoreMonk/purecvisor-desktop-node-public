@@ -43,7 +43,9 @@
 
 ## Task 3: dev build 설치 (Lane 2)
 
-- [ ] `Invoke-PcvDesktopNodeProduct.ps1 -Action Update`(가능하면 먼저 계획·WhatIf)로 dev build를 설치하고 service가 Running, 설치본 version, Web `200`, `GET .../console/frame/640x480`이 꺼진 VM에 `409`를 주는지 확인한다. 로컬 commit.
+- [x] `Invoke-PcvDesktopNodeProduct.ps1 -Action Update`(가능하면 먼저 계획·WhatIf)로 dev build를 설치하고 service가 Running, 설치본 version, Web `200`, `GET .../console/frame/640x480`이 꺼진 VM에 `409`를 주는지 확인한다. 로컬 commit.
+
+실행 기록(2026-10-08 23:33 KST): repo wrapper `-Action Update -UpdateCatalogUri <dev catalog> -UpdateChannel admin-smoke -DryRun`이 `ok=true`, 실행은 exit `0`(`3`초). 끝 상태: 설치본 manifest `0.42.94-admin-smoke`, service Running, Web `200`, `GET /api/v1/vms/pcv-guest-installed-04253-r1/console/frame/640x480`이 `409 PCV_CONSOLE_VM_NOT_RUNNING`(새 route 동작, 보존 VM은 읽기만), `pcv-it-` VM `0`개, 보존 VM Off. 결과 JSON은 `artifacts/s1-installed-20261008/devprobe/`에 있다.
 
 ## Task 4: S1 시나리오 스크립트 (Lane 2)
 
