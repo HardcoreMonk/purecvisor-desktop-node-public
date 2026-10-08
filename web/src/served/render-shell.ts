@@ -374,6 +374,7 @@ function render() {
   renderNetworkInventory();
   renderVmWorkbenchContext();
   renderVmDetail();
+  paintVmConsoleFrame();
   renderJobs();
   renderDashboardActivity();
   renderActivity();

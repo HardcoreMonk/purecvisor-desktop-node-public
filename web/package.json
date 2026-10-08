@@ -20,6 +20,7 @@
     "verify:web-contract-negative-parity": "node scripts/verify-web-contract-negative-parity.mjs",
     "browser:fixture": "node scripts/verify-browser-fixture.mjs",
     "capture:installed-listener": "node scripts/capture-installed-listener-qa.mjs",
+    "scenario:s1-console": "node scripts/run-s1-console-scenario.mjs",
     "check:frontend-batches": "node scripts/validate-frontend-completion-batches.mjs"
   },
   "devDependencies": {

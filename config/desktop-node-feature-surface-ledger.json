@@ -849,6 +849,54 @@
       ]
     },
     {
+      "feature_id": "pcv.vm.browser-console",
+      "title": "VM browser console",
+      "routes": [
+        {
+          "operation_id": "console.frame",
+          "method": "GET",
+          "route_template": "/api/v1/vms/{vmId}/console/frame/{size}",
+          "required_permission": "console.view",
+          "present_surfaces": [
+            "api",
+            "web"
+          ],
+          "excluded_surfaces": [
+            {
+              "surface": "cli",
+              "reason": "The console frame is a browser canvas stream; PCVCLI keeps the vm console handoff."
+            }
+          ],
+          "surface_bindings": {
+            "web": {
+              "coverage_id": "console.frame"
+            }
+          }
+        },
+        {
+          "operation_id": "console.input",
+          "method": "POST",
+          "route_template": "/api/v1/vms/{vmId}/console/input",
+          "required_permission": "console.input",
+          "present_surfaces": [
+            "api",
+            "web"
+          ],
+          "excluded_surfaces": [
+            {
+              "surface": "cli",
+              "reason": "Console keyboard input follows the browser canvas; PCVCLI keeps the vm console handoff."
+            }
+          ],
+          "surface_bindings": {
+            "web": {
+              "coverage_id": "console.input"
+            }
+          }
+        }
+      ]
+    },
+    {
       "feature_id": "pcv.vm.telemetry",
       "title": "VM telemetry",
       "routes": [

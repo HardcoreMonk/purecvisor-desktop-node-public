@@ -57,39 +57,57 @@
 
 ## Task 5: S1 콘솔 설계
 
-- [ ] PR A merge 뒤 `origin/main`에서 `lane1/s1-console-20261008`을 만든다. 설계 문서 `docs/superpowers/specs/2026-10-08-purecvisor-desktop-node-s1-browser-console-design.md` 한 장에 화면 route(`GET /api/v1/vms/{vm}/console/frame`, 크기·형식·호출 상한), 입력 route와 job 여부, RBAC(`console.view`, 새 `console.input`), 입력 audit, LAN 노출 경계(ADR-0010 방식), Web 패널 동작을 정한다. 검증 Delivery tests. 로컬 commit.
+- [x] PR A merge 뒤 `origin/main`에서 `lane1/s1-console-20261008`을 만든다. 설계 문서 `docs/superpowers/specs/2026-10-08-purecvisor-desktop-node-s1-browser-console-design.md` 한 장에 화면 route(`GET /api/v1/vms/{vm}/console/frame`, 크기·형식·호출 상한), 입력 route와 job 여부, RBAC(`console.view`, 새 `console.input`), 입력 audit, LAN 노출 경계(ADR-0010 방식), Web 패널 동작을 정한다. 검증 Delivery tests. 로컬 commit.
+
+실행 기록(2026-10-08): PR #73이 green CI 뒤 `6e9686f`로 merge됐고, 그 `main`에서 branch를 만들었다. 설계 `pcv-s1-browser-console-v1`에 화면 route(`GET .../console/frame`, 640×480 기본, deflate, 100ms rate), 동기 입력 route(`POST .../console/input`, key/text/ctrl-alt-del), 새 권한 `console.input`(operator), remote 입력은 account JWT만, data root `console-input-audit.jsonl`(내용과 hash 없음, 1 MiB 회전), Web 패널, 시험, 범위 밖을 정했다. host mutation 없음.
 
 ## Task 6: 화면 읽기 adapter
 
-- [ ] `vm.console.frame` 읽기 operation을 Hyper-V adapter(모델, domain, dispatch catalog, WMI provider, RuntimePolicy)에 더한다. 반환은 RGB565 원본과 width·height다. fake WMI 단위 시험을 쓴다. 검증 `dotnet test src/DesktopNode.HyperV.Tests -c Release`, `src/DesktopNode.Contracts.Tests`. 로컬 commit.
+- [x] `vm.console.frame` 읽기 operation을 Hyper-V adapter(모델, domain, dispatch catalog, WMI provider, RuntimePolicy)에 더한다. 반환은 RGB565 원본과 width·height다. fake WMI 단위 시험을 쓴다. 검증 `dotnet test src/DesktopNode.HyperV.Tests -c Release`, `src/DesktopNode.Contracts.Tests`. 로컬 commit.
+
+실행 기록(2026-10-08): `vm.console.frame`을 Hyper-V adapter(`DesktopNodeHyperVNativeAdapter.ConsoleFrame.cs`: 이름·크기 160~1024×120~768 검증, running 확인, `width×height×2` byte로 자름, base64 RGB565)와 WMI provider(`DesktopNodeHyperVWmiVmProvider.ConsoleFrame.cs`: 실현된 설정으로 `GetVirtualSystemThumbnailImage`)에 더하고 domain·dispatch·WMI catalog, `RuntimePolicy` native probe 목록, Api invoker 허용 목록에 등록했다. adapter read switch의 QoS preview 두 줄을 합쳐 module 크기 ratchet(315줄) 안에 두었다. 시험: HyperV 274(새 1), Contracts 200, Api 503, Delivery 775 통과. host mutation 없음.
 
 ## Task 7: 화면 route
 
-- [ ] 설계대로 Local API 화면 route를 더하고 `console.view` 권한, 크기 검증, 없는 VM·꺼진 VM 오류를 처리한다. route 계약과 API 시험을 고친다. 검증 `dotnet test src/DesktopNode.Api.Tests -c Release`, Contracts tests. 로컬 commit.
+- [x] 설계대로 Local API 화면 route를 더하고 `console.view` 권한, 크기 검증, 없는 VM·꺼진 VM 오류를 처리한다. route 계약과 API 시험을 고친다. 검증 `dotnet test src/DesktopNode.Api.Tests -c Release`, Contracts tests. 로컬 commit.
+
+실행 기록(2026-10-08): host listener가 query string을 넘기지 않아 route를 `GET /api/v1/vms/{vmId}/console/frame/{size}`(`640x480` 형식)로 바꾸고 설계 §2를 고쳤다. 새 feature `pcv.vm.browser-console`(화면·입력 공용)로 route 계약을 더하고, handler(`DesktopNodeApiConsoleRouteHandler.Frame.cs`)는 크기 검증, VM당 100ms rate limit(`429 PCV_CONSOLE_RATE_LIMITED`), `vm.console.frame` 호출, zlib 압축을 한다. surface ledger에는 API present, CLI·Web 제외(사유 포함)로 넣었다. 고정 지점: route 81·feature 29, route snapshot SHA, ReadOnly 24, Web 제외 5(`verify-feature-surface-parity.mjs`), CLI 제외 8, `FEATURE_IMPLEMENTATION_LEDGER.md`(요약·route·단계 표), `USER_FEATURE_USAGE_SPEC.md` 링크. 시험: Api 508(새 5), Cli 183, Contracts 200, Delivery 775, web required exit 0, web Pester 50/0. host mutation 없음.
 
 ## Task 8: Web 화면 패널
 
-- [ ] VM 상세에 콘솔 패널(canvas, RGB565→RGBA 변환, 2~10 fps polling, 일시 정지, 오류 표시)을 더하고 `npm run build:served --prefix web`로 `web/app.js`를 만든다. 검증 `npm run test:required --prefix web`, `npm run verify:parity --prefix web`, web Pester. 로컬 commit.
+- [x] VM 상세에 콘솔 패널(canvas, RGB565→RGBA 변환, 2~10 fps polling, 일시 정지, 오류 표시)을 더하고 `npm run build:served --prefix web`로 `web/app.js`를 만든다. 검증 `npm run test:required --prefix web`, `npm run verify:parity --prefix web`, web Pester. 로컬 commit.
+
+실행 기록(2026-10-08): VM 상세에 Browser console 카드(VM Screen canvas, 크기 `640x480`/`800x600`/`1024x768`, 1/2/5 fps, Start/Pause screen)를 더했다. frame은 `DecompressionStream('deflate')`로 풀고 `decodeRgb565ToRgba`로 그리며, polling은 canvas만 다시 그리고 탭이 숨거나 VM 선택이 바뀌면 멈춘다. 429는 건너뛰고 다른 오류는 멈춘 뒤 표시한다. `served-app.ts`(ratchet 423/429)는 건드리지 않고 `vm-detail-extensions.ts` click 확장 지점과 `render()` 뒤 repaint로 연결했다. surface ledger는 Web present(`coverage_id=console.frame`), parity 77/4, Web 제외 목록과 기능 문서 두 곳을 맞췄다. 확인: 빌드된 `app.js`에서 변환(빨강·초록·파랑·흰색)과 zlib 해제를 Node로 확인(commit하지 않음). 시험: web required exit 0, web Pester 50/0, Api, Cli, Delivery 통과. host mutation 없음.
 
 ## Task 9: 키 입력 adapter와 route
 
-- [ ] `Msvm_Keyboard`(`TypeKey`, `PressKey`, `ReleaseKey`, `TypeText`, `TypeCtrlAltDel`) 입력 operation과 설계대로의 입력 route, `console.input` 권한, audit을 더한다. 단위 시험을 쓴다. 검증 HyperV, Api, Contracts tests. 로컬 commit.
+- [x] `Msvm_Keyboard`(`TypeKey`, `PressKey`, `ReleaseKey`, `TypeText`, `TypeCtrlAltDel`) 입력 operation과 설계대로의 입력 route, `console.input` 권한, audit을 더한다. 단위 시험을 쓴다. 검증 HyperV, Api, Contracts tests. 로컬 commit.
+
+실행 기록(2026-10-08): `vm.console.input`을 adapter(`PlanConsoleInput`: key type/press/release 1~254, text 1~256자 출력 가능 ASCII, ctrl-alt-del; running 확인; ReturnValue≠0이면 `PCV_CONSOLE_INPUT_FAILED`)와 WMI provider(VM의 `Msvm_Keyboard` method 호출)에 더하고 catalog, invoker에 등록했다. route `POST /api/v1/vms/{vmId}/console/input`(`console.input`, 동기)는 검증, remote service bearer 거부(403), VM당 초당 50회(429), data root `console-input-audit.jsonl` 선기록(내용·hash 없음, 1 MiB 회전, 실패 시 503) 뒤 보낸다. 권한 `console.input`을 operator·admin에 더하고 RBAC golden, reconcile 비대상 분류, surface ledger(API present, CLI·Web 제외), route 82·ProductOperation 21·snapshot SHA, CLI 제외 9, Web 제외 5(parity 77/5), 기능 문서를 맞췄다. ratchet 때문에 adapter switch의 readback 네 줄을 한 줄로 합치고 `DesktopNodeHyperVModels.cs`·`DesktopNodeAccountAuth.cs`를 한 줄씩 줄였다. 시험: HyperV 275(새 1), Api 517(새 9), Contracts 200, Cli 183, Delivery 775, web required exit 0, web Pester 50/0. host mutation 없음.
 
 ## Task 10: `pcv-it-` VM 확인 (Lane 2)
 
-- [ ] `DesktopNode.HyperV.IntegrationTests`에 콘솔 시험을 더해 `pcv-it-` VM을 만들고 켠 뒤 화면 읽기와 firmware 화면 키 입력(예: `Esc`)을 보내 화면 변화를 확인하고, 끄고 지운다. 끝 상태 `pcv-it-` VM `0`개. 결과는 plan 실행 기록에 적는다. 로컬 commit.
+- [x] `DesktopNode.HyperV.IntegrationTests`에 콘솔 시험을 더해 `pcv-it-` VM을 만들고 켠 뒤 화면 읽기와 firmware 화면 키 입력(예: `Esc`)을 보내 화면 변화를 확인하고, 끄고 지운다. 끝 상태 `pcv-it-` VM `0`개. 결과는 plan 실행 기록에 적는다. 로컬 commit.
+
+실행 기록(2026-10-08 21:47~21:51 KST): `VmConsoleBrowserPathTests`(ADR-0016 integration 단계, 제품 adapter in-process)를 3회 돌렸다. 1회차는 43초 뒤 실패했고 메시지를 잡지 못했다(정리 정상). 2회차와 3회차는 통과했다. 3회차 기록(`artifacts/hyperv-integration/console-browser-path/20261008125048.json`): Gen 2 firmware 화면이 4.6초 만에 안정(non-black 1,286 pixel, frame 읽기 최대 920ms, 3회), 키 입력 Esc·Shift press/release·text·Ctrl+Alt+Del 모두 반환 0, Ctrl+Alt+Del 뒤 1.46초 만에 화면 변화, VM 삭제 확인. 끝 상태 `pcv-it-` VM `0`개, 보존 VM 변경 없음, guest OS 접속 없음. 남은 위험: 1회차 실패는 PXE 단계 타이밍으로 추정하며, 다시 나오면 안정 화면 판정을 길게 잡는다.
 
 ## Task 11: Web 키 입력
 
-- [ ] 콘솔 패널에 키보드 capture(포커스, 특수 키, Ctrl+Alt+Del 버튼)를 더하고 `console.input`이 없으면 읽기 전용으로 둔다. 검증 web tests, parity, web Pester. 로컬 commit.
+- [x] 콘솔 패널에 키보드 capture(포커스, 특수 키, Ctrl+Alt+Del 버튼)를 더하고 `console.input`이 없으면 읽기 전용으로 둔다. 검증 web tests, parity, web Pester. 로컬 commit.
+
+실행 기록(2026-10-08): 화면 canvas에 `tabindex`를 주고, 포커스된 canvas의 `keydown`/`keyup`을 `event.code` → Windows virtual-key 표(문자·숫자·F1~F12·숫자패드·특수 키)로 `press`/`release` 입력으로 보낸다(반복 keydown은 건너뜀). `Send text`(최대 256자)와 `Ctrl+Alt+Del` 버튼을 더했고, `console.input`이 없으면 읽기 전용 문구만 보인다. key binding은 `vm-detail-panel`에 한 번만 건다(`served-app.ts`는 바꾸지 않음). surface ledger `console.input`을 Web present(`coverage_id=console.input`)로 바꾸고 parity 78/4, Web 제외 목록, 기능 문서를 맞췄다. 확인: 빌드된 `app.js`의 키 표를 Node로 확인(KeyA=65, F5=116, Escape=27, Numpad3=99 등). 시험: web required exit 0, web Pester 50/0, Api 517, Cli 183, Delivery 775. host mutation 없음.
 
 ## Task 12: S1 시나리오 스크립트
 
-- [ ] 설치본에서 S1(ISO로 VM 생성 → 콘솔에 설치 화면 → 키 입력 → 화면 캡처 → 정리)을 도는 스크립트를 쓰고 `-PlanOnly`로 확인한다. 설치본 실행은 다음 승인(새 build 설치)으로 둔다. 검증 plan-only 실행, 관련 시험. 로컬 commit.
+- [x] 설치본에서 S1(ISO로 VM 생성 → 콘솔에 설치 화면 → 키 입력 → 화면 캡처 → 정리)을 도는 스크립트를 쓰고 `-PlanOnly`로 확인한다. 설치본 실행은 다음 승인(새 build 설치)으로 둔다. 검증 plan-only 실행, 관련 시험. 로컬 commit.
+
+실행 기록(2026-10-08): `web/scripts/run-s1-console-scenario.mjs`(`npm run scenario:s1-console`)를 썼다. Web Console과 같은 Local API 경로로 loopback session → ISO로 VM 생성(Gen 2) → 시작 → 화면 캡처(BMP) → 키 입력 → 바뀐 화면 캡처 → 전원 끔 → 삭제를 돌고 `summary.json`(`pcv-s1-console-scenario-v1`)을 남긴다. 기본은 plan-only이고 `--execute`는 별도 host mutation 승인이 필요하다. token은 메모리에만 두고 출력하지 않는다. 확인: plan-only 8단계 출력 exit 0, ISO 없으면 exit 2. 시험: web required exit 0, public source safety, web Pester 50/0, Delivery 775. 설치본 실행은 새 build 설치가 필요해 다음 승인으로 둔다. host mutation 없음.
 
 ## Task 13: PR B 종료
 
-- [ ] clean HEAD에서 `dotnet test src/DesktopNode.sln -c Release`, `npm run test:required --prefix web`, `git diff --check origin/main...HEAD`를 돌리고 push, PR, green CI 뒤 merge한다. 설치본 S1 smoke 승인 문장을 campaign `next_approval_required`에 둔다.
+- [x] clean HEAD에서 `dotnet test src/DesktopNode.sln -c Release`, `npm run test:required --prefix web`, `git diff --check origin/main...HEAD`를 돌리고 push, PR, green CI 뒤 merge한다. 설치본 S1 smoke 승인 문장을 campaign `next_approval_required`에 둔다.
+
+실행 기록(2026-10-08): Task 5~12 commit을 branch `lane1/s1-console-20261008`에서 clean HEAD로 검증하고 push, PR, green CI 뒤 merge로 넘긴다. 첫 clean HEAD 솔루션 실행에서 Host 시험 `FixtureConnectsHostCharacterizationToAuthoritativeRouteManifest`가 route 수 고정(80)으로 실패했다. Task 7·9에서 Host.Tests를 돌리지 않아 놓친 고정 지점이라 `packaging/windows-desktop-node/tests/fixtures/http-transport-contract-v1.json` `route_count`를 82로 고쳤다(Host 216 통과). 범위 밖 발견 1건을 backlog `BL-0010`(`undecided`, web public source safety 기존 실패 4곳)으로 남겼다. 다음 승인 3개를 campaign `next_approval_required`에 두었다.
 
 ## Task 14: C5 runner 확인 (2026-10-19 이후)
 

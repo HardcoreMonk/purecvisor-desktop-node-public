@@ -129,7 +129,7 @@ public sealed partial class DesktopNodeApiRequestProcessor
         // so a second lock object would silently drop that exclusion.
         throttle = new DesktopNodeApiRequestThrottle(this.hardeningOptions, sync);
         var noVncTargetStore = new DesktopNodeNoVncTargetStore(resolvedConsoleOptions);
-        consoleRouteHandler = new DesktopNodeApiConsoleRouteHandler(noVncTargetStore, authSessionHandler, jobRuntime);
+        consoleRouteHandler = new DesktopNodeApiConsoleRouteHandler(noVncTargetStore, authSessionHandler, jobRuntime, operationInvoker);
         guestExecutionRouteHandler = new DesktopNodeApiGuestExecutionRouteHandler(authSessionHandler);
         jobRouteHandler = new DesktopNodeApiJobRouteHandler(jobRuntime);
         var checkpointScheduleStore = new DesktopNodeCheckpointScheduleStore(checkpointScheduleFilePath);

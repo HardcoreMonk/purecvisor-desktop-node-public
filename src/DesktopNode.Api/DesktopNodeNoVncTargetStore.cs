@@ -20,6 +20,9 @@ public sealed class DesktopNodeNoVncTargetStore
 
     private readonly object gate = new();
     private readonly string? filePath;
+
+    // 콘솔 입력 audit 은 이 파일과 같은 data root 폴더에 둔다.
+    internal string? FilePath => filePath;
     private readonly string? webSocketPath;
     private DesktopNodeConsoleOptions live;
     private Snapshot current;

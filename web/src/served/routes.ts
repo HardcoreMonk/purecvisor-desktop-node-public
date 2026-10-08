@@ -54,7 +54,9 @@ const DESKTOP_NODE_API_ROUTES: Readonly<PcvRouteRegistry> = Object.freeze({
   jobDetail: (jobId: string) => `/api/v1/jobs/${encodeRouteSegment(jobId)}`,
   jobAction: (jobId: string, action: string) => `/api/v1/jobs/${encodeRouteSegment(jobId)}/${requireRouteAction(action, ['cancel', 'retry', 'reconcile'])}`,
   diagnosticBundleDownload: (bundleId: string) => `/api/v1/diagnostics/bundles/${encodeRouteSegment(bundleId)}/download`,
-  vmConsole: (vmId: string) => `/api/v1/vms/${encodeRouteSegment(vmId)}/console`
+  vmConsole: (vmId: string) => `/api/v1/vms/${encodeRouteSegment(vmId)}/console`,
+  vmConsoleFrame: (vmId: string, size: string) => `/api/v1/vms/${encodeRouteSegment(vmId)}/console/frame/${encodeRouteSegment(size)}`,
+  vmConsoleInput: (vmId: string) => `/api/v1/vms/${encodeRouteSegment(vmId)}/console/input`
 });
 
 const DESKTOP_NODE_ROUTE_COVERAGE: ReadonlyArray<PcvRouteCoverageItem> = Object.freeze([
@@ -128,7 +130,9 @@ const DESKTOP_NODE_ROUTE_COVERAGE: ReadonlyArray<PcvRouteCoverageItem> = Object.
   { id: 'account.create', featureId: 'pcv.account.session', method: 'POST', route: DESKTOP_NODE_API_ROUTES.accounts, view: 'troubleshooting', mutating: true, tokenRequired: true },
   { id: 'account.disable', featureId: 'pcv.account.session', method: 'POST', route: '/api/v1/accounts/{username}/disable', view: 'troubleshooting', mutating: true, tokenRequired: true },
   { id: 'console.capabilities', featureId: 'pcv.console.capabilities', method: 'GET', route: DESKTOP_NODE_API_ROUTES.consoleCapabilities, view: 'troubleshooting', mutating: false, tokenRequired: true },
-  { id: 'console.session', featureId: 'pcv.vm.console-handoff', method: 'GET', route: '/api/v1/vms/{vm_id}/console', view: 'vms', mutating: false, tokenRequired: true }
+  { id: 'console.session', featureId: 'pcv.vm.console-handoff', method: 'GET', route: '/api/v1/vms/{vm_id}/console', view: 'vms', mutating: false, tokenRequired: true },
+  { id: 'console.frame', featureId: 'pcv.vm.browser-console', method: 'GET', route: '/api/v1/vms/{vm_id}/console/frame/{size}', view: 'vms', mutating: false, tokenRequired: true },
+  { id: 'console.input', featureId: 'pcv.vm.browser-console', method: 'POST', route: '/api/v1/vms/{vm_id}/console/input', view: 'vms', mutating: true, tokenRequired: true }
 ]);
 
 function encodeRouteSegment(value: unknown): string {

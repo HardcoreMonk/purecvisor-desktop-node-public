@@ -12,7 +12,7 @@
   ],
   "mutation_allowed": true,
   "current_write_allowed": false,
-  "next_step": "Run Task 1 from docs/superpowers/plans/2026-10-08-purecvisor-desktop-node-adr17-s1-console.md, then the queue in order. PR A is Tasks 1-4; PR B starts from origin/main after PR A merges. Task 14 waits until 2026-10-19.",
+  "next_step": "Tasks 1-13 are done (PR A #73 merged; PR B ships the S1 browser console). Task 14 waits until 2026-10-19. The completion autopilot is paused by ADR-0017; the next approvals are in next_approval_required.",
   "plan": "docs/superpowers/plans/2026-10-08-purecvisor-desktop-node-adr17-s1-console.md",
   "task_queue": [
     "Task 1",
@@ -36,19 +36,32 @@
   "task_not_before": {
     "Task 14": "2026-10-19"
   },
-  "next_task": "Task 5",
+  "next_task": "Task 14",
   "completed_tasks": [
     "Task 1",
     "Task 2",
     "Task 3",
-    "Task 4"
+    "Task 4",
+    "Task 5",
+    "Task 6",
+    "Task 7",
+    "Task 8",
+    "Task 9",
+    "Task 10",
+    "Task 11",
+    "Task 12",
+    "Task 13"
   ],
   "commit_policy": "local-commit-per-task",
   "push_allowed": true,
   "merge_policy": "after-green-ci",
   "checkpoint_limit": 14,
   "approval_locator": "User-Approval: 2026-09-27 campaign runner commit policy local-commit-per-task; User-Approval: 2026-10-08 \"1,2,3\" on scenario-pivot-20261008 next_approval_required (1 adopt ADR-0017 and split the contract changes (completion criteria, autopilot policy, pcvverify completion, train departure, AGENTS.md, pcv skills) into Lane 1 tasks with push, PR and merge after green CI; 2 open the S1 browser console campaign on the WMI frame plus Msvm_Keyboard path: design document, frame adapter, route and Web panel, pcv-it- VM input check, S1 scenario script; Lane 1 and Lane 2 limited to pcv-it- prefixed VM create, start, stop and delete and key input to that VM; push, PR and merge after green CI; 3 keep the VMware Workstation 26H1 install deferred, decision only); carry scenario-pivot-20261008 Task 6 (C5 runner, not before 2026-10-19) as Task 14 under the deadline-wait row (Lane 0/1, push, PR and merge after green CI); carried ADR-0016 standing approval from process-followups-20261007 item 4: standing approval limited to pcv-it- prefixed VM create and delete",
-  "next_approval_required": [],
+  "next_approval_required": [
+    "1. S1 설치본 smoke: PR B merge 뒤 main build로 이 호스트에서 dev probe를 한다(제품 Update로 새 build 설치, service 재시작, `npm run scenario:s1-console -- --execute`를 pcv-it- 접두사 VM과 smoke ISO로 실행, 끝에 제품 Rollback으로 0.42.93 복귀). Lane 2 host mutation은 제품 Update/Rollback, service 재시작, pcv-it- VM 생성·시작·키 입력·중지·삭제만. 결과 기록 push, PR, green CI 뒤 merge.",
+    "2. S1 시연 기록: 실제 OS 설치 ISO(사용자가 경로 제공)로 브라우저에서 VM 생성 → 화면·키 입력으로 OS 설치 → 네트워크 확인을 한 번 하고, 짧은 시연 기록 문서와 criteria S1 `status=passed`, `demo_record`를 쓴다. Lane 2(pcv-it- 접두사 VM, guest OS 설치 포함), push, PR, green CI 뒤 merge.",
+    "3. backlog BL-0010(web public source safety 기존 실패 4곳) 분류: counts면 Lane 1로 고치고 push, PR, green CI 뒤 merge."
+  ],
   "stop_on": [
     "same-cause-fail-3",
     "budget",

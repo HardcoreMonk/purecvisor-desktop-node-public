@@ -155,6 +155,8 @@ public static class DesktopNodeHyperVWmiProviderCatalog
                 "vm.cpu-stats",
                 "vm.blkio-get",
                 "vm.disk.inspect",
+                "vm.console.frame",
+                "vm.console.input",
                 "vm.bandwidth",
                 "vm.qos.storage.preview",
                 "vm.qos.network.preview",

@@ -19,7 +19,7 @@ public sealed class ApiSurfaceCompletionContractTests
     public void CliExclusionsAreOnlyAccountSessionAndConsoleDiscovery()
     {
         Assert.Equal(
-            ["auth.login", "auth.logout", "auth.loopback-session", "auth.rbac", "auth.refresh", "auth.session", "console.capabilities"],
+            ["auth.login", "auth.logout", "auth.loopback-session", "auth.rbac", "auth.refresh", "auth.session", "console.capabilities", "console.frame", "console.input"],
             ExcludedOperations("cli"));
     }
 

@@ -301,5 +301,10 @@ const desktopApi: Readonly<PcvDesktopApi> = Object.freeze({
     body: JSON.stringify(payload)
   }),
   getConsoleCapabilities: (options = {}) => apiFetch(DESKTOP_NODE_API_ROUTES.consoleCapabilities, options),
-  getVmConsole: (vmId: string, options = {}) => apiFetch(DESKTOP_NODE_API_ROUTES.vmConsole(vmId), options)
+  getVmConsole: (vmId: string, options = {}) => apiFetch(DESKTOP_NODE_API_ROUTES.vmConsole(vmId), options),
+  getVmConsoleFrame: (vmId: string, size: string, options = {}) => apiFetch(DESKTOP_NODE_API_ROUTES.vmConsoleFrame(vmId, size), options),
+  sendVmConsoleInput: (vmId: string, payload: Record<string, unknown>) => apiFetch(DESKTOP_NODE_API_ROUTES.vmConsoleInput(vmId), {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  })
 });

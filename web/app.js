@@ -62,6 +62,7 @@ const state = {
     consoleCapabilities: null,
     consoleSession: null,
     consoleError: null,
+    vmConsoleFrame: null,
     pendingDiagnosticAction: '',
     lastDiagnosticAction: '',
     tokenActionMessage: '',
@@ -225,7 +226,9 @@ const DESKTOP_NODE_API_ROUTES = Object.freeze({
     jobDetail: (jobId) => `/api/v1/jobs/${encodeRouteSegment(jobId)}`,
     jobAction: (jobId, action) => `/api/v1/jobs/${encodeRouteSegment(jobId)}/${requireRouteAction(action, ['cancel', 'retry', 'reconcile'])}`,
     diagnosticBundleDownload: (bundleId) => `/api/v1/diagnostics/bundles/${encodeRouteSegment(bundleId)}/download`,
-    vmConsole: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/console`
+    vmConsole: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/console`,
+    vmConsoleFrame: (vmId, size) => `/api/v1/vms/${encodeRouteSegment(vmId)}/console/frame/${encodeRouteSegment(size)}`,
+    vmConsoleInput: (vmId) => `/api/v1/vms/${encodeRouteSegment(vmId)}/console/input`
 });
 const DESKTOP_NODE_ROUTE_COVERAGE = Object.freeze([
     { id: 'ops.summary', featureId: 'pcv.ops.summary', method: 'GET', route: DESKTOP_NODE_API_ROUTES.opsSummary, view: 'dashboard', mutating: false, tokenRequired: true },
@@ -298,7 +301,9 @@ const DESKTOP_NODE_ROUTE_COVERAGE = Object.freeze([
     { id: 'account.create', featureId: 'pcv.account.session', method: 'POST', route: DESKTOP_NODE_API_ROUTES.accounts, view: 'troubleshooting', mutating: true, tokenRequired: true },
     { id: 'account.disable', featureId: 'pcv.account.session', method: 'POST', route: '/api/v1/accounts/{username}/disable', view: 'troubleshooting', mutating: true, tokenRequired: true },
     { id: 'console.capabilities', featureId: 'pcv.console.capabilities', method: 'GET', route: DESKTOP_NODE_API_ROUTES.consoleCapabilities, view: 'troubleshooting', mutating: false, tokenRequired: true },
-    { id: 'console.session', featureId: 'pcv.vm.console-handoff', method: 'GET', route: '/api/v1/vms/{vm_id}/console', view: 'vms', mutating: false, tokenRequired: true }
+    { id: 'console.session', featureId: 'pcv.vm.console-handoff', method: 'GET', route: '/api/v1/vms/{vm_id}/console', view: 'vms', mutating: false, tokenRequired: true },
+    { id: 'console.frame', featureId: 'pcv.vm.browser-console', method: 'GET', route: '/api/v1/vms/{vm_id}/console/frame/{size}', view: 'vms', mutating: false, tokenRequired: true },
+    { id: 'console.input', featureId: 'pcv.vm.browser-console', method: 'POST', route: '/api/v1/vms/{vm_id}/console/input', view: 'vms', mutating: true, tokenRequired: true }
 ]);
 function encodeRouteSegment(value) {
     return encodeURIComponent(String(value ?? ''));
@@ -897,7 +902,12 @@ const desktopApi = Object.freeze({
         body: JSON.stringify(payload)
     }),
     getConsoleCapabilities: (options = {}) => apiFetch(DESKTOP_NODE_API_ROUTES.consoleCapabilities, options),
-    getVmConsole: (vmId, options = {}) => apiFetch(DESKTOP_NODE_API_ROUTES.vmConsole(vmId), options)
+    getVmConsole: (vmId, options = {}) => apiFetch(DESKTOP_NODE_API_ROUTES.vmConsole(vmId), options),
+    getVmConsoleFrame: (vmId, size, options = {}) => apiFetch(DESKTOP_NODE_API_ROUTES.vmConsoleFrame(vmId, size), options),
+    sendVmConsoleInput: (vmId, payload) => apiFetch(DESKTOP_NODE_API_ROUTES.vmConsoleInput(vmId), {
+        method: 'POST',
+        body: JSON.stringify(payload)
+    })
 });
 // --- src/served/evidence.ts ---
 // @ts-nocheck
@@ -1948,6 +1958,7 @@ function renderVmDetail() {
     <div class="details-grid detail-grid">
       ${details.map(([label, value]) => `<div class="kv"><span>${escapeHtml(label)}</span><strong>${escapeHtml(formatObjectValue(value))}</strong></div>`).join('')}
     </div>
+    ${renderVmConsoleFrameCard(vm, vmId, canViewConsole)}
     ${renderExportImportReadback(vm, vmId, actionDisabled)}
     ${renderVmQosGuestReadback(vmId)}
     ${renderVmQosDirectControl(vmId)}
@@ -3523,6 +3534,7 @@ function render() {
     renderNetworkInventory();
     renderVmWorkbenchContext();
     renderVmDetail();
+    paintVmConsoleFrame();
     renderJobs();
     renderDashboardActivity();
     renderActivity();
@@ -4398,7 +4410,7 @@ async function queueVmRename(vmId, newName) {
         render();
     }
 }
-const VM_DETAIL_EXTENSION_CLICK_ACTIONS = new Set(['checkpoint-schedule-clear']);
+const VM_DETAIL_EXTENSION_CLICK_ACTIONS = new Set(['checkpoint-schedule-clear', 'vm-console-frame-start', 'vm-console-frame-stop', 'vm-console-input-cad']);
 function readCheckpointSchedulePayload(data) {
     const payload = {};
     for (const name of ['interval_minutes', 'retention_max']) {
@@ -4601,6 +4613,12 @@ async function handleVmDetailExtensionSubmit(form, data, submitterAction) {
         const kind = form.dataset.action === 'vm-network-connect' ? 'connect' : 'device';
         await queueVmNetworkChange(form.dataset.vmId, kind, readVmNetworkChangePayload(kind, data));
     }
+    else if (form?.dataset.action === 'vm-console-text') {
+        const text = String(data.get('text') || '');
+        if (text)
+            await sendVmConsoleKeyboard(form.dataset.vmId, { kind: 'text', text });
+        form.reset();
+    }
     else if (form?.dataset.action === 'checkpoint-schedule') {
         await queueCheckpointScheduleControl(form.dataset.vmId, submitterAction === 'checkpoint-schedule-set' ? 'set' : 'preview', readCheckpointSchedulePayload(data));
     }
@@ -4609,6 +4627,203 @@ async function handleVmDetailExtensionClick(button) {
     if (button.dataset.action === 'checkpoint-schedule-clear') {
         await queueCheckpointScheduleControl(button.dataset.vmId, 'clear', {});
     }
+    else if (button.dataset.action === 'vm-console-frame-start') {
+        startVmConsoleFrame(button.dataset.vmId);
+    }
+    else if (button.dataset.action === 'vm-console-frame-stop') {
+        stopVmConsoleFrame();
+        render();
+    }
+    else if (button.dataset.action === 'vm-console-input-cad') {
+        await sendVmConsoleKeyboard(button.dataset.vmId, { kind: 'ctrl-alt-del' });
+    }
+}
+// S1 browser console (design pcv-s1-browser-console-v1 §6): the frame route returns a zlib-compressed RGB565 frame;
+// the browser inflates it with DecompressionStream('deflate') and paints it on a canvas. Polling repaints only the canvas.
+const VM_CONSOLE_FRAME_SIZES = ['640x480', '800x600', '1024x768'];
+const VM_CONSOLE_FRAME_FPS = [1, 2, 5];
+function decodeRgb565ToRgba(bytes, width, height) {
+    const rgba = new Uint8ClampedArray(width * height * 4);
+    for (let pixel = 0; pixel < width * height; pixel += 1) {
+        const value = bytes[pixel * 2] | (bytes[(pixel * 2) + 1] << 8);
+        rgba[pixel * 4] = Math.round(((value >> 11) & 0x1f) * 255 / 31);
+        rgba[(pixel * 4) + 1] = Math.round(((value >> 5) & 0x3f) * 255 / 63);
+        rgba[(pixel * 4) + 2] = Math.round((value & 0x1f) * 255 / 31);
+        rgba[(pixel * 4) + 3] = 255;
+    }
+    return rgba;
+}
+async function inflateConsoleFrame(base64) {
+    const binary = atob(base64);
+    const compressed = new Uint8Array(binary.length);
+    for (let index = 0; index < binary.length; index += 1)
+        compressed[index] = binary.charCodeAt(index);
+    const stream = new Blob([compressed]).stream().pipeThrough(new DecompressionStream('deflate'));
+    return new Uint8Array(await new Response(stream).arrayBuffer());
+}
+function getVmConsoleFrameControl(vmId) {
+    const control = state.vmConsoleFrame;
+    return control && control.vm_id === vmId ? control : null;
+}
+function renderVmConsoleFrameCard(vm, vmId, canViewConsole) {
+    const control = getVmConsoleFrameControl(vmId);
+    const running = control?.running === true;
+    const size = control?.size || VM_CONSOLE_FRAME_SIZES[0];
+    const fps = control?.fps || 2;
+    const [width, height] = size.split('x');
+    const disabled = canViewConsole ? '' : ' disabled';
+    const vmState = String(vm.state || vm.status || '').toLowerCase();
+    const status = control?.error
+        ? `${control.error.code}: ${control.error.message}`
+        : running
+            ? `streaming ${size} at ${fps} fps`
+            : vmState === 'running' ? 'paused' : 'VM is not running; start it to see its screen.';
+    return `<div class="checkpoint-panel vm-console-frame-panel">
+      <div class="mini-section-header">
+        <div>
+          <p class="eyebrow">Browser console</p>
+          <h3>VM Screen</h3>
+        </div>
+        <div class="diagnostics-actions">
+          <select data-console-frame="size" aria-label="console frame size"${disabled}>${VM_CONSOLE_FRAME_SIZES.map((item) => `<option value="${item}"${item === size ? ' selected' : ''}>${item}</option>`).join('')}</select>
+          <select data-console-frame="fps" aria-label="console frame rate"${disabled}>${VM_CONSOLE_FRAME_FPS.map((item) => `<option value="${item}"${item === fps ? ' selected' : ''}>${item} fps</option>`).join('')}</select>
+          <button data-action="vm-console-frame-start" data-vm-id="${escapeHtml(vmId)}"${running ? ' disabled' : disabled}>Start screen</button>
+          <button data-action="vm-console-frame-stop" data-vm-id="${escapeHtml(vmId)}"${running ? '' : ' disabled'}>Pause screen</button>
+        </div>
+      </div>
+      <canvas id="vm-console-frame-canvas" class="vm-console-frame-canvas" tabindex="0" width="${escapeHtml(width)}" height="${escapeHtml(height)}" style="width:100%;max-width:${escapeHtml(width)}px;background:#000"></canvas>
+      <p id="vm-console-frame-status" class="muted">${escapeHtml(status)}</p>
+      ${renderVmConsoleInputControls(vmId)}
+      <p class="muted">Screen view needs console.view. vmconnect handoff stays available from the Console button.</p>
+    </div>`;
+}
+function paintVmConsoleFrame() {
+    ensureVmConsoleKeyBinding();
+    const control = state.vmConsoleFrame;
+    const canvas = document.getElementById('vm-console-frame-canvas');
+    if (!control?.image || !canvas || canvas.width !== control.image.width || canvas.height !== control.image.height)
+        return;
+    canvas.getContext('2d')?.putImageData(control.image, 0, 0);
+}
+function setVmConsoleFrameStatus(text) {
+    const element = document.getElementById('vm-console-frame-status');
+    if (element)
+        element.textContent = text;
+}
+async function pollVmConsoleFrame(vmId, generation) {
+    const control = state.vmConsoleFrame;
+    if (!control || control.vm_id !== vmId || control.generation !== generation || !control.running)
+        return;
+    if (document.hidden || getVmId(state.selectedVm || {}) !== vmId) {
+        stopVmConsoleFrame();
+        return;
+    }
+    try {
+        const frame = await desktopApi.getVmConsoleFrame(vmId, control.size);
+        const data = frame?.data || frame;
+        const rgb565 = await inflateConsoleFrame(data.frame_base64);
+        control.image = new ImageData(decodeRgb565ToRgba(rgb565, data.width, data.height), data.width, data.height);
+        control.error = null;
+        paintVmConsoleFrame();
+        setVmConsoleFrameStatus(`streaming ${control.size} at ${control.fps} fps / ${new Date().toLocaleTimeString()}`);
+    }
+    catch (error) {
+        const normalized = normalizeError(error);
+        if (normalized.code !== 'PCV_CONSOLE_RATE_LIMITED') {
+            control.error = normalized;
+            control.running = false;
+            render();
+            return;
+        }
+    }
+    control.timer = window.setTimeout(() => pollVmConsoleFrame(vmId, generation), Math.round(1000 / control.fps));
+}
+function startVmConsoleFrame(vmId) {
+    requireRbac('console.view', 'VM screen');
+    const panel = els.vmDetailPanel;
+    const size = panel?.querySelector('select[data-console-frame="size"]')?.value || VM_CONSOLE_FRAME_SIZES[0];
+    const fps = Number(panel?.querySelector('select[data-console-frame="fps"]')?.value || 2);
+    stopVmConsoleFrame();
+    const generation = Date.now();
+    state.vmConsoleFrame = { vm_id: vmId, size, fps, running: true, generation, image: null, error: null, timer: null };
+    render();
+    pollVmConsoleFrame(vmId, generation);
+}
+function stopVmConsoleFrame() {
+    const control = state.vmConsoleFrame;
+    if (!control)
+        return;
+    if (control.timer)
+        window.clearTimeout(control.timer);
+    control.running = false;
+    control.timer = null;
+}
+// S1 console input (design pcv-s1-browser-console-v1 §6): a focused screen canvas sends key press/release by Windows
+// virtual-key code; Ctrl+Alt+Del and short text go through buttons. Without console.input the screen stays read-only.
+const VM_CONSOLE_VIRTUAL_KEYS = Object.freeze({
+    Backspace: 0x08, Tab: 0x09, Enter: 0x0d, NumpadEnter: 0x0d, ShiftLeft: 0x10, ShiftRight: 0x10, ControlLeft: 0x11,
+    ControlRight: 0x11, AltLeft: 0x12, AltRight: 0x12, Pause: 0x13, CapsLock: 0x14, Escape: 0x1b, Space: 0x20, PageUp: 0x21,
+    PageDown: 0x22, End: 0x23, Home: 0x24, ArrowLeft: 0x25, ArrowUp: 0x26, ArrowRight: 0x27, ArrowDown: 0x28, Insert: 0x2d,
+    Delete: 0x2e, MetaLeft: 0x5b, MetaRight: 0x5c, Semicolon: 0xba, Equal: 0xbb, Comma: 0xbc, Minus: 0xbd, Period: 0xbe,
+    Slash: 0xbf, Backquote: 0xc0, BracketLeft: 0xdb, Backslash: 0xdc, BracketRight: 0xdd, Quote: 0xde
+});
+function getVmConsoleVirtualKey(code) {
+    if (/^Key[A-Z]$/.test(code))
+        return code.charCodeAt(3);
+    if (/^Digit[0-9]$/.test(code))
+        return code.charCodeAt(5);
+    if (/^Numpad[0-9]$/.test(code))
+        return 0x60 + Number(code.slice(6));
+    if (/^F([1-9]|1[0-2])$/.test(code))
+        return 0x6f + Number(code.slice(1));
+    return VM_CONSOLE_VIRTUAL_KEYS[code] || null;
+}
+async function sendVmConsoleKeyboard(vmId, payload) {
+    requireRbac('console.input', 'VM console input');
+    try {
+        await desktopApi.sendVmConsoleInput(vmId, payload);
+    }
+    catch (error) {
+        const normalized = normalizeError(error);
+        if (normalized.code === 'PCV_CONSOLE_RATE_LIMITED')
+            return;
+        const control = getVmConsoleFrameControl(vmId);
+        if (control)
+            control.error = normalized;
+        setVmConsoleFrameStatus(`${normalized.code}: ${normalized.message}`);
+    }
+}
+function handleVmConsoleKeyEvent(event) {
+    if (event.target?.id !== 'vm-console-frame-canvas' || !rbacAllows('console.input'))
+        return;
+    const keyCode = getVmConsoleVirtualKey(event.code);
+    if (!keyCode)
+        return;
+    event.preventDefault();
+    if (event.type === 'keydown' && event.repeat)
+        return;
+    const vmId = getVmId(state.selectedVm || {});
+    if (!vmId)
+        return;
+    sendVmConsoleKeyboard(vmId, { kind: 'key', action: event.type === 'keydown' ? 'press' : 'release', key_code: keyCode });
+}
+function ensureVmConsoleKeyBinding() {
+    if (state.vmConsoleKeysBound || !els.vmDetailPanel)
+        return;
+    els.vmDetailPanel.addEventListener('keydown', handleVmConsoleKeyEvent);
+    els.vmDetailPanel.addEventListener('keyup', handleVmConsoleKeyEvent);
+    state.vmConsoleKeysBound = true;
+}
+function renderVmConsoleInputControls(vmId) {
+    if (!rbacAllows('console.input')) {
+        return '<p class="muted">Keyboard input needs console.input; the screen stays read-only.</p>';
+    }
+    return `<form class="vm-resource-form" data-action="vm-console-text" data-vm-id="${escapeHtml(vmId)}">
+        <p class="muted">Click the screen to type into the VM. Keys go as press and release; passwords are not recorded.</p>
+        <input name="text" maxlength="256" autocomplete="off" placeholder="Text to type (printable ASCII)" aria-label="console text">
+        <button type="submit" data-action="vm-console-text">Send text</button>
+        <button type="button" data-action="vm-console-input-cad" data-vm-id="${escapeHtml(vmId)}">Ctrl+Alt+Del</button>
+      </form>`;
 }
 // --- src/served/job-polling.ts ---
 // @ts-nocheck

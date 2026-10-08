@@ -173,6 +173,7 @@
         "diagnostics.read",
         "diagnostics.create",
         "console.view",
+        "console.input",
         "console.configure",
         "account.manage"
       ],
@@ -192,6 +193,7 @@
         "diagnostics.read",
         "diagnostics.create",
         "console.view",
+        "console.input",
         "console.configure",
         "account.manage"
       ],
@@ -214,18 +216,19 @@
         },
         {
           "description": "Read state, queue operator actions, collect diagnostics, and open console handoff.",
-          "permissions": ["read", "operate", "job.control", "diagnostics.read", "diagnostics.create", "console.view"],
+          "permissions": ["read", "operate", "job.control", "diagnostics.read", "diagnostics.create", "console.view", "console.input"],
           "role": "operator"
         },
         {
           "description": "Full local account/RBAC administrator role.",
-          "permissions": ["*", "read", "operate", "job.control", "diagnostics.read", "diagnostics.create", "console.view", "console.configure", "account.manage"],
+          "permissions": ["*", "read", "operate", "job.control", "diagnostics.read", "diagnostics.create", "console.view", "console.input", "console.configure", "account.manage"],
           "role": "admin"
         }
       ],
       "route_policy": {
         "account.manage": "admin",
         "console.configure": "admin",
+        "console.input": "operator",
         "console.view": "operator",
         "diagnostics.create": "operator",
         "operate": "operator",
