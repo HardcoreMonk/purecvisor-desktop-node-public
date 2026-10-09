@@ -105,9 +105,19 @@ public sealed class HyperVIntegrationFixture : IDisposable
         TryDeleteStorageRoot(problems);
 
         var namesAfter = VmNames();
-        if (!namesAfter.Order(StringComparer.Ordinal).SequenceEqual(namesBefore.Order(StringComparer.Ordinal)))
+        // Another class's fixture may still be running its own pcv-it-<run id>- VM; that is its cleanup, not a leak of
+        // this run. The invariant here is: no VM of this run remains, and every VM outside the integration tier is as before.
+        var foreignBefore = namesBefore.Where(name => !RunVmName.IsMatch(name)).Order(StringComparer.Ordinal);
+        var foreignAfter = namesAfter.Where(name => !RunVmName.IsMatch(name)).Order(StringComparer.Ordinal);
+        if (!foreignAfter.SequenceEqual(foreignBefore))
         {
             problems.Add("VM names differ before and after the run: " + string.Join(", ", namesAfter.Except(namesBefore)));
+        }
+
+        var remaining = namesAfter.Where(name => name.StartsWith(RunPrefix, StringComparison.Ordinal)).ToList();
+        if (remaining.Count > 0)
+        {
+            problems.Add("VMs of this run remain: " + string.Join(", ", remaining));
         }
 
         File.WriteAllText(
