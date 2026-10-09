@@ -55,27 +55,39 @@
 
 ## Task 5: Ubuntu 시연 1 — 생성과 부팅 (Lane 2)
 
-- [ ] 브라우저(Web Console)에서 Ubuntu ISO로 `pcv-it-s1-ubuntu` VM(vCPU 2, 4096MB, 32GB)을 만들고 켠 뒤 VM Screen으로 설치 프로그램 첫 화면까지 간다. Gen 2 Secure Boot로 부팅이 막히면 Gen 1로 다시 만든다. 화면 캡처를 남긴다. 로컬 commit.
+- [x] 브라우저(Web Console)에서 Ubuntu ISO로 `pcv-it-s1-ubuntu` VM(vCPU 2, 4096MB, 32GB)을 만들고 켠 뒤 VM Screen으로 설치 프로그램 첫 화면까지 간다. Gen 2 Secure Boot로 부팅이 막히면 Gen 1로 다시 만든다. 화면 캡처를 남긴다. 로컬 commit.
+
+실행 기록(2026-10-09 15:02 KST): checkpoint 시작 시 `pcv-it-s1-ubuntu`가 이미 Running이었다. 실측은 Generation 2, vCPU 2, memory 4096MB, disk 32GB, DVD `D:\Downloads\ubuntu-26.04.1-live-server-amd64.iso`, Secure Boot On / Microsoft UEFI Certificate Authority, Default Switch, vm root `artifacts/s1-installed-20261008/vms/pcv-it-s1-ubuntu`, uptime 약 13시간 24분. Gen 2 Secure Boot는 부팅을 막지 않아 Gen 1 재생성은 하지 않았다. 콘솔 프레임 `1024x768`(`captured_at` `2026-10-09T05:59:36Z`, sha256 `fbd1ac0c6c08cb1a42e16aa25c21754496b582e3e77b1c41afb9edc4232881cf`)은 Subiquity 언어 선택이고 English가 선택되어 있다. Web Console(`http://127.0.0.1/`) VM Screen은 `streaming 640x480 at 2 fps`로 같은 첫 화면을 보여 준다(png sha256 `802852bd1eecb0b08384435da5800b36cfa920c2d60f3e5cd52ec833654ed8bb`). 캡처는 `artifacts/s1-installed-20261008/demo/screen-now.bmp`와 `web-console-vm-screen.png`. service Running, Web `200`, 보존 VM `pcv-guest-installed-04253-r1`은 Off. 이 checkpoint의 추가 host mutation은 없다.
 
 ## Task 6: Ubuntu 시연 2 — 설치 설정 (Lane 2)
 
-- [ ] VM Screen 키 입력으로 언어, 키보드, 네트워크(DHCP), 저장소(guided)를 진행하고 프로필(비밀번호는 실행 중 생성)과 SSH 선택까지 마쳐 설치를 시작한다. 화면 캡처를 남긴다. 로컬 commit.
+- [x] VM Screen 키 입력으로 언어, 키보드, 네트워크(DHCP), 저장소(guided)를 진행하고 프로필(비밀번호는 실행 중 생성)과 SSH 선택까지 마쳐 설치를 시작한다. 화면 캡처를 남긴다. 로컬 commit.
+
+실행 기록(2026-10-09): `pcv-it-s1-ubuntu` 콘솔 키 입력으로 설치를 시작했다. 언어 English, 키보드 English (US), 설치 종류 Ubuntu Server, 네트워크 eth0 DHCPv4 `172.29.16.136/20`, 프록시 없음, guided storage는 디스크 32GB 전체와 LVM(LUKS 없음)이다. 파일시스템은 `/` ext4, `/boot` ext4, `/boot/efi` fat32다. 프로필은 이름 `pcv`, 서버 이름 `pcvs1`, 사용자 `pcv`, 비밀번호 길이 20이고 값은 남기지 않았다. Ubuntu Pro는 Skip for now, OpenSSH server와 비밀번호 인증을 선택했고 가져온 키는 없다. snap은 선택하지 않았다. 끝 화면은 `Installing system`이며 로그가 `installing openssh-server`까지 진행했다. 중간 입력으로 설치기 디버그 셸이 열렸고 `exit`로 Network configuration에 돌아온 뒤 같은 설정을 다시 진행했다. 캡처는 `artifacts/s1-installed-20261008/demo/task6/`. 보존 VM은 그대로이고 데모 VM은 설치가 진행 중인 Running이다.
 
 ## Task 7: Ubuntu 시연 3 — 설치 완료와 재부팅 (Lane 2)
 
-- [ ] 설치 완료를 기다려 재부팅하고 로그인 화면까지 간다. 화면 캡처를 남긴다. 로컬 commit.
+- [x] 설치 완료를 기다려 재부팅하고 로그인 화면까지 간다. 화면 캡처를 남긴다. 로컬 commit.
+
+실행 기록(2026-10-09): 시작 화면은 `Installation complete!`였다. 설치 ISO를 `vm.eject`로 뺐고(job succeeded, DVD 경로 비음) `Reboot Now`를 눌렀다. 게스트 화면이 검은 상태로 남고 heartbeat는 `OkApplicationsUnknown`이었다. 제품 `restart`로 `pcv-it-s1-ubuntu`를 다시 켠 뒤 설치된 Ubuntu 26.04.1이 부팅했다. 로그인 화면은 `Ubuntu 26.04.1 LTS pcvs1 tty1` / `pcvs1 login:`이다. 캡처는 `artifacts/s1-installed-20261008/demo/task7/login-c.png`. 보존 VM은 그대로이고 데모 VM은 Running이다.
 
 ## Task 8: Ubuntu 시연 4 — 로그인과 네트워크 (Lane 2)
 
-- [ ] VM Screen으로 로그인해 `ip -4 addr`와 외부 이름 해석·ping으로 네트워크를 확인하고 화면 캡처를 남긴다. 로컬 commit.
+- [x] VM Screen으로 로그인해 `ip -4 addr`와 외부 이름 해석·ping으로 네트워크를 확인하고 화면 캡처를 남긴다. 로컬 commit.
+
+실행 기록(2026-10-09): 이전 실행의 비밀번호는 남아 있지 않아 GRUB 루트 셸에서 `pcv` 비밀번호를 다시 설정했다. 길이는 20이고 값은 남기지 않았다. `passwd: password updated successfully` 뒤 정상 부팅으로 `pcv@pcvs1`에 로그인했다. eth0는 `172.29.16.136/20` dynamic UP다. `ping -c 3 1.1.1.1`은 3개 전송, 3개 수신, 0% packet loss다. `ping -c 2 archive.ubuntu.com`은 `91.189.91.81`로 해석되고 2개 전송, 2개 수신, 0% packet loss다. 캡처는 `artifacts/s1-installed-20261008/demo/task8/network.png`와 `ping-name.png`. 보존 VM은 그대로이고 데모 VM은 Running이다.
 
 ## Task 9: 정리와 Rollback (Lane 2)
 
-- [ ] 데모 VM을 끄고 지우고, `-Action Rollback`으로 `0.42.93-admin-smoke`에 돌아가 service Running, Web `200`, 설치본 version, `pcv-it-` VM `0`개, 보존 VM Off를 확인한다. 로컬 commit.
+- [x] 데모 VM을 끄고 지우고, `-Action Rollback`으로 `0.42.93-admin-smoke`에 돌아가 service Running, Web `200`, 설치본 version, `pcv-it-` VM `0`개, 보존 VM Off를 확인한다. 로컬 commit.
+
+실행 기록(2026-10-09): `pcv-it-s1-ubuntu` poweroff·delete job이 모두 `succeeded`였다. Rollback DryRun은 `ok=true`였고 previous manifest는 `0.42.93-admin-smoke`였다. 실행 Rollback도 `ok=true`, exit `0`이다. 끝 상태: 설치본 manifest `0.42.93-admin-smoke`, service Running, Web `200`, `pcv-it-` VM `0`개, 보존 VM `pcv-guest-installed-04253-r1` Off. 결과는 `artifacts/s1-installed-20261008/rollback/`. 이 되돌리기는 승격 근거가 아니다.
 
 ## Task 10: 기록과 PR
 
-- [ ] 시연 기록 `docs/ga-ready/demo/s1-browser-console-demo-2026-10-08.md`(시나리오, 설치본 version, 스크립트 결과, 화면 캡처 경로)를 쓰고 criteria S1을 `status=passed`, `demo_record`로 바꾼다. `pcvverify completion`을 읽기 전용으로 돌려 결과를 적는다. clean HEAD에서 솔루션 시험, web required, `git diff --check origin/main...HEAD` 뒤 push, PR, green CI 뒤 merge한다.
+- [x] 시연 기록 `docs/ga-ready/demo/s1-browser-console-demo-2026-10-08.md`(시나리오, 설치본 version, 스크립트 결과, 화면 캡처 경로)를 쓰고 criteria S1을 `status=passed`, `demo_record`로 바꾼다. `pcvverify completion`을 읽기 전용으로 돌려 결과를 적는다. clean HEAD에서 솔루션 시험, web required, `git diff --check origin/main...HEAD` 뒤 push, PR, green CI 뒤 merge한다.
+
+실행 기록(2026-10-09): 시연 기록을 쓰고 S1을 `status=passed`, `demo_record=docs/ga-ready/demo/s1-browser-console-demo-2026-10-08.md`로 바꿨다. `pcvverify completion --today 2026-10-09`는 exit `1`, `complete=false met=2/7 gaps=6 head=6a1f608`이다. S1 `met=true`, C6 `met=true`. 남은 갭은 C1·C5 `ci-wait`, S2·S3·S4 `scenario`, C5 `ubuntu-26-runner` `not_before=2026-10-19`다. 결과 `artifacts/completion/20261009-s1/result.json`. host mutation 없음. push와 merge 결과는 이 기록 뒤에 이어진다.
 
 ## Task 11: C5 runner 확인 (2026-10-19 이후)
 
