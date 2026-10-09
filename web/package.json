@@ -21,6 +21,7 @@
     "browser:fixture": "node scripts/verify-browser-fixture.mjs",
     "capture:installed-listener": "node scripts/capture-installed-listener-qa.mjs",
     "scenario:s1-console": "node scripts/run-s1-console-scenario.mjs",
+    "scenario:s2-clone": "node scripts/run-s2-clone-scenario.mjs",
     "check:frontend-batches": "node scripts/validate-frontend-completion-batches.mjs"
   },
   "devDependencies": {

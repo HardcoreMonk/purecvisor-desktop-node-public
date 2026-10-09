@@ -40,10 +40,9 @@
 
 ## 판정
 
-- `pcvverify completion` 읽기 전용, `--today 2026-10-09`, exit `1`.
-- `completion: complete=false met=2/7 gaps=6 head=6a1f608836b031ef641c7a26b43bc2310858ce11`
-- S1 `met=true` (`status=passed`, 이 문서). 충족은 S1과 C6이다.
-- 남은 갭: C1 `ci-wait`, S2·S3·S4 `scenario`, C5 `ci-wait`, C5 `ubuntu-26-runner` `not_before=2026-10-19`.
+- 기록 작성 시점(`6a1f608`) 판정: exit `1`, `complete=false met=2/7 gaps=6`. S1과 C6만 충족. C1·C5는 그 branch SHA의 `main` push run이 없어 `ci-wait`였다.
+- PR #76 merge 뒤 `main` `9b6c0e2` 재판정: exit `1`, `complete=false met=3/7 gaps=4`. 충족은 C1, S1, C6. Development Gates와 Public Boundary Contract는 success다.
+- 남은 갭: S2·S3·S4 `scenario`, C5 `ubuntu-26-runner` `not_before=2026-10-19`.
 - 위생: C2·C3·C4 충족. C7은 `BL-0011`, `BL-0012`가 `undecided`다.
 - 결과 JSON: `artifacts/completion/20261009-s1/result.json`. 이 판정은 완료를 주장하지 않는다.
 

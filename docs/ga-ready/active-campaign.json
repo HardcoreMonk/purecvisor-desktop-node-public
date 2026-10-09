@@ -2,8 +2,8 @@
   "schema_version": 1,
   "contract": "pcv-active-campaign-v1",
   "status": "open",
-  "id": "s1-installed-20261008",
-  "intent": "s1-installed-dev-probe-and-demo",
+  "id": "s2-template-clone-20261009",
+  "intent": "s2-template-clone-plan",
   "working_authority": "source_head",
   "allowed_lanes": [
     "0",
@@ -12,53 +12,29 @@
   ],
   "mutation_allowed": true,
   "current_write_allowed": false,
-  "next_step": "Run Task 1 from docs/superpowers/plans/2026-10-08-purecvisor-desktop-node-s1-installed.md, then the queue in order. Task 9 must return the host to 0.42.93-admin-smoke. Task 11 waits until 2026-10-19.",
-  "plan": "docs/superpowers/plans/2026-10-08-purecvisor-desktop-node-s1-installed.md",
+  "next_step": "Run Task 1 from docs/superpowers/plans/2026-10-09-purecvisor-desktop-node-s2-template-clone.md, then Task 2 after 2026-10-19.",
+  "plan": "docs/superpowers/plans/2026-10-09-purecvisor-desktop-node-s2-template-clone.md",
   "task_queue": [
     "Task 1",
-    "Task 2",
     "Task 3",
-    "Task 4",
-    "Task 5",
-    "Task 6",
-    "Task 7",
-    "Task 8",
-    "Task 9",
-    "Task 10",
-    "Task 11",
-    "Task 12"
+    "Task 2"
   ],
   "task_lanes": {
-    "Task 3": "2",
-    "Task 4": "2",
-    "Task 5": "2",
-    "Task 6": "2",
-    "Task 7": "2",
-    "Task 8": "2",
-    "Task 9": "2"
+    "Task 3": "2"
   },
   "task_not_before": {
-    "Task 11": "2026-10-19"
+    "Task 2": "2026-10-19"
   },
-  "next_task": "Task 11",
+  "next_task": "Task 2",
   "completed_tasks": [
     "Task 1",
-    "Task 2",
-    "Task 3",
-    "Task 4",
-    "Task 5",
-    "Task 6",
-    "Task 7",
-    "Task 8",
-    "Task 9",
-    "Task 10",
-    "Task 12"
+    "Task 3"
   ],
   "commit_policy": "local-commit-per-task",
   "push_allowed": true,
   "merge_policy": "after-green-ci",
-  "checkpoint_limit": 12,
-  "approval_locator": "User-Approval: 2026-09-27 campaign runner commit policy local-commit-per-task; User-Approval: 2026-10-08 \"1, D:\\Downloads\\ubuntu-26.04.1-live-server-amd64.iso, 3\" on adr17-s1-console-20261008 next_approval_required (1 S1 installed dev probe: product Update to the main build, service restart, the S1 scenario script with --execute on a pcv-it- VM and the smoke ISO, product Rollback to 0.42.93 at the end; Lane 2 host mutation limited to product Update/Rollback, service restart and pcv-it- prefixed VM create, start, key input, stop and delete; push, PR and merge after green CI; 2 S1 demo record with the user ISO D:\\Downloads\\ubuntu-26.04.1-live-server-amd64.iso: browser VM create, OS install through the screen and key input, network check, demo record and criteria S1 passed; Lane 2 on pcv-it- prefixed VMs including guest OS install; push, PR and merge after green CI; 3 classify backlog BL-0010 as counts and fix it in Lane 1 with push, PR and merge after green CI); carry adr17-s1-console-20261008 Task 14 (C5 runner, not before 2026-10-19) as Task 11 under the deadline-wait row (Lane 0/1, push, PR and merge after green CI); carried ADR-0016 standing approval from process-followups-20261007 item 4: standing approval limited to pcv-it- prefixed VM create and delete; User-Approval: 2026-10-09 \"모든 문서 현행화\" (Lane 1 document refresh as Task 12, local commit, ships with this campaign PR)",
+  "checkpoint_limit": 3,
+  "approval_locator": "User-Approval: 2026-09-27 campaign runner commit policy local-commit-per-task; User-Approval: 2026-10-09 \"S2\" then \"그렇게 진행해\" (commit the current-document refresh, carry s1-installed-20261008 Task 11, open the S2 campaign). User-Approval: 2026-10-09 \"pcv-it-s2-source를 managed Generation 2로 만든다(작은 독립 VHDX, Off, checkpoint 없음, TPM 없음). template lock 뒤 pcv-it-s2-clone으로 60초 안에 clone하고 복제본은 지운다. 보존 VM은 건드리지 않는다. 시연 기록과 criteria S2 passed, push, PR, green CI 뒤 merge.\"",
   "next_approval_required": [],
   "stop_on": [
     "same-cause-fail-3",
@@ -72,8 +48,8 @@
     "deadline-wait"
   ],
   "out_of_scope_is_not_next_step": true,
-  "closed_predecessor": "adr17-s1-console-20261008",
+  "closed_predecessor": "s1-installed-20261008",
   "carried_from": {
-    "Task 11": "adr17-s1-console-20261008 Task 14"
+    "Task 2": "s1-installed-20261008 Task 11"
   }
 }

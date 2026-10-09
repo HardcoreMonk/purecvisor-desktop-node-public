@@ -10,10 +10,11 @@
 - Required CI 권위: Development Gates run `37171644667`; 보호 context는 정확히 `dotnet`, `web`, `delivery`, `installer-policy`다.
 - PowerShell/Pester 경계: invocation 0은 위 Required CI 네 context에만 적용한다. 별도 Public Boundary workflow는 비필수 legacy residue로 보존한다(run `37171644656`, job `111345611153`).
 - 운영 제품 권위: `0.42.93-admin-smoke`; Web Console과 PCVCLI가 active이고 TUI는 absent다. Feature promotion은 `promotion_eligible=true`, blockers `none`이다. P0 feature ledger는 `0.42.75-admin-smoke` evidence를 유지한다.
-- 이 호스트 설치본(2026-10-08 train `0.42.93` fullgate): `0.42.93-admin-smoke`(gate build `+818d00f`), service `Running/Automatic`. ARP `DisplayVersion`은 `0.42.93`(항목 `1`개). operational current와 같은 version이고 설치본은 gate build다.
-- 개발 campaign: `docs/ga-ready/active-campaign.json` id `s1-installed-20261008`(intent `s1-installed-dev-probe-and-demo`, 2026-10-08 열림, 계획 `docs/superpowers/plans/2026-10-08-purecvisor-desktop-node-s1-installed.md`). `main` `6b76274` build를 dev probe로 설치해 S1 시나리오 스크립트와 Ubuntu 26.04.1 브라우저 시연을 하고 0.42.93으로 되돌리며, backlog BL-0010을 고친다. 직전 `adr17-s1-console-20261008`(ADR-0017 채택 PR #73, S1 브라우저 콘솔 PR #74)은 닫고 Task 14(C5, 2026-10-19 뒤)를 Task 11로 이관했다.
+- 최신 `main`: `9b6c0e2`(PR #76, S1 시연 기록). 운영 payload 권위는 위 `56e7cd0` / `0.42.93-admin-smoke`이고, 그 뒤 `main` 변경은 문서다.
+- 이 호스트 설치본: `0.42.93-admin-smoke`, service `Running/Automatic`, Web HTTP 200. 2026-10-09 S1 dev probe(`0.42.94-admin-smoke`)는 제품 Rollback으로 이 version에 돌아왔다. `pcv-it-` VM 0개, 보존 VM `pcv-guest-installed-04253-r1` Off.
+- 개발 campaign: `docs/ga-ready/active-campaign.json` id `s2-template-clone-20261009`. S2 시연 기록 `docs/ga-ready/demo/s2-template-clone-demo-2026-10-09.md`. C5 runner(Task 2)는 2026-10-19 전엔 시작하지 않는다. 계획 `docs/superpowers/plans/2026-10-09-purecvisor-desktop-node-s2-template-clone.md`.
 - release train: 대기열과 train 이력 `docs/ga-ready/release-train.json`, 규칙 `docs/DEVELOPMENT_PROCEDURE.md` §10, 설계 `docs/superpowers/specs/2026-10-04-purecvisor-desktop-node-release-train-design.md`(2026-10-04 채택).
-- 진행 상황 현행화: `docs/project-status-audit-2026-10-09.md`(완료 정의 v3, `main` `6b76274` 판정 `met=1/7`). 직전 snapshot은 `docs/project-status-audit-2026-10-06.md`(v1 C1~C6), 그 전은 `docs/project-status-audit-2026-10-03.md`.
+- 진행 상황 현행화: `docs/project-status-audit-2026-10-09-after-s1.md`(완료 정의 v3, `main` `9b6c0e2` 판정 `met=3/7`, S1 `passed`). 같은 날 시연 전 snapshot은 `docs/project-status-audit-2026-10-09.md`(`met=1/7`). 그 전은 `docs/project-status-audit-2026-10-06.md`, `docs/project-status-audit-2026-10-03.md`.
 - 프로젝트 완료 정의: `docs/adr/0017-scenario-delivery-completion.md`(v3, 2026-10-08 채택). 시나리오 S1~S4와 C1·C5·C6, 기계 판정 출처 `config/project-completion-criteria.json`, 완료는 `pcvverify completion` exit `0`일 때만. v2 설계 `docs/superpowers/specs/2026-10-07-purecvisor-desktop-node-completion-definition-v2-design.md`와 v1 설계는 역사 기록이다. completion autopilot은 `config/completion-autopilot-policy.json` `status=paused`.
 - `vm.create` reconcile 장치 지문: `docs/superpowers/specs/2026-10-08-purecvisor-desktop-node-vm-create-reconcile-devices-design.md`(`pcv-vm-create-reconcile-devices-v1`). 디스크·ISO·`Default Switch` 연결이 맞아야 `postcondition-confirmed`(backlog `BL-0001`).
 - 단일 PR train v2: `docs/superpowers/specs/2026-10-08-purecvisor-desktop-node-single-pr-train-v2-design.md`(`pcv-single-pr-train-v2`). `train-path-check`가 Lane 3 pin 여섯 파일의 SHA 한 줄 변경만 허용하고 `CurrentEvidenceVerifierTests`는 version을 파일에서 읽는다(backlog `BL-0005`).
@@ -36,7 +37,7 @@
 
 - 기여자 온보딩: `docs/DEVELOPMENT_PROCEDURE.md`, `docs/DEVELOPER_INDEX.md`, `docs/CODING_GUIDE.md`, `docs/DEVELOPMENT_VERIFICATION_POLICY.md`
 - 아키텍처: `docs/ADR_INDEX.md`, `docs/adr/`, `docs/service-core-backend-frontend-implementation-evaluation-2026-07-16.md`
-- 현재 작업과 상태: `docs/project-status-audit-2026-10-09.md`, `docs/FEATURE_IMPLEMENTATION_LEDGER.md`, `docs/ga-ready/CURRENT_EVIDENCE_LEDGER.md`, `docs/ga-ready/EVIDENCE_INDEX.md`
+- 현재 작업과 상태: `docs/project-status-audit-2026-10-09-after-s1.md`, `docs/ga-ready/demo/s1-browser-console-demo-2026-10-08.md`, `docs/FEATURE_IMPLEMENTATION_LEDGER.md`, `docs/ga-ready/CURRENT_EVIDENCE_LEDGER.md`, `docs/ga-ready/EVIDENCE_INDEX.md`
 - 버전·릴리스 증거: [docs/ga-ready/current-evidence.json](ga-ready/current-evidence.json)과 위 evidence index
 - 역사 변경 기록: Git 이력과 아래 날짜별 계획·명세·증거
 
