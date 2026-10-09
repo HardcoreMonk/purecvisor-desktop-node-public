@@ -26,7 +26,9 @@
 
 ## Task 1: S2 plan-only 스크립트
 
-- [ ] `web/scripts/run-s2-clone-scenario.mjs`와 `npm run scenario:s2-clone`을 추가한다. 기본 plan-only는 HTTP를 보내지 않고 template-lock, clone preview, clone, 60초 한도를 출력한다. `--execute`는 exit 2로 거절한다. `node --test web/node-tests/s2-clone-scenario.test.mjs`와 `node --check`로 확인한다. 로컬 commit.
+- [x] `web/scripts/run-s2-clone-scenario.mjs`와 `npm run scenario:s2-clone`을 추가한다. 기본 plan-only는 HTTP를 보내지 않고 template-lock, clone preview, clone, 60초 한도를 출력한다. `--execute`는 exit 2로 거절한다. `node --test web/node-tests/s2-clone-scenario.test.mjs`와 `node --check`로 확인한다. 로컬 commit.
+
+실행 기록(2026-10-09): `node --check`와 `node --test web/node-tests/s2-clone-scenario.test.mjs`가 2개 통과, exit 0이다. `--execute`는 HTTP 없이 exit 2다. host mutation 없음.
 
 ## Task 2: C5 runner 확인 (2026-10-19 이후)
 
