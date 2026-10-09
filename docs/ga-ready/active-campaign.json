@@ -12,7 +12,7 @@
   ],
   "mutation_allowed": true,
   "current_write_allowed": false,
-  "next_step": "Task 7 stopped on Lane 2 FAIL (2026-10-10): hyperv-integration vm.list returned PCV_NATIVE_VM_LIST_IDENTITY_STATE_INCOMPLETE right after vm.create (BL-0014). Approval 4 opens the Lane 1 fix; then rerun Task 7, then Task 8; Task 9 not before 2026-10-19.",
+  "next_step": "Run Task 10 (BL-0014 fix) from docs/superpowers/plans/2026-10-09-purecvisor-desktop-node-audit-green-lean.md, then rerun Task 7, then Task 8 (push, PR, merge after green CI); Task 9 not before 2026-10-19. After this campaign closes, open the S3 campaign (approval 2) carrying Task 9, then the S4 campaign (approval 3).",
   "plan": "docs/superpowers/plans/2026-10-09-purecvisor-desktop-node-audit-green-lean.md",
   "task_queue": [
     "Task 1",
@@ -21,6 +21,7 @@
     "Task 4",
     "Task 5",
     "Task 6",
+    "Task 10",
     "Task 7",
     "Task 8",
     "Task 9"
@@ -31,7 +32,7 @@
   "task_not_before": {
     "Task 9": "2026-10-19"
   },
-  "next_task": "Task 7",
+  "next_task": "Task 10",
   "completed_tasks": [
     "Task 1",
     "Task 2",
@@ -42,15 +43,10 @@
   ],
   "commit_policy": "local-commit-per-task",
   "push_allowed": true,
-  "merge_policy": "none",
-  "checkpoint_limit": 9,
-  "approval_locator": "User-Approval: 2026-09-27 campaign runner commit policy local-commit-per-task; User-Approval: 2026-10-09 \"보고서 추가, - 1번과 2번 승인 - 3~6번 승인 - 승인: 2번의 두 저장소 push와 PR, 5·7번의 pcv-it- VM 생성(ADR-0016 standing approval 문장), 8번의 설치본 --allow-lan과 방화벽 변경(host mutation).\" on the 2026-10-09 zero-base audit improvement items 1-8 (1 public flake fix with clock injection, failing test names in the CI log, pcv-ship post-merge main run check; 2 private repo read-only archive, move 4 skills and CLAUDE.md to public, AGENTS public-content rule; both repos branch push and PR, no merge; 3 purpose sentence Hyper-V management layer, WHP v2 candidate; 4 ADR-0017 sync items disposition and feature ledger generator; 5 local PR gate script, Lane 2 run once; ADR-0016 standing approval limited to pcv-it- prefixed VM create, configure and delete under artifacts/hyperv-integration; 6 demo record template with reviewer and capture retention; 7 and 8 not approved as work; 8 installed --allow-lan and firewall host mutation pre-approved for a later S4 campaign only); carry s2-template-clone-20261009 Task 2 (C5 runner, not before 2026-10-19) as Task 9 with its original push, PR and merge after green CI",
-  "next_approval_required": [
-    "1 green CI 뒤 merge: public PR lane1/audit-green-lean-20261009와 private PR #190 archive/private-readonly-20261009",
-    "2 S3 campaign: checkpoint 생성·복원·예약을 브라우저에서 시연",
-    "3 S4 campaign: LAN의 다른 PC에서 계정 로그인 후 S1~S3 사용(설치본 --allow-lan과 방화벽 host mutation은 2026-10-09 사전 승인), 이어서 release train 1회",
-    "4 Lane 1 수정(BL-0014): vm.create 직후 vm.list가 PCV_NATIVE_VM_LIST_IDENTITY_STATE_INCOMPLETE로 inventory 전체를 거절하는 문제를 고치고(전이 상태 어휘 또는 create 완료 대기), Task 7(통합 gate 1회, pcv-it- VM 생성·삭제 standing approval 그대로)을 다시 돌린다"
-  ],
+  "merge_policy": "after-green-ci",
+  "checkpoint_limit": 11,
+  "approval_locator": "User-Approval: 2026-09-27 campaign runner commit policy local-commit-per-task; User-Approval: 2026-10-09 \"보고서 추가, - 1번과 2번 승인 - 3~6번 승인 - 승인: 2번의 두 저장소 push와 PR, 5·7번의 pcv-it- VM 생성(ADR-0016 standing approval 문장), 8번의 설치본 --allow-lan과 방화벽 변경(host mutation).\" on the 2026-10-09 zero-base audit improvement items 1-8 (1 public flake fix with clock injection, failing test names in the CI log, pcv-ship post-merge main run check; 2 private repo read-only archive, move 4 skills and CLAUDE.md to public, AGENTS public-content rule; both repos branch push and PR, no merge; 3 purpose sentence Hyper-V management layer, WHP v2 candidate; 4 ADR-0017 sync items disposition and feature ledger generator; 5 local PR gate script, Lane 2 run once; ADR-0016 standing approval limited to pcv-it- prefixed VM create, configure and delete under artifacts/hyperv-integration; 6 demo record template with reviewer and capture retention; 7 and 8 not approved as work; 8 installed --allow-lan and firewall host mutation pre-approved for a later S4 campaign only); carry s2-template-clone-20261009 Task 2 (C5 runner, not before 2026-10-19) as Task 9 with its original push, PR and merge after green CI; User-Approval: 2026-10-10 \"1,2,3,4\" on the Task 7 Lane 2 FAIL report (1 merge after green CI for the public PR lane1/audit-green-lean-20261009 and private PR #190; 2 S3 campaign to open after this campaign closes, carrying Task 9, pcv-it- VM standing approval; 3 S4 campaign after S3 with the 2026-10-09 pre-approved installed --allow-lan and firewall host mutation, then one release train; 4 Lane 1 fix of BL-0014 as Task 10, then rerun Task 7 under the same pcv-it- standing approval, then Task 8)",
+  "next_approval_required": [],
   "stop_on": [
     "same-cause-fail-3",
     "budget",

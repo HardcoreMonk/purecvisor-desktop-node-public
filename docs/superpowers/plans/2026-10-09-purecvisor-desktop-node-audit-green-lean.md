@@ -23,6 +23,17 @@
 | 7·8 | 작업 미승인. "8번의 설치본 --allow-lan과 방화벽 변경(host mutation)" 사전 승인은 locator에만 남기고 이 campaign은 쓰지 않는다. |
 | 이관 | `s2-template-clone-20261009` Task 2(C5 runner 확인, `not_before` 2026-10-19)를 Task 9로 옮긴다. 문장과 push, PR, green CI 뒤 merge는 원래 승인 그대로다. |
 
+## 사용자 결정 (2026-10-10)
+
+승인 원문: `1,2,3,4` (2026-10-10 Task 7 Lane 2 FAIL 최종 보고의 `next_approval_required` 네 문장에 대한 답.)
+
+| 항목 | 범위 |
+| --- | --- |
+| 1 | green CI 뒤 merge: public PR `lane1/audit-green-lean-20261009`(Task 8에서 열림)와 private PR #190. `merge_policy=after-green-ci`. CI가 red면 merge하지 않고 보고한다. |
+| 2 | S3 campaign(checkpoint 생성·복원·예약을 브라우저에서 시연). 이 campaign이 닫힌 뒤 Task 9를 carry해 `pcv-campaign-open`으로 연다. host mutation은 `pcv-it-` VM 생성·삭제 standing approval 범위다. |
+| 3 | S4 campaign(LAN의 다른 PC에서 계정 로그인 후 S1~S3, 이어서 release train 1회). S3 뒤에 연다. 설치본 `--allow-lan`과 방화벽 변경은 2026-10-09 사전 승인이다. |
+| 4 | Lane 1 수정(BL-0014): `vm.create` 직후 `vm.list`가 `PCV_NATIVE_VM_LIST_IDENTITY_STATE_INCOMPLETE`로 inventory 전체를 거절하는 문제를 고치고(전이 상태 어휘 또는 create 완료 대기) Task 7을 다시 돌린 뒤 Task 8로 진행한다. Task 10으로 큐 앞에 둔다. |
+
 ## Global Constraints
 
 - 보존 VM `pcv-guest-installed-04253-r1`과 template VM `pcv-it-s2-source`, `current-evidence.json`, `release-train.json`의 `trains`를 바꾸지 않는다. 통합 테스트가 만드는 VM은 `pcv-it-<run id>-` 접두사뿐이고 끝에 `pcv-it-` 신규 VM 0개여야 한다.
@@ -79,6 +90,10 @@
 ## Task 9: C5 runner 확인 (2026-10-19 이후, 이관)
 
 - [ ] `not_before` 2026-10-19. 이관 전 `s2-template-clone-20261009` Task 2(그 전 `s1-installed-20261008` Task 11, `adr17-s1-console-20261008` Task 14)다. Ubuntu 26 runner의 첫 `main` Development Gates와 Public Boundary run이 green이면 `config/project-completion-criteria.json` 위험 행을 `status=closed`, `closed_by`에 run id로 닫는다. 실패하면 `ubuntu-24.04` pin을 판단해 보고하고 멈춘다. push, PR, green CI 뒤 merge.
+
+## Task 10: BL-0014 수정 (Task 7 재실행 전, 2026-10-10 승인 4)
+
+- [ ] `vm.create`가 Ok를 돌려준 직후 `vm.list`가 `PCV_NATIVE_VM_LIST_IDENTITY_STATE_INCOMPLETE`를 내는 원인을 `DesktopNodeHyperVWmiVmProvider`의 state 매핑과 `DesktopNodeHyperVWmiVmCreateProvider`의 반환 시점에서 찾는다. 전이 상태 어휘가 비어 있으면 어휘를 더하고, create가 정의 직후 돌아오면 생성한 VM의 행이 id·name·state를 갖출 때까지 bounded 대기(예: 250 ms 간격 최대 10초)를 넣는다. parity guard(한 행이라도 불완전하면 inventory 전체 거절)는 바꾸지 않는다. fake provider 단위 시험을 더한다. 검증 `dotnet test src/DesktopNode.HyperV.Tests -c Release`, `dotnet test src/DesktopNode.Api.Tests -c Release`, ratchet Pester. 로컬 commit. 그 뒤 Task 7을 같은 승인으로 다시 돈다.
 
 ## Nonclaims
 
