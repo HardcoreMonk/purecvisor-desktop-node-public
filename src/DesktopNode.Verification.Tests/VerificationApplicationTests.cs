@@ -1,3 +1,5 @@
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 
 namespace DesktopNode.Verification.Tests;
@@ -183,6 +185,48 @@ public sealed class VerificationApplicationTests
         Assert.Equal("passed", Assert.Single(summary.Results).Status);
         Assert.Equal(1, process.CallCount);
         Assert.Equal(0, managed.CallCount);
+    }
+
+    [Fact]
+    public async Task FailedProcessSuiteEchoesFailedTestNamesToStandardError()
+    {
+        // 2026-10-09 감사 §10: CI 로그에 summary.json 경로만 남아 실패 테스트를 알 수 없었다.
+        using var repository = ApplicationRepositoryFixture.Create();
+        repository.SetActivationState("active");
+        var output =
+            "  Failed DesktopNode.Api.Tests.ApiConsoleFrameRouteTests.FrameRouteLimitsTheSameVmTo100Milliseconds [110 ms]\n" +
+            "  Error Message:\n" +
+            "   Assert.Equal() Failure: Values differ\n" +
+            "Failed!  - Failed:     1, Passed:   516, Skipped:     0, Total:   517, Duration: 35 s - DesktopNode.Api.Tests.dll (net10.0)\n";
+        // summary writer 는 OutputSha256 이 SHA-256(stdout + "\n" + stderr) 와 같아야 행을 받는다.
+        var outputHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(output + "\n" + string.Empty))).ToLowerInvariant();
+        var process = new RecordingProcessRunner(new ProcessExecutionResult(
+            1,
+            7,
+            false,
+            false,
+            output,
+            string.Empty,
+            outputHash));
+        var managed = new RecordingManagedSuiteRunner(failIfCalled: true);
+        var application = repository.CreateApplication(process, managed);
+
+        var outcome = await RunAsync(
+            application,
+            Arguments("Full", "M", ".github/workflows/development-gates.yml", "actual-failed", "--suite", "dotnet"));
+
+        Assert.Equal(1, outcome.ExitCode);
+        Assert.Contains(
+            "failed-test suite=dotnet test=DesktopNode.Api.Tests.ApiConsoleFrameRouteTests.FrameRouteLimitsTheSameVmTo100Milliseconds" + Environment.NewLine,
+            outcome.StandardError,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "failed-suite suite=dotnet status=Failed exit=1 failed_tests=1" + Environment.NewLine,
+            outcome.StandardError,
+            StringComparison.Ordinal);
+        Assert.DoesNotContain("Error Message", outcome.StandardError, StringComparison.Ordinal);
+        Assert.DoesNotContain("Assert.Equal", outcome.StandardError, StringComparison.Ordinal);
+        Assert.Equal(1, process.CallCount);
     }
 
     [Fact]

@@ -13,6 +13,8 @@ internal sealed partial class DesktopNodeApiConsoleRouteHandler
 
     private static readonly Regex FrameSize = new("^([0-9]{3,4})x([0-9]{3,4})$", RegexOptions.CultureInvariant);
 
+    // 마지막 frame 시각은 hardening options 의 clock(ms since epoch)으로 잰다. 시험이 clock 을 고정해 throttle 을
+    // 결정적으로 검증할 수 있고, 실제 서비스는 UtcNow 를 쓴다.
     private readonly ConcurrentDictionary<string, long> lastFrameTicks = new(StringComparer.OrdinalIgnoreCase);
 
     private DesktopNodeApiResponse HandleVmConsoleFrame(string encodedVmId, string encodedSize)
@@ -35,7 +37,7 @@ internal sealed partial class DesktopNodeApiConsoleRouteHandler
                 false);
         }
 
-        var now = Environment.TickCount64;
+        var now = hardeningOptions.Now().ToUnixTimeMilliseconds();
         var vm = routeId.Value!;
         if (lastFrameTicks.TryGetValue(vm, out var last) && now - last < FrameMinIntervalMilliseconds)
         {
