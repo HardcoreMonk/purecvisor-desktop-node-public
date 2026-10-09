@@ -31,10 +31,11 @@
   "task_not_before": {
     "Task 9": "2026-10-19"
   },
-  "next_task": "Task 3",
+  "next_task": "Task 4",
   "completed_tasks": [
     "Task 1",
-    "Task 2"
+    "Task 2",
+    "Task 3"
   ],
   "commit_policy": "local-commit-per-task",
   "push_allowed": true,
@@ -42,7 +43,7 @@
   "checkpoint_limit": 9,
   "approval_locator": "User-Approval: 2026-09-27 campaign runner commit policy local-commit-per-task; User-Approval: 2026-10-09 \"보고서 추가, - 1번과 2번 승인 - 3~6번 승인 - 승인: 2번의 두 저장소 push와 PR, 5·7번의 pcv-it- VM 생성(ADR-0016 standing approval 문장), 8번의 설치본 --allow-lan과 방화벽 변경(host mutation).\" on the 2026-10-09 zero-base audit improvement items 1-8 (1 public flake fix with clock injection, failing test names in the CI log, pcv-ship post-merge main run check; 2 private repo read-only archive, move 4 skills and CLAUDE.md to public, AGENTS public-content rule; both repos branch push and PR, no merge; 3 purpose sentence Hyper-V management layer, WHP v2 candidate; 4 ADR-0017 sync items disposition and feature ledger generator; 5 local PR gate script, Lane 2 run once; ADR-0016 standing approval limited to pcv-it- prefixed VM create, configure and delete under artifacts/hyperv-integration; 6 demo record template with reviewer and capture retention; 7 and 8 not approved as work; 8 installed --allow-lan and firewall host mutation pre-approved for a later S4 campaign only); carry s2-template-clone-20261009 Task 2 (C5 runner, not before 2026-10-19) as Task 9 with its original push, PR and merge after green CI",
   "next_approval_required": [
-    "1 green CI 뒤 merge: public PR lane1/audit-green-lean-20261009와 private PR archive/private-readonly-20261009",
+    "1 green CI 뒤 merge: public PR lane1/audit-green-lean-20261009와 private PR #190 archive/private-readonly-20261009",
     "2 S3 campaign: checkpoint 생성·복원·예약을 브라우저에서 시연",
     "3 S4 campaign: LAN의 다른 PC에서 계정 로그인 후 S1~S3 사용(설치본 --allow-lan과 방화벽 host mutation은 2026-10-09 사전 승인), 이어서 release train 1회"
   ],
