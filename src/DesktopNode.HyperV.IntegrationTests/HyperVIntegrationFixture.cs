@@ -3,13 +3,16 @@ using System.Management;
 using System.Security.Principal;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Text.RegularExpressions;
 using DesktopNode.HyperV;
 
 namespace DesktopNode.HyperV.IntegrationTests;
 
 // ADR-0016 guard and cleanup. The constructor refuses to start (so every test fails) unless the standing approval, the
-// privileges and the host switch state are in place and no earlier run left pcv-it- VMs behind. Every VM the tests
-// create uses this run's prefix and stores its disks under artifacts/hyperv-integration/<run id>/.
+// privileges and the host switch state are in place and no earlier integration run left its VMs behind. Every VM the
+// tests create uses this run's prefix (pcv-it-<run id>-) and stores its disks under artifacts/hyperv-integration/<run id>/.
+// Other pcv-it- VMs (scenario demos keep pcv-it-s2-source as an Off template) are not leftovers: they are only read, and
+// the before/after name comparison in Dispose still proves this run touched nothing but its own VMs.
 public sealed class HyperVIntegrationFixture : IDisposable
 {
     internal const string ApprovalVariable = "PCV_HYPERV_INTEGRATION_APPROVAL";
@@ -17,6 +20,7 @@ public sealed class HyperVIntegrationFixture : IDisposable
     internal const string NamePrefix = "pcv-it-";
     private const string DefaultIso = "artifacts/smoke-media-20261003/pcv-route-parity-smoke-20261003.iso";
     private const string HyperVAdministratorsSid = "S-1-5-32-578";
+    private static readonly Regex RunVmName = new("^pcv-it-[0-9]{14}-", RegexOptions.CultureInvariant);
 
     private readonly DesktopNodeHyperVNativeAdapter adapter;
     private readonly IReadOnlyList<string> namesBefore;
@@ -42,7 +46,7 @@ public sealed class HyperVIntegrationFixture : IDisposable
 
         adapter = DesktopNodeHyperVNativeAdapter.CreateDefault();
         namesBefore = VmNames();
-        var leftovers = namesBefore.Where(name => name.StartsWith(NamePrefix, StringComparison.Ordinal)).ToList();
+        var leftovers = namesBefore.Where(name => RunVmName.IsMatch(name)).ToList();
         if (leftovers.Count > 0)
         {
             throw new InvalidOperationException(

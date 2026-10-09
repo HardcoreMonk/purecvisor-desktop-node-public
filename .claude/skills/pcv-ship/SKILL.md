@@ -32,7 +32,14 @@ description: PureCVisor public 저장소 변경을 clean HEAD 종료 검증 → 
    artifact root는 저장소 `artifacts/` 아래여야 한다. 실행 기록의 assembly별 시험 수는 dotnet shard
    `summary.json`의 `results[0].standard_output`에서 읽는다(`docs/DEVELOPMENT_PROCEDURE.md` §4).
    C# 시험은 Debug가 아니라 `-c Release`로 돈다. CI가 Release라 Debug만 통과한 변경은 `main`을 red로 만든다.
-3. `git -C $pub diff --check origin/main...HEAD`. red면 멈춘다.
+3. PR을 열기 전 이 호스트에서 PR gate를 돌린다. `summary.json` `ok=true`가 아니면 push하지 않는다.
+
+       pwsh -NoProfile -File packaging/windows-desktop-node/tools/Invoke-PcvPrGate.ps1
+
+   Hyper-V 어댑터 코드(`src/DesktopNode.HyperV/**`)가 바뀌었고 campaign `approval_locator`에 ADR-0016 standing approval
+   문장이 있으면 `PCV_HYPERV_INTEGRATION_APPROVAL`을 그 문장으로 두고 `-Integration`을 더한다(`pcv-it-` 접두사 일회용 VM
+   생성·삭제, Lane 2). 문장이 없으면 gate가 exit 2로 거절하고, 그때는 `-Integration` 없이 돌린다.
+4. `git -C $pub diff --check origin/main...HEAD`. red면 멈춘다.
 
 ## 2. branch와 PR
 
