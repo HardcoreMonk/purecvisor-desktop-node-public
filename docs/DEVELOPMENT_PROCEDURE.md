@@ -243,6 +243,10 @@ probe 스크립트는 `packaging/windows-desktop-node/lane2-probes/`에서 추�
 `-PlanOnly`는 `pcvcli`와 Hyper-V를 부르지 않고 아무것도 쓰지 않는다. 카탈로그에 없는 기능군은 세션 임시 폴더가 아니라
 이 디렉터리에 스크립트를 더하고 카탈로그와 `Lane2ProbeCatalogContractTests` 계약을 맞춘 뒤 실행한다.
 
+ADR-0017 시나리오 시연 기록은 `docs/ga-ready/demo/TEMPLATE.md` 형식을 따른다. 화면 캡처는 git 밖 `artifacts/`가 아니라
+`docs/ga-ready/demo/<시나리오 id>-<yyyymmdd>/`에 PNG로 보존하고, 확인자·확인 일시·확인 방법은 사람이 채운다. 확인자가
+비어 있으면 그 시연은 에이전트 자가 보고로 본다(2026-10-09 감사 §10). S3부터 적용한다.
+
 ## 6. Lane 3 operational promotion
 
 Lane 3는 대상 변경에 필요한 package, full admin host mutation, manual-admin pair, installed

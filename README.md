@@ -183,6 +183,10 @@ PR #156 post-merge public-boundary main push는 `docs/ga-ready/evidence/public-b
 
 PureCVisor Desktop Node는 Windows 10/11 Pro/Enterprise + Hyper-V를 대상으로 하는 내부 전용 로컬 데스크톱 가상화 관리 서비스입니다.
 
+제품 정의(2026-10-09 감사 §2): Windows Hyper-V 기반 가상화 **관리 계층**이다. VM 실행은 Hyper-V VMMS가 맡고, PureCVisor는
+WMI `root\virtualization\v2`로 VM 생성·전원·checkpoint·QoS·guest 실행을 제어한다. Windows Hypervisor Platform(WHP) 위의 자체
+VMM, QEMU 내장 실행 엔진, 자체 하이퍼바이저는 범위 밖이며 v2 후보로만 둔다(2026-04-24 설계 §MVP 제외 범위).
+
 이 저장소는 Linux `purecvisor-single` / `purecvisorsd` 저장소와 물리적으로 분리된 Windows 전용 저장소입니다.
 
 ```text

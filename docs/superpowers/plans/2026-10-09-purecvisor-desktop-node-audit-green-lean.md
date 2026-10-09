@@ -50,7 +50,9 @@
 
 ## Task 4: 목적 문장과 시연 기록 규칙
 
-- [ ] public `README.md`와 `AGENTS.md` 저장소 경계에 "Windows Hyper-V 기반 가상화 관리 계층(WMI `root\virtualization\v2`). WHP 자체 VMM은 범위 밖, v2 후보" 한 문단. `docs/ga-ready/demo/TEMPLATE.md`에 시나리오, 설치본 version, 스크립트 결과, 캡처 경로 `docs/ga-ready/demo/<id>/`, 확인자와 확인 일시 칸을 두고 `docs/DEVELOPMENT_PROCEDURE.md` 시연 기록 문장에 캡처 보존 규칙을 더한다. 검증 `Update-PcvCurrentEvidenceDocs.ps1 -Check`, `Invoke-Pester packaging/windows-desktop-node/tests/PcvAdminSmokeEvidenceDocs.Tests.ps1`. 로컬 commit.
+- [x] public `README.md`와 `AGENTS.md` 저장소 경계에 "Windows Hyper-V 기반 가상화 관리 계층(WMI `root\virtualization\v2`). WHP 자체 VMM은 범위 밖, v2 후보" 한 문단. `docs/ga-ready/demo/TEMPLATE.md`에 시나리오, 설치본 version, 스크립트 결과, 캡처 경로 `docs/ga-ready/demo/<id>/`, 확인자와 확인 일시 칸을 두고 `docs/DEVELOPMENT_PROCEDURE.md` 시연 기록 문장에 캡처 보존 규칙을 더한다. 검증 `Update-PcvCurrentEvidenceDocs.ps1 -Check`, `Invoke-Pester packaging/windows-desktop-node/tests/PcvAdminSmokeEvidenceDocs.Tests.ps1`. 로컬 commit.
+
+실행 기록(2026-10-09): `README.md` 184행 아래에 제품 정의 문단, `AGENTS.md` 저장소 경계 둘째 줄에 제품 정의 bullet을 넣었다. `docs/ga-ready/demo/TEMPLATE.md`(설치본, 실행, 화면 캡처 보존 규칙, 확인자·확인 일시·확인 방법 표, 정리, 판정)를 만들고 `docs/DEVELOPMENT_PROCEDURE.md` §5 끝에 시연 기록 규칙 문단(S3부터 적용)을 더했다. 기존 S1·S2 기록은 바꾸지 않았다. 검증: `git diff --check` 통과, Pester 93/93(`PcvAdminSmokeEvidenceDocs` + `PcvAgentExecutionCircuitBreaker`), `Update-PcvCurrentEvidenceDocs.ps1 -Check` ok.
 
 ## Task 5: 동기화 4항목 처분과 feature ledger 생성기
 

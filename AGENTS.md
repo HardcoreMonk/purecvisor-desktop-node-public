@@ -197,6 +197,8 @@ PR #156 post-merge public-boundary main push는 `docs/ga-ready/evidence/public-b
 ## 저장소 경계
 
 - 단일 진실: 이 저장소는 Windows Desktop Node 전용이다.
+- 제품 정의: Windows Hyper-V 기반 가상화 관리 계층(WMI `root\virtualization\v2`). WHP 자체 VMM, QEMU 내장 실행 엔진, 자체
+  하이퍼바이저는 범위 밖이고 v2 후보로만 둔다(2026-10-09 감사 §2, 2026-04-24 설계 §MVP 제외 범위).
 - Linux `purecvisor-single`, Linux `purecvisorsd`, KVM/libvirt/LXC/ZFS/OVS/OVN runtime 코드를 추가하지 않는다.
 - 현재 코드 경로는 phase 이력과 테스트 계약을 보존하기 위해 `archive/spikes/purecvisor-desktop-node/**`와 `packaging/windows-desktop-node/**`를 유지한다.
 - 현재 적용 결정은 `docs/ADR_INDEX.md`와 `docs/adr/`를 우선한다.
