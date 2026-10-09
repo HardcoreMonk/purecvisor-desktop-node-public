@@ -67,7 +67,9 @@
 
 ## Task 7: Ubuntu 시연 3 — 설치 완료와 재부팅 (Lane 2)
 
-- [ ] 설치 완료를 기다려 재부팅하고 로그인 화면까지 간다. 화면 캡처를 남긴다. 로컬 commit.
+- [x] 설치 완료를 기다려 재부팅하고 로그인 화면까지 간다. 화면 캡처를 남긴다. 로컬 commit.
+
+실행 기록(2026-10-09): 시작 화면은 `Installation complete!`였다. 설치 ISO를 `vm.eject`로 뺐고(job succeeded, DVD 경로 비음) `Reboot Now`를 눌렀다. 게스트 화면이 검은 상태로 남고 heartbeat는 `OkApplicationsUnknown`이었다. 제품 `restart`로 `pcv-it-s1-ubuntu`를 다시 켠 뒤 설치된 Ubuntu 26.04.1이 부팅했다. 로그인 화면은 `Ubuntu 26.04.1 LTS pcvs1 tty1` / `pcvs1 login:`이다. 캡처는 `artifacts/s1-installed-20261008/demo/task7/login-c.png`. 보존 VM은 그대로이고 데모 VM은 Running이다.
 
 ## Task 8: Ubuntu 시연 4 — 로그인과 네트워크 (Lane 2)
 
