@@ -2,8 +2,8 @@
   "schema_version": 1,
   "contract": "pcv-active-campaign-v1",
   "status": "open",
-  "id": "s2-template-clone-20261009",
-  "intent": "s2-template-clone-plan",
+  "id": "audit-green-lean-20261009",
+  "intent": "audit-improvements-1-6",
   "working_authority": "source_head",
   "allowed_lanes": [
     "0",
@@ -12,30 +12,37 @@
   ],
   "mutation_allowed": true,
   "current_write_allowed": false,
-  "next_step": "Run Task 1 from docs/superpowers/plans/2026-10-09-purecvisor-desktop-node-s2-template-clone.md, then Task 2 after 2026-10-19.",
-  "plan": "docs/superpowers/plans/2026-10-09-purecvisor-desktop-node-s2-template-clone.md",
+  "next_step": "Run Task 1 from docs/superpowers/plans/2026-10-09-purecvisor-desktop-node-audit-green-lean.md, then the queue in order; Task 9 not before 2026-10-19.",
+  "plan": "docs/superpowers/plans/2026-10-09-purecvisor-desktop-node-audit-green-lean.md",
   "task_queue": [
     "Task 1",
+    "Task 2",
     "Task 3",
-    "Task 2"
+    "Task 4",
+    "Task 5",
+    "Task 6",
+    "Task 7",
+    "Task 8",
+    "Task 9"
   ],
   "task_lanes": {
-    "Task 3": "2"
+    "Task 7": "2"
   },
   "task_not_before": {
-    "Task 2": "2026-10-19"
+    "Task 9": "2026-10-19"
   },
-  "next_task": "Task 2",
-  "completed_tasks": [
-    "Task 1",
-    "Task 3"
-  ],
+  "next_task": "Task 1",
+  "completed_tasks": [],
   "commit_policy": "local-commit-per-task",
   "push_allowed": true,
-  "merge_policy": "after-green-ci",
-  "checkpoint_limit": 3,
-  "approval_locator": "User-Approval: 2026-09-27 campaign runner commit policy local-commit-per-task; User-Approval: 2026-10-09 \"S2\" then \"그렇게 진행해\" (commit the current-document refresh, carry s1-installed-20261008 Task 11, open the S2 campaign). User-Approval: 2026-10-09 \"pcv-it-s2-source를 managed Generation 2로 만든다(작은 독립 VHDX, Off, checkpoint 없음, TPM 없음). template lock 뒤 pcv-it-s2-clone으로 60초 안에 clone하고 복제본은 지운다. 보존 VM은 건드리지 않는다. 시연 기록과 criteria S2 passed, push, PR, green CI 뒤 merge.\"",
-  "next_approval_required": [],
+  "merge_policy": "none",
+  "checkpoint_limit": 9,
+  "approval_locator": "User-Approval: 2026-09-27 campaign runner commit policy local-commit-per-task; User-Approval: 2026-10-09 \"보고서 추가, - 1번과 2번 승인 - 3~6번 승인 - 승인: 2번의 두 저장소 push와 PR, 5·7번의 pcv-it- VM 생성(ADR-0016 standing approval 문장), 8번의 설치본 --allow-lan과 방화벽 변경(host mutation).\" on the 2026-10-09 zero-base audit improvement items 1-8 (1 public flake fix with clock injection, failing test names in the CI log, pcv-ship post-merge main run check; 2 private repo read-only archive, move 4 skills and CLAUDE.md to public, AGENTS public-content rule; both repos branch push and PR, no merge; 3 purpose sentence Hyper-V management layer, WHP v2 candidate; 4 ADR-0017 sync items disposition and feature ledger generator; 5 local PR gate script, Lane 2 run once; ADR-0016 standing approval limited to pcv-it- prefixed VM create, configure and delete under artifacts/hyperv-integration; 6 demo record template with reviewer and capture retention; 7 and 8 not approved as work; 8 installed --allow-lan and firewall host mutation pre-approved for a later S4 campaign only); carry s2-template-clone-20261009 Task 2 (C5 runner, not before 2026-10-19) as Task 9 with its original push, PR and merge after green CI",
+  "next_approval_required": [
+    "1 green CI 뒤 merge: public PR lane1/audit-green-lean-20261009와 private PR archive/private-readonly-20261009",
+    "2 S3 campaign: checkpoint 생성·복원·예약을 브라우저에서 시연",
+    "3 S4 campaign: LAN의 다른 PC에서 계정 로그인 후 S1~S3 사용(설치본 --allow-lan과 방화벽 host mutation은 2026-10-09 사전 승인), 이어서 release train 1회"
+  ],
   "stop_on": [
     "same-cause-fail-3",
     "budget",
@@ -48,8 +55,8 @@
     "deadline-wait"
   ],
   "out_of_scope_is_not_next_step": true,
-  "closed_predecessor": "s1-installed-20261008",
+  "closed_predecessor": "s2-template-clone-20261009",
   "carried_from": {
-    "Task 2": "s1-installed-20261008 Task 11"
+    "Task 9": "s2-template-clone-20261009 Task 2"
   }
 }
