@@ -73,7 +73,9 @@
 
 ## Task 8: Ubuntu 시연 4 — 로그인과 네트워크 (Lane 2)
 
-- [ ] VM Screen으로 로그인해 `ip -4 addr`와 외부 이름 해석·ping으로 네트워크를 확인하고 화면 캡처를 남긴다. 로컬 commit.
+- [x] VM Screen으로 로그인해 `ip -4 addr`와 외부 이름 해석·ping으로 네트워크를 확인하고 화면 캡처를 남긴다. 로컬 commit.
+
+실행 기록(2026-10-09): 이전 실행의 비밀번호는 남아 있지 않아 GRUB 루트 셸에서 `pcv` 비밀번호를 다시 설정했다. 길이는 20이고 값은 남기지 않았다. `passwd: password updated successfully` 뒤 정상 부팅으로 `pcv@pcvs1`에 로그인했다. eth0는 `172.29.16.136/20` dynamic UP다. `ping -c 3 1.1.1.1`은 3개 전송, 3개 수신, 0% packet loss다. `ping -c 2 archive.ubuntu.com`은 `91.189.91.81`로 해석되고 2개 전송, 2개 수신, 0% packet loss다. 캡처는 `artifacts/s1-installed-20261008/demo/task8/network.png`와 `ping-name.png`. 보존 VM은 그대로이고 데모 VM은 Running이다.
 
 ## Task 9: 정리와 Rollback (Lane 2)
 
