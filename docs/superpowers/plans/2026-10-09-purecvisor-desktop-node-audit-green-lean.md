@@ -57,7 +57,7 @@
 
 - [x] private 저장소 `README.md`, `AGENTS.md`, `CLAUDE.md` 맨 위(생성 블록 밖)에 "2026-10-09부터 read-only archive. 작업·skill·campaign은 `purecvisor-desktop-node-public`" 안내를 넣고 skill 디렉터리에 같은 안내 `README.md`를 둔다. branch `archive/private-readonly-20261009`, 검증 `git diff --check`, `Update-PcvCurrentEvidenceDocs.ps1 -Check`, `Invoke-Pester packaging/windows-desktop-node/tests/PcvAdminSmokeEvidenceDocs.Tests.ps1`. 로컬 commit, push, PR. merge는 `next_approval_required`.
 
-실행 기록(2026-10-09): private 저장소 branch `archive/private-readonly-20261009`, commit `636f0647`, PR #190(`https://github.com/HardcoreMonk/purecvisor-desktop-node/pull/190`) open. 세 문서의 H1 바로 아래, 생성 블록 밖에 archive 안내 blockquote를 넣었고 `.claude/skills/README.md`에 동결 사본 안내를 뒀다. 검증: `git diff --check` 통과, `PcvAdminSmokeEvidenceDocs` Pester 90/90, `Update-PcvCurrentEvidenceDocs.ps1 -Check` ok. private `main` CI는 손대지 않았다(red 유지, 유지보수 종료). merge는 `next_approval_required` 1번이다.
+실행 기록(2026-10-09): private 저장소 branch `archive/private-readonly-20261009`, commit `636f0647`, private PR #190 open(URL은 public 수록 금지 규칙 `provider.private-archive`에 따라 적지 않는다). 세 문서의 H1 바로 아래, 생성 블록 밖에 archive 안내 blockquote를 넣었고 `.claude/skills/README.md`에 동결 사본 안내를 뒀다. 검증: `git diff --check` 통과, `PcvAdminSmokeEvidenceDocs` Pester 90/90, `Update-PcvCurrentEvidenceDocs.ps1 -Check` ok. private `main` CI는 손대지 않았다(red 유지, 유지보수 종료). merge는 `next_approval_required` 1번이다.
 
 ## Task 4: 목적 문장과 시연 기록 규칙
 

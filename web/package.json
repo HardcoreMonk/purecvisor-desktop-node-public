@@ -22,7 +22,8 @@
     "capture:installed-listener": "node scripts/capture-installed-listener-qa.mjs",
     "scenario:s1-console": "node scripts/run-s1-console-scenario.mjs",
     "scenario:s2-clone": "node scripts/run-s2-clone-scenario.mjs",
-    "check:frontend-batches": "node scripts/validate-frontend-completion-batches.mjs"
+    "check:frontend-batches": "node scripts/validate-frontend-completion-batches.mjs",
+    "scenario:s3-checkpoint": "node scripts/run-s3-checkpoint-scenario.mjs"
   },
   "devDependencies": {
     "typescript": "5.9.3"
