@@ -31,12 +31,13 @@
   "task_not_before": {
     "Task 9": "2026-10-19"
   },
-  "next_task": "Task 5",
+  "next_task": "Task 6",
   "completed_tasks": [
     "Task 1",
     "Task 2",
     "Task 3",
-    "Task 4"
+    "Task 4",
+    "Task 5"
   ],
   "commit_policy": "local-commit-per-task",
   "push_allowed": true,

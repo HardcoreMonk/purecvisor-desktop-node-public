@@ -93,6 +93,10 @@ git diff --check
 - Evidence 문서는 과거 anchor를 깨지 않도록 새 파일로 추가하고, 기존 evidence를 덮어쓰지 않는다.
 - 현재 기준 수치(버전, MSI SHA, blocker)는 `AGENTS.md` 상단 "Current operational evidence (generated)" 섹션과
   `docs/ga-ready/current-evidence.json`이 소유한다. 생성기 `packaging/windows-desktop-node/tools/Update-PcvCurrentEvidenceDocs.ps1 -Check`로 확인한다.
+- `AGENTS.md`, `.github/workflows/development-gates.yml`, `config/development-verification-suites.json` 등은
+  `config/pcv-development-policy-contract-spec-v1.json`의 SHA pin 대상이다. 바꾼 뒤 같은 commit에서
+  `packaging/windows-desktop-node/tools/Update-PcvContractSpecPins.ps1 -Apply`를 돌려 spec pin과 Delivery verifier 상수를 갱신하고
+  `dotnet test src/DesktopNode.Delivery.Tests -c Release`로 확인한다. 안 하면 Delivery 시험 50건이 `source-sha`로 실패한다.
 - 커밋은 사용자가 요청하거나 campaign `commit_policy`가 허용할 때만 한다.
 
 ## 8. gstack skill routing (기존 설정)

@@ -175,6 +175,16 @@ focused test 결과를 whole-solution PASS 또는 clean-HEAD policy PASS로 표�
 Lane 1에서는 MSI 설치, service, firewall, trust store, Event Log, Hyper-V VM 및 current evidence
 mutation을 수행하지 않는다.
 
+ADR-0017 §2.4 동기화 항목 처분(2026-10-09, campaign `audit-green-lean-20261009` Task 5). 기능 PR은 아래 네 항목을 손으로
+고치지 않는다. 생성 항목은 도구로 다시 만들고, train 전용 항목은 release train(§10)에서만 바뀐다.
+
+| 항목 | 처분 | 도구 |
+| --- | --- | --- |
+| feature ledger 행(`docs/FEATURE_IMPLEMENTATION_LEDGER.md` Feature ID 요약) | 생성 | `packaging/windows-desktop-node/tools/Update-PcvFeatureLedgerDoc.ps1`(`-Check`). Delivery 시험 `PcvFeatureLedgerDocContractTests`가 CI에서 대조 |
+| `CURRENT_EVIDENCE_LEDGER.md`·`EVIDENCE_INDEX.md` 절 | train 전용 | Lane 3 `Update-PcvCurrentEvidenceLedgerRows.ps1`, `New-PcvPromotionIndexSections.ps1`(§6) |
+| Lane 3 spec SHA pin | train 전용 | `Update-PcvContractSpecPins.ps1`(§10 `allowed_pin_paths`) |
+| installed current-card | 유지 | train의 current-card 단계에서만 갱신 |
+
 ## 4. Git과 clean-HEAD 검증
 
 소스 변경 승인, Git commit 승인, push/PR 승인은 서로 다르다. 각 승인을 합쳐 추정하지 않는다.

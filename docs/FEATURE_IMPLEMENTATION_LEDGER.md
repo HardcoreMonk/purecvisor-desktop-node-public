@@ -5,6 +5,8 @@
 이 문서는 Desktop Node 기능의 사람이 읽는 투영이다. 기계 계약의 단일 진실은
 `config/desktop-node-feature-surface-ledger.json`이며, 이 문서는 Feature ID, API route,
 Web Console coverage, PCVCLI command binding을 설명하기 위해 그 계약을 투영한다.
+`## Feature ID 요약` 표는 `packaging/windows-desktop-node/tools/Update-PcvFeatureLedgerDoc.ps1`이 그 계약에서 생성하며(`-Check`로 대조,
+Delivery 시험 `PcvFeatureLedgerDocContractTests`가 CI에서 같은 렌더링으로 대조), 손으로 고치지 않는다(2026-10-09 감사 §9, ADR-0017 §2.4).
 
 기능 승격 evidence는 별도 `config/desktop-node-feature-evidence-ledger.json`과
 `packaging/windows-desktop-node/tests/fixtures/feature-evidence-promotion/04274-p0-fail.json`
@@ -33,6 +35,7 @@ feature promotion evidence를 서로 다른 계약으로 유지한다.
 
 ## Feature ID 요약
 
+<!-- BEGIN GENERATED FEATURE ID SUMMARY -->
 | Feature ID | Title | Routes | Web | CLI |
 |---|---|---:|---:|---:|
 | <a id="pcv-runtime-policy"></a>`pcv.runtime.policy` | Runtime policy | 1 | 1 present / 0 excluded | 1 present / 0 excluded |
@@ -64,6 +67,7 @@ feature promotion evidence를 서로 다른 계약으로 유지한다.
 | <a id="pcv-vm-media-eject"></a>`pcv.vm.media-eject` | VM media eject | 1 | 1 present / 0 excluded | 1 present / 0 excluded |
 | <a id="pcv-vm-media-attach"></a>`pcv.vm.media-attach` | VM media attach | 1 | 1 present / 0 excluded | 1 present / 0 excluded |
 | <a id="pcv-vm-resource-limits"></a>`pcv.vm.resource-limits` | VM resource limits | 4 | 3 present / 1 excluded | 4 present / 0 excluded |
+<!-- END GENERATED FEATURE ID SUMMARY -->
 
 ## 82-route surface 투영
 
