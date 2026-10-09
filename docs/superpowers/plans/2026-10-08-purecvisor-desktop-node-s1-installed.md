@@ -85,7 +85,9 @@
 
 ## Task 10: 기록과 PR
 
-- [ ] 시연 기록 `docs/ga-ready/demo/s1-browser-console-demo-2026-10-08.md`(시나리오, 설치본 version, 스크립트 결과, 화면 캡처 경로)를 쓰고 criteria S1을 `status=passed`, `demo_record`로 바꾼다. `pcvverify completion`을 읽기 전용으로 돌려 결과를 적는다. clean HEAD에서 솔루션 시험, web required, `git diff --check origin/main...HEAD` 뒤 push, PR, green CI 뒤 merge한다.
+- [x] 시연 기록 `docs/ga-ready/demo/s1-browser-console-demo-2026-10-08.md`(시나리오, 설치본 version, 스크립트 결과, 화면 캡처 경로)를 쓰고 criteria S1을 `status=passed`, `demo_record`로 바꾼다. `pcvverify completion`을 읽기 전용으로 돌려 결과를 적는다. clean HEAD에서 솔루션 시험, web required, `git diff --check origin/main...HEAD` 뒤 push, PR, green CI 뒤 merge한다.
+
+실행 기록(2026-10-09): 시연 기록을 쓰고 S1을 `status=passed`, `demo_record=docs/ga-ready/demo/s1-browser-console-demo-2026-10-08.md`로 바꿨다. `pcvverify completion --today 2026-10-09`는 exit `1`, `complete=false met=2/7 gaps=6 head=6a1f608`이다. S1 `met=true`, C6 `met=true`. 남은 갭은 C1·C5 `ci-wait`, S2·S3·S4 `scenario`, C5 `ubuntu-26-runner` `not_before=2026-10-19`다. 결과 `artifacts/completion/20261009-s1/result.json`. host mutation 없음. push와 merge 결과는 이 기록 뒤에 이어진다.
 
 ## Task 11: C5 runner 확인 (2026-10-19 이후)
 

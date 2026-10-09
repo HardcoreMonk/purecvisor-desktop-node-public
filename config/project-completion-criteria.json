@@ -16,8 +16,8 @@
     {
       "id": "S1",
       "title": "브라우저에서 ISO로 VM을 만들고, 브라우저 콘솔로 OS를 설치하고, 네트워크 연결을 확인한다",
-      "status": "open",
-      "demo_record": null
+      "status": "passed",
+      "demo_record": "docs/ga-ready/demo/s1-browser-console-demo-2026-10-08.md"
     },
     {
       "id": "S2",
