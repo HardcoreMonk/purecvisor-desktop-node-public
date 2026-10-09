@@ -29,7 +29,9 @@ public sealed class HyperVIntegrationFixture : IDisposable
     public HyperVIntegrationFixture()
     {
         repositoryRoot = FindRepositoryRoot();
-        RunId = DateTime.UtcNow.ToString("yyyyMMddHHmmss", CultureInfo.InvariantCulture);
+        // Two test classes get two fixture instances that may start within the same second; a random tail keeps their
+        // run prefixes and storage roots apart so one Dispose never deletes the other's disks (2026-10-10 gate runs).
+        RunId = DateTime.UtcNow.ToString("yyyyMMddHHmmss", CultureInfo.InvariantCulture) + "-" + Guid.NewGuid().ToString("N")[..4];
         RunPrefix = $"{NamePrefix}{RunId}-";
         VmRoot = Path.Combine(repositoryRoot, "artifacts", "hyperv-integration", RunId);
         IsoPath = Path.Combine(
@@ -100,10 +102,7 @@ public sealed class HyperVIntegrationFixture : IDisposable
             }
         }
 
-        if (Directory.Exists(VmRoot))
-        {
-            Directory.Delete(VmRoot, recursive: true);
-        }
+        TryDeleteStorageRoot(problems);
 
         var namesAfter = VmNames();
         if (!namesAfter.Order(StringComparer.Ordinal).SequenceEqual(namesBefore.Order(StringComparer.Ordinal)))
@@ -127,6 +126,39 @@ public sealed class HyperVIntegrationFixture : IDisposable
         if (problems.Count > 0)
         {
             throw new InvalidOperationException("Integration cleanup failed: " + string.Join("; ", problems));
+        }
+    }
+
+    // VMMS can hold a deleted VM's VHDX for a moment after vm.delete returns, so the first recursive delete may hit an
+    // IOException. Retry briefly and record a problem instead of throwing, so the run summary is always written.
+    private void TryDeleteStorageRoot(List<string> problems)
+    {
+        for (var attempt = 1; attempt <= 10; attempt++)
+        {
+            try
+            {
+                if (Directory.Exists(VmRoot))
+                {
+                    Directory.Delete(VmRoot, recursive: true);
+                }
+
+                return;
+            }
+            catch (IOException exception) when (attempt < 10)
+            {
+                _ = exception;
+                Thread.Sleep(500);
+            }
+            catch (IOException exception)
+            {
+                problems.Add($"delete storage root {VmRoot}: {exception.Message}");
+                return;
+            }
+            catch (UnauthorizedAccessException exception)
+            {
+                problems.Add($"delete storage root {VmRoot}: {exception.Message}");
+                return;
+            }
         }
     }
 
