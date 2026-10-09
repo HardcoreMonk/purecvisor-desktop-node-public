@@ -22,7 +22,8 @@
 
 - 완료 조건: 시나리오 S1~S4와 C1(GA-ready CI), C5(CI와 기한 위험), C6(영구 범위 밖). 결정 `docs/adr/0017-scenario-delivery-completion.md`,
   기계 판정 출처 `config/project-completion-criteria.json`(`pcv-project-completion-definition-v3`). v2의 C2·C3·C4·C7은 `hygiene` 줄로만 낸다.
-- 2026-10-09 판정(`main` `6b76274`): `met=1/7`. 현황 감사 `docs/project-status-audit-2026-10-09.md`.
+- 2026-10-09 최신 판정(`main` `9b6c0e2`): `met=3/7`. 충족은 C1, S1, C6. 현황 감사 `docs/project-status-audit-2026-10-09-after-s1.md`. S1 시연 기록 `docs/ga-ready/demo/s1-browser-console-demo-2026-10-08.md`.
+- 같은 날 시연 전 판정(`main` `6b76274`): `met=1/7`. `docs/project-status-audit-2026-10-09.md`.
 - 평소 기능 PR은 Lane 1 + Required CI + 설치본 smoke(dev probe), release train은 시나리오 단계 완료 때만 출발한다.
 - S1 브라우저 콘솔 설계 `docs/superpowers/specs/2026-10-08-purecvisor-desktop-node-s1-browser-console-design.md`, 시나리오 스크립트 `npm run scenario:s1-console --prefix web`.
 

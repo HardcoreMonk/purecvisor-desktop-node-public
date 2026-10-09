@@ -151,6 +151,7 @@ evidence다.
 - LAN은 preview. 기본 loopback, TLS는 외부 reverse-proxy
 - noVNC는 기본 off. target mutation은 ADR-0010 후보
 - 2026-10-08: 브라우저 콘솔은 noVNC가 아니라 WMI 화면과 `Msvm_Keyboard` 입력으로 제공한다(ADR-0017 시나리오 S1, PR #74)
+- 2026-10-09: S1 시연이 통과했다. 기록 `docs/ga-ready/demo/s1-browser-console-demo-2026-10-08.md`. 이 호스트 설치본은 Rollback 뒤 `0.42.93-admin-smoke`다
 - 계정 CRUD API 없음. 기본 계정 없음
 - TUI 없음
 - Linux runtime, public signing, 외부 publication 없음

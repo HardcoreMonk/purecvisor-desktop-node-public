@@ -389,7 +389,7 @@ Evidence ledger와 waiver record field는 다음 format과 enum rule을 따른�
 - 내부 전용 GA-ready 제품 런타임의 기본 Local API auth mode는 `single_bearer_token`이며, account file이 `no-default-account` 상태이면 bearer token gate가 계속 authoritative하다.
 - Account/RBAC/JWT route는 `accounts.json`와 `jwt-signing-key.txt`가 구성된 뒤에만 additive local auth surface로 동작한다. 기본 bootstrap은 계정을 만들지 않는다.
 - RBAC enforcement는 Local API request processor가 소유한다. Web Console의 role/permission 표시는 operator hint이며 authorization의 단일 근거가 아니다.
-- 2026-10-08부터 S1 브라우저 콘솔 route 두 개(`GET /api/v1/vms/{vmId}/console/frame/{size}` `console.view`, `POST /api/v1/vms/{vmId}/console/input` `console.input`)가 WMI 화면과 `Msvm_Keyboard` 입력을 제공한다(설계 `pcv-s1-browser-console-v1`).
+- 2026-10-08부터 S1 브라우저 콘솔 route 두 개(`GET /api/v1/vms/{vmId}/console/frame/{size}` `console.view`, `POST /api/v1/vms/{vmId}/console/input` `console.input`)가 WMI 화면과 `Msvm_Keyboard` 입력을 제공한다(설계 `pcv-s1-browser-console-v1`). 2026-10-09 S1 시연이 통과했다. 기록은 `docs/ga-ready/demo/s1-browser-console-demo-2026-10-08.md`.
 - Console route는 Hyper-V `vmconnect` handoff capability를 기본으로 노출한다. noVNC/WebSocket bridge는 explicit `--novnc-target-host`/`--novnc-target-port` 구성 전까지 disabled이며, 구성된 경우 Windows Desktop Node listener가 WebSocket-to-VNC TCP bridge를 제공한다. Linux console backend를 가져오지 않는다.
 - loopback static asset bypass는 Web Console bootstrap을 위한 `unauthenticated-static-only` 정책으로만 허용한다.
 - non-loopback static assets require bearer auth. LAN mode에서 static asset과 API route는 같은 bearer token boundary 안에 있어야 한다.

@@ -113,7 +113,7 @@ Web Console은 선택된 VM의 console capability를 표시한다. 현재 Window
 | 항목 | 상태 |
 |------|------|
 | Windows console | `vmconnect` handoff |
-| Browser console | VM 상세 Browser console 카드. 화면은 `console.view`, 키 입력은 `console.input` 권한 |
+| Browser console | VM 상세 Browser console 카드. 화면은 `console.view`, 키 입력은 `console.input` 권한. 2026-10-09 S1 시연 기록은 `docs/ga-ready/demo/s1-browser-console-demo-2026-10-08.md` |
 | noVNC | Explicit noVNC target host/port가 구성되기 전까지 `not_configured`; 구성되면 WebSocket-to-VNC TCP bridge |
 | Required permission | `console.view` |
 
