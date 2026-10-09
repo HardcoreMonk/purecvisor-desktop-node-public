@@ -200,6 +200,10 @@ PR #156 post-merge public-boundary main push는 `docs/ga-ready/evidence/public-b
 - Linux `purecvisor-single`, Linux `purecvisorsd`, KVM/libvirt/LXC/ZFS/OVS/OVN runtime 코드를 추가하지 않는다.
 - 현재 코드 경로는 phase 이력과 테스트 계약을 보존하기 위해 `archive/spikes/purecvisor-desktop-node/**`와 `packaging/windows-desktop-node/**`를 유지한다.
 - 현재 적용 결정은 `docs/ADR_INDEX.md`와 `docs/adr/`를 우선한다.
+- 이 저장소는 GitHub public이다. 문서, evidence, 시연 기록에 사용자 홈 경로, LAN 사설 IP, 호스트명, token 값을 적지 않는다.
+  저장소 상대 경로와 Hyper-V Default Switch NAT 주소까지만 허용한다(2026-10-09 감사 §7).
+- 작업 저장소는 이 저장소 하나다. private `purecvisor-desktop-node`는 2026-10-09부터 read-only archive이고, Claude Code
+  skill(`pcv-campaign`, `pcv-campaign-open`, `pcv-ship`, `pcv-goal`)은 이 저장소 `.claude/skills/`가 소유한다.
 - 현재 operational full admin host mutation anchor는 `0.42.77-admin-smoke` /
   `full-admin-host-mutation-gate-20260830-04277`다. 설치본 운영자 표면은 Web Console과
   PCVCLI이며 `tui_present=false`다. 최신 closed manual-admin package-pair는
