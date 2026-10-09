@@ -93,6 +93,8 @@
 
 - [ ] `not_before` 2026-10-19. 이관 전 `adr17-s1-console-20261008` Task 14(그 전 `scenario-pivot-20261008` Task 6, `completion-20261008` Task 10)이다. Ubuntu 26 runner의 첫 `main` Development Gates와 Public Boundary run이 green이면 `config/project-completion-criteria.json` 위험 행을 `status=closed`, `closed_by`에 run id로 닫는다. 실패하면 `ubuntu-24.04` pin을 판단해 보고하고 멈춘다. push, PR, green CI 뒤 merge.
 
+이관(2026-10-09): `s2-template-clone-20261009` Task 2. 이 campaign은 닫는다.
+
 ## Task 12: 문서 현행화 (2026-10-09 사용자 지시)
 
 - [x] 사용자 지시 `모든 문서 현행화`. 현재 상태 문서를 ADR-0017, S1 브라우저 콘솔, 이 호스트 dev probe 상태에 맞춘다. 과거 evidence, plan, spec은 바꾸지 않는다.
