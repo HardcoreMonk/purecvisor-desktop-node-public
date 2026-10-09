@@ -12,7 +12,7 @@
   ],
   "mutation_allowed": true,
   "current_write_allowed": false,
-  "next_step": "Run Task 10 (BL-0014 fix) from docs/superpowers/plans/2026-10-09-purecvisor-desktop-node-audit-green-lean.md, then rerun Task 7, then Task 8 (push, PR, merge after green CI); Task 9 not before 2026-10-19. After this campaign closes, open the S3 campaign (approval 2) carrying Task 9, then the S4 campaign (approval 3).",
+  "next_step": "Run Task 8 (clean-HEAD verification, push, PR, merge after green CI, post-merge main run check) from docs/superpowers/plans/2026-10-09-purecvisor-desktop-node-audit-green-lean.md; Task 9 not before 2026-10-19. After this campaign closes, open the S3 campaign (approval 2) carrying Task 9, then the S4 campaign (approval 3).",
   "plan": "docs/superpowers/plans/2026-10-09-purecvisor-desktop-node-audit-green-lean.md",
   "task_queue": [
     "Task 1",
@@ -32,7 +32,7 @@
   "task_not_before": {
     "Task 9": "2026-10-19"
   },
-  "next_task": "Task 7",
+  "next_task": "Task 8",
   "completed_tasks": [
     "Task 1",
     "Task 2",
@@ -40,7 +40,8 @@
     "Task 4",
     "Task 5",
     "Task 6",
-    "Task 10"
+    "Task 10",
+    "Task 7"
   ],
   "commit_policy": "local-commit-per-task",
   "push_allowed": true,
