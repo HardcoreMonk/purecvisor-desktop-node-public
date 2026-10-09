@@ -7,32 +7,35 @@
   "working_authority": "source_head",
   "allowed_lanes": [
     "0",
-    "1"
+    "1",
+    "2"
   ],
-  "mutation_allowed": false,
+  "mutation_allowed": true,
   "current_write_allowed": false,
   "next_step": "Run Task 1 from docs/superpowers/plans/2026-10-09-purecvisor-desktop-node-s2-template-clone.md, then Task 2 after 2026-10-19.",
   "plan": "docs/superpowers/plans/2026-10-09-purecvisor-desktop-node-s2-template-clone.md",
   "task_queue": [
     "Task 1",
+    "Task 3",
     "Task 2"
   ],
-  "task_lanes": {},
+  "task_lanes": {
+    "Task 3": "2"
+  },
   "task_not_before": {
     "Task 2": "2026-10-19"
   },
   "next_task": "Task 2",
   "completed_tasks": [
-    "Task 1"
+    "Task 1",
+    "Task 3"
   ],
   "commit_policy": "local-commit-per-task",
   "push_allowed": true,
   "merge_policy": "after-green-ci",
-  "checkpoint_limit": 2,
-  "approval_locator": "User-Approval: 2026-09-27 campaign runner commit policy local-commit-per-task; User-Approval: 2026-10-09 \"S2\" then \"그렇게 진행해\" (commit the current-document refresh, carry s1-installed-20261008 Task 11, open the S2 campaign). New S2 work is Lane 1 plan-only and local commit only. Carried Task 2 keeps the original C5 sentence including push, PR and merge after green CI, not before 2026-10-19.",
-  "next_approval_required": [
-    "1. S2 설치본 시연: 꺼진 managed Generation 2 pcv-it- VM을 template lock한 뒤 clone하고, clone job이 60초 안에 끝나게 한다. 시연 기록과 criteria S2 passed. Lane 2는 그 VM의 lock, clone, 그리고 만든 VM의 삭제만. push, PR, green CI 뒤 merge."
-  ],
+  "checkpoint_limit": 3,
+  "approval_locator": "User-Approval: 2026-09-27 campaign runner commit policy local-commit-per-task; User-Approval: 2026-10-09 \"S2\" then \"그렇게 진행해\" (commit the current-document refresh, carry s1-installed-20261008 Task 11, open the S2 campaign). User-Approval: 2026-10-09 \"pcv-it-s2-source를 managed Generation 2로 만든다(작은 독립 VHDX, Off, checkpoint 없음, TPM 없음). template lock 뒤 pcv-it-s2-clone으로 60초 안에 clone하고 복제본은 지운다. 보존 VM은 건드리지 않는다. 시연 기록과 criteria S2 passed, push, PR, green CI 뒤 merge.\"",
+  "next_approval_required": [],
   "stop_on": [
     "same-cause-fail-3",
     "budget",

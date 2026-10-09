@@ -15,9 +15,10 @@ test("plan-only prints the template lock, clone, and 60 second bound without exe
   assert.match(result.stdout, /elapsed_ms <= 60000/);
 });
 
-test("execute is rejected until a host mutation approval exists", () => {
-  const result = spawnSync(process.execPath, [script, "--execute", "--source=pcv-it-s2-source"], { encoding: "utf8" });
-  assert.equal(result.status, 2);
-  assert.match(result.stderr, /host-mutation approval/);
-  assert.equal(result.stdout, "");
+test("plan-only uses the approved source and clone names", () => {
+  const result = spawnSync(process.execPath, [script, "--source=pcv-it-s2-source", "--target=pcv-it-s2-clone"], { encoding: "utf8" });
+  assert.equal(result.status, 0);
+  assert.match(result.stdout, /pcv-it-s2-source/);
+  assert.match(result.stdout, /pcv-it-s2-clone/);
+  assert.match(result.stdout, /delete-clone/);
 });

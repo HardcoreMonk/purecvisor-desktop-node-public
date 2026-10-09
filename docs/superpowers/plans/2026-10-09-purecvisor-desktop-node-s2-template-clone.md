@@ -30,12 +30,18 @@
 
 실행 기록(2026-10-09): `node --check`와 `node --test web/node-tests/s2-clone-scenario.test.mjs`가 2개 통과, exit 0이다. `--execute`는 HTTP 없이 exit 2다. host mutation 없음.
 
+## Task 3: S2 설치본 시연 (Lane 2)
+
+- [x] `pcv-it-s2-source`를 managed Generation 2로 만들고 template lock한 뒤 `pcv-it-s2-clone`을 60초 안에 clone하고 복제본을 지운다. 시연 기록과 criteria S2 `passed`. push, PR, green CI 뒤 merge.
+
+실행 기록(2026-10-09): `run-s2-clone-scenario.mjs --execute` `result=pass`. create·template-lock·delete-clone job `succeeded`, preview HTTP 200, clone `elapsed_ms=3091`. 원본은 Off template로 남고 보존 VM은 Off다. 기록 `docs/ga-ready/demo/s2-template-clone-demo-2026-10-09.md`.
+
 ## Task 2: C5 runner 확인 (2026-10-19 이후)
 
 - [ ] `not_before` 2026-10-19. 이관 전 `s1-installed-20261008` Task 11(그 전 `adr17-s1-console-20261008` Task 14)이다. Ubuntu 26 runner의 첫 `main` Development Gates와 Public Boundary run이 green이면 `config/project-completion-criteria.json` 위험 행을 `status=closed`, `closed_by`에 run id로 닫는다. 실패하면 `ubuntu-24.04` pin을 판단해 보고하고 멈춘다. push, PR, green CI 뒤 merge.
 
 ## Nonclaims
 
-- S2 통과를 주장하지 않는다. criteria S2는 `open`으로 둔다.
+- S2 통과는 Task 3 시연과 스크립트 결과로만 주장하고, S3~S4는 주장하지 않는다.
 - operational current는 `0.42.93-admin-smoke` 그대로다.
 - public trusted signing과 external stable publication을 주장하지 않는다.
