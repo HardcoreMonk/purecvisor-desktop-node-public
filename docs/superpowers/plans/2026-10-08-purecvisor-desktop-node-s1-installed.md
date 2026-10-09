@@ -79,7 +79,9 @@
 
 ## Task 9: 정리와 Rollback (Lane 2)
 
-- [ ] 데모 VM을 끄고 지우고, `-Action Rollback`으로 `0.42.93-admin-smoke`에 돌아가 service Running, Web `200`, 설치본 version, `pcv-it-` VM `0`개, 보존 VM Off를 확인한다. 로컬 commit.
+- [x] 데모 VM을 끄고 지우고, `-Action Rollback`으로 `0.42.93-admin-smoke`에 돌아가 service Running, Web `200`, 설치본 version, `pcv-it-` VM `0`개, 보존 VM Off를 확인한다. 로컬 commit.
+
+실행 기록(2026-10-09): `pcv-it-s1-ubuntu` poweroff·delete job이 모두 `succeeded`였다. Rollback DryRun은 `ok=true`였고 previous manifest는 `0.42.93-admin-smoke`였다. 실행 Rollback도 `ok=true`, exit `0`이다. 끝 상태: 설치본 manifest `0.42.93-admin-smoke`, service Running, Web `200`, `pcv-it-` VM `0`개, 보존 VM `pcv-guest-installed-04253-r1` Off. 결과는 `artifacts/s1-installed-20261008/rollback/`. 이 되돌리기는 승격 근거가 아니다.
 
 ## Task 10: 기록과 PR
 
