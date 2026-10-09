@@ -1,6 +1,8 @@
+using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.RegularExpressions;
 
 namespace DesktopNode.Verification;
 
@@ -147,6 +149,7 @@ internal sealed class VerificationApplication(
 
             var report = await new VerificationExecutor(processRunner, managedSuiteRunner)
                 .ExecuteAsync(plan, catalog, repositoryRoot, cancellationToken);
+            WriteFailedSuiteDiagnostics(standardError, report.Results, repositoryRoot);
             var completedAt = clock.UtcNow;
             var summary = VerificationSummaryFactory.Create(
                 plan,
@@ -339,6 +342,49 @@ internal sealed class VerificationApplication(
                 VerificationErrorCodes.ConfigInvalid,
                 "standard-output-write-failed");
             return 2;
+        }
+    }
+
+    // CI 로그에는 summary.json 경로만 남아 어느 테스트가 실패했는지 알 수 없었다(2026-10-09 감사 §10). 실패하거나
+    // 시간 초과한 process suite 의 출력에서 테스트 runner 의 실패 줄(xunit `Failed <name>`, VSTest 한국어 `실패 <name>`,
+    // Pester `[-] <name>`)만 골라 stderr 에 쓴다. 나머지 출력은 summary.json 에만 남고, 이름은 summary 와 같은
+    // sanitizer 를 거친다. stdout 은 summary 경로 한 줄이라는 계약을 그대로 둔다.
+    private static readonly Regex FailedTestLine = new(
+        "^[ \\t]*(?:Failed|실패)[ \\t]+(?<name>[^\\s\\[]+)|^[ \\t]*\\[-\\][ \\t]+(?<name>.+?)[ \\t]*$",
+        RegexOptions.CultureInvariant | RegexOptions.Multiline);
+
+    private const int MaximumEchoedFailuresPerSuite = 50;
+
+    private static void WriteFailedSuiteDiagnostics(
+        TextWriter standardError,
+        IReadOnlyList<SuiteExecutionRecord> results,
+        string repositoryRoot)
+    {
+        foreach (var result in results)
+        {
+            if (result.Status is not (SuiteStatus.Failed or SuiteStatus.TimedOut) ||
+                string.IsNullOrEmpty(result.StandardOutput))
+            {
+                continue;
+            }
+
+            var echoed = 0;
+            foreach (Match match in FailedTestLine.Matches(result.StandardOutput))
+            {
+                if (echoed == MaximumEchoedFailuresPerSuite)
+                {
+                    standardError.WriteLine($"failed-test suite={result.SuiteId} test=...[truncated]");
+                    break;
+                }
+
+                var name = ProcessOutputSanitizer.Sanitize(match.Groups["name"].Value, repositoryRoot, 400);
+                standardError.WriteLine($"failed-test suite={result.SuiteId} test={name}");
+                echoed++;
+            }
+
+            var exit = result.ExitCode?.ToString(CultureInfo.InvariantCulture) ?? "none";
+            standardError.WriteLine(
+                $"failed-suite suite={result.SuiteId} status={result.Status} exit={exit} failed_tests={echoed}");
         }
     }
 

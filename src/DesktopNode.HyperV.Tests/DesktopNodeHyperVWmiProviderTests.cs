@@ -207,6 +207,76 @@ public sealed class DesktopNodeHyperVWmiProviderTests
         Assert.Equal("saved", DesktopNodeHyperVWmiCommon.MapEnabledState(6));
     }
 
+    // BL-0014: Hyper-V 가 실제로 돌려주는 전이 값은 unknown 으로 떨어지면 안 된다. inventory 는 한 행이라도 unknown 이면
+    // 전체를 거절한다.
+    [Theory]
+    [InlineData(4, "stopping")]
+    [InlineData(10, "starting")]
+    [InlineData(32772, "running")]
+    [InlineData(32779, "saved")]
+    [InlineData(32780, "saving")]
+    [InlineData(0, "unknown")]
+    [InlineData(1, "unknown")]
+    public void WmiEnabledStateVocabularyCoversTransitionalValues(int enabledState, string expected)
+    {
+        Assert.Equal(expected, DesktopNodeHyperVWmiCommon.MapEnabledState(enabledState));
+    }
+
+    [Fact]
+    public void WaitForKnownStateStopsAtTheFirstKnownState()
+    {
+        var reads = new Queue<string>(["unknown", "unknown", "stopped"]);
+        var waits = 0;
+
+        var known = DesktopNodeHyperVWmiCommon.WaitForKnownState(
+            () => reads.Dequeue(),
+            attempts: 40,
+            interval: TimeSpan.FromMilliseconds(250),
+            CancellationToken.None,
+            wait: (span, _) =>
+            {
+                Assert.Equal(TimeSpan.FromMilliseconds(250), span);
+                waits++;
+                return false;
+            });
+
+        Assert.True(known);
+        Assert.Equal(2, waits);
+        Assert.Empty(reads);
+    }
+
+    [Fact]
+    public void WaitForKnownStateGivesUpAfterTheAttemptBudgetWithoutThrowing()
+    {
+        var reads = 0;
+        var waits = 0;
+
+        var known = DesktopNodeHyperVWmiCommon.WaitForKnownState(
+            () => { reads++; return "unknown"; },
+            attempts: 3,
+            interval: TimeSpan.FromMilliseconds(1),
+            CancellationToken.None,
+            wait: (_, _) => { waits++; return false; });
+
+        Assert.False(known);
+        Assert.Equal(3, reads);
+        Assert.Equal(2, waits);
+    }
+
+    [Fact]
+    public void WaitForKnownStateHonoursCancellation()
+    {
+        using var cancellation = new CancellationTokenSource();
+        cancellation.Cancel();
+
+        Assert.Throws<OperationCanceledException>(() => DesktopNodeHyperVWmiCommon.WaitForKnownState(
+            () => "unknown",
+            attempts: 3,
+            interval: TimeSpan.FromMilliseconds(1),
+            cancellation.Token,
+            wait: (_, _) => true));
+    }
+
     [Fact]
     public void WmiVmProviderDeclinesUnknownSummaryUnits()
     {

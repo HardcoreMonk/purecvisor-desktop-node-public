@@ -13,17 +13,20 @@ internal sealed partial class DesktopNodeApiConsoleRouteHandler
     private readonly DesktopNodeApiAuthSessionHandler authSessionHandler;
     private readonly DesktopNodeJobRuntime jobRuntime;
     private readonly DesktopNodeApiHyperVOperationInvoker operationInvoker;
+    private readonly DesktopNodeApiHardeningOptions hardeningOptions;
 
     public DesktopNodeApiConsoleRouteHandler(
         DesktopNodeNoVncTargetStore noVncTargetStore,
         DesktopNodeApiAuthSessionHandler authSessionHandler,
         DesktopNodeJobRuntime jobRuntime,
-        DesktopNodeApiHyperVOperationInvoker operationInvoker)
+        DesktopNodeApiHyperVOperationInvoker operationInvoker,
+        DesktopNodeApiHardeningOptions? hardeningOptions = null)
     {
         this.operationInvoker = operationInvoker;
         this.noVncTargetStore = noVncTargetStore;
         this.authSessionHandler = authSessionHandler;
         this.jobRuntime = jobRuntime;
+        this.hardeningOptions = hardeningOptions ?? new DesktopNodeApiHardeningOptions();
     }
 
     private DesktopNodeConsoleOptions consoleOptions => noVncTargetStore.Options;

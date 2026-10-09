@@ -52,16 +52,27 @@ public sealed class ApiConsoleFrameRouteTests
     [Fact]
     public void FrameRouteLimitsTheSameVmTo100Milliseconds()
     {
+        // throttle 은 hardening options 의 clock 으로 잰다. 고정 clock 이므로 느린 runner 에서도 결과가 같다.
+        var now = new DateTimeOffset(2026, 10, 9, 12, 0, 0, TimeSpan.Zero);
         var calls = new List<JsonElement>();
-        var processor = DesktopNodeApiRequestProcessor.CreateDefault(nativeAdapter: new FrameNativeAdapter(calls));
+        var processor = DesktopNodeApiRequestProcessor.CreateDefault(
+            nativeAdapter: new FrameNativeAdapter(calls),
+            hardeningOptions: new DesktopNodeApiHardeningOptions(Clock: () => now));
+        var request = new DesktopNodeApiRequest("GET", "/api/v1/vms/lab-vm/console/frame/160x120", ServiceBearerAccepted: true);
 
-        var first = processor.Handle(new DesktopNodeApiRequest("GET", "/api/v1/vms/lab-vm/console/frame/160x120", ServiceBearerAccepted: true));
-        var second = processor.Handle(new DesktopNodeApiRequest("GET", "/api/v1/vms/lab-vm/console/frame/160x120", ServiceBearerAccepted: true));
+        var first = processor.Handle(request);
+        var second = processor.Handle(request);
+        now = now.AddMilliseconds(DesktopNodeApiConsoleRouteHandler.FrameMinIntervalMilliseconds - 1);
+        var third = processor.Handle(request);
+        now = now.AddMilliseconds(1);
+        var fourth = processor.Handle(request);
 
         Assert.Equal(200, first.StatusCode);
         Assert.Equal(429, second.StatusCode);
         Assert.Contains("PCV_CONSOLE_RATE_LIMITED", second.Body, StringComparison.Ordinal);
-        Assert.Single(calls);
+        Assert.Equal(429, third.StatusCode);
+        Assert.Equal(200, fourth.StatusCode);
+        Assert.Equal(2, calls.Count);
     }
 
     private sealed class FrameNativeAdapter(List<JsonElement> calls) : IDesktopNodeHyperVNativeAdapter
