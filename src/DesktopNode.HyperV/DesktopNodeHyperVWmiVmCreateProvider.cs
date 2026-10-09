@@ -20,6 +20,8 @@ public sealed partial class DesktopNodeHyperVWmiVmCreateProvider : IDesktopNodeH
     public const string SyntheticEthernetPortSettingClass = "Msvm_SyntheticEthernetPortSettingData";
     public const string EthernetPortAllocationSettingClass = "Msvm_EthernetPortAllocationSettingData";
     private const string DefineSystemMethod = "DefineSystem";
+    private const int InventoryReadbackAttempts = 40;
+    private static readonly TimeSpan InventoryReadbackInterval = TimeSpan.FromMilliseconds(250);
     private const string DestroySystemMethod = "DestroySystem";
     private const string CreateVirtualHardDiskMethod = "CreateVirtualHardDisk";
     private const string AddResourceSettingsMethod = "AddResourceSettings";
@@ -120,6 +122,15 @@ public sealed partial class DesktopNodeHyperVWmiVmCreateProvider : IDesktopNodeH
                 ConfigureGen2Firmware(scope, request.Name, cancellationToken);
                 steps.Add("Configure Gen2 firmware");
             }
+
+            // BL-0014: 돌아가기 전에 vm.list 가 이 VM 의 state 를 읽을 수 있어야 한다(최대 10초).
+            steps.Add(WaitForKnownState(
+                () => ReadEnabledState(scope, request.Name, cancellationToken),
+                InventoryReadbackAttempts,
+                InventoryReadbackInterval,
+                cancellationToken)
+                ? "Confirm inventory readback"
+                : "Inventory readback state still unknown after 10 s");
 
             if (!TryDeleteCreateMarker(markerPath))
             {
@@ -450,6 +461,12 @@ public sealed partial class DesktopNodeHyperVWmiVmCreateProvider : IDesktopNodeH
         }
 
         return null;
+    }
+
+    private static string ReadEnabledState(ManagementScope scope, string vmName, CancellationToken cancellationToken)
+    {
+        using var vm = FindVm(scope, vmName, cancellationToken);
+        return vm is null ? "unknown" : MapEnabledState(vm.Properties["EnabledState"]?.Value);
     }
 
     // Hyper-V assigns a Generation 2 boot order of network, then disk, then DVD. A VM created

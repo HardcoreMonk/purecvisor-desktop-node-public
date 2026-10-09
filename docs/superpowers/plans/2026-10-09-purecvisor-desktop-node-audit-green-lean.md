@@ -93,7 +93,9 @@
 
 ## Task 10: BL-0014 수정 (Task 7 재실행 전, 2026-10-10 승인 4)
 
-- [ ] `vm.create`가 Ok를 돌려준 직후 `vm.list`가 `PCV_NATIVE_VM_LIST_IDENTITY_STATE_INCOMPLETE`를 내는 원인을 `DesktopNodeHyperVWmiVmProvider`의 state 매핑과 `DesktopNodeHyperVWmiVmCreateProvider`의 반환 시점에서 찾는다. 전이 상태 어휘가 비어 있으면 어휘를 더하고, create가 정의 직후 돌아오면 생성한 VM의 행이 id·name·state를 갖출 때까지 bounded 대기(예: 250 ms 간격 최대 10초)를 넣는다. parity guard(한 행이라도 불완전하면 inventory 전체 거절)는 바꾸지 않는다. fake provider 단위 시험을 더한다. 검증 `dotnet test src/DesktopNode.HyperV.Tests -c Release`, `dotnet test src/DesktopNode.Api.Tests -c Release`, ratchet Pester. 로컬 commit. 그 뒤 Task 7을 같은 승인으로 다시 돈다.
+- [x] `vm.create`가 Ok를 돌려준 직후 `vm.list`가 `PCV_NATIVE_VM_LIST_IDENTITY_STATE_INCOMPLETE`를 내는 원인을 `DesktopNodeHyperVWmiVmProvider`의 state 매핑과 `DesktopNodeHyperVWmiVmCreateProvider`의 반환 시점에서 찾는다. 전이 상태 어휘가 비어 있으면 어휘를 더하고, create가 정의 직후 돌아오면 생성한 VM의 행이 id·name·state를 갖출 때까지 bounded 대기(예: 250 ms 간격 최대 10초)를 넣는다. parity guard(한 행이라도 불완전하면 inventory 전체 거절)는 바꾸지 않는다. fake provider 단위 시험을 더한다. 검증 `dotnet test src/DesktopNode.HyperV.Tests -c Release`, `dotnet test src/DesktopNode.Api.Tests -c Release`, ratchet Pester. 로컬 commit. 그 뒤 Task 7을 같은 승인으로 다시 돈다.
+
+실행 기록(2026-10-10): 원인은 두 겹이다. `DesktopNodeHyperVWmiCommon.MapEnabledState`가 Hyper-V가 실제로 돌려주는 전이 값 4(Shutting Down), 10(Starting), 32772(Migrating), 32779(FastSaved), 32780(FastSaving)을 `unknown`으로 떨어뜨렸고, `vm.create`는 마지막 설정 job 직후 바로 돌아와 `vm.list`가 새 VM의 state를 읽기 전에 inventory 전체를 거절할 수 있었다. 어휘 다섯 값을 더했고(0 Unknown, 1 Other만 `unknown`), `WaitForKnownState`(readState·wait 주입 가능, bounded)를 두고 create provider가 Gen2 firmware 설정 뒤 `ReadEnabledState`로 250 ms × 40회까지 기다린 뒤 step `Confirm inventory readback`(또는 10초 뒤에도 unknown이면 그 사실)을 남긴다. parity guard는 그대로다. 단위 시험 10건 추가(전이 값 7건, `WaitForKnownState` 3건). 검증: HyperV.Tests 285/285, Api.Tests 517/517(Release), IntegrationTests 빌드 성공, ratchet 3/3(`DesktopNodeHyperVWmiVmCreateProvider.cs` 662 ≤ 675), `git diff --check` 통과. 실제 WMI 값이 어느 쪽이었는지는 Task 7 재실행이 보여 준다.
 
 ## Nonclaims
 
