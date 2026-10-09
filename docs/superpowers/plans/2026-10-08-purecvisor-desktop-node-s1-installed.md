@@ -55,7 +55,9 @@
 
 ## Task 5: Ubuntu 시연 1 — 생성과 부팅 (Lane 2)
 
-- [ ] 브라우저(Web Console)에서 Ubuntu ISO로 `pcv-it-s1-ubuntu` VM(vCPU 2, 4096MB, 32GB)을 만들고 켠 뒤 VM Screen으로 설치 프로그램 첫 화면까지 간다. Gen 2 Secure Boot로 부팅이 막히면 Gen 1로 다시 만든다. 화면 캡처를 남긴다. 로컬 commit.
+- [x] 브라우저(Web Console)에서 Ubuntu ISO로 `pcv-it-s1-ubuntu` VM(vCPU 2, 4096MB, 32GB)을 만들고 켠 뒤 VM Screen으로 설치 프로그램 첫 화면까지 간다. Gen 2 Secure Boot로 부팅이 막히면 Gen 1로 다시 만든다. 화면 캡처를 남긴다. 로컬 commit.
+
+실행 기록(2026-10-09 15:02 KST): checkpoint 시작 시 `pcv-it-s1-ubuntu`가 이미 Running이었다. 실측은 Generation 2, vCPU 2, memory 4096MB, disk 32GB, DVD `D:\Downloads\ubuntu-26.04.1-live-server-amd64.iso`, Secure Boot On / Microsoft UEFI Certificate Authority, Default Switch, vm root `artifacts/s1-installed-20261008/vms/pcv-it-s1-ubuntu`, uptime 약 13시간 24분. Gen 2 Secure Boot는 부팅을 막지 않아 Gen 1 재생성은 하지 않았다. 콘솔 프레임 `1024x768`(`captured_at` `2026-10-09T05:59:36Z`, sha256 `fbd1ac0c6c08cb1a42e16aa25c21754496b582e3e77b1c41afb9edc4232881cf`)은 Subiquity 언어 선택이고 English가 선택되어 있다. Web Console(`http://127.0.0.1/`) VM Screen은 `streaming 640x480 at 2 fps`로 같은 첫 화면을 보여 준다(png sha256 `802852bd1eecb0b08384435da5800b36cfa920c2d60f3e5cd52ec833654ed8bb`). 캡처는 `artifacts/s1-installed-20261008/demo/screen-now.bmp`와 `web-console-vm-screen.png`. service Running, Web `200`, 보존 VM `pcv-guest-installed-04253-r1`은 Off. 이 checkpoint의 추가 host mutation은 없다.
 
 ## Task 6: Ubuntu 시연 2 — 설치 설정 (Lane 2)
 
