@@ -61,7 +61,9 @@
 
 ## Task 6: Ubuntu 시연 2 — 설치 설정 (Lane 2)
 
-- [ ] VM Screen 키 입력으로 언어, 키보드, 네트워크(DHCP), 저장소(guided)를 진행하고 프로필(비밀번호는 실행 중 생성)과 SSH 선택까지 마쳐 설치를 시작한다. 화면 캡처를 남긴다. 로컬 commit.
+- [x] VM Screen 키 입력으로 언어, 키보드, 네트워크(DHCP), 저장소(guided)를 진행하고 프로필(비밀번호는 실행 중 생성)과 SSH 선택까지 마쳐 설치를 시작한다. 화면 캡처를 남긴다. 로컬 commit.
+
+실행 기록(2026-10-09): `pcv-it-s1-ubuntu` 콘솔 키 입력으로 설치를 시작했다. 언어 English, 키보드 English (US), 설치 종류 Ubuntu Server, 네트워크 eth0 DHCPv4 `172.29.16.136/20`, 프록시 없음, guided storage는 디스크 32GB 전체와 LVM(LUKS 없음)이다. 파일시스템은 `/` ext4, `/boot` ext4, `/boot/efi` fat32다. 프로필은 이름 `pcv`, 서버 이름 `pcvs1`, 사용자 `pcv`, 비밀번호 길이 20이고 값은 남기지 않았다. Ubuntu Pro는 Skip for now, OpenSSH server와 비밀번호 인증을 선택했고 가져온 키는 없다. snap은 선택하지 않았다. 끝 화면은 `Installing system`이며 로그가 `installing openssh-server`까지 진행했다. 중간 입력으로 설치기 디버그 셸이 열렸고 `exit`로 Network configuration에 돌아온 뒤 같은 설정을 다시 진행했다. 캡처는 `artifacts/s1-installed-20261008/demo/task6/`. 보존 VM은 그대로이고 데모 VM은 설치가 진행 중인 Running이다.
 
 ## Task 7: Ubuntu 시연 3 — 설치 완료와 재부팅 (Lane 2)
 
