@@ -13,7 +13,8 @@
     "burn": "docs/ga-ready/evidence/burn-bootstrapper-lifecycle-smoke-2026-10-10-04295.md",
     "msix": "docs/ga-ready/evidence/msix-package-lifecycle-smoke-2026-10-10-04294-04295.md",
     "pair-descriptor": "docs/ga-ready/evidence/manual-admin-campaign-descriptor-2026-10-10-04294-04295.md",
-    "fullgate": "docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-10-10-04295-hostmutation.md"
+    "fullgate": "docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-10-10-04295-hostmutation.md",
+    "current-card": "docs/ga-ready/evidence/installed-operator-surface-current-card-2026-10-10-04295.md"
   },
   "sources": {
     "package_root": "artifacts/admin-smoke-package-20261010-04295",
@@ -35,6 +36,9 @@
     "fullgate": {
       "run_context": "gate는 branch `lane1/train-04295-20261010`의 HEAD `b9898cf`에서 빌드했다(product source는 payload `f84d46a`와 같고, 그 뒤 commit은 문서뿐이다). manifest는 `pcvverify train-host-inputs --kind fullgate-manifest`가 `docs/ga-ready/trains/0.42.95-admin-smoke.host-inputs.json`에서 만들었고 LAN prefix는 직전 manifest에서 읽어 환경 변수로만 넘겼다. 설치본은 pair가 남긴 `0.42.95-admin-smoke+b401d94`(ARP 1개)에서 시작했다.",
       "vm_summary": "`pcv-guest-installed-04253-r1` Off, `pcv-it-s2-source` Off(S2 template)만 남음"
+    },
+    "current-card": {
+      "script_note": "capture 스크립트는 `pcvverify train-host-inputs --kind current-card`가 렌더된 fullgate facts에서 만들었다. 저장소 root(card root 밖)에서 실행했고 읽기만 한다."
     }
   }
 }
