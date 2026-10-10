@@ -399,7 +399,7 @@ Phase 25 후보는 .NET/TypeScript 전환을 단계적으로 검증했고, 후�
 - `GET /api/v1/vms/{id}/checkpoints`는 native checkpoint list read path를 사용하며 native VM inventory 또는 checkpoint row parity를 보존하지 못하면 helper 재시도 없이 native structured failure를 반환한다.
 - `POST /api/v1/vms/{id}/checkpoints`, `POST /api/v1/vms/{id}/checkpoints/{checkpoint_id}/restore`, `DELETE /api/v1/vms/{id}/checkpoints/{checkpoint_id}`는 C# WMI snapshot service adapter가 실행한다.
 - `POST /api/v1/vms`, `POST /api/v1/vms/{id}/shutdown`, `POST /api/v1/vms/{id}/restart`도 C# native adapter가 실행한다. Native VM create는 Generation 2 product path만 지원한다.
-- TypeScript Web Console은 `web/src/served-app.ts`가 served `web/app.js`를 생성하는 static asset flow로 승격됐으며, `verify:parity`는 served freshness, generated manifest/static parity, Node `vm` browser fixture smoke를 함께 실행한다.
+- TypeScript Web Console은 2026-10-10 ADR-0018로 Single Edge 프론트엔드 구조를 차용했다. `/`는 `web/index.html` 셸이고, `web/app.bundle.js`는 `web/src/modules.json` 순서표의 `web/src/modules/*.ts`와 `web/src/bootstrap.ts`로 만든 생성물이다. 옛 콘솔 `web/index.legacy.html` + `web/app.js`(source `web/src/served-app.ts`)는 옛 계약 기준선으로 남는다. `verify:parity`는 served freshness, generated manifest/static parity, 옛 콘솔 Node `vm` browser fixture smoke를 함께 실행하고, 새 셸 번들은 `web/node-tests/bundle-load.test.mjs`가 fake DOM에서 적재한다.
 - Public trusted signing과 외부 stable publication은 내부 전용 서비스 scope 밖이다.
 
 관련 문서:

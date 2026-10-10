@@ -308,6 +308,8 @@ Build script가 host path를 받지 않으면 `DesktopNode.Host`를 self-contain
 
 Repo migration follow-up 이후 MSI payload staging은 product wrapper, `DesktopNode.Host.exe`, repo-root `web/**`, `product-manifest.json`만 포함한다. Legacy API/Hyper-V/service component files는 MSI payload input이 아니다.
 
+Web payload 파일 목록은 `web/payload-manifest.json`(`pcv-web-payload-manifest-v1`, ADR-0018)이 소유한다. `core`(`app.js`, `index.html`, `styles.css`)는 `Product.wxs`의 명시 component이고, 나머지 `files`는 `packaging/windows-desktop-node/tools/Update-PcvWebPayloadWix.ps1`이 만드는 `WebPayload.wxs`의 component다. manifest를 바꾸면 이 도구를 `-Apply`로 돌려 fragment를 다시 만들고 `-Check`로 확인한다. build module(`PcvDesktopNodeInstaller.Build.psm1`)의 staging 목록도 같은 manifest를 읽는다. 생성 디렉터리마다 첫 component에 `RemoveFolder`(`On="uninstall"`)가 있다. 제품 ZIP update가 MSI 설치 전에 하위 폴더를 만들 수 있어, 이 행이 없으면 uninstall 뒤 폴더와 제품 root가 남는다(BL-0017, train `0.42.94` 정차, PR #84). Delivery `WixSourceContractVerifier`의 remove-folder 규칙이 이를 검사한다.
+
 최근 MSI 검증 요약:
 
 - `0.23.8-rc.1`, `0.23.9-rc.1`: local test certificate 기준 `RequireSigned` MSI lifecycle PASS. Public trust chain 검증은 닫지 않았다.

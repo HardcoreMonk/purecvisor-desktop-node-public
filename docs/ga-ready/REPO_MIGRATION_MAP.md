@@ -69,6 +69,7 @@ archive/
 - `web/src/served-app.ts`가 served `web/app.js` build output의 source owner다.
 - `web/package.json`의 `build:served`, `check:served`, `generate:parity`, `verify:parity`, `browser:fixture`가 Web Console package 검증 owner다.
 - `packaging/windows-desktop-node/installer/build.ps1`는 repo-root `web/app.js`, `web/index.html`, `web/styles.css`를 MSI payload `web/**`로 staging한다.
+- 2026-10-10 ADR-0018 뒤: 기본 셸 source owner는 `web/src/modules.json` 순서표와 `web/src/modules/**`(생성물 `web/app.bundle.js`)다. `web/src/served-app.ts`와 `web/app.js`는 옛 콘솔(`web/index.legacy.html`)로 남는다. MSI web payload 목록은 `web/payload-manifest.json`이 정한다. `core` 세 파일은 `installer/Product.wxs`, 나머지는 `packaging/windows-desktop-node/tools/Update-PcvWebPayloadWix.ps1`이 만드는 `installer/WebPayload.wxs`가 싣고, `installer/PcvDesktopNodeInstaller.Build.psm1`이 같은 목록을 staging한다.
 - 이 slice 자체는 PowerShell helper 제거, API/Hyper-V/service/CLI migration, ADR-0004 current 적용, aggregate closure report 생성을 하지 않았다. 이후 ADR-0004 적용 diff와 2026-05-05 aggregate closure가 current decision을 갱신했다.
 
 ## 실행 완료 Product Wrapper Asset Boundary Slice

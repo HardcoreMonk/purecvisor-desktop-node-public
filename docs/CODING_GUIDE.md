@@ -184,13 +184,22 @@ canonical owner가 우선하며, 이 문서를 같은 변경에서 갱신한다.
   `verbatimModuleSyntax`, casing 검사를 사용한다.
 - `자동 강제`: `npm test --prefix web`은 typecheck, served asset freshness와 frontend batch를 검사하고
   `npm run verify:parity --prefix web`은 static/browser parity를 검사한다.
-- `현재 적용`: `web/src/served-app.ts`와 `web/src/served/**`가 source이며 `web/app.js`는 생성물이다.
-  `web/app.js`를 직접 수정하지 않고 `npm run build:served --prefix web`로 갱신한다. TypeScript source는 ESM
-  설정으로 검사하지만 served bundle은 현재 classic global-script output이다.
+- `현재 적용`: Web Console 셸은 `web/index.html`(ADR-0018 Single Edge 구조)이다. source는 `web/src/modules/*.ts`와
+  `web/src/bootstrap.ts`이고 결합 순서는 `web/src/modules.json`(`pcv-web-module-order-v1`)이 정한다. 생성물
+  `web/app.bundle.js`를 직접 수정하지 않고 `npm run build:served --prefix web`로 갱신한다. 순서표에 없는 module 파일이
+  있으면 빌드가 실패하고, 같은 명령이 `web/sw.js`의 `CACHE_NAME`을 LF 기준 hash로 바꾼다. TypeScript source는 ESM
+  설정으로 검사하지만 served bundle은 classic global-script output이다.
+- `현재 적용`: 옛 콘솔 `web/index.legacy.html` + `web/app.js`(source `web/src/served-app.ts`, `web/src/served/**`)는 옛 static
+  contract, web Pester, browser fixture의 기준선으로 남고 같은 명령이 생성한다. 새 기능은 `web/src/modules/**`에 쓴다.
+  옛 콘솔 제거는 legacy-retirement campaign이 한다.
+- `현재 적용`: 화면 전환은 `web/src/modules/nav.ts`가 소유한다. 보이는 `#cb .app-view` section은 `PCV.nav.activeView()`가
+  알려 주고 옛 렌더러는 그 값을 따른다(BL-0019). form 안의 submit 버튼 click은 위임 핸들러가 다시 렌더하지 않고 submit
+  핸들러에 맡긴다(BL-0016).
 - `현재 적용`: TypeScript type은 server contract mirror이며 API source of truth가 아니다.
 - `현재 적용`: token/JWT/Authorization 값과 private credential을 source, fixture, DOM, console 또는 artifact에
   기록하지 않는다.
-- `현재 관행`: `served-app.ts`에는 `@ts-nocheck`, served module에는 명시적 `any`가 남아 있다. `strict=true`를
+- `현재 관행`: `served-app.ts`, `web/src/bootstrap.ts`, `web/src/modules/*.ts` 23개 전부에 `@ts-nocheck`가 있고 served
+  module에는 명시적 `any`가 남아 있다. `strict=true`를
   Web 전체의 no-any 보장으로 표현하지 않으며 새 예외 확장은 별도 근거와 test를 남긴다.
 - `향후 게이트`: ASP.NET Core는 기존 build output을 정적 제공할 뿐 TypeScript source/build/browser runtime을
   대체하지 않는다. 설치 host에 Node.js runtime 의존성을 추가하지 않는다.
@@ -398,7 +407,7 @@ dotnet run --project src/DesktopNode.Verification -c Release --no-build --no-res
 - Development Gates는 `DesktopNode.Verification`의 정확한 네 shard를 실행하며 Required CI의
   Pester 및 비관리자 PowerShell process invocation은 각각 `0`이다.
 - current evidence generated 문서가 canonical JSON과 일치하는지 검사한다.
-- served TypeScript source와 committed `web/app.js`의 byte freshness/parity를 검사한다.
+- served TypeScript source와 committed `web/app.bundle.js`, `web/app.js`, `web/sw.js` `CACHE_NAME`의 byte freshness/parity를 검사한다.
 - 대형 모듈 라인 수 라쳇을 강제한다. `packaging/windows-desktop-node/tests/PcvModuleSizeRatchet.Tests.ps1`이
   `fixtures/module-size-ratchet.json`의 `max_lines`를 상한으로 검사하고, 모듈이 `slack_lines`(`50`)
   이상 줄면 상한을 실제 값으로 낮추도록 요구한다. 라쳇은 한 방향으로만 움직이므로 순증은 실패한다.

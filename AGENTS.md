@@ -206,15 +206,14 @@ PR #156 post-merge public-boundary main push는 `docs/ga-ready/evidence/public-b
   저장소 상대 경로와 Hyper-V Default Switch NAT 주소까지만 허용한다(2026-10-09 감사 §7).
 - 작업 저장소는 이 저장소 하나다. private `purecvisor-desktop-node`는 2026-10-09부터 read-only archive이고, Claude Code
   skill(`pcv-campaign`, `pcv-campaign-open`, `pcv-ship`, `pcv-goal`)은 이 저장소 `.claude/skills/`가 소유한다.
-- 현재 operational full admin host mutation anchor는 `0.42.77-admin-smoke` /
-  `full-admin-host-mutation-gate-20260830-04277`다. 설치본 운영자 표면은 Web Console과
-  PCVCLI이며 `tui_present=false`다. 최신 closed manual-admin package-pair는
-  `0.42.75-admin-smoke -> 0.42.77-admin-smoke` /
-  `manual-admin-campaign-descriptor-20260920-04275-04277`다. 정확한 hash와 evidence
-  tuple은 이 파일 최상단 generated current-evidence 블록과
-  `docs/ga-ready/current-evidence.json`이 소유한다. 이 evidence는 internal admin-smoke
-  범위이고 Runtime/API current-card contract는 `runtime-api-current-evidence-rollup-v1`이다.
+- 현재 operational version, full admin host mutation anchor, 최신 closed manual-admin package-pair, 정확한 hash와
+  evidence tuple은 이 파일 최상단 generated current-evidence 블록과 `docs/ga-ready/current-evidence.json`이 소유한다.
+  이 절에는 version을 다시 적지 않는다. 설치본 운영자 표면은 Web Console과 PCVCLI이며 `tui_present=false`다. 이
+  evidence는 internal admin-smoke 범위이고 Runtime/API current-card contract는 `runtime-api-current-evidence-rollup-v1`이다.
   Public trusted signing 또는 외부 stable publication evidence가 아니다.
+- Web Console은 ADR-0018 Single Edge 프론트엔드 구조다. `/`는 `web/index.html` 셸이고 생성물 `web/app.bundle.js`의 source는
+  `web/src/modules/**`, 순서표는 `web/src/modules.json`이다. 옛 콘솔 `web/index.legacy.html` + `web/app.js`는
+  legacy-retirement campaign 전까지 옛 계약 기준선으로 남는다. Linux Single Edge runtime·route·화면은 가져오지 않는다.
 
 ## 문서 진입점
 

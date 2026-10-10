@@ -1,7 +1,7 @@
 # 문서 통합 인덱스
 
 > 2026-08-26에 공개 저장소 Required CI 전환 이후 전체 카탈로그를 다시 생성했다. 아래 현재 기준
-> 블록과 핵심 문서 목록은 2026-10-03에 HEAD `2057b40` 기준으로 현행화했다. 전체 파일 재생성은
+> 블록과 핵심 문서 목록은 2026-10-11에 `main` `87a7deb` 기준으로 현행화했다. 전체 파일 재생성은
 > 이 현행화가 수행하지 않는다.
 
 ## 현재 기준
@@ -10,8 +10,8 @@
 - Required CI 권위: Development Gates run `37171644667`; 보호 context는 정확히 `dotnet`, `web`, `delivery`, `installer-policy`다.
 - PowerShell/Pester 경계: invocation 0은 위 Required CI 네 context에만 적용한다. 별도 Public Boundary workflow는 비필수 legacy residue로 보존한다(run `37171644656`, job `111345611153`).
 - 운영 제품 권위: `0.42.93-admin-smoke`; Web Console과 PCVCLI가 active이고 TUI는 absent다. Feature promotion은 `promotion_eligible=true`, blockers `none`이다. P0 feature ledger는 `0.42.75-admin-smoke` evidence를 유지한다.
-- 최신 `main`: `9b6c0e2`(PR #76, S1 시연 기록). 운영 payload 권위는 위 `56e7cd0` / `0.42.93-admin-smoke`이고, 그 뒤 `main` 변경은 문서다.
-- 이 호스트 설치본: `0.42.93-admin-smoke`, service `Running/Automatic`, Web HTTP 200. 2026-10-09 S1 dev probe(`0.42.94-admin-smoke`)는 제품 Rollback으로 이 version에 돌아왔다. `pcv-it-` VM 0개, 보존 VM `pcv-guest-installed-04253-r1` Off.
+- 최신 `main`: `87a7deb`(PR #86, BL-0019 셸 화면 전환 수정). 운영 payload 권위는 위 `56e7cd0` / `0.42.93-admin-smoke`다. 그 뒤 `main`의 제품 변경(PR #78·#79·#81·#84·#86)은 train `0.42.96`에 실렸고 아직 승격되지 않았다.
+- 이 호스트 설치본: `0.42.96-admin-smoke`(train `0.42.96` fullgate build, 승격 전, ARP 항목 1개), service `Running/Automatic`, Web HTTP 200(Single Edge 셸). operational current는 `0.42.93-admin-smoke` 그대로다. VM은 보존 VM `pcv-guest-installed-04253-r1`과 S2 template `pcv-it-s2-source`(둘 다 Off)뿐이다.
 - 개발 campaign: `docs/ga-ready/active-campaign.json` id `train-04296-20261011`. release train `0.42.96-admin-smoke`(queue 78·79·81·84·86; package·pair·fullgate·current-card·Lane 2 probe·S3 재시연 PASS, Lane 3는 lane3-spec previous_version 결함 BL-0021로 보류, 다음 승인 대기), plan `docs/superpowers/plans/2026-10-11-purecvisor-desktop-node-train-04296.md`. 직전 `shell-nav-view-sync-20261011`은 PR #86 merge(BL-0019 셸 화면 전환 수정)로 닫혔고 Task 4(C5 runner 확인, 2026-10-19 이후)는 Task 12로 이관. train 뒤 승인 3으로 S4·legacy-retirement.
 - release train: 대기열과 train 이력 `docs/ga-ready/release-train.json`, 규칙 `docs/DEVELOPMENT_PROCEDURE.md` §10, 설계 `docs/superpowers/specs/2026-10-04-purecvisor-desktop-node-release-train-design.md`(2026-10-04 채택).
 - 진행 상황 현행화: `docs/project-status-audit-2026-10-09-after-s1.md`(완료 정의 v3, `main` `9b6c0e2` 판정 `met=3/7`, S1 `passed`). 같은 날 시연 전 snapshot은 `docs/project-status-audit-2026-10-09.md`(`met=1/7`). 그 전은 `docs/project-status-audit-2026-10-06.md`, `docs/project-status-audit-2026-10-03.md`.
@@ -38,7 +38,7 @@
 
 - 기여자 온보딩: `docs/DEVELOPMENT_PROCEDURE.md`, `docs/DEVELOPER_INDEX.md`, `docs/CODING_GUIDE.md`, `docs/DEVELOPMENT_VERIFICATION_POLICY.md`
 - 아키텍처: `docs/ADR_INDEX.md`, `docs/adr/`, `docs/service-core-backend-frontend-implementation-evaluation-2026-07-16.md`
-- 현재 작업과 상태: `docs/project-status-audit-2026-10-09-after-s1.md`, `docs/ga-ready/demo/s1-browser-console-demo-2026-10-08.md`, `docs/ga-ready/demo/s2-template-clone-demo-2026-10-09.md`, `docs/ga-ready/demo/s3-checkpoint-demo-2026-10-10.md`(S3 open, BL-0016), `docs/FEATURE_IMPLEMENTATION_LEDGER.md`, `docs/ga-ready/CURRENT_EVIDENCE_LEDGER.md`, `docs/ga-ready/EVIDENCE_INDEX.md`
+- 현재 작업과 상태: `docs/project-status-audit-2026-10-09-after-s1.md`, `docs/ga-ready/demo/s1-browser-console-demo-2026-10-08.md`, `docs/ga-ready/demo/s2-template-clone-demo-2026-10-09.md`, `docs/ga-ready/demo/s3-checkpoint-demo-2026-10-10.md`(S3 open, BL-0016), `docs/ga-ready/demo/s3-checkpoint-demo-2026-10-11-04296.md`(설치본 `0.42.96` 재시연 PASS, criteria S3는 S4 campaign 첫 PR에서 닫는다), `docs/ga-ready/demo/web-console-shell-demo-2026-10-11.md`(새 셸 시연 PASS), `docs/FEATURE_IMPLEMENTATION_LEDGER.md`, `docs/ga-ready/CURRENT_EVIDENCE_LEDGER.md`, `docs/ga-ready/EVIDENCE_INDEX.md`
 - 버전·릴리스 증거: [docs/ga-ready/current-evidence.json](ga-ready/current-evidence.json)과 위 evidence index
 - 역사 변경 기록: Git 이력과 아래 날짜별 계획·명세·증거
 

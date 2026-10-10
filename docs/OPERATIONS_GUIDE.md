@@ -179,7 +179,7 @@ Start-Process "http://127.0.0.1/"
 - `PureCVisorDesktopNode` service 상태가 `Running`이다.
 - VMMS가 Hyper-V 작업을 위해 `Running`이다.
 - Product manifest version이 의도한 설치 version이다.
-- Loopback Web Console이 열린다.
+- Loopback Web Console이 열린다(ADR-0018 Single Edge 셸). 계정이 구성되지 않았으면 loopback 접속은 로그인 없이 세션을 받는다.
 - 새 터미널에서 `pcvcli`가 전체 경로 없이 실행된다.
 - API route 호출에는 bearer token이 필요하다.
 - Account file이 `no-default-account` 상태이면 account login route가 service bearer gate를 우회하지 않는다.
