@@ -65,13 +65,13 @@ function _renderContentPaint(tab, generation) {
   try {
     var fn = (function() {
       var routes = {
-      dashboard: () => PCV.monitor && PCV.monitor.renderDashboard ? PCV.monitor.renderDashboard(b) : null,
-      vms: () => PCV.vm && PCV.vm.render ? PCV.vm.render(b, v) : null,
-      network: () => PCV.ops && PCV.ops.renderNetwork ? PCV.ops.renderNetwork(b) : null,
-      jobs: () => PCV.ops && PCV.ops.renderJobs ? PCV.ops.renderJobs(b) : null,
-      activity: () => PCV.ops && PCV.ops.renderActivity ? PCV.ops.renderActivity(b) : null,
-      evidence: () => PCV.ops && PCV.ops.renderEvidence ? PCV.ops.renderEvidence(b) : null,
-      troubleshooting: () => PCV.security && PCV.security.renderTroubleshooting ? PCV.security.renderTroubleshooting(b) : null,
+      dashboard: () => (typeof render === 'function' ? render() : null),
+      vms: () => (typeof render === 'function' ? render() : null),
+      network: () => (typeof render === 'function' ? render() : null),
+      jobs: () => (typeof render === 'function' ? render() : null),
+      activity: () => (typeof render === 'function' ? render() : null),
+      evidence: () => (typeof render === 'function' ? render() : null),
+      troubleshooting: () => (typeof render === 'function' ? render() : null),
       helppage: () => PCV.help && PCV.help.render ? PCV.help.render(b) : null
       };
       return routes;

@@ -25,7 +25,7 @@ test("the Desktop Node endpoint surface lists the routes the console uses and no
   }
   const code = codeOnly(endpoints);
   for (const forbidden of ["CTR_", "STORAGE_", "OVN_", "VPC_", "SURICATA_", "DPDK_", "SRIOV_", "PUSH_", "AUTH_TOTP", "RPC:", "ISCSI", "OVERLAY", "UPDATE_CHECK", "AUTH_TOKEN:"]) {
-    assert.doesNotMatch(code, new RegExp("^\s+" + forbidden, "m"), `Linux Single Edge endpoint ${forbidden}`);
+    assert.doesNotMatch(code, new RegExp("^\\s+" + forbidden, "m"), `Linux Single Edge endpoint ${forbidden}`);
   }
   assert.match(code, /window\.PCV_DESKTOP_NODE_CONFIG/, "API_BASE comes from pcv-config.js");
 });
@@ -51,7 +51,7 @@ test("api recovers a rejected bearer token once and the events module polls inst
   assert.match(apiCode, /EP\.AUTH_LOOPBACK_SESSION\(\)/);
   const eventsCode = codeOnly(events);
   assert.match(eventsCode, /PCV\.events = \{/);
-  assert.match(eventsCode, /pcv_tracked_jobs/);
-  assert.match(eventsCode, /isHealthy: isHealthy/);
+  assert.match(eventsCode, /loadAll = refreshAll/, "the legacy refresh loop is the Single Edge loadAll");
+  assert.match(eventsCode, /isHealthy: function/);
   assert.doesNotMatch(eventsCode, /new WebSocket\(/);
 });

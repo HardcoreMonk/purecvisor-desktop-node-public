@@ -1,0 +1,330 @@
+// @ts-nocheck
+// Desktop Node module (ADR-0018, pcv-single-edge-frontend-structure-v1 §4): the typed Local API client of the legacy console (web/src/served/api-client.ts); bearer token falls back to the Single Edge session token.
+// The legacy parts are kept verbatim inside one window.PCV module; their top-level declarations are exported to
+// window so the parts keep the shared-scope behaviour of the legacy bundle until Task 16 retires web/src/served.
+window.PCV = window.PCV || {};
+(function (PCV) {
+// --- legacy api-client.ts ---
+function mergeRequestOptions(baseOptions: RequestInit, options: RequestInit = {}): RequestInit {
+  const headers = new Headers(baseOptions.headers || {});
+  const optionHeaders = new Headers(options.headers || {});
+  optionHeaders.forEach((value, key) => headers.set(key, value));
+  return { ...baseOptions, ...options, headers };
+}
+
+async function apiFetch(path: string, options: RequestInit = {}): Promise<any> {
+  const response = await apiRequest(path, options);
+
+  let payload: any;
+  try {
+    payload = await response.json();
+  } catch (error) {
+    const caught = error as Error;
+    throw normalizeError({
+      status: response.status,
+      code: 'PCV_RESPONSE_INVALID',
+      message: 'The API returned a malformed response.',
+      detail: caught.message
+    });
+  }
+
+  if (!response.ok || payload.ok === false) {
+    throw normalizeApiResponseError(response, payload);
+  }
+
+  return unwrapApiEnvelope(payload);
+}
+
+function unwrapApiEnvelope(payload: any): any {
+  if (!payload || typeof payload !== 'object') return payload;
+  if (Object.prototype.hasOwnProperty.call(payload, 'data')) return payload.data;
+  return payload;
+}
+
+function unwrapApiList(payload: any): any[] {
+  return asArray(unwrapApiEnvelope(payload));
+}
+
+async function apiRequest(path: string, options: RequestInit = {}): Promise<Response> {
+  const base = state.apiBaseUrl.replace(/\/$/, '');
+  const requestOptions = options as RequestInit & { skipAuth?: boolean };
+  const headers = new Headers(requestOptions.headers || {});
+  headers.set('Accept', headers.get('Accept') || 'application/json');
+  const accountToken = String(state.authAccessToken || window.authToken || '').trim();
+  const serviceToken = state.apiToken.trim();
+  if (!requestOptions.skipAuth && (accountToken || serviceToken)) {
+    headers.set('Authorization', `Bearer ${accountToken || serviceToken}`);
+  }
+  if (requestOptions.body && !headers.has('Content-Type')) {
+    headers.set('Content-Type', 'application/json');
+  }
+  const { skipAuth: _skipAuth, ...fetchOptions } = requestOptions;
+
+  let response: Response;
+  try {
+    response = await fetch(`${base}${path}`, { ...fetchOptions, headers });
+  } catch (error) {
+    const caught = error as Error;
+    throw normalizeError({
+      code: caught.name === 'AbortError' ? 'PCV_REQUEST_ABORTED' : 'PCV_NETWORK_ERROR',
+      message: caught.name === 'AbortError' ? 'The Web Console request was superseded.' : 'Network request failed.',
+      detail: caught.message
+    });
+  }
+
+  return response;
+}
+
+function normalizeApiResponseError(response: Response, payload: any): PcvNormalizedError {
+  if (isProblemDetailsPayload(payload)) {
+    return normalizeError(normalizeProblemDetails(payload, response));
+  }
+
+  const apiError = payload?.error || {};
+  return normalizeError({
+    status: response.status,
+    operation: payload?.operation,
+    code: apiError.code,
+    message: apiError.message,
+    detail: apiError.detail,
+    retryable: apiError.retryable
+  });
+}
+
+function readDownloadFileName(response: Response, bundleId: string): string {
+  const disposition = readResponseHeader(response, 'Content-Disposition') || '';
+  const match = disposition.match(/filename="?([^";]+)"?/i);
+  return match?.[1] || `${bundleId}.bundle.json`;
+}
+
+async function apiDownload(path: string, bundleId: string, options: RequestInit = {}): Promise<any> {
+  const response = await apiRequest(path, mergeRequestOptions({
+    method: 'GET',
+    headers: { Accept: 'application/vnd.purecvisor.diagnostic-bundle+json, application/json' }
+  }, options));
+
+  if (!response.ok) {
+    let payload: any = null;
+    try {
+      payload = await response.json();
+    } catch (_) {
+      throw normalizeError({
+        status: response.status,
+        operation: 'diagnostic.bundle.download',
+        code: 'PCV_DIAGNOSTIC_BUNDLE_DOWNLOAD_FAILED',
+        message: 'Diagnostic bundle download failed.',
+        detail: `HTTP ${response.status}`,
+        retryable: false
+      });
+    }
+    throw normalizeApiResponseError(response, payload);
+  }
+
+  const contentType = readResponseHeader(response, 'Content-Type') || 'application/vnd.purecvisor.diagnostic-bundle+json';
+  const bundleHeader = readResponseHeader(response, 'X-PCV-Diagnostic-Bundle-Id') || bundleId;
+  const fileName = readDownloadFileName(response, bundleHeader);
+  let body = '';
+  if (typeof response.text === 'function') {
+    body = await response.text();
+  }
+
+  return {
+    bundle_id: bundleHeader,
+    content_type: contentType,
+    file_name: fileName,
+    size_bytes: body.length,
+    body
+  };
+}
+
+const desktopApi: Readonly<PcvDesktopApi> = Object.freeze({
+  getHostStatus: (options = {}) => apiFetch(DESKTOP_NODE_API_ROUTES.hostStatus, options),
+  listVms: async (options = {}) => unwrapApiList(await apiFetch(DESKTOP_NODE_API_ROUTES.vmList, options)),
+  getNetworkInventory: (options = {}) => apiFetch(DESKTOP_NODE_API_ROUTES.networkInventory, options),
+  getRuntimePolicy: (options = {}) => apiFetch(DESKTOP_NODE_API_ROUTES.runtimePolicy, options),
+  getOpsSummary: (options = {}) => apiFetch(DESKTOP_NODE_API_ROUTES.opsSummary, options),
+  listJobs: (limit = 50, offset = 0, options = {}) => apiFetch(DESKTOP_NODE_API_ROUTES.jobsPage(limit, offset), options),
+  getVm: (vmId: string, options = {}) => apiFetch(DESKTOP_NODE_API_ROUTES.vmDetail(vmId), options),
+  getVmBlkio: (vmId: string, options = {}) => apiFetch(DESKTOP_NODE_API_ROUTES.vmBlkio(vmId), options),
+  getVmBandwidth: (vmId: string, options = {}) => apiFetch(DESKTOP_NODE_API_ROUTES.vmBandwidth(vmId), options),
+  getVmMemoryStats: (vmId: string, options = {}) => apiFetch(DESKTOP_NODE_API_ROUTES.vmMemoryStats(vmId), options),
+  getVmCpuStats: (vmId: string, options = {}) => apiFetch(DESKTOP_NODE_API_ROUTES.vmCpuStats(vmId), options),
+  previewVmQosStorage: (vmId: string, payload: Record<string, unknown>) => apiFetch(DESKTOP_NODE_API_ROUTES.vmQosStoragePreview(vmId), {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  }),
+  applyVmQosStorage: (vmId: string, payload: Record<string, unknown>) => apiFetch(DESKTOP_NODE_API_ROUTES.vmQosStorage(vmId), {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  }),
+  previewVmQosNetwork: (vmId: string, payload: Record<string, unknown>) => apiFetch(DESKTOP_NODE_API_ROUTES.vmQosNetworkPreview(vmId), {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  }),
+  applyVmQosNetwork: (vmId: string, payload: Record<string, unknown>) => apiFetch(DESKTOP_NODE_API_ROUTES.vmQosNetwork(vmId), {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  }),
+  getVmGuestAgentStatus: (vmId: string, options = {}) => apiFetch(DESKTOP_NODE_API_ROUTES.vmGuestAgentStatus(vmId), options),
+  getVmGuestAgentPing: (vmId: string, options = {}) => apiFetch(DESKTOP_NODE_API_ROUTES.vmGuestAgentPing(vmId), options),
+  queueVmGuestExec: (vmId: string, payload: Record<string, unknown>) => apiFetch(DESKTOP_NODE_API_ROUTES.vmGuestExec(vmId), {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  }),
+  previewVmGuestFile: (vmId: string, payload: Record<string, unknown>) => apiFetch(DESKTOP_NODE_API_ROUTES.vmGuestFilePreview(vmId), {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  }),
+  queueVmGuestFile: (vmId: string, payload: Record<string, unknown>) => apiFetch(DESKTOP_NODE_API_ROUTES.vmGuestFile(vmId), {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  }),
+  verifyVmGuestChannel: (vmId: string, payload: Record<string, unknown>) => apiFetch(DESKTOP_NODE_API_ROUTES.vmGuestChannelVerify(vmId), {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  }),
+  ensureVmGuestChannel: (vmId: string, payload: Record<string, unknown>) => apiFetch(DESKTOP_NODE_API_ROUTES.vmGuestChannelEnsure(vmId), {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  }),
+  getVmDeleteStatus: (vmId: string, options = {}) => apiFetch(DESKTOP_NODE_API_ROUTES.vmAction(vmId, 'delete-status'), options),
+  getVmCheckpoints: async (vmId: string, options = {}) => unwrapApiList(await apiFetch(DESKTOP_NODE_API_ROUTES.vmCheckpoints(vmId), options)),
+  queueVmAction: (vmId: string, action: string) => apiFetch(DESKTOP_NODE_API_ROUTES.vmAction(vmId, action), { method: 'POST' }),
+  queueVmAttach: (vmId: string, isoPath: string) => apiFetch(DESKTOP_NODE_API_ROUTES.vmAction(vmId, 'attach'), {
+    method: 'POST',
+    body: JSON.stringify({ iso_path: isoPath })
+  }),
+  queueVmRename: (vmId: string, newName: string) => apiFetch(DESKTOP_NODE_API_ROUTES.vmAction(vmId, 'rename'), {
+    method: 'POST',
+    body: JSON.stringify({ new_name: newName })
+  }),
+  queueVmManage: (vmId: string, confirmName: string) => apiFetch(DESKTOP_NODE_API_ROUTES.vmAction(vmId, 'manage'), {
+    method: 'POST',
+    body: JSON.stringify({ confirm_name: confirmName })
+  }),
+  queueVmTemplateLock: (vmId: string, confirmName: string, locked: boolean) => apiFetch(DESKTOP_NODE_API_ROUTES.vmAction(vmId, 'template-lock'), {
+    method: 'POST',
+    body: JSON.stringify({ confirm_name: confirmName, locked })
+  }),
+  previewVmClone: (vmId: string, payload: Record<string, unknown>) => apiFetch(DESKTOP_NODE_API_ROUTES.vmClonePreview(vmId), {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  }),
+  queueVmClone: (vmId: string, payload: Record<string, unknown>) => apiFetch(DESKTOP_NODE_API_ROUTES.vmAction(vmId, 'clone'), {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  }),
+  queueVmResourceMutation: (vmId: string, action: string, payload: Record<string, unknown>) => apiFetch(DESKTOP_NODE_API_ROUTES.vmAction(vmId, action), {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  }),
+  createVm: (payload: Record<string, unknown>) => apiFetch(DESKTOP_NODE_API_ROUTES.vmList, { method: 'POST', body: JSON.stringify(payload) }),
+  deleteVm: (vmId: string) => apiFetch(DESKTOP_NODE_API_ROUTES.vmDetail(vmId), { method: 'DELETE' }),
+  createCheckpoint: (vmId: string, name: string) => apiFetch(DESKTOP_NODE_API_ROUTES.vmCheckpoints(vmId), {
+    method: 'POST',
+    body: JSON.stringify({ name })
+  }),
+  restoreCheckpoint: (vmId: string, checkpointId: string) => apiFetch(DESKTOP_NODE_API_ROUTES.checkpointAction(vmId, checkpointId, 'restore'), { method: 'POST' }),
+  deleteCheckpoint: (vmId: string, checkpointId: string) => apiFetch(DESKTOP_NODE_API_ROUTES.checkpointDetail(vmId, checkpointId), { method: 'DELETE' }),
+  previewVmGuestExec: (vmId: string, payload: Record<string, unknown>) => apiFetch(DESKTOP_NODE_API_ROUTES.vmGuestExecPreview(vmId), {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  }),
+  previewVmGuestChannel: (vmId: string, payload: Record<string, unknown>) => apiFetch(DESKTOP_NODE_API_ROUTES.vmGuestChannelPreview(vmId), {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  }),
+  connectVmNetwork: (vmId: string, payload: Record<string, unknown>) => apiFetch(DESKTOP_NODE_API_ROUTES.vmNetwork(vmId), {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  }),
+  addVmDevice: (vmId: string, payload: Record<string, unknown>) => apiFetch(DESKTOP_NODE_API_ROUTES.vmDevices(vmId), {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  }),
+  previewVmExport: (vmId: string, payload: Record<string, unknown>) => apiFetch(DESKTOP_NODE_API_ROUTES.vmExportPreview(vmId), {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  }),
+  exportVm: (vmId: string, payload: Record<string, unknown>) => apiFetch(DESKTOP_NODE_API_ROUTES.vmExport(vmId), {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  }),
+  previewVmImport: (payload: Record<string, unknown>) => apiFetch(DESKTOP_NODE_API_ROUTES.vmImportPreview(), {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  }),
+  importVm: (payload: Record<string, unknown>) => apiFetch(DESKTOP_NODE_API_ROUTES.vmImport(), {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  }),
+  previewCheckpointSchedule: (vmId: string, payload: Record<string, unknown>) => apiFetch(DESKTOP_NODE_API_ROUTES.vmCheckpointSchedulePreview(vmId), {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  }),
+  setCheckpointSchedule: (vmId: string, payload: Record<string, unknown>) => apiFetch(DESKTOP_NODE_API_ROUTES.vmCheckpointSchedule(vmId), {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  }),
+  clearCheckpointSchedule: (vmId: string) => apiFetch(DESKTOP_NODE_API_ROUTES.vmCheckpointScheduleClear(vmId), { method: 'POST' }),
+  getJob: (jobId: string, options = {}) => apiFetch(DESKTOP_NODE_API_ROUTES.jobDetail(jobId), options),
+  cancelJob: (jobId: string) => apiFetch(DESKTOP_NODE_API_ROUTES.jobAction(jobId, 'cancel'), { method: 'POST' }),
+  retryJob: (jobId: string) => apiFetch(DESKTOP_NODE_API_ROUTES.jobAction(jobId, 'retry'), { method: 'POST' }),
+  reconcileJob: (jobId: string) => apiFetch(DESKTOP_NODE_API_ROUTES.jobAction(jobId, 'reconcile'), { method: 'POST' }),
+  listDiagnosticBundles: (limit = 10, offset = 0, options = {}) => apiFetch(DESKTOP_NODE_API_ROUTES.diagnosticBundlesPage(limit, offset), options),
+  createDiagnosticBundle: (payload = {}) => apiFetch(DESKTOP_NODE_API_ROUTES.diagnosticBundles, {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  }),
+  downloadDiagnosticBundle: (bundleId: string, options = {}) => apiDownload(DESKTOP_NODE_API_ROUTES.diagnosticBundleDownload(bundleId), bundleId, options),
+  loginAccount: (payload: Record<string, unknown>) => apiFetch(DESKTOP_NODE_API_ROUTES.authLogin, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+    skipAuth: true
+  } as RequestInit & { skipAuth: boolean }),
+  createLoopbackSession: () => apiFetch(DESKTOP_NODE_API_ROUTES.authLoopbackSession, {
+    method: 'POST',
+    skipAuth: true
+  } as RequestInit & { skipAuth: boolean }),
+  refreshAccount: (payload: Record<string, unknown>) => apiFetch(DESKTOP_NODE_API_ROUTES.authRefresh, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+    skipAuth: true
+  } as RequestInit & { skipAuth: boolean }),
+  logoutAccount: (payload = {}) => apiFetch(DESKTOP_NODE_API_ROUTES.authLogout, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+    skipAuth: true
+  } as RequestInit & { skipAuth: boolean }),
+  getAccountSession: (options = {}) => apiFetch(DESKTOP_NODE_API_ROUTES.authSession, options),
+  getAccountRbac: (options = {}) => apiFetch(DESKTOP_NODE_API_ROUTES.authRbac, options),
+  listAccounts: (options = {}) => apiFetch(DESKTOP_NODE_API_ROUTES.accounts, options),
+  createAccount: (payload: Record<string, unknown>) => apiFetch(DESKTOP_NODE_API_ROUTES.accounts, {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  }),
+  disableAccount: (username: string, payload: Record<string, unknown>) => apiFetch(DESKTOP_NODE_API_ROUTES.accountDisable(username), {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  }),
+  getConsoleCapabilities: (options = {}) => apiFetch(DESKTOP_NODE_API_ROUTES.consoleCapabilities, options),
+  getVmConsole: (vmId: string, options = {}) => apiFetch(DESKTOP_NODE_API_ROUTES.vmConsole(vmId), options),
+  getVmConsoleFrame: (vmId: string, size: string, options = {}) => apiFetch(DESKTOP_NODE_API_ROUTES.vmConsoleFrame(vmId, size), options),
+  sendVmConsoleInput: (vmId: string, payload: Record<string, unknown>) => apiFetch(DESKTOP_NODE_API_ROUTES.vmConsoleInput(vmId), {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  })
+});
+
+// exports
+window.mergeRequestOptions = mergeRequestOptions;
+window.apiFetch = apiFetch;
+window.unwrapApiEnvelope = unwrapApiEnvelope;
+window.unwrapApiList = unwrapApiList;
+window.apiRequest = apiRequest;
+window.normalizeApiResponseError = normalizeApiResponseError;
+window.readDownloadFileName = readDownloadFileName;
+window.apiDownload = apiDownload;
+window.desktopApi = desktopApi;
+PCV.desktopApi = Object.assign(PCV.desktopApi || {}, { mergeRequestOptions, apiFetch, unwrapApiEnvelope, unwrapApiList, apiRequest, normalizeApiResponseError, readDownloadFileName, apiDownload, desktopApi });
+})(window.PCV);

@@ -4,6 +4,8 @@
   "design": "docs/superpowers/specs/2026-10-10-purecvisor-desktop-node-single-edge-frontend-structure-design.md",
   "note": "Bundle order for web/app.bundle.js (Single Edge UI_MODULES model). Every src/modules/*.ts must be listed here, dependencies first; the bootstrap is appended last. Filled task by task in campaign single-edge-frontend-structure-20261010.",
   "modules": [
+    "core",
+    "desktop-api",
     "endpoints",
     "api",
     "events",
@@ -17,7 +19,12 @@
     "modal",
     "nav",
     "shell",
-    "mobile"
+    "mobile",
+    "vm",
+    "vm-console",
+    "ops",
+    "monitor",
+    "accounts"
   ],
   "bootstrap": "src/bootstrap.ts"
 }

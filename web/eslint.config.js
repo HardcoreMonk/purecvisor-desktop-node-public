@@ -21,6 +21,7 @@ export default [
     rules: {
       // Modules share one classic-script scope through window.PCV; cross-file globals are intended.
       "no-undef": "off",
+      "no-useless-assignment": "off",
       "no-unused-vars": ["warn", {
         args: "none",
         caughtErrors: "none",
@@ -40,6 +41,7 @@ export default [
     },
     rules: {
       "no-undef": "off",
+      "no-useless-assignment": "off",
       "no-empty": ["error", { allowEmptyCatch: true }]
     }
   }
