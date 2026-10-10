@@ -48,7 +48,9 @@
 
 ## Task 1: package
 
-- [ ] clean HEAD에서 `build.ps1 -Version 0.42.94-admin-smoke -MsiProductVersion 0.42.94 -SigningMode AllowUnsignedDev -SigningTrustModel LocalTest -OutputRoot artifacts/admin-smoke-package-20261010-04294`, `New-PcvAdminSmokeUpdatePackage.ps1`. `train-facts`로 package 문서(`docs/ga-ready/trains/0.42.94-admin-smoke.train-facts-input.json`, narrative는 적재 변경 세 행). 검증: `train-evidence --check`, `TrainEvidenceGoldenTests`·`TrainFactsBuilderTests`. host mutation 없음. 로컬 commit.
+- [x] clean HEAD에서 `build.ps1 -Version 0.42.94-admin-smoke -MsiProductVersion 0.42.94 -SigningMode AllowUnsignedDev -SigningTrustModel LocalTest -OutputRoot artifacts/admin-smoke-package-20261010-04294`, `New-PcvAdminSmokeUpdatePackage.ps1`. `train-facts`로 package 문서(`docs/ga-ready/trains/0.42.94-admin-smoke.train-facts-input.json`, narrative는 적재 변경 세 행). 검증: `train-evidence --check`, `TrainEvidenceGoldenTests`·`TrainFactsBuilderTests`. host mutation 없음. 로컬 commit.
+
+실행 기록(2026-10-10): clean HEAD `59af872`에서 build `42`초, `build_utc` `2026-10-10T11:34:23.0989417Z`, provenance `59af872e559d3debc6c0a2b0e0cb56014a50291a`, WiX `5.0.2+aa65968c`(source Product.wxs, ProductActions.wxs, WebPayload.wxs). MSI SHA-256 `a9a4ec7700b84535b5ce7af27738560c575e76b031ebf1e5dab9685b73431096`, payload SHA-256 `2e1b20b78cad161979227a79057531be5b0a9f5ba369f04ce6485b3f9b6a932b`, payload `32`(web 자산 27개 포함; 이전 train 8), update ZIP SHA-256 `f649c5d613069fa042666a288c993168c06838aeff9cf39d3ea329e772f40018`, catalog SHA-256 `623b77a5faf75949e823a27f6f862b0ab4b524deb88df0422b02722fb5f6c9eb`. update package는 첫 실행이 build 시간을 받지 않아(`build_seconds` null) ZIP·catalog·package-facts.json을 지우고 `-BuildSeconds 42`로 한 번 다시 만들었다(ZIP SHA 동일, catalog SHA만 바뀜). `train-facts` package `generated=20` `narrative=3`, `train-evidence --write` 뒤 `--check` `current`. `TrainEvidenceGoldenTests`와 `TrainFactsBuilderTests` `20/20`. host mutation 없음. operational current는 `0.42.93-admin-smoke` 그대로다.
 
 ## Task 2: pair
 
