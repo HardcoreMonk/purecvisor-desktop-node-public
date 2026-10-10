@@ -44,7 +44,9 @@
 
 ## Task 3: 수정 PR B merge
 
-- [ ] clean HEAD에서 `dotnet build src/DesktopNode.sln -c Release`, Required CI `dotnet`·`delivery` shard 로컬, push, PR, green CI 뒤 merge한다. 실행 기록은 Task 4 commit에 적는다.
+- [x] clean HEAD에서 `dotnet build src/DesktopNode.sln -c Release`, Required CI `dotnet`·`delivery` shard 로컬, push, PR, green CI 뒤 merge한다. 실행 기록은 Task 4 commit에 적는다.
+
+실행 기록(2026-10-11): clean HEAD `fc2c501`에서 `dotnet build src/DesktopNode.sln -c Release` 경고 0, PR gate `artifacts/pr-gate/20261010-185419`(`dotnet-test-release`, `module-size-ratchet` passed). PR #87 Required check 다섯 개(`dotnet`, `web`, `delivery`, `installer-policy`, `public-boundary-ci-required`) pass 뒤 `--match-head-commit fc2c501`로 merge, merge commit `952fbd4`. host mutation 없음.
 
 ## Task 4: Lane 3 데이터와 lane3-spec (Lane 3)
 
