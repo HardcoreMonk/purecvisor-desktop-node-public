@@ -104,6 +104,37 @@ internal sealed class WixSourceContractVerifier
                 throw Invalid($"web-payload:component:{(string?)component.Attribute("Id")}");
             }
         }
+        // BL-0017 (train 0.42.94 stop): a product ZIP update can create the web folders before an MSI install and
+        // Windows Installer only deletes empty folders it created, so every generated directory needs exactly one
+        // RemoveFolder (On="uninstall") and Product.wxs must remove the web folder and INSTALLFOLDER the same way.
+        var webRemoveTargets = webPayloadGroup.Elements(Namespace + "Component")
+            .SelectMany(component => component.Elements(Namespace + "RemoveFolder")
+                .Select(remove => (string?)remove.Attribute("Directory") ?? RequiredAttribute(component, "Directory")))
+            .ToList();
+        foreach (var directoryId in WebPayloadDocument.Descendants(Namespace + "Directory").Select(RequiredId))
+        {
+            if (webRemoveTargets.Count(target => target == directoryId) != 1)
+            {
+                throw Invalid($"web-payload:remove-folder:{directoryId}");
+            }
+        }
+        foreach (var remove in WebPayloadDocument.Descendants(Namespace + "RemoveFolder"))
+        {
+            if ((string?)remove.Attribute("On") != "uninstall")
+            {
+                throw Invalid($"web-payload:remove-folder-on:{(string?)remove.Attribute("Id")}");
+            }
+        }
+        foreach (var (directoryId, removeId) in new[] { ("DesktopNodeWebFolder", "RemoveWebFolder"), ("INSTALLFOLDER", "RemoveInstallFolder") })
+        {
+            var remove = Single(
+                ProductDocument.Descendants(Namespace + "RemoveFolder").Where(element => (string?)element.Attribute("Id") == removeId),
+                $"product:remove-folder:{removeId}");
+            if (remove.Parent is null || RequiredAttribute(remove.Parent, "Directory") != directoryId || (string?)remove.Attribute("On") != "uninstall")
+            {
+                throw Invalid($"product:remove-folder:{removeId}");
+            }
+        }
         foreach (var id in ActionIds)
         {
             if (!CustomActionReferences.Contains(id))

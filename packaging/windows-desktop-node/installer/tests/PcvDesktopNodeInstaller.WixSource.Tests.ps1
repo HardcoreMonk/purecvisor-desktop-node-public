@@ -136,6 +136,13 @@ Describe 'Desktop Node WiX source contract' {
         $product | Should -Match 'Source="\$\(var\.PayloadRoot\)\\Invoke-PcvDesktopNodeProduct\.ps1"'
         $product | Should -Match 'Source="\$\(var\.PayloadRoot\)\\PcvDesktopNodeProduct\.psm1"'
         $product | Should -Match 'Source="\$\(var\.PayloadRoot\)\\web\\index\.html"'
+        # BL-0017: folders a product ZIP update may create first are removed on uninstall by explicit RemoveFolder rows.
+        $product | Should -Match '<RemoveFolder Id="RemoveWebFolder" On="uninstall" />'
+        $product | Should -Match '<RemoveFolder Id="RemoveInstallFolder" On="uninstall" />'
+        $fragment = Get-Content -Raw -LiteralPath (Join-Path $script:InstallerRoot 'WebPayload.wxs')
+        $directoryCount = ([regex]::Matches($fragment, '<Directory Id="')).Count
+        $directoryCount | Should -BeGreaterThan 0
+        ([regex]::Matches($fragment, '<RemoveFolder Id="DesktopNodeWebDirRemove_[A-Za-z0-9_]+" On="uninstall" />')).Count | Should -Be $directoryCount
         $product | Should -Not -Match 'Directory Id="DesktopNodeApiFolder"'
         $product | Should -Not -Match 'Directory Id="DesktopNodeHyperVFolder"'
         $product | Should -Not -Match 'Directory Id="DesktopNodeServiceFolder"'

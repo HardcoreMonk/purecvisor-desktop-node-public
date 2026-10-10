@@ -12,7 +12,7 @@
   ],
   "mutation_allowed": true,
   "current_write_allowed": false,
-  "next_step": "Run Task 1 from docs/superpowers/plans/2026-10-10-purecvisor-desktop-node-webpayload-removefolder.md, then the queue in order.",
+  "next_step": "Run Task 2 from docs/superpowers/plans/2026-10-10-purecvisor-desktop-node-webpayload-removefolder.md, then the queue in order.",
   "plan": "docs/superpowers/plans/2026-10-10-purecvisor-desktop-node-webpayload-removefolder.md",
   "task_queue": [
     "Task 1",
@@ -29,8 +29,10 @@
   "carried_from": {
     "Task 4": "train-04294-20261010 Task 11"
   },
-  "next_task": "Task 1",
-  "completed_tasks": [],
+  "next_task": "Task 2",
+  "completed_tasks": [
+    "Task 1"
+  ],
   "commit_policy": "local-commit-per-task",
   "push_allowed": true,
   "merge_policy": "after-green-ci",
