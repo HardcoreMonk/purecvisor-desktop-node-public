@@ -174,14 +174,48 @@ public sealed class InstallerNegativeParityTests
         Assert.Equal("PCV_INSTALLER_WIX_SOURCE_INVALID|namespace:product", error.Message);
     }
 
+    [Fact]
+    public void WixSourceVerifierRejectsWebPayloadDirectoryWithoutRemoveFolder()
+    {
+        var repository = RepositoryContractContext.Find();
+        var webPayload = repository.ReadUtf8Text(WebPayloadWxsPath);
+        var mutated = webPayload.Replace(
+            "<RemoveFolder Id=\"DesktopNodeWebDirRemove_samples\" On=\"uninstall\" />",
+            string.Empty,
+            StringComparison.Ordinal);
+        Assert.NotEqual(webPayload, mutated);
+
+        var error = Assert.Throws<InvalidDataException>(() =>
+            NewWixVerifier(repository, repository.ReadUtf8Text(ProductWxsPath), mutated));
+        Assert.Equal("PCV_INSTALLER_WIX_SOURCE_INVALID|web-payload:remove-folder:DesktopNodeWebDir_samples", error.Message);
+    }
+
+    [Fact]
+    public void WixSourceVerifierRejectsProductWithoutWebFolderRemoval()
+    {
+        var repository = RepositoryContractContext.Find();
+        var product = repository.ReadUtf8Text(ProductWxsPath);
+        var mutated = product.Replace(
+            "<RemoveFolder Id=\"RemoveWebFolder\" On=\"uninstall\" />",
+            string.Empty,
+            StringComparison.Ordinal);
+        Assert.NotEqual(product, mutated);
+
+        var error = Assert.Throws<InvalidDataException>(() => NewWixVerifier(repository, mutated));
+        Assert.Equal("PCV_INSTALLER_WIX_SOURCE_INVALID|product:remove-folder:RemoveWebFolder", error.Message);
+    }
+
+    private const string WebPayloadWxsPath = "packaging/windows-desktop-node/installer/WebPayload.wxs";
+
     private static WixSourceContractVerifier NewWixVerifier(
         RepositoryContractContext repository,
-        string productSource) =>
+        string productSource,
+        string? webPayloadSource = null) =>
         new(
             productSource,
             repository.ReadUtf8Text(ProductActionsWxsPath),
             repository.ReadUtf8Text(WixProjectPath),
-            repository.ReadUtf8Text("packaging/windows-desktop-node/installer/WebPayload.wxs"));
+            webPayloadSource ?? repository.ReadUtf8Text(WebPayloadWxsPath));
 
     [Fact]
     public void WrapperVerifierRejectsExitCodeCollapse()

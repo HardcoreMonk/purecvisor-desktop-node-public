@@ -44,6 +44,7 @@
       </Component>
       <Component Id="DesktopNodeServiceHostComponent" Directory="INSTALLFOLDER" Guid="{96B0EE9D-3515-4C4E-B29C-2A8754AFA09C}">
         <File Id="DesktopNodeServiceHost" Source="$(var.PayloadRoot)\DesktopNode.Host.exe" KeyPath="yes" />
+        <RemoveFolder Id="RemoveInstallFolder" On="uninstall" />
         <RemoveFile Id="RemoveLegacyWinSwRootExe" Name="PureCVisorDesktopNode.exe" On="install" />
         <RemoveFile Id="RemoveLegacyWinSwRootXml" Name="PureCVisorDesktopNode.xml" On="install" />
       </Component>
@@ -68,6 +69,7 @@
       </Component>
       <Component Id="DesktopNodeWebIndexComponent" Directory="DesktopNodeWebFolder" Guid="{EDB654D2-A877-490A-8469-3B60A7FFFB0C}">
         <File Id="DesktopNodeWebIndex" Source="$(var.PayloadRoot)\web\index.html" KeyPath="yes" />
+        <RemoveFolder Id="RemoveWebFolder" On="uninstall" />
       </Component>
       <Component Id="DesktopNodeWebStylesComponent" Directory="DesktopNodeWebFolder" Guid="{7036935D-46A7-453E-95D7-7904F0C1E845}">
         <File Id="DesktopNodeWebStyles" Source="$(var.PayloadRoot)\web\styles.css" KeyPath="yes" />

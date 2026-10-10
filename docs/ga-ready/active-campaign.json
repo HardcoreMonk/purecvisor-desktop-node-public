@@ -1,64 +1,45 @@
 {
   "schema_version": 1,
   "contract": "pcv-active-campaign-v1",
-  "status": "closed",
-  "id": "train-04294-20261010",
-  "intent": "Release train 0.42.94-admin-smoke: fix queue 78/79/81, package, pair, fullgate, current-card, Lane 2 probes (vm.create, web.console.shell, checkpoint.schedule.set + S3 browser re-demo), Lane 3 promotion, single PR merge; then open the S4 campaign (approval 2) and later the legacy-retirement campaign (approval 3).",
+  "status": "open",
+  "id": "webpayload-removefolder-20261010",
+  "intent": "Fix BL-0017 (train 0.42.94 stop): generated WebPayload.wxs removes every web directory on uninstall and Product.wxs removes the web folder and INSTALLFOLDER; verify with a Burn lifecycle dev probe on the installed host; merge; then open the train 0.42.95 campaign (approval 2), later S4 and legacy-retirement (approval 3).",
   "working_authority": "source_head",
   "allowed_lanes": [
     "0",
     "1",
-    "2",
-    "3"
+    "2"
   ],
   "mutation_allowed": true,
-  "current_write_allowed": true,
-  "next_step": "Stopped at Task 2 (lane2-fail, 정차): pair burn-bootstrapper-lifecycle failed twice with 'remove-absence product remains' because WebPayload.wxs has no RemoveFolder for the web subdirectories the ZIP product Update creates first. Train 0.42.94 is stopped: its entry leaves release-train.json (a stopped entry would be an unfinished-train gap for the completion evaluator) and its rows are back in the queue. Reply with the approval numbers; Task 11 (C5 runner check, not_before 2026-10-19) is carried by the next campaign.",
-  "plan": "docs/superpowers/plans/2026-10-10-purecvisor-desktop-node-train-04294.md",
+  "current_write_allowed": false,
+  "next_step": "Run Task 3 from docs/superpowers/plans/2026-10-10-purecvisor-desktop-node-webpayload-removefolder.md, then the queue in order.",
+  "plan": "docs/superpowers/plans/2026-10-10-purecvisor-desktop-node-webpayload-removefolder.md",
   "task_queue": [
-    "Task 0",
     "Task 1",
     "Task 2",
     "Task 3",
-    "Task 4",
-    "Task 5",
-    "Task 6",
-    "Task 7",
-    "Task 8",
-    "Task 9",
-    "Task 10",
-    "Task 11"
+    "Task 4"
   ],
   "task_lanes": {
-    "Task 2": "2",
-    "Task 3": "2",
-    "Task 4": "2",
-    "Task 5": "2",
-    "Task 6": "2",
-    "Task 7": "2",
-    "Task 8": "3"
+    "Task 2": "2"
   },
   "task_not_before": {
-    "Task 11": "2026-10-19"
+    "Task 4": "2026-10-19"
   },
   "carried_from": {
-    "Task 11": "single-edge-frontend-structure-20261010 Task 18"
+    "Task 4": "train-04294-20261010 Task 11"
   },
-  "next_task": null,
+  "next_task": "Task 3",
   "completed_tasks": [
-    "Task 0",
-    "Task 1"
+    "Task 1",
+    "Task 2"
   ],
   "commit_policy": "local-commit-per-task",
   "push_allowed": true,
   "merge_policy": "after-green-ci",
-  "checkpoint_limit": 12,
-  "approval_locator": "User-Approval: 2026-09-27 campaign runner commit policy local-commit-per-task; User-Approval: 2026-10-10 \"1,2,3\" on the single-edge-frontend-structure-20261010 final report (1 train 0.42.94-admin-smoke departure: fix queue 78/79/81, package build, dev-host pair host mutation (product Update/Rollback, ADR-0016 pcv-it- VM create/configure/delete with disks under artifacts), fullgate (full-admin-host-mutation-gate incl. required os-mutation-gate: firewall rule, Event Log source, LAN listener; same scope as the train-departure policy row) and current-card, Lane 2 probe families vm.create, checkpoint.schedule.set, web.console.shell (installed-console browser demo of the Single Edge shell loopback session, VM list, S3 schedule-save re-demo), Lane 3 current-evidence.json write, single-PR train push/PR and merge after green CI, revert PR if the main push is red; 2 open the S4 campaign after the train (installed --allow-lan/firewall only within that campaign's existing pre-approval); 3 open the legacy-retirement campaign after S4 (remove web/index.legacy.html, app.js, styles.css, web/src/served/*, re-baseline the legacy static contracts, negative tests, web Pester, parity, browser fixture, migration manifest and Delivery/packaging/config pins, 6-8 checkpoints, Lane 1, push/PR, merge after green CI)); ADR-0016 standing approval (2026-10-07): pcv-it- prefixed VM create/configure/delete, disks under artifacts",
-  "next_approval_required": [
-    "1 Lane 1 수정 campaign: `Update-PcvWebPayloadWix.ps1`이 생성 디렉터리(web/samples, web/vendor, web/vendor/coolicons, web/vendor/pretendard, web/vendor/pretendard/woff2)마다 `RemoveFolder`(On=uninstall) component를 내고 `web` 폴더도 제거 대상에 넣으며, `WixSourceContractVerifier`·Delivery·installer Pester의 component 수 pin과 WiX smoke(설치·제거 뒤 제품 root 없음)를 맞춘다; release-train queue 행 추가; Task 11(C5 runner 확인, not_before 2026-10-19) 이관; push/PR, green CI 뒤 merge.",
-    "2 수정 merge 뒤 train 0.42.95-admin-smoke 출발: queue 78·79·81과 수정 PR 행을 고정하고 package build, 개발 호스트 pair host mutation(제품 Update/Rollback, ADR-0016 pcv-it- VM 생성·구성·삭제, disk는 artifacts 아래), fullgate(full-admin-host-mutation-gate, required os-mutation-gate 포함)와 current-card, Lane 2 probe vm.create·checkpoint.schedule.set·web.console.shell(S3 예약 저장 재시연), Lane 3 current-evidence.json 쓰기, 단일 PR train push/PR과 green CI 뒤 merge, main push red면 revert PR. baseline은 설치본 0.42.94 package.",
-    "3 train 뒤 S4 campaign, 그 뒤 legacy-retirement campaign(2026-10-10 승인 2·3 그대로)."
-  ],
+  "checkpoint_limit": 4,
+  "approval_locator": "User-Approval: 2026-09-27 campaign runner commit policy local-commit-per-task; User-Approval: 2026-10-10 \"1,2,3\" on the train-04294-20261010 stop report (1 Lane 1 fix campaign: Update-PcvWebPayloadWix.ps1 emits a RemoveFolder component per generated directory and the web folder is removable, WixSourceContractVerifier / Delivery / installer Pester pins and a WiX smoke (install and remove leave no product root) are updated, release-train queue row added, Task 11 carried, push/PR, merge after green CI incl. PR #83; 2 after the fix merges depart train 0.42.95-admin-smoke with queue 78/79/81 plus the fix PR row, package build, dev-host pair host mutation (ADR-0016 scope), fullgate incl. os-mutation-gate and current-card, Lane 2 probes vm.create / checkpoint.schedule.set / web.console.shell with the S3 re-demo, Lane 3 current-evidence.json write, single-PR train merge after green CI, revert PR if the main push is red, baseline = installed 0.42.94 package; 3 after the train the S4 campaign, then the legacy-retirement campaign as approved on 2026-10-10 items 2 and 3). Lane 2 scope of this campaign: Burn lifecycle dev probe (bundle install, repair, uninstall of the fixed MSI, target MSI restore, service stop/start); ADR-0016 standing approval (2026-10-07): pcv-it- prefixed VM create/configure/delete, disks under artifacts (no VM in this campaign)",
+  "next_approval_required": [],
   "stop_on": [
     "same-cause-fail-3",
     "budget",
@@ -68,9 +49,8 @@
     "new-design-required",
     "permission-denied",
     "dirty-tree-at-start",
-    "lane2-fail",
-    "train-path-check-red"
+    "lane2-fail"
   ],
   "out_of_scope_is_not_next_step": true,
-  "closed_predecessor": "single-edge-frontend-structure-20261010"
+  "closed_predecessor": "train-04294-20261010"
 }

@@ -8,7 +8,10 @@ The web root of the Single Edge frontend structure ships many files (vendor font
 service worker, samples, guide content). Product.wxs keeps explicit components only for the manifest "core" files;
 every other manifest entry becomes one Component/File pair in the generated WebPayload.wxs fragment, with nested
 Directory elements under DesktopNodeWebFolder for subdirectories. Component GUIDs are auto-generated ("*"), which
-WiX derives from the install path, so the fragment is stable across runs.
+WiX derives from the install path, so the fragment is stable across runs. The first component of every generated
+directory also carries a RemoveFolder (On="uninstall"): Windows Installer only deletes empty folders it created, and
+the product ZIP update can create these folders before an MSI install (BL-0017, train 0.42.94 stop), so without the
+row an uninstall would leave the folder and the product root behind.
 
 -Check compares the committed fragment with the generated text and exits 1 when stale. -Apply writes it.
 Output is one JSON object, like the other packaging tools.
@@ -106,14 +109,25 @@ if ($directoryIds.Count -gt 0) {
     $lines.Add('    </DirectoryRef>')
 }
 $lines.Add('    <ComponentGroup Id="DesktopNodeWebPayloadComponents">')
+# Each generated directory gets one RemoveFolder, placed in the first component installed into it.
+$removeFolderPending = [System.Collections.Generic.HashSet[string]]::new([string[]]$directoryIds.Keys)
 foreach ($entry in $generated) {
     $segments = $entry.Split('/')
-    $directoryId = if ($segments.Count -gt 1) { $directoryIds[($segments[0..($segments.Count - 2)] -join '/')] } else { 'DesktopNodeWebFolder' }
+    $directoryPath = if ($segments.Count -gt 1) { ($segments[0..($segments.Count - 2)] -join '/') } else { '' }
+    $directoryId = if ($directoryPath) { $directoryIds[$directoryPath] } else { 'DesktopNodeWebFolder' }
     $id = ConvertTo-PcvWixId -Prefix 'DesktopNodeWebPayload_' -RelativePath $entry
     $source = '$(var.PayloadRoot)\web\' + $entry.Replace('/', '\')
     $lines.Add("      <Component Id=`"${id}Component`" Directory=`"$directoryId`" Guid=`"*`">")
     $lines.Add("        <File Id=`"$id`" Source=`"$source`" KeyPath=`"yes`" />")
+    if ($directoryPath -and $removeFolderPending.Remove($directoryPath)) {
+        $removeId = ConvertTo-PcvWixId -Prefix 'DesktopNodeWebDirRemove_' -RelativePath $directoryPath
+        $lines.Add("        <RemoveFolder Id=`"$removeId`" On=`"uninstall`" />")
+    }
     $lines.Add('      </Component>')
+}
+if ($removeFolderPending.Count -gt 0) {
+    [pscustomobject]@{ schema_version = 1; ok = $false; error = "PCV_WEB_PAYLOAD_MANIFEST_INVALID|Directories without a file component: $(($removeFolderPending | Sort-Object) -join ', ')." } | ConvertTo-Json -Compress
+    exit 1
 }
 $lines.Add('    </ComponentGroup>')
 $lines.Add('  </Fragment>')
