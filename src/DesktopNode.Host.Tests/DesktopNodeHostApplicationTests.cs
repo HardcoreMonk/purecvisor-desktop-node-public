@@ -360,6 +360,7 @@ public sealed class DesktopNodeHostApplicationTests
             await File.WriteAllTextAsync(Path.Combine(webRoot, "sw.js"), "self.addEventListener('install', () => {});");
             await File.WriteAllBytesAsync(Path.Combine(webRoot, "icon-192.png"), new byte[] { 0x89, 0x50, 0x4E, 0x47 });
             await File.WriteAllTextAsync(Path.Combine(webRoot, "guide-content.md"), "# guide");
+            await File.WriteAllTextAsync(Path.Combine(webRoot, "offline.html"), "<html>offline</html>");
             await File.WriteAllTextAsync(Path.Combine(webRoot, "src", "bootstrap.ts"), "window.PCV = {};");
             await File.WriteAllTextAsync(Path.Combine(webRoot, "src", "modules", "shell.ts"), "window.PCV = {};");
             await File.WriteAllTextAsync(Path.Combine(webRoot, "package.json"), "{}");
@@ -380,7 +381,8 @@ public sealed class DesktopNodeHostApplicationTests
                 ("/manifest.json", "application/json"),
                 ("/sw.js", "application/javascript"),
                 ("/icon-192.png", "image/png"),
-                ("/guide-content.md", "text/markdown")
+                ("/guide-content.md", "text/markdown"),
+                ("/offline.html", "text/html")
             })
             {
                 using var response = await client.GetAsync(new Uri(host.WebBaseUri, path));

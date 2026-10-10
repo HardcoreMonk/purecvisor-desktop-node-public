@@ -1,0 +1,53 @@
+{
+  "name": "PureCVisor Desktop Node",
+  "short_name": "Desktop Node",
+  "description": "Windows Hyper-V Desktop Node console: virtual machines, checkpoints, jobs and troubleshooting over the loopback Local API",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+  "orientation": "any",
+  "background_color": "#05050a",
+  "theme_color": "#00f0ff",
+  "lang": "ko",
+  "dir": "ltr",
+  "categories": ["productivity", "utilities"],
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    {
+      "name": "Virtual Machines",
+      "short_name": "VMs",
+      "description": "VM Workbench: inventory, detail, lifecycle and checkpoints",
+      "url": "/#vms",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Jobs",
+      "short_name": "Jobs",
+      "description": "Tracked jobs of this browser session",
+      "url": "/#jobs",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Troubleshooting",
+      "short_name": "Incident",
+      "description": "Incident Command: failed jobs, risks and diagnostic bundle handoff",
+      "url": "/#troubleshooting",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Docs",
+      "short_name": "Docs",
+      "description": "Operator guide portal",
+      "url": "/docs.html",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    }
+  ],
+  "prefer_related_applications": false
+}

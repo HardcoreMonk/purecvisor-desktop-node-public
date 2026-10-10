@@ -29,6 +29,9 @@
     "i18n.js",
     "docs.html",
     "guide.html",
-    "guide-content.md"
+    "guide-content.md",
+    "manifest.json",
+    "sw.js",
+    "offline.html"
   ]
 }

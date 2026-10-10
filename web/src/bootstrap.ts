@@ -427,11 +427,36 @@ function init() {
 
 window.bindEvents = bindEvents;
 window.init = init;
+// Single Edge app.js service worker registration at the web root (updateViaCache none, SKIP_WAITING handshake, reload on
+// controller change). Loopback http is a secure context; on plain-http LAN the browser rejects the registration and the
+// console keeps working without the cache (pcv-single-edge-frontend-structure-v1 §3, Task 15).
+function pcvRegisterServiceWorker() {
+  if (typeof navigator !== 'object' || !navigator || !('serviceWorker' in navigator)) return;
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then(function (reg) {
+      window._swRegError = null;
+      if (reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+      reg.addEventListener('updatefound', function () {
+        var nw = reg.installing;
+        if (!nw) return;
+        nw.addEventListener('statechange', function () {
+          if (nw.state === 'installed' && navigator.serviceWorker.controller) nw.postMessage({ type: 'SKIP_WAITING' });
+        });
+      });
+      reg.update().catch(function () { /* offline update check */ });
+    }).catch(function (err) {
+      window._swRegError = { name: err && err.name, message: err && err.message ? String(err.message) : String(err) };
+    });
+    navigator.serviceWorker.addEventListener('controllerchange', function () { window.location.reload(); });
+  });
+}
+PCV.registerServiceWorker = pcvRegisterServiceWorker;
 function pcvBootstrap() {
   try { init(); } catch (e) { if (window._DEBUG) console.warn('bootstrap:init', e); }
   if (PCV.shell && typeof PCV.shell.mount === 'function') { try { PCV.shell.mount(); } catch (e) { if (window._DEBUG) console.warn('bootstrap:shell', e); } }
   if (typeof restoreSession === 'function' && document.getElementById('login-page')) restoreSession();
   if (typeof navigateToHash === 'function') { try { navigateToHash(); } catch (e) { if (window._DEBUG) console.warn('bootstrap:hash', e); } }
+  pcvRegisterServiceWorker();
 }
 PCV.bootstrap = pcvBootstrap;
 document.addEventListener('DOMContentLoaded', pcvBootstrap);

@@ -39,6 +39,12 @@
       <Component Id="DesktopNodeWebPayload_index_next_htmlComponent" Directory="DesktopNodeWebFolder" Guid="*">
         <File Id="DesktopNodeWebPayload_index_next_html" Source="$(var.PayloadRoot)\web\index.next.html" KeyPath="yes" />
       </Component>
+      <Component Id="DesktopNodeWebPayload_manifest_jsonComponent" Directory="DesktopNodeWebFolder" Guid="*">
+        <File Id="DesktopNodeWebPayload_manifest_json" Source="$(var.PayloadRoot)\web\manifest.json" KeyPath="yes" />
+      </Component>
+      <Component Id="DesktopNodeWebPayload_offline_htmlComponent" Directory="DesktopNodeWebFolder" Guid="*">
+        <File Id="DesktopNodeWebPayload_offline_html" Source="$(var.PayloadRoot)\web\offline.html" KeyPath="yes" />
+      </Component>
       <Component Id="DesktopNodeWebPayload_samples_design_system_preview_htmlComponent" Directory="DesktopNodeWebDir_samples" Guid="*">
         <File Id="DesktopNodeWebPayload_samples_design_system_preview_html" Source="$(var.PayloadRoot)\web\samples\design-system-preview.html" KeyPath="yes" />
       </Component>
@@ -47,6 +53,9 @@
       </Component>
       <Component Id="DesktopNodeWebPayload_style_cssComponent" Directory="DesktopNodeWebFolder" Guid="*">
         <File Id="DesktopNodeWebPayload_style_css" Source="$(var.PayloadRoot)\web\style.css" KeyPath="yes" />
+      </Component>
+      <Component Id="DesktopNodeWebPayload_sw_jsComponent" Directory="DesktopNodeWebFolder" Guid="*">
+        <File Id="DesktopNodeWebPayload_sw_js" Source="$(var.PayloadRoot)\web\sw.js" KeyPath="yes" />
       </Component>
       <Component Id="DesktopNodeWebPayload_vendor_chart_umd_min_jsComponent" Directory="DesktopNodeWebDir_vendor" Guid="*">
         <File Id="DesktopNodeWebPayload_vendor_chart_umd_min_js" Source="$(var.PayloadRoot)\web\vendor\chart.umd.min.js" KeyPath="yes" />
