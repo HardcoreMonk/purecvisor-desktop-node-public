@@ -14,7 +14,8 @@ public sealed class PcvDesktopNodeInstallerWixSourceContractTests
         verifier = new WixSourceContractVerifier(
             repository.ReadUtf8Text("packaging/windows-desktop-node/installer/Product.wxs"),
             repository.ReadUtf8Text("packaging/windows-desktop-node/installer/ProductActions.wxs"),
-            repository.ReadUtf8Text("packaging/windows-desktop-node/installer/PureCVisorDesktopNode.wixproj"));
+            repository.ReadUtf8Text("packaging/windows-desktop-node/installer/PureCVisorDesktopNode.wixproj"),
+            repository.ReadUtf8Text("packaging/windows-desktop-node/installer/WebPayload.wxs"));
     }
 
     [PcvLegacyContract("pcv.installer.desktop-node-installer-wix-source.001", "packaging/windows-desktop-node/installer/tests/PcvDesktopNodeInstaller.WixSource.Tests.ps1", 1, "defines a per-machine MSI product with a fixed UpgradeCode")]
@@ -144,6 +145,6 @@ public sealed class PcvDesktopNodeInstallerWixSourceContractTests
     public void Contract010()
     {
         Assert.Equal("WixToolset.Sdk/5.0.2", (string?)verifier.ProjectDocument.Root?.Attribute("Sdk"));
-        Assert.Equal(["Product.wxs", "ProductActions.wxs"], verifier.WixProjectSources);
+        Assert.Equal(["Product.wxs", "ProductActions.wxs", "WebPayload.wxs"], verifier.WixProjectSources);
     }
 }

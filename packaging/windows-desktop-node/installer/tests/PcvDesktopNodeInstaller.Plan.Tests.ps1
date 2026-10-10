@@ -570,7 +570,7 @@ Describe 'Desktop Node installer build plan' {
         Test-Path -LiteralPath (Join-Path $payloadRoot 'stale.txt') | Should -BeFalse
         Test-Path -LiteralPath (Join-Path $payloadRoot 'pcvcli.exe') | Should -BeTrue
         Test-Path -LiteralPath (Join-Path $payloadRoot 'pcvtui.exe') | Should -BeFalse
-        $output.provenance.payload.file_count | Should -Be 8
+        $output.provenance.payload.file_count | Should -Be (5 + @((Get-Content -Raw -LiteralPath (Join-Path $PSScriptRoot '..\..\..\..\web\payload-manifest.json') | ConvertFrom-Json).core).Count + @((Get-Content -Raw -LiteralPath (Join-Path $PSScriptRoot '..\..\..\..\web\payload-manifest.json') | ConvertFrom-Json).files).Count)
         $output.provenance.cli.sha256 | Should -Match '^[0-9A-Fa-f]{64}$'
         $output.provenance.PSObject.Properties.Name | Should -Not -Contain 'tui'
     }
@@ -622,7 +622,7 @@ Describe 'Desktop Node installer build plan' {
         $manifest.update.installed_manifest_is_source_of_truth | Should -BeTrue
         @(Get-ChildItem -LiteralPath $payloadRoot -Recurse -Directory |
             Where-Object { $_.Name -eq 'tests' }).Count | Should -Be 0
-        $output.provenance.payload.file_count | Should -Be 8
+        $output.provenance.payload.file_count | Should -Be (5 + @((Get-Content -Raw -LiteralPath (Join-Path $PSScriptRoot '..\..\..\..\web\payload-manifest.json') | ConvertFrom-Json).core).Count + @((Get-Content -Raw -LiteralPath (Join-Path $PSScriptRoot '..\..\..\..\web\payload-manifest.json') | ConvertFrom-Json).files).Count)
         $output.provenance.cli.source_path | Should -Match 'pcvcli\.exe$'
         $output.provenance.PSObject.Properties.Name | Should -Not -Contain 'tui'
     }

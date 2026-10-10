@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated from web/payload-manifest.json by packaging/windows-desktop-node/tools/Update-PcvWebPayloadWix.ps1 (ADR-0018). Do not edit; run the tool with -Apply. -->
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Fragment>
+    <ComponentGroup Id="DesktopNodeWebPayloadComponents">
+      <Component Id="DesktopNodeWebPayload_app_bundle_jsComponent" Directory="DesktopNodeWebFolder" Guid="*">
+        <File Id="DesktopNodeWebPayload_app_bundle_js" Source="$(var.PayloadRoot)\web\app.bundle.js" KeyPath="yes" />
+      </Component>
+    </ComponentGroup>
+  </Fragment>
+</Wix>
