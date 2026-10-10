@@ -16,20 +16,26 @@ function getArg(name, fallback = "") {
 const execute = process.argv.includes("--execute");
 // --keep-vm leaves the VM (with its checkpoints) for the browser demo; --cleanup-only skips every step and only
 // clears the schedule and deletes the VM. Both need --execute.
-const keepVm = process.argv.includes("--keep-vm");
 const cleanupOnly = process.argv.includes("--cleanup-only");
+const keepVm = process.argv.includes("--keep-vm") || process.argv.includes("--skip-auto") || process.argv.includes("--verify-only");
 const api = getArg("api", "http://127.0.0.1:7777");
 const vm = getArg("vm", "pcv-it-s3-source");
 const checkpoint = getArg("checkpoint", "s3-cp1");
-// CheckpointSchedulePolicy: interval 60..10080 minutes, retention 1..32. A schedule with no last_enqueued_at is due
-// at once, so the first scheduled checkpoint appears within seconds and next_due_at moves one interval ahead.
+// CheckpointSchedulePolicy: interval 60..10080 minutes, retention 1..32. checkpoint.schedule.set stamps
+// last_enqueued_at with the time of enabling, so the first scheduled checkpoint is due one interval later (next_due_at)
+// and the worker scans due schedules once a minute. --skip-auto ends the run after schedule-set (keeps the VM and the
+// armed schedule); --verify-only later checks that the scheduled checkpoint appeared (--expect-count) without changing
+// anything; --cleanup-only clears the schedule and deletes the VM.
 const intervalMinutes = Number(getArg("interval", "60"));
 const retentionMax = Number(getArg("retention", "2"));
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const vmRoot = resolve(getArg("vm-root", join(repoRoot, "artifacts", "s3-checkpoint-20261010", "vms")));
 const iso = resolve(getArg("iso", join(repoRoot, "artifacts", "smoke-media-20261003", "pcv-route-parity-smoke-20261003.iso")));
 const outDir = resolve(getArg("out", join(repoRoot, "artifacts", "s3-checkpoint-20261010")));
-const autoBoundMs = Number(getArg("auto-bound-ms", "120000"));
+const skipAuto = process.argv.includes("--skip-auto");
+const verifyOnly = process.argv.includes("--verify-only");
+const expectCount = Number(getArg("expect-count", "2"));
+const autoBoundMs = Number(getArg("auto-bound-ms", String(intervalMinutes * 60000 + 120000)));
 
 const steps = [
   ["create", `POST /api/v1/vms name=${vm} generation=2 cpu=1 memory_mb=512 disk_gb=8 iso=${iso} vm_root=${vmRoot}`],
@@ -38,7 +44,7 @@ const steps = [
   ["checkpoint-restore", `POST /api/v1/vms/${vm}/checkpoints/${checkpoint}/restore`],
   ["schedule-preview", `POST /api/v1/vms/${vm}/checkpoints/schedule/preview interval_minutes=${intervalMinutes} retention_max=${retentionMax}`],
   ["schedule-set", `POST /api/v1/vms/${vm}/checkpoints/schedule interval_minutes=${intervalMinutes} retention_max=${retentionMax}`],
-  ["auto-checkpoint", `wait until the worker enqueues the first scheduled checkpoint (due at once on enable, count >= 2) within ${autoBoundMs} ms`],
+  ["auto-checkpoint", `wait until the worker enqueues the first scheduled checkpoint (due one interval after enable, count >= ${expectCount}) within ${autoBoundMs} ms; --skip-auto ends here, --verify-only checks later`],
   ["schedule-clear", `POST /api/v1/vms/${vm}/checkpoints/schedule/clear`],
   ["delete-vm", `DELETE /api/v1/vms/${vm} (removes its checkpoints; skipped with --keep-vm, run alone with --cleanup-only)`]
 ];
@@ -129,6 +135,16 @@ try {
     throw Object.assign(new Error("cleanup-only"), { cleanupOnly: true });
   }
 
+  if (verifyOnly) {
+    const names = await checkpointNames();
+    const readback = await scheduleReadback();
+    summary.steps["auto-checkpoint"] = { count: names.length, names, readback };
+    summary.within_bound = names.length >= expectCount;
+    summary.vm_remaining = true;
+    if (!summary.within_bound) throw new Error(`verify-only: checkpoint count ${names.length} < ${expectCount}`);
+    throw Object.assign(new Error("verify-only"), { cleanupOnly: true });
+  }
+
   if (!(await vmExists(vm))) {
     const created = await call("POST", "/api/v1/vms", {
       name: vm,
@@ -169,12 +185,18 @@ try {
   scheduleSet = true;
   summary.steps["schedule-set"].readback = await scheduleReadback();
 
+  if (skipAuto) {
+    summary.within_bound = true;
+    summary.steps["auto-checkpoint"] = { status: "skipped", next_due_at: summary.steps["schedule-set"].readback.next_due_at };
+    throw Object.assign(new Error("skip-auto"), { cleanupOnly: true });
+  }
+
   const started = Date.now();
   let autoCount = namesAfterCreate.length;
   while (Date.now() - started < autoBoundMs) {
     const names = await checkpointNames();
     autoCount = names.length;
-    if (autoCount >= namesAfterCreate.length + 1) {
+    if (autoCount >= expectCount) {
       summary.steps["auto-checkpoint"] = { count: autoCount, names, elapsed_ms: Date.now() - started, readback: await scheduleReadback() };
       break;
     }

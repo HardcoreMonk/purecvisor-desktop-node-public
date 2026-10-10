@@ -12,7 +12,7 @@ test("plan-only prints checkpoint create, restore, schedule and cleanup without 
   assert.match(result.stdout, /checkpoint-create: POST \/api\/v1\/vms\/pcv-it-s3-source\/checkpoints name=s3-cp1/);
   assert.match(result.stdout, /checkpoint-restore: POST \/api\/v1\/vms\/pcv-it-s3-source\/checkpoints\/s3-cp1\/restore/);
   assert.match(result.stdout, /schedule-set: POST \/api\/v1\/vms\/pcv-it-s3-source\/checkpoints\/schedule interval_minutes=60 retention_max=2/);
-  assert.match(result.stdout, /auto-checkpoint: .*due at once on enable.*within 120000 ms/);
+  assert.match(result.stdout, /auto-checkpoint: .*due one interval after enable.*within 3720000 ms/);
   assert.match(result.stdout, /schedule-clear: POST \/api\/v1\/vms\/pcv-it-s3-source\/checkpoints\/schedule\/clear/);
   assert.match(result.stdout, /delete-vm: DELETE \/api\/v1\/vms\/pcv-it-s3-source/);
 });
