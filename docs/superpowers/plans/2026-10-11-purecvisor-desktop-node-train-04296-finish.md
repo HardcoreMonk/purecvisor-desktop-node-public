@@ -36,7 +36,9 @@
 
 ## Task 2: lane3-spec previous_version 수정과 골든 시험
 
-- [ ] `main`에서 branch를 만든다. `src/DesktopNode.Verification/TrainEvidence/TrainLane3SpecBuilder.Rows.cs`의 `index_sections.previous_version`을 직전 승격 spec(`previous_spec`)의 version으로 채운다. pair 관련 값(`pair`, descriptor chain)은 pair baseline 그대로 둔다. 승격을 건너뛴 train(직전 승격 `0.42.93`, pair baseline `0.42.95`, 새 version `0.42.96`)의 골든 시험을 `DesktopNode.Verification.Tests`에 더하고, 기존 골든 시험은 바뀌지 않음을 확인한다. `dotnet test src/DesktopNode.Verification.Tests -c Release`. Task 1 실행 기록과 함께 로컬 commit.
+- [x] `main`에서 branch를 만든다. `src/DesktopNode.Verification/TrainEvidence/TrainLane3SpecBuilder.Rows.cs`의 `index_sections.previous_version`을 직전 승격 spec(`previous_spec`)의 version으로 채운다. pair 관련 값(`pair`, descriptor chain)은 pair baseline 그대로 둔다. 승격을 건너뛴 train(직전 승격 `0.42.93`, pair baseline `0.42.95`, 새 version `0.42.96`)의 골든 시험을 `DesktopNode.Verification.Tests`에 더하고, 기존 골든 시험은 바뀌지 않음을 확인한다. `dotnet test src/DesktopNode.Verification.Tests -c Release`. Task 1 실행 기록과 함께 로컬 commit.
+
+실행 기록(2026-10-11): branch `lane1/lane3-spec-skipped-promotion-20261011`(`origin/main` `87a7deb`에서) commit `fc2c501`. `TrainLane3SpecBuilder.Rows.cs`의 `index_sections.previous_version`을 직전 승격 spec의 `index_sections.installed_version`으로 바꿨다(pair 값은 baseline 그대로). 새 시험 `IndexSectionsContinueFromThePreviousPromotedSpecWhenAPromotionWasSkipped`는 0.42.89 facts의 pair baseline을 0.42.87로 바꾼 임시 root에서 `previous_version=0.42.88`, pair `0.42.87 -> 0.42.89`를 확인하고, 옛 줄로 되돌리면 `0.42.87`로 실패한다. 골든 재생성(0.42.89~0.42.93 spec)은 바뀌지 않았다. 범위 추가로 `ProjectCompletionEvaluatorTests` `Cleared()`가 승격되지 않은 train을 뺀다. train branch의 `release-train.json`(`0.42.96` `running`)을 넣고 돌린 completion 시험 31/31 통과. clean HEAD `dotnet test src/DesktopNode.Verification.Tests -c Release` 674/674 통과. tooling·test 전용이라 release-train queue 행은 더하지 않는다.
 
 범위 추가(2026-10-11, Task 1 재배치 근거): 같은 PR에서 completion 평가기 시험 입력 `Cleared()`(`src/DesktopNode.Verification.Tests/ProjectCompletionEvaluatorTests.cs`)가 승격되지 않은 train을 빼게 해, 시험이 실제 저장소의 진행 중 train에 묶이지 않게 한다. 시험 전용 변경이고 평가기 동작은 바꾸지 않는다. 확인은 train branch처럼 `running` train이 있는 `release-train.json`에서도 `DesktopNode.Verification.Tests`가 통과하는 것이다.
 
