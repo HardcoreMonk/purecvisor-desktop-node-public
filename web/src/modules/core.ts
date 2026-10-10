@@ -245,7 +245,7 @@ declare function render(): void;
 declare function findCachedVm(vmId: string): any;
 
 // --- legacy state.ts ---
-const WEB_ASSET_LABEL = 'app.js';
+const WEB_ASSET_LABEL = 'app.bundle.js';
 
 function resolveInitialApiBaseUrl(): string {
   const configured = window.PCV_DESKTOP_NODE_CONFIG?.apiBaseUrl;

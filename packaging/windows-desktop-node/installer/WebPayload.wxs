@@ -36,8 +36,8 @@
       <Component Id="DesktopNodeWebPayload_icon_512_pngComponent" Directory="DesktopNodeWebFolder" Guid="*">
         <File Id="DesktopNodeWebPayload_icon_512_png" Source="$(var.PayloadRoot)\web\icon-512.png" KeyPath="yes" />
       </Component>
-      <Component Id="DesktopNodeWebPayload_index_next_htmlComponent" Directory="DesktopNodeWebFolder" Guid="*">
-        <File Id="DesktopNodeWebPayload_index_next_html" Source="$(var.PayloadRoot)\web\index.next.html" KeyPath="yes" />
+      <Component Id="DesktopNodeWebPayload_index_legacy_htmlComponent" Directory="DesktopNodeWebFolder" Guid="*">
+        <File Id="DesktopNodeWebPayload_index_legacy_html" Source="$(var.PayloadRoot)\web\index.legacy.html" KeyPath="yes" />
       </Component>
       <Component Id="DesktopNodeWebPayload_manifest_jsonComponent" Directory="DesktopNodeWebFolder" Guid="*">
         <File Id="DesktopNodeWebPayload_manifest_json" Source="$(var.PayloadRoot)\web\manifest.json" KeyPath="yes" />

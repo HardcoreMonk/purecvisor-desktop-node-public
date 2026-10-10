@@ -4,12 +4,12 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import vm from "node:vm";
 
-// ADR-0018: web/app.bundle.js (i18n.js first, like index.next.html) must evaluate and boot in a minimal DOM shaped
-// after index.next.html without throwing, expose the window.PCV namespaces of src/modules.json and build its endpoint
+// ADR-0018: web/app.bundle.js (i18n.js first, like index.html) must evaluate and boot in a minimal DOM shaped
+// after index.html without throwing, expose the window.PCV namespaces of src/modules.json and build its endpoint
 // surface from pcv-config.js. This is the offline stand-in for a browser load until the train ships the bundle.
 
 const webRoot = fileURLToPath(new URL("../", import.meta.url));
-const indexHtml = fs.readFileSync(webRoot + "index.next.html", "utf8");
+const indexHtml = fs.readFileSync(webRoot + "index.html", "utf8");
 const ids = [...new Set([...indexHtml.matchAll(/ id="([^"]+)"/g)].map((match) => match[1]))];
 const order = JSON.parse(fs.readFileSync(webRoot + "src/modules.json", "utf8"));
 
@@ -109,7 +109,7 @@ function createSandbox() {
     document,
     localStorage: storage(),
     sessionStorage: storage(),
-    location: { hash: "", hostname: "127.0.0.1", pathname: "/index.next.html", search: "", origin: "http://127.0.0.1", href: "http://127.0.0.1/index.next.html", replace() {} },
+    location: { hash: "", hostname: "127.0.0.1", pathname: "/index.html", search: "", origin: "http://127.0.0.1", href: "http://127.0.0.1/index.html", replace() {} },
     history: { replaceState() {}, pushState() {} },
     navigator: { userAgent: "node", language: "ko", onLine: true },
     performance: { now: () => Date.now(), timing: { loadEventEnd: 0, navigationStart: 0 }, getEntriesByType: () => [] },
@@ -147,7 +147,7 @@ function createSandbox() {
   return { sandbox, document };
 }
 
-test("i18n.js and app.bundle.js evaluate in the index.next.html DOM and expose every module namespace", () => {
+test("i18n.js and app.bundle.js evaluate in the index.html DOM and expose every module namespace", () => {
   const { sandbox } = createSandbox();
   vm.runInContext(fs.readFileSync(webRoot + "i18n.js", "utf8"), sandbox, { filename: "i18n.js" });
   vm.runInContext(fs.readFileSync(webRoot + "app.bundle.js", "utf8"), sandbox, { filename: "app.bundle.js" });
@@ -179,7 +179,7 @@ test("i18n.js and app.bundle.js evaluate in the index.next.html DOM and expose e
   assert.ok(PCV.help && typeof PCV.help.render === "function" && PCV.help.catalog().length === 7, "PCV.help");
 });
 
-test("the bootstrap binds the index.next.html elements, renders every panel and starts a loopback session", async () => {
+test("the bootstrap binds the index.html elements, renders every panel and starts a loopback session", async () => {
   const { sandbox, document } = createSandbox();
   vm.runInContext(fs.readFileSync(webRoot + "i18n.js", "utf8"), sandbox, { filename: "i18n.js" });
   vm.runInContext(fs.readFileSync(webRoot + "app.bundle.js", "utf8"), sandbox, { filename: "app.bundle.js" });
@@ -188,7 +188,7 @@ test("the bootstrap binds the index.next.html elements, renders every panel and 
   sandbox.console.warn = (...args) => warnings.push(args.map(String).join(" "));
   document.dispatch("DOMContentLoaded");
   await new Promise((resolve) => setTimeout(resolve, 50));
-  assert.ok(sandbox.els && sandbox.els.vmTable, "els bound to the index.next.html content ids");
+  assert.ok(sandbox.els && sandbox.els.vmTable, "els bound to the index.html content ids");
   assert.equal(sandbox.els.connectionForm, null, "shell-only legacy elements are absent and tolerated");
   assert.match(sandbox.els.vmTable.innerHTML, /No VMs|muted/, "VM table rendered an empty state");
   assert.ok(sandbox.fetchLog.some((entry) => entry.url.endsWith("/api/v1/auth/loopback-session") && entry.method === "POST"), "loopback session requested on a loopback host");

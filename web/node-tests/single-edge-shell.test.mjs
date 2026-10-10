@@ -3,16 +3,17 @@ import fs from "node:fs";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
-// ADR-0018 (Single Edge frontend structure): web/index.next.html is the Single Edge index.html structure (login page,
-// app shell, icon defs, theme bootstrap, splash) carrying the Desktop Node content sections. It is renamed to
-// index.html by campaign single-edge-frontend-structure-20261010 Task 16; until then these checks keep its shape.
+// ADR-0018 (Single Edge frontend structure): web/index.html is the Single Edge index.html structure (login page,
+// app shell, icon defs, theme bootstrap, splash) carrying the Desktop Node content sections; it is served at /
+// since campaign single-edge-frontend-structure-20261010 Task 16a. The legacy console stays at web/index.legacy.html
+// (its own contracts) until a later campaign retires it. These checks keep the shell's shape.
 
-const INDEX = fileURLToPath(new URL("../index.next.html", import.meta.url));
+const INDEX = fileURLToPath(new URL("../index.html", import.meta.url));
 const html = fs.readFileSync(INDEX, "utf8");
 
 test("head declares the Single Edge security and asset wiring for the Desktop Node", () => {
   assert.match(html, /<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline';/);
-  assert.match(html, /connect-src 'self' http:\/\/127\.0\.0\.1:7777/);
+  assert.match(html, /connect-src 'self' http:\/\/127\.0\.0\.1:\* http:\/\/localhost:\* http:\/\/\*:7777/);
   assert.match(html, /frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'/);
   assert.match(html, /<base href="\/">/);
   assert.match(html, /<link rel="stylesheet" href="vendor\/pretendard\/pretendard\.css\?v=/);

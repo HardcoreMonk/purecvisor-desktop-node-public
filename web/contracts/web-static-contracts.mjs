@@ -471,13 +471,13 @@ function verifyFeatureSurfaceLedger(context) {
 
 function verifyRootAssets(context) {
   for (const [relativePath, label] of [
-    ["web/index.html", "index"],
+    ["web/index.legacy.html", "index"],
     ["web/styles.css", "styles"],
     ["web/app.js", "app"]
   ]) {
     context.assertExists(relativePath, `root-assets:${label}`);
   }
-  const index = context.readText("web/index.html");
+  const index = context.readText("web/index.legacy.html");
   context.assertMatch(index, /PureCVisor Desktop Node/i, "root-assets:title");
   context.assertMatch(index, /styles\.css/i, "root-assets:styles-link");
   context.assertMatch(index, /app\.js/i, "root-assets:script-link");
@@ -485,14 +485,14 @@ function verifyRootAssets(context) {
 }
 
 function verifyInlineFavicon(context) {
-  const index = context.readText("web/index.html");
+  const index = context.readText("web/index.legacy.html");
   context.assertMatch(index, /<link rel="icon"/i, "inline-favicon:link");
   context.assertMatch(index, /data:image\/svg\+xml/i, "inline-favicon:data-uri");
   context.assertNotMatch(index, /href="\/favicon\.ico"/i, "inline-favicon:no-file-request");
 }
 
 function verifySingleEdgeIsolation(context) {
-  for (const relativePath of ["web/index.html", "web/app.js", "web/styles.css"]) {
+  for (const relativePath of ["web/index.legacy.html", "web/app.js", "web/styles.css"]) {
     context.assertNotMatch(context.readText(relativePath), /\.\.\/\.\.\/ui\//i, `single-edge-isolation:${relativePath}`);
   }
 }
@@ -538,7 +538,7 @@ function verifySupanovaTokens(context) {
 }
 
 function verifyVisualShell(context) {
-  const index = context.readText("web/index.html");
+  const index = context.readText("web/index.legacy.html");
   const styles = context.readText("web/styles.css");
   const combined = index + styles;
   for (const [pattern, label] of [
@@ -568,7 +568,7 @@ function verifyVisualShell(context) {
 }
 
 function verifyWorkbenchFrame(context) {
-  const index = context.readText("web/index.html");
+  const index = context.readText("web/index.legacy.html");
   const styles = context.readText("web/styles.css");
   const combined = index + styles;
   for (const className of [
@@ -850,7 +850,7 @@ function verifyGuestExecCancel(context) {
 }
 
 function verifySearchEventTable(context) {
-  const index = context.readText("web/index.html");
+  const index = context.readText("web/index.legacy.html");
   const styles = context.readText("web/styles.css");
   const app = context.readText("web/app.js");
   const servedSource = context.readServedSource();
@@ -917,7 +917,7 @@ function verifyOptionalBearer(context) {
 }
 
 function verifyAccountRbacConsole(context) {
-  const index = context.readText("web/index.html");
+  const index = context.readText("web/index.legacy.html");
   const app = context.readText("web/app.js");
   const routesSource = context.readText("web/src/served/routes.ts");
   const actionsSource = context.readText("web/src/served/actions.ts");
@@ -987,7 +987,7 @@ function verifyAccountRbacConsole(context) {
 }
 
 function verifyListenerApiBase(context) {
-  const index = context.readText("web/index.html");
+  const index = context.readText("web/index.legacy.html");
   const app = context.readText("web/app.js");
   const servedState = context.readText("web/src/served/state.ts");
   context.assertMatch(index, /\/pcv-config\.js/i, "listener-api-base:config-script");
@@ -1031,7 +1031,7 @@ function verifyVmLifecycleRoutes(context) {
 }
 
 function verifyVmDetailMount(context) {
-  const index = context.readText("web/index.html");
+  const index = context.readText("web/index.legacy.html");
   const app = context.readText("web/app.js");
   const stateSource = context.readText("web/src/served/state.ts");
   const servedAppSource = context.readText("web/src/served-app.ts");
@@ -1141,7 +1141,7 @@ function verifyCheckpointActions(context) {
 }
 
 function verifyBrowserJobHistory(context) {
-  const index = context.readText("web/index.html");
+  const index = context.readText("web/index.legacy.html");
   const app = context.readText("web/app.js");
   const stateSource = context.readText("web/src/served/state.ts");
   const pollingSource = context.readText("web/src/served/job-polling.ts");
@@ -1227,7 +1227,7 @@ function verifyJobOrchestration(context) {
 }
 
 function verifyShellControls(context) {
-  const index = context.readText("web/index.html");
+  const index = context.readText("web/index.legacy.html");
   const app = context.readText("web/app.js");
   const shellSource = context.readText("web/src/served/render-shell.ts");
   const actionsSource = context.readText("web/src/served/actions.ts");
@@ -1267,7 +1267,7 @@ function verifyShellControls(context) {
 }
 
 function verifyActivityTroubleshooting(context) {
-  const index = context.readText("web/index.html");
+  const index = context.readText("web/index.legacy.html");
   const app = context.readText("web/app.js");
   const servedSource = context.readText("web/src/served-app.ts");
   const combined = app + servedSource;
@@ -1304,7 +1304,7 @@ function verifyActivityTroubleshooting(context) {
 }
 
 function verifyOpsCockpit(context) {
-  const index = context.readText("web/index.html");
+  const index = context.readText("web/index.legacy.html");
   const app = context.readText("web/app.js");
   const servedSource = context.readText("web/src/served-app.ts");
   const apiTypes = context.readText("web/src/api-types.ts");
@@ -1350,7 +1350,7 @@ function verifyOpsCockpit(context) {
 }
 
 function verifyEvidenceDashboard(context) {
-  const index = context.readText("web/index.html");
+  const index = context.readText("web/index.legacy.html");
   const app = context.readText("web/app.js");
   const servedSource = context.readText("web/src/served-app.ts");
   const apiTypes = context.readText("web/src/api-types.ts");
@@ -1403,7 +1403,7 @@ function verifyEvidenceDashboard(context) {
 }
 
 function verifyEvidenceDegradation(context) {
-  const index = context.readText("web/index.html");
+  const index = context.readText("web/index.legacy.html");
   const app = context.readText("web/app.js");
   const servedSource = context.readText("web/src/served-app.ts");
   const fixtures = context.readText("web/src/user-visible-fixtures.ts");
@@ -1424,7 +1424,7 @@ function verifyEvidenceDegradation(context) {
 }
 
 function verifyDiagnosticBundle(context) {
-  const index = context.readText("web/index.html");
+  const index = context.readText("web/index.legacy.html");
   const app = context.readText("web/app.js");
   const servedSource = context.readText("web/src/served-app.ts");
   const fixtures = context.readText("web/src/user-visible-fixtures.ts");
@@ -1490,7 +1490,7 @@ function verifyDiagnosticBundle(context) {
 }
 
 function verifyOperatorTerms(context) {
-  const index = context.readText("web/index.html");
+  const index = context.readText("web/index.legacy.html");
   const servedSource = context.readServedSource();
   const terms = context.readText("docs/OPERATOR_SURFACE_TERMS.md");
   const webSurface = servedSource + index;
@@ -1601,7 +1601,7 @@ function verifyFrontendEdgeCases(context) {
 }
 
 function verifyTokenRotation(context) {
-  const index = context.readText("web/index.html");
+  const index = context.readText("web/index.legacy.html");
   const app = context.readText("web/app.js");
   const servedSource = context.readText("web/src/served-app.ts");
   const combined = app + servedSource;
@@ -1629,7 +1629,7 @@ function verifyTokenRotation(context) {
 }
 
 function verifyBetaFollowup(context) {
-  const index = context.readText("web/index.html");
+  const index = context.readText("web/index.legacy.html");
   const app = context.readText("web/app.js");
   const servedSource = context.readText("web/src/served-app.ts");
   const combined = app + servedSource;
@@ -1659,7 +1659,7 @@ function verifyBetaFollowup(context) {
 }
 
 function verifyMonitoring(context) {
-  const index = context.readText("web/index.html");
+  const index = context.readText("web/index.legacy.html");
   const app = context.readText("web/app.js");
   for (const [pattern, label] of [
     [/id="monitoring"/i, "view"],
@@ -1683,7 +1683,7 @@ function verifyMonitoring(context) {
 }
 
 function verifyNetworkInventory(context) {
-  const index = context.readText("web/index.html");
+  const index = context.readText("web/index.legacy.html");
   const app = context.readText("web/app.js");
   const servedSource = context.readText("web/src/served-app.ts");
   const apiTypes = context.readText("web/src/api-types.ts");
@@ -1738,7 +1738,7 @@ function verifyNetworkInventory(context) {
 }
 
 function verifyWorkflowPolish(context) {
-  const index = context.readText("web/index.html");
+  const index = context.readText("web/index.legacy.html");
   const app = context.readText("web/app.js");
   for (const [pattern, label] of [
     [/id="vm-filter"/i, "vm-filter"],
@@ -1790,7 +1790,7 @@ async function verifyTypeScriptScaffold(context) {
   const packageJson = context.readJson("web/package.json");
   context.assertEqual(packageJson.private, true, "typescript-scaffold:private");
   context.assertEqual(packageJson.scripts?.test, "npm run check:feature-surfaces && tsc --noEmit -p tsconfig.json && npm run check:served && npm run check:frontend-batches && npm run lint && npm run lint:domsafe", "typescript-scaffold:test-script");
-  const index = context.readText("web/index.html");
+  const index = context.readText("web/index.legacy.html");
   context.assertMatch(index, /app\.js/i, "typescript-scaffold:index-app-js");
   context.assertNotMatch(index, /src\/app\.ts/i, "typescript-scaffold:index-no-source-app");
 }
@@ -1825,7 +1825,7 @@ async function verifyParityManifest(context) {
   for (const [key, route, label] of [["runtimePolicy", "/api/v1/runtime/policy", "runtime-policy"], ["hostStatus", "/api/v1/host/status", "host-status"], ["networkInventory", "/api/v1/network/inventory", "network-inventory"], ["vmList", "/api/v1/vms", "vm-list"], ["jobList", "/api/v1/jobs", "job-list"], ["jobsPage", "/api/v1/jobs?limit={limit}&offset={offset}", "jobs-page"], ["vmDetail", "/api/v1/vms/{vm_id}", "vm-detail"], ["vmAction", "/api/v1/vms/{vm_id}/{action}", "vm-action"], ["vmCheckpoints", "/api/v1/vms/{vm_id}/checkpoints", "vm-checkpoints"], ["checkpointAction", "/api/v1/vms/{vm_id}/checkpoints/{checkpoint_id}/{action}", "checkpoint-action"], ["jobAction", "/api/v1/jobs/{job_id}/{action}", "job-action"]]) context.assertEqual(manifest.localApiRoutes?.[key], route, `parity-manifest:${label}-route`);
   for (const [key, expected, label] of [["source", "src/app.ts", "regeneration-source"], ["output", "generated/parity/static-asset-parity.manifest.json", "regeneration-output"], ["writeCommand", "npm run generate:parity", "regeneration-write-command"], ["checkCommand", "npm run verify:parity", "regeneration-check-command"]]) context.assertEqual(manifest.regeneration?.[key], expected, `parity-manifest:${label}`);
   context.assertEqual(manifest.regeneration?.replacesServedAsset, true, "parity-manifest:regeneration-replaces-served-asset");
-  const index = context.readText("web/index.html");
+  const index = context.readText("web/index.legacy.html");
   context.assertMatch(index, /<script src="\/app\.js" defer><\/script>/i, "parity-manifest:index-script");
   context.assertNotMatch(index, /src\/app\.ts/i, "parity-manifest:index-no-source-app");
   context.assertNotMatch(manifestText, /Bearer\s+(?!\$\{)[A-Za-z0-9._~+/=-]{24,}/i, "parity-manifest:no-literal-bearer");
@@ -1855,7 +1855,7 @@ async function verifyVerifierWiring(context) {
 
 async function verifyGeneratedParityAlignment(context) {
   await context.runOwners(["static-parity", "browser-fixture"]);
-  const index = context.readText("web/index.html"); const manifestText = context.readText("web/generated/parity/static-asset-parity.manifest.json"); const manifest = context.readJson("web/generated/parity/static-asset-parity.manifest.json"); const verify = context.readText("web/scripts/verify-static-parity.mjs"); const regenerate = context.readText("web/scripts/regenerate-static-parity.mjs"); const app = context.readText("web/src/app.ts"); const served = context.readText("web/src/served-app.ts"); const fixtures = context.readText("web/src/user-visible-fixtures.ts"); const generator = context.readText("web/src/generate-parity-manifest.ts");
+  const index = context.readText("web/index.legacy.html"); const manifestText = context.readText("web/generated/parity/static-asset-parity.manifest.json"); const manifest = context.readJson("web/generated/parity/static-asset-parity.manifest.json"); const verify = context.readText("web/scripts/verify-static-parity.mjs"); const regenerate = context.readText("web/scripts/regenerate-static-parity.mjs"); const app = context.readText("web/src/app.ts"); const served = context.readText("web/src/served-app.ts"); const fixtures = context.readText("web/src/user-visible-fixtures.ts"); const generator = context.readText("web/src/generate-parity-manifest.ts");
   context.assertMatch(index, /<script src="\/app\.js" defer><\/script>/i, "generated-parity-alignment:index-script"); context.assertNotMatch(index, /src\/app\.ts|dist\//i, "generated-parity-alignment:index-no-source-or-dist");
   for (const [actual, expected, label] of [[manifest.servedAsset, "app.js", "served-asset"], [manifest.indexScriptSrc, "/app.js", "index-script"], [manifest.typeScriptEntry, "src/app.ts", "typescript-entry"], [manifest.servedTypeScriptEntry, "src/served-app.ts", "served-entry"], [manifest.userVisibleFixtureEntry, "src/user-visible-fixtures.ts", "fixture-entry"], [manifest.scaffold?.decisionCandidate, "static-asset-parity-scaffold-first", "decision-candidate"], [manifest.scaffold?.runtimeReplacement, "default", "runtime-replacement"], [manifest.localApiRoutes?.runtimePolicy, "/api/v1/runtime/policy", "runtime-policy"], [manifest.localApiRoutes?.hostStatus, "/api/v1/host/status", "host-status"], [manifest.localApiRoutes?.vmList, "/api/v1/vms", "vm-list"], [manifest.localApiRoutes?.jobList, "/api/v1/jobs", "job-list"], [manifest.localApiRoutes?.vmAction, "/api/v1/vms/{vm_id}/{action}", "vm-action"], [manifest.localApiRoutes?.checkpointAction, "/api/v1/vms/{vm_id}/checkpoints/{checkpoint_id}/{action}", "checkpoint-action"], [manifest.localApiRoutes?.jobAction, "/api/v1/jobs/{job_id}/{action}", "job-action"], [manifest.regeneration?.output, "generated/parity/static-asset-parity.manifest.json", "regeneration-output"], [manifest.regeneration?.writeCommand, "npm run generate:parity", "regeneration-write"], [manifest.regeneration?.checkCommand, "npm run verify:parity", "regeneration-check"], [manifest.browserFixture?.script, "scripts/verify-browser-fixture.mjs", "browser-fixture-script"], [manifest.browserFixture?.command, "npm run browser:fixture", "browser-fixture-command"], [manifest.browserFixture?.mode, "node-vm-minimal-dom", "browser-fixture-mode"]]) context.assertEqual(actual, expected, `generated-parity-alignment:${label}`);
   context.assertEqual(manifest.replacesServedAsset, true, "generated-parity-alignment:replaces-served-asset"); context.assertEqual(manifest.regeneration?.replacesServedAsset, true, "generated-parity-alignment:regeneration-replaces-served-asset"); context.assertEqual(manifest.browserFixture?.mutating, false, "generated-parity-alignment:browser-fixture-mutating"); context.assertEqual(manifest.browserFixture?.replacesServedAsset, true, "generated-parity-alignment:browser-fixture-replaces-served-asset");
@@ -1872,7 +1872,7 @@ async function verifySecretMutationGuard(context) {
 
 async function verifyNoFabricatedValues(context) {
   await context.runOwners(["static-contract", "browser-fixture"]);
-  const index = context.readText("web/index.html");
+  const index = context.readText("web/index.legacy.html");
   for (const literal of [">Connected<", "VM: 3/3", "API: 10ms avg", "Updated 0s ago", "<strong>4/5</strong>", "pcv-node-a", "pcv-node-b", "lab-vm-01"]) context.assertNotMatch(index, new RegExp(literal.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i"), `no-fabricated-values:literal-${literal}`);
   for (const [pattern, label] of [[/id="status-connection"[^>]*>\s*Connected\b/i, "connection"], [/id="status-host"[^>]*>\s*\w/i, "host"], [/id="status-updated"[^>]*>\s*Updated\s+\d/i, "updated"], [/id="status-vm-count"[^>]*>\s*VM:\s*\d/i, "vm-count"], [/id="hero-workload"[^>]*>\s*\d/i, "workload"], [/id="hero-host-mode"[^>]*>\s*\w/i, "host-mode"], [/id="hero-alerts"[^>]*>\s*\d/i, "alerts"], [/id="asset-count"[^>]*>\s*\d/i, "asset-count"]]) context.assertNotMatch(index, pattern, `no-fabricated-values:binding-${label}`);
   for (const id of ["status-connection", "status-host", "status-updated", "status-vm-count", "status-view", "hero-workload", "hero-host-mode", "hero-alerts"]) context.assertMatch(index, new RegExp(`id="${id}"`, "i"), `no-fabricated-values:required-${id}`);

@@ -11,7 +11,7 @@
   ],
   "mutation_allowed": false,
   "current_write_allowed": false,
-  "next_step": "Run Task 16a from docs/superpowers/plans/2026-10-10-purecvisor-desktop-node-single-edge-frontend-structure.md, then the queue in order.",
+  "next_step": "Run Task 16b from docs/superpowers/plans/2026-10-10-purecvisor-desktop-node-single-edge-frontend-structure.md, then the queue in order.",
   "plan": "docs/superpowers/plans/2026-10-10-purecvisor-desktop-node-single-edge-frontend-structure.md",
   "task_queue": [
     "Task 1",
@@ -38,7 +38,7 @@
   "task_not_before": {
     "Task 18": "2026-10-19"
   },
-  "next_task": "Task 16a",
+  "next_task": "Task 16b",
   "completed_tasks": [
     "Task 1",
     "Task 2",
@@ -54,7 +54,8 @@
     "Task 12",
     "Task 13",
     "Task 14",
-    "Task 15"
+    "Task 15",
+    "Task 16a"
   ],
   "commit_policy": "local-commit-per-task",
   "push_allowed": true,

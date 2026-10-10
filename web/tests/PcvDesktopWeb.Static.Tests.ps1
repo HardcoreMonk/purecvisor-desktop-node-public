@@ -2,7 +2,7 @@ Describe 'PcvDesktopWeb static console assets' {
     BeforeAll {
         $script:WebRoot = Split-Path -Parent $PSScriptRoot
         $script:RepoRoot = Split-Path -Parent $script:WebRoot
-        $script:IndexPath = Join-Path $script:WebRoot 'index.html'
+        $script:IndexPath = Join-Path $script:WebRoot 'index.legacy.html'
         $script:StylesPath = Join-Path $script:WebRoot 'styles.css'
         $script:AppPath = Join-Path $script:WebRoot 'app.js'
         $script:PackagePath = Join-Path $script:WebRoot 'package.json'
