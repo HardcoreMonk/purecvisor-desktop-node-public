@@ -69,6 +69,8 @@
 
 - [ ] `not_before` 2026-10-19. 이관 전 `audit-green-lean-20261009` Task 9(그 전 `s2-template-clone-20261009` Task 2, `s1-installed-20261008` Task 11, `adr17-s1-console-20261008` Task 14)다. Ubuntu 26 runner의 첫 `main` Development Gates와 Public Boundary run이 green이면 `config/project-completion-criteria.json` 위험 행을 `status=closed`, `closed_by`에 run id로 닫는다. 실패하면 `ubuntu-24.04` pin을 판단해 보고하고 멈춘다. push, PR, green CI 뒤 merge.
 
+이관(2026-10-10): campaign `single-edge-frontend-structure-20261010` Task 18로 옮겼다. 문장과 `not_before`는 그대로다. 이 campaign은 Task 1~3 완료(PR #79 `04ffe117`, PR #80 `1dd86c8`)로 닫혔다.
+
 ## Nonclaims
 
 - S3 통과는 Task 2 시연과 스크립트 결과로만 주장하고, S4는 주장하지 않는다. 확인자 칸이 비어 있는 동안 기록은 자가 보고다.

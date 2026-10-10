@@ -63,14 +63,14 @@ pcvcli --json vm list
 
 ## 웹 콘솔 연결
 
-Web Console 상단의 connection form에서 다음 값을 사용한다. 설치 listener는 Web Console 포트와 Web API 포트를 분리하며, `/pcv-config.js`가 기본 API 값을 채운다.
+Web Console은 `http://127.0.0.1/`에서 Single Edge 구조의 셸(로그인 페이지 + 앱 셸)을 연다. 설치 listener는 Web Console 포트와 Web API 포트를 분리하며, `/pcv-config.js`가 기본 API 값(`http://127.0.0.1:7777`)을 채운다.
 
-| 필드 | 입력 |
+| 접속 | 동작 |
 |------|------|
-| API | 기본값 `http://127.0.0.1:7777` |
-| Token | 내부 운영자가 제공한 bearer token |
+| loopback(`127.0.0.1`) | `POST /api/v1/auth/loopback-session`으로 짧은 JWT를 자동으로 받는다. 계정이 구성되면 이 경로는 `409 PCV_LOOPBACK_SESSION_DISABLED`로 닫히고 로그인 페이지에서 username/password로 로그인한다. |
+| LAN/비-loopback | 계정 JWT 또는 운영자가 별도로 제공한 bearer token이 필요하다. |
 
-`Save`를 누르면 host status, VM inventory, tracked job 상태를 불러온다. `Refresh`는 현재 host와 VM 목록을 다시 조회한다. `Clear`는 브라우저에 입력된 token 값을 지운다.
+상단 바의 환경설정(`Ctrl+P`)에서 테마, 언어, Local API 주소, 선택적 브라우저 token을 바꾸고, `token 지우기`로 브라우저에 입력된 token 값을 지운다. 사이드바 `Help`는 Local API route, 권한, CLI, Web Console 화면을 묶은 참조 카탈로그이고, `http://127.0.0.1/docs.html`은 이 가이드를 발췌한 문서 포털이다. 키보드 단축키 목록은 `?`로 연다. 옛 연결 폼 기반 콘솔은 `http://127.0.0.1/index.legacy.html`에 남아 있다(옛 계약 검증용, 별도 campaign에서 제거 예정).
 
 Token 값은 command line, issue, 문서, diagnostic bundle에 기록하지 않는다. 설치된 service와 CLI 기본 실행은 protected token file을 사용하고, Web Console에는 운영자가 별도로 제공한 token만 입력한다.
 

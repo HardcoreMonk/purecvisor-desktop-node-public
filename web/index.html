@@ -1,347 +1,443 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<!-- Ported from purecvisor ui/index.html (Apache-2.0, same author): login page, app shell, icon defs, theme bootstrap and
+     splash are the Single Edge structure (ADR-0018). Content sections are the Desktop Node views. Served as
+     index.html during campaign single-edge-frontend-structure-20261010 and renamed to index.html in Task 16. -->
+<html lang="ko">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>PureCVisor Desktop Node</title>
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230f172a'/%3E%3Cpath d='M8 10h16v4H8zM8 18h16v4H8z' fill='%23f8fafc'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="/styles.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="description" content="PureCVisor Desktop Node는 단일 Windows 호스트를 위한 Hyper-V 가상화 콘솔입니다. VM, checkpoint, 브라우저 콘솔과 운영 API를 한 화면에서 다룹니다.">
+<meta property="og:title" content="PureCVisor Desktop Node | Windows Hyper-V 콘솔">
+<meta property="og:description" content="단일 Windows 호스트 운영에 필요한 Hyper-V VM, checkpoint, 브라우저 콘솔과 운영 API를 한 콘솔에 모았습니다.">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="ko_KR">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self'; connect-src 'self' http://127.0.0.1:* http://localhost:* http://*:7777; img-src 'self' data: blob:; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<base href="/">
+<link rel="stylesheet" href="vendor/pretendard/pretendard.css?v=single-edge-v1">
+<link rel="stylesheet" href="style.css?v=single-edge-v1">
+<script>
+  (function() {
+    var allowed = ['supanova', 'supanova-cyan', 'supanova-hicontrast', 'supanova-mockup'];
+    var vars = ['bg','bg2','bg3','fg','fg2','accent','green','red','yellow','cyan','peach','magenta','border'];
+    var colorRe = /^#(?:[0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$|^(?:rgb|hsl)a?\([0-9a-z.,%\s+/-]{1,48}\)$/i;
+    var root = document.documentElement;
+    var t = localStorage.getItem('pcv-theme') || '';
+    var applied = 0;
+    if (t === 'custom') {
+      try {
+        var raw = JSON.parse(localStorage.getItem('pcv-custom-theme') || 'null');
+        if (raw && typeof raw === 'object') {
+          for (var i = 0; i < vars.length; i++) {
+            var val = raw[vars[i]];
+            if (typeof val !== 'string') continue;
+            val = val.trim();
+            if (colorRe.test(val)) { root.style.setProperty('--' + vars[i], val); applied++; }
+          }
+        }
+      } catch (e) { /* ignore a corrupt custom theme */ }
+    }
+    if (applied) {
+      root.setAttribute('data-theme', 'custom');
+    } else {
+      if (allowed.indexOf(t) < 0) {
+        t = 'supanova';
+        localStorage.setItem('pcv-theme', t);
+      }
+      root.setAttribute('data-theme', t);
+    }
+  })();
+</script>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="/icon-192.png">
+<link rel="shortcut icon" href="/icon-192.png">
+<meta name="theme-color" content="#ffffff">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>PureCVisor Desktop Node | Windows Hyper-V 콘솔</title>
 </head>
-<body>
-  <div id="app-root" class="shell supanova-console single-clone-shell" data-ui-port="single-edge-visual-shell">
-    <nav class="menu-bar" aria-label="Application menu">
-      <button type="button" data-menu-command="dashboard">파일</button>
-      <button type="button" data-menu-command="refresh">편집</button>
-      <button type="button" data-menu-command="vms">보기</button>
-      <button type="button" data-menu-command="network">이동</button>
-      <button type="button" data-menu-command="open-create-vm">실행</button>
-      <button type="button" data-menu-command="activity">관제</button>
-      <button type="button" data-menu-command="troubleshooting">계정</button>
-      <button type="button" data-menu-command="evidence">도움말</button>
-    </nav>
-
-    <header class="topbar glass-topbar workspace-header">
-      <div class="console-brand">
-        <span class="brand-mark" aria-hidden="true">PCV</span>
-        <div>
-          <p class="eyebrow">운영 콘솔</p>
-          <h1>PureCVisor Desktop Node</h1>
-          <p class="brand-subtitle">단일 Windows 호스트 상태를 한 화면에서 관리합니다.</p>
-        </div>
-      </div>
-      <div class="header-actions" aria-label="Primary console actions">
-        <button type="button" data-menu-command="evidence">스냅샷</button>
-        <button type="button" data-menu-command="troubleshooting">설정</button>
-      </div>
-      <form id="connection-form" class="connection-form control-strip">
-        <label class="session-control">
-          Theme
-          <select id="theme-select" aria-label="theme preview">
-            <option value="supanova">SUPANOVA (Teal)</option>
-            <option value="contrast">SUPANOVA Contrast</option>
-          </select>
-        </label>
-        <label class="session-control">
-          Lang
-          <select id="language-select" aria-label="language preview">
-            <option value="ko">한국어</option>
-            <option value="en">English</option>
-          </select>
-        </label>
-        <label class="session-control global-search-control">
-          Search
-          <input id="global-search-input" type="search" autocomplete="off" placeholder="views, assets, jobs">
-        </label>
-        <button id="open-command-palette" type="button" data-command-palette="open">Command</button>
-        <span id="live-viewer-state" class="live-viewer-state" aria-label="Live viewer state">
-          <span aria-hidden="true"></span>Live viewer
-        </span>
-        <label>
-          API
-          <input id="api-base-url" name="apiBaseUrl" type="url" autocomplete="off">
-        </label>
-        <label>
-          Token
-          <input id="api-token" name="apiToken" type="password" autocomplete="off" aria-label="optional API token">
-        </label>
-        <button type="submit">Save</button>
-        <button id="clear-token" type="button">Clear</button>
-        <button id="refresh-all" type="button">Refresh</button>
-        <button id="logout-boundary" type="button" data-menu-command="clear-browser-state">로그아웃</button>
-      </form>
-      <div id="connection-state" class="connection-state state-idle">Idle</div>
-    </header>
-
-    <aside class="activity-rail" aria-label="Console rail">
-      <button type="button" aria-label="Assets" data-view-link="vms">▣</button>
-      <button type="button" aria-label="Evidence" data-view-link="evidence">◇</button>
-      <button type="button" aria-label="Network" data-view-link="network">◎</button>
-      <button type="button" aria-label="Search" data-view-link="activity">⌕</button>
-      <span class="rail-spacer"></span>
-      <button type="button" aria-label="Notifications" data-view-link="activity">!</button>
-      <button type="button" aria-label="Settings" data-view-link="troubleshooting">*</button>
-    </aside>
-
-    <aside class="sidebar nav-rail asset-explorer">
-      <div class="asset-tabs" role="tablist" aria-label="Desktop Node asset scope">
-        <button class="asset-tab active" type="button" role="tab" aria-selected="true">VM 자산</button>
-        <button class="asset-tab" type="button" role="tab">네트워크</button>
-        <button class="asset-tab" type="button" role="tab">운영</button>
-      </div>
-      <div class="asset-panel-title">
-        <strong>VM 자산</strong>
-        <span id="asset-count">—</span>
-      </div>
-      <label class="asset-search">
-        <span class="sr-only">이름으로 찾기</span>
-        <input id="asset-search-input" type="search" placeholder="이름으로 찾기" autocomplete="off">
-      </label>
-      <div class="asset-columns" aria-hidden="true">
-        <span></span>
-        <span></span>
-        <span></span>
-        <span>이름</span>
-        <span>CPU</span>
-        <span>MEM</span>
-        <span>상태</span>
-      </div>
-      <div id="vm-asset-list" class="asset-list" aria-label="Pinned desktop node assets">
-        <p class="muted">VM 자산을 불러오는 중…</p>
-      </div>
-      <nav class="workspace-links" aria-label="Desktop Node views">
-        <a href="#dashboard" data-view-link="dashboard">Dashboard</a>
-        <a href="#vms" data-view-link="vms">Virtual Machines</a>
-        <a href="#network" data-view-link="network">Network</a>
-        <a href="#jobs" data-view-link="jobs">Jobs</a>
-        <a href="#activity" data-view-link="activity">Activity</a>
-        <a href="#evidence" data-view-link="evidence">Evidence</a>
-        <a href="#troubleshooting" data-view-link="troubleshooting">Troubleshooting</a>
-      </nav>
-      <div id="asset-status" class="asset-status"></div>
-    </aside>
-
-    <div id="workspace-tabbar" class="workspace-tabbar" role="tablist" aria-label="Open views">
-      <span class="workspace-tab active" role="tab" aria-selected="true">Dashboard <button type="button" aria-label="Close dashboard tab">x</button></span>
+<body class="login-active">
+<svg class="pcv-icon-defs" aria-hidden="true" focusable="false" width="0" height="0">
+  <defs>
+    <symbol id="pcv-i-server" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20H7m11-3h-2m-3-8H6.2c-1.12 0-1.68 0-2.108.218a2 2 0 0 0-.874.874C3 10.52 3 11.08 3 12.2v1.6c0 1.12 0 1.68.218 2.107c.192.377.497.683.874.875c.427.218.987.218 2.105.218H13m0-8v8m0-8V7.2c0-1.12 0-1.68.218-2.108a2 2 0 0 1 .874-.874C14.52 4 15.08 4 16.2 4h1.6c1.12 0 1.68 0 2.107.218c.377.192.683.497.875.874c.218.427.218.987.218 2.105v9.606c0 1.118 0 1.677-.218 2.104a2 2 0 0 1-.875.875c-.427.218-.986.218-2.104.218h-1.606c-1.118 0-1.678 0-2.105-.218a2 2 0 0 1-.874-.875c-.205-.401-.217-.919-.218-1.907m4.002-10v.002H17V7z"/></symbol>
+    <symbol id="pcv-i-pulse" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15v1.8c0 1.12 0 1.68.218 2.108a2 2 0 0 0 .874.874c.427.218.987.218 2.105.218H21M3 15V5m0 10l3.853-3.21l.004-.003c.697-.581 1.046-.872 1.425-.99a2 2 0 0 1 1.362.061c.367.153.688.474 1.332 1.118l.006.006c.654.654.981.982 1.354 1.133a2 2 0 0 0 1.385.046c.383-.128.733-.434 1.433-1.046L21 7"/></symbol>
+    <symbol id="pcv-i-monitor" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 20H9m-5-6.2V8.2c0-1.12 0-1.68.218-2.108c.192-.377.497-.682.874-.874C5.52 5 6.08 5 7.2 5h9.6c1.12 0 1.68 0 2.107.218c.377.192.683.497.875.874c.218.427.218.987.218 2.105v5.606c0 1.118 0 1.677-.218 2.104a2 2 0 0 1-.875.875c-.427.218-.986.218-2.104.218H7.197c-1.118 0-1.678 0-2.105-.218a2 2 0 0 1-.874-.875C4 15.48 4 14.92 4 13.8"/></symbol>
+    <symbol id="pcv-i-database" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 12v5c0 1.657-2.686 3-6 3s-6-1.343-6-3v-5m12 0V7m0 5c0 1.657-2.686 3-6 3s-6-1.343-6-3m12-5c0-1.657-2.686-3-6-3S6 5.343 6 7m12 0c0 1.657-2.686 3-6 3S6 8.657 6 7m0 5V7"/></symbol>
+    <symbol id="pcv-i-user" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21a7 7 0 1 0-14 0m7-10a4 4 0 1 1 0-8a4 4 0 0 1 0 8"/></symbol>
+    <symbol id="pcv-i-lock" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.23 9H7.2c-1.12 0-1.68 0-2.108.218a2 2 0 0 0-.874.874C4 10.52 4 11.08 4 12.2v5.6c0 1.12 0 1.68.218 2.108a2 2 0 0 0 .874.874c.427.218.987.218 2.105.218h9.606c1.118 0 1.677 0 2.104-.218c.377-.192.683-.498.875-.874c.218-.428.218-.986.218-2.104v-5.607c0-1.118 0-1.678-.218-2.105a2 2 0 0 0-.875-.874C18.48 9 17.92 9 16.8 9h-2.03M9.23 9h5.539M9.23 9A.23.23 0 0 1 9 8.77V6a3 3 0 1 1 6 0v2.77a.23.23 0 0 1-.231.23"/></symbol>
+    <symbol id="pcv-i-eye" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M3.587 13.779c1.78 1.769 4.883 4.22 8.413 4.22s6.634-2.451 8.413-4.22c.47-.467.705-.7.854-1.159c.107-.327.107-.913 0-1.24c-.15-.458-.385-.692-.854-1.159C18.633 8.452 15.531 6 12 6c-3.53 0-6.634 2.452-8.413 4.221c-.47.467-.705.7-.854 1.159c-.107.327-.107.913 0 1.24c.15.458.384.692.854 1.159"/><path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0-4 0"/></g></symbol>
+    <symbol id="pcv-i-eye-off" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m4 4l16 16m-3.5-3.244C15.147 17.485 13.618 18 12 18c-3.53 0-6.634-2.452-8.413-4.221c-.47-.467-.705-.7-.854-1.159c-.107-.327-.107-.913 0-1.24c.15-.459.385-.693.855-1.16c.897-.892 2.13-1.956 3.584-2.793M19.5 14.634c.333-.293.638-.582.912-.854l.003-.003c.468-.466.703-.7.852-1.156c.107-.327.107-.914 0-1.241c-.15-.458-.384-.692-.854-1.159C18.633 8.452 15.531 6 12 6q-.507 0-1 .064m2.323 7.436a2 2 0 0 1-2.762-2.889"/></symbol>
+    <symbol id="pcv-i-arrow-right" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14m0 0l-6-6m6 6l-6 6"/></symbol>
+  </defs>
+</svg>
+<div id="splash" role="status" aria-live="polite" aria-label="Loading PureCVisor" style="position:fixed;inset:0;z-index:100000;background:#ffffff;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity 0.5s">
+  <div style="font-family:'Outfit','Pretendard',sans-serif;font-size:56px;font-weight:800;color:#12627a;letter-spacing:4px;margin-bottom:16px">PureCVisor</div>
+  <div style="width:200px;height:3px;background:#edf1f5;border-radius:2px;overflow:hidden">
+    <div id="splash-bar" style="width:0%;height:100%;background:#12627a;transition:width 0.3s"></div>
+  </div>
+  <div style="margin-top:12px;font-size:20px;color:#5c6675">모듈을 불러오는 중입니다...</div>
+</div>
+<a href="#cb" class="skip-link">본문으로 건너뛰기</a>
+<div class="toast-c" id="toasts" role="status" aria-live="polite"></div>
+<div class="ctx" id="ctx" role="menu" aria-label="Context menu"></div>
+<div id="login-page" class="login-overlay" role="dialog" aria-modal="true" aria-labelledby="login-card-title">
+  <header class="login-topbar" role="banner">
+    <div class="login-brand">
+      <span class="login-brand-mark" aria-hidden="true">P</span>
+      <span class="login-brand-id">
+        <span class="login-brand-name">PureCVisor</span>
+        <span class="login-brand-edi">DESKTOP NODE</span>
+      </span>
     </div>
-
-    <main class="main">
-      <section id="alert-region" class="alert-region" aria-live="polite"></section>
-      <section id="dashboard" class="section app-view" data-view="dashboard">
-        <div id="view-dashboard">
-        <div class="dashboard-hero">
-          <section class="hero-panel">
-            <p class="eyebrow">Desktop Node</p>
-            <h2>운영 대시보드</h2>
-            <p>호스트 상태, VM 자산, 작업 경고를 한 화면에서 확인합니다.</p>
-            <div class="hero-chips">
-              <span>활성 워크로드 <strong id="hero-workload">—</strong></span>
-              <span>호스트 상태 <strong id="hero-host-mode">—</strong></span>
-              <span>최근 경고 <strong id="hero-alerts">—</strong></span>
-            </div>
-          </section>
-          <aside class="operator-memo">
-            <p class="eyebrow">운영 메모</p>
-            <dl>
-              <div><dt>현재 역할</dt><dd>단독 운영</dd></div>
-              <div><dt>웹소켓</dt><dd>미사용</dd></div>
-              <div><dt>운영 우선순위</dt><dd>자원 추이 점검</dd></div>
-            </dl>
-          </aside>
-        </div>
-        <div class="dashboard-pills" aria-label="Displayed dashboard items">
-          <span>운영 요약</span>
-          <span>빠른 작업</span>
-          <span>자원 추이</span>
-          <span>최근 경고</span>
-          <span>워크로드 표</span>
-        </div>
-        <div class="quick-action-grid" aria-label="Quick actions">
-          <a href="#vms" data-shell-action="open-create-vm"><span class="qa-icon">▣</span><span>새 VM</span></a>
-          <a href="#jobs" data-view-link="jobs"><span class="qa-icon">☷</span><span>작업 큐</span></a>
-          <a href="#network" data-view-link="network"><span class="qa-icon">◎</span><span>네트워크</span></a>
-          <a href="#activity" data-view-link="activity"><span class="qa-icon">⌁</span><span>운영 개요</span></a>
-          <a href="#dashboard" data-view-link="dashboard"><span class="qa-icon">▤</span><span>호스트 상태</span></a>
-          <a href="#troubleshooting" data-view-link="troubleshooting"><span class="qa-icon">▥</span><span>서비스 가이드</span></a>
-        </div>
-        <div class="section-header">
-          <div>
-            <p class="eyebrow">Dashboard</p>
-            <h2>Ops Cockpit</h2>
+    <div class="login-topbar-meta">
+      <span id="login-tls" class="login-tls" role="status"></span>
+    </div>
+  </header>
+  <main class="login-main" aria-label="로그인 화면">
+    <div class="login-split">
+      <section class="login-pitch">
+        <h1 class="login-hero ko-tight">Windows 호스트 운영을,<br><span class="login-hero-accent">한 콘솔에.</span></h1>
+        <p class="login-lede ko">웹 콘솔 · Local API 로 Hyper-V VM · checkpoint · 브라우저 콘솔 · 작업 기록을 같은 표면에서 다룹니다.</p>
+        <div class="login-node" aria-live="polite" aria-label="노드 상태">
+          <div class="login-node-head">
+            <span class="login-node-kicker">
+              <svg class="pcv-icon" aria-hidden="true"><use href="#pcv-i-pulse"></use></svg>
+              노드 상태
+            </span>
+            <span class="login-node-state">
+              <span id="lh-dot" class="login-dot login-dot-idle" aria-hidden="true"></span>
+              <span id="lh-state">노드 응답 대기</span>
+            </span>
           </div>
-          <button id="open-create-vm" type="button">Create VM</button>
+          <dl class="login-node-grid">
+            <div>
+              <dt>NODE</dt>
+              <dd id="lh-node">—</dd>
+            </div>
+            <div>
+              <dt>VERSION</dt>
+              <dd id="lh-version">—</dd>
+            </div>
+            <div>
+              <dt>UPTIME</dt>
+              <dd id="lh-uptime">—</dd>
+            </div>
+          </dl>
+          <div class="login-node-checks" aria-label="노드 점검 요약">
+            <span class="login-node-check">
+              <span id="lh-hyperv-dot" class="login-dot login-dot-idle" aria-hidden="true"></span>
+              <b>HYPER-V</b><span id="lh-hyperv">—</span>
+            </span>
+            <span class="login-node-check">
+              <span id="lh-disk-dot" class="login-dot login-dot-idle" aria-hidden="true"></span>
+              <b>DISK</b><span id="lh-disk">—</span>
+            </span>
+          </div>
         </div>
-        <div id="ops-summary-panel" class="ops-summary-panel"></div>
-        <div id="priority-panel" class="priority-panel"></div>
-        <div id="dashboard-activity-panel" class="dashboard-activity-panel"></div>
-        <div id="metric-grid" class="metric-grid"></div>
-        <div id="host-details" class="details-grid"></div>
-        <section id="monitoring" class="monitoring-section">
+        <ul class="login-caps ko" aria-label="핵심 역량">
+          <li><svg class="pcv-icon" aria-hidden="true"><use href="#pcv-i-monitor"></use></svg>VM</li>
+          <li><svg class="pcv-icon" aria-hidden="true"><use href="#pcv-i-server"></use></svg>Hyper-V</li>
+          <li><svg class="pcv-icon" aria-hidden="true"><use href="#pcv-i-database"></use></svg>Checkpoint</li>
+          <li><svg class="pcv-icon" aria-hidden="true"><use href="#pcv-i-arrow-right"></use></svg>REST</li>
+        </ul>
+      </section>
+      <section class="login-aside">
+        <div class="login-card">
+          <div class="login-card-head">
+            <div class="login-card-eyebrow">관리자 인증</div>
+            <h2 class="login-card-title ko-tight" id="login-card-title" data-i18n="login.title">보안 로그인</h2>
+            <p class="login-card-sub ko">로컬 운영 계정으로 접속하세요. loopback 접속은 세션이 자동으로 열립니다.</p>
+          </div>
+          <form class="login-form" onsubmit="event.preventDefault();doLoginPage();return false;" autocomplete="on">
+            <div id="login-cred-fields" class="login-stack">
+              <div class="login-field">
+                <label class="login-label" for="login-user">계정 이름</label>
+                <div class="login-input-wrap">
+                  <svg class="pcv-icon login-input-icon" aria-hidden="true"><use href="#pcv-i-user"></use></svg>
+                  <input id="login-user" class="login-input" placeholder="계정 이름" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" aria-label="계정 이름">
+                </div>
+              </div>
+              <div class="login-field">
+                <label class="login-label" for="login-pass">비밀번호</label>
+                <div class="login-input-wrap">
+                  <svg class="pcv-icon login-input-icon" aria-hidden="true"><use href="#pcv-i-lock"></use></svg>
+                  <input id="login-pass" type="password" class="login-input" placeholder="••••••••" autocomplete="current-password" autocapitalize="none" autocorrect="off" spellcheck="false" aria-label="비밀번호">
+                  <button type="button" class="login-pass-toggle" aria-label="비밀번호 표시 전환" onclick="(function(b){var i=document.getElementById('login-pass');var hidden=i.type==='password';i.type=hidden?'text':'password';b.setAttribute('aria-pressed',hidden?'true':'false');})(this)">
+                    <svg class="pcv-icon" aria-hidden="true"><use href="#pcv-i-eye"></use></svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div id="login-err" class="login-err" role="alert" aria-live="assertive"></div>
+            <div id="login-cred-actions" class="login-stack">
+              <button type="submit" class="login-submit" aria-label="로그인">
+                <span class="login-submit-label" data-i18n="login">로그인</span>
+                <span class="login-submit-arrow" aria-hidden="true">
+                  <svg class="pcv-icon"><use href="#pcv-i-arrow-right"></use></svg>
+                </span>
+              </button>
+              <div class="login-alt">
+                <button type="button" class="login-link login-link-button" onclick="showRegisterModal()">첫 계정 생성</button>
+                <span class="login-alt-sep" aria-hidden="true">·</span>
+                <a href="guide.html" class="login-link">운영 가이드</a>
+              </div>
+            </div>
+          </form>
+          <p class="login-security-note ko">로그인 실패와 세션 변경은 Windows Event Log와 audit 기록에 남습니다.</p>
+        </div>
+      </section>
+    </div>
+  </main>
+  <footer class="login-footer ko" role="contentinfo">
+    <div>&copy; 2026 PureCVisor Desktop Node</div>
+    <div class="login-footer-meta">Windows Hyper-V 운영 콘솔</div>
+  </footer>
+</div>
+<div class="app" id="app" aria-hidden="true" inert>
+<aside class="shell-sidebar" id="shell-sidebar"></aside>
+<div class="shell-main">
+  <header class="shell-topbar" id="shell-topbar-static">
+    <div class="shell-topbar-dyn" id="shell-topbar"></div>
+    <div class="shell-topbar-fixed">
+      <span id="version-badge" class="version-badge" role="status" aria-live="polite" hidden></span>
+      <span id="ws-s" class="ws-status" role="status" aria-label="Polling status"></span>
+      <button class="shell-iconbtn" onclick="toggleNotifCenter()" aria-label="알림 센터" title="알림">
+        <svg class="ci-icon" aria-hidden="true"><use href="vendor/coolicons/coolicons.svg#ci-bell"></use></svg>
+        <span id="notif-toolbar-badge" class="shell-badge" style="display:none"></span>
+      </button>
+      <button class="shell-iconbtn" onclick="showPrefs()" aria-label="설정" title="설정">
+        <svg class="ci-icon" aria-hidden="true"><use href="vendor/coolicons/coolicons.svg#ci-settings"></use></svg>
+      </button>
+      <span id="la" class="shell-session">
+        <button class="btn" type="button" onclick="pcvSetLoginVisible(true)" data-i18n="login">로그인</button>
+      </span>
+      <span id="us" class="hidden shell-user">
+        <span id="us-name" class="shell-user-name"></span>
+        <button class="btn" onclick="showChangePwModal()" title="비밀번호 변경" style="font-size:11px;padding:4px 10px">PW</button>
+        <button class="btn btn-r" onclick="doLogout()" style="font-size:11px;padding:4px 10px" data-i18n="logout">로그아웃</button>
+      </span>
+      <button id="mobile-menu-btn" class="mobile-menu-btn" onclick="toggleMobileSB()" aria-label="사이드바 열기"><svg class="ci-icon" aria-hidden="true"><use href="vendor/coolicons/coolicons.svg#ci-menu-alt-01"></use></svg></button>
+    </div>
+  </header>
+  <div class="shell-statusbar" id="shell-statusbar"></div>
+  <main class="content shell-content" aria-label="Content area">
+    <div class="cb" id="cb" tabindex="0">
+        <section id="alert-region" class="alert-region" aria-live="polite"></section>
+        <section id="dashboard" class="section app-view" data-view="dashboard">
+          <div id="view-dashboard">
+          <div class="dashboard-hero">
+            <section class="hero-panel">
+              <p class="eyebrow">Desktop Node</p>
+              <h2>운영 대시보드</h2>
+              <p>호스트 상태, VM 자산, 작업 경고를 한 화면에서 확인합니다.</p>
+              <div class="hero-chips">
+                <span>활성 워크로드 <strong id="hero-workload">—</strong></span>
+                <span>호스트 상태 <strong id="hero-host-mode">—</strong></span>
+                <span>최근 경고 <strong id="hero-alerts">—</strong></span>
+              </div>
+            </section>
+            <aside class="operator-memo">
+              <p class="eyebrow">운영 메모</p>
+              <dl>
+                <div><dt>현재 역할</dt><dd>단독 운영</dd></div>
+                <div><dt>웹소켓</dt><dd>미사용</dd></div>
+                <div><dt>운영 우선순위</dt><dd>자원 추이 점검</dd></div>
+              </dl>
+            </aside>
+          </div>
+          <div class="dashboard-pills" aria-label="Displayed dashboard items">
+            <span>운영 요약</span>
+            <span>빠른 작업</span>
+            <span>자원 추이</span>
+            <span>최근 경고</span>
+            <span>워크로드 표</span>
+          </div>
+          <div class="quick-action-grid" aria-label="Quick actions">
+            <a href="#vms" data-shell-action="open-create-vm"><span class="qa-icon">▣</span><span>새 VM</span></a>
+            <a href="#jobs" data-view-link="jobs"><span class="qa-icon">☷</span><span>작업 큐</span></a>
+            <a href="#network" data-view-link="network"><span class="qa-icon">◎</span><span>네트워크</span></a>
+            <a href="#activity" data-view-link="activity"><span class="qa-icon">⌁</span><span>운영 개요</span></a>
+            <a href="#dashboard" data-view-link="dashboard"><span class="qa-icon">▤</span><span>호스트 상태</span></a>
+            <a href="#troubleshooting" data-view-link="troubleshooting"><span class="qa-icon">▥</span><span>서비스 가이드</span></a>
+          </div>
           <div class="section-header">
             <div>
-              <p class="eyebrow">Signals</p>
-              <h2>Monitoring</h2>
+              <p class="eyebrow">Dashboard</p>
+              <h2>Ops Cockpit</h2>
             </div>
+            <button id="open-create-vm" type="button">Create VM</button>
           </div>
-          <div id="monitoring-panel" class="monitoring-panel"></div>
-        </section>
-        </div>
-      </section>
-
-      <section id="vms" class="section app-view" data-view="vms">
-        <div id="view-vms">
-        <div class="section-header">
-          <div>
-            <p class="eyebrow">Inventory</p>
-            <h2>VM Workbench</h2>
-          </div>
-          <label class="filter-control">
-            Filter
-            <input id="vm-filter" type="search" autocomplete="off" placeholder="Name, state, note">
-          </label>
-          <label class="filter-control">
-            State
-            <select id="vm-state-filter" aria-label="VM state filter">
-              <option value="all">All</option>
-              <option value="running">Running</option>
-              <option value="off">Off</option>
-              <option value="failed">Failed</option>
-            </select>
-          </label>
-          <label class="filter-control">
-            Sort
-            <select id="vm-sort" aria-label="VM sort">
-              <option value="name">Name</option>
-              <option value="state">State</option>
-              <option value="updated">Updated</option>
-            </select>
-          </label>
-        </div>
-        <div id="vm-workbench-context" class="vm-workbench-context"></div>
-        <div class="vm-workspace">
-          <div id="vm-table" class="table-wrap"></div>
-          <aside id="vm-detail-panel" class="vm-detail-panel" aria-live="polite">
+          <div id="ops-summary-panel" class="ops-summary-panel"></div>
+          <div id="priority-panel" class="priority-panel"></div>
+          <div id="dashboard-activity-panel" class="dashboard-activity-panel"></div>
+          <div id="metric-grid" class="metric-grid"></div>
+          <div id="host-details" class="details-grid"></div>
+          <section id="monitoring" class="monitoring-section">
             <div class="section-header">
               <div>
-                <p class="eyebrow">Selected VM</p>
-                <h2 id="vm-detail-title">No VM selected</h2>
+                <p class="eyebrow">Signals</p>
+                <h2>Monitoring</h2>
               </div>
-              <button id="close-vm-detail" type="button">Close</button>
             </div>
-            <div id="vm-detail-content">
-              <p class="muted">Select a VM row to inspect lifecycle controls and inventory details.</p>
+            <div id="monitoring-panel" class="monitoring-panel"></div>
+          </section>
+          </div>
+        </section>
+
+        <section id="vms" class="section app-view" data-view="vms">
+          <div id="view-vms">
+          <div class="section-header">
+            <div>
+              <p class="eyebrow">Inventory</p>
+              <h2>VM Workbench</h2>
             </div>
-          </aside>
-        </div>
-        </div>
-      </section>
-
-      <section id="network" class="section app-view" data-view="network">
-        <div id="view-network">
-        <div class="section-header">
-          <div>
-            <p class="eyebrow">Inventory</p>
-            <h2>Network Inventory</h2>
+            <label class="filter-control">
+              Filter
+              <input id="vm-filter" type="search" autocomplete="off" placeholder="Name, state, note">
+            </label>
+            <label class="filter-control">
+              State
+              <select id="vm-state-filter" aria-label="VM state filter">
+                <option value="all">All</option>
+                <option value="running">Running</option>
+                <option value="off">Off</option>
+                <option value="failed">Failed</option>
+              </select>
+            </label>
+            <label class="filter-control">
+              Sort
+              <select id="vm-sort" aria-label="VM sort">
+                <option value="name">Name</option>
+                <option value="state">State</option>
+                <option value="updated">Updated</option>
+              </select>
+            </label>
           </div>
-          <label class="filter-control">
-            Filter
-            <input id="network-filter" type="search" autocomplete="off" placeholder="Switch, type, adapter">
-          </label>
-        </div>
-        <div id="network-inventory-panel" class="network-inventory-panel"></div>
-        </div>
-      </section>
-
-      <section id="jobs" class="section app-view" data-view="jobs">
-        <div class="section-header">
-          <div>
-            <p class="eyebrow">Session</p>
-            <h2>Tracked Jobs</h2>
+          <div id="vm-workbench-context" class="vm-workbench-context"></div>
+          <div class="vm-workspace">
+            <div id="vm-table" class="table-wrap"></div>
+            <aside id="vm-detail-panel" class="vm-detail-panel" aria-live="polite">
+              <div class="section-header">
+                <div>
+                  <p class="eyebrow">Selected VM</p>
+                  <h2 id="vm-detail-title">No VM selected</h2>
+                </div>
+                <button id="close-vm-detail" type="button">Close</button>
+              </div>
+              <div id="vm-detail-content">
+                <p class="muted">Select a VM row to inspect lifecycle controls and inventory details.</p>
+              </div>
+            </aside>
           </div>
-          <label class="filter-control">
-            Filter
-            <input id="job-filter" type="search" autocomplete="off" placeholder="Job id, operation, error">
-          </label>
-          <label class="filter-control">
-            Status
-            <select id="job-status-filter" aria-label="Job status filter">
-              <option value="all">All</option>
-              <option value="queued">Queued</option>
-              <option value="running">Running</option>
-              <option value="failed">Failed</option>
-              <option value="succeeded">Succeeded</option>
-              <option value="canceled">Canceled</option>
-            </select>
-          </label>
-          <label class="filter-control">
-            Sort
-            <select id="job-sort" aria-label="Job sort">
-              <option value="updated:desc">Updated</option>
-              <option value="status:asc">Status</option>
-              <option value="operation:asc">Operation</option>
-              <option value="source:asc">Source</option>
-            </select>
-          </label>
-          <button id="clear-job-history" type="button">Clear history</button>
-        </div>
-        <div id="jobs-panel" class="jobs-panel"></div>
-      </section>
-
-      <section id="activity" class="section app-view" data-view="activity">
-        <div class="section-header">
-          <div>
-            <p class="eyebrow">Operations</p>
-            <h2>Operator Activity</h2>
           </div>
-        </div>
-        <div id="event-center-panel" class="event-center-panel"></div>
-        <div id="activity-panel" class="activity-panel"></div>
-      </section>
+        </section>
 
-      <section id="evidence" class="section app-view" data-view="evidence">
-        <div id="view-evidence">
-        <div class="section-header">
-          <div>
-            <p class="eyebrow">Batch Evidence</p>
-            <h2>Supervisor Evidence</h2>
+        <section id="network" class="section app-view" data-view="network">
+          <div id="view-network">
+          <div class="section-header">
+            <div>
+              <p class="eyebrow">Inventory</p>
+              <h2>Network Inventory</h2>
+            </div>
+            <label class="filter-control">
+              Filter
+              <input id="network-filter" type="search" autocomplete="off" placeholder="Switch, type, adapter">
+            </label>
           </div>
-        </div>
-        <div id="evidence-panel" class="evidence-panel"></div>
-        </div>
-      </section>
-
-      <section id="troubleshooting" class="section app-view" data-view="troubleshooting">
-        <div id="view-troubleshooting">
-        <div class="section-header">
-          <div>
-            <p class="eyebrow">Support</p>
-            <h2>Incident Command</h2>
+          <div id="network-inventory-panel" class="network-inventory-panel"></div>
           </div>
-        </div>
-        <div id="incident-panel" class="incident-panel"></div>
-        <div id="account-session-panel" class="account-session-panel">
-          <form id="account-login-form" class="account-login-form" autocomplete="off">
-            <label>Username<input id="account-username" name="username" type="text" autocomplete="username"></label>
-            <label>Password<input id="account-password" name="password" type="password" autocomplete="current-password"></label>
-            <button type="submit">Login</button>
-          </form>
-        </div>
-        <div id="account-console-panel" class="account-console-panel"></div>
-        <div id="token-rotation-panel" class="token-rotation-panel"></div>
-        <div id="diagnostics-panel" class="diagnostics-panel"></div>
-        <div id="beta-followup-panel" class="beta-followup-panel"></div>
-        <div id="troubleshooting-panel" class="troubleshooting-panel"></div>
-        </div>
-      </section>
-    </main>
-    <footer class="status-bar">
-      <span id="status-connection">Not connected</span>
-      <span id="status-host">—</span>
-      <span id="status-updated">Updated —</span>
-      <span class="status-live" id="status-vm-count">VM: —</span>
-      <span id="status-view">dashboard</span>
-    </footer>
-  </div>
+        </section>
 
+        <section id="jobs" class="section app-view" data-view="jobs">
+          <div class="section-header">
+            <div>
+              <p class="eyebrow">Session</p>
+              <h2>Tracked Jobs</h2>
+            </div>
+            <label class="filter-control">
+              Filter
+              <input id="job-filter" type="search" autocomplete="off" placeholder="Job id, operation, error">
+            </label>
+            <label class="filter-control">
+              Status
+              <select id="job-status-filter" aria-label="Job status filter">
+                <option value="all">All</option>
+                <option value="queued">Queued</option>
+                <option value="running">Running</option>
+                <option value="failed">Failed</option>
+                <option value="succeeded">Succeeded</option>
+                <option value="canceled">Canceled</option>
+              </select>
+            </label>
+            <label class="filter-control">
+              Sort
+              <select id="job-sort" aria-label="Job sort">
+                <option value="updated:desc">Updated</option>
+                <option value="status:asc">Status</option>
+                <option value="operation:asc">Operation</option>
+                <option value="source:asc">Source</option>
+              </select>
+            </label>
+            <button id="clear-job-history" type="button">Clear history</button>
+          </div>
+          <div id="jobs-panel" class="jobs-panel"></div>
+        </section>
+
+        <section id="activity" class="section app-view" data-view="activity">
+          <div class="section-header">
+            <div>
+              <p class="eyebrow">Operations</p>
+              <h2>Operator Activity</h2>
+            </div>
+          </div>
+          <div id="event-center-panel" class="event-center-panel"></div>
+          <div id="activity-panel" class="activity-panel"></div>
+        </section>
+
+        <section id="evidence" class="section app-view" data-view="evidence">
+          <div id="view-evidence">
+          <div class="section-header">
+            <div>
+              <p class="eyebrow">Batch Evidence</p>
+              <h2>Supervisor Evidence</h2>
+            </div>
+          </div>
+          <div id="evidence-panel" class="evidence-panel"></div>
+          </div>
+        </section>
+
+        <section id="troubleshooting" class="section app-view" data-view="troubleshooting">
+          <div id="view-troubleshooting">
+          <div class="section-header">
+            <div>
+              <p class="eyebrow">Support</p>
+              <h2>Incident Command</h2>
+            </div>
+          </div>
+          <div id="incident-panel" class="incident-panel"></div>
+          <div id="account-session-panel" class="account-session-panel">
+            <form id="account-login-form" class="account-login-form" autocomplete="off">
+              <label>Username<input id="account-username" name="username" type="text" autocomplete="username"></label>
+              <label>Password<input id="account-password" name="password" type="password" autocomplete="current-password"></label>
+              <button type="submit">Login</button>
+            </form>
+          </div>
+          <div id="account-console-panel" class="account-console-panel"></div>
+          <div id="token-rotation-panel" class="token-rotation-panel"></div>
+          <div id="diagnostics-panel" class="diagnostics-panel"></div>
+          <div id="beta-followup-panel" class="beta-followup-panel"></div>
+          <div id="troubleshooting-panel" class="troubleshooting-panel"></div>
+          </div>
+        </section>
+    </div>
+  </main>
+</div>
+</div>
+<div class="mobile-overlay" id="mobile-overlay" onclick="closeMobileSB()"></div>
+<div id="ev-side" class="ev-side" style="display:none" aria-live="polite" aria-label="Event log panel">
+<div id="evp" class="ev-content">이벤트 대기 중...</div>
+<div class="ev-footer"><span id="ev-count">0 events</span><span id="ev-status">Idle</span></div>
+</div>
   <div id="command-palette" class="command-palette" hidden role="dialog" aria-modal="false" aria-label="Command palette">
     <div class="command-palette-panel">
       <label>
@@ -351,7 +447,6 @@
       <div id="command-palette-results" class="command-palette-results"></div>
     </div>
   </div>
-
   <dialog id="create-vm-dialog">
     <form id="create-vm-form" method="dialog" class="create-form">
       <div class="section-header">
@@ -373,8 +468,49 @@
       <button type="submit">Queue Create Job</button>
     </form>
   </dialog>
+<script src="/pcv-config.js"></script>
+<script src="vendor/chart.umd.min.js?v=single-edge-v1"></script>
+<script src="i18n.js?v=single-edge-v1"></script>
+<script src="app.bundle.js?v=single-edge-v1"></script>
+<script>
+  var _pcvSplashDismissed = false;
+  function _pcvSplashRemove() {
+    if (_pcvSplashDismissed) return;
+    _pcvSplashDismissed = true;
+    var splashBar = document.getElementById('splash-bar');
+    if (splashBar) splashBar.style.width = '100%';
+    requestAnimationFrame(function() {
+      var splash = document.getElementById('splash');
+      if (splash) { splash.style.opacity = '0'; setTimeout(function() { splash.remove(); }, 180); }
+    });
+  }
+  window.__pcvDismissSplash = _pcvSplashRemove;
+  function _pcvInitUI() {
 
-  <script src="/pcv-config.js"></script>
-  <script src="/app.js" defer></script>
+    var langSel = document.getElementById('lang-select');
+    if (langSel && typeof I18N !== 'undefined') langSel.value = I18N.getLang();
+    if (typeof applyI18n === 'function') applyI18n();
+
+    if (typeof updateVersionBadge === 'function') updateVersionBadge();
+    _pcvSplashRemove();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', _pcvInitUI, { once: true });
+  } else {
+    _pcvInitUI();
+  }
+  window.addEventListener('load', _pcvSplashRemove, { once: true });
+
+  setTimeout(function() {
+    var splash = document.getElementById('splash');
+    if (splash) {
+      _pcvSplashDismissed = true;
+      splash.remove();
+      var lp = document.getElementById('login-page');
+      if (lp) lp.style.display = 'flex';
+    }
+  }, 3000);
+</script>
 </body>
 </html>

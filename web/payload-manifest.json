@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "contract": "pcv-web-payload-manifest-v1",
+  "design": "docs/superpowers/specs/2026-10-10-purecvisor-desktop-node-single-edge-frontend-structure-design.md",
+  "note": "Web root files shipped in the product payload (ADR-0018). core = files owned by explicit Product.wxs components and required by the product module update check. files = the rest, relative to web/ with forward slashes; packaging/windows-desktop-node/tools/Update-PcvWebPayloadWix.ps1 generates installer/WebPayload.wxs from them and the installer build copies core + files. Later tasks of campaign single-edge-frontend-structure-20261010 append entries.",
+  "core": [
+    "app.js",
+    "index.html",
+    "styles.css"
+  ],
+  "files": [
+    "app.bundle.js",
+    "style.css",
+    "samples/design-system-preview.html",
+    "samples/supanova-preview.html",
+    "vendor/chart.umd.min.js",
+    "vendor/coolicons/README.md",
+    "vendor/coolicons/coolicons.svg",
+    "vendor/pretendard/pretendard.css",
+    "vendor/pretendard/woff2/Pretendard-Black.woff2",
+    "vendor/pretendard/woff2/Pretendard-Bold.woff2",
+    "vendor/pretendard/woff2/Pretendard-ExtraBold.woff2",
+    "vendor/pretendard/woff2/Pretendard-Medium.woff2",
+    "vendor/pretendard/woff2/Pretendard-Regular.woff2",
+    "vendor/pretendard/woff2/Pretendard-SemiBold.woff2",
+    "index.legacy.html",
+    "icon-192.png",
+    "icon-512.png",
+    "i18n.js",
+    "docs.html",
+    "guide.html",
+    "guide-content.md",
+    "manifest.json",
+    "sw.js",
+    "offline.html"
+  ]
+}

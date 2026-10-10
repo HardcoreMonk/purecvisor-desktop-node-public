@@ -6,7 +6,7 @@ const webRoot = dirname(dirname(fileURLToPath(import.meta.url)));
 
 const paths = {
   packageJson: join(webRoot, "package.json"),
-  index: join(webRoot, "index.html"),
+  index: join(webRoot, "index.legacy.html"), // the legacy console page, formerly index.html (Single Edge shell since Task 16a)
   appSource: join(webRoot, "src", "app.ts"),
   fixtureSource: join(webRoot, "src", "user-visible-fixtures.ts"),
   servedSource: join(webRoot, "src", "served-app.ts"),
@@ -139,9 +139,9 @@ requireEqual(
 );
 requireEqual(packageJson.scripts?.["browser:fixture"], "node scripts/verify-browser-fixture.mjs", "package browser:fixture script");
 
-requireIncludes(index, '<script src="/app.js" defer></script>', "index.html");
-requireNotIncludes(index, "src/app.ts", "index.html");
-requireNotIncludes(index, "dist/", "index.html");
+requireIncludes(index, '<script src="/app.js" defer></script>', "index.legacy.html");
+requireNotIncludes(index, "src/app.ts", "index.legacy.html");
+requireNotIncludes(index, "dist/", "index.legacy.html");
 
 requireEqual(manifest.generatedBy, expected.generatedBy, "manifest.generatedBy");
 requireEqual(manifest.regeneratedBy, expected.regeneratedBy, "manifest.regeneratedBy");

@@ -10,9 +10,9 @@
     "check:web-contract-registry": "node scripts/verify-web-contract-registry.mjs",
     "check:verification-migration-manifest": "node scripts/regenerate-verification-migration-manifest.mjs --check && node scripts/verify-verification-migration-manifest.mjs --require-web-local-pass",
     "generate:verification-migration-manifest": "node scripts/regenerate-verification-migration-manifest.mjs --write",
-    "test": "npm run check:feature-surfaces && tsc --noEmit -p tsconfig.json && npm run check:served && npm run check:frontend-batches",
+    "test": "npm run check:feature-surfaces && tsc --noEmit -p tsconfig.json && npm run check:served && npm run check:frontend-batches && npm run lint && npm run lint:domsafe",
     "test:public-source-safety": "node --test --test-reporter=spec node-tests/public-source-safety.test.mjs",
-    "test:web-contracts": "npm run check:web-contract-registry && npm run check:verification-migration-manifest && node --test --test-reporter=spec node-tests/web-contract-harness.test.mjs node-tests/web-static-contracts.test.mjs node-tests/web-static-contracts-negative.test.mjs node-tests/verification-migration-manifest.test.mjs node-tests/web-contract-negative-parity.test.mjs node-tests/web-verification-architecture-boundary.test.mjs node-tests/vm-detail-submit-guard.test.mjs",
+    "test:web-contracts": "npm run check:web-contract-registry && npm run check:verification-migration-manifest && node --test --test-reporter=spec node-tests/web-contract-harness.test.mjs node-tests/web-static-contracts.test.mjs node-tests/web-static-contracts-negative.test.mjs node-tests/verification-migration-manifest.test.mjs node-tests/web-contract-negative-parity.test.mjs node-tests/web-verification-architecture-boundary.test.mjs node-tests/vm-detail-submit-guard.test.mjs node-tests/single-edge-shell.test.mjs node-tests/single-edge-modules.test.mjs node-tests/i18n-dictionary.test.mjs node-tests/endpoints-registry.test.mjs node-tests/bundle-load.test.mjs node-tests/docs-portal.test.mjs node-tests/pwa-assets.test.mjs",
     "test:required": "npm test && npm run test:web-contracts && npm run verify:parity",
     "generate:parity": "node scripts/regenerate-static-parity.mjs --write",
     "verify:parity": "npm run check:served && node scripts/regenerate-static-parity.mjs --check && node scripts/verify-static-parity.mjs && npm run browser:fixture",
@@ -23,9 +23,14 @@
     "scenario:s1-console": "node scripts/run-s1-console-scenario.mjs",
     "scenario:s2-clone": "node scripts/run-s2-clone-scenario.mjs",
     "check:frontend-batches": "node scripts/validate-frontend-completion-batches.mjs",
-    "scenario:s3-checkpoint": "node scripts/run-s3-checkpoint-scenario.mjs"
+    "scenario:s3-checkpoint": "node scripts/run-s3-checkpoint-scenario.mjs",
+    "lint": "eslint --no-error-on-unmatched-pattern app.bundle.js i18n.js sw.js",
+    "lint:domsafe": "node scripts/domsafe-ratchet.mjs"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.12.0",
+    "globals": "^17.13.0",
     "typescript": "5.9.3"
   }
 }

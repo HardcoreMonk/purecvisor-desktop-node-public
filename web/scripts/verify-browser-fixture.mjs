@@ -5,7 +5,7 @@ import vm from "node:vm";
 
 const webRoot = dirname(dirname(fileURLToPath(import.meta.url)));
 const appScript = readFileSync(join(webRoot, "app.js"), "utf8");
-const indexText = readFileSync(join(webRoot, "index.html"), "utf8");
+const indexText = readFileSync(join(webRoot, "index.legacy.html"), "utf8");
 
 const requiredIds = [
   "connection-form",

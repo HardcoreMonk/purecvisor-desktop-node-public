@@ -75,7 +75,7 @@ const defectCases = [
   {
     name: "incorrect exact TypeScript test script",
     id: "web.static.typescript-scaffold",
-    caseVariantOverrides: () => replaceExactlyOnce("web/index.html", "app.js", "APP.JS"),
+    caseVariantOverrides: () => replaceExactlyOnce("web/index.legacy.html", "app.js", "APP.JS"),
     overrides: () => transformJson("web/package.json", (packageJson) => { packageJson.scripts.test = "npm run check:served"; }),
     expectedCode: assertionFailed,
     expectedLabel: "typescript-scaffold:test-script"
@@ -91,7 +91,7 @@ const defectCases = [
   {
     name: "missing runtime policy parity route",
     id: "web.static.parity-manifest",
-    caseVariantOverrides: () => replaceExactlyOnce("web/index.html", "/app.js", "/APP.JS"),
+    caseVariantOverrides: () => replaceExactlyOnce("web/index.legacy.html", "/app.js", "/APP.JS"),
     collectionVariantOverrides: () => transformJson("web/generated/parity/static-asset-parity.manifest.json", (manifest) => {
       manifest.userVisibleFixtureNames = "emptyInventory runningVmAndJob unsupportedHost";
     }),
@@ -118,7 +118,7 @@ const defectCases = [
   {
     name: "mutating browser fixture manifest",
     id: "web.static.generated-parity-alignment",
-    caseVariantOverrides: () => replaceExactlyOnce("web/index.html", "<script src=\"/app.js\" defer></script>", "<SCRIPT src=\"/APP.JS\" defer></SCRIPT>"),
+    caseVariantOverrides: () => replaceExactlyOnce("web/index.legacy.html", "<script src=\"/app.js\" defer></script>", "<SCRIPT src=\"/APP.JS\" defer></SCRIPT>"),
     overrides: () => transformJson("web/generated/parity/static-asset-parity.manifest.json", (manifest) => { manifest.browserFixture.mutating = true; }),
     expectedCode: assertionFailed,
     expectedLabel: "generated-parity-alignment:browser-fixture-mutating"
@@ -134,8 +134,8 @@ const defectCases = [
   {
     name: "fabricated VM count in shell",
     id: "web.static.no-fabricated-values",
-    caseVariantRejectOverrides: () => new Map([["web/index.html", `${readCanonical("web/index.html")}\nvm: 3/3`]]),
-    overrides: () => new Map([["web/index.html", `${readCanonical("web/index.html")}\nVM: 3/3`]]),
+    caseVariantRejectOverrides: () => new Map([["web/index.legacy.html", `${readCanonical("web/index.legacy.html")}\nvm: 3/3`]]),
+    overrides: () => new Map([["web/index.legacy.html", `${readCanonical("web/index.legacy.html")}\nVM: 3/3`]]),
     expectedCode: assertionFailed,
     expectedLabel: "no-fabricated-values:literal-VM: 3/3"
   },
@@ -149,14 +149,14 @@ const defectCases = [
   {
     name: "missing app root",
     id: "web.static.root-assets",
-    overrides: () => removeOnce("web/index.html", "id=\"app-root\""),
+    overrides: () => removeOnce("web/index.legacy.html", "id=\"app-root\""),
     expectedCode: assertionFailed,
     expectedLabel: "root-assets:app-root"
   },
   {
     name: "missing inline favicon",
     id: "web.static.inline-favicon",
-    overrides: () => removeOnce("web/index.html", "<link rel=\"icon\""),
+    overrides: () => removeOnce("web/index.legacy.html", "<link rel=\"icon\""),
     expectedCode: assertionFailed,
     expectedLabel: "inline-favicon:link"
   },
@@ -184,14 +184,14 @@ const defectCases = [
   {
     name: "missing visual shell port",
     id: "web.static.visual-shell",
-    overrides: () => removeOnce("web/index.html", "data-ui-port=\"single-edge-visual-shell\""),
+    overrides: () => removeOnce("web/index.legacy.html", "data-ui-port=\"single-edge-visual-shell\""),
     expectedCode: assertionFailed,
     expectedLabel: "visual-shell:port"
   },
   {
     name: "missing menu bar",
     id: "web.static.workbench-frame",
-    overrides: () => removeOnce("web/index.html", "class=\"menu-bar\""),
+    overrides: () => removeOnce("web/index.legacy.html", "class=\"menu-bar\""),
     expectedCode: assertionFailed,
     expectedLabel: "workbench-frame:index-menu-bar"
   },
@@ -251,7 +251,7 @@ const defectCases = [
   {
     name: "missing command palette",
     id: "web.static.search-event-table",
-    overrides: () => removeOnce("web/index.html", "id=\"command-palette\""),
+    overrides: () => removeOnce("web/index.legacy.html", "id=\"command-palette\""),
     expectedCode: assertionFailed,
     expectedLabel: "search-event-table:command-palette"
   },
@@ -272,14 +272,14 @@ const defectCases = [
   {
     name: "missing account login form",
     id: "web.static.account-rbac-console",
-    overrides: () => removeOnce("web/index.html", "id=\"account-login-form\""),
+    overrides: () => removeOnce("web/index.legacy.html", "id=\"account-login-form\""),
     expectedCode: assertionFailed,
     expectedLabel: "account-rbac-console:login-form"
   },
   {
     name: "missing listener API base script",
     id: "web.static.listener-api-base",
-    overrides: () => removeOnce("web/index.html", "/pcv-config.js"),
+    overrides: () => removeOnce("web/index.legacy.html", "/pcv-config.js"),
     expectedCode: assertionFailed,
     expectedLabel: "listener-api-base:config-script"
   },
@@ -300,7 +300,7 @@ const defectCases = [
   {
     name: "missing VM detail panel mount",
     id: "web.static.vm-detail-mount",
-    overrides: () => removeOnce("web/index.html", "id=\"vm-detail-panel\""),
+    overrides: () => removeOnce("web/index.legacy.html", "id=\"vm-detail-panel\""),
     expectedCode: assertionFailed,
     expectedLabel: "vm-detail-mount:panel"
   },
@@ -335,28 +335,28 @@ const defectCases = [
   {
     name: "missing shell refresh command",
     id: "web.static.shell-controls",
-    overrides: () => removeOnce("web/index.html", "data-menu-command=\"refresh\""),
+    overrides: () => removeOnce("web/index.legacy.html", "data-menu-command=\"refresh\""),
     expectedCode: assertionFailed,
     expectedLabel: "shell-controls:refresh-command"
   },
   {
     name: "missing activity troubleshooting panel",
     id: "web.static.activity-troubleshooting",
-    overrides: () => removeOnce("web/index.html", "id=\"activity-panel\""),
+    overrides: () => removeOnce("web/index.legacy.html", "id=\"activity-panel\""),
     expectedCode: assertionFailed,
     expectedLabel: "activity-troubleshooting:activity-panel"
   },
   {
     name: "missing ops summary panel",
     id: "web.static.ops-cockpit",
-    overrides: () => removeOnce("web/index.html", "id=\"ops-summary-panel\""),
+    overrides: () => removeOnce("web/index.legacy.html", "id=\"ops-summary-panel\""),
     expectedCode: assertionFailed,
     expectedLabel: "ops-cockpit:ops-summary-panel"
   },
   {
     name: "missing evidence panel",
     id: "web.static.evidence-dashboard",
-    overrides: () => removeOnce("web/index.html", "id=\"evidence-panel\""),
+    overrides: () => removeOnce("web/index.legacy.html", "id=\"evidence-panel\""),
     expectedCode: assertionFailed,
     expectedLabel: "evidence-dashboard:evidence-panel"
   },
@@ -391,35 +391,35 @@ const defectCases = [
   {
     name: "missing token rotation panel",
     id: "web.static.token-rotation",
-    overrides: () => removeOnce("web/index.html", 'id="token-rotation-panel"'),
+    overrides: () => removeOnce("web/index.legacy.html", 'id="token-rotation-panel"'),
     expectedCode: assertionFailed,
     expectedLabel: "token-rotation:panel"
   },
   {
     name: "missing beta follow-up panel",
     id: "web.static.beta-followup",
-    overrides: () => removeOnce("web/index.html", 'id="beta-followup-panel"'),
+    overrides: () => removeOnce("web/index.legacy.html", 'id="beta-followup-panel"'),
     expectedCode: assertionFailed,
     expectedLabel: "beta-followup:panel"
   },
   {
     name: "missing monitoring panel",
     id: "web.static.monitoring",
-    overrides: () => removeOnce("web/index.html", 'id="monitoring-panel"'),
+    overrides: () => removeOnce("web/index.legacy.html", 'id="monitoring-panel"'),
     expectedCode: assertionFailed,
     expectedLabel: "monitoring:panel"
   },
   {
     name: "missing network inventory panel",
     id: "web.static.network-inventory",
-    overrides: () => removeOnce("web/index.html", 'id="network-inventory-panel"'),
+    overrides: () => removeOnce("web/index.legacy.html", 'id="network-inventory-panel"'),
     expectedCode: assertionFailed,
     expectedLabel: "network-inventory:panel"
   },
   {
     name: "missing VM filter",
     id: "web.static.workflow-polish",
-    overrides: () => removeOnce("web/index.html", 'id="vm-filter"'),
+    overrides: () => removeOnce("web/index.legacy.html", 'id="vm-filter"'),
     expectedCode: assertionFailed,
     expectedLabel: "workflow-polish:vm-filter"
   },

@@ -1,0 +1,8 @@
+{
+  "schema_version": 1,
+  "contract": "pcv-web-domsafe-ratchet-v1",
+  "pattern": "\\.(innerHTML|outerHTML)\\b|\\.insertAdjacentHTML\\s*\\(|\\bdocument\\.write\\s*\\(",
+  "ceiling": 82,
+  "recorded_on": "2026-10-10",
+  "note": "Lower this only by removing HTML-injection sites; raise it only with a reviewed reason in the commit."
+}

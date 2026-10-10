@@ -28,7 +28,9 @@ public sealed partial class DesktopNodeHostApplication : IDisposable
         var fullPath = Path.GetFullPath(Path.Combine(root, relativePath));
         var rootWithSeparator = root.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) + Path.DirectorySeparatorChar;
 
-        if (!fullPath.StartsWith(rootWithSeparator, StringComparison.OrdinalIgnoreCase) || !File.Exists(fullPath))
+        if (!fullPath.StartsWith(rootWithSeparator, StringComparison.OrdinalIgnoreCase)
+            || IsUnservedWebPath(relativePath)
+            || !File.Exists(fullPath))
         {
             await WriteTextAsync(response, 404, "application/json", "{\"ok\":false,\"error\":{\"code\":\"PCV_STATIC_FILE_NOT_FOUND\"}}").ConfigureAwait(false);
             return;
@@ -278,6 +280,34 @@ public sealed partial class DesktopNodeHostApplication : IDisposable
         return merged;
     }
 
+    // ADR-0018 (Single Edge frontend structure): the web root carries vendor fonts and icons, the PWA manifest and
+    // service worker, sample pages and markdown guide content next to index.html, so each type is served with its
+    // media type. Anything else stays application/octet-stream. The TypeScript sources and the web tooling folders
+    // are never served even when a development checkout is used as the web root.
+    private static readonly string[] UnservedWebPrefixes =
+    [
+        "src", "node_modules", "scripts", "tests", "node-tests", "contracts", "config", "generated"
+    ];
+
+    private static bool IsUnservedWebPath(string relativePath)
+    {
+        var normalized = relativePath.Replace(Path.DirectorySeparatorChar, '/').Replace(Path.AltDirectorySeparatorChar, '/');
+        var firstSegment = normalized.Split('/', 2)[0];
+        foreach (var prefix in UnservedWebPrefixes)
+        {
+            if (string.Equals(firstSegment, prefix, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return normalized.EndsWith("/package.json", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(normalized, "package.json", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(normalized, "package-lock.json", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(normalized, "tsconfig.json", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(normalized, "eslint.config.js", StringComparison.OrdinalIgnoreCase);
+    }
+
     private static string GetContentType(string path)
     {
         return Path.GetExtension(path).ToLowerInvariant() switch
@@ -285,6 +315,16 @@ public sealed partial class DesktopNodeHostApplication : IDisposable
             ".html" => "text/html",
             ".js" => "application/javascript",
             ".css" => "text/css",
+            ".json" => "application/json",
+            ".webmanifest" => "application/manifest+json",
+            ".map" => "application/json",
+            ".md" => "text/markdown",
+            ".svg" => "image/svg+xml",
+            ".png" => "image/png",
+            ".ico" => "image/x-icon",
+            ".woff2" => "font/woff2",
+            ".woff" => "font/woff",
+            ".ttf" => "font/ttf",
             _ => "application/octet-stream"
         };
     }

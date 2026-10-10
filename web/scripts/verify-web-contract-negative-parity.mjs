@@ -31,7 +31,7 @@ if ($failed.Count -eq 1 -and $result.FailedCount -eq 1) { exit 1 }
 exit 2`;
 const REQUIRED_FILES = Object.freeze([
   "web/tests/PcvDesktopWeb.Static.Tests.ps1",
-  "web/index.html",
+  "web/index.legacy.html",
   "web/styles.css",
   "web/app.js",
   "web/scripts/build-served-asset.mjs"
@@ -335,7 +335,7 @@ function copyFixture(repositoryRoot, fixtureRoot) {
     fs.mkdirSync(path.dirname(destination), { recursive: true });
     fs.copyFileSync(source, destination);
   }
-  const indexPath = path.join(fixtureRoot, "web", "index.html");
+  const indexPath = path.join(fixtureRoot, "web", "index.legacy.html");
   const index = fs.readFileSync(indexPath, "utf8");
   const matches = [...index.matchAll(/id="app-root"/g)];
   if (matches.length !== 1) throw unsafe("fixture_defect=app-root-count-invalid");

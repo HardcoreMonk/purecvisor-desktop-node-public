@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated from web/payload-manifest.json by packaging/windows-desktop-node/tools/Update-PcvWebPayloadWix.ps1 (ADR-0018). Do not edit; run the tool with -Apply. -->
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Fragment>
+    <DirectoryRef Id="DesktopNodeWebFolder">
+      <Directory Id="DesktopNodeWebDir_samples" Name="samples">
+      </Directory>
+      <Directory Id="DesktopNodeWebDir_vendor" Name="vendor">
+        <Directory Id="DesktopNodeWebDir_vendor_coolicons" Name="coolicons">
+        </Directory>
+        <Directory Id="DesktopNodeWebDir_vendor_pretendard" Name="pretendard">
+          <Directory Id="DesktopNodeWebDir_vendor_pretendard_woff2" Name="woff2">
+          </Directory>
+        </Directory>
+      </Directory>
+    </DirectoryRef>
+    <ComponentGroup Id="DesktopNodeWebPayloadComponents">
+      <Component Id="DesktopNodeWebPayload_app_bundle_jsComponent" Directory="DesktopNodeWebFolder" Guid="*">
+        <File Id="DesktopNodeWebPayload_app_bundle_js" Source="$(var.PayloadRoot)\web\app.bundle.js" KeyPath="yes" />
+      </Component>
+      <Component Id="DesktopNodeWebPayload_docs_htmlComponent" Directory="DesktopNodeWebFolder" Guid="*">
+        <File Id="DesktopNodeWebPayload_docs_html" Source="$(var.PayloadRoot)\web\docs.html" KeyPath="yes" />
+      </Component>
+      <Component Id="DesktopNodeWebPayload_guide_content_mdComponent" Directory="DesktopNodeWebFolder" Guid="*">
+        <File Id="DesktopNodeWebPayload_guide_content_md" Source="$(var.PayloadRoot)\web\guide-content.md" KeyPath="yes" />
+      </Component>
+      <Component Id="DesktopNodeWebPayload_guide_htmlComponent" Directory="DesktopNodeWebFolder" Guid="*">
+        <File Id="DesktopNodeWebPayload_guide_html" Source="$(var.PayloadRoot)\web\guide.html" KeyPath="yes" />
+      </Component>
+      <Component Id="DesktopNodeWebPayload_i18n_jsComponent" Directory="DesktopNodeWebFolder" Guid="*">
+        <File Id="DesktopNodeWebPayload_i18n_js" Source="$(var.PayloadRoot)\web\i18n.js" KeyPath="yes" />
+      </Component>
+      <Component Id="DesktopNodeWebPayload_icon_192_pngComponent" Directory="DesktopNodeWebFolder" Guid="*">
+        <File Id="DesktopNodeWebPayload_icon_192_png" Source="$(var.PayloadRoot)\web\icon-192.png" KeyPath="yes" />
+      </Component>
+      <Component Id="DesktopNodeWebPayload_icon_512_pngComponent" Directory="DesktopNodeWebFolder" Guid="*">
+        <File Id="DesktopNodeWebPayload_icon_512_png" Source="$(var.PayloadRoot)\web\icon-512.png" KeyPath="yes" />
+      </Component>
+      <Component Id="DesktopNodeWebPayload_index_legacy_htmlComponent" Directory="DesktopNodeWebFolder" Guid="*">
+        <File Id="DesktopNodeWebPayload_index_legacy_html" Source="$(var.PayloadRoot)\web\index.legacy.html" KeyPath="yes" />
+      </Component>
+      <Component Id="DesktopNodeWebPayload_manifest_jsonComponent" Directory="DesktopNodeWebFolder" Guid="*">
+        <File Id="DesktopNodeWebPayload_manifest_json" Source="$(var.PayloadRoot)\web\manifest.json" KeyPath="yes" />
+      </Component>
+      <Component Id="DesktopNodeWebPayload_offline_htmlComponent" Directory="DesktopNodeWebFolder" Guid="*">
+        <File Id="DesktopNodeWebPayload_offline_html" Source="$(var.PayloadRoot)\web\offline.html" KeyPath="yes" />
+      </Component>
+      <Component Id="DesktopNodeWebPayload_samples_design_system_preview_htmlComponent" Directory="DesktopNodeWebDir_samples" Guid="*">
+        <File Id="DesktopNodeWebPayload_samples_design_system_preview_html" Source="$(var.PayloadRoot)\web\samples\design-system-preview.html" KeyPath="yes" />
+      </Component>
+      <Component Id="DesktopNodeWebPayload_samples_supanova_preview_htmlComponent" Directory="DesktopNodeWebDir_samples" Guid="*">
+        <File Id="DesktopNodeWebPayload_samples_supanova_preview_html" Source="$(var.PayloadRoot)\web\samples\supanova-preview.html" KeyPath="yes" />
+      </Component>
+      <Component Id="DesktopNodeWebPayload_style_cssComponent" Directory="DesktopNodeWebFolder" Guid="*">
+        <File Id="DesktopNodeWebPayload_style_css" Source="$(var.PayloadRoot)\web\style.css" KeyPath="yes" />
+      </Component>
+      <Component Id="DesktopNodeWebPayload_sw_jsComponent" Directory="DesktopNodeWebFolder" Guid="*">
+        <File Id="DesktopNodeWebPayload_sw_js" Source="$(var.PayloadRoot)\web\sw.js" KeyPath="yes" />
+      </Component>
+      <Component Id="DesktopNodeWebPayload_vendor_chart_umd_min_jsComponent" Directory="DesktopNodeWebDir_vendor" Guid="*">
+        <File Id="DesktopNodeWebPayload_vendor_chart_umd_min_js" Source="$(var.PayloadRoot)\web\vendor\chart.umd.min.js" KeyPath="yes" />
+      </Component>
+      <Component Id="DesktopNodeWebPayload_vendor_coolicons_coolicons_svgComponent" Directory="DesktopNodeWebDir_vendor_coolicons" Guid="*">
+        <File Id="DesktopNodeWebPayload_vendor_coolicons_coolicons_svg" Source="$(var.PayloadRoot)\web\vendor\coolicons\coolicons.svg" KeyPath="yes" />
+      </Component>
+      <Component Id="DesktopNodeWebPayload_vendor_coolicons_README_mdComponent" Directory="DesktopNodeWebDir_vendor_coolicons" Guid="*">
+        <File Id="DesktopNodeWebPayload_vendor_coolicons_README_md" Source="$(var.PayloadRoot)\web\vendor\coolicons\README.md" KeyPath="yes" />
+      </Component>
+      <Component Id="DesktopNodeWebPayload_vendor_pretendard_pretendard_cssComponent" Directory="DesktopNodeWebDir_vendor_pretendard" Guid="*">
+        <File Id="DesktopNodeWebPayload_vendor_pretendard_pretendard_css" Source="$(var.PayloadRoot)\web\vendor\pretendard\pretendard.css" KeyPath="yes" />
+      </Component>
+      <Component Id="DesktopNodeWebPayload_vendor_pretendard_woff2_Prete_ABB6A615Component" Directory="DesktopNodeWebDir_vendor_pretendard_woff2" Guid="*">
+        <File Id="DesktopNodeWebPayload_vendor_pretendard_woff2_Prete_ABB6A615" Source="$(var.PayloadRoot)\web\vendor\pretendard\woff2\Pretendard-Black.woff2" KeyPath="yes" />
+      </Component>
+      <Component Id="DesktopNodeWebPayload_vendor_pretendard_woff2_Prete_0FB3887AComponent" Directory="DesktopNodeWebDir_vendor_pretendard_woff2" Guid="*">
+        <File Id="DesktopNodeWebPayload_vendor_pretendard_woff2_Prete_0FB3887A" Source="$(var.PayloadRoot)\web\vendor\pretendard\woff2\Pretendard-Bold.woff2" KeyPath="yes" />
+      </Component>
+      <Component Id="DesktopNodeWebPayload_vendor_pretendard_woff2_Prete_8189A3DFComponent" Directory="DesktopNodeWebDir_vendor_pretendard_woff2" Guid="*">
+        <File Id="DesktopNodeWebPayload_vendor_pretendard_woff2_Prete_8189A3DF" Source="$(var.PayloadRoot)\web\vendor\pretendard\woff2\Pretendard-ExtraBold.woff2" KeyPath="yes" />
+      </Component>
+      <Component Id="DesktopNodeWebPayload_vendor_pretendard_woff2_Prete_0D02D802Component" Directory="DesktopNodeWebDir_vendor_pretendard_woff2" Guid="*">
+        <File Id="DesktopNodeWebPayload_vendor_pretendard_woff2_Prete_0D02D802" Source="$(var.PayloadRoot)\web\vendor\pretendard\woff2\Pretendard-Medium.woff2" KeyPath="yes" />
+      </Component>
+      <Component Id="DesktopNodeWebPayload_vendor_pretendard_woff2_Prete_62FF0A18Component" Directory="DesktopNodeWebDir_vendor_pretendard_woff2" Guid="*">
+        <File Id="DesktopNodeWebPayload_vendor_pretendard_woff2_Prete_62FF0A18" Source="$(var.PayloadRoot)\web\vendor\pretendard\woff2\Pretendard-Regular.woff2" KeyPath="yes" />
+      </Component>
+      <Component Id="DesktopNodeWebPayload_vendor_pretendard_woff2_Prete_34D3B745Component" Directory="DesktopNodeWebDir_vendor_pretendard_woff2" Guid="*">
+        <File Id="DesktopNodeWebPayload_vendor_pretendard_woff2_Prete_34D3B745" Source="$(var.PayloadRoot)\web\vendor\pretendard\woff2\Pretendard-SemiBold.woff2" KeyPath="yes" />
+      </Component>
+    </ComponentGroup>
+  </Fragment>
+</Wix>

@@ -299,7 +299,7 @@ ADR-0005의 `installed-listener-external-load-rate-limit`는 `docs/ga-ready/evid
 - Linux `purecvisorsd`
 - Linux Single Edge C runtime
 - KVM/libvirt/LXC/ZFS/OVS/OVN implementation
-- Single Edge Web UI/API 공개 표면
+- Single Edge Web UI/API 공개 표면(Linux route·화면). 프론트엔드 구조와 공통 모듈 코드는 ADR-0018로 차용한다
 - Multi Edge cluster/federation/live migration implementation
 
 ## Phase 11-25 상태

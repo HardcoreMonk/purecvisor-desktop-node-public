@@ -78,7 +78,8 @@ canonical owner가 우선하며, 이 문서를 같은 변경에서 갱신한다.
 
 ### 3.2 범위 외
 
-- Linux `purecvisorsd`, KVM/libvirt/LXC/ZFS/OVS/OVN runtime과 Single Edge 표면을 추가하지 않는다.
+- Linux `purecvisorsd`, KVM/libvirt/LXC/ZFS/OVS/OVN runtime과 Linux Single Edge route·화면을 추가하지 않는다. Single Edge
+  프론트엔드 구조와 공통 모듈(셸, nav, theme, modal, i18n 등)은 ADR-0018로 차용하며 `web/` 안에 둔다.
 - TUI source, package, smoke 또는 운영자 경로를 재도입하지 않는다.
 - C++23, CMake, 별도 native runtime prerequisite 또는 C++ interop 계층을 현재 제품·installer payload에
   추가하지 않는다.

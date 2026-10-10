@@ -341,7 +341,7 @@ public sealed class PcvDesktopNodeInstallerPlanContractTests : IDisposable
         Assert.False(File.Exists(stale));
         Assert.True(File.Exists(Path.Combine(payload, "pcvcli.exe")));
         Assert.False(File.Exists(Path.Combine(payload, "pcvtui.exe")));
-        Assert.Equal(8, result.Provenance?.PayloadFileCount);
+        Assert.Equal(5 + harness.ReadWebPayloadManifestFiles().Count, result.Provenance?.PayloadFileCount);
         Assert.Matches("^[0-9a-f]{64}$", result.Provenance?.CliSha256!);
         Assert.False(result.Provenance?.HasTuiProperty);
     }
@@ -375,7 +375,7 @@ public sealed class PcvDesktopNodeInstallerPlanContractTests : IDisposable
         Assert.Equal("dotnet-windows-service", manifest.RootElement.GetProperty("service_host").GetProperty("mode").GetString());
         Assert.True(manifest.RootElement.GetProperty("update").GetProperty("installed_manifest_is_source_of_truth").GetBoolean());
         Assert.Empty(Directory.EnumerateDirectories(payload, "tests", SearchOption.AllDirectories));
-        Assert.Equal(8, result.Provenance?.PayloadFileCount);
+        Assert.Equal(5 + harness.ReadWebPayloadManifestFiles().Count, result.Provenance?.PayloadFileCount);
         Assert.EndsWith("pcvcli.exe", result.Provenance?.CliPath, StringComparison.OrdinalIgnoreCase);
         Assert.False(result.Provenance?.HasTuiProperty);
     }

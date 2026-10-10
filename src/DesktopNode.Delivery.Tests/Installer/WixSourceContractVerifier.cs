@@ -18,10 +18,11 @@ internal sealed class WixSourceContractVerifier
         "DataRootRemove",
     ];
 
-    internal WixSourceContractVerifier(string productSource, string actionsSource, string projectSource)
+    internal WixSourceContractVerifier(string productSource, string actionsSource, string projectSource, string webPayloadSource)
     {
         ProductDocument = Parse(productSource, "product");
         ActionsDocument = Parse(actionsSource, "actions");
+        WebPayloadDocument = Parse(webPayloadSource, "web-payload");
         ProjectDocument = Parse(projectSource, "project", requireWixNamespace: false);
         Namespace = NamespaceUri;
         Package = Single(ProductDocument.Descendants(Namespace + "Package"), "package");
@@ -47,6 +48,7 @@ internal sealed class WixSourceContractVerifier
     internal XNamespace Namespace { get; }
     internal XDocument ProductDocument { get; }
     internal XDocument ActionsDocument { get; }
+    internal XDocument WebPayloadDocument { get; }
     internal XDocument ProjectDocument { get; }
     internal XElement Package { get; }
     internal IReadOnlyDictionary<string, XElement> ProductFiles { get; }
@@ -81,11 +83,25 @@ internal sealed class WixSourceContractVerifier
         var installDirectory = RequireElement(ProductDocument, "Directory", "Id", "INSTALLFOLDER");
         RequireAttribute(installDirectory, "Name", "DesktopNode", "directory:INSTALLFOLDER");
 
-        foreach (var id in new[] { "DesktopNodePayloadComponents", "DesktopNodeProductWrapperComponents" })
+        foreach (var id in new[] { "DesktopNodePayloadComponents", "DesktopNodeProductWrapperComponents", "DesktopNodeWebPayloadComponents" })
         {
             if (!ComponentGroupReferences.Contains(id))
             {
                 throw Invalid($"component-group-ref:{id}");
+            }
+        }
+        // ADR-0018: the generated WebPayload.wxs fragment owns the Single Edge web payload components; every
+        // component must carry exactly one File under the web folder tree with an auto GUID.
+        var webPayloadGroup = WebPayloadDocument.Descendants(Namespace + "ComponentGroup")
+            .SingleOrDefault(element => (string?)element.Attribute("Id") == "DesktopNodeWebPayloadComponents")
+            ?? throw Invalid("web-payload:component-group");
+        foreach (var component in webPayloadGroup.Elements(Namespace + "Component"))
+        {
+            var file = Single(component.Elements(Namespace + "File"), "web-payload:file");
+            if ((string?)component.Attribute("Guid") != "*" || (string?)file.Attribute("KeyPath") != "yes"
+                || !((string?)file.Attribute("Source") ?? string.Empty).StartsWith("$(var.PayloadRoot)\\web\\", StringComparison.Ordinal))
+            {
+                throw Invalid($"web-payload:component:{(string?)component.Attribute("Id")}");
             }
         }
         foreach (var id in ActionIds)
@@ -217,7 +233,7 @@ internal sealed class WixSourceContractVerifier
         }
 
         if ((string?)ProjectDocument.Root?.Attribute("Sdk") != "WixToolset.Sdk/5.0.2" ||
-            !WixProjectSources.SequenceEqual(["Product.wxs", "ProductActions.wxs"], StringComparer.Ordinal))
+            !WixProjectSources.SequenceEqual(["Product.wxs", "ProductActions.wxs", "WebPayload.wxs"], StringComparer.Ordinal))
         {
             throw Invalid("wix-project-sources");
         }

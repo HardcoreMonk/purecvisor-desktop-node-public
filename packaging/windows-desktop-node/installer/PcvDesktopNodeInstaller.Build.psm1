@@ -454,7 +454,8 @@ function Invoke-PcvInstallerBuildCore {
     $toolOutput = [ordered]@{}
     $wixSourcePaths = @(
         (Join-Path $installerRoot 'Product.wxs'),
-        (Join-Path $installerRoot 'ProductActions.wxs')
+        (Join-Path $installerRoot 'ProductActions.wxs'),
+        (Join-Path $installerRoot 'WebPayload.wxs')
     )
     $modulePath = Join-Path $repoRoot 'packaging\windows-desktop-node\PcvDesktopNodeProduct.psm1'
     $moduleHash = Get-PcvFileSha256 -Path $modulePath
@@ -708,10 +709,16 @@ function Invoke-PcvInstallerBuildCore {
             }
         )
     
+        # ADR-0018: the web payload file list lives in web/payload-manifest.json (core files owned by Product.wxs plus
+        # the files generated into WebPayload.wxs). Keep the manifest, the fragment and this copy in step.
+        $webPayloadManifestPath = Join-Path $repoRoot 'web\payload-manifest.json'
+        $webPayloadManifest = Get-Content -LiteralPath $webPayloadManifestPath -Raw -ErrorAction Stop | ConvertFrom-Json
+        if ([string]$webPayloadManifest.contract -ne 'pcv-web-payload-manifest-v1') {
+            throw "PCV_INSTALLER_WEB_PAYLOAD_MANIFEST_INVALID|web/payload-manifest.json contract is not pcv-web-payload-manifest-v1.|$webPayloadManifestPath"
+        }
         $webRuntimeFiles = @(
-            'web\app.js',
-            'web\index.html',
-            'web\styles.css'
+            @($webPayloadManifest.core) + @($webPayloadManifest.files) |
+                ForEach-Object { 'web\' + ([string]$_).Replace('/', '\') }
         )
         foreach ($relativePath in $webRuntimeFiles) {
             $payloadFilesToCopy += [ordered]@{

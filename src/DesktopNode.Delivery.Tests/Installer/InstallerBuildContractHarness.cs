@@ -322,9 +322,10 @@ internal sealed partial class InstallerBuildContractHarness
         CopyPayload("packaging/windows-desktop-node/PcvDesktopNodeProduct.psm1", payloadRoot, "PcvDesktopNodeProduct.psm1");
         File.Copy(hostPath, Path.Combine(payloadRoot, "DesktopNode.Host.exe"), overwrite: true);
         File.Copy(cliPath, Path.Combine(payloadRoot, "pcvcli.exe"), overwrite: true);
-        CopyPayload("web/app.js", payloadRoot, Path.Combine("web", "app.js"));
-        CopyPayload("web/index.html", payloadRoot, Path.Combine("web", "index.html"));
-        CopyPayload("web/styles.css", payloadRoot, Path.Combine("web", "styles.css"));
+        foreach (var webFile in ReadWebPayloadManifestFiles())
+        {
+            CopyPayload("web/" + webFile, payloadRoot, Path.Combine("web", webFile.Replace('/', Path.DirectorySeparatorChar)));
+        }
 
         var productManifest = new JsonObject
         {
@@ -461,6 +462,19 @@ internal sealed partial class InstallerBuildContractHarness
         {
             throw Invalid("payload-root");
         }
+    }
+
+    internal IReadOnlyList<string> ReadWebPayloadManifestFiles()
+    {
+        using var document = System.Text.Json.JsonDocument.Parse(repository.ReadUtf8Text("web/payload-manifest.json"));
+        var root = document.RootElement;
+        if (root.GetProperty("contract").GetString() != "pcv-web-payload-manifest-v1")
+        {
+            throw Invalid("web-payload-manifest-contract");
+        }
+        return root.GetProperty("core").EnumerateArray().Concat(root.GetProperty("files").EnumerateArray())
+            .Select(element => element.GetString()!)
+            .ToArray();
     }
 
     private void CopyPayload(string sourcePath, string payloadRoot, string relativeDestination)
@@ -783,13 +797,14 @@ internal static partial class InstallerBuildSourcePolicy
             ("mode='internal-artifact-descriptor-only'", "publication-mode"),
             ("public_trusted_signing='not-claimed'", "publication-signing"),
             ("external_stable_publication='not-claimed'", "publication-external"),
-            ("$wixSourcePaths=@((Join-Path$installerRoot'Product.wxs'),(Join-Path$installerRoot'ProductActions.wxs'))", "wix-source-order"),
+            ("$wixSourcePaths=@((Join-Path$installerRoot'Product.wxs'),(Join-Path$installerRoot'ProductActions.wxs'),(Join-Path$installerRoot'WebPayload.wxs'))", "wix-source-order"),
             ("$wixArgs=@('build')+$wixSourcePaths+@('-arch','x64','-define',\"MsiProductVersion=$msiProductVersion\",'-define',\"PayloadRoot=$payloadRoot\",'-out',$msiPath)", "wix-argument-order"),
             ("(Split-Path-Leaf$resolvedPayloadRoot)-ne'payload'-or-not(Test-PcvChildPath-Path$resolvedPayloadRoot-Parent$outputRootFull)", "payload-containment"),
             ("Remove-Item-LiteralPath$resolvedPayloadRoot-Recurse-Force", "payload-clean"),
             ("destination=Join-Path$payloadRoot'DesktopNode.Host.exe'", "host-payload"),
             ("destination=Join-Path$payloadRoot'pcvcli.exe'", "cli-payload"),
-            ("'web\\app.js','web\\index.html','web\\styles.css'", "web-payload"),
+            ("$webPayloadManifestPath=Join-Path$repoRoot'web\\payload-manifest.json'", "web-payload-manifest"),
+            ("@($webPayloadManifest.core)+@($webPayloadManifest.files)", "web-payload"),
             ("git_commit=Get-PcvGitCommit-RepositoryRoot$repoRoot", "git-provenance"),
             ("\"$msiHash$(Split-Path-Leaf$msiPath)\"|Set-Content-LiteralPath$msiSha256Path-EncodingASCII", "hash-sidecar"),
             ("$publicationDescriptor|ConvertTo-Json-Depth8|Set-Content-LiteralPath$publicationPath-EncodingUTF8", "publication-sidecar"),

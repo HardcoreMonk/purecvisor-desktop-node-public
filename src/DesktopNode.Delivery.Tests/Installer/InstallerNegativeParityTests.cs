@@ -180,7 +180,8 @@ public sealed class InstallerNegativeParityTests
         new(
             productSource,
             repository.ReadUtf8Text(ProductActionsWxsPath),
-            repository.ReadUtf8Text(WixProjectPath));
+            repository.ReadUtf8Text(WixProjectPath),
+            repository.ReadUtf8Text("packaging/windows-desktop-node/installer/WebPayload.wxs"));
 
     [Fact]
     public void WrapperVerifierRejectsExitCodeCollapse()
