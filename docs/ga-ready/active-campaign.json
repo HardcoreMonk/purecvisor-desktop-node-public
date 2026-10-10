@@ -12,7 +12,7 @@
   ],
   "mutation_allowed": true,
   "current_write_allowed": false,
-  "next_step": "Task 2 done (scheduled checkpoint fired at 2026-10-10T05:24:23Z, UI clear, cleanup, pcv-it-s3-* 0). Next Task 3: demo record docs/ga-ready/demo/s3-checkpoint-demo-2026-10-10.md with the FAIL cause (criteria S3 stays open), DOCUMENTATION_INDEX, clean-HEAD verification, push, PR, merge after green CI, then the release-train queue row for Task 2b with the merge SHA and BL-0016 closed_by. Task 4 not before 2026-10-19. After this campaign, the next campaign is decided by the 2026-10-10 frontend-structure approval answer (Single Edge ui structure adoption) and the S4 campaign order.",
+  "next_step": "PR #79 (lane1/s3-checkpoint-20261010) merges after green CI (2026-10-10 approval 1). After the merge, the next branch adds the release-train queue row for Task 2b (web/app.js) with the merge SHA and closes BL-0016 (closed_by). Task 4 (C5 runner check) not before 2026-10-19: carry it into the next campaign. The next campaign is decided by the 2026-10-10 frontend-structure approval answer (Single Edge ui structure adoption, B plan) and the S4 campaign order.",
   "plan": "docs/superpowers/plans/2026-10-10-purecvisor-desktop-node-s3-checkpoint.md",
   "task_queue": [
     "Task 1",
@@ -27,11 +27,12 @@
   "task_not_before": {
     "Task 4": "2026-10-19"
   },
-  "next_task": "Task 3",
+  "next_task": "Task 4",
   "completed_tasks": [
     "Task 1",
     "Task 2b",
-    "Task 2"
+    "Task 2",
+    "Task 3"
   ],
   "commit_policy": "local-commit-per-task",
   "push_allowed": true,
