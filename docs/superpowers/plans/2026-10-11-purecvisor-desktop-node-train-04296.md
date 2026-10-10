@@ -79,7 +79,9 @@
 
 ## Task 6: probe `web.console.shell` (queue 81, 86)
 
-- [ ] 설치본 `0.42.96`의 `http://127.0.0.1/`를 Playwright(Chromium)로 열어 Single Edge 셸이 token 입력 없이 loopback 세션으로 열리고, 사이드바 8 화면 각각과 `#/vms` hash 전환마다 그 section만 보이며 polling 재렌더 뒤에도 유지되고, VM 목록에 보존 VM이 보이며, 도움말 카탈로그·`docs.html` reader·`manifest.json`·`sw.js`(registration `active`)·`offline.html`·옛 콘솔 `/index.legacy.html` 200을 확인한다. 캡처는 TEMPLATE 규칙대로 `docs/ga-ready/demo/web-console-shell-20261011/`에 PNG(500 KB 이하, 사용자 홈 경로·LAN IP·호스트명·token 없음)로 둔다. host mutation 없음(읽기만). 기록 `docs/ga-ready/demo/web-console-shell-demo-2026-10-11.md`(TEMPLATE.md 형식, 확인자 칸 비움). 로컬 commit.
+- [x] 설치본 `0.42.96`의 `http://127.0.0.1/`를 Playwright(Chromium)로 열어 Single Edge 셸이 token 입력 없이 loopback 세션으로 열리고, 사이드바 8 화면 각각과 `#/vms` hash 전환마다 그 section만 보이며 polling 재렌더 뒤에도 유지되고, VM 목록에 보존 VM이 보이며, 도움말 카탈로그·`docs.html` reader·`manifest.json`·`sw.js`(registration `active`)·`offline.html`·옛 콘솔 `/index.legacy.html` 200을 확인한다. 캡처는 TEMPLATE 규칙대로 `docs/ga-ready/demo/web-console-shell-20261011/`에 PNG(500 KB 이하, 사용자 홈 경로·LAN IP·호스트명·token 없음)로 둔다. host mutation 없음(읽기만). 기록 `docs/ga-ready/demo/web-console-shell-demo-2026-10-11.md`(TEMPLATE.md 형식, 확인자 칸 비움). 로컬 commit.
+
+실행 기록(2026-10-11): 설치본 `0.42.96-admin-smoke+9ac8eb3`의 `http://127.0.0.1/`을 Playwright(Chromium)로 열었다(새 service worker의 설계된 1회 reload 뒤 확인). 셸은 token 없이 loopback 세션으로 열렸고(login page `display:none`, app inert 아님, 상단 바 `loopback-session`), 사이드바 8 화면 모두 클릭마다 그 section만 보이며 `PCV.nav.activeView()`가 같았다. `#/jobs` hash와 35초 polling 뒤에도 jobs 유지, VM 목록에 보존 VM 2행, 도움말 namespace 7·route 65행(전용 section, 뒤이은 진단 화면 패널 7개 그대로), `docs.html` reader(장 10), `manifest.json`·`sw.js`·`offline.html`·`index.legacy.html` 등 200(content-type 정상), `/src/bootstrap.ts` 404, service worker `activated`. 본문에 호스트명·LAN IP·사용자 경로 없음. 콘솔 오류는 세션 전 401, 브라우저 저장소의 옛 job id 404, 일부러 요청한 소스 경로 404뿐이다. 판정 PASS(0.42.95 정차 결함 BL-0019 해소). 기록 `docs/ga-ready/demo/web-console-shell-demo-2026-10-11.md`, 캡처 4장 `docs/ga-ready/demo/web-console-shell-20261011/`(500 KB 이하). host mutation 없음. operational current는 `0.42.93-admin-smoke` 그대로다.
 
 ## Task 7: probe `checkpoint.schedule.set` + S3 브라우저 시연 (queue 79)
 
