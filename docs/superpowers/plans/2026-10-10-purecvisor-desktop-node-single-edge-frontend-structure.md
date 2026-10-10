@@ -43,7 +43,9 @@
 
 ## Task 3: Host 정적 서빙 확장
 
-- [ ] `src/DesktopNode.Host/DesktopNodeHostApplication.StaticAuth.cs`의 content-type 표에 `.woff2`, `.woff`, `.ttf`, `.svg`, `.json`, `.webmanifest`, `.png`, `.ico`, `.md`, `.map`를 더하고, web root 아래 하위 디렉터리(`vendor/`, `samples/`, `modules/` 소스는 제외)의 파일을 경로 정규화 검사(`..` 금지, root 밖 금지) 뒤 서빙한다. `sw.js`는 root scope로 서빙한다. Host 테스트(`src/DesktopNode.Host.Tests`)에 content-type·하위 경로·경로 탈출 거부 시험을 더한다. 검증: `dotnet test src/DesktopNode.Host.Tests -c Release`, `git diff --check`. 로컬 commit.
+- [x] `src/DesktopNode.Host/DesktopNodeHostApplication.StaticAuth.cs`의 content-type 표에 `.woff2`, `.woff`, `.ttf`, `.svg`, `.json`, `.webmanifest`, `.png`, `.ico`, `.md`, `.map`를 더하고, web root 아래 하위 디렉터리(`vendor/`, `samples/`, `modules/` 소스는 제외)의 파일을 경로 정규화 검사(`..` 금지, root 밖 금지) 뒤 서빙한다. `sw.js`는 root scope로 서빙한다. Host 테스트(`src/DesktopNode.Host.Tests`)에 content-type·하위 경로·경로 탈출 거부 시험을 더한다. 검증: `dotnet test src/DesktopNode.Host.Tests -c Release`, `git diff --check`. 로컬 commit.
+
+실행 기록(2026-10-10): 정적 서빙은 이미 web root 아래 하위 경로를 경로 정규화와 root 밖 거부로 서빙하고 있어 content-type과 숨김 규칙만 더했다. `GetContentType`에 `.json`(application/json), `.webmanifest`, `.map`, `.md`(text/markdown), `.svg`, `.png`, `.ico`, `.woff2`, `.woff`, `.ttf`를 더했고, `IsUnservedWebPath`가 첫 경로 조각 `src`, `node_modules`, `scripts`, `tests`, `node-tests`, `contracts`, `config`, `generated`와 `package.json`, `package-lock.json`, `tsconfig.json`, `eslint.config.js`를 404(`PCV_STATIC_FILE_NOT_FOUND`)로 돌린다. `sw.js`는 root에 있어 따로 header가 필요 없다. 시험 `SeparateWebPrefixServesSingleEdgeAssetTypesAndHidesSources`(content-type 6종, 숨김 경로 3종)를 `DesktopNodeHostApplicationTests.cs`에 더했다. 검증: `dotnet test src/DesktopNode.Host.Tests -c Release` 217/217, `git diff --check` 통과. host mutation 없음. 범위 밖 발견: web payload 파일 목록이 `PcvDesktopNodeProduct.psm1`, `PcvDesktopNodeInstaller.Build.psm1`, `Product.wxs`, Delivery `InstallerBuildContractHarness.cs`(정확한 문자열 pin)에 3개 파일로 고정돼 있어 Task 4에서 manifest 기반으로 바꿔야 한다.
 
 ## Task 4: packaging·installer 파일 inventory
 

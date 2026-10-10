@@ -345,6 +345,64 @@ public sealed class DesktopNodeHostApplicationTests
     }
 
     [Fact]
+    public async Task SeparateWebPrefixServesSingleEdgeAssetTypesAndHidesSources()
+    {
+        var webRoot = Path.Combine(Path.GetTempPath(), "pcv-host-web-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(Path.Combine(webRoot, "vendor", "pretendard"));
+        Directory.CreateDirectory(Path.Combine(webRoot, "vendor", "coolicons"));
+        Directory.CreateDirectory(Path.Combine(webRoot, "src", "modules"));
+        try
+        {
+            await File.WriteAllTextAsync(Path.Combine(webRoot, "index.html"), "<html>single edge shell</html>");
+            await File.WriteAllBytesAsync(Path.Combine(webRoot, "vendor", "pretendard", "Pretendard-Regular.woff2"), new byte[] { 0x77, 0x4F, 0x46, 0x32 });
+            await File.WriteAllTextAsync(Path.Combine(webRoot, "vendor", "coolicons", "coolicons.svg"), "<svg xmlns=\"http://www.w3.org/2000/svg\"></svg>");
+            await File.WriteAllTextAsync(Path.Combine(webRoot, "manifest.json"), "{\"name\":\"PureCVisor Desktop Node\"}");
+            await File.WriteAllTextAsync(Path.Combine(webRoot, "sw.js"), "self.addEventListener('install', () => {});");
+            await File.WriteAllBytesAsync(Path.Combine(webRoot, "icon-192.png"), new byte[] { 0x89, 0x50, 0x4E, 0x47 });
+            await File.WriteAllTextAsync(Path.Combine(webRoot, "guide-content.md"), "# guide");
+            await File.WriteAllTextAsync(Path.Combine(webRoot, "src", "bootstrap.ts"), "window.PCV = {};");
+            await File.WriteAllTextAsync(Path.Combine(webRoot, "src", "modules", "shell.ts"), "window.PCV = {};");
+            await File.WriteAllTextAsync(Path.Combine(webRoot, "package.json"), "{}");
+
+            using var host = await DesktopNodeHostApplication.StartAsync(new DesktopNodeHostOptions
+            {
+                Mode = DesktopNodeHostMode.Listen,
+                Prefix = "http://127.0.0.1:0/",
+                WebPrefix = "http://127.0.0.1:0/",
+                WebRootPath = webRoot
+            });
+
+            using var client = new HttpClient();
+            foreach (var (path, mediaType) in new[]
+            {
+                ("/vendor/pretendard/Pretendard-Regular.woff2", "font/woff2"),
+                ("/vendor/coolicons/coolicons.svg", "image/svg+xml"),
+                ("/manifest.json", "application/json"),
+                ("/sw.js", "application/javascript"),
+                ("/icon-192.png", "image/png"),
+                ("/guide-content.md", "text/markdown")
+            })
+            {
+                using var response = await client.GetAsync(new Uri(host.WebBaseUri, path));
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                Assert.Equal(mediaType, response.Content.Headers.ContentType?.MediaType);
+            }
+
+            foreach (var hiddenPath in new[] { "/src/bootstrap.ts", "/src/modules/shell.ts", "/package.json" })
+            {
+                using var hidden = await client.GetAsync(new Uri(host.WebBaseUri, hiddenPath));
+                var hiddenBody = await hidden.Content.ReadAsStringAsync();
+                Assert.Equal(HttpStatusCode.NotFound, hidden.StatusCode);
+                Assert.Contains("PCV_STATIC_FILE_NOT_FOUND", hiddenBody);
+            }
+        }
+        finally
+        {
+            Directory.Delete(webRoot, recursive: true);
+        }
+    }
+
+    [Fact]
     public async Task SeparateWebPrefixAllowsCorsFromConfiguredWebOrigin()
     {
         var webRoot = Path.Combine(Path.GetTempPath(), "pcv-host-web-" + Guid.NewGuid().ToString("N"));
