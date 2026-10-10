@@ -18,6 +18,9 @@
       <Component Id="DesktopNodeWebPayload_app_bundle_jsComponent" Directory="DesktopNodeWebFolder" Guid="*">
         <File Id="DesktopNodeWebPayload_app_bundle_js" Source="$(var.PayloadRoot)\web\app.bundle.js" KeyPath="yes" />
       </Component>
+      <Component Id="DesktopNodeWebPayload_i18n_jsComponent" Directory="DesktopNodeWebFolder" Guid="*">
+        <File Id="DesktopNodeWebPayload_i18n_js" Source="$(var.PayloadRoot)\web\i18n.js" KeyPath="yes" />
+      </Component>
       <Component Id="DesktopNodeWebPayload_icon_192_pngComponent" Directory="DesktopNodeWebFolder" Guid="*">
         <File Id="DesktopNodeWebPayload_icon_192_png" Source="$(var.PayloadRoot)\web\icon-192.png" KeyPath="yes" />
       </Component>

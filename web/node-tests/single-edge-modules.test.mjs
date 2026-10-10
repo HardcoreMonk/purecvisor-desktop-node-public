@@ -55,7 +55,7 @@ test("the generated bundle carries the module namespaces in order", () => {
     assert.ok(index > last, `bundle marker order for ${name}`);
     last = index;
   }
-  for (const ns of ["PCV.theme = {", "PCV.modalCore = modalCore;", "PCV.modal = Modal;", "PCV.nav = {", "PCV.shell = {"]) {
+  for (const ns of ["PCV.ui = {", "PCV.uxlib = {", "PCV.ui.filterState = {", "PCV.metrics = {", "PCV.charts = {", "PCV.theme = {", "PCV.modalCore = modalCore;", "PCV.modal = Modal;", "PCV.nav = {", "PCV.shell = {", "PCV.mobile = {"]) {
     assert.ok(bundle.includes(ns), `bundle defines ${ns}`);
   }
 });
