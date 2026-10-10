@@ -25,6 +25,17 @@
         "design": "docs/superpowers/plans/2026-10-10-purecvisor-desktop-node-s3-checkpoint.md"
       },
       "risk_tier": "S"
+    },
+    {
+      "pr": 81,
+      "merge_commit": "4e109e70",
+      "area": "web",
+      "summary": "Single Edge 프론트엔드 구조 차용(ADR-0018): 로그인 페이지+앱 셸 index.html을 /에서 서빙, window.PCV 모듈 23개를 app.bundle.js로, help 카탈로그·문서 포털·PWA, Host 정적 content-type과 소스 404, WebPayload.wxs 생성; 옛 콘솔은 index.legacy.html로 유지, Linux 전용 i18n/style 제거",
+      "lane2_probe": {
+        "family": "web.console.shell",
+        "design": "docs/superpowers/plans/2026-10-10-purecvisor-desktop-node-single-edge-frontend-structure.md"
+      },
+      "risk_tier": "M"
     }
   ],
   "trains": [
