@@ -9,6 +9,19 @@
     "styles.css"
   ],
   "files": [
-    "app.bundle.js"
+    "app.bundle.js",
+    "style.css",
+    "samples/design-system-preview.html",
+    "samples/supanova-preview.html",
+    "vendor/chart.umd.min.js",
+    "vendor/coolicons/README.md",
+    "vendor/coolicons/coolicons.svg",
+    "vendor/pretendard/pretendard.css",
+    "vendor/pretendard/woff2/Pretendard-Black.woff2",
+    "vendor/pretendard/woff2/Pretendard-Bold.woff2",
+    "vendor/pretendard/woff2/Pretendard-ExtraBold.woff2",
+    "vendor/pretendard/woff2/Pretendard-Medium.woff2",
+    "vendor/pretendard/woff2/Pretendard-Regular.woff2",
+    "vendor/pretendard/woff2/Pretendard-SemiBold.woff2"
   ]
 }

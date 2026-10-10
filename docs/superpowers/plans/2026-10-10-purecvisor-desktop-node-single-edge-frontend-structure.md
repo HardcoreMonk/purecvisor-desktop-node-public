@@ -55,7 +55,9 @@
 
 ## Task 5: vendor 자산과 style.css
 
-- [ ] `web/vendor/pretendard/`(css + woff2 6개), `web/vendor/coolicons/`(svg sprite + README), `web/vendor/chart.umd.min.js`를 Single Edge에서 가져오고 `THIRD_PARTY_NOTICES.md`와 맞춘다. `web/style.css`를 Single Edge `ui/style.css` 원문 base로 만들고 Desktop Node 전용 selector(`web/styles.css`에만 있는 것)를 병합하며 Linux 전용 selector는 제거 목록으로 적는다. `web/samples/`에 `design-system-preview.html`, `supanova-preview.html`을 가져온다(`web/mockups/`는 그대로). 검증: `npm test --prefix web`(static parity는 Task 16까지 옛 파일 기준), 파일 크기 합 기록, `git diff --check`. 로컬 commit.
+- [x] `web/vendor/pretendard/`(css + woff2 6개), `web/vendor/coolicons/`(svg sprite + README), `web/vendor/chart.umd.min.js`를 Single Edge에서 가져오고 `THIRD_PARTY_NOTICES.md`와 맞춘다. `web/style.css`를 Single Edge `ui/style.css` 원문 base로 만들고 Desktop Node 전용 selector(`web/styles.css`에만 있는 것)를 병합하며 Linux 전용 selector는 제거 목록으로 적는다. `web/samples/`에 `design-system-preview.html`, `supanova-preview.html`을 가져온다(`web/mockups/`는 그대로). 검증: `npm test --prefix web`(static parity는 Task 16까지 옛 파일 기준), 파일 크기 합 기록, `git diff --check`. 로컬 commit.
+
+실행 기록(2026-10-10): `web/vendor/`에 Pretendard(css + woff2 6개, 4.7 MB), Coolicons(svg 18 KB + README), Chart.js 4.4.4(206 KB)를, `web/samples/`에 design-system-preview·supanova-preview를 Single Edge에서 그대로 가져왔다. `web/style.css`(6,202줄)는 Single Edge `ui/style.css` 원문(4,378줄, 토큰 142개, supanova 테마 4종) + Part 2로 옛 `web/styles.css` 231블록 중 Single Edge에 같은 selector가 없는 221블록을 덧붙여 만들었다(중복 10블록 제외, Desktop Node `:root`·`html[data-theme=contrast]` 토큰은 override로 유지). Linux 전용 selector 후보 57개(`.ctr-*`, `.vpc-*`, `.push-*` 등)는 제거하지 않고 Task 16 정리 목록으로 둔다(scratch `linux-selector-candidates.txt`, Task 16에서 spec 부록으로 옮김). `web/payload-manifest.json` `files`에 14개 항목을 더하고 `WebPayload.wxs`를 다시 생성했다(Component 14, Directory 5). 생성기의 id 길이를 60자로 줄여 WiX 72자 한도 경고를 없앴다. 검증: `npm test`·`verify:parity` 통과, `test:public-source-safety` 기존 2건만, Delivery 779/779, installer Pester 49/49, web Pester 50/50, WiX throwaway build 경고 없이 성공(msi 4,853,760 B), `git diff --check` 통과. `index.html`은 아직 옛 `styles.css`를 쓰므로 화면 변화 없음. host mutation 없음.
 
 ## Task 6: index.html 로그인 페이지와 셸
 

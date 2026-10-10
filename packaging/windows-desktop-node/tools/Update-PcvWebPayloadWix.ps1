@@ -36,10 +36,11 @@ function ConvertTo-PcvWixId {
     param([string]$Prefix, [string]$RelativePath)
     $sanitized = [regex]::Replace($RelativePath, '[^A-Za-z0-9_]', '_')
     $id = "$Prefix$sanitized"
-    if ($id.Length -gt 64) {
+    # Keep File ids at 60 characters so the Component id (id + "Component") stays within the 72-character WiX limit.
+    if ($id.Length -gt 60) {
         $sha = [System.Security.Cryptography.SHA256]::HashData([System.Text.Encoding]::UTF8.GetBytes($RelativePath))
         $tail = ([System.Convert]::ToHexString($sha)).Substring(0, 8)
-        $id = $id.Substring(0, 55) + '_' + $tail
+        $id = $id.Substring(0, 51) + '_' + $tail
     }
     return $id
 }
