@@ -35,7 +35,7 @@ const EXACT_EVIDENCE_LINES = [
   "operational_current=0.42.74-admin-smoke"
 ];
 
-const EXPECTED_TEST_SCRIPT = "npm run check:feature-surfaces && tsc --noEmit -p tsconfig.json && npm run check:served && npm run check:frontend-batches";
+const EXPECTED_TEST_SCRIPT = "npm run check:feature-surfaces && tsc --noEmit -p tsconfig.json && npm run check:served && npm run check:frontend-batches && npm run lint && npm run lint:domsafe";
 const EXPECTED_PARITY_SCRIPT = "npm run check:served && node scripts/regenerate-static-parity.mjs --check && node scripts/verify-static-parity.mjs && npm run browser:fixture";
 const EXPECTED_REQUIRED_SCRIPT = "npm test && npm run test:web-contracts && npm run verify:parity";
 const EXPECTED_WEB_CONTRACTS_SCRIPT = "npm run check:web-contract-registry && npm run check:verification-migration-manifest && node --test --test-reporter=spec node-tests/web-contract-harness.test.mjs node-tests/web-static-contracts.test.mjs node-tests/web-static-contracts-negative.test.mjs node-tests/verification-migration-manifest.test.mjs node-tests/web-contract-negative-parity.test.mjs node-tests/web-verification-architecture-boundary.test.mjs node-tests/vm-detail-submit-guard.test.mjs";

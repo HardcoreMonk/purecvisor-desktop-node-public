@@ -1789,7 +1789,7 @@ async function verifyTypeScriptScaffold(context) {
   ]) context.assertExists(file, `typescript-scaffold:${label}`);
   const packageJson = context.readJson("web/package.json");
   context.assertEqual(packageJson.private, true, "typescript-scaffold:private");
-  context.assertEqual(packageJson.scripts?.test, "npm run check:feature-surfaces && tsc --noEmit -p tsconfig.json && npm run check:served && npm run check:frontend-batches", "typescript-scaffold:test-script");
+  context.assertEqual(packageJson.scripts?.test, "npm run check:feature-surfaces && tsc --noEmit -p tsconfig.json && npm run check:served && npm run check:frontend-batches && npm run lint && npm run lint:domsafe", "typescript-scaffold:test-script");
   const index = context.readText("web/index.html");
   context.assertMatch(index, /app\.js/i, "typescript-scaffold:index-app-js");
   context.assertNotMatch(index, /src\/app\.ts/i, "typescript-scaffold:index-no-source-app");

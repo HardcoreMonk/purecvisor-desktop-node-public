@@ -34,7 +34,7 @@ route 계약이 달라 약 24,000줄을 손봐야 하므로 택하지 않는다.
 | Single Edge `ui/` | Desktop Node `web/` (이 설계) | 비고 |
 | --- | --- | --- |
 | `index.html` | `web/index.html` | 로그인 페이지 `#login-page` + 앱 셸 `#app`(`shell-sidebar`, `shell-topbar`, `main.content.shell-content`), CSP meta, 테마 부트스트랩 inline script, manifest·icon 링크 |
-| `app.js` | `web/src/app.ts` → bundle 끝 | 전역 상태, `window.PCV.state/config/auth`, 에디션 게이팅(Desktop Node 에디션: Linux 전용 nav 숨김) |
+| `app.js` | `web/src/bootstrap.ts` → bundle 끝 | 전역 상태, `window.PCV.state/config/auth`, 에디션 게이팅(Desktop Node 에디션: Linux 전용 nav 숨김) |
 | `modules/*.js` | `web/src/modules/*.ts` | `window.PCV` IIFE, `@ts-nocheck`, ES export 없음 |
 | `app.bundle.js` | `web/app.bundle.js` | `build-served-asset.mjs` 출력, `PCV_UI_SOURCE_SHA1` 배너 |
 | `i18n.js` | `web/i18n.js` | `PCV.I18N` ko·en, bundle과 별개로 먼저 로드 |
@@ -44,7 +44,7 @@ route 계약이 달라 약 24,000줄을 손봐야 하므로 택하지 않는다.
 | `samples/*.html` | `web/samples/` | design-system-preview, supanova-preview. 기존 `web/mockups/`는 그대로 |
 | `docs.html`, `guide.html`, `guide-content.md` | 같은 이름 | 문서 포털(승인 2), 내용은 `docs/USER_GUIDE.md` 발췌 |
 | `maintenance.html`, `maintenance-status.json` | 가져오지 않음 | Desktop Node service에 maintenance 모드 없음 |
-| Makefile `ui-bundle`, `scripts/bundle-ui.sh` | `web/scripts/build-served-asset.mjs` | 모듈 순서표, 누락 검사, SHA 배너, `sw.js` 캐시 이름 bump |
+| Makefile `ui-bundle`, `scripts/bundle-ui.sh` | `web/scripts/build-served-asset.mjs` + `web/src/modules.json`(`pcv-web-module-order-v1`) | 모듈 순서표, 누락 검사, `PCV_UI_SOURCE_SHA1` 배너, `sw.js` 캐시 이름 bump |
 | `eslint.config.js`, `scripts/domsafe_ratchet.py` | `web/eslint.config.js`, `web/scripts/domsafe-ratchet.mjs` | `npm run lint`, `npm run lint:domsafe` |
 
 옛 구조 `web/src/served/*.ts`, `web/src/served-app.ts`, `web/app.js`, `web/styles.css`는 Task 16에서 제거한다. 그때까지 두
@@ -79,7 +79,7 @@ bundle 순서는 Single Edge `UI_MODULES`와 같은 원칙(의존이 앞)이다.
 | 20 | `monitor` | 도메인 | dashboard, monitoring signals(옛 `render-panels.ts`, `render-monitoring.ts`) |
 | 21 | `ops` | 도메인 | jobs, activity/event center, evidence, troubleshooting(옛 `render-jobs.ts`, `render-activity.ts`, `evidence.ts`, `errors.ts`) |
 | 22 | `help` | 공통 | Single Edge `help.js`, 문서 포털 |
-| 23 | `app` | 부트스트랩 | `web/src/app.ts`(옛 `served-app.ts` 이벤트 바인딩 포함) |
+| 23 | `bootstrap` | 부트스트랩 | `web/src/bootstrap.ts`(옛 `served-app.ts` 이벤트 바인딩 포함). `web/src/app.ts`는 정적 parity scaffold라 이름을 바꾸지 않는다 |
 
 `web/src/served/state.ts`, `types.ts`, `errors.ts`의 공용 타입·상태는 `web/src/modules/state.ts`로 옮겨 1번보다 앞에 둔다.
 

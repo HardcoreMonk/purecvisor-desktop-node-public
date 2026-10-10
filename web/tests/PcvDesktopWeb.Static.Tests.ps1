@@ -932,7 +932,7 @@ Describe 'PcvDesktopWeb static console assets' {
 
         $package = Get-Content -LiteralPath $script:PackagePath -Raw | ConvertFrom-Json
         $package.private | Should -BeTrue
-        $package.scripts.test | Should -Be 'npm run check:feature-surfaces && tsc --noEmit -p tsconfig.json && npm run check:served && npm run check:frontend-batches'
+        $package.scripts.test | Should -Be 'npm run check:feature-surfaces && tsc --noEmit -p tsconfig.json && npm run check:served && npm run check:frontend-batches && npm run lint && npm run lint:domsafe'
 
         $index = Get-Content -LiteralPath $script:IndexPath -Raw
         $index | Should -Match 'app\.js'
