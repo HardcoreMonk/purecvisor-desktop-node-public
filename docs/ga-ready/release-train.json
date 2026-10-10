@@ -3,7 +3,52 @@
   "contract": "pcv-release-train-v1",
   "design": "docs/superpowers/specs/2026-10-04-purecvisor-desktop-node-release-train-design.md",
   "operational_current": "0.42.93-admin-smoke",
-  "queue": [],
+  "queue": [
+    {
+      "pr": 78,
+      "merge_commit": "1b04ff46",
+      "area": "hyperv",
+      "summary": "console frame throttle clock 주입, Verification 실패 테스트명 stderr 출력, EnabledState 전이 값 어휘와 vm.create inventory readback 대기(BL-0014), Lane 1 PR gate와 ADR-0016 fixture 안정화",
+      "lane2_probe": {
+        "family": "vm.create",
+        "design": "docs/superpowers/plans/2026-10-09-purecvisor-desktop-node-audit-green-lean.md"
+      },
+      "risk_tier": "M"
+    },
+    {
+      "pr": 79,
+      "merge_commit": "04ffe117",
+      "area": "web",
+      "summary": "VM 상세 click 위임 핸들러가 form 안 type=submit 버튼을 건너뛰게 수정(BL-0016, checkpoint schedule 폼 저장 복구), S3 checkpoint 시나리오 스크립트와 회귀 테스트",
+      "lane2_probe": {
+        "family": "checkpoint.schedule.set",
+        "design": "docs/superpowers/plans/2026-10-10-purecvisor-desktop-node-s3-checkpoint.md"
+      },
+      "risk_tier": "S"
+    },
+    {
+      "pr": 81,
+      "merge_commit": "4e109e70",
+      "area": "web",
+      "summary": "Single Edge 프론트엔드 구조 차용(ADR-0018): 로그인 페이지+앱 셸 index.html을 /에서 서빙, window.PCV 모듈 23개를 app.bundle.js로, help 카탈로그·문서 포털·PWA, Host 정적 content-type과 소스 404, WebPayload.wxs 생성; 옛 콘솔은 index.legacy.html로 유지, Linux 전용 i18n/style 제거",
+      "lane2_probe": {
+        "family": "web.console.shell",
+        "design": "docs/superpowers/plans/2026-10-10-purecvisor-desktop-node-single-edge-frontend-structure.md"
+      },
+      "risk_tier": "M"
+    },
+    {
+      "pr": 84,
+      "merge_commit": "3d50f14b",
+      "area": "installer",
+      "summary": "생성 WebPayload.wxs의 web 디렉터리마다 RemoveFolder(On=uninstall), Product.wxs의 web 폴더·INSTALLFOLDER 제거(BL-0017: ZIP 제품 Update가 먼저 만든 디렉터리가 MSI 제거 뒤 남아 Burn remove-absence 실패), WiX 계약 pin과 Burn lifecycle dev probe",
+      "lane2_probe": {
+        "family": "burn.lifecycle",
+        "design": "docs/superpowers/plans/2026-10-10-purecvisor-desktop-node-webpayload-removefolder.md"
+      },
+      "risk_tier": "M"
+    }
+  ],
   "trains": [
     {
       "version": "0.42.89-admin-smoke",
@@ -49,18 +94,6 @@
         68
       ],
       "status": "promoted"
-    },
-    {
-      "version": "0.42.95-admin-smoke",
-      "departed_at": "2026-10-10T23:18:00+09:00",
-      "source_commit": "f84d46a2fab6356e61db656d75f7b095d82edf20",
-      "carriages": [
-        78,
-        79,
-        81,
-        84
-      ],
-      "status": "running"
     }
   ]
 }
