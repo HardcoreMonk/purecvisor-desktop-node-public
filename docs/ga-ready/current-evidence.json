@@ -2,18 +2,21 @@
   "schema_version": 1,
   "contract": "pcv-current-evidence-v1",
   "current": {
-    "version": "0.42.93-admin-smoke",
-    "operator_surfaces": ["web", "cli"],
+    "version": "0.42.96-admin-smoke",
+    "operator_surfaces": [
+      "web",
+      "cli"
+    ],
     "tui_present": false,
-    "package_evidence": "docs/ga-ready/evidence/admin-smoke-package-2026-10-08-04293.md",
-    "fullgate_batch": "full-admin-host-mutation-gate-20261008-04293",
-    "fullgate_evidence": "docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-10-08-04293-hostmutation.md",
-    "functional_evidence": "docs/ga-ready/evidence/functional-correctness-actual-host-validation-2026-10-08-04293-carryforward.md",
-    "installed_evidence": "docs/ga-ready/evidence/installed-operator-surface-current-card-2026-10-08-04293.md",
-    "clean_msi_sha256": "13d7f0d476828f865b0d4aca7331a2dcd1a10a8dbe157b9d6a93dc2217f9fb49",
-    "operational_msi_sha256": "5d5a7c7c6086c591bae0b2609c8e44f5ae94e84e3fd70584f7b3f994456864dd",
-    "payload_sha256": "df1a8cacade8db1ccf644a4a9a83852f2cc731c3d50231389758f6b78bf0d29e",
-    "provenance_commit": "818d00f113b3d3eaf1573652cd4c2d86a551834d"
+    "package_evidence": "docs/ga-ready/evidence/admin-smoke-package-2026-10-11-04296.md",
+    "fullgate_batch": "full-admin-host-mutation-gate-20261011-04296",
+    "fullgate_evidence": "docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-10-11-04296-hostmutation.md",
+    "functional_evidence": "docs/ga-ready/evidence/functional-correctness-actual-host-validation-2026-10-11-04296-carryforward.md",
+    "installed_evidence": "docs/ga-ready/evidence/installed-operator-surface-current-card-2026-10-11-04296.md",
+    "clean_msi_sha256": "326b867a161ffa5038f4b3cecd8405ca0999cff00875c4a9fb8f5ac92f3cdeed",
+    "operational_msi_sha256": "37bfc1ffd045950e3c4bfa1fefd4db6a96a0490288dc647fecc6cb1e1137d299",
+    "payload_sha256": "8dc6df5754616748d83b5728cd5f38b0a5788c47e44d1d8f46e31fca4dfe4cd5",
+    "provenance_commit": "9ac8eb3fcf38989dc4dbd66351fc9c7c858e2d63"
   },
   "feature_qualification": {
     "schema_version": 1,
@@ -22,9 +25,9 @@
     "blockers": []
   },
   "manual_admin": {
-    "latest_closed_baseline": "0.42.92-admin-smoke",
-    "latest_closed_target": "0.42.93-admin-smoke",
-    "latest_closed_descriptor": "manual-admin-campaign-20261008-04292-04293-closed"
+    "latest_closed_baseline": "0.42.95-admin-smoke",
+    "latest_closed_target": "0.42.96-admin-smoke",
+    "latest_closed_descriptor": "manual-admin-campaign-20261011-04295-04296-closed"
   },
   "claims": {
     "public_trusted_signing": false,
