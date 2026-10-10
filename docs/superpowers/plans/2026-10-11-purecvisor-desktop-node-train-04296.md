@@ -43,7 +43,9 @@
 
 ## Task 0: 출발
 
-- [ ] payload commit(PR #86 merge)의 main push Development Gates와 Public Boundary가 success임을 run id로 적고, `release-train.json` `queue` 다섯 행을 train `0.42.96-admin-smoke`의 `carriages` `[78, 79, 81, 84, 86]`로 옮기고 `status=running`, `departed_at`, `source_commit`을 적으며 `queue`는 빈 목록으로 둔다. `docs/ga-ready/trains/0.42.96-admin-smoke.host-inputs.json`을 commit한다. 검증: `PcvReleaseTrainContractTests`, `git diff --check`. 로컬 commit.
+- [x] payload commit(PR #86 merge)의 main push Development Gates와 Public Boundary가 success임을 run id로 적고, `release-train.json` `queue` 다섯 행을 train `0.42.96-admin-smoke`의 `carriages` `[78, 79, 81, 84, 86]`로 옮기고 `status=running`, `departed_at`, `source_commit`을 적으며 `queue`는 빈 목록으로 둔다. `docs/ga-ready/trains/0.42.96-admin-smoke.host-inputs.json`을 commit한다. 검증: `PcvReleaseTrainContractTests`, `git diff --check`. 로컬 commit.
+
+실행 기록(2026-10-11): 출발 `2026-10-11T01:52:00+09:00`, payload `87a7deb9434c721a5e1f9f74dacc7581d0a98455`(PR #86 merge, origin/main), carriages `[78, 79, 81, 84, 86]`, queue 비움, train `status=running`. payload main push Development Gates `38069202154` success, Public Boundary Contract `38069202145` success. 설치본은 `0.42.95-admin-smoke+b9898cf`(PR #86 dev probe의 Rollback 뒤; ARP 1개, service Running/Automatic, Web 200). `docs/ga-ready/trains/0.42.96-admin-smoke.host-inputs.json`은 opening commit에 있다. host mutation 없음. operational current는 `0.42.93-admin-smoke` 그대로다.
 
 ## Task 1: package
 
