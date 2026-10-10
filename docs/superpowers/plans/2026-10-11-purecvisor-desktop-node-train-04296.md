@@ -73,7 +73,9 @@
 
 ## Task 5: probe `vm.create` (queue 78)
 
-- [ ] 설치본 `0.42.96`에서 Local API로 `pcv-it-probe-create-1011`(managed Generation 2, cpu 1, memory 512 MB, disk 8 GB, smoke ISO, VM root `artifacts/pcv-it-probe-create-1011`)을 만들고 create job `succeeded` 직후 `GET /api/v1/vms`와 `pcvcli --json vm list`가 `PCV_NATIVE_VM_LIST_IDENTITY_STATE_INCOMPLETE` 없이 새 VM을 off 어휘로 돌려주는지 확인한다(BL-0014). VM을 켜지 않는다. managed delete 뒤 VM과 VM 디렉터리가 없음을 확인한다. evidence `docs/ga-ready/evidence/lane2-vm-create-readback-actual-vm-2026-10-11-04296.md`. 로컬 commit.
+- [x] 설치본 `0.42.96`에서 Local API로 `pcv-it-probe-create-1011`(managed Generation 2, cpu 1, memory 512 MB, disk 8 GB, smoke ISO, VM root `artifacts/pcv-it-probe-create-1011`)을 만들고 create job `succeeded` 직후 `GET /api/v1/vms`와 `pcvcli --json vm list`가 `PCV_NATIVE_VM_LIST_IDENTITY_STATE_INCOMPLETE` 없이 새 VM을 off 어휘로 돌려주는지 확인한다(BL-0014). VM을 켜지 않는다. managed delete 뒤 VM과 VM 디렉터리가 없음을 확인한다. evidence `docs/ga-ready/evidence/lane2-vm-create-readback-actual-vm-2026-10-11-04296.md`. 로컬 commit.
+
+실행 기록(2026-10-11): 설치본 `0.42.96-admin-smoke+9ac8eb3`에서 Local API loopback 세션으로 probe VM `pcv-it-probe-create-1011`(Generation 2, CPU 1, memory 512 MB, disk 8 GB, smoke ISO, VM root `artifacts/pcv-it-probe-create-1011`)을 만들고 켜지 않았다. create job `job-ab2bf677ab5e4bf08f2931bcb410883b` `succeeded`(2.6초). job 완료 690 ms 뒤 `GET /api/v1/vms`가 status 200, 오류 코드 없이 3개(probe row state `stopped`)를 돌려줬고 `pcvcli --json vm list`도 JSON 3행에 probe row `stopped`, 오류 코드 없음(BL-0014 재현 없음). detail 200 state `stopped` generation 2. managed delete job `job-a6d040b402f3445abe2c9d431b51dd73` `succeeded`(2.1초) 뒤 VM 없음(inventory 2개), VM 디렉터리 없음(스크립트의 첫 판정은 부모 폴더 기준이라 FAIL로 찍혔고 VM 디렉터리 기준으로 PASS; 빈 부모 폴더는 지움). evidence `docs/ga-ready/evidence/lane2-vm-create-readback-actual-vm-2026-10-11-04296.md`. operational current는 `0.42.93-admin-smoke` 그대로다.
 
 ## Task 6: probe `web.console.shell` (queue 81, 86)
 
