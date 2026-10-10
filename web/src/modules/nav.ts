@@ -4,6 +4,8 @@
 window.PCV = window.PCV || {};
 (function(PCV) {
 window._navGeneration = 0;
+// BL-0019: the #cb view this nav last showed; the legacy renderActiveView() follows it (null until the first paint).
+var _shownView = null;
 function _commitNavigation(n) {
   window._navGeneration = (window._navGeneration || 0) + 1;
   if (typeof clearAllFormDirty === 'function') clearAllFormDirty();
@@ -46,11 +48,12 @@ function _renderContentPaint(tab, generation) {
       !(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)) {
     cb.classList.add('fade-out');
   }
-  // Desktop Node: the views are static sections inside #cb (index.next.html). Show the active one and let the
-  // route renderer repaint its panels instead of rebuilding the content box (pcv-single-edge-frontend-structure-v1 §5).
+  // Desktop Node: the views are static sections inside #cb (index.html), one per route; help has its own section.
+  // This nav owns which section is shown (BL-0019): it records the view for the legacy renderActiveView() and syncs
+  // the legacy view state before the legacy render() repaints the panels (pcv-single-edge-frontend-structure-v1 §5).
   var b = null;
   if (cb) {
-    var viewId = tab === 'helppage' ? 'troubleshooting' : tab;
+    var viewId = tab;
     cb.querySelectorAll('.app-view').forEach(function (section) {
       var on = section.dataset.view === viewId;
       section.classList.toggle('active', on);
@@ -58,6 +61,8 @@ function _renderContentPaint(tab, generation) {
     });
     b = cb.querySelector('.app-view[data-view="' + viewId + '"]') || cb;
     PCV.ui._renderTarget = b;
+    _shownView = viewId;
+    if (window.VALID_VIEWS && window.VALID_VIEWS.has(viewId) && typeof setActiveView === 'function') setActiveView(viewId);
   }
   var v = (window.vmList || [])[window.selectedVmIndex || 0];
   var gen = generation;
@@ -736,6 +741,7 @@ function checkForUpdates() {
 }
 window.checkForUpdates = checkForUpdates;
 PCV.nav = {
+  activeView: function () { return _shownView; },
   updateVersionBadge: updateVersionBadge,
   checkForUpdates: checkForUpdates,
   navigateTo: navigateTo,

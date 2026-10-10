@@ -36,6 +36,8 @@ test("login page and app shell keep the Single Edge ids the ported modules bind 
 });
 
 test("content area carries every Desktop Node view and dialog", () => {
+  // BL-0019: help renders into its own section instead of the troubleshooting one.
+  assert.match(html, /<section id="helppage" class="section app-view" data-view="helppage" aria-label="도움말" hidden><\/section>/);
   for (const view of ["dashboard", "vms", "network", "jobs", "activity", "evidence", "troubleshooting"]) {
     assert.match(html, new RegExp(`<section id="${view}" class="section app-view" data-view="${view}">`), `view ${view}`);
   }

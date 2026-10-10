@@ -1067,12 +1067,15 @@ function renderVmAssetList() {
 }
 
 function renderActiveView() {
+  // BL-0019: in the Single Edge shell PCV.nav owns the shown section; the legacy view state only follows it.
+  const navView = window.PCV && window.PCV.nav && typeof window.PCV.nav.activeView === 'function' ? window.PCV.nav.activeView() : null;
+  const shownView = navView || state.activeView;
   document.querySelectorAll('.app-view').forEach((section) => {
-    const active = section.dataset?.view === state.activeView || section.id === state.activeView;
+    const active = section.dataset?.view === shownView || section.id === shownView;
     section.hidden = !active;
   });
   document.querySelectorAll('[data-view-link]').forEach((link) => {
-    const active = link.dataset?.viewLink === state.activeView;
+    const active = link.dataset?.viewLink === shownView;
     link.className = active ? 'nav-active' : '';
     if (active) link.setAttribute('aria-current', 'page');
     else link.removeAttribute('aria-current');

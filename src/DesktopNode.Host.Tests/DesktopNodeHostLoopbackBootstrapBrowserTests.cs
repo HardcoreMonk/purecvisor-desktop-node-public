@@ -51,6 +51,7 @@ public sealed class DesktopNodeHostLoopbackBootstrapBrowserTests
             Assert.DoesNotContain("VM: 3/3", snapshot.StatusVm, StringComparison.Ordinal);
             Assert.DoesNotContain("pcv-node-a", snapshot.BodyText, StringComparison.Ordinal);
             Assert.False(snapshot.AuthGate);
+            Assert.Equal("vms", snapshot.ShownView);
             Assert.DoesNotContain(ServiceTokenValue, snapshot.BodyText, StringComparison.Ordinal);
         }
         finally
@@ -273,8 +274,15 @@ public sealed class DesktopNodeHostLoopbackBootstrapBrowserTests
                 !last.AuthGate)
             {
                 await EvaluateAsync(webSocket, "window.location.hash = '#vms'; window.dispatchEvent(new Event('hashchange')); true;");
-                await Task.Delay(250);
-                return await EvaluateSnapshotAsync(webSocket);
+                // BL-0019: the Single Edge nav must leave the dashboard and keep the VM section shown after the legacy re-render.
+                var switched = await EvaluateSnapshotAsync(webSocket);
+                for (var attempt = 0; attempt < 20 && switched.ShownView != "vms"; attempt++)
+                {
+                    await Task.Delay(150);
+                    switched = await EvaluateSnapshotAsync(webSocket);
+                }
+
+                return switched;
             }
 
             await Task.Delay(200);
@@ -293,6 +301,7 @@ public sealed class DesktopNodeHostLoopbackBootstrapBrowserTests
               connection: document.querySelector('#connection-state')?.textContent || '',
               statusVm: document.querySelector('#status-vm-count')?.textContent || '',
               authGate: Boolean(document.querySelector('[data-auth-gate]')),
+              shownView: [...document.querySelectorAll('#cb .app-view')].filter(section => !section.hidden).map(section => section.dataset.view).join(','),
               session: sessionStorage.getItem('pcvDesktopAccountSession.v1') || '',
               bodyText: document.body?.innerText || ''
             }))()
@@ -386,6 +395,7 @@ public sealed class DesktopNodeHostLoopbackBootstrapBrowserTests
         public string Connection { get; set; } = "";
         public string StatusVm { get; set; } = "";
         public bool AuthGate { get; set; }
+        public string ShownView { get; set; } = "";
         public string Session { get; set; } = "";
         public string BodyText { get; set; } = "";
     }
