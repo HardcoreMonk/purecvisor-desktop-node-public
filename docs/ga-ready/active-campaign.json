@@ -12,11 +12,12 @@
   ],
   "mutation_allowed": true,
   "current_write_allowed": false,
-  "next_step": "Task 2 is paused (deadline-wait): browser checkpoint create, restore and schedule clear passed; browser schedule preview/save FAILED on the installed 0.42.93 build (BL-0016, VM detail click handler re-renders before submit). The schedule was set through the product submit handler (requestSubmit) at 2026-10-10T04:24:15Z, next due 2026-10-10T05:24:15Z. After 2026-10-10 14:26 Asia/Seoul: run web/scripts/run-s3-checkpoint-scenario.mjs --execute --verify-only --expect-count=3, capture, clear the schedule in the UI, --execute --cleanup-only, confirm pcv-it-s3-* 0, record, commit. Task 3 as written (criteria S3 passed) is blocked by BL-0016; see next_approval_required 3 and 4.",
+  "next_step": "Task 2 is paused until 2026-10-10T05:26Z (verify the scheduled checkpoint with --execute --verify-only --expect-count=3, capture, clear the schedule in the UI, --execute --cleanup-only, confirm pcv-it-s3-* 0, record, commit); Task 2b (Lane 1 BL-0016 click handler fix + regression test + rebuilt web/app.js) runs while waiting. Then Task 3 (demo record with the FAIL cause, criteria S3 stays open, push, PR, merge after green CI, then the release-train queue row with the merge SHA); Task 4 not before 2026-10-19. After this campaign closes, open the S4 campaign (2026-10-10 approval 3) whose train 0.42.94 carries BL-0016 and re-demos the browser schedule save.",
   "plan": "docs/superpowers/plans/2026-10-10-purecvisor-desktop-node-s3-checkpoint.md",
   "task_queue": [
     "Task 1",
     "Task 2",
+    "Task 2b",
     "Task 3",
     "Task 4"
   ],
@@ -32,15 +33,10 @@
   ],
   "commit_policy": "local-commit-per-task",
   "push_allowed": true,
-  "merge_policy": "none",
-  "checkpoint_limit": 4,
-  "approval_locator": "User-Approval: 2026-09-27 campaign runner commit policy local-commit-per-task; User-Approval: 2026-10-09 \"보고서 추가, - 1번과 2번 승인 - 3~6번 승인 - 승인: 2번의 두 저장소 push와 PR, 5·7번의 pcv-it- VM 생성(ADR-0016 standing approval 문장), 8번의 설치본 --allow-lan과 방화벽 변경(host mutation).\" (ADR-0016 standing approval limited to pcv-it- prefixed VM create, configure and delete; 8 installed --allow-lan and firewall host mutation pre-approved for the S4 campaign only); User-Approval: 2026-10-10 \"1,2,3,4\" on the audit-green-lean-20261009 Task 7 FAIL report (2 S3 campaign: checkpoint create, restore and schedule demonstrated in the browser on the installed build, carrying audit-green-lean-20261009 Task 9 as Task 4 with its original push, PR and merge after green CI; 3 S4 campaign to open after S3; branch push and PR for this campaign, merge not approved)",
-  "next_approval_required": [
-    "1 green CI 뒤 merge: S3 PR lane1/s3-checkpoint-20261010",
-    "2 private PR #190(archive 선언)을 red CI 상태로 merge할지, 그대로 둘지 결정",
-    "3 BL-0016 Lane 1 수정(VM 상세 click 핸들러가 type=submit 버튼을 건너뛰게 고치고 회귀 테스트 추가)을 이 campaign에 Task 2b로 끼워 넣고 push, PR, green CI 뒤 merge",
-    "4 S3 판정 보류: Task 3를 \"시연 기록(FAIL 원인 포함)·backlog·스크립트 push·PR, criteria S3는 open 유지\"로 바꾸고, 브라우저 예약 저장 재시연은 S4 campaign의 train(0.42.94, BL-0016 포함) 뒤 S4 campaign 안 task로 넣는다"
-  ],
+  "merge_policy": "after-green-ci",
+  "checkpoint_limit": 5,
+  "approval_locator": "User-Approval: 2026-09-27 campaign runner commit policy local-commit-per-task; User-Approval: 2026-10-09 \"보고서 추가, - 1번과 2번 승인 - 3~6번 승인 - 승인: 2번의 두 저장소 push와 PR, 5·7번의 pcv-it- VM 생성(ADR-0016 standing approval 문장), 8번의 설치본 --allow-lan과 방화벽 변경(host mutation).\" (ADR-0016 standing approval limited to pcv-it- prefixed VM create, configure and delete; 8 installed --allow-lan and firewall host mutation pre-approved for the S4 campaign only); User-Approval: 2026-10-10 \"1,2,3,4\" on the audit-green-lean-20261009 Task 7 FAIL report (2 S3 campaign: checkpoint create, restore and schedule demonstrated in the browser on the installed build, carrying audit-green-lean-20261009 Task 9 as Task 4 with its original push, PR and merge after green CI; 3 S4 campaign to open after S3; branch push and PR for this campaign, merge not approved); User-Approval: 2026-10-10 \"1. merge, 2. merge, 3,4 , 계속\" on the s3-checkpoint-20261010 Task 2 deadline-wait report (1 S3 PR lane1/s3-checkpoint-20261010 merge after green CI; 2 private PR #190 merged with red CI by user decision, merge 50dffbc9; 3 BL-0016 Lane 1 fix as Task 2b with push, PR and merge after green CI; 4 S3 verdict deferred: Task 3 restated to demo record with FAIL cause, backlog and script push/PR, criteria S3 stays open, browser schedule-save re-demo in the S4 campaign after its train)",
+  "next_approval_required": [],
   "stop_on": [
     "same-cause-fail-3",
     "budget",

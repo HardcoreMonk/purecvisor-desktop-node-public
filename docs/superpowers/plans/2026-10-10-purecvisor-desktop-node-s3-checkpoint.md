@@ -20,6 +20,18 @@
 | queue | PR #78(merge `1b04ff46`)의 release-train queue 행은 이 branch 첫 commit에서 더한다(Delivery 계약이 merge SHA를 요구). |
 | 다음 | S4 campaign(승인 3)은 이 campaign이 닫힌 뒤 연다. |
 
+## 사용자 결정 (2026-10-10, 2차)
+
+승인 원문: `1. merge, 2. merge, 3,4 , 계속` (2026-10-10 Task 2 deadline-wait 보고의 `next_approval_required` 1~4에 대한 답)
+
+| 항목 | 범위 |
+| --- | --- |
+| 1 | S3 PR `lane1/s3-checkpoint-20261010`는 green CI 뒤 merge한다(`merge_policy=after-green-ci`). |
+| 2 | private PR #190(archive 선언)을 red CI 상태로 merge한다. 2026-10-10 04:39Z merge commit `50dffbc9`(Lane 0, red CI는 사용자 결정으로 수용). |
+| 3 | BL-0016 Lane 1 수정을 Task 2b로 Task 2 뒤에 끼워 넣는다. push·PR은 이 campaign branch, merge는 1번과 같이 green CI 뒤다. |
+| 4 | S3 판정 보류. Task 3는 시연 기록(FAIL 원인 포함)·backlog·스크립트 push·PR로 바꾸고 criteria S3는 `open` 그대로 둔다. 브라우저 예약 저장 재시연은 S4 campaign의 train(0.42.94, BL-0016 포함) 뒤 S4 campaign 안 task다. |
+| 계속 | Task 2의 남은 단계(2026-10-10 14:26 Asia/Seoul 이후)와 큐를 이어 돈다. 기다리는 동안 Task 2b를 먼저 돈다. |
+
 ## Global Constraints
 
 - 보존 VM `pcv-guest-installed-04253-r1`, template VM `pcv-it-s2-source`, `current-evidence.json`, `release-train.json`의 `trains`를 바꾸지 않는다. 시연 VM은 `pcv-it-s3-source` 하나이고 끝에 checkpoint와 함께 지운다. 끝 상태 `pcv-it-s3-*` VM 0개.
@@ -39,9 +51,13 @@
 
 실행 기록(2026-10-10, 중단·deadline-wait): 설치본 `0.42.93-admin-smoke`(service 실행, Web `http://127.0.0.1/` 200), 시작 시 `pcv-it-s3-*` VM 0개. 스크립트 `--execute` 첫 판은 "schedule이 enable 즉시 due"라는 가정이 틀려 auto-checkpoint 단계가 bound 안에 끝나지 않았다. `checkpoint.schedule.set`은 Apply에서 `last_enqueued_at=UtcNow`를 찍으므로 첫 예약 실행은 한 interval(최소 60분) 뒤다. 스크립트를 `--skip-auto`(set까지, VM 보존)·`--verify-only --expect-count=N`(목록·readback 확인)·`--cleanup-only`로 나누고 기본 bound를 interval+120초로 바꿨다(`node --test` 2/2). 브라우저(Playwright, Web Console VM 상세 `pcv-it-s3-source`): checkpoint 생성 `s3-ui-cp`, 복원 `s3-cp1`, schedule clear는 폼 클릭으로 성공했고(job succeeded) 캡처 01~04다. **FAIL(설치본 결함, BL-0016)**: `Preview schedule`/`Save schedule` 클릭은 4회 모두 "Form submission canceled because the form is not connected"로 취소되어 요청이 나가지 않고 입력값도 지워졌다. 원인(페이지 안 계측으로 확인): VM 상세 click 위임 핸들러(설치본 `app.js:5572`, source `web/src/served-app.ts` `els.vmDetailPanel` click)가 `button[data-action]` 전부에 대해 끝에서 `render()`를 불러 click 처리 중 form이 detach되고, 브라우저가 submit 알고리즘을 취소해 submit 핸들러(`queueCheckpointScheduleControl`)가 돌지 않는다. `type="submit"` + `data-action` 버튼 13종이 같은 패턴이고 `vm-clone`만 early return 예외다. 같은 폼에 `form.requestSubmit(Save)`로 submit 핸들러에 직접 들어가면 confirm → `POST /api/v1/vms/pcv-it-s3-source/checkpoints/schedule` → job succeeded → readback `enabled / interval 60 / retention 3 / last enqueued 2026-10-10T04:24:15Z / next due 2026-10-10T05:24:15Z`(캡처 05). 중간에 브라우저 loopback session이 만료되어 403 `PCV_AUTH_FORBIDDEN`이 났고 stale token을 비운 뒤 세션을 다시 만들어 진행했다(stale token이 남아 있으면 `ensureLoopbackSession`이 세션을 다시 만들지 않는 점은 report-only). 남은 단계(2026-10-10 14:26 Asia/Seoul 이후): `--execute --verify-only --expect-count=3`로 예약 checkpoint 1개 추가 확인·캡처, UI로 schedule clear, `--execute --cleanup-only`, 끝 상태 확인(`pcv-it-s3-*` 0, 보존 VM Off, template Off). 현재 host 상태: `pcv-it-s3-source` Off, checkpoint 2(`s3-cp1`, `s3-ui-cp`), schedule enabled(retention 3이라 예약 checkpoint는 최대 1개 더 생기고 그 뒤 capacity로 막힘), `pcv-guest-installed-04253-r1` Off, `pcv-it-s2-source` Off. 판정: 브라우저 예약 저장 경로가 설치본 결함으로 막혀 S3는 `0.42.93`에서 통과할 수 없다. 수정은 Lane 1(BL-0016), 설치본 반영은 train이 필요하다.
 
+## Task 2b: BL-0016 수정 (Lane 1, 2026-10-10 2차 결정 3)
+
+- [ ] `web/src/served-app.ts`의 `els.vmDetailPanel` click 위임 핸들러가 form 안 `type="submit"` 버튼이면 아무것도 하지 않고 돌아가게 고쳐(그 폼의 submit 핸들러가 처리) 재렌더로 submit이 취소되지 않게 한다. `vm-clone`의 기존 early return은 그대로 둔다. `npm run build:served --prefix web`으로 `web/app.js`를 다시 만들고, 회귀 테스트(`web/node-tests`의 정적 검사: 핸들러에 guard가 있고 `web/app.js`에도 들어 있음)를 더해 CI가 돌리는 npm 스크립트에 연결한다. 검증: `npm test --prefix web`, `npm run test:web-contracts --prefix web`, `Invoke-Pester web/tests`, `git diff --check`. 로컬 commit. product payload(`web/app.js`)가 바뀌므로 release-train queue 행은 merge 뒤 merge SHA로 더한다.
+
 ## Task 3: 시연 기록과 criteria, push·PR
 
-- [ ] `docs/ga-ready/demo/s3-checkpoint-demo-2026-10-10.md`를 TEMPLATE.md 형식으로 쓰고(확인자 칸은 비움), `config/project-completion-criteria.json` S3를 `passed` + `demo_record`로 바꾸고 `docs/DOCUMENTATION_INDEX.md`를 갱신한다. clean HEAD에서 `dotnet test src/DesktopNode.Delivery.Tests -c Release`, `npm test --prefix web`, `Invoke-Pester packaging/windows-desktop-node/tests`, `Update-PcvCurrentEvidenceDocs.ps1 -Check`, `git diff --check`. push, PR. merge는 `next_approval_required` 1번이다.
+- [ ] (2026-10-10 2차 결정 4로 변경) `docs/ga-ready/demo/s3-checkpoint-demo-2026-10-10.md`를 TEMPLATE.md 형식으로 쓴다(확인자 칸은 비움, 판정은 "브라우저 생성·복원·clear 통과, 예약 저장 FAIL(BL-0016), 예약 실행은 submit 핸들러 직접 호출로 설정해 확인"). `config/project-completion-criteria.json` S3는 `open` 그대로 두고 `docs/DOCUMENTATION_INDEX.md`에 기록을 더한다. clean HEAD에서 `dotnet test src/DesktopNode.Delivery.Tests -c Release`, `npm test --prefix web`, `Invoke-Pester packaging/windows-desktop-node/tests`, `Update-PcvCurrentEvidenceDocs.ps1 -Check`, `git diff --check`. push, PR, green CI 뒤 merge(2차 결정 1). merge 뒤 release-train queue 행(Task 2b의 `web/app.js`)을 merge SHA로 더한다.
 
 ## Task 4: C5 runner 확인 (2026-10-19 이후, 이관)
 
