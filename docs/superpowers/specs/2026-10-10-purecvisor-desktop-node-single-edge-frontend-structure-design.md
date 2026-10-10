@@ -83,6 +83,8 @@ bundle 순서는 Single Edge `UI_MODULES`와 같은 원칙(의존이 앞)이다.
 
 `web/src/served/state.ts`, `types.ts`, `errors.ts`의 공용 타입·상태는 `web/src/modules/state.ts`로 옮겨 1번보다 앞에 둔다.
 
+실제 이동(Task 10, 2026-10-10)은 옛 part 단위로 했다: `core`(types·state·routes·errors·summary·table·rbac·load)·`desktop-api`(api-client)·`events`(job-polling + facade)·`vm`(render-inventory·render-vm-detail·render-qos·mutate)·`vm-console`(render-console·vm-detail-extensions: console frame·키보드·guest exec/channel/file·checkpoint schedule·export/import·network/device)·`ops`(render-jobs·render-activity·evidence)·`monitor`(render-ops·render-panels·render-monitoring·render-shell `render()`)·`accounts`(actions). 표의 `vm-checkpoint`·`vm-guest`·`security`는 별도 파일로 나누지 않고 위 모듈 안에 있다(함수 단위 분리는 Task 16 정리 후보). `prefs`(환경설정 modal, `showPrefs`/`showCreate`)는 Desktop Node가 더한 모듈이다. 순서표: core, desktop-api, endpoints, api, events, ui, uxlib, filter-state, metrics, charts, theme, modal-core, modal, nav, shell, mobile, prefs, vm, vm-console, ops, monitor, accounts.
+
 ## 5. 네임스페이스와 코드 규칙
 
 - 모든 모듈은 `window.PCV = window.PCV || {}; (function (PCV) { ... })(window.PCV);` 꼴이고 공개 API는 `PCV.<module>`에만

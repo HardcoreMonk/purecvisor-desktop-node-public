@@ -47,7 +47,18 @@ function _storeSession(d, user) {
     display_name: session.display_name || name
   };
   sessionStorage.setItem('pcv_session', JSON.stringify(window.currentUser));
+  _syncLegacyState(d);
   return name;
+}
+// The legacy console parts (core/desktop-api modules) keep their own auth state; mirror the Single Edge session into it.
+function _syncLegacyState(d) {
+  var st = window.state;
+  if (!st || typeof st !== 'object') return;
+  st.authAccessToken = String((d && d.access_token) || '');
+  st.authRefreshToken = String((d && d.refresh_token) || '');
+  st.authSession = (d && d.session) || null;
+  st.authError = null;
+  if (typeof saveAccountSessionToStorage === 'function') { try { saveAccountSessionToStorage(); } catch (e) { /* storage unavailable */ } }
 }
 var _refreshInProgress = null;
 async function _tryRefreshToken() {
@@ -105,6 +116,7 @@ function _redirectToLogin() {
   sessionStorage.removeItem('pcv_refresh_token');
   sessionStorage.removeItem('pcv_user');
   sessionStorage.removeItem('pcv_session');
+  _syncLegacyState(null);
   if (PCV.events && typeof PCV.events.stop === 'function') PCV.events.stop();
   pcvSetLoginVisible(true);
   var la = document.getElementById('la');

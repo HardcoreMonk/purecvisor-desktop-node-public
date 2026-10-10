@@ -97,11 +97,15 @@
 
 ## Task 12: 도메인 vm-console, vm-guest
 
-- [ ] `vm-console.ts`(frame 폴링·canvas·키 입력·text·Ctrl+Alt+Del, Single Edge `vm-console.js` 구조 + Desktop Node frame route)와 `vm-guest.ts`(guest exec/channel/file)를 옛 `render-console.ts`, `vm-detail-extensions.ts`에서 옮긴다. 검증: `npm test --prefix web`, `node --test web/node-tests/s1-*`(있으면), `git diff --check`. 로컬 commit.
+- [x] `vm-console.ts`(frame 폴링·canvas·키 입력·text·Ctrl+Alt+Del, Single Edge `vm-console.js` 구조 + Desktop Node frame route)와 `vm-guest.ts`(guest exec/channel/file)를 옛 `render-console.ts`, `vm-detail-extensions.ts`에서 옮긴다. 검증: `npm test --prefix web`, `node --test web/node-tests/s1-*`(있으면), `git diff --check`. 로컬 commit.
+
+실행 기록(2026-10-10): console frame(폴링·canvas·키 입력·text·Ctrl+Alt+Del)과 guest exec/channel/file은 Task 10 port로 `vm-console.ts`(render-console + vm-detail-extensions)와 `vm.ts`(mutate의 `queueVmGuestExecutionControl`·`queueVmGuestFile`)에 있다. 별도 `vm-guest.ts`로 나누지 않았고 spec §4에 실제 매핑과 Task 16 정리 후보로 적었다. bundle 로드 smoke에 console·guest 전역 함수 존재 검사(`startVmConsoleFrame`, `stopVmConsoleFrame`, `pollVmConsoleFrame`, `sendVmConsoleKeyboard`, `handleVmGuestPreviewSubmit`, `queueVmGuestExecutionControl`, `queueVmGuestFile`, `queueCheckpointScheduleControl`, `queueVmExportImportControl`)를 더했다. 검증: bundle 로드 smoke 2/2, `test:web-contracts` 255/255. host mutation 없음.
 
 ## Task 13: 도메인 accounts, security, monitor
 
-- [ ] `accounts.ts`(로그인 페이지·계정 생성·session·refresh·logout, Single Edge `accounts.js` 구조), `security.ts`(RBAC chips, token rotation, diagnostics 번들, 옛 `rbac.ts`·`render-ops.ts` 일부), `monitor.ts`(dashboard hero·summary·ops cockpit·monitoring signals, 옛 `render-panels.ts`·`render-monitoring.ts`)를 만든다. 검증: `npm test --prefix web`, `git diff --check`. 로컬 commit.
+- [x] `accounts.ts`(로그인 페이지·계정 생성·session·refresh·logout, Single Edge `accounts.js` 구조), `security.ts`(RBAC chips, token rotation, diagnostics 번들, 옛 `rbac.ts`·`render-ops.ts` 일부), `monitor.ts`(dashboard hero·summary·ops cockpit·monitoring signals, 옛 `render-panels.ts`·`render-monitoring.ts`)를 만든다. 검증: `npm test --prefix web`, `git diff --check`. 로컬 commit.
+
+실행 기록(2026-10-10): 로그인 페이지·loopback 세션·refresh·logout은 Task 9의 `api.ts`, 계정 생성·session·RBAC chips·token rotation·diagnostics·dashboard·monitoring은 Task 10의 `accounts.ts`·`monitor.ts`(옛 actions·render-ops·render-panels·render-monitoring)에 있다. 이 task에서 더한 것: (1) `prefs.ts`(Desktop Node 모듈): Single Edge topbar·command palette가 부르는 `showPrefs()`를 Desktop Node 환경설정 modal로 구현(테마 `PCV.theme.PREVIEWS`, 언어 `I18N`, Local API 주소 `state.apiBaseUrl`/`window.API_BASE`, 브라우저 token은 값 노출 없이 `state.apiToken`에만, 테마 편집기·설정 내보내기/가져오기·token 지우기 버튼; 옛 헤더 connection form 대체) + `showCreate()`(VM 생성 dialog). (2) `api.ts`의 `_storeSession`/`_redirectToLogin`이 Single Edge 세션을 옛 `state.authAccessToken/authRefreshToken/authSession`에 미러링(`_syncLegacyState`)해 옛 `refreshAll`·`desktopApi`가 같은 세션을 쓴다. (3) `modal.ts`: Desktop Node에 비밀번호 변경 route가 없어 `showChangePassword`는 toast로 거절, `showRegister`는 Desktop Node 계정 생성 payload(`role: admin`, 200/201 수락). 순서표 22개(prefs는 mobile 뒤). bundle 로드 smoke에 `showPrefs`·`showCreate`·`showRegisterModal`·`showChangePwModal`·`doLoginPage`·`doLogout`·`loadAll`과 `PCV.prefs` 검사 추가. 검증: `npm run build:served`(app.bundle.js 11,593줄), `npm run lint` 통과, domsafe 82/82, node 테스트(bundle·modules·i18n) 통과, `npm test`·`test:web-contracts` 255/255·`verify:parity` 통과, `git diff --check` 통과. host mutation 없음.
 
 ## Task 14: 도메인 ops와 help 포털
 

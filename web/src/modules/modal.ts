@@ -1,6 +1,6 @@
 // @ts-nocheck
 // Ported from purecvisor ui/modules/modal.js (Apache-2.0, same author) for the Desktop Node Web Console (ADR-0018,
-// pcv-single-edge-frontend-structure-v1). Desktop Node changes: none; EP.AUTH_REGISTER/AUTH_PASSWORD resolve to the Desktop Node account routes in endpoints (Task 9).
+// pcv-single-edge-frontend-structure-v1). Desktop Node changes: showChangePassword refuses with a toast when the Desktop Node has no password route (EP.AUTH_PASSWORD() is null); EP.AUTH_REGISTER is the Desktop Node account create route (Task 9).
 window.PCV = window.PCV || {};
 (function(PCV) {
   function _t(key, fallback) {
@@ -99,10 +99,10 @@ window.PCV = window.PCV || {};
             fetch(EP.AUTH_REGISTER(), {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ username: u, password: p })
+              body: JSON.stringify({ username: u, password: p, role: 'admin' })
             }).then(function(r) { return r.json().then(function(d) { return { status: r.status, body: d }; }); })
               .then(function(res) {
-                if (res.status === 201) {
+                if (res.status === 201 || res.status === 200) {
                   Modal.setMessage(_t('register.ok', '가입 성공! 로그인 화면으로 돌아갑니다.'), 'success');
                   setTimeout(function() {
                     Modal.close();
@@ -124,6 +124,10 @@ window.PCV = window.PCV || {};
       });
     },
     showChangePassword: function() {
+      if (typeof EP === "undefined" || !EP.AUTH_PASSWORD || !EP.AUTH_PASSWORD()) {
+        if (typeof toast === "function") toast(typeof _L === "function" ? _L("비밀번호 변경은 Desktop Node 계정 관리에 없습니다", "Password change is not available on the Desktop Node") : "Password change is not available", false);
+        return;
+      }
       var mkEl = PCV.uxlib.el;
       var body = [
         mkEl('div', { style: 'margin-bottom:12px' },

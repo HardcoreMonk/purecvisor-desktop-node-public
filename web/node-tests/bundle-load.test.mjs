@@ -155,7 +155,7 @@ test("i18n.js and app.bundle.js evaluate in the index.next.html DOM and expose e
   assert.ok(PCV, "window.PCV");
   assert.equal(typeof sandbox.I18N.t, "function");
   assert.equal(sandbox._L("가", "a"), "가");
-  const namespaces = { endpoints: "endpoints", api: "api", events: "events", ui: "ui", uxlib: "uxlib", metrics: "metrics", charts: "charts", theme: "theme", "modal-core": "modalCore", modal: "modal", nav: "nav", shell: "shell", mobile: "mobile", core: "core", "desktop-api": "desktopApi", vm: "vm", "vm-console": "vmConsole", ops: "ops", monitor: "monitor", accounts: "accounts", "filter-state": null };
+  const namespaces = { endpoints: "endpoints", api: "api", events: "events", ui: "ui", uxlib: "uxlib", metrics: "metrics", charts: "charts", theme: "theme", "modal-core": "modalCore", modal: "modal", nav: "nav", shell: "shell", mobile: "mobile", prefs: "prefs", core: "core", "desktop-api": "desktopApi", vm: "vm", "vm-console": "vmConsole", ops: "ops", monitor: "monitor", accounts: "accounts", "filter-state": null };
   for (const name of order.modules) {
     const ns = namespaces[name];
     if (ns === null) continue;
@@ -172,6 +172,10 @@ test("i18n.js and app.bundle.js evaluate in the index.next.html DOM and expose e
   assert.equal(sandbox.pcvEscapeHtml(null), "-", "legacy escapeHtml keeps its dash fallback");
   assert.equal(PCV.events.isHealthy(), false);
   assert.equal(typeof PCV.bootstrap, "function");
+  for (const fn of ["startVmConsoleFrame", "stopVmConsoleFrame", "pollVmConsoleFrame", "sendVmConsoleKeyboard", "handleVmGuestPreviewSubmit", "queueVmGuestExecutionControl", "queueVmGuestFile", "queueCheckpointScheduleControl", "queueVmExportImportControl", "showPrefs", "showCreate", "showRegisterModal", "showChangePwModal", "doLoginPage", "doLogout", "loadAll"]) {
+    assert.equal(typeof sandbox[fn], "function", `global ${fn}`);
+  }
+  assert.ok(PCV.prefs && typeof PCV.prefs.show === "function", "PCV.prefs");
 });
 
 test("the bootstrap binds the index.next.html elements, renders every panel and starts a loopback session", async () => {
