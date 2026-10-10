@@ -60,7 +60,9 @@
 
 ## Task 3: fullgate
 
-- [ ] `pcvverify train-host-inputs --kind fullgate-manifest --write`로 manifest를 만들고(LAN prefix는 직전 manifest에서 읽어 환경 변수로만 넘김) supervisor `-DryRun -AllowHostMutation` 뒤 clean `0.42.95` 위에서 `full-admin-host-mutation-gate-20261010-04295`를 돌린다. 사후 검사(설치본 Host/CLI ProductVersion == gate build commit, 같은 version ARP 1개, PureCVisor firewall 규칙 0, service Running/Automatic, Web 200, 보존 VM Off). `train-facts`로 fullgate 문서. 로컬 commit.
+- [x] `pcvverify train-host-inputs --kind fullgate-manifest --write`로 manifest를 만들고(LAN prefix는 직전 manifest에서 읽어 환경 변수로만 넘김) supervisor `-DryRun -AllowHostMutation` 뒤 clean `0.42.95` 위에서 `full-admin-host-mutation-gate-20261010-04295`를 돌린다. 사후 검사(설치본 Host/CLI ProductVersion == gate build commit, 같은 version ARP 1개, PureCVisor firewall 규칙 0, service Running/Automatic, Web 200, 보존 VM Off). `train-facts`로 fullgate 문서. 로컬 commit.
+
+실행 기록(2026-10-10): `train-host-inputs --kind fullgate-manifest --write`로 manifest를 만들었다(sha256 `93aeb429069c272d1c30ad71ecac66c562ccf764711756af4b46f6257b2b4fca`, LAN prefix는 직전 manifest에서 읽어 환경 변수로만 넘김). supervisor `-DryRun -AllowHostMutation`은 두 단계 planned, `ok=true`. `2026-10-10T14:25:58Z`부터 `291`초 실행, `ok=true`, `status=completed`(stdout은 `artifacts/batch-manifests/full-admin-host-mutation-gate-20261010-04295.result.json`, stderr 0 byte). step: service-msi-hyperv-admin-smoke exit 0(시도 1, ?초), os-mutation-gate exit 0(시도 1, ?초); total_steps 2, executed 2, skipped . 사후 검사: 설치본 Host/CLI `0.42.95-admin-smoke+b9898cf` == gate build HEAD `b9898cf`(Task 2 commit; product source는 payload `f84d46a`와 같음), ARP `{F5203439-7074-4F2C-8F20-0D9571420514}` `0.42.95` 1개, PureCVisor firewall 규칙 `0`, service Running/Automatic, Web `200`, 보존 VM과 `pcv-it-s2-source` Off. `train-facts` fullgate `generated=35` `narrative=2`, `--check` `current`. golden 시험 `21/21`. operational current는 `0.42.93-admin-smoke` 그대로다.
 
 ## Task 4: installed current-card
 
