@@ -53,7 +53,9 @@
 
 ## Task 2b: BL-0016 수정 (Lane 1, 2026-10-10 2차 결정 3)
 
-- [ ] `web/src/served-app.ts`의 `els.vmDetailPanel` click 위임 핸들러가 form 안 `type="submit"` 버튼이면 아무것도 하지 않고 돌아가게 고쳐(그 폼의 submit 핸들러가 처리) 재렌더로 submit이 취소되지 않게 한다. `vm-clone`의 기존 early return은 그대로 둔다. `npm run build:served --prefix web`으로 `web/app.js`를 다시 만들고, 회귀 테스트(`web/node-tests`의 정적 검사: 핸들러에 guard가 있고 `web/app.js`에도 들어 있음)를 더해 CI가 돌리는 npm 스크립트에 연결한다. 검증: `npm test --prefix web`, `npm run test:web-contracts --prefix web`, `Invoke-Pester web/tests`, `git diff --check`. 로컬 commit. product payload(`web/app.js`)가 바뀌므로 release-train queue 행은 merge 뒤 merge SHA로 더한다.
+- [x] `web/src/served-app.ts`의 `els.vmDetailPanel` click 위임 핸들러가 form 안 `type="submit"` 버튼이면 아무것도 하지 않고 돌아가게 고쳐(그 폼의 submit 핸들러가 처리) 재렌더로 submit이 취소되지 않게 한다. `vm-clone`의 기존 early return은 그대로 둔다. `npm run build:served --prefix web`으로 `web/app.js`를 다시 만들고, 회귀 테스트(`web/node-tests`의 정적 검사: 핸들러에 guard가 있고 `web/app.js`에도 들어 있음)를 더해 CI가 돌리는 npm 스크립트에 연결한다. 검증: `npm test --prefix web`, `npm run test:web-contracts --prefix web`, `Invoke-Pester web/tests`, `git diff --check`. 로컬 commit. product payload(`web/app.js`)가 바뀌므로 release-train queue 행은 merge 뒤 merge SHA로 더한다.
+
+실행 기록(2026-10-10): `web/src/served-app.ts` `els.vmDetailPanel` click 핸들러 머리에 `if (button.type === 'submit' && button.form) return;` guard(BL-0016 주석)를 넣었다. `vm-clone` early return은 그대로다. `npm run build:served`로 `web/app.js`를 다시 만들었고(guard는 bundle 5740행, +5줄) `check:served`·static parity·browser fixture가 current다. 회귀 테스트 `web/node-tests/vm-detail-submit-guard.test.mjs` 3건(source의 click 핸들러 머리에 guard가 `state.error = null`보다 앞에 있음, `web/app.js`에 같은 guard가 있음, schedule Preview/Save가 `type="submit"` + `data-action`임)을 `test:web-contracts`에 붙이고 그 명령을 pin한 `web-verification-architecture-boundary.test.mjs`의 `EXPECTED_WEB_CONTRACTS_SCRIPT`를 같이 갱신했다. 검증: 새 테스트 3/3, `npm test` 통과, `test:web-contracts` 239/239, `verify:parity` 통과, web Pester 50/50, `git diff --check` 통과. host mutation 없음. BL-0016 행은 PR merge 뒤 `closed_by`에 merge SHA를 적는다. release-train queue 행도 merge 뒤다.
 
 ## Task 3: 시연 기록과 criteria, push·PR
 
