@@ -19,6 +19,7 @@
 | 3 | S4 campaign과 train 0.42.94는 이 campaign 뒤로 미룬다. 그 train이 BL-0016 수정(queue 79)과 새 프론트엔드를 한 번에 싣고, 그 설치본에서 S3 브라우저 예약 저장 재시연과 S4를 한다. train 출발 승인 문구는 이 campaign이 닫힐 때 `next_approval_required`로 묻는다(`docs/DEVELOPMENT_PROCEDURE.md` §10). |
 | 4 | 분석을 Claude Doc 보고서로 남긴다(2026-10-10 작성). |
 | 이관 | `s3-checkpoint-20261010` Task 4(C5 runner 확인, `not_before` 2026-10-19)를 Task 18로 옮긴다. 문장과 push, PR, green CI 뒤 merge는 원래 승인 그대로다. |
+| 5 | 2026-10-10 `1`(Task 16 실측 정지 보고의 승인 1): Task 16을 cutover로 재단한다. 16a: `index.next.html`→`index.html`(`/`가 Single Edge 셸), 옛 콘솔은 `index.legacy.html`+`app.js`+`styles.css`로 유지, 옛 계약은 파일 이름만 재지정. 16b: Linux i18n/selector 정리와 `DESIGN.md`·`USER_GUIDE.md` 갱신. 옛 구조 제거와 계약 재기준선은 train 뒤 별도 campaign(6~8 checkpoint). Lane 1, checkpoint_limit 19, push/PR, green CI 뒤 merge. |
 
 ## Global Constraints
 
@@ -26,7 +27,7 @@
 - Desktop Node Local API route/계약은 고정한다(`web/DESIGN.md` Porting Order 1). 새 route, WebSocket route(`/ws/events`), Linux route(`/containers`, `/storage`, `/ovn`, `/networks`, `/auth/token`)를 넣지 않는다. loopback 기본값(`http://127.0.0.1/`, `:7777`)은 그대로다.
 - Single Edge에서 가져온 파일은 머리에 출처 주석(`Ported from purecvisor ui/<path> (Apache-2.0, same author)`)을 적고, vendor 자산은 `THIRD_PARTY_NOTICES.md`에 라이선스(Pretendard OFL-1.1, Coolicons CC BY 4.0, Chart.js MIT)를 적는다. qrcode, noVNC는 가져오지 않는다.
 - 공개 저장소 내용 규칙(AGENTS.md): 사용자 홈 경로, LAN 사설 IP, 호스트명, token, private 저장소 URL을 적지 않는다. Single Edge 저장소 URL은 적어도 된다(사용자 공개 저장소).
-- 옛 구조(`web/src/served/*.ts`, `web/app.js`, `web/styles.css`)는 Task 16에서 제거할 때까지 빌드·계약을 깨지 않게 둔다. 중간 task에서 `npm test --prefix web`이 red가 되면 그 task 안에서 고치거나 멈춘다.
+- 옛 구조(`web/src/served/*.ts`, `web/app.js`, `web/styles.css`)는 Task 16a cutover 뒤에도 `web/index.legacy.html`과 함께 남겨 빌드·계약을 깨지 않게 둔다(제거와 재기준선은 2026-10-10 승인 1에 따라 train 뒤 별도 campaign). 중간 task에서 `npm test --prefix web`이 red가 되면 그 task 안에서 고치거나 멈춘다.
 - 한도: Lane 1 30분·tool batch 18회(checkpoint마다). 한 task가 한도를 넘으면 멈추고 나눠서 보고한다. Lane 2·3는 열지 않는다.
 
 ## Task 1: 설계 spec, ADR-0018, 경계 문서, 라이선스 고지
@@ -124,6 +125,14 @@
 - [ ] `web/src/served/*.ts`, `web/src/served-app.ts`, `web/app.js`, `web/styles.css`를 제거하고 `web/contracts/web-static-contracts.mjs`(`root-assets`, `visual-shell`, `workbench-frame`, `served-source-parts` 등)와 `web/tests/PcvDesktopWeb.Static.Tests.ps1`, feature surface ledger, static parity 스냅샷(`npm run generate:parity`), browser fixture, `web/node-tests/*`(S1~S3 시나리오 테스트 경로), Delivery 계약 pin, `web/DESIGN.md`(Single UI Clone Mapping을 구조 차용 표로 갱신)를 새 구조로 다시 기준선 잡는다. 검증: `npm run test:required --prefix web`, `Invoke-Pester web/tests`, `dotnet test src/DesktopNode.Delivery.Tests -c Release`, `git diff --check`. 로컬 commit.
 
 실측 기록(2026-10-10, 미착수·정지 `new-design-required`): 착수 시 실측에서 이 task는 Lane 1 checkpoint 하나(18 batch·30분)에 들어가지 않는다. 옛 구조를 읽는 pin: `web/contracts/web-static-contracts.mjs` verifier 40개 중 `web/app.js` 29회, `web/src/served*` 58회, `web/index.html` 25회, `web/styles.css` 5회 읽기(metadata ledger 50행); `web-static-contracts-negative.test.mjs` 옛 파일 override 39건; `web/tests/PcvDesktopWeb.Static.Tests.ps1` It 49개(1215줄, METADATA_LEDGER 줄 범위 pin); `verify-browser-fixture.mjs` 1762줄(옛 `app.js`를 vm에서 실행); static parity(`generate-parity-manifest.ts`, `verify/regenerate-static-parity.mjs`, 스냅샷); `config/development-verification- migration-manifest.json` 11555줄(legacy_name 627행, 재생성 가능); `web-contract-harness`의 servedSourceParts 파서와 그 시험; Delivery·packaging pin(`Product.wxs` app.js/styles.css component, `PcvDesktopNodeProduct.psm1` core 3파일, Manifest/Invoke Pester fixture, product descriptor spec, installed smoke spec `/app.js` probe, `PcvAdminSmokeEvidenceDocs.Tests.ps1` 5곳, `module-size-ratchet.json`); 문서 6종. 합계 70+ 파일, 40 verifier × (negative·Pester·migration manifest) 미러 재작성은 6~8 checkpoint 규모다. 러너 규칙(범위 밖 설계 필요 → 즉시 중단, 추가 patch 금지)에 따라 Task 16 변경 없이 멈추고 재단 선택지를 campaign `next_approval_required`에 적었다. tree clean, head `bfb3f79`(Task 15).
+
+## Task 16a: 서빙 루트 cutover (재단, 2026-10-10 승인 1)
+
+- [ ] `web/index.html`(옛 콘솔)을 `web/index.legacy.html`로, `web/index.next.html`을 `web/index.html`로 옮겨 `/`가 Single Edge 셸을 서빙하게 한다. 옛 계약은 파일 이름만 재지정한다: `web/contracts/web-static-contracts.mjs`(`web/index.html` 27곳), `web-static-contracts-negative.test.mjs`, `verify-web-contract-negative-parity.mjs` REQUIRED_FILES와 fixture 경로, `verify-static-parity.mjs`, `verify-browser-fixture.mjs`, `web/tests/PcvDesktopWeb.Static.Tests.ps1` `$script:IndexPath`(줄 수 불변). 새 셸 시험은 `index-next-shell.test.mjs`→`single-edge-shell.test.mjs`, `bundle-load.test.mjs`를 `index.html`로 돌리고 `test:web-contracts`·architecture-boundary pin을 맞춘다. `web/payload-manifest.json` files에 `index.legacy.html`(core `index.html`은 새 셸), `WebPayload.wxs` 재생성, `core.ts` `WEB_ASSET_LABEL`을 `app.bundle.js`로, spec의 `index.next.html` 전환 주석을 갱신한다. 검증: `npm run test:required --prefix web`, `Invoke-Pester web/tests`, `dotnet test src/DesktopNode.Delivery.Tests -c Release`, `dotnet test src/DesktopNode.Host.Tests -c Release`, installer Pester, WiX smoke, `git diff --check`. 로컬 commit.
+
+## Task 16b: Linux 잔재 정리와 문서 (재단, 2026-10-10 승인 1)
+
+- [ ] `web/i18n.js`의 Linux Single Edge 전용 키(containers, storage, ovn, networks, push, swagger 등)와 `web/style.css`의 Linux 전용 selector(scratch 후보 57개: `.ctr-*`, `.vpc-*`, `.push-*` 등)를 제거하고, `web/DESIGN.md` "Single UI Clone Mapping"을 구조 차용 표(파일 배치, 모듈 순서, 셸 selector, 옛 콘솔 `index.legacy.html` 경계)로 갱신하며, `docs/USER_GUIDE.md` 웹 콘솔 절에 로그인 페이지·환경설정·도움말·문서 포털·`index.legacy.html`을 적는다(`web.static.design-boundary` 계약이 요구하는 `web/src/served-app.ts` 언급은 유지). 검증: `npm run test:required --prefix web`, `Invoke-Pester web/tests`, `git diff --check`. 로컬 commit.
 
 ## Task 17: 종료 검증, push, PR, merge
 
