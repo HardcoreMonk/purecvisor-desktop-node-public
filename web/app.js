@@ -5734,6 +5734,11 @@ function bindEvents() {
         const button = event.target.closest('button[data-action]');
         if (!button)
             return;
+        // BL-0016: a submit button inside a form belongs to the panel submit handler above. Handling it here
+        // re-renders the panel during the click, which detaches the form before the browser runs the submit
+        // algorithm and cancels it ("Form submission canceled because the form is not connected").
+        if (button.type === 'submit' && button.form)
+            return;
         const action = VM_LIFECYCLE_ACTIONS[button.dataset.action];
         state.error = null;
         try {

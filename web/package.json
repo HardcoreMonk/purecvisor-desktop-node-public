@@ -12,7 +12,7 @@
     "generate:verification-migration-manifest": "node scripts/regenerate-verification-migration-manifest.mjs --write",
     "test": "npm run check:feature-surfaces && tsc --noEmit -p tsconfig.json && npm run check:served && npm run check:frontend-batches",
     "test:public-source-safety": "node --test --test-reporter=spec node-tests/public-source-safety.test.mjs",
-    "test:web-contracts": "npm run check:web-contract-registry && npm run check:verification-migration-manifest && node --test --test-reporter=spec node-tests/web-contract-harness.test.mjs node-tests/web-static-contracts.test.mjs node-tests/web-static-contracts-negative.test.mjs node-tests/verification-migration-manifest.test.mjs node-tests/web-contract-negative-parity.test.mjs node-tests/web-verification-architecture-boundary.test.mjs",
+    "test:web-contracts": "npm run check:web-contract-registry && npm run check:verification-migration-manifest && node --test --test-reporter=spec node-tests/web-contract-harness.test.mjs node-tests/web-static-contracts.test.mjs node-tests/web-static-contracts-negative.test.mjs node-tests/verification-migration-manifest.test.mjs node-tests/web-contract-negative-parity.test.mjs node-tests/web-verification-architecture-boundary.test.mjs node-tests/vm-detail-submit-guard.test.mjs",
     "test:required": "npm test && npm run test:web-contracts && npm run verify:parity",
     "generate:parity": "node scripts/regenerate-static-parity.mjs --write",
     "verify:parity": "npm run check:served && node scripts/regenerate-static-parity.mjs --check && node scripts/verify-static-parity.mjs && npm run browser:fixture",
@@ -22,7 +22,8 @@
     "capture:installed-listener": "node scripts/capture-installed-listener-qa.mjs",
     "scenario:s1-console": "node scripts/run-s1-console-scenario.mjs",
     "scenario:s2-clone": "node scripts/run-s2-clone-scenario.mjs",
-    "check:frontend-batches": "node scripts/validate-frontend-completion-batches.mjs"
+    "check:frontend-batches": "node scripts/validate-frontend-completion-batches.mjs",
+    "scenario:s3-checkpoint": "node scripts/run-s3-checkpoint-scenario.mjs"
   },
   "devDependencies": {
     "typescript": "5.9.3"

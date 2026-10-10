@@ -2,8 +2,8 @@
   "schema_version": 1,
   "contract": "pcv-active-campaign-v1",
   "status": "open",
-  "id": "audit-green-lean-20261009",
-  "intent": "audit-improvements-1-6",
+  "id": "s3-checkpoint-20261010",
+  "intent": "s3-checkpoint-browser-demo",
   "working_authority": "source_head",
   "allowed_lanes": [
     "0",
@@ -12,42 +12,33 @@
   ],
   "mutation_allowed": true,
   "current_write_allowed": false,
-  "next_step": "Run Task 8 (clean-HEAD verification, push, PR, merge after green CI, post-merge main run check) from docs/superpowers/plans/2026-10-09-purecvisor-desktop-node-audit-green-lean.md; Task 9 not before 2026-10-19. After this campaign closes, open the S3 campaign (approval 2) carrying Task 9, then the S4 campaign (approval 3).",
-  "plan": "docs/superpowers/plans/2026-10-09-purecvisor-desktop-node-audit-green-lean.md",
+  "next_step": "PR #79 (lane1/s3-checkpoint-20261010) merges after green CI (2026-10-10 approval 1). After the merge, the next branch adds the release-train queue row for Task 2b (web/app.js) with the merge SHA and closes BL-0016 (closed_by). Task 4 (C5 runner check) not before 2026-10-19: carry it into the next campaign. The next campaign is decided by the 2026-10-10 frontend-structure approval answer (Single Edge ui structure adoption, B plan) and the S4 campaign order.",
+  "plan": "docs/superpowers/plans/2026-10-10-purecvisor-desktop-node-s3-checkpoint.md",
   "task_queue": [
     "Task 1",
     "Task 2",
+    "Task 2b",
     "Task 3",
-    "Task 4",
-    "Task 5",
-    "Task 6",
-    "Task 10",
-    "Task 7",
-    "Task 8",
-    "Task 9"
+    "Task 4"
   ],
   "task_lanes": {
-    "Task 7": "2"
+    "Task 2": "2"
   },
   "task_not_before": {
-    "Task 9": "2026-10-19"
+    "Task 4": "2026-10-19"
   },
-  "next_task": "Task 8",
+  "next_task": "Task 4",
   "completed_tasks": [
     "Task 1",
+    "Task 2b",
     "Task 2",
-    "Task 3",
-    "Task 4",
-    "Task 5",
-    "Task 6",
-    "Task 10",
-    "Task 7"
+    "Task 3"
   ],
   "commit_policy": "local-commit-per-task",
   "push_allowed": true,
   "merge_policy": "after-green-ci",
-  "checkpoint_limit": 11,
-  "approval_locator": "User-Approval: 2026-09-27 campaign runner commit policy local-commit-per-task; User-Approval: 2026-10-09 \"보고서 추가, - 1번과 2번 승인 - 3~6번 승인 - 승인: 2번의 두 저장소 push와 PR, 5·7번의 pcv-it- VM 생성(ADR-0016 standing approval 문장), 8번의 설치본 --allow-lan과 방화벽 변경(host mutation).\" on the 2026-10-09 zero-base audit improvement items 1-8 (1 public flake fix with clock injection, failing test names in the CI log, pcv-ship post-merge main run check; 2 private repo read-only archive, move 4 skills and CLAUDE.md to public, AGENTS public-content rule; both repos branch push and PR, no merge; 3 purpose sentence Hyper-V management layer, WHP v2 candidate; 4 ADR-0017 sync items disposition and feature ledger generator; 5 local PR gate script, Lane 2 run once; ADR-0016 standing approval limited to pcv-it- prefixed VM create, configure and delete under artifacts/hyperv-integration; 6 demo record template with reviewer and capture retention; 7 and 8 not approved as work; 8 installed --allow-lan and firewall host mutation pre-approved for a later S4 campaign only); carry s2-template-clone-20261009 Task 2 (C5 runner, not before 2026-10-19) as Task 9 with its original push, PR and merge after green CI; User-Approval: 2026-10-10 \"1,2,3,4\" on the Task 7 Lane 2 FAIL report (1 merge after green CI for the public PR lane1/audit-green-lean-20261009 and private PR #190; 2 S3 campaign to open after this campaign closes, carrying Task 9, pcv-it- VM standing approval; 3 S4 campaign after S3 with the 2026-10-09 pre-approved installed --allow-lan and firewall host mutation, then one release train; 4 Lane 1 fix of BL-0014 as Task 10, then rerun Task 7 under the same pcv-it- standing approval, then Task 8)",
+  "checkpoint_limit": 5,
+  "approval_locator": "User-Approval: 2026-09-27 campaign runner commit policy local-commit-per-task; User-Approval: 2026-10-09 \"보고서 추가, - 1번과 2번 승인 - 3~6번 승인 - 승인: 2번의 두 저장소 push와 PR, 5·7번의 pcv-it- VM 생성(ADR-0016 standing approval 문장), 8번의 설치본 --allow-lan과 방화벽 변경(host mutation).\" (ADR-0016 standing approval limited to pcv-it- prefixed VM create, configure and delete; 8 installed --allow-lan and firewall host mutation pre-approved for the S4 campaign only); User-Approval: 2026-10-10 \"1,2,3,4\" on the audit-green-lean-20261009 Task 7 FAIL report (2 S3 campaign: checkpoint create, restore and schedule demonstrated in the browser on the installed build, carrying audit-green-lean-20261009 Task 9 as Task 4 with its original push, PR and merge after green CI; 3 S4 campaign to open after S3; branch push and PR for this campaign, merge not approved); User-Approval: 2026-10-10 \"1. merge, 2. merge, 3,4 , 계속\" on the s3-checkpoint-20261010 Task 2 deadline-wait report (1 S3 PR lane1/s3-checkpoint-20261010 merge after green CI; 2 private PR #190 merged with red CI by user decision, merge 50dffbc9; 3 BL-0016 Lane 1 fix as Task 2b with push, PR and merge after green CI; 4 S3 verdict deferred: Task 3 restated to demo record with FAIL cause, backlog and script push/PR, criteria S3 stays open, browser schedule-save re-demo in the S4 campaign after its train)",
   "next_approval_required": [],
   "stop_on": [
     "same-cause-fail-3",
@@ -61,8 +52,8 @@
     "deadline-wait"
   ],
   "out_of_scope_is_not_next_step": true,
-  "closed_predecessor": "s2-template-clone-20261009",
+  "closed_predecessor": "audit-green-lean-20261009",
   "carried_from": {
-    "Task 9": "s2-template-clone-20261009 Task 2"
+    "Task 4": "audit-green-lean-20261009 Task 9"
   }
 }

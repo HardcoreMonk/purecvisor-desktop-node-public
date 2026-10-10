@@ -170,6 +170,30 @@
       "needs_design": false,
       "status": "open",
       "closed_by": null
+    },
+    {
+      "id": "BL-0015",
+      "found_on": "2026-10-10",
+      "source": "docs/superpowers/plans/2026-10-10-purecvisor-desktop-node-s3-checkpoint.md Task 1 (npm run test:public-source-safety)",
+      "summary": "BL-0010으로 비웠던 public source safety 발견이 main에 다시 2건 있다: docs/ga-ready/demo/s1-browser-console-demo-2026-10-08.md 24행과 docs/superpowers/plans/2026-10-08-purecvisor-desktop-node-s1-installed.md 66행의 network.observed-private-endpoint(guest NAT 주소). 규칙을 NAT 대역 허용으로 넓히거나 두 문서의 주소를 가려야 하고, test:public-source-safety는 Required CI 밖이라 회귀를 막지 못했다",
+      "classification": "undecided",
+      "basis": null,
+      "out_of_scope_ref": null,
+      "needs_design": false,
+      "status": "open",
+      "closed_by": null
+    },
+    {
+      "id": "BL-0016",
+      "found_on": "2026-10-10",
+      "source": "docs/superpowers/plans/2026-10-10-purecvisor-desktop-node-s3-checkpoint.md Task 2 (Playwright, 설치본 0.42.93-admin-smoke Web Console)",
+      "summary": "Web Console VM 상세의 click 위임 핸들러(web/src/served-app.ts els.vmDetailPanel click, 설치본 app.js:5572)가 button[data-action] 전부에 대해 끝에서 render()를 부른다. form 안의 type=\"submit\" + data-action 버튼은 click 처리 중 재렌더로 원래 form이 detach되고 브라우저가 submit 알고리즘을 취소해(\"Form submission canceled because the form is not connected\") submit 핸들러가 돌지 않고 요청이 나가지 않는다. 라이브 재현: checkpoint-schedule-preview/set(Preview schedule, Save schedule) 클릭 4회 모두 취소, 입력값도 지워짐; form.requestSubmit()으로 submit 핸들러에 직접 들어가면 confirm과 POST /checkpoints/schedule이 정상. 정적 검사로 같은 패턴: vm-qos-storage-preview, vm-qos-network-preview, vm-guest-exec-preview, guest-agent-channel-preview, guest-agent-ensure-channel, vm-export-preview/apply, vm-import-preview/apply, vm-console-text(vm-clone만 early return으로 예외 처리됨). 수정안: click 핸들러에서 button.type === \"submit\"이면 return(submit 핸들러에 맡김) 또는 분기가 처리한 경우에만 render(). S3 브라우저 예약 저장이 이 결함으로 설치본에서 막혔다",
+      "classification": "undecided",
+      "basis": null,
+      "out_of_scope_ref": null,
+      "needs_design": false,
+      "status": "open",
+      "closed_by": null
     }
   ]
 }

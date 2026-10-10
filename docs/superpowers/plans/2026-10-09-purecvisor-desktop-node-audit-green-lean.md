@@ -57,7 +57,7 @@
 
 - [x] private 저장소 `README.md`, `AGENTS.md`, `CLAUDE.md` 맨 위(생성 블록 밖)에 "2026-10-09부터 read-only archive. 작업·skill·campaign은 `purecvisor-desktop-node-public`" 안내를 넣고 skill 디렉터리에 같은 안내 `README.md`를 둔다. branch `archive/private-readonly-20261009`, 검증 `git diff --check`, `Update-PcvCurrentEvidenceDocs.ps1 -Check`, `Invoke-Pester packaging/windows-desktop-node/tests/PcvAdminSmokeEvidenceDocs.Tests.ps1`. 로컬 commit, push, PR. merge는 `next_approval_required`.
 
-실행 기록(2026-10-09): private 저장소 branch `archive/private-readonly-20261009`, commit `636f0647`, PR #190(`https://github.com/HardcoreMonk/purecvisor-desktop-node/pull/190`) open. 세 문서의 H1 바로 아래, 생성 블록 밖에 archive 안내 blockquote를 넣었고 `.claude/skills/README.md`에 동결 사본 안내를 뒀다. 검증: `git diff --check` 통과, `PcvAdminSmokeEvidenceDocs` Pester 90/90, `Update-PcvCurrentEvidenceDocs.ps1 -Check` ok. private `main` CI는 손대지 않았다(red 유지, 유지보수 종료). merge는 `next_approval_required` 1번이다.
+실행 기록(2026-10-09): private 저장소 branch `archive/private-readonly-20261009`, commit `636f0647`, private PR #190 open(URL은 public 수록 금지 규칙 `provider.private-archive`에 따라 적지 않는다). 세 문서의 H1 바로 아래, 생성 블록 밖에 archive 안내 blockquote를 넣었고 `.claude/skills/README.md`에 동결 사본 안내를 뒀다. 검증: `git diff --check` 통과, `PcvAdminSmokeEvidenceDocs` Pester 90/90, `Update-PcvCurrentEvidenceDocs.ps1 -Check` ok. private `main` CI는 손대지 않았다(red 유지, 유지보수 종료). merge는 `next_approval_required` 1번이다.
 
 ## Task 4: 목적 문장과 시연 기록 규칙
 
@@ -87,11 +87,15 @@
 
 ## Task 8: 종료 검증과 push·PR
 
-- [ ] clean HEAD에서 `dotnet test src/DesktopNode.sln -c Release`, `npm test --prefix web`, `npm run verify:parity --prefix web`, packaging·installer·web Pester, `Update-PcvCurrentEvidenceDocs.ps1 -Check`, `git diff --check`. `lane1/audit-green-lean-20261009`를 push하고 PR을 연다. merge는 `next_approval_required` 1번이다.
+- [x] clean HEAD에서 `dotnet test src/DesktopNode.sln -c Release`, `npm test --prefix web`, `npm run verify:parity --prefix web`, packaging·installer·web Pester, `Update-PcvCurrentEvidenceDocs.ps1 -Check`, `git diff --check`. `lane1/audit-green-lean-20261009`를 push하고 PR을 연다. merge는 `next_approval_required` 1번이다.
+
+실행 기록(2026-10-10): clean HEAD `a50a294`에서 `dotnet test src/DesktopNode.sln -c Release`(gate 4차 run, 코드 HEAD `cb25102` 동일) 전건 통과, `npm test`·`verify:parity` 통과, packaging Pester 528/528, installer+web 99/99, evidence·feature-ledger·spec-pins `-Check` current, `git diff --check origin/main...HEAD` 통과. PR #78(`https://github.com/HardcoreMonk/purecvisor-desktop-node-public/pull/78`)을 열었다. queue 행을 PR 안에 넣었다가 Delivery 계약 `PcvReleaseTrainContractTests.QueueRowsNameAMergedProductChangeAndItsProbe`가 `merge_commit`에 실제 SHA를 요구해 되돌렸다(`b547d0b` → `9af123d`). head `9af123da`에서 required check 5개(dotnet, web, delivery, installer-policy, public-boundary-ci-required) 모두 pass → 승인 1(after-green-ci)대로 `gh pr merge 78 --merge --match-head-commit` → merge commit `1b04ff46`. 로컬 `main` 동기화. merge commit의 `main` push run은 Development Gates `37959538181` success, Public Boundary Contract `37959537954` success로 public `main`이 2026-10-09 S2 merge 이후 처음 green이다. private PR #190은 `dotnet-tests`·`packaging-pester`가 archive 전부터 red라 "green CI 뒤 merge" 조건을 못 채워 merge하지 않았다. PR #78의 release-train queue 행은 merge SHA가 생긴 뒤 `lane1/s3-checkpoint-20261010` 첫 commit에서 더한다.
 
 ## Task 9: C5 runner 확인 (2026-10-19 이후, 이관)
 
 - [ ] `not_before` 2026-10-19. 이관 전 `s2-template-clone-20261009` Task 2(그 전 `s1-installed-20261008` Task 11, `adr17-s1-console-20261008` Task 14)다. Ubuntu 26 runner의 첫 `main` Development Gates와 Public Boundary run이 green이면 `config/project-completion-criteria.json` 위험 행을 `status=closed`, `closed_by`에 run id로 닫는다. 실패하면 `ubuntu-24.04` pin을 판단해 보고하고 멈춘다. push, PR, green CI 뒤 merge.
+
+이관(2026-10-10): `s3-checkpoint-20261010` Task 4. 이 campaign은 닫는다(Task 1~8, 10 완료, PR #78 merge `1b04ff46`).
 
 ## Task 10: BL-0014 수정 (Task 7 재실행 전, 2026-10-10 승인 4)
 
