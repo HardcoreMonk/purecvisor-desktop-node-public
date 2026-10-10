@@ -55,7 +55,9 @@
 
 ## Task 2: pair
 
-- [ ] orchestrator `-PlanOnly` 뒤 `-Execute`(campaign `manual-admin-campaign-20261011-04295-04296`, baseline `artifacts/admin-smoke-package-20261010-04295`, target Task 1 package root). 여섯 bucket PASS(Burn bucket PASS가 queue 84의 Lane 2 probe다), closed descriptor, `observation_error` 없음, 끝 상태 설치본 `0.42.96`·ARP 1개·service Running/Automatic·Web 200·보존 VM Off. `train-facts`로 pair 문서 6개. 로컬 commit.
+- [x] orchestrator `-PlanOnly` 뒤 `-Execute`(campaign `manual-admin-campaign-20261011-04295-04296`, baseline `artifacts/admin-smoke-package-20261010-04295`, target Task 1 package root). 여섯 bucket PASS(Burn bucket PASS가 queue 84의 Lane 2 probe다), closed descriptor, `observation_error` 없음, 끝 상태 설치본 `0.42.96`·ARP 1개·service Running/Automatic·Web 200·보존 VM Off. `train-facts`로 pair 문서 6개. 로컬 commit.
+
+실행 기록(2026-10-11): `-PlanOnly` `ok=true`(host mutation 없음, 설치본 `0.42.95-admin-smoke+b9898cf`가 baseline version과 같아 baseline_alignment required=false). `-Execute`로 여섯 bucket PASS(readiness, product Update/Rollback, clean-host, burn-bootstrapper-lifecycle — queue 84의 Lane 2 probe, BL-0017 수정 뒤 제품 root 부재 확인 —, msix, ops-summary), closed descriptor `manual-admin-campaign-20261011-04295-04296-closed`, observations 0개 `observation_error` 0개, restoration 없음. 끝 상태: 설치본 `0.42.96-admin-smoke+e07113c5f555715955856897c687c7c8843db1dc`, ARP `{EBCDF75B-F5A7-49D1-92BE-84F442F67E99}` `0.42.96` 1개, service Running/Automatic, Web 200, 보존 VM과 `pcv-it-s2-source` Off. campaign root `artifacts/manual-admin-campaign-20261011-04295-04296`. `train-facts`로 pair 문서 6개(ops-summary 10, update-rollback 23, clean-host 21, burn 16, msix 17, pair-descriptor 17 생성값), `train-evidence --write` 뒤 `--check` 모두 `current`. golden 시험 `22/22`. operational current는 `0.42.93-admin-smoke` 그대로다.
 
 ## Task 3: fullgate
 
