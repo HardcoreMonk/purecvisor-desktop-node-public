@@ -95,6 +95,8 @@
 
 실행 기록(2026-10-11, 보류 `new-design-required`): Lane 3 데이터(consume manifest, functional carry-forward·pair consume·main-push-payload facts, current-card `promoted-current`, `current-evidence.json`, `release-train.json`, lane3-spec input)를 만들고 `train-path-check --payload 87a7deb… --head c31f782…` exit 0(`changed_path_count=28`, 제품 경로 없음)과 `train-evidence --write --allow-update`·`--check`, `lane3-spec --write`까지 갔지만, `Invoke-PcvLane3PromotionDocs.ps1` dry-run의 index 단계가 `PCV_PROMOTION_INDEX_INVALID|control_plane_index|previous-heading-mismatch:## 2026-10-08 \`0.42.93\` current promotion`으로 실패했다. 원인: `src/DesktopNode.Verification/TrainEvidence/TrainLane3SpecBuilder.Rows.cs`가 `index_sections.previous_version`을 pair baseline(`0.42.95`)으로 채운다. 모든 train이 승격된다는 가정이고, train `0.42.94`·`0.42.95`가 정차해 직전 operational current는 `0.42.93`이다(pair 관련 spec 값 `0.42.95 -> 0.42.96`은 맞다). 고치려면 `src/` 변경이 필요하고 단일 PR train은 payload 뒤 `src/` 변경을 금지하며, spec 수기 수정은 `TrainLane3SpecGoldenTests`와 절차를 깬다. 그래서 Lane 3 변경은 commit하지 않고 되돌렸다(트리 clean, consume manifest는 git 밖 artifact에 남음). train `0.42.96`은 `running` 그대로(Task 0~7·9 PASS), operational current는 `0.42.93-admin-smoke`. backlog BL-0021. 다음 승인은 campaign `next_approval_required`에 있다.
 
+이관(2026-10-11, 승인 `1,2,3`): `train-04296-finish-20261011` Task 4·5(Lane 3는 lane3-spec 수정 PR B merge 뒤 `main`에서 PR C로 쓴다).
+
 ## Task 9: S3 예약 실행 확인과 정리 (queue 79)
 
 - [x] Task 7 schedule의 `next_due_at`이 지난 뒤 시나리오 스크립트 `--execute --verify-only --expect-count=<n>`과 브라우저 readback(checkpoint 목록에 `pcv-schedule-*`, last enqueued 갱신)으로 예약 실행을 확인하고, 브라우저에서 schedule clear를 한 뒤 스크립트 `--execute --cleanup-only`로 VM을 지우고 `pcv-it-s3-*` VM 0개, VM 폴더 없음을 확인한다. Task 7 기록을 완성한다(판정, 캡처). 로컬 commit.
@@ -105,13 +107,19 @@
 
 - [ ] clean HEAD 종료 검증(`dotnet build -c Release`, PR gate 또는 Required CI shard 4개 로컬, Pester 4종, `npm run test:public-source-safety --prefix web` 신규 0), `train-path-check --payload <payload> --head HEAD` exit `0`, push, PR 하나, green CI 뒤 merge(`--match-head-commit`). merge 직전 base는 `origin/main`과 같다. merge 뒤 main push run을 기다리고, red면 revert PR을 열고 멈춘다.
 
+이관(2026-10-11): `train-04296-finish-20261011` Task 1(train branch를 PR A로 merge, Lane 3 없음).
+
 ## Task 11: 판정과 후속 campaign
 
 - [ ] clean `main`에서 `pcvverify completion`을 돌려 결과를 기록한다. exit `0`이면 감사 문서로 완료를 적고 push, PR, green CI 뒤 merge한다. 그 밖이면 이 campaign을 `status=closed`로 닫고(Task 12는 `carried_tasks`로 새 campaign에 옮김) 승인 3으로 S4 campaign을 `pcv-campaign-open`으로 연다(그 campaign 첫 PR에 criteria S3 닫기와 Task 12 이관 포함). legacy-retirement campaign은 S4 campaign이 닫힌 뒤 연다.
 
+이관(2026-10-11): `train-04296-finish-20261011` Task 7.
+
 ## Task 12: C5 runner 확인 (2026-10-19 이후, 이관)
 
 - [ ] `not_before` 2026-10-19. 이관 전 `shell-nav-view-sync-20261011` Task 4(원래 `completion-20261008` Task 10)이다. Ubuntu 26 runner의 첫 `main` Development Gates와 Public Boundary run이 green이면 `config/project-completion-criteria.json` 위험 행을 `status=closed`, `closed_by`에 run id로 닫는다. 실패하면 `ubuntu-24.04` pin을 판단해 backlog 행으로 보고한다. push, PR, green CI 뒤 merge.
+
+이관(2026-10-11): `train-04296-finish-20261011` Task 8(`not_before` 2026-10-19).
 
 ## Nonclaims
 

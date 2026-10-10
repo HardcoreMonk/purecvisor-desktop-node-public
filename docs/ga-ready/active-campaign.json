@@ -2,21 +2,19 @@
   "schema_version": 1,
   "contract": "pcv-active-campaign-v1",
   "status": "open",
-  "id": "train-04296-20261011",
-  "intent": "Release train 0.42.96-admin-smoke: fix queue 78/79/81/84/86, package, pair (Burn bucket = probe for 84), fullgate, current-card, Lane 2 probes (vm.create, web.console.shell, checkpoint.schedule.set + S3 browser re-demo with the scheduled run), Lane 3 promotion, single PR merge; then open the S4 campaign (approval 3) and later the legacy-retirement campaign.",
+  "id": "train-04296-finish-20261011",
+  "intent": "Finish release train 0.42.96-admin-smoke in two PRs: merge the train branch (PR A, evidence without Lane 3), fix lane3-spec index_sections.previous_version for skipped promotions (PR B, BL-0021), then write Lane 3 from main (PR C) and promote 0.42.96 to operational current; then record the completion judgement and open the S4 campaign (approval 3).",
   "working_authority": "source_head",
   "allowed_lanes": [
     "0",
     "1",
-    "2",
     "3"
   ],
-  "mutation_allowed": true,
+  "mutation_allowed": false,
   "current_write_allowed": true,
-  "next_step": "Held at Task 8 (new-design-required): lane3-spec fills index_sections.previous_version with the pair baseline (0.42.95) while the last promoted current is 0.42.93 (trains 0.42.94 and 0.42.95 stopped), so the promotion docs tool refuses; the fix is under src/ and cannot ride the single-PR train branch. Train 0.42.96 stays running with Tasks 0-7 and 9 PASS. Reply with the approval numbers.",
-  "plan": "docs/superpowers/plans/2026-10-11-purecvisor-desktop-node-train-04296.md",
+  "next_step": "Run Task 1 from docs/superpowers/plans/2026-10-11-purecvisor-desktop-node-train-04296-finish.md, then the queue in order.",
+  "plan": "docs/superpowers/plans/2026-10-11-purecvisor-desktop-node-train-04296-finish.md",
   "task_queue": [
-    "Task 0",
     "Task 1",
     "Task 2",
     "Task 3",
@@ -24,50 +22,30 @@
     "Task 5",
     "Task 6",
     "Task 7",
-    "Task 8",
-    "Task 9",
-    "Task 10",
-    "Task 11",
-    "Task 12"
+    "Task 8"
   ],
   "task_lanes": {
-    "Task 2": "2",
-    "Task 3": "2",
-    "Task 4": "2",
-    "Task 5": "2",
-    "Task 6": "2",
-    "Task 7": "2",
-    "Task 8": "3",
-    "Task 9": "2"
+    "Task 4": "3",
+    "Task 5": "3"
   },
   "task_not_before": {
-    "Task 12": "2026-10-19"
+    "Task 8": "2026-10-19"
   },
   "carried_from": {
-    "Task 12": "shell-nav-view-sync-20261011 Task 4"
+    "Task 1": "train-04296-20261011 Task 10",
+    "Task 4": "train-04296-20261011 Task 8",
+    "Task 5": "train-04296-20261011 Task 8",
+    "Task 7": "train-04296-20261011 Task 11",
+    "Task 8": "train-04296-20261011 Task 12"
   },
-  "next_task": "Task 8",
-  "completed_tasks": [
-    "Task 0",
-    "Task 1",
-    "Task 2",
-    "Task 3",
-    "Task 4",
-    "Task 5",
-    "Task 6",
-    "Task 7",
-    "Task 9"
-  ],
+  "next_task": "Task 1",
+  "completed_tasks": [],
   "commit_policy": "local-commit-per-task",
   "push_allowed": true,
   "merge_policy": "after-green-ci",
-  "checkpoint_limit": 13,
-  "approval_locator": "User-Approval: 2026-09-27 campaign runner commit policy local-commit-per-task; User-Approval: 2026-10-11 \"1,2,3\" on the train-04295-20261010 stop report, item 2 (after the fix merges depart train 0.42.96-admin-smoke with queue 78/79/81/84 plus the fix PR row (86), package build, dev-host pair host mutation (product Update/Rollback, ADR-0016 pcv-it- VM create/configure/delete with disks under artifacts), fullgate (full-admin-host-mutation-gate incl. required os-mutation-gate: firewall rule, Event Log source, LAN listener; same scope as the train-departure policy row) and current-card, Lane 2 probe families vm.create, web.console.shell, checkpoint.schedule.set (installed-console browser demo incl. the S3 schedule-save re-demo and the scheduled run), Lane 3 current-evidence.json write, single-PR train push/PR and merge after green CI, revert PR if the main push is red, baseline = installed 0.42.95 package) and item 3 (after the train the S4 campaign, then the legacy-retirement campaign, as approved on 2026-10-10); ADR-0016 standing approval (2026-10-07): pcv-it- prefixed VM create/configure/delete, disks under artifacts",
-  "next_approval_required": [
-    "1 Lane 1 수정 PR: `TrainLane3SpecBuilder`가 `index_sections.previous_version`을 pair baseline 대신 직전 승격 spec(`previous_spec`)의 version(직전 operational current)으로 쓰게 고치고, 승격을 건너뛴 train(0.42.93 → 0.42.96) 골든 시험을 더한다. push/PR, green CI 뒤 merge.",
-    "2 train 0.42.96을 두 PR로 마무리: 지금 train branch(Task 0~7·9 evidence와 기록, Lane 3 없음, train `running`)를 push/PR, green CI 뒤 merge하고, 1번 merge 뒤 main에서 Lane 3 PR(functional carry-forward, consume, 두 PR용 `main-push` 문서, current-card `promoted-current`, `current-evidence.json` 쓰기, `lane3-spec`, 승격 문서 도구, `release-train.json` 승격)을 push/PR, green CI 뒤 merge한다. merge 뒤 main push가 red면 revert PR. host mutation 없음.",
-    "3 train 뒤 S4 campaign, 그 뒤 legacy-retirement campaign(2026-10-10 승인 2·3 그대로). criteria S3 닫기와 C5 확인(Task 12, 2026-10-19 이후) 이관은 S4 campaign 첫 PR에서 한다."
-  ],
+  "checkpoint_limit": 8,
+  "approval_locator": "User-Approval: 2026-09-27 campaign runner commit policy local-commit-per-task; User-Approval: 2026-10-11 \"1,2,3\" on the train-04296-20261011 Task 8 hold report: item 1 (Lane 1 fix PR: TrainLane3SpecBuilder writes index_sections.previous_version from the previous promoted spec version instead of the pair baseline, plus a golden test for a skipped promotion 0.42.93 -> 0.42.96; push/PR, merge after green CI), item 2 (finish train 0.42.96 in two PRs: push/PR the train branch with Tasks 0-7 and 9 and no Lane 3, merge after green CI; after item 1 merges, a Lane 3 PR from main with functional carry-forward, consume, the two-PR main-push document, current-card promoted-current, current-evidence.json write, lane3-spec, the promotion docs tool and release-train promotion; push/PR, merge after green CI; revert PR if the main push is red; no host mutation), item 3 (after the train the S4 campaign, then the legacy-retirement campaign, as approved on 2026-10-10 items 2 and 3; closing criteria S3 and carrying the C5 check happen in the first S4 PR); ADR-0016 standing approval (2026-10-07): pcv-it- prefixed VM create/configure/delete, disks under artifacts",
+  "next_approval_required": [],
   "stop_on": [
     "same-cause-fail-3",
     "budget",
@@ -77,9 +55,8 @@
     "new-design-required",
     "permission-denied",
     "dirty-tree-at-start",
-    "lane2-fail",
     "train-path-check-red"
   ],
   "out_of_scope_is_not_next_step": true,
-  "closed_predecessor": "shell-nav-view-sync-20261011"
+  "closed_predecessor": "train-04296-20261011"
 }
