@@ -21,6 +21,7 @@
     "shell",
     "mobile",
     "prefs",
+    "help",
     "vm",
     "vm-console",
     "ops",

@@ -81,6 +81,8 @@ bundle 순서는 Single Edge `UI_MODULES`와 같은 원칙(의존이 앞)이다.
 | 22 | `help` | 공통 | Single Edge `help.js`, 문서 포털 |
 | 23 | `bootstrap` | 부트스트랩 | `web/src/bootstrap.ts`(옛 `served-app.ts` 이벤트 바인딩 포함). `web/src/app.ts`는 정적 parity scaffold라 이름을 바꾸지 않는다 |
 
+주(Task 14 실측): `help`는 `web/src/modules.json`에서 `prefs` 뒤, 도메인 모듈 앞에 둔다. `nav`가 `PCV.help.render`를 route 실행 시점에 찾으므로 `uxlib`·`ui`·`modal-core` 뒤면 충분하고, 표의 번호는 묶음(공통/도메인)을 뜻한다.
+
 `web/src/served/state.ts`, `types.ts`, `errors.ts`의 공용 타입·상태는 `web/src/modules/state.ts`로 옮겨 1번보다 앞에 둔다.
 
 실제 이동(Task 10, 2026-10-10)은 옛 part 단위로 했다: `core`(types·state·routes·errors·summary·table·rbac·load)·`desktop-api`(api-client)·`events`(job-polling + facade)·`vm`(render-inventory·render-vm-detail·render-qos·mutate)·`vm-console`(render-console·vm-detail-extensions: console frame·키보드·guest exec/channel/file·checkpoint schedule·export/import·network/device)·`ops`(render-jobs·render-activity·evidence)·`monitor`(render-ops·render-panels·render-monitoring·render-shell `render()`)·`accounts`(actions). 표의 `vm-checkpoint`·`vm-guest`·`security`는 별도 파일로 나누지 않고 위 모듈 안에 있다(함수 단위 분리는 Task 16 정리 후보). `prefs`(환경설정 modal, `showPrefs`/`showCreate`)는 Desktop Node가 더한 모듈이다. 순서표: core, desktop-api, endpoints, api, events, ui, uxlib, filter-state, metrics, charts, theme, modal-core, modal, nav, shell, mobile, prefs, vm, vm-console, ops, monitor, accounts.
