@@ -32,9 +32,13 @@
 
 - [ ] clean HEAD에서 `dotnet build src/DesktopNode.sln -c Release`, Required CI shard 네 개 로컬, Pester 네 종, `npm run test:public-source-safety --prefix web`(기존 BL-0015 두 건 외 신규 0), `Update-PcvCurrentEvidenceDocs.ps1 -Check`, `train-path-check --payload 87a7deb --head HEAD` exit `0`(허용 pin 네 개)을 돌린다. push, PR 하나, green CI 뒤 merge(`--match-head-commit`, merge 직전 base가 `origin/main`인지 확인)한다. merge 뒤 main push run(Development Gates, Public Boundary)을 기다려 run id를 기록하고, red면 revert PR을 열고 멈춘다. 실행 기록은 Task 2 commit에 적는다.
 
+재배치(2026-10-11): 첫 종료 검증(HEAD `85a0f86`)에서 Pester는 packaging 528·installer 49·web 50·manual-admin 137 통과였지만 PR gate `dotnet-test-release`가 `DesktopNode.Verification.Tests` 18개 실패로 red였다(`artifacts/pr-gate/20261010-184221`). completion 평가기 시험 입력 `Cleared()`가 실제 `release-train.json`의 queue만 비우고 trains는 그대로 두어, 이 branch의 train `0.42.96` `running`이 C2를 열어 둔다(PR #83 red와 같은 원인). PR A는 `src/` 시험을 고칠 수 없으므로(허용 pin 밖) Task 2·3(PR B)을 먼저 하고 이 task는 Task 3 뒤에 한다. 그때 `origin/main`을 이 branch에 merge commit으로 합친다. rebase하지 않는 이유는 evidence가 인용한 train commit(fullgate build 등)을 `main`에서 도달하게 두기 위해서다. `train-path-check`는 PR A 자기 범위(`--payload <merge-base>`)로 보고, payload `87a7deb` 기준 결과도 함께 적는다.
+
 ## Task 2: lane3-spec previous_version 수정과 골든 시험
 
 - [ ] `main`에서 branch를 만든다. `src/DesktopNode.Verification/TrainEvidence/TrainLane3SpecBuilder.Rows.cs`의 `index_sections.previous_version`을 직전 승격 spec(`previous_spec`)의 version으로 채운다. pair 관련 값(`pair`, descriptor chain)은 pair baseline 그대로 둔다. 승격을 건너뛴 train(직전 승격 `0.42.93`, pair baseline `0.42.95`, 새 version `0.42.96`)의 골든 시험을 `DesktopNode.Verification.Tests`에 더하고, 기존 골든 시험은 바뀌지 않음을 확인한다. `dotnet test src/DesktopNode.Verification.Tests -c Release`. Task 1 실행 기록과 함께 로컬 commit.
+
+범위 추가(2026-10-11, Task 1 재배치 근거): 같은 PR에서 completion 평가기 시험 입력 `Cleared()`(`src/DesktopNode.Verification.Tests/ProjectCompletionEvaluatorTests.cs`)가 승격되지 않은 train을 빼게 해, 시험이 실제 저장소의 진행 중 train에 묶이지 않게 한다. 시험 전용 변경이고 평가기 동작은 바꾸지 않는다. 확인은 train branch처럼 `running` train이 있는 `release-train.json`에서도 `DesktopNode.Verification.Tests`가 통과하는 것이다.
 
 ## Task 3: 수정 PR B merge
 
