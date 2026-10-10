@@ -85,6 +85,23 @@ function storage() {
 
 function createSandbox() {
   const byId = new Map(ids.map((id) => [id, new Element("div", id)]));
+  // #cb sections of index.html (one per route, BL-0019): the nav and the legacy renderActiveView() toggle their hidden flag.
+  const views = [...indexHtml.matchAll(/<section id="([^"]+)" class="section app-view" data-view="([^"]+)"([^>]*)>/g)].map((match) => {
+    const element = byId.get(match[1]);
+    element.tagName = "SECTION";
+    element.className = "section app-view";
+    element.dataset.view = match[2];
+    element.hidden = /\bhidden\b/.test(match[3]);
+    return element;
+  });
+  const cb = byId.get("cb");
+  if (cb) {
+    cb.querySelectorAll = (selector) => (selector === ".app-view" ? views.slice() : []);
+    cb.querySelector = (selector) => {
+      const match = /^\.app-view\[data-view="([^"]+)"\]$/.exec(selector);
+      return match ? views.find((view) => view.dataset.view === match[1]) || null : null;
+    };
+  }
   const body = new Element("body");
   const documentElement = new Element("html");
   documentElement.lang = "ko";
@@ -98,7 +115,7 @@ function createSandbox() {
     createTextNode: (text) => ({ nodeType: 3, textContent: String(text) }),
     createDocumentFragment: () => new Element("fragment"),
     querySelector: () => null,
-    querySelectorAll: () => [],
+    querySelectorAll: (selector) => (selector === ".app-view" ? views.slice() : []),
     addEventListener: (type, handler) => { const list = listeners.get(type) || []; list.push(handler); listeners.set(type, list); },
     removeEventListener: () => {},
     dispatch: (type) => { for (const handler of listeners.get(type) || []) handler({ type }); }
@@ -139,6 +156,7 @@ function createSandbox() {
   sandbox.addEventListener = (type, handler) => { const list = listeners.get("window:" + type) || []; list.push(handler); listeners.set("window:" + type, list); };
   sandbox.removeEventListener = () => {};
   sandbox.dispatchEvent = () => true;
+  sandbox.__dispatchWindow = (type) => { for (const handler of listeners.get("window:" + type) || []) handler({ type }); };
   sandbox.confirm = () => true;
   sandbox.alert = () => {};
   sandbox.open = () => null;
@@ -194,4 +212,34 @@ test("the bootstrap binds the index.html elements, renders every panel and start
   assert.ok(sandbox.fetchLog.some((entry) => entry.url.endsWith("/api/v1/auth/loopback-session") && entry.method === "POST"), "loopback session requested on a loopback host");
   const fatal = warnings.filter((line) => /bootstrap:init|bootstrap:shell|render:/.test(line) && !/render:renderConnectionState|render:renderStatusBar|render:renderAssetStatus|render:renderWorkspaceTabs|render:renderVmAssetList|render:renderHeroChips|render:applyUiPreferences/.test(line));
   assert.deepEqual(fatal, [], "no unexpected bootstrap or render failures");
+});
+
+test("the Single Edge nav keeps the chosen section shown through sidebar, hash and the legacy re-render (BL-0019)", async () => {
+  const { sandbox, document } = createSandbox();
+  vm.runInContext(fs.readFileSync(webRoot + "i18n.js", "utf8"), sandbox, { filename: "i18n.js" });
+  vm.runInContext(fs.readFileSync(webRoot + "app.bundle.js", "utf8"), sandbox, { filename: "app.bundle.js" });
+  document.dispatch("DOMContentLoaded");
+  await new Promise((resolve) => setTimeout(resolve, 50));
+  const shown = () => document.querySelectorAll(".app-view").filter((section) => !section.hidden).map((section) => section.dataset.view);
+  assert.equal(document.querySelectorAll(".app-view").length, 8, "seven legacy views plus the help section");
+  const troubleshooting = document.getElementById("troubleshooting");
+  const marker = { nodeType: 1, marker: "legacy-troubleshooting-panel" };
+  troubleshooting.appendChild(marker);
+  for (const view of ["dashboard", "vms", "network", "jobs", "activity", "evidence", "troubleshooting", "helppage"]) {
+    sandbox.navigateTo(view);
+    assert.deepEqual(shown(), [view], `${view} after the sidebar navigation`);
+    sandbox.render();
+    assert.deepEqual(shown(), [view], `${view} after the legacy re-render`);
+    assert.equal(sandbox.PCV.nav.activeView(), view);
+    if (view !== "helppage") assert.equal(sandbox.state.activeView, view, `legacy view state follows ${view}`);
+  }
+  assert.ok(document.getElementById("helppage").children.length > 0, "help rendered into its own section");
+  assert.ok(troubleshooting.children.includes(marker), "help no longer clears the troubleshooting section");
+  for (const [hash, view] of [["#/jobs", "jobs"], ["#network", "network"], ["#/vms/pcv-it-x", "vms"]]) {
+    sandbox.location.hash = hash;
+    sandbox.__dispatchWindow("hashchange");
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    assert.deepEqual(shown(), [view], `${hash} shows ${view}`);
+    assert.equal(sandbox.state.activeView, view, `${hash} legacy view state`);
+  }
 });

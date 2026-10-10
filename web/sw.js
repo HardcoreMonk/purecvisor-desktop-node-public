@@ -4,7 +4,7 @@
 // other origins (the Local API on its own port) pass through, and the Web Push handlers (push, pushsubscriptionchange,
 // notificationclick) are dropped because the Desktop Node has no push backend. CACHE_NAME is bumped by
 // scripts/build-served-asset.mjs whenever the bundle or a precache input changes.
-const CACHE_NAME = 'pcv-ui-v4ba14980';
+const CACHE_NAME = 'pcv-ui-v8cad6aec';
 const OFFLINE_URL = '/offline.html';
 const STATIC_ASSETS = [
   '/',

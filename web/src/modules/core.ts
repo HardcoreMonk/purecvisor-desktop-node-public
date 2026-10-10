@@ -335,7 +335,8 @@ function byId(id: string): HTMLElement | null {
 }
 
 function getHashView(): PcvView {
-  const value = String(window.location.hash || '').replace(/^#/, '').toLowerCase();
+  // Accepts the legacy '#vms' and the Single Edge '#/vms' (or '#/vms/<id>') hash forms (BL-0019).
+  const value = (String(window.location.hash || '').replace(/^#\/?/, '').split('/')[0] ?? '').toLowerCase();
   return VALID_VIEWS.has(value) ? value as PcvView : 'dashboard';
 }
 
