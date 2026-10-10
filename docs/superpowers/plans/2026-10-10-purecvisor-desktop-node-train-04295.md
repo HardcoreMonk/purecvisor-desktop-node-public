@@ -102,6 +102,8 @@
 
 - [ ] `not_before` 2026-10-19. 이관 전 `webpayload-removefolder-20261010` Task 4(원래 `completion-20261008` Task 10)이다. Ubuntu 26 runner의 첫 `main` Development Gates와 Public Boundary run이 green이면 `config/project-completion-criteria.json` 위험 행을 `status=closed`, `closed_by`에 run id로 닫는다. 실패하면 `ubuntu-24.04` pin을 판단해 backlog 행으로 보고한다. push, PR, green CI 뒤 merge.
 
+이관(2026-10-11): 2026-10-11 승인 `1,2,3`으로 `shell-nav-view-sync-20261011` Task 4로 옮긴다(`docs/superpowers/plans/2026-10-11-purecvisor-desktop-node-shell-nav-view-sync.md`). 문장과 `not_before` 2026-10-19는 그대로다.
+
 ## Nonclaims
 
 - operational current는 Task 8의 Lane 3 commit이 main에 merge된 뒤에만 `0.42.95-admin-smoke`로 바뀐다. 그 전 모든 task 기록은 `0.42.93-admin-smoke` 그대로다.
