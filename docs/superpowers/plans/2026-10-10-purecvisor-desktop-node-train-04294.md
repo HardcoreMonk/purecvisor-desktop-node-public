@@ -42,7 +42,9 @@
 
 ## Task 0: 출발
 
-- [ ] payload commit `a054db3`의 main push Development Gates `38047675817`와 Public Boundary `38047675792`가 success임을 적고, `release-train.json` `queue` 세 행을 train `0.42.94-admin-smoke`의 `carriages` `[78, 79, 81]`로 옮기고 `status=running`, `departed_at`, `source_commit`을 적으며 `queue`는 빈 목록으로 둔다. 검증: `PcvReleaseTrainContractTests`, `git diff --check`. 로컬 commit.
+- [x] payload commit `a054db3`의 main push Development Gates `38047675817`와 Public Boundary `38047675792`가 success임을 적고, `release-train.json` `queue` 세 행을 train `0.42.94-admin-smoke`의 `carriages` `[78, 79, 81]`로 옮기고 `status=running`, `departed_at`, `source_commit`을 적으며 `queue`는 빈 목록으로 둔다. 검증: `PcvReleaseTrainContractTests`, `git diff --check`. 로컬 commit.
+
+실행 기록(2026-10-10): 출발 `2026-10-10T20:32:00+09:00`, payload `a054db355babbd37b466cc7d8711b12c2aa8dfb4`(PR #82 merge, origin/main), carriages `[78, 79, 81]`, queue 비움, train `status=running`. payload main push Development Gates `38047675817` success, Public Boundary Contract `38047675792` success. 설치본은 `0.42.93-admin-smoke+818d00f`(ARP 1개, service Running/Automatic, Web 200). host mutation 없음. operational current는 `0.42.93-admin-smoke` 그대로다.
 
 ## Task 1: package
 
