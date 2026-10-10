@@ -91,7 +91,9 @@
 
 ## Task 11: 도메인 vm-lifecycle 2
 
-- [ ] checkpoint(생성·복원·삭제·schedule preview/set/clear), export/import, QoS(storage/network), network connect/device add를 옛 `vm-detail-extensions.ts`, `render-qos.ts`, `mutate.ts`에서 `vm-lifecycle.ts`(또는 `vm-checkpoint.ts`로 분리)로 옮긴다. 검증: `npm test --prefix web`, `node --test web/node-tests/s3-checkpoint-scenario.test.mjs`, `git diff --check`. 로컬 commit.
+- [x] checkpoint(생성·복원·삭제·schedule preview/set/clear), export/import, QoS(storage/network), network connect/device add를 옛 `vm-detail-extensions.ts`, `render-qos.ts`, `mutate.ts`에서 `vm-lifecycle.ts`(또는 `vm-checkpoint.ts`로 분리)로 옮긴다. 검증: `npm test --prefix web`, `node --test web/node-tests/s3-checkpoint-scenario.test.mjs`, `git diff --check`. 로컬 commit.
+
+실행 기록(2026-10-10): checkpoint·schedule·export/import·QoS·network/device 코드는 Task 10의 port로 이미 `vm.ts`(render-qos·mutate)와 `vm-console.ts`(vm-detail-extensions)에 들어갔으므로 이 task는 그 코드가 새 구조에서 실제로 로드·기동되는지 보는 bundle 로드 smoke로 썼다. `web/node-tests/bundle-load.test.mjs` 2건: (1) `i18n.js` + `app.bundle.js`를 node `vm` 샌드박스(index.next.html의 id 전부를 가진 최소 DOM, `PCV_DESKTOP_NODE_CONFIG`, 401을 돌려주는 fetch, unref 타이머)에서 평가해 `window.PCV` 네임스페이스 20개와 `PCV.ui.filterState`, EP가 설정된 API base로 route를 만들고 잘못된 action을 거부, shell nav 모델 8 view, 옛 `render()`·`pcvEscapeHtml`(dash fallback)과 Single Edge `escapeHtml`(빈 문자열)이 공존, `PCV.events.isHealthy()` false, `PCV.bootstrap` 존재를 확인; (2) `DOMContentLoaded`를 보내 bootstrap이 content id를 `els`에 묶고(셸 전용 옛 요소는 null 허용), VM 표가 빈 상태를 그리고, loopback 호스트라 `POST /api/v1/auth/loopback-session`을 요청하며, 예상 밖 bootstrap/render 실패 경고가 없음을 확인. `test:web-contracts`에 붙였다(pin 갱신). `vm-checkpoint.ts` 분리는 하지 않았다(옛 part 단위 이동이라 함수 단위 분리는 Task 16 정리 후보). 검증: 새 테스트 2/2, `test:web-contracts` 255/255, `node --test web/node-tests/s3-checkpoint-scenario.test.mjs` 2/2(변경 없음), `git diff --check` 통과. host mutation 없음.
 
 ## Task 12: 도메인 vm-console, vm-guest
 
