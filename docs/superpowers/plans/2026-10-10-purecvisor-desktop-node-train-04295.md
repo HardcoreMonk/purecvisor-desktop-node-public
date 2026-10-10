@@ -48,7 +48,9 @@
 
 ## Task 1: package
 
-- [ ] clean HEAD에서 `build.ps1 -Version 0.42.95-admin-smoke -MsiProductVersion 0.42.95 -SigningMode AllowUnsignedDev -SigningTrustModel LocalTest -OutputRoot artifacts/admin-smoke-package-20261010-04295`, `New-PcvAdminSmokeUpdatePackage.ps1 -BuildSeconds <build 초>`. `train-facts`로 package 문서(`docs/ga-ready/trains/0.42.95-admin-smoke.train-facts-input.json`, narrative는 적재 변경 네 행). 검증: `train-evidence --check`, `TrainEvidenceGoldenTests`·`TrainFactsBuilderTests`. host mutation 없음. 로컬 commit.
+- [x] clean HEAD에서 `build.ps1 -Version 0.42.95-admin-smoke -MsiProductVersion 0.42.95 -SigningMode AllowUnsignedDev -SigningTrustModel LocalTest -OutputRoot artifacts/admin-smoke-package-20261010-04295`, `New-PcvAdminSmokeUpdatePackage.ps1 -BuildSeconds <build 초>`. `train-facts`로 package 문서(`docs/ga-ready/trains/0.42.95-admin-smoke.train-facts-input.json`, narrative는 적재 변경 네 행). 검증: `train-evidence --check`, `TrainEvidenceGoldenTests`·`TrainFactsBuilderTests`. host mutation 없음. 로컬 commit.
+
+실행 기록(2026-10-10): clean HEAD `b401d94`에서 build `39`초, `build_utc` `2026-10-10T14:19:06.0172474Z`, provenance `b401d949a0d17eece428aaef83330e9e5f20ed59`, WiX `5.0.2+aa65968c`. MSI SHA-256 `50680d3c757596e8fce85b3cbb41a7228e8a1ced244678d620fe912f371fab24`, payload SHA-256 `53a58bded4c5eec6f6e430fd4dfd8b69f904b4773c7f45841e224cc3c830381f`, payload `32`, update ZIP SHA-256 `32350c7422f365a8c15a4a5b1fb5e4cd6a05650e475230b6be49f62926d09887`, catalog SHA-256 `14ccf0837a06b003beeb22fe98680ab910ab6100dc412c8ee0689848173a1e0d`(`-BuildSeconds 39`로 한 번에 생성). `train-facts` package `generated=20` `narrative=3`, `train-evidence --write` 뒤 `--check` `current`. `TrainEvidenceGoldenTests`와 `TrainFactsBuilderTests` `21/21`. host mutation 없음. operational current는 `0.42.93-admin-smoke` 그대로다.
 
 ## Task 2: pair
 
