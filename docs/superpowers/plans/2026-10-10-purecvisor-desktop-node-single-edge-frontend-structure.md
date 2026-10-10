@@ -148,6 +148,8 @@
 
 - [ ] `not_before` 2026-10-19. 이관 전 `s3-checkpoint-20261010` Task 4(그 전 `audit-green-lean-20261009` Task 9, `s2-template-clone-20261009` Task 2, `s1-installed-20261008` Task 11, `adr17-s1-console-20261008` Task 14)다. Ubuntu 26 runner의 첫 `main` Development Gates와 Public Boundary run이 green이면 `config/project-completion-criteria.json` 위험 행을 `status=closed`, `closed_by`에 run id로 닫는다. 실패하면 `ubuntu-24.04` pin을 판단해 보고하고 멈춘다. push, PR, green CI 뒤 merge.
 
+이관(2026-10-10): 2026-10-10 승인 `1,2,3`으로 `train-04294-20261010` Task 11로 옮긴다(`docs/superpowers/plans/2026-10-10-purecvisor-desktop-node-train-04294.md`). 문장과 `not_before` 2026-10-19는 그대로다.
+
 ## Nonclaims
 
 - operational current는 `0.42.93-admin-smoke` 그대로다. 설치본 반영과 S3 재시연·S4는 이 campaign 뒤 train 0.42.94에서 한다.
