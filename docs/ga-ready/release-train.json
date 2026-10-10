@@ -83,17 +83,6 @@
         68
       ],
       "status": "promoted"
-    },
-    {
-      "version": "0.42.94-admin-smoke",
-      "departed_at": "2026-10-10T20:32:00+09:00",
-      "source_commit": "a054db355babbd37b466cc7d8711b12c2aa8dfb4",
-      "carriages": [
-        78,
-        79,
-        81
-      ],
-      "status": "stopped"
     }
   ]
 }
