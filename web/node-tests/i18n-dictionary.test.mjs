@@ -21,7 +21,7 @@ const koKeys = keysOf(text.slice(koStart, enStart));
 const enKeys = keysOf(text.slice(enStart, dataEnd));
 
 test("ko and en dictionaries carry the same keys", () => {
-  assert.ok(koKeys.length > 300, `ko keys ${koKeys.length}`);
+  assert.ok(koKeys.length > 200, `ko keys ${koKeys.length}`);
   assert.deepEqual([...new Set(koKeys)].sort(), [...new Set(enKeys)].sort());
   assert.equal(new Set(koKeys).size, koKeys.length, "duplicate ko keys");
 });

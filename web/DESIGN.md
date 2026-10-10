@@ -11,12 +11,13 @@ Web Console에 직접 가져오지 않는다.
 
 ## 적용 범위
 
-- `web/index.html`
-- `web/styles.css`
-- `web/src/served-app.ts`
-- `web/src/app.ts`
-- `web/src/view-model.ts`
-- `web/src/user-visible-fixtures.ts`
+- `web/index.html` (Single Edge 셸: 로그인 페이지 + 앱 셸, 2026-10-10 Task 16a부터 `/`에서 서빙)
+- `web/app.bundle.js` (생성물: `web/src/modules.json` 순서표 + `web/src/modules/*.ts` + `web/src/bootstrap.ts`)
+- `web/style.css`, `web/i18n.js`, `web/sw.js`, `web/manifest.json`, `web/offline.html`
+- `web/docs.html`, `web/guide.html`, `web/guide-content.md` (문서 포털)
+- `web/vendor/*` (Pretendard, Coolicons, Chart.js; 라이선스는 `THIRD_PARTY_NOTICES.md`)
+- `web/index.legacy.html`, `web/styles.css`, `web/app.js`, `web/src/served-app.ts`, `web/src/served/*.ts` (옛 콘솔; 옛 static contracts·web Pester·parity가 이 이름으로 읽고, 제거는 별도 campaign)
+- `web/src/app.ts`, `web/src/view-model.ts`, `web/src/user-visible-fixtures.ts` (static parity scaffold)
 - `web/scripts/*.mjs`
 - `web/node-tests/*.mjs`
 - `web/tests/*.ps1` (legacy/manual parity residue; Required CI 아님)
@@ -52,23 +53,27 @@ Desktop Node Web Console 기본값이 아니다.
 
 ## Single UI Clone Mapping
 
-`purecvisor-single`의 Supanova 운영 콘솔 UI/UX는 화면 구조와 조작 감각만 이식한다.
-Desktop Node는 Windows Desktop Node Local API와 Hyper-V VM 운영 화면만 활성화한다.
+2026-10-10 ADR-0018부터 Single Edge(`HardcoreMonk/purecvisor` `ui/`, Apache-2.0, 같은 저자)의 프론트엔드 **구조**를 그대로
+차용한다: 파일 배치, `window.PCV` 네임스페이스 IIFE 모듈, 로그인 페이지 + 셸, 공통 계층, 빌드 파이프라인, PWA, 문서 포털.
+도메인 화면은 Windows Desktop Node Local API 위에 다시 얹는다. Supanova 테마 토큰과 조작 감각은 유지한다.
 Linux runtime screens are excluded.
 
-| Single UI surface | Desktop Node clone target | Active Desktop Node boundary |
+| Single Edge `ui/` | Desktop Node `web/` | 경계 |
 |---|---|---|
-| Shell frame | `single-clone-shell`, glass topbar, rail, sidebar, workspace tabbar | Static `web/index.html` shell, no imported Single Edge runtime route |
-| Top menu | Korean menu bar commands for dashboard, refresh, VM workbench, network, activity, evidence, troubleshooting | Calls existing browser handlers only |
-| Operator session | SUPANOVA theme selector, Korean/language selector, global search, command palette trigger, Live viewer state, API base, browser token input, account login/refresh/logout boundary | Clears browser session/token/JWT state only; command palette uses Windows-local view/action set |
-| Activity rail | compact icon rail for assets, evidence, network, activity, settings | Navigates Desktop Node views with `data-view-link` |
-| asset explorer | VM asset tabs, search, selected VM row, status/CPU/memory columns, empty state | Windows VM assets only; non-VM runtime tabs remain absent or inactive |
-| Workspace tabs | Dashboard, VM Assets, Network, Jobs, Activity, Evidence, Troubleshooting | Browser hash views backed by Desktop Node Local API route names |
-| Dashboard | hero, operation memo, summary pills, quick actions, ops cockpit, monitoring signals | Host status, runtime policy, VM/job/evidence state only |
-| Activity/Event Center | severity lane, problem-details events, evidence issues, active/failed job rollup | Read-only browser synthesis; no WebSocket route or host mutation command |
-| Account/RBAC | username/password login, JWT refresh, logout, session role, permission chips | Desktop Node `/api/v1/auth/login`, `/api/v1/auth/refresh`, `/api/v1/auth/logout`, `/api/v1/auth/session`, `/api/v1/auth/rbac`; password/JWT values not rendered |
-| Console | noVNC/console affordance | Desktop Node `/api/v1/console/capabilities` and `/api/v1/vms/{id}/console`; noVNC remains disabled until a Windows VNC/WebSocket bridge is configured, Hyper-V `vmconnect` handoff is shown |
-| status bar | connection state, selected asset, API latency/evidence labels | Browser-rendered status; no host mutation command text |
+| `index.html` 로그인 페이지 + 셸(`#login-page`, `#app`, `shell-sidebar`, `shell-topbar`, `shell-statusbar`, `main.content > #cb`) | `web/index.html` | TOTP 없음, loopback 세션 자동 발급, Desktop Node 화면은 `#cb` 안의 정적 `.app-view` 섹션 |
+| `app.bundle.js` (Makefile `UI_MODULES` concat → esbuild) | `web/app.bundle.js` ← `web/src/modules.json`(`pcv-web-module-order-v1`) 모듈 23개 + `bootstrap.ts` | 순서표 누락 검사, `PCV_UI_SOURCE_SHA1` 배너, `sw.js` CACHE_NAME bump |
+| 공통 계층 shell, nav, theme, modal-core, modal, ui, uxlib, filter-state, metrics, charts, mobile, prefs, help | `web/src/modules/<같은 이름>.ts` | nav route는 Desktop Node 화면(dashboard, vms, network, jobs, activity, evidence, troubleshooting, helppage)만 |
+| 도메인 모듈(vm, 컨테이너, 스토리지, 네트워크 가상화, monitor 등) | `core`, `desktop-api`, `endpoints`, `api`, `events`, `vm`, `vm-console`, `ops`, `monitor`, `accounts` | Linux route 없음. `endpoints.ts`가 Desktop Node route만 조립하고 WebSocket 대신 job polling |
+| `i18n.js` | `web/i18n.js` | Desktop Node 키 추가, Linux 전용 키 제거(Task 16b), `_L(ko, en)` |
+| `style.css` | `web/style.css` | Supanova 토큰 유지, Desktop Node 블록 추가, Linux 전용 selector 제거(Task 16b) |
+| `sw.js`, `manifest.json`, `offline.html` | 같은 이름, root scope | Web Push 제외, `/pcv-config.js`·`/api/`·다른 origin 비캐시 |
+| `docs.html`, `guide.html`, `guide-content.md`, `help.js` | 같은 이름 + `web/src/modules/help.ts` | Swagger 제외, 가이드는 `docs/USER_GUIDE.md` 발췌, 카탈로그는 Desktop Node Local API |
+| eslint, `domsafe_ratchet.py` | `web/eslint.config.js`, `web/scripts/domsafe-ratchet.mjs` | ceiling 82 |
+| 옛 Desktop Node 콘솔(단일 `app.js`, 연결 폼 셸) | `web/index.legacy.html` + `web/app.js` + `web/styles.css` | 옛 static contracts·web Pester·parity·browser fixture가 이 이름으로 읽는다. 제거와 재기준선은 train 뒤 별도 campaign |
+
+셸 안에서 Desktop Node가 유지하는 조작면: asset explorer(VM 표, 검색, 선택 VM 상세), status bar(연결 상태, 세션, 폴링),
+command palette(`Ctrl+K`), 환경설정(`Ctrl+P`: 테마, 언어, Local API 주소, 브라우저 token), 키보드 도움말(`?`), 도움말 카탈로그와 문서 포털.
+옛 콘솔 표(2026-08 Supanova clone 표)는 git history에 남는다.
 
 ## Visual Theme
 
