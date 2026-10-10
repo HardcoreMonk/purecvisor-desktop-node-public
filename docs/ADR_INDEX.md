@@ -16,7 +16,8 @@ current가 `0.42.96-admin-smoke`다.
 ADR-0017을 채택해 완료 정의를 시연 가능한 사용자 시나리오 S1~S4(v3)로 바꾼다. 평소 기능 PR은 Lane 1 + Required CI +
 설치본 smoke로 merge하고, release train은 시나리오 단계가 끝날 때만 출발하며, completion autopilot은 멈춰 있다.
 2026-10-09에 S1이 통과했다(PR #76, `docs/ga-ready/demo/s1-browser-console-demo-2026-10-08.md`). S2도 같은 날 통과했다(PR #77,
-`docs/ga-ready/demo/s2-template-clone-demo-2026-10-09.md`). S3·S4는 열려 있다.
+`docs/ga-ready/demo/s2-template-clone-demo-2026-10-09.md`). S3는 2026-10-11 설치본 `0.42.96` 재시연으로 통과했다
+(`docs/ga-ready/demo/s3-checkpoint-demo-2026-10-11-04296.md`). S4는 열려 있다(campaign `s4-lan-account-20261011`).
 적용 문서는 `docs/adr/0017-scenario-delivery-completion.md`이고, 완료 정의 v2 설계는 역사 기록이다.
 
 ## 2026-10-07 현재 기준
@@ -228,7 +229,7 @@ run `25984814303`, job `76380096421`, head `26ae50fa7bef11b4919b441e706bde505463
 | `docs/adr/0011-cli-web-only-operator-surface.md` | 적용 중 | 활성 운영자 표면을 Web Console과 PCVCLI로 제한하고 TUI source/package/smoke/current 문서 계약 제거. Local API/backend 유지 | `docs/ga-ready/evidence/tui-removal-cli-web-only-code-level-2026-07-14.md`, `docs/ga-ready/CURRENT_EVIDENCE_LEDGER.md` |
 | `docs/adr/0013-job-store-single-writer-transaction-lease.md` | 적용 중 | schema v1/v2를 유지하면서 canonical-path transaction mutex와 loaded-base SHA/length CAS로 stale current writer의 lost update를 거절. lifetime/mixed-version writer와 exactly-once는 비주장 | `docs/superpowers/specs/2026-08-02-purecvisor-desktop-node-job-store-durability-decision.md`, `docs/ga-ready/evidence/csharp-architecture-wave2a-job-durability-completion-2026-08-02.md`, `docs/ga-ready/evidence/csharp-architecture-wave2a-legacy-installed-checkpoint-2026-08-03.md` |
 | `docs/adr/0015-feature-evidence-promotion-policy.md` | 채택 / evaluator 구현 전 | operational current와 기능별 qualification을 분리하고 mandatory stage가 모두 PASS일 때만 candidate promotion eligibility를 허용 | `config/desktop-node-feature-evidence-ledger.schema.json`, `config/desktop-node-feature-evidence-ledger.json`, `docs/ga-ready/evidence/service-plan-p0-actual-vm-2026-08-20-04274.md` |
-| `docs/adr/0017-scenario-delivery-completion.md` | 채택 / S1·S2 통과, S3·S4 열림 | 완료 정의를 시나리오 S1~S4(v3)로 바꾼다. S1 시연은 2026-10-09 PR #76, S2 시연은 같은 날 PR #77. 기능 PR은 Lane 1 + Required CI + 설치본 smoke, train은 시나리오 단계 완료 때만, completion autopilot은 정지 | `docs/ga-ready/demo/s1-browser-console-demo-2026-10-08.md`, `docs/ga-ready/demo/s2-template-clone-demo-2026-10-09.md`, `docs/superpowers/specs/2026-10-08-purecvisor-desktop-node-hyperv-browser-console-spike.md`, `docs/superpowers/plans/2026-10-08-purecvisor-desktop-node-adr17-s1-console.md` |
+| `docs/adr/0017-scenario-delivery-completion.md` | 채택 / S1~S3 통과, S4 열림 | 완료 정의를 시나리오 S1~S4(v3)로 바꾼다. S1 시연은 2026-10-09 PR #76, S2 시연은 같은 날 PR #77, S3 시연은 2026-10-11 설치본 0.42.96. 기능 PR은 Lane 1 + Required CI + 설치본 smoke, train은 시나리오 단계 완료 때만, completion autopilot은 정지 | `docs/ga-ready/demo/s1-browser-console-demo-2026-10-08.md`, `docs/ga-ready/demo/s2-template-clone-demo-2026-10-09.md`, `docs/ga-ready/demo/s3-checkpoint-demo-2026-10-11-04296.md`, `docs/superpowers/specs/2026-10-08-purecvisor-desktop-node-hyperv-browser-console-spike.md`, `docs/superpowers/plans/2026-10-08-purecvisor-desktop-node-adr17-s1-console.md` |
 | `docs/adr/0018-single-edge-frontend-structure-adoption.md` | 채택 / 설치본 0.42.96 운영 반영 | Web Console이 Single Edge `ui/` 프론트엔드 구조와 공통 모듈을 차용한다. Linux route·화면 제외, vendor 라이선스 고지, 정적 계약 재기준선. 구현 PR #81. 설치본 반영 train 0.42.94·0.42.95 정차, 0.42.96 승격(2026-10-11) | `docs/superpowers/specs/2026-10-10-purecvisor-desktop-node-single-edge-frontend-structure-design.md`, `docs/superpowers/plans/2026-10-10-purecvisor-desktop-node-single-edge-frontend-structure.md`, `THIRD_PARTY_NOTICES.md` |
 
 ## 적용 전/대체 ADR 후보
