@@ -33,7 +33,7 @@
 
 ## 화면 캡처
 
-캡처는 `docs/ga-ready/demo/web-console-shell-20261010/` 아래 PNG(1280×800 CSS 픽셀, 500 KB 이하)다. 사용자 홈 경로·LAN IP·호스트명·token은 화면에 없다(본문 텍스트 검색으로 확인).
+캡처는 `docs/ga-ready/demo/web-console-shell-20261010/` 아래 PNG다. 1280×800 CSS 픽셀로 찍었고 500 KB 이하 규칙에 맞춰 01~03은 800×500으로 축소했다(04·05는 원본). 사용자 홈 경로·LAN IP·호스트명·token은 화면에 없다(본문 텍스트 검색으로 확인).
 
 - `docs/ga-ready/demo/web-console-shell-20261010/01-shell-dashboard.png`: Single Edge 셸(사이드바, 상단 바 `loopback-session`, 상태 바)과 운영 대시보드.
 - `docs/ga-ready/demo/web-console-shell-20261010/02-help-catalog.png`: 도움말 카탈로그(Local API 레퍼런스).
