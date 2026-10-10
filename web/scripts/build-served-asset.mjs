@@ -160,8 +160,9 @@ function serviceWorkerText(bundleText) {
   const current = readFileSync(paths.serviceWorker, "utf8");
   const precacheInputs = ["index.html", "style.css", "i18n.js", "offline.html", "manifest.json"]
     .filter((file) => existsSync(join(webRoot, file)))
-    .map((file) => readFileSync(join(webRoot, file), "utf8"));
-  const hash = createHash("sha1").update([bundleText, ...precacheInputs].join("\n")).digest("hex").slice(0, 8);
+    .map((file) => readFileSync(join(webRoot, file), "utf8").replace(/\r\n/g, "\n"));
+  // Hash LF-normalized text so a CRLF working copy on Windows and the LF checkout on Linux CI agree on the name.
+  const hash = createHash("sha1").update([bundleText.replace(/\r\n/g, "\n"), ...precacheInputs].join("\n")).digest("hex").slice(0, 8);
   const next = current.replace(/const CACHE_NAME = 'pcv-ui-v[^']*';/, `const CACHE_NAME = 'pcv-ui-v${hash}';`);
   return { current, next };
 }
