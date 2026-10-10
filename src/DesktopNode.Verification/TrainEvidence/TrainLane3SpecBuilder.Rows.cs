@@ -80,7 +80,9 @@ internal sealed partial class TrainLane3SpecBuilder
         ["schema_version"] = 1,
         ["contract"] = IndexSectionsContract,
         ["date"] = Date,
-        ["previous_version"] = BaselineVersion,
+        // The index sections continue from the previous promoted current, not from the pair baseline: a stopped train
+        // between them is never promoted (0.42.96 paired against the stopped 0.42.95 after 0.42.93, BL-0021).
+        ["previous_version"] = PreviousString("index_sections", "installed_version"),
         ["installed_version"] = Version,
         ["p0_feature_ledger_version"] = PreviousString("index_sections", "p0_feature_ledger_version"),
         ["pair_evidence"] = DocumentPath("pair-consume"),
