@@ -1,0 +1,8 @@
+{
+  "schema_version": 1,
+  "contract": "pcv-train-host-inputs-v1",
+  "version": "0.42.95-admin-smoke",
+  "date": "2026-10-10",
+  "facts": "docs/ga-ready/trains/0.42.95-admin-smoke.evidence-facts.json",
+  "iso": "artifacts/smoke-media-20261003/pcv-route-parity-smoke-20261003.iso"
+}
