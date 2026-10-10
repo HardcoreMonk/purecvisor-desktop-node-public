@@ -72,7 +72,9 @@
 
 ## Task 5: probe `vm.create` (queue 78)
 
-- [ ] 설치본 `0.42.95`에서 `pcvcli vm create pcv-it-probe-create-1010`(managed Generation 2, cpu 1, memory 512 MB, disk 8 GB, ISO는 smoke ISO, VM root `artifacts/pcv-it-probe-create-1010`)의 create job이 `succeeded`한 직후 `pcvcli --json vm list`와 `GET /api/v1/vms`가 `PCV_NATIVE_VM_LIST_IDENTITY_STATE_INCOMPLETE` 없이 새 VM을 off 어휘로 돌려주는지 확인한다(BL-0014). VM을 켜지 않는다. managed delete 뒤 VM과 폴더가 없음을 확인한다. evidence `docs/ga-ready/evidence/lane2-vm-create-readback-actual-vm-2026-10-10-04295.md`. 로컬 commit.
+- [x] 설치본 `0.42.95`에서 `pcvcli vm create pcv-it-probe-create-1010`(managed Generation 2, cpu 1, memory 512 MB, disk 8 GB, ISO는 smoke ISO, VM root `artifacts/pcv-it-probe-create-1010`)의 create job이 `succeeded`한 직후 `pcvcli --json vm list`와 `GET /api/v1/vms`가 `PCV_NATIVE_VM_LIST_IDENTITY_STATE_INCOMPLETE` 없이 새 VM을 off 어휘로 돌려주는지 확인한다(BL-0014). VM을 켜지 않는다. managed delete 뒤 VM과 폴더가 없음을 확인한다. evidence `docs/ga-ready/evidence/lane2-vm-create-readback-actual-vm-2026-10-10-04295.md`. 로컬 commit.
+
+실행 기록(2026-10-10): 설치본 `0.42.95-admin-smoke+b9898cf`에서 Local API loopback 세션으로 probe VM `pcv-it-probe-create-1010`(Generation 2, CPU 1, memory 512 MB, disk 8 GB, smoke ISO, VM root `artifacts/pcv-it-probe-create-1010`)을 만들고 켜지 않았다. create job `job-57836fe454f846518b193ff2535b3e00` `succeeded`(2.6초). job 완료 670 ms 뒤 `GET /api/v1/vms`가 status 200, 오류 코드 없이 3개(probe row state `stopped`)를 돌려줬고 `pcvcli --json vm list`도 JSON 3행에 probe row `stopped`, 오류 코드 없음(BL-0014의 `PCV_NATIVE_VM_LIST_IDENTITY_STATE_INCOMPLETE` 재현 없음). detail 200 state `stopped` generation 2. managed delete job `job-359310a7cf214094a94a11e3e9b0234a` `succeeded`(2.1초) 뒤 VM 없음(inventory 2개), VM 디렉터리 `<vm_root>/pcv-it-probe-create-1010` 없음(스크립트의 첫 판정이 내가 넘긴 부모 폴더를 봐서 FAIL로 찍혔고, VM 디렉터리 기준으로 고쳐 PASS; 빈 부모 폴더는 지움). Hyper-V에는 보존 VM과 `pcv-it-s2-source`만 남았다. evidence `docs/ga-ready/evidence/lane2-vm-create-readback-actual-vm-2026-10-10-04295.md`, summary `artifacts/lane2-vm-create-readback-20261010/summary.json`. operational current는 `0.42.93-admin-smoke` 그대로다.
 
 ## Task 6: probe `web.console.shell` (queue 81)
 
