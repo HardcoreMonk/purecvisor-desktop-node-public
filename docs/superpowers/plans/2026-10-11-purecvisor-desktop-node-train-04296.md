@@ -67,7 +67,9 @@
 
 ## Task 4: installed current-card
 
-- [ ] fullgate 문서를 렌더한 뒤 `train-host-inputs --kind current-card`로 capture 스크립트를 만들어 root 밖에서 실행한다. `status=pass`, `promotion_ledger_status=not-promoted`, 남은 시험 VM 0(`pcv-it-s2-source`는 S2 template로 기록), secret 없음. 스크립트를 root에 `capture-current-card.ps1`로 복사한다. `train-facts`로 current-card 문서. 로컬 commit.
+- [x] fullgate 문서를 렌더한 뒤 `train-host-inputs --kind current-card`로 capture 스크립트를 만들어 root 밖에서 실행한다. `status=pass`, `promotion_ledger_status=not-promoted`, 남은 시험 VM 0(`pcv-it-s2-source`는 S2 template로 기록), secret 없음. 스크립트를 root에 `capture-current-card.ps1`로 복사한다. `train-facts`로 current-card 문서. 로컬 commit.
+
+실행 기록(2026-10-11): `train-host-inputs --kind current-card --write`가 렌더된 fullgate facts에서 capture 스크립트(sha256 `0dc50f648b4ee3af6654370a5878539556094aaf62eb251bd75bdc65c34ed3f2`)를 만들었고 저장소 root(card root 밖)에서 `2026-10-10T17:04:14Z`에 `5`초 실행했다. `status=pass`, `promotion_ledger_status=not-promoted`, `canonical_current_changed=false`, 설치본 `0.42.96-admin-smoke+9ac8eb3`, ARP 1, CLI 3/3, Web 2, service Running/Auto, secret 없음, 남은 시험 VM 0(non-spike VM은 보존 VM과 S2 template `pcv-it-s2-source`), host mutation 없음. 스크립트를 root에 `capture-current-card.ps1`로 복사했다(summary sha256 `1adee05d40d6ab0c17e937d2c20e137d2b8bb556b87c222520999a08e08803c8`). `train-facts` current-card `generated=31` `narrative=1`, `--check` `current`. Verification 시험(golden, facts, host-inputs) `27/27`. operational current는 `0.42.93-admin-smoke` 그대로다.
 
 ## Task 5: probe `vm.create` (queue 78)
 
