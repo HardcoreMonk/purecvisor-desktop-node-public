@@ -11,7 +11,7 @@
   ],
   "mutation_allowed": false,
   "current_write_allowed": false,
-  "next_step": "Run Task 1 from docs/superpowers/plans/2026-10-11-purecvisor-desktop-node-s4-lan-account.md; Task 2 waits for 2026-10-19.",
+  "next_step": "Task 1 done (criteria S3 closed, S4 design written). S4 implementation and demo tasks wait for the design decisions in next_approval_required; Task 2 (C5 runner check) waits for 2026-10-19. Reply with the approval numbers.",
   "plan": "docs/superpowers/plans/2026-10-11-purecvisor-desktop-node-s4-lan-account.md",
   "task_queue": [
     "Task 1",
@@ -24,14 +24,20 @@
   "carried_from": {
     "Task 2": "train-04296-finish-20261011 Task 8"
   },
-  "next_task": "Task 1",
-  "completed_tasks": [],
+  "next_task": "Task 2",
+  "completed_tasks": [
+    "Task 1"
+  ],
   "commit_policy": "local-commit-per-task",
   "push_allowed": true,
   "merge_policy": "after-green-ci",
   "checkpoint_limit": 2,
   "approval_locator": "User-Approval: 2026-09-27 campaign runner commit policy local-commit-per-task; User-Approval: 2026-10-11 \"1,2,3\" on the train-04296-20261011 Task 8 hold report, item 3 (after the train the S4 campaign, then the legacy-retirement campaign, as approved on 2026-10-10 items 2 and 3; closing criteria S3 and carrying the C5 check happen in the first S4 PR); 2026-10-10 item 2 (open the S4 campaign after the train; installed --allow-lan and firewall changes only within that campaign's existing pre-approval); 2026-10-09 audit item 3 pre-approval (S4: log in with an account from another PC on the LAN and use S1-S3, then one release train; installed --allow-lan and firewall changes pre-approved); ADR-0016 standing approval (2026-10-07): pcv-it- prefixed VM create/configure/delete, disks under artifacts",
-  "next_approval_required": [],
+  "next_approval_required": [
+    "1 (권장) S4 설계 권장안 승인: D1-A(사용자 실제 PC에서 사용자가 S1~S3 시연, 그 전에 에이전트가 이 호스트 브라우저로 `http://<host-lan-ip>/` 리허설), D2-A(설치 service를 API·Web LAN prefix로 재구성, 제품 변경 없음), D3(방화벽 관리 규칙 두 개 7777·80, Private, LocalSubnet; 시연 뒤 loopback 복귀와 규칙 0), D4(사용자가 admin 계정을 직접 만들고, 에이전트는 리허설용 operator 계정을 실행 경계 비밀번호로 만든 뒤 disable), D5(`run-s4-lan-scenario.mjs`). 설계 4절 task 1~5를 이 campaign에 더한다. Lane 1 PR은 green CI 뒤 merge, Lane 2는 사전 승인(`--allow-lan`, 방화벽)과 계정 생성·disable, ADR-0016 `pcv-it-s4-*` VM 생성·삭제.",
+    "2 (1 대신) D1-B: 브라우저 있는 `pcv-it-` guest VM을 Default Switch에 두고 에이전트가 끝까지 시연한다(guest 이미지 준비, 방화벽 범위를 Default Switch 대역으로 넓힘). 시연 기록에 \"LAN의 다른 PC\"가 아니라 NAT guest임을 적고, 나머지는 1과 같다.",
+    "3 S4를 잠시 미루고 legacy-retirement campaign을 먼저 연다(2026-10-10 승인 3 그대로: 옛 콘솔 파일 제거와 옛 계약 재기준선, Lane 1, push/PR, green CI 뒤 merge). C5 확인(Task 2, 2026-10-19 이후)은 그대로 둔다."
+  ],
   "stop_on": [
     "same-cause-fail-3",
     "budget",

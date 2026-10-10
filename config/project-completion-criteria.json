@@ -28,8 +28,8 @@
     {
       "id": "S3",
       "title": "checkpoint 생성·복원과 예약 실행을 브라우저에서 한다",
-      "status": "open",
-      "demo_record": null
+      "status": "passed",
+      "demo_record": "docs/ga-ready/demo/s3-checkpoint-demo-2026-10-11-04296.md"
     },
     {
       "id": "S4",

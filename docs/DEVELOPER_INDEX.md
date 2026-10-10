@@ -35,7 +35,8 @@
   한 번 보류했고, 수정 PR #87 뒤 두 PR(evidence PR #88, Lane 3 PR)로 operational current를 `0.42.96-admin-smoke`로 올렸다.
   기록은 `docs/superpowers/plans/2026-10-11-purecvisor-desktop-node-train-04296.md`와
   `docs/superpowers/plans/2026-10-11-purecvisor-desktop-node-train-04296-finish.md`.
-- 시나리오: `config/project-completion-criteria.json`에서 S1·S2 `passed`, S3·S4 `open`이다. S3 닫기는 S4 campaign 첫 PR에서 한다.
+- 시나리오: `config/project-completion-criteria.json`에서 S1~S3 `passed`, S4 `open`이다. S4 설계는
+  `docs/superpowers/specs/2026-10-11-purecvisor-desktop-node-s4-lan-account-design.md`(결정 대기)다.
 
 ## 2026-10-09 프로젝트 완료 정의 v3 (ADR-0017)
 

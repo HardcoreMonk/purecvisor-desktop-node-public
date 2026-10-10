@@ -38,7 +38,7 @@
 
 - 기여자 온보딩: `docs/DEVELOPMENT_PROCEDURE.md`, `docs/DEVELOPER_INDEX.md`, `docs/CODING_GUIDE.md`, `docs/DEVELOPMENT_VERIFICATION_POLICY.md`
 - 아키텍처: `docs/ADR_INDEX.md`, `docs/adr/`, `docs/service-core-backend-frontend-implementation-evaluation-2026-07-16.md`
-- 현재 작업과 상태: `docs/project-status-audit-2026-10-09-after-s1.md`, `docs/ga-ready/demo/s1-browser-console-demo-2026-10-08.md`, `docs/ga-ready/demo/s2-template-clone-demo-2026-10-09.md`, `docs/ga-ready/demo/s3-checkpoint-demo-2026-10-10.md`(S3 open, BL-0016), `docs/ga-ready/demo/s3-checkpoint-demo-2026-10-11-04296.md`(설치본 `0.42.96` 재시연 PASS, criteria S3는 S4 campaign 첫 PR에서 닫는다), `docs/ga-ready/demo/web-console-shell-demo-2026-10-11.md`(새 셸 시연 PASS), `docs/FEATURE_IMPLEMENTATION_LEDGER.md`, `docs/ga-ready/CURRENT_EVIDENCE_LEDGER.md`, `docs/ga-ready/EVIDENCE_INDEX.md`
+- 현재 작업과 상태: `docs/project-status-audit-2026-10-09-after-s1.md`, `docs/ga-ready/demo/s1-browser-console-demo-2026-10-08.md`, `docs/ga-ready/demo/s2-template-clone-demo-2026-10-09.md`, `docs/ga-ready/demo/s3-checkpoint-demo-2026-10-10.md`(S3 open, BL-0016), `docs/ga-ready/demo/s3-checkpoint-demo-2026-10-11-04296.md`(설치본 `0.42.96` 재시연 PASS, criteria S3 `passed`), `docs/ga-ready/demo/web-console-shell-demo-2026-10-11.md`(새 셸 시연 PASS), `docs/FEATURE_IMPLEMENTATION_LEDGER.md`, `docs/ga-ready/CURRENT_EVIDENCE_LEDGER.md`, `docs/ga-ready/EVIDENCE_INDEX.md`
 - 버전·릴리스 증거: [docs/ga-ready/current-evidence.json](ga-ready/current-evidence.json)과 위 evidence index
 - 역사 변경 기록: Git 이력과 아래 날짜별 계획·명세·증거
 
