@@ -18,6 +18,15 @@
       <Component Id="DesktopNodeWebPayload_app_bundle_jsComponent" Directory="DesktopNodeWebFolder" Guid="*">
         <File Id="DesktopNodeWebPayload_app_bundle_js" Source="$(var.PayloadRoot)\web\app.bundle.js" KeyPath="yes" />
       </Component>
+      <Component Id="DesktopNodeWebPayload_icon_192_pngComponent" Directory="DesktopNodeWebFolder" Guid="*">
+        <File Id="DesktopNodeWebPayload_icon_192_png" Source="$(var.PayloadRoot)\web\icon-192.png" KeyPath="yes" />
+      </Component>
+      <Component Id="DesktopNodeWebPayload_icon_512_pngComponent" Directory="DesktopNodeWebFolder" Guid="*">
+        <File Id="DesktopNodeWebPayload_icon_512_png" Source="$(var.PayloadRoot)\web\icon-512.png" KeyPath="yes" />
+      </Component>
+      <Component Id="DesktopNodeWebPayload_index_next_htmlComponent" Directory="DesktopNodeWebFolder" Guid="*">
+        <File Id="DesktopNodeWebPayload_index_next_html" Source="$(var.PayloadRoot)\web\index.next.html" KeyPath="yes" />
+      </Component>
       <Component Id="DesktopNodeWebPayload_samples_design_system_preview_htmlComponent" Directory="DesktopNodeWebDir_samples" Guid="*">
         <File Id="DesktopNodeWebPayload_samples_design_system_preview_html" Source="$(var.PayloadRoot)\web\samples\design-system-preview.html" KeyPath="yes" />
       </Component>

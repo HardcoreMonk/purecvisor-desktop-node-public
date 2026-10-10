@@ -22,6 +22,9 @@
     "vendor/pretendard/woff2/Pretendard-ExtraBold.woff2",
     "vendor/pretendard/woff2/Pretendard-Medium.woff2",
     "vendor/pretendard/woff2/Pretendard-Regular.woff2",
-    "vendor/pretendard/woff2/Pretendard-SemiBold.woff2"
+    "vendor/pretendard/woff2/Pretendard-SemiBold.woff2",
+    "index.next.html",
+    "icon-192.png",
+    "icon-512.png"
   ]
 }

@@ -33,7 +33,7 @@ route 계약이 달라 약 24,000줄을 손봐야 하므로 택하지 않는다.
 
 | Single Edge `ui/` | Desktop Node `web/` (이 설계) | 비고 |
 | --- | --- | --- |
-| `index.html` | `web/index.html` | 로그인 페이지 `#login-page` + 앱 셸 `#app`(`shell-sidebar`, `shell-topbar`, `main.content.shell-content`), CSP meta, 테마 부트스트랩 inline script, manifest·icon 링크 |
+| `index.html` | `web/index.html` (Task 6~15 동안 `web/index.next.html`, Task 16에서 교체) | 로그인 페이지 `#login-page` + 앱 셸 `#app`(`shell-sidebar`, `shell-topbar`, `main.content.shell-content`), CSP meta(`connect-src`에 Local API `http://127.0.0.1:7777`, `http://localhost:7777`, `http://*:7777`), 테마 부트스트랩 inline script, manifest·icon 링크. TOTP 단계는 제외. 옛 헤더의 API/Token 입력은 설정(prefs) modal로 옮긴다(Task 13) |
 | `app.js` | `web/src/bootstrap.ts` → bundle 끝 | 전역 상태, `window.PCV.state/config/auth`, 에디션 게이팅(Desktop Node 에디션: Linux 전용 nav 숨김) |
 | `modules/*.js` | `web/src/modules/*.ts` | `window.PCV` IIFE, `@ts-nocheck`, ES export 없음 |
 | `app.bundle.js` | `web/app.bundle.js` | `build-served-asset.mjs` 출력, `PCV_UI_SOURCE_SHA1` 배너 |
