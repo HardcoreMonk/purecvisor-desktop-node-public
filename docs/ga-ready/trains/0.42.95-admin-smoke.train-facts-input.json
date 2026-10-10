@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "contract": "pcv-train-facts-input-v1",
+  "version": "0.42.95-admin-smoke",
+  "baseline_version": "0.42.94-admin-smoke",
+  "canonical_current_evidence": "0.42.93-admin-smoke",
+  "date": "2026-10-10",
+  "documents": {
+    "package": "docs/ga-ready/evidence/admin-smoke-package-2026-10-10-04295.md",
+    "ops-summary": "docs/ga-ready/evidence/installed-runtime-ops-summary-2026-10-10-04295.md",
+    "update-rollback": "docs/ga-ready/evidence/product-update-rollback-2026-10-10-04294-04295.md",
+    "clean-host": "docs/ga-ready/evidence/internal-clean-host-install-update-rollback-smoke-2026-10-10-04294-04295.md",
+    "burn": "docs/ga-ready/evidence/burn-bootstrapper-lifecycle-smoke-2026-10-10-04295.md",
+    "msix": "docs/ga-ready/evidence/msix-package-lifecycle-smoke-2026-10-10-04294-04295.md",
+    "pair-descriptor": "docs/ga-ready/evidence/manual-admin-campaign-descriptor-2026-10-10-04294-04295.md",
+    "fullgate": "docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-10-10-04295-hostmutation.md",
+    "current-card": "docs/ga-ready/evidence/installed-operator-surface-current-card-2026-10-10-04295.md"
+  },
+  "sources": {
+    "package_root": "artifacts/admin-smoke-package-20261010-04295",
+    "baseline_package_root": "artifacts/admin-smoke-package-20261010-04294",
+    "campaign_root": "artifacts/manual-admin-campaign-20261010-04294-04295",
+    "target_update_catalog": "artifacts/admin-smoke-package-20261010-04295/PureCVisorDesktopNode-0.42.95-admin-smoke-update-catalog.json",
+    "signer_thumbprint": "8C5F3B5030D3A54B1150C2C30CFD9868800DF0C6",
+    "fullgate_batch_id": "full-admin-host-mutation-gate-20261010-04295",
+    "iso_path": "artifacts/smoke-media-20261003/pcv-route-parity-smoke-20261003.iso",
+    "current_card_root": "artifacts/installed-operator-surface-current-card-20261010-04295",
+    "fullgate_final_firewall_rule_count": "0"
+  },
+  "narrative": {
+    "package": {
+      "background": "release train `0.42.95`의 package다. train `0.42.94`가 pair Burn bucket에서 정차(BL-0017: ZIP 제품 Update가 먼저 만든 web 하위 디렉터리를 MSI 제거가 남김)한 뒤 수정 PR #84(생성 `WebPayload.wxs`의 디렉터리별 `RemoveFolder`, `web`·INSTALLFOLDER 제거)를 merge하고 2026-10-10 승인 2로 연 campaign `train-04295-20261010`의 train이며 queue 78(`vm.create` inventory readback 대기, BL-0014), 79(VM 상세 submit 버튼 click 위임 수정, BL-0016), 81(Single Edge 프론트엔드 구조 차용 ADR-0018), 84(RemoveFolder 수정)를 싣는다. payload 파일은 32개. build 39초.",
+      "train_carriages": "`PR #78` (변경 `1b04ff46`, hyperv), `PR #79` (변경 `04ffe117`, web), `PR #81` (변경 `4e109e70`, web), `PR #84` (변경 `3d50f14b`, installer, merge `f84d46a`); payload `f84d46a` (PR #84 merge)",
+      "lane2_probes": "`vm.create`(inventory readback, BL-0014), `web.console.shell`(Single Edge 셸 브라우저 시연), `checkpoint.schedule.set`(S3 브라우저 예약 저장 재시연, BL-0016), `burn.lifecycle`(pair Burn bucket PASS, BL-0017)"
+    },
+    "fullgate": {
+      "run_context": "gate는 branch `lane1/train-04295-20261010`의 HEAD `b9898cf`에서 빌드했다(product source는 payload `f84d46a`와 같고, 그 뒤 commit은 문서뿐이다). manifest는 `pcvverify train-host-inputs --kind fullgate-manifest`가 `docs/ga-ready/trains/0.42.95-admin-smoke.host-inputs.json`에서 만들었고 LAN prefix는 직전 manifest에서 읽어 환경 변수로만 넘겼다. 설치본은 pair가 남긴 `0.42.95-admin-smoke+b401d94`(ARP 1개)에서 시작했다.",
+      "vm_summary": "`pcv-guest-installed-04253-r1` Off, `pcv-it-s2-source` Off(S2 template)만 남음"
+    },
+    "current-card": {
+      "script_note": "capture 스크립트는 `pcvverify train-host-inputs --kind current-card`가 렌더된 fullgate facts에서 만들었다. 저장소 root(card root 밖)에서 실행했고 읽기만 한다."
+    }
+  }
+}
