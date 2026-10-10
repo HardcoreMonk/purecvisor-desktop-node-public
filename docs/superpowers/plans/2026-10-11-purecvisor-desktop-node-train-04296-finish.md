@@ -64,15 +64,21 @@
 
 ## Task 6: Lane 3 PR C merge
 
-- [ ] clean HEAD에서 `dotnet build src/DesktopNode.sln -c Release`, Required CI shard 네 개 로컬, Pester 네 종, `npm run test:public-source-safety --prefix web` 신규 0. push, PR, green CI 뒤 merge한다. merge 뒤 main push run을 기다리고 red면 revert PR을 열고 멈춘다. 실행 기록은 Task 7 기록에 적는다.
+- [x] clean HEAD에서 `dotnet build src/DesktopNode.sln -c Release`, Required CI shard 네 개 로컬, Pester 네 종, `npm run test:public-source-safety --prefix web` 신규 0. push, PR, green CI 뒤 merge한다. merge 뒤 main push run을 기다리고 red면 revert PR을 열고 멈춘다. 실행 기록은 Task 7 기록에 적는다.
+
+실행 기록(2026-10-11): clean HEAD `4d765c5`에서 `dotnet build -c Release` 경고 0, PR gate `artifacts/pr-gate/20261010-191433` passed, Pester packaging 528·installer 49·web 50·manual-admin 137 통과, public source safety는 기존 BL-0015 두 건 외 신규 0. PR #89 Required check 다섯 개 pass, base 최신 확인 뒤 `--match-head-commit 4d765c5`로 merge, merge commit `d28b74a`. main push run Public Boundary `38079434392` success, Development Gates `38079434310` success. operational current는 `0.42.96-admin-smoke`다.
 
 ## Task 7: 판정과 S4 campaign 열기
 
-- [ ] clean `main`에서 `pcvverify completion`을 돌려 결과를 기록한다. exit `0`이면 감사 문서로 완료를 적고 push, PR, green CI 뒤 merge한다. 그 밖이면 이 campaign을 `status=closed`로 닫고(Task 8은 `carried_tasks`로 새 campaign에 옮김) 승인 3으로 S4 campaign을 `pcv-campaign-open`으로 연다. 그 campaign 첫 PR이 criteria S3 닫기와 Task 8 이관을 한다. S4의 설치본 `--allow-lan`/firewall 변경은 2026-10-10 승인 2의 범위(그 campaign의 기존 사전 승인 범위) 안에서만 한다.
+- [x] clean `main`에서 `pcvverify completion`을 돌려 결과를 기록한다. exit `0`이면 감사 문서로 완료를 적고 push, PR, green CI 뒤 merge한다. 그 밖이면 이 campaign을 `status=closed`로 닫고(Task 8은 `carried_tasks`로 새 campaign에 옮김) 승인 3으로 S4 campaign을 `pcv-campaign-open`으로 연다. 그 campaign 첫 PR이 criteria S3 닫기와 Task 8 이관을 한다. S4의 설치본 `--allow-lan`/firewall 변경은 2026-10-10 승인 2의 범위(그 campaign의 기존 사전 승인 범위) 안에서만 한다.
+
+실행 기록(2026-10-11): clean `main` `d28b74a`에서 `pcvverify completion`(`artifacts/completion/20261011/result.json`) exit `1`, `complete=false met=4/7 gaps=3`. 충족 C1·S1·S2·C6, 갭 `S3-scenario`(시연 PASS는 있으나 criteria S3가 아직 `open`), `S4-scenario`, `C5-risk-ubuntu-26-runner`(deadline-wait, 2026-10-19). hygiene C7은 backlog `undecided` 12행(BL-0011~BL-0022). 이 campaign을 닫고(Task 8은 `carried_tasks`로 이관) 승인 3으로 `s4-lan-account-20261011`을 열었다. S4 첫 PR이 criteria S3 닫기, C5 이관, S4 설계를 한다.
 
 ## Task 8: C5 runner 확인 (2026-10-19 이후, 이관)
 
 - [ ] `not_before` 2026-10-19. 이관 전 `train-04296-20261011` Task 12(원래 `completion-20261008` Task 10)이다. Ubuntu 26 runner의 첫 `main` Development Gates와 Public Boundary run이 green이면 `config/project-completion-criteria.json` 위험 행을 `status=closed`, `closed_by`에 run id로 닫는다. 실패하면 `ubuntu-24.04` pin을 판단해 backlog 행으로 보고한다. push, PR, green CI 뒤 merge.
+
+이관(2026-10-11): `s4-lan-account-20261011` Task 2(`not_before` 2026-10-19), plan `docs/superpowers/plans/2026-10-11-purecvisor-desktop-node-s4-lan-account.md`.
 
 ## Nonclaims
 
