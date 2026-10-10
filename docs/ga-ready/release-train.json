@@ -14,6 +14,17 @@
         "design": "docs/superpowers/plans/2026-10-09-purecvisor-desktop-node-audit-green-lean.md"
       },
       "risk_tier": "M"
+    },
+    {
+      "pr": 79,
+      "merge_commit": "04ffe117",
+      "area": "web",
+      "summary": "VM 상세 click 위임 핸들러가 form 안 type=submit 버튼을 건너뛰게 수정(BL-0016, checkpoint schedule 폼 저장 복구), S3 checkpoint 시나리오 스크립트와 회귀 테스트",
+      "lane2_probe": {
+        "family": "checkpoint.schedule.set",
+        "design": "docs/superpowers/plans/2026-10-10-purecvisor-desktop-node-s3-checkpoint.md"
+      },
+      "risk_tier": "S"
     }
   ],
   "trains": [
