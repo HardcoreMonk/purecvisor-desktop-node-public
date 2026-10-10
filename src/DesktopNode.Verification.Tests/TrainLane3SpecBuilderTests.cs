@@ -77,6 +77,51 @@ public sealed class TrainLane3SpecBuilderTests
         Assert.Equal("lane3-spec:facts-version-mismatch:docs/ga-ready/trains/0.42.89-admin-smoke.evidence-facts.json", exception.Detail);
     }
 
+    [Fact]
+    public void IndexSectionsContinueFromThePreviousPromotedSpecWhenAPromotionWasSkipped()
+    {
+        // Train 0.42.96 paired against the stopped train 0.42.95 while 0.42.93 was the last promoted current (BL-0021).
+        // Same shape: the 0.42.89 facts get a pair baseline other than the previous promoted spec's version (0.42.88).
+        var root = Path.Combine(
+            VerificationCatalogFixture.RepositoryRoot, "artifacts", "lane3-spec-tests", Guid.NewGuid().ToString("N"));
+        try
+        {
+            var input = Input04289();
+            CopyIntoRoot(root, input.PreviousSpec, ReadRepositoryText(input.PreviousSpec));
+            CopyIntoRoot(root, "docs/ga-ready/release-train.json", ReadRepositoryText("docs/ga-ready/release-train.json"));
+            var facts = JsonNode.Parse(ReadRepositoryText(input.Facts))!.AsObject();
+            var pairConsume = facts["documents"]!.AsArray().OfType<JsonObject>()
+                .Single(document => document["template"]!.GetValue<string>() == "pair-consume");
+            pairConsume["values"]!["baseline_version"] = "0.42.87-admin-smoke";
+            CopyIntoRoot(root, input.Facts, facts.ToJsonString());
+
+            var builder = new TrainLane3SpecBuilder(root, input);
+
+            Assert.Equal("0.42.88-admin-smoke", builder.IndexSections()["previous_version"]!.GetValue<string>());
+            Assert.Equal(
+                "0.42.87-admin-smoke -> 0.42.89-admin-smoke",
+                builder.LedgerHead()["values"]!["current_manual_admin_package_pair"]!.GetValue<string>());
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, recursive: true);
+            }
+        }
+    }
+
+    private static string ReadRepositoryText(string relativePath) =>
+        File.ReadAllText(Path.Combine(
+            VerificationCatalogFixture.RepositoryRoot, relativePath.Replace('/', Path.DirectorySeparatorChar)));
+
+    private static void CopyIntoRoot(string root, string relativePath, string text)
+    {
+        var path = Path.Combine(root, relativePath.Replace('/', Path.DirectorySeparatorChar));
+        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+        File.WriteAllText(path, text);
+    }
+
     private static string Detail(JsonObject input) =>
         Assert.Throws<VerificationException>(() => TrainLane3SpecInput.Parse(input.ToJsonString())).Detail;
 

@@ -279,6 +279,16 @@ public sealed class ProjectCompletionEvaluatorTests
             Today,
             path => File.Exists(Path.Combine(VerificationCatalogFixture.RepositoryRoot, path)));
         inputs.ReleaseTrain["queue"] = new JsonArray();
+        // A train in flight on the real release-train.json (running between departure and Lane 3, e.g. a two-PR train)
+        // must not leak into the cleared baseline; tests that need such a train add it themselves.
+        var trains = inputs.ReleaseTrain["trains"]!.AsArray();
+        foreach (var train in trains.OfType<JsonObject>()
+                     .Where(train => train["status"]?.GetValue<string>() != "promoted")
+                     .ToList())
+        {
+            trains.Remove(train);
+        }
+
         inputs.Backlog["rows"] = new JsonArray();
         var risk = Risk(inputs);
         risk["status"] = "closed";
