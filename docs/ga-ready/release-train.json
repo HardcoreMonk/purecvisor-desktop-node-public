@@ -47,6 +47,17 @@
         "design": "docs/superpowers/plans/2026-10-10-purecvisor-desktop-node-webpayload-removefolder.md"
       },
       "risk_tier": "M"
+    },
+    {
+      "pr": 86,
+      "merge_commit": "179bd198",
+      "area": "web",
+      "summary": "Single Edge 셸 화면 전환 수정(BL-0019): nav가 보이는 #cb section의 주인(PCV.nav.activeView), 옛 view 상태 동기화(setActiveView), 도움말 전용 helppage section, getHashView의 #/view 지원, bundle-load·Host Chromium 회귀 시험",
+      "lane2_probe": {
+        "family": "web.console.shell",
+        "design": "docs/superpowers/plans/2026-10-11-purecvisor-desktop-node-shell-nav-view-sync.md"
+      },
+      "risk_tier": "S"
     }
   ],
   "trains": [
