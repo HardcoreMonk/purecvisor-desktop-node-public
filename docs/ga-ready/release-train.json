@@ -36,6 +36,17 @@
         "design": "docs/superpowers/plans/2026-10-10-purecvisor-desktop-node-single-edge-frontend-structure.md"
       },
       "risk_tier": "M"
+    },
+    {
+      "pr": 84,
+      "merge_commit": "3d50f14b",
+      "area": "installer",
+      "summary": "생성 WebPayload.wxs의 web 디렉터리마다 RemoveFolder(On=uninstall), Product.wxs의 web 폴더·INSTALLFOLDER 제거(BL-0017: ZIP 제품 Update가 먼저 만든 디렉터리가 MSI 제거 뒤 남아 Burn remove-absence 실패), WiX 계약 pin과 Burn lifecycle dev probe",
+      "lane2_probe": {
+        "family": "burn.lifecycle",
+        "design": "docs/superpowers/plans/2026-10-10-purecvisor-desktop-node-webpayload-removefolder.md"
+      },
+      "risk_tier": "M"
     }
   ],
   "trains": [
