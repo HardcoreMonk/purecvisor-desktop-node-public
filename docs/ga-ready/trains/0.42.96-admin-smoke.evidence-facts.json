@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "contract": "pcv-train-evidence-facts-v1",
+  "version": "0.42.96-admin-smoke",
+  "documents": [
+    {
+      "template": "package",
+      "path": "docs/ga-ready/evidence/admin-smoke-package-2026-10-11-04296.md",
+      "values": {
+        "evidence_id": "admin-smoke-package-2026-10-11-04296",
+        "canonical_current_evidence": "0.42.93-admin-smoke",
+        "date": "2026-10-11",
+        "version": "0.42.96-admin-smoke",
+        "source_commit": "e07113c5f555715955856897c687c7c8843db1dc",
+        "release_train": "0.42.96-admin-smoke",
+        "artifact_root": "artifacts/admin-smoke-package-20261011-04296",
+        "clean_package_msi_sha256": "326b867a161ffa5038f4b3cecd8405ca0999cff00875c4a9fb8f5ac92f3cdeed",
+        "clean_package_payload_aggregate_sha256": "b76c53108e93b37f6d8ca9236f51a1aee5ea252f67c9ffc1ca68883983449104",
+        "product_wrapper_sha256": "8c0bf982097881f56e60354f53961e54ea4d7a49e566a1e1eee861cd309403c3",
+        "service_host_sha256": "db179cda0f34b42adf5c342de4d2363dd3160713b5176142bec989797d185c23",
+        "cli_sha256": "f8a6856fcfcc410623382cb08f0a78c8f69eadeca02cc4a06546480c36bdc689",
+        "update_zip_sha256": "e4324e2420724dc4383b142debb600465dee84d415243183f138e602530c6a94",
+        "payload_file_count": "32",
+        "wix_version": "5.0.2+aa65968c",
+        "build_utc": "2026-10-10T16:52:56.3848655Z",
+        "msi_product_version": "0.42.96",
+        "zip_note": "update ZIP은 `New-PcvAdminSmokeUpdatePackage.ps1`가 payload 32개 파일을 root에 두고 deflate와 `/` 구분자로 만들었다(항목 구성은 0.42.95 ZIP과 같다).",
+        "host_product_version": "0.42.96-admin-smoke+e07113c5f555715955856897c687c7c8843db1dc",
+        "build_seconds": "42",
+        "background": "release train `0.42.96`의 package다. train `0.42.94`(pair Burn bucket, BL-0017)와 `0.42.95`(Lane 2 `web.console.shell` probe, BL-0019)가 정차한 뒤 수정 PR #84(생성 `WebPayload.wxs`의 디렉터리별 `RemoveFolder`)와 #86(Single Edge nav가 보이는 section의 주인, 옛 view 상태 동기화, 도움말 전용 section)을 merge하고 2026-10-11 승인 2로 연 campaign `train-04296-20261011`의 train이며 queue 78(`vm.create` inventory readback 대기, BL-0014), 79(VM 상세 submit 버튼 click 위임 수정, BL-0016), 81(Single Edge 프론트엔드 구조 차용 ADR-0018), 84, 86을 싣는다. payload 파일은 32개. build 42초.",
+        "train_carriages": "`PR #78` (변경 `1b04ff46`, hyperv), `PR #79` (변경 `04ffe117`, web), `PR #81` (변경 `4e109e70`, web), `PR #84` (변경 `3d50f14b`, installer), `PR #86` (변경 `179bd198`, web); payload: PR #86 merge",
+        "lane2_probes": "`vm.create`(inventory readback, BL-0014), `web.console.shell`(Single Edge 셸 화면 전환과 브라우저 시연, BL-0019), `checkpoint.schedule.set`(S3 브라우저 예약 저장과 예약 실행, BL-0016), `burn.lifecycle`(pair Burn bucket PASS, BL-0017)"
+      }
+    }
+  ]
+}
