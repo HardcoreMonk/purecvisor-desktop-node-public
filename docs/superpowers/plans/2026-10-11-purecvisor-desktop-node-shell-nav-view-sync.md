@@ -35,7 +35,9 @@
 
 ## Task 2: 설치본 dev probe (Lane 2)
 
-- [ ] Task 1 HEAD에서 dev package를 만들고(update ZIP·catalog 포함, version은 train 번호와 겹치지 않게 정한다) 제품 Update로 설치본에 올린 뒤 Playwright(Chromium)로 `http://127.0.0.1/`의 사이드바 8 화면과 `#/vms` hash 전환마다 그 section만 보이는지, 30초 polling 뒤에도 유지되는지, 도움말 뒤 진단 화면이 그대로인지 확인한다. 끝에 제품 Rollback으로 설치본 `0.42.95-admin-smoke+b9898cf`에 돌려 놓고 service·Web·ARP를 확인한다. FAIL이면 멈춘다. evidence `docs/ga-ready/evidence/lane2-web-shell-navigation-dev-probe-2026-10-11.md`(손으로 씀, 승격 근거 아님). 로컬 commit.
+- [x] Task 1 HEAD에서 dev package를 만들고(update ZIP·catalog 포함, version은 train 번호와 겹치지 않게 정한다) 제품 Update로 설치본에 올린 뒤 Playwright(Chromium)로 `http://127.0.0.1/`의 사이드바 8 화면과 `#/vms` hash 전환마다 그 section만 보이는지, 30초 polling 뒤에도 유지되는지, 도움말 뒤 진단 화면이 그대로인지 확인한다. 끝에 제품 Rollback으로 설치본 `0.42.95-admin-smoke+b9898cf`에 돌려 놓고 service·Web·ARP를 확인한다. FAIL이면 멈춘다. evidence `docs/ga-ready/evidence/lane2-web-shell-navigation-dev-probe-2026-10-11.md`(손으로 씀, 승격 근거 아님). 로컬 commit.
+
+실행 기록(2026-10-11): Task 1 HEAD `179bd19`에서 dev package `0.42.96-admin-smoke`(root `artifacts/navfix-probe-20261011-04296`, MSI SHA-256 `3ce658544dfcf7aa05d382860cec6168532bfbb8c97b581b2d60eddc4f6b849b`, update ZIP SHA-256 `e4bd87519a753895c78084a762ce2b67d66b14276f6c1ec43078e6f4fab05b63`)를 만들었다. version 문자열은 다음 train과 같지만 updater가 package를 ZIP SHA-256 이름으로 두므로 섞이지 않는다. 제품 Update `ok=true` → 설치본 `0.42.96-admin-smoke+179bd19`(ARP는 `0.42.95` 그대로), 설치된 bundle에 `PCV.nav.activeView`·index에 helppage section 확인. Playwright(Chromium): 사이드바 8 화면 중 7개가 첫 회차에 그 section만 보였고, 가상 머신은 첫 회차가 새 service worker의 설계된 1회 `controllerchange` reload와 겹쳐 dashboard로 읽혔으며 reload 뒤 세 출발 화면에서 3회 모두 `vms`(VM 2행, page navigation 0). 도움말 뒤 진단 화면은 `-panel` 7개 그대로, `#/vms` hash와 35초 polling 뒤에도 `vms` 유지. 콘솔 오류는 첫 로드 401(세션 전)과 브라우저 저장소의 옛 job id 404뿐이다. 제품 Rollback `ok=true` → 설치본 `0.42.95-admin-smoke+b9898cf`, service Running/Automatic, Web 200, ARP 1개, 보존 VM과 `pcv-it-s2-source` Off. 판정 PASS. evidence `docs/ga-ready/evidence/lane2-web-shell-navigation-dev-probe-2026-10-11.md`(손으로 씀, 승격 근거 아님). operational current는 `0.42.93-admin-smoke` 그대로다.
 
 ## Task 3: 종료 검증, queue 행, push, PR, merge, train campaign 열기
 
