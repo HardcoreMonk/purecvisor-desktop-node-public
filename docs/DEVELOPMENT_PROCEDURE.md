@@ -374,6 +374,11 @@ campaign은 이미 받은 승인을 되묻지 않을 뿐, 없는 승인을 만�
   필요하고 승격 근거가 아니다.
 - FAIL이면 멈춘다(정차). Lane 1로 고쳐 `main`에 merge하고 다음 patch version으로 다시 출발한다.
   환경 원인으로 판명된 일시 실패는 같은 단계를 한 번 다시 돌리고 그 사실을 evidence에 적는다.
+- 정차한 train은 `release-train.json` `trains`에서 빼고 적재 행을 `queue`로 되돌린다. 정차 항목을 남기면 completion 판정이
+  미완료 train 갭으로 센다(2026-10-10 PR #83). 정차 사실은 그 train plan과 evidence 문서가 갖는다.
+- 앞 train이 정차해 승격을 건너뛴 train은 Lane 3 전에 `lane3-spec`의 `index_sections.previous_version`이
+  `current-evidence.json` current version과 같은지 본다. 지금 생성기는 pair baseline을 써서 다르다(BL-0021). 고칠 때까지 그런
+  train은 Lane 3 앞에서 멈춘다.
 - 출발 승인 문구는 train version과 고정할 `queue` 행, package build, pair host mutation 범위,
   fullgate와 current-card, Lane 2 probe 기능군, Lane 3 `current-evidence.json` 쓰기, push/PR과
   green CI 뒤 merge, merge 뒤 main push가 red면 revert PR을 하나씩 적는다. 정차하면 그 승인은 끝난다.

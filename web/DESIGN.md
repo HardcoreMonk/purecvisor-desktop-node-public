@@ -118,9 +118,10 @@ command palette(`Ctrl+K`), 환경설정(`Ctrl+P`: 테마, 언어, Local API 주�
 
 Desktop layout:
 
-- topbar: service/API/token/refresh controls
-- sidebar: view navigation
-- main: active view content
+- topbar: breadcrumb, global search(`Ctrl+K`), polling 상태, 알림 센터, 환경설정(`Ctrl+P`: 테마, 언어, Local API 주소, 브라우저 token), 세션 사용자와 로그아웃
+- statusbar: VM 실행, 작업, Critical, 호스트, 증적 요약 버튼
+- sidebar: `운영 대시보드`와 `워크로드`·`인프라`·`관제`·`시스템`·`도움말` 묶음(view id `dashboard`, `vms`, `network`, `jobs`, `activity`, `evidence`, `troubleshooting`, `helppage`)
+- main: `#cb` 안의 정적 `.app-view` section 중 nav가 고른 하나
 - dashboard: ops summary, priority signals, recent activity, metrics
 - troubleshooting: account session, RBAC permission state, console capability, token/diagnostic handoff
 
@@ -175,7 +176,7 @@ width를 사용해 hover/loading/error state가 layout shift를 만들지 않게
   값을 우선하고, 없을 때만 현재 Web origin으로 fallback한다.
 - API response handling uses explicit unwrap helpers for envelope/list shapes
   while preserving problem-details normalization.
-- Optional service bearer token UX는 현재 `apiToken` input과 `Clear` flow를 유지한다.
+- Optional service bearer token UX는 환경설정(`Ctrl+P`)의 브라우저 token 입력과 `token 지우기`다. 옛 콘솔은 `apiToken` input과 `Clear` flow를 유지한다.
 - Account auth UX는 `/api/v1/auth/login`, `/api/v1/auth/refresh`,
   `/api/v1/auth/session`, `/api/v1/auth/rbac`만 사용한다.
 - JWT/password 값은 DOM, logs, diagnostics, static fixture에 렌더링하지 않는다.
@@ -208,8 +209,10 @@ width를 사용해 hover/loading/error state가 layout shift를 만들지 않게
   `Cancel running guest exec` label과 `running-guest-execution` scope를 표시한다. 이 UI는
   0.42.55 package/current-card에서 설치본으로 승격됐다.
 - WebSocket event flow를 추가하지 않는다.
-- `web/src/served-app.ts`가 served `web/app.js`의 source owner다.
-- `web/app.js`는 직접 편집하지 않고 `npm run build:served --prefix web`로 생성한다.
+- 새 셸 source는 `web/src/modules/**`와 `web/src/bootstrap.ts`이고, 순서표 `web/src/modules.json`이 `web/app.bundle.js`의 결합 순서를 정한다. 옛 콘솔 `web/app.js`의 source owner는 `web/src/served-app.ts`다.
+- 생성물(`web/app.bundle.js`, `web/app.js`, `web/sw.js` CACHE_NAME)은 직접 편집하지 않고 `npm run build:served --prefix web`로 만든다.
+- 화면 전환은 `nav.ts`가 소유한다. 보이는 `#cb .app-view` section은 `PCV.nav.activeView()`이고, 옛 렌더러(`setActiveView`, `monitor.ts` `renderActiveView`)는 이 값을 따른다. `#/<view>` hash도 같은 경로로 연다(BL-0019).
+- form 안의 submit 버튼 click은 위임 핸들러가 다시 렌더하지 않고 submit 핸들러에 맡긴다. click 처리 중 재렌더는 form을 떼어 내 브라우저가 submit을 취소한다(BL-0016).
 - route literal이 늘어나면 TypeScript contract mirror와 parity manifest를 함께 갱신한다.
 - `innerHTML`을 쓸 때는 HTML escape/sanitizer helper를 거친다.
 
@@ -264,8 +267,8 @@ Required CI dual-run과 cutover가 pending이던 historical predecessor 기록�
 
 ## Static parity snapshot policy
 
-- `web/src/served/**`와 `web/src/served-app.ts`가 served asset source of truth다.
-- `web/app.js`는 직접 편집하지 않고 `npm run build:served --prefix web`로만 갱신한다.
+- `web/src/modules/**`·`web/src/bootstrap.ts`(새 셸)와 `web/src/served/**`·`web/src/served-app.ts`(옛 콘솔)가 served asset source of truth다.
+- `web/app.bundle.js`와 `web/app.js`는 직접 편집하지 않고 `npm run build:served --prefix web`로만 갱신한다.
 - route literal, fixture-visible copy, browser-visible DOM id/action이 바뀌면
   `npm run generate:parity --prefix web`로 `web/generated/parity/static-asset-parity.manifest.json`
   snapshot을 갱신한다.
@@ -287,8 +290,8 @@ git diff --check
 ## Porting Order
 
 1. Keep Desktop Node route/API contract fixed.
-2. Add or update design tokens in `web/styles.css`.
+2. Add or update design tokens in `web/style.css` (옛 콘솔은 `web/styles.css`).
 3. Port one component family at a time.
-4. Regenerate `web/app.js` only from `web/src/served-app.ts`.
+4. Regenerate `web/app.bundle.js` only from `web/src/modules.json` and `web/src/modules/**` (옛 `web/app.js`는 `web/src/served-app.ts`에서만).
 5. Run static parity and browser fixture checks.
 6. Only then consider vendor assets or host static content-type changes.

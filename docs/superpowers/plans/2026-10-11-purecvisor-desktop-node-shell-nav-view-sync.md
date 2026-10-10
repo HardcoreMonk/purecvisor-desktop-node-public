@@ -41,11 +41,15 @@
 
 ## Task 3: 종료 검증, queue 행, push, PR, merge, train campaign 열기
 
-- [ ] clean HEAD에서 PR gate(`Invoke-PcvPrGate.ps1 -SkipBuild` 뒤 Release build), `npm run test:required --prefix web`, Pester 4종, `Update-PcvCurrentEvidenceDocs.ps1 -Check`, `npm run test:public-source-safety --prefix web`(BL-0015 기존 2건 외 0), `git diff --check origin/main...HEAD`. push, PR, 그 PR 번호로 `release-train.json` `queue` 행(area web, risk S, lane2_probe `web.console.shell`)을 같은 PR에 더한 뒤 green CI 뒤 merge, main push run green 확인. campaign을 닫고(Task 4 이관) 승인 2로 train `0.42.96` campaign을 `pcv-campaign-open`으로 연다.
+- [x] clean HEAD에서 PR gate(`Invoke-PcvPrGate.ps1 -SkipBuild` 뒤 Release build), `npm run test:required --prefix web`, Pester 4종, `Update-PcvCurrentEvidenceDocs.ps1 -Check`, `npm run test:public-source-safety --prefix web`(BL-0015 기존 2건 외 0), `git diff --check origin/main...HEAD`. push, PR, 그 PR 번호로 `release-train.json` `queue` 행(area web, risk S, lane2_probe `web.console.shell`)을 같은 PR에 더한 뒤 green CI 뒤 merge, main push run green 확인. campaign을 닫고(Task 4 이관) 승인 2로 train `0.42.96` campaign을 `pcv-campaign-open`으로 연다.
+
+실행 기록(2026-10-11): clean HEAD에서 Release build, PR gate `artifacts/pr-gate/20261010-163746`(dotnet-test-release passed, module-size-ratchet passed), `npm run test:required --prefix web`, Pester packaging 528·installer 49·web 50·manual-admin 137, `Update-PcvCurrentEvidenceDocs.ps1 -Check` current, `npm run test:public-source-safety`(BL-0015 기존 2건 외 0), `git diff --check origin/main...HEAD`. PR #86 checks: 첫 run 38068792113의 dotnet shard가 Host Chromium 시험 teardown(남은 browser 프로세스 1개, BL-0012와 같은 일시 실패; 새 ShownView 검사는 통과)으로 red, 실패 job 한 번 재실행(attempt 2)으로 dotnet·web·delivery·installer-policy·public-boundary-ci-required 모두 pass. queue 행 86(area web, risk S, lane2_probe `web.console.shell`, 변경 `179bd198`)을 같은 PR에 더했다. merge commit `87a7deb9`(after-green-ci). main push run: Development Gates 38069202154 success, Public Boundary Contract 38069202145 success. host mutation은 Task 2 dev probe가 유일하다. 이 campaign은 닫고 Task 4(C5 runner 확인)는 `train-04296-20261011` Task 12로 이관하며, 2026-10-11 승인 2로 train `0.42.96` campaign을 연다.
 
 ## Task 4: C5 runner 확인 (2026-10-19 이후, 이관)
 
 - [ ] `not_before` 2026-10-19. 이관 전 `train-04295-20261010` Task 11(원래 `completion-20261008` Task 10)이다. Ubuntu 26 runner의 첫 `main` Development Gates와 Public Boundary run이 green이면 `config/project-completion-criteria.json` 위험 행을 `status=closed`, `closed_by`에 run id로 닫는다. 실패하면 `ubuntu-24.04` pin을 판단해 backlog 행으로 보고한다. push, PR, green CI 뒤 merge.
+
+이관(2026-10-11): `train-04296-20261011` Task 12로 옮긴다(`docs/superpowers/plans/2026-10-11-purecvisor-desktop-node-train-04296.md`). 문장과 `not_before` 2026-10-19는 그대로다.
 
 ## Nonclaims
 

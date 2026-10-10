@@ -18,6 +18,24 @@
 - Claims: `public_trusted_signing=false`; `external_stable_publication=false`.
 <!-- END GENERATED CURRENT EVIDENCE -->
 
+## 2026-10-11 Web Console 프론트엔드 구조(ADR-0018)와 train `0.42.94`~`0.42.96`
+
+- Web Console은 ADR-0018 Single Edge 구조다. `/`는 `web/index.html` 셸(로그인 페이지 + 앱 셸)이고, `web/app.bundle.js`는
+  `web/src/modules.json` 순서표(module 23개 + `web/src/bootstrap.ts`)로 만든 생성물이다. 옛 콘솔 `web/index.legacy.html` +
+  `web/app.js`는 옛 계약 기준선으로 남는다. 설계 `docs/superpowers/specs/2026-10-10-purecvisor-desktop-node-single-edge-frontend-structure-design.md`,
+  구현 PR #81, 화면 규격 `web/DESIGN.md`.
+- MSI web payload 목록은 `web/payload-manifest.json`이다. `core` 세 파일은 `installer/Product.wxs`가, 나머지는
+  `packaging/windows-desktop-node/tools/Update-PcvWebPayloadWix.ps1`이 만드는 `installer/WebPayload.wxs`가 싣는다. 생성
+  디렉터리마다 첫 component에 `RemoveFolder`(`On="uninstall"`)가 있다(BL-0017, PR #84).
+- train `0.42.94`는 MSI uninstall 뒤 web 하위 폴더가 남아(BL-0017), `0.42.95`는 새 셸 화면 전환이 대시보드에 멈춰(BL-0019,
+  PR #86) 정차했다. 정차한 train은 `docs/ga-ready/release-train.json`에서 빼고 적재 행을 `queue`로 되돌린다.
+- train `0.42.96-admin-smoke`(적재 PR #78·#79·#81·#84·#86)는 package, pair, fullgate, current-card, Lane 2 probe, 셸 시연
+  `docs/ga-ready/demo/web-console-shell-demo-2026-10-11.md`, S3 재시연 `docs/ga-ready/demo/s3-checkpoint-demo-2026-10-11-04296.md`가
+  PASS다. Lane 3는 `pcvverify lane3-spec`이 `index_sections.previous_version`을 pair baseline으로 채우는 결함(BL-0021)으로
+  보류했고 operational current는 `0.42.93-admin-smoke` 그대로다. 기록은
+  `docs/superpowers/plans/2026-10-11-purecvisor-desktop-node-train-04296.md`, 다음 승인은 `docs/ga-ready/active-campaign.json`.
+- 시나리오: `config/project-completion-criteria.json`에서 S1·S2 `passed`, S3·S4 `open`이다. S3 닫기는 S4 campaign 첫 PR에서 한다.
+
 ## 2026-10-09 프로젝트 완료 정의 v3 (ADR-0017)
 
 - 완료 조건: 시나리오 S1~S4와 C1(GA-ready CI), C5(CI와 기한 위험), C6(영구 범위 밖). 결정 `docs/adr/0017-scenario-delivery-completion.md`,
@@ -713,7 +731,7 @@ manual-admin descriptor schema v2(`descriptor_schema_version=2`,
 | Root component boundary | `archive/spikes/purecvisor-desktop-node/README.md` |
 | Local API | `archive/spikes/purecvisor-desktop-node/api/README.md` |
 | Active .NET CLI | `src/DesktopNode.Cli/`, `src/DesktopNode.Cli/README.md`, `docs/CLI_COMMAND_USAGE.md`, `docs/superpowers/plans/2026-05-09-purecvisor-desktop-node-active-dotnet-cli.md` |
-| Active TypeScript Web Console | `web/`, `web/src/served-app.ts`, `web/package.json` |
+| Active TypeScript Web Console | `web/`, `web/src/modules.json`, `web/src/modules/`, `web/src/bootstrap.ts`, `web/package.json`, `web/DESIGN.md`; 옛 콘솔 `web/src/served-app.ts` |
 | Historical .NET TUI predecessor (active 아님) | `docs/adr/0011-cli-web-only-operator-surface.md`, `docs/superpowers/specs/2026-05-10-purecvisor-desktop-node-product-tui-service-design.md`, `docs/superpowers/plans/2026-05-10-purecvisor-desktop-node-product-tui-service.md`, `docs/ga-ready/evidence/product-tui-service-plan-closure-2026-05-10.md` |
 | Archived PowerShell CLI baseline | `archive/spikes/purecvisor-desktop-node/cli/README.md` |
 | Hyper-V helper | `archive/spikes/purecvisor-desktop-node/hyperv/README.md` |
@@ -786,7 +804,7 @@ ADR-0006은 현재 적용되는 내부 사설망 전용 배포 결정이다. `IN
 - `DELETE /api/v1/vms/{id}`는 native VM delete adapter가 처리한다. Managed VM은 C# WMI `DestroySystem` adapter로 삭제하고, missing VM은 `action=absent`, unmanaged VM은 `PCV_VM_NOT_MANAGED_BY_PURECVISOR`로 반환한다. `0.30.1-admin-smoke` installed destructive smoke가 managed delete, repeat absent, unmanaged guard block, cleanup/no-reboot evidence를 확인했다.
 - `POST /api/v1/vms/{id}/checkpoints`, `POST /api/v1/vms/{id}/checkpoints/{checkpoint_id}/restore`, `DELETE /api/v1/vms/{id}/checkpoints/{checkpoint_id}`는 .NET request processor queue를 유지하되 C# WMI snapshot service adapter가 직접 실행한다. PowerShell helper fallback은 사용하지 않는다.
 - Successful guest shutdown installed smoke는 `artifacts/guest-shutdown-windows-smoke-20260503-222750`에서 Microsoft Windows Server 2022 Evaluation VHD guest 기준 installed Local API `vm.shutdown` job `succeeded`, final VM `Off`, cleanup 완료로 확인했다.
-- Web Console served `web/app.js`는 `web/src/served-app.ts` TypeScript build output이며, `npm run verify:parity --prefix web`가 served freshness와 Node `vm` browser fixture smoke를 함께 실행한다. `Network` 화면은 `GET /api/v1/network/inventory`를 read-only로 표시하며 switch type/default/management OS/external adapter field를 fixture와 browser smoke로 검증한다. `Troubleshooting` 화면의 Diagnostic Bundle 패널은 server-side bundle API create/download와 product wrapper fallback 안내, diagnostics root/redaction boundary를 표시하며, host mutation은 실행하지 않는다.
+- Web Console은 `web/index.html` 셸과 TypeScript build output `web/app.bundle.js`(source `web/src/modules/**`)를 서빙한다. 옛 콘솔 `web/app.js`(source `web/src/served-app.ts`)는 `/index.legacy.html`에 남고, `npm run verify:parity --prefix web`가 served freshness와 옛 콘솔 Node `vm` browser fixture smoke를 함께 실행한다. `Network` 화면은 `GET /api/v1/network/inventory`를 read-only로 표시하며 switch type/default/management OS/external adapter field를 fixture와 browser smoke로 검증한다. `Troubleshooting` 화면의 Diagnostic Bundle 패널은 server-side bundle API create/download와 product wrapper fallback 안내, diagnostics root/redaction boundary를 표시하며, host mutation은 실행하지 않는다.
 - Web/API listener 기본값은 Web Console `http://127.0.0.1/`, Web API `http://127.0.0.1:7777/api/v1/...` 분리다. Host가 `/pcv-config.js`로 API origin을 주입하고 Web listener의 `/api/*`는 `PCV_API_ROUTE_ON_WEB_PORT`로 거부한다. `docs/ga-ready/evidence/web-api-port-split-installed-listener-2026-05-10.md`는 설치본 `0.39.2-port-split-smoke` payload와 service `PathName` `--web-prefix "http://127.0.0.1:80/"` 적용, Web/API HTTP smoke PASS를 기록한다. 기본 Web Console은 HTTP loopback이고, internal HTTPS/TLS lifecycle installed smoke는 별도 ADR-0006 evidence로 PASS다. Public 443 publication은 scope 밖이다.
 - `artifacts/routeparity-service-msi-hyperv-admin-host-mutation-20260505-174902-0357`와 `artifacts/os-mutation-gates-20260505-180434-0357-rerun`는 사용자 재승인으로 `0.35.7-admin-smoke` Hyper-V/MSI/firewall/LAN/Event Log/internal trust-store gate를 확인한 historical evidence다. Final service는 loopback-only `Running`, installed DisplayVersion은 `0.35.7`, firewall final count는 `0`, Event Log source는 absent, internal trust cert는 present다. Public trusted signing은 제외했고, evidence는 `AllowUnsignedDev`와 ADR-0003 internal trust-store 범위다.
 - `artifacts/routeparity-service-msi-hyperv-dotnet100-20260505-0.36.0`는 후속 active product .NET 100% cleanup Service/MSI/Hyper-V route parity rerun이다. Final service는 loopback-only `Running`, boot time unchanged, `remaining_pcv_vms=[]`다. Firewall/trust-store/LAN/Event Log OS gate는 이번 rerun 범위가 아니다.

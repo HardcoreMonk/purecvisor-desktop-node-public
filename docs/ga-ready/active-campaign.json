@@ -2,43 +2,52 @@
   "schema_version": 1,
   "contract": "pcv-active-campaign-v1",
   "status": "open",
-  "id": "shell-nav-view-sync-20261011",
-  "intent": "Fix BL-0019 (train 0.42.95 stop): the Single Edge nav owns the shown #cb section (help gets its own section), the legacy view state follows it, regression tests in the bundle-load fake DOM and the Host Chromium test, an installed dev probe (product Update to the fixed build, Playwright view switching, Rollback); merge; then open the train 0.42.96 campaign (approval 2), later S4 and legacy-retirement (approval 3).",
+  "id": "train-04296-finish-20261011",
+  "intent": "Finish release train 0.42.96-admin-smoke in two PRs: merge the train branch (PR A, evidence without Lane 3), fix lane3-spec index_sections.previous_version for skipped promotions (PR B, BL-0021), then write Lane 3 from main (PR C) and promote 0.42.96 to operational current; then record the completion judgement and open the S4 campaign (approval 3).",
   "working_authority": "source_head",
   "allowed_lanes": [
     "0",
     "1",
-    "2"
+    "3"
   ],
-  "mutation_allowed": true,
-  "current_write_allowed": false,
-  "next_step": "Run Task 3 from docs/superpowers/plans/2026-10-11-purecvisor-desktop-node-shell-nav-view-sync.md, then the queue in order.",
-  "plan": "docs/superpowers/plans/2026-10-11-purecvisor-desktop-node-shell-nav-view-sync.md",
+  "mutation_allowed": false,
+  "current_write_allowed": true,
+  "next_step": "Run Task 1 from docs/superpowers/plans/2026-10-11-purecvisor-desktop-node-train-04296-finish.md, then the queue in order.",
+  "plan": "docs/superpowers/plans/2026-10-11-purecvisor-desktop-node-train-04296-finish.md",
   "task_queue": [
-    "Task 1",
     "Task 2",
     "Task 3",
-    "Task 4"
+    "Task 1",
+    "Task 4",
+    "Task 5",
+    "Task 6",
+    "Task 7",
+    "Task 8"
   ],
   "task_lanes": {
-    "Task 2": "2"
+    "Task 4": "3",
+    "Task 5": "3"
   },
   "task_not_before": {
-    "Task 4": "2026-10-19"
+    "Task 8": "2026-10-19"
   },
   "carried_from": {
-    "Task 4": "train-04295-20261010 Task 11"
+    "Task 1": "train-04296-20261011 Task 10",
+    "Task 4": "train-04296-20261011 Task 8",
+    "Task 5": "train-04296-20261011 Task 8",
+    "Task 7": "train-04296-20261011 Task 11",
+    "Task 8": "train-04296-20261011 Task 12"
   },
-  "next_task": "Task 3",
+  "next_task": "Task 1",
   "completed_tasks": [
-    "Task 1",
-    "Task 2"
+    "Task 2",
+    "Task 3"
   ],
   "commit_policy": "local-commit-per-task",
   "push_allowed": true,
   "merge_policy": "after-green-ci",
-  "checkpoint_limit": 4,
-  "approval_locator": "User-Approval: 2026-09-27 campaign runner commit policy local-commit-per-task; User-Approval: 2026-10-11 \"1,2,3\" on the train-04295-20261010 stop report (1 Lane 1 fix campaign: the nav route syncs the legacy view state with setActiveView(viewId) before the legacy render(), bundle-load regression for section visibility after sidebar and hash switches, Host Chromium #/vms switch check, installed dev probe (product Update to the fixed build, Playwright check of the 8 views), queue row, Task 11 (C5) carried, push/PR, merge after green CI incl. PR #85; 2 after the fix merges depart train 0.42.96-admin-smoke with queue 78/79/81/84 plus the fix PR row, package build, dev-host pair host mutation (ADR-0016 scope), fullgate incl. os-mutation-gate and current-card, Lane 2 probes vm.create / web.console.shell / checkpoint.schedule.set with the S3 re-demo, Lane 3 current-evidence.json write, single-PR train merge after green CI, revert PR if the main push is red, baseline = installed 0.42.95 package; 3 after the train the S4 campaign, then the legacy-retirement campaign as approved on 2026-10-10). Lane 2 scope of this campaign: product Update of the installed node to the fixed dev build and product Rollback back to 0.42.95, service stop/start; ADR-0016 standing approval (2026-10-07): pcv-it- prefixed VM create/configure/delete, disks under artifacts (no VM in this campaign)",
+  "checkpoint_limit": 8,
+  "approval_locator": "User-Approval: 2026-09-27 campaign runner commit policy local-commit-per-task; User-Approval: 2026-10-11 \"1,2,3\" on the train-04296-20261011 Task 8 hold report: item 1 (Lane 1 fix PR: TrainLane3SpecBuilder writes index_sections.previous_version from the previous promoted spec version instead of the pair baseline, plus a golden test for a skipped promotion 0.42.93 -> 0.42.96; push/PR, merge after green CI), item 2 (finish train 0.42.96 in two PRs: push/PR the train branch with Tasks 0-7 and 9 and no Lane 3, merge after green CI; after item 1 merges, a Lane 3 PR from main with functional carry-forward, consume, the two-PR main-push document, current-card promoted-current, current-evidence.json write, lane3-spec, the promotion docs tool and release-train promotion; push/PR, merge after green CI; revert PR if the main push is red; no host mutation), item 3 (after the train the S4 campaign, then the legacy-retirement campaign, as approved on 2026-10-10 items 2 and 3; closing criteria S3 and carrying the C5 check happen in the first S4 PR); ADR-0016 standing approval (2026-10-07): pcv-it- prefixed VM create/configure/delete, disks under artifacts",
   "next_approval_required": [],
   "stop_on": [
     "same-cause-fail-3",
@@ -49,8 +58,8 @@
     "new-design-required",
     "permission-denied",
     "dirty-tree-at-start",
-    "lane2-fail"
+    "train-path-check-red"
   ],
   "out_of_scope_is_not_next_step": true,
-  "closed_predecessor": "train-04295-20261010"
+  "closed_predecessor": "train-04296-20261011"
 }

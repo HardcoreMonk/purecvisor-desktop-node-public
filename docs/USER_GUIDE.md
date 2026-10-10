@@ -70,7 +70,7 @@ Web Console은 `http://127.0.0.1/`에서 Single Edge 구조의 셸(로그인 페
 | loopback(`127.0.0.1`) | `POST /api/v1/auth/loopback-session`으로 짧은 JWT를 자동으로 받는다. 계정이 구성되면 이 경로는 `409 PCV_LOOPBACK_SESSION_DISABLED`로 닫히고 로그인 페이지에서 username/password로 로그인한다. |
 | LAN/비-loopback | 계정 JWT 또는 운영자가 별도로 제공한 bearer token이 필요하다. |
 
-상단 바의 환경설정(`Ctrl+P`)에서 테마, 언어, Local API 주소, 선택적 브라우저 token을 바꾸고, `token 지우기`로 브라우저에 입력된 token 값을 지운다. 사이드바 `Help`는 Local API route, 권한, CLI, Web Console 화면을 묶은 참조 카탈로그이고, `http://127.0.0.1/docs.html`은 이 가이드를 발췌한 문서 포털이다. 키보드 단축키 목록은 `?`로 연다. 옛 연결 폼 기반 콘솔은 `http://127.0.0.1/index.legacy.html`에 남아 있다(옛 계약 검증용, 별도 campaign에서 제거 예정).
+상단 바의 환경설정(`Ctrl+P`)에서 테마, 언어, Local API 주소, 선택적 브라우저 token을 바꾸고, `token 지우기`로 브라우저에 입력된 token 값을 지운다. 사이드바 `도움말`(Help)은 Local API route, 권한, CLI, Web Console 화면을 묶은 참조 카탈로그이고, `http://127.0.0.1/docs.html`은 이 가이드를 발췌한 문서 포털이다. 키보드 단축키 목록은 `?`로 연다. 옛 연결 폼 기반 콘솔은 `http://127.0.0.1/index.legacy.html`에 남아 있다(옛 계약 검증용, 별도 campaign에서 제거 예정).
 
 Token 값은 command line, issue, 문서, diagnostic bundle에 기록하지 않는다. 설치된 service와 CLI 기본 실행은 protected token file을 사용하고, Web Console에는 운영자가 별도로 제공한 token만 입력한다.
 
@@ -124,9 +124,9 @@ noVNC bridge는 Windows Desktop Node listener의 opt-in bridge이며 기본 disa
 | 상태 | 의미 | 조치 |
 |------|------|------|
 | `Connected` | API와 인증이 정상이다. | 그대로 사용한다. |
-| `Auth required` | token이 없거나 거부됐다. | token 입력값을 확인한다. |
+| `Auth required` | 세션이나 token이 없거나 거부됐다. | loopback이면 페이지를 새로 고친다. 계정이 구성됐으면 로그인한다. 환경설정(`Ctrl+P`)의 브라우저 token을 확인한다. |
 | `Error` | service/API/host 작업 중 오류가 발생했다. | alert의 `PCV_*` error code와 service 상태를 확인한다. |
-| `Idle` | 아직 연결 요청 전이다. | API와 token을 입력하고 `Save` 또는 `Refresh`를 누른다. |
+| `Idle` | 아직 연결 요청 전이다. | 페이지를 새로 고치거나 환경설정의 Local API 주소를 확인한다. 옛 콘솔(`/index.legacy.html`)에서는 API와 token을 입력하고 `Save` 또는 `Refresh`를 누른다. |
 
 현재 Web Console에서 직접 제공하는 범위:
 
@@ -150,15 +150,16 @@ noVNC bridge는 Windows Desktop Node listener의 opt-in bridge이며 기본 disa
 
 ### 운영 화면 구조
 
-Web Console은 `Dashboard`, `Virtual Machines`, `Network`, `Jobs`, `Activity`, `Evidence`, `Troubleshooting` 화면으로 운영 흐름을 나눈다.
+Web Console 사이드바는 맨 위 `운영 대시보드`와 `워크로드`, `인프라`, `관제`, `시스템`, `도움말` 묶음으로 화면을 나눈다. 주소 hash `#/<view>`(예: `http://127.0.0.1/#/vms`)로 화면을 바로 열 수 있다. 괄호 안은 영어 UI 이름과 view id다.
 
-- `Dashboard`는 Ops Cockpit 메인 화면이다. Host readiness, VM/job count, runtime policy, priority warning, 최근 activity를 확인한다.
-- `Virtual Machines`는 VM Workbench다. VM 검색, 선택된 VM 상세, lifecycle/checkpoint action, VM-local activity context를 확인한다.
-- `Network`는 read-only Network Inventory 화면이다. Hyper-V switch topology를 확인한다.
-- `Jobs`는 현재 브라우저 세션의 tracked job history를 확인한다.
-- `Activity`는 server-side job snapshot과 request/correlation id를 확인한다.
-- `Evidence`는 Batch Supervisor evidence 요약을 확인한다.
-- `Troubleshooting`은 Incident Command 화면이다. 실패 job, runtime/auth/LAN/VMMS/checkpoint risk, token rotation handoff, diagnostic bundle handoff와 read-only 진단 가이드를 확인한다.
+- `운영 대시보드`(Dashboard, `dashboard`)는 Ops Cockpit 메인 화면이다. Host readiness, VM/job count, runtime policy, priority warning, 최근 activity를 확인한다.
+- `가상 머신`(Virtual Machines, `vms`)은 VM Workbench다. VM 검색, 선택된 VM 상세, lifecycle/checkpoint action, VM-local activity context를 확인한다.
+- `네트워크`(Network, `network`)는 read-only Network Inventory 화면이다. Hyper-V switch topology를 확인한다.
+- `작업`(Jobs, `jobs`)은 현재 브라우저 세션의 tracked job history를 확인한다.
+- `이벤트 센터`(Event Center, `activity`)는 server-side job snapshot과 request/correlation id를 확인한다.
+- `증적`(Evidence, `evidence`)은 Batch Supervisor evidence 요약을 확인한다.
+- `진단과 계정`(Diagnostics and Accounts, `troubleshooting`)은 Incident Command 화면이다. 실패 job, runtime/auth/LAN/VMMS/checkpoint risk, token rotation handoff, diagnostic bundle handoff와 read-only 진단 가이드를 확인한다.
+- `도움말`(Help, `helppage`)은 Local API route, 권한, CLI, 화면을 묶은 참조 카탈로그다.
 
 이 화면 구조는 새 OS mutation을 실행하지 않는다. 실제 VM lifecycle/checkpoint/delete action은 기존 queued job route와 확인 dialog를 그대로 사용한다.
 
@@ -260,6 +261,11 @@ VM detail panel의 checkpoint 영역에서 작업한다.
 | `Create checkpoint` | 입력한 이름으로 checkpoint 생성 job을 queue한다. |
 | `Restore` | 선택한 checkpoint로 복원 job을 queue한다. 확인 dialog가 뜬다. |
 | `Delete` | 선택한 checkpoint 삭제 job을 queue한다. 확인 dialog가 뜬다. |
+| `Preview schedule` | 입력한 interval 분과 retention 개수로 예약을 미리 본다(dry run). 저장하지 않는다. |
+| `Save schedule` | 예약 저장 job(`checkpoint.schedule.set`)을 queue한다. 확인 dialog가 뜬다. |
+| `Clear schedule` | 예약 해제 job(`checkpoint.schedule.clear`)을 queue한다. 기존 checkpoint는 지우지 않는다. 확인 dialog가 뜬다. |
+
+예약이 켜지면 service가 `next due` 시각에 `pcv-schedule-<UTC 시각>` 이름의 checkpoint를 만들고, retention 개수를 넘으면 가장 오래된 예약 checkpoint를 지운다. 실행은 schedule 카드의 `last enqueued`, `next due`와 checkpoint 목록으로 확인한다. 저장이나 해제 job이 끝난 뒤 카드가 바로 바뀌지 않으면 VM을 다시 선택한다(알려진 갱신 지연, backlog BL-0020).
 
 Checkpoint restore는 VM state에 민감하다. 검증된 smoke는 `vm.poweroff-before-restore` 조건을 사용했다. 운영 중 VM에서는 복원 전 workload 영향과 VM 전원 상태를 먼저 확인한다.
 

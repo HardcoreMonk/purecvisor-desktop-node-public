@@ -56,7 +56,7 @@ historical predecessor 문단은 그 아래쪽에 누적돼 있다(약 90 KB). `
 | `src/DesktopNode.HostOps` | host ops catalog와 planner(observe/dry-run만, Mutate는 항상 거절). 실제 제어는 Host에 있다 |
 | `src/DesktopNode.Verification` | `pcvverify`: 검증 shard 실행기, 완료 판정, train 도구. 제품 런타임이 아니다 |
 | `src/DesktopNode.Cli` | PCVCLI (`docs/CLI_COMMAND_USAGE.md`) |
-| `web/src/served/*.ts` → `web/app.js` | Web Console. `app.js`는 **생성물** — `web/src`를 수정 후 `npm run build:served --prefix web` |
+| `web/src/modules/*.ts` + `web/src/modules.json` → `web/app.bundle.js` | Web Console(ADR-0018 Single Edge 셸 `web/index.html`). `app.bundle.js`는 **생성물** — `web/src`를 수정 후 `npm run build:served --prefix web`. 같은 명령이 옛 콘솔 `web/app.js`(`web/index.legacy.html`, source `web/src/served-app.ts`)와 `web/sw.js` CACHE_NAME도 갱신한다. MSI web payload 목록은 `web/payload-manifest.json` |
 | `packaging/windows-desktop-node/` | 제품 wrapper, installer(MSI), 관리자 smoke 도구, Pester 테스트, 문서 생성기 |
 | `.claude/skills/` | `pcv-campaign`, `pcv-campaign-open`, `pcv-ship`, `pcv-goal` |
 

@@ -46,6 +46,10 @@ DESKTOP_NODE_WEB_SOURCE_PARTS: web/src/modules
 
 - campaign `single-edge-frontend-structure-20261010`(Lane 1, 18 task)이 이 결정을 구현한다. 설치본 반영은 그 뒤 train
   0.42.94(BL-0016 수정과 새 프론트엔드)이고, 그 설치본에서 S3 브라우저 예약 저장 재시연과 S4 campaign을 한다.
+- 2026-10-11 현황: 구현은 PR #81로 merge됐다. train `0.42.94`(MSI uninstall 뒤 web 폴더 잔여, BL-0017)와 `0.42.95`(새 셸 화면
+  전환, BL-0019)는 정차했고 PR #84, #86으로 고쳤다. train `0.42.96` 설치본에서 셸 시연
+  (`docs/ga-ready/demo/web-console-shell-demo-2026-10-11.md`)과 S3 브라우저 예약 저장 재시연
+  (`docs/ga-ready/demo/s3-checkpoint-demo-2026-10-11-04296.md`)이 PASS다. Lane 3 승격은 BL-0021로 보류 중이다.
 - Host 정적 서빙은 폰트·SVG·manifest·하위 디렉터리를 서빙하도록 넓어지고, installer 파일 inventory가 web root 전체를 싣는다.
 - 정적 계약(static contracts, parity 스냅샷, feature surface ledger, web Pester 줄 범위 pin, Delivery pin)은 새 구조로
   재기준선을 잡는다(설계 §8).

@@ -339,7 +339,7 @@ Phase 25 후보는 C#/.NET contract/runtime/API/service/host, TypeScript Web Con
 초기 Phase 25 slice:
 
 - `src/DesktopNode.Contracts/**`, `src/DesktopNode.Runtime/**`, `src/DesktopNode.Api/**`, `src/DesktopNode.Service/**`는 side-by-side contract/scaffold였다.
-- Web Console TypeScript parity scaffold는 2026-05-03 served asset/root migration slice에서 `web/src/served-app.ts`가 `web/app.js`를 생성하는 제품 Web Console source로 승격됐다.
+- Web Console TypeScript parity scaffold는 2026-05-03 served asset/root migration slice에서 `web/src/served-app.ts`가 `web/app.js`를 생성하는 제품 Web Console source로 승격됐다. 2026-10-10 ADR-0018 뒤 기본 셸 source는 `web/src/modules/**`(생성물 `web/app.bundle.js`)이고, `web/src/served-app.ts`는 옛 콘솔(`web/index.legacy.html`) source로 남는다.
 
 현재 Phase 25 경계:
 
@@ -368,7 +368,7 @@ Phase 25 후보는 C#/.NET contract/runtime/API/service/host, TypeScript Web Con
 - Public signed update/rollback smoke preflight는 code-level dry-run evidence다. `New-PcvPublicSignedUpdateRollbackSmokePreflight.ps1`는 selected catalog channel에서 clean-host smoke plan preview를 산출하지만, install/update/rollback execution, public trusted signing, external stable publication은 실행하지 않는다. Evidence는 `docs/ga-ready/evidence/public-signed-update-rollback-smoke-preflight-2026-05-08.md`다.
 - Burn bootstrapper preflight는 code-level dry-run evidence다. `New-PcvBurnBootstrapperPreflight.ps1`는 packaging publication descriptor와 HTTPS MSI URL에서 WiX Burn authoring preview를 산출하지만, bundle build/chained lifecycle smoke/public trusted signing/external stable publication은 실행하지 않는다. Evidence는 `docs/ga-ready/evidence/burn-bootstrapper-preflight-2026-05-07.md`다.
 - MSIX packaging feasibility preflight는 code-level dry-run evidence다. `New-PcvMsixPackagingFeasibilityPreflight.ps1`는 MSIX package manifest preview를 산출하지만, 그 preflight 자체는 package build/install/update/remove/public trusted signing/external stable publication을 실행하지 않는다. Evidence는 `docs/ga-ready/evidence/msix-packaging-feasibility-preflight-2026-05-07.md`다. 후속 internal lifecycle smoke `docs/ga-ready/evidence/msix-package-lifecycle-smoke-2026-05-10-0416.md`는 `PureCVisor.DesktopNode.MsixSmoke` package build/install/update/remove를 PASS로 확인했지만 public trusted signing 또는 외부 stable publication evidence가 아니다.
-- Web Console browser fixture parity는 served `app.js`를 Node `vm` 최소 DOM과 fixture Local API 응답으로 실행하는 code-level/npm 검증이며, 실제 browser/dev server/Local API/Hyper-V mutation evidence가 아니다.
+- Web Console browser fixture parity는 옛 콘솔 served `app.js`를 Node `vm` 최소 DOM과 fixture Local API 응답으로 실행하는 code-level/npm 검증이다. 새 셸 `app.bundle.js`는 `web/node-tests/bundle-load.test.mjs`가 fake DOM에서 적재한다. 둘 다 실제 browser/dev server/Local API/Hyper-V mutation evidence가 아니다. 새 셸의 브라우저 동작은 설치본 시연 기록(예: `docs/ga-ready/demo/web-console-shell-demo-2026-10-11.md`)으로만 주장한다.
 
 Evidence 기준:
 
