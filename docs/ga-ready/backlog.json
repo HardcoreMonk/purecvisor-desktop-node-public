@@ -194,6 +194,30 @@
       "needs_design": false,
       "status": "open",
       "closed_by": null
+    },
+    {
+      "id": "BL-0017",
+      "found_on": "2026-10-10",
+      "source": "docs/superpowers/plans/2026-10-10-purecvisor-desktop-node-train-04294.md Task 2 (pair orchestrator, 설치본 0.42.93 → 0.42.94)",
+      "summary": "생성된 installer/WebPayload.wxs(Update-PcvWebPayloadWix.ps1)에 RemoveFolder가 없다. ZIP 제품 Update가 MSI보다 먼저 web\\samples, web\\vendor\\coolicons, web\\vendor\\pretendard\\woff2를 만들면 Windows Installer는 자기가 만든 빈 폴더만 지우므로 MSI 제거 뒤 그 디렉터리와 제품 root가 남고, Burn lifecycle remove-absence가 'product remains'로 실패한다(train 0.42.94 pair 1차·r2 재현). 0.42.93은 web 하위 디렉터리가 없어 통과했다. 수정: 생성 디렉터리마다 RemoveFolder(On=uninstall) component + registry keypath, web 폴더 포함, WixSourceContractVerifier·Delivery·installer Pester component 수 pin 갱신, WiX smoke에 설치·제거 뒤 root 부재 검사.",
+      "classification": "undecided",
+      "basis": null,
+      "out_of_scope_ref": null,
+      "needs_design": false,
+      "status": "open",
+      "closed_by": null
+    },
+    {
+      "id": "BL-0018",
+      "found_on": "2026-10-10",
+      "source": "docs/superpowers/plans/2026-10-10-purecvisor-desktop-node-train-04294.md Task 2 (pair orchestrator, 설치본 0.42.93 → 0.42.94)",
+      "summary": "Invoke-PcvBurnBootstrapperLifecycle.ps1의 remove-absence 검사(Get-PcvProductState)는 service·manifest·product root 중 무엇이 남았는지 밝히지 않고 'product remains'만 던지고, summary.states에 remove-absence 항목도 남기지 않는다. 남은 항목(및 root면 남은 경로 목록)을 summary와 오류 문자열에 적고, 서비스 삭제 지연 같은 일시 조건은 짧게 재검사하면 진단이 빨라진다(train 0.42.94 정차 진단에 로그 열람 2회가 필요했다).",
+      "classification": "undecided",
+      "basis": null,
+      "out_of_scope_ref": null,
+      "needs_design": false,
+      "status": "open",
+      "closed_by": null
     }
   ]
 }

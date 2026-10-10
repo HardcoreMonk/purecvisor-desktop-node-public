@@ -1,19 +1,22 @@
 {
   "schema_version": 1,
   "contract": "pcv-active-campaign-v1",
-  "status": "open",
-  "id": "single-edge-frontend-structure-20261010",
-  "intent": "single-edge-frontend-structure-adoption",
+  "status": "closed",
+  "id": "train-04294-20261010",
+  "intent": "Release train 0.42.94-admin-smoke: fix queue 78/79/81, package, pair, fullgate, current-card, Lane 2 probes (vm.create, web.console.shell, checkpoint.schedule.set + S3 browser re-demo), Lane 3 promotion, single PR merge; then open the S4 campaign (approval 2) and later the legacy-retirement campaign (approval 3).",
   "working_authority": "source_head",
   "allowed_lanes": [
     "0",
-    "1"
+    "1",
+    "2",
+    "3"
   ],
-  "mutation_allowed": false,
-  "current_write_allowed": false,
-  "next_step": "Task 18 (C5 runner check) waits for its not_before 2026-10-19 (deadline-wait). Train 0.42.94 departure, the S4 campaign and the legacy-retirement campaign need the approvals in next_approval_required; reply with the numbers.",
-  "plan": "docs/superpowers/plans/2026-10-10-purecvisor-desktop-node-single-edge-frontend-structure.md",
+  "mutation_allowed": true,
+  "current_write_allowed": true,
+  "next_step": "Stopped at Task 2 (lane2-fail, 정차): pair burn-bootstrapper-lifecycle failed twice with 'remove-absence product remains' because WebPayload.wxs has no RemoveFolder for the web subdirectories the ZIP product Update creates first. Train 0.42.94 is stopped: its entry leaves release-train.json (a stopped entry would be an unfinished-train gap for the completion evaluator) and its rows are back in the queue. Reply with the approval numbers; Task 11 (C5 runner check, not_before 2026-10-19) is carried by the next campaign.",
+  "plan": "docs/superpowers/plans/2026-10-10-purecvisor-desktop-node-train-04294.md",
   "task_queue": [
+    "Task 0",
     "Task 1",
     "Task 2",
     "Task 3",
@@ -24,50 +27,37 @@
     "Task 8",
     "Task 9",
     "Task 10",
-    "Task 11",
-    "Task 12",
-    "Task 13",
-    "Task 14",
-    "Task 15",
-    "Task 16a",
-    "Task 16b",
-    "Task 17",
-    "Task 18"
+    "Task 11"
   ],
-  "task_lanes": {},
-  "task_not_before": {
-    "Task 18": "2026-10-19"
+  "task_lanes": {
+    "Task 2": "2",
+    "Task 3": "2",
+    "Task 4": "2",
+    "Task 5": "2",
+    "Task 6": "2",
+    "Task 7": "2",
+    "Task 8": "3"
   },
-  "next_task": "Task 18",
+  "task_not_before": {
+    "Task 11": "2026-10-19"
+  },
+  "carried_from": {
+    "Task 11": "single-edge-frontend-structure-20261010 Task 18"
+  },
+  "next_task": null,
   "completed_tasks": [
-    "Task 1",
-    "Task 2",
-    "Task 3",
-    "Task 4",
-    "Task 5",
-    "Task 6",
-    "Task 7",
-    "Task 8",
-    "Task 9",
-    "Task 10",
-    "Task 11",
-    "Task 12",
-    "Task 13",
-    "Task 14",
-    "Task 15",
-    "Task 16a",
-    "Task 16b",
-    "Task 17"
+    "Task 0",
+    "Task 1"
   ],
   "commit_policy": "local-commit-per-task",
   "push_allowed": true,
   "merge_policy": "after-green-ci",
-  "checkpoint_limit": 19,
-  "approval_locator": "User-Approval: 2026-09-27 campaign runner commit policy local-commit-per-task; User-Approval: 2026-10-10 \"https://github.com/HardcoreMonk/purecvisor 내가 제공하는 오픈소스에 접근, 분석하고 프론트엔드 구조를 그대로 차용해 줘\" and \"1,2,3,4\" on the Single Edge frontend-structure analysis report (1 plan B campaign single-edge-frontend-structure-20261010, Lane 1, branch push and PR, merge after green CI; 2 PWA and help portal in scope; 3 S4 campaign and train 0.42.94 deferred after this campaign, one train carrying BL-0016 and the new frontend; 4 analysis kept as a Claude Doc); Task 18 carried from s3-checkpoint-20261010 Task 4 with its original approval (User-Approval: 2026-10-10 \"1,2,3,4\" on the audit-green-lean-20261009 Task 7 FAIL report, C5 runner check with push, PR and merge after green CI, not before 2026-10-19); 2026-10-10 \"1\" (Task 16 cutover 재단: 16a 서빙 루트 cutover, 16b Linux 잔재·문서; 옛 구조 제거와 계약 재기준선은 train 뒤 별도 campaign; Lane 1, push/PR, green CI 뒤 merge)",
+  "checkpoint_limit": 12,
+  "approval_locator": "User-Approval: 2026-09-27 campaign runner commit policy local-commit-per-task; User-Approval: 2026-10-10 \"1,2,3\" on the single-edge-frontend-structure-20261010 final report (1 train 0.42.94-admin-smoke departure: fix queue 78/79/81, package build, dev-host pair host mutation (product Update/Rollback, ADR-0016 pcv-it- VM create/configure/delete with disks under artifacts), fullgate (full-admin-host-mutation-gate incl. required os-mutation-gate: firewall rule, Event Log source, LAN listener; same scope as the train-departure policy row) and current-card, Lane 2 probe families vm.create, checkpoint.schedule.set, web.console.shell (installed-console browser demo of the Single Edge shell loopback session, VM list, S3 schedule-save re-demo), Lane 3 current-evidence.json write, single-PR train push/PR and merge after green CI, revert PR if the main push is red; 2 open the S4 campaign after the train (installed --allow-lan/firewall only within that campaign's existing pre-approval); 3 open the legacy-retirement campaign after S4 (remove web/index.legacy.html, app.js, styles.css, web/src/served/*, re-baseline the legacy static contracts, negative tests, web Pester, parity, browser fixture, migration manifest and Delivery/packaging/config pins, 6-8 checkpoints, Lane 1, push/PR, merge after green CI)); ADR-0016 standing approval (2026-10-07): pcv-it- prefixed VM create/configure/delete, disks under artifacts",
   "next_approval_required": [
-    "1 train 0.42.94-admin-smoke 출발: queue 78·79·81을 고정하고 package build, 개발 호스트 pair host mutation(제품 Update/Rollback, ADR-0016 `pcv-it-` 접두사 VM 생성·구성·삭제, disk는 artifacts 아래), fullgate와 current-card, Lane 2 probe 기능군 vm.create·checkpoint.schedule.set·web.console.shell(설치본 브라우저에서 Single Edge 셸의 loopback 세션·VM 목록·S3 예약 저장 재시연), Lane 3 `current-evidence.json` 쓰기, 단일 PR train의 push/PR과 green CI 뒤 merge, merge 뒤 main push가 red면 revert PR.",
-    "2 train 뒤 S4 campaign을 연다(2026-10-10 승인 3의 순서; 설치본 `--allow-lan`/firewall 변경은 그 campaign의 기존 사전 승인 범위 안에서만).",
-    "3 train 뒤 legacy-retirement campaign을 연다: `web/index.legacy.html`·`app.js`·`styles.css`·`web/src/served/*` 제거와 옛 static contracts·negative·web Pester·parity·browser fixture·migration manifest·Delivery/packaging/config pin 재기준선(6~8 checkpoint), Lane 1, push/PR, green CI 뒤 merge."
+    "1 Lane 1 수정 campaign: `Update-PcvWebPayloadWix.ps1`이 생성 디렉터리(web/samples, web/vendor, web/vendor/coolicons, web/vendor/pretendard, web/vendor/pretendard/woff2)마다 `RemoveFolder`(On=uninstall) component를 내고 `web` 폴더도 제거 대상에 넣으며, `WixSourceContractVerifier`·Delivery·installer Pester의 component 수 pin과 WiX smoke(설치·제거 뒤 제품 root 없음)를 맞춘다; release-train queue 행 추가; Task 11(C5 runner 확인, not_before 2026-10-19) 이관; push/PR, green CI 뒤 merge.",
+    "2 수정 merge 뒤 train 0.42.95-admin-smoke 출발: queue 78·79·81과 수정 PR 행을 고정하고 package build, 개발 호스트 pair host mutation(제품 Update/Rollback, ADR-0016 pcv-it- VM 생성·구성·삭제, disk는 artifacts 아래), fullgate(full-admin-host-mutation-gate, required os-mutation-gate 포함)와 current-card, Lane 2 probe vm.create·checkpoint.schedule.set·web.console.shell(S3 예약 저장 재시연), Lane 3 current-evidence.json 쓰기, 단일 PR train push/PR과 green CI 뒤 merge, main push red면 revert PR. baseline은 설치본 0.42.94 package.",
+    "3 train 뒤 S4 campaign, 그 뒤 legacy-retirement campaign(2026-10-10 승인 2·3 그대로)."
   ],
   "stop_on": [
     "same-cause-fail-3",
@@ -78,11 +68,9 @@
     "new-design-required",
     "permission-denied",
     "dirty-tree-at-start",
-    "deadline-wait"
+    "lane2-fail",
+    "train-path-check-red"
   ],
   "out_of_scope_is_not_next_step": true,
-  "closed_predecessor": "s3-checkpoint-20261010",
-  "carried_from": {
-    "Task 18": "s3-checkpoint-20261010 Task 4"
-  }
+  "closed_predecessor": "single-edge-frontend-structure-20261010"
 }
