@@ -21,6 +21,21 @@
 | ADR-0016 | standing approval은 `pcv-it-` 접두사 VM 생성·구성·삭제로 한정, disk는 artifacts 아래 |
 | 이관 | `train-04296-finish-20261011` Task 8(C5 runner 확인, `not_before` 2026-10-19) → Task 2 |
 
+## 사용자 결정 (2026-10-12)
+
+승인 원문: `1` (campaign `s4-lan-account-20261011` `next_approval_required` 1번). 설계 권장안 D1-A, D2-A, D3, D4, D5를 승인하고 설계 4절 task 1~5를 이 campaign에 더한다. Lane 1 PR은 green CI 뒤 merge. Lane 2는 사전 승인(`--allow-lan`, 방화벽)과 계정 생성·disable, ADR-0016 `pcv-it-s4-*` VM 생성·삭제.
+
+| 항목 | 범위 |
+| --- | --- |
+| D1 | A. 사용자의 실제 PC에서 사용자가 S1~S3을 시연한다. 그 전에 에이전트가 이 호스트 브라우저로 `http://<host-lan-ip>/` 리허설 R을 돈다. R은 S4 판정 근거가 아니다 |
+| D2 | A. 설치 service를 API `http://<host-lan-ip>:7777/`, Web `http://<host-lan-ip>:80/`로 재구성한다. 제품 변경 없음 |
+| D3 | 방화벽 관리 규칙 두 개(7777, 80, Private, LocalSubnet). Web 규칙 이름은 `PureCVisor Desktop Node Web LAN`. 시연 뒤 loopback 복귀와 규칙 0 |
+| D4 | 사용자가 admin 계정을 직접 만든다. 에이전트 리허설 계정은 operator이며 실행 경계 비밀번호로 만든 뒤 disable한다 |
+| D5 | `web/scripts/run-s4-lan-scenario.mjs`. 비밀번호는 환경 변수. VM 이름은 `pcv-it-s4-*`. disk는 artifacts 아래 |
+| Lane 1 | push, PR, green CI 뒤 merge. `current-evidence.json`은 쓰지 않는다 |
+| Lane 2 | `--allow-lan`, 방화벽, 계정 생성·disable, `pcv-it-s4-*` VM 생성·삭제 |
+| 유지 | Task 2(C5 runner 확인)는 `not_before` 2026-10-19 그대로 큐에 남긴다 |
+
 ## Global Constraints
 
 - 설치본은 operational current `0.42.96-admin-smoke`다. 보존 VM `pcv-guest-installed-04253-r1`과 template `pcv-it-s2-source`는 건드리지 않는다.
@@ -37,6 +52,28 @@
 ## Task 2: C5 runner 확인 (2026-10-19 이후, 이관)
 
 - [ ] `not_before` 2026-10-19. 이관 전 `train-04296-finish-20261011` Task 8(원래 `completion-20261008` Task 10)이다. Ubuntu 26 runner의 첫 `main` Development Gates와 Public Boundary run이 green이면 `config/project-completion-criteria.json` 위험 행을 `status=closed`, `closed_by`에 run id로 닫는다. 실패하면 `ubuntu-24.04` pin을 판단해 backlog 행으로 보고한다. push, PR, green CI 뒤 merge.
+
+## Task 3: S4 LAN 시나리오 스크립트 (설계 4절 task 1)
+
+- [x] `web/scripts/run-s4-lan-scenario.mjs`와 `web/node-tests/s4-lan-scenario.test.mjs`를 추가하고 `web/package.json`에 `scenario:s4-lan`과 `test:web-contracts` 항목을 더한다. 시연 순서표는 `docs/ga-ready/demo/s4-lan-runbook.md`다. 기본은 plan-only이고 이 task는 `--execute`로 설치본에 요청을 보내지 않는다. 검증: `node web/scripts/run-s4-lan-scenario.mjs`, `node --test web/node-tests/s4-lan-scenario.test.mjs`, `npm run test:required --prefix web`, `npm run test:public-source-safety --prefix web`, `git diff --check`, clean HEAD에서 `dotnet test src/DesktopNode.Delivery.Tests -c Release`, `dotnet test src/DesktopNode.Verification.Tests -c Release`. push, PR, green CI 뒤 merge. host mutation 없음. S4 통과를 주장하지 않는다.
+
+실행 기록(2026-10-12): `run-s4-lan-scenario.mjs`는 기본 plan-only이고 `--execute`만 요청을 보낸다. 비밀번호는 `PCV_S4_PASSWORD`만 읽으며 `--password`는 거절한다. 시연 순서표는 `docs/ga-ready/demo/s4-lan-runbook.md`다. `test:web-contracts`에 시험을 넣고 `web-verification-architecture-boundary.test.mjs`의 pin을 맞췄다. `node web/scripts/run-s4-lan-scenario.mjs` exit 0, `node --test web/node-tests/s4-lan-scenario.test.mjs` 9/9, `npm run test:required --prefix web` exit 0(`test:web-contracts` 273/273, parity 통과), `git diff --check` 통과. 새 파일 public source safety 스캔 발견 0. `npm run test:public-source-safety --prefix web`는 19/20이고 실패 1건은 기존 두 문서의 `network.observed-private-endpoint`(BL에 이미 있음)다. 설치본에 `--execute`를 보내지 않았다. S4 통과를 주장하지 않는다. Delivery·Verification 시험은 이 commit의 clean HEAD에서 돌린다.
+
+## Task 4: S4 리허설 R (설계 4절 task 2)
+
+- [ ] Lane 2. 설치 service를 API `http://<host-lan-ip>:7777/`, Web `http://<host-lan-ip>:80/`로 재구성하고(`--allow-lan`, token source), 방화벽 관리 규칙 두 개(7777, 80, Private, LocalSubnet, Web 규칙 이름 `PureCVisor Desktop Node Web LAN`)를 연다. 에이전트 operator 계정을 실행 경계 비밀번호로 만든다. 이 호스트 브라우저로 `http://<host-lan-ip>/` 리허설을 하고 `run-s4-lan-scenario.mjs --phases=none` 뒤 전체 `--execute`를 1회 돌린다. 비밀번호, token, 실제 LAN IP는 기록하지 않는다. 끝 상태는 Task 6까지 유지한다.
+
+## Task 5: S4 사용자 시연 A (설계 4절 task 3)
+
+- [ ] 사용자가 admin 계정을 직접 만들고 자기 PC 브라우저로 S1~S3을 시연한다. 에이전트는 시연 전후 상태(service 구성, 방화벽 규칙, 계정 목록, VM)를 읽어 기록하고 확인자 칸은 사용자가 채운다. 이 기록만 "다른 PC" 시연이다. 리허설 R은 S4 판정 근거로 쓰지 않는다.
+
+## Task 6: S4 끝 상태 (설계 4절 task 4)
+
+- [ ] Lane 2. 끝 상태는 loopback 복귀, 방화벽 규칙 0, 에이전트 operator 계정 disable, `pcv-it-s4-*` VM 정리다. 기록한다. 계정 파일 삭제는 이 task가 하지 않는다.
+
+## Task 7: criteria S4 판정 (설계 4절 task 5)
+
+- [ ] Lane 1. 시연 기록이 설계 1절의 판정을 모두 담으면 `config/project-completion-criteria.json` S4를 `passed`로 두고 시연 기록 링크를 적는다. push, PR, green CI 뒤 merge. 적재할 제품 변경이 없으면 release train을 열지 않고 그 사실을 적는다. 이 task가 끝나면 남은 Task 2(C5, 2026-10-19 이후)를 `next_task`로 둔다. 판정 전에는 S4 통과를 주장하지 않는다.
 
 ## Nonclaims
 
