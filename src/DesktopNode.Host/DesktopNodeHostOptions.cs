@@ -205,10 +205,12 @@ public sealed class DesktopNodeHostOptions
             }
 
             var values = ParseNamedArguments(args.Skip(2).ToArray());
-            return new DesktopNodeHostOptions
+            var options = new DesktopNodeHostOptions
             {
                 Mode = DesktopNodeHostMode.ServiceAction,
                 ServiceAction = args[1].ToLowerInvariant(),
+                Prefix = GetValue(values, "--prefix") ?? "http://127.0.0.1:7777/",
+                WebPrefix = GetValue(values, "--web-prefix"),
                 ProductRoot = GetValue(values, "--product-root"),
                 DataRoot = GetValue(values, "--data-root"),
                 ServiceExecutablePath = GetValue(values, "--service-exe"),
@@ -244,6 +246,8 @@ public sealed class DesktopNodeHostOptions
                     MinimumMaxRequestBodyBytes,
                     MaximumMaxRequestBodyBytes)
             };
+            _ = DesktopNodeHostServiceAction.ResolveListenPrefixes(options);
+            return options;
         }
 
         throw new ArgumentException($"PCV_HOST_MODE_INVALID|The .NET service host mode is invalid.|Unsupported mode '{args[0]}'.");

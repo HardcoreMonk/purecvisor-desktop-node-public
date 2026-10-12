@@ -97,8 +97,7 @@ public static partial class DesktopNodeHostServiceAction
             ? "PureCVisor/PureCVisorDesktopNode/api-token"
             : options.CredentialTarget;
 
-        var prefix = "http://127.0.0.1:7777/";
-        var webPrefix = "http://127.0.0.1:80/";
+        var listenPrefixes = ResolveListenPrefixes(options);
         var protectedToken = dataRoot is null ? null : Path.Combine(dataRoot, "api-token.dpapi.json");
         var accountFile = dataRoot is null ? null : Path.Combine(dataRoot, "accounts.json");
         var jwtSigningKeyFile = dataRoot is null ? null : Path.Combine(dataRoot, "jwt-signing-key.txt");
@@ -127,9 +126,9 @@ public static partial class DesktopNodeHostServiceAction
                 Quote(serviceExe),
                 "listen",
                 "--prefix",
-                Quote(prefix),
+                Quote(listenPrefixes.Prefix),
                 "--web-prefix",
-                Quote(webPrefix),
+                Quote(listenPrefixes.WebPrefix),
                 "--web-root",
                 Quote(webRoot),
                 "--job-store",
@@ -164,6 +163,7 @@ public static partial class DesktopNodeHostServiceAction
                 maxRequestBodyBytes.ToString(System.Globalization.CultureInfo.InvariantCulture)
             };
         AddOptionalQuotedArgument(binPathArguments, "--batch-evidence-root", batchEvidenceRoot);
+        InsertConfigureAllowLan(binPathArguments, listenPrefixes.EmitAllowLan);
         if (controlledRouteTimeoutProbeDelayMilliseconds > 0)
         {
             binPathArguments.Add("--controlled-route-timeout-probe-delay-ms");
