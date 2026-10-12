@@ -18,8 +18,9 @@ public static partial class DesktopNodeHostServiceAction
     {
         var productRoot = Require(options.ProductRoot, "PCV_HOST_PRODUCT_ROOT_REQUIRED");
         var dataRoot = Require(options.DataRoot, "PCV_HOST_DATA_ROOT_REQUIRED");
-        var prefix = "http://127.0.0.1:7777/";
-        var webPrefix = "http://127.0.0.1:80/";
+        var listenPrefixes = ResolveListenPrefixes(options);
+        var prefix = listenPrefixes.Prefix;
+        var webPrefix = listenPrefixes.WebPrefix;
         var protectedToken = Path.Combine(dataRoot, "api-token.dpapi.json");
         var accountFile = Path.Combine(dataRoot, "accounts.json");
         var jwtSigningKeyFile = Path.Combine(dataRoot, "jwt-signing-key.txt");
@@ -89,6 +90,7 @@ public static partial class DesktopNodeHostServiceAction
             maxRequestBodyBytes.ToString(System.Globalization.CultureInfo.InvariantCulture)
         };
         AddOptionalQuotedArgument(arguments, "--batch-evidence-root", batchEvidenceRoot);
+        InsertConfigureAllowLan(arguments, listenPrefixes.EmitAllowLan);
         if (controlledRouteTimeoutProbeDelayMilliseconds > 0)
         {
             arguments.Add("--controlled-route-timeout-probe-delay-ms");

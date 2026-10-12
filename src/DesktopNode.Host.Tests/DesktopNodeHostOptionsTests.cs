@@ -516,4 +516,144 @@ public sealed class DesktopNodeHostOptionsTests
         Assert.Equal("product-config-v1-to-v2", options.MigrationPlanId);
         Assert.Equal(1, options.MigrationPlanVersion);
     }
+
+    // public-safety: synthetic-rfc1918
+    private const string SyntheticLanHost = "192.168.1.17";
+
+    [Theory]
+    [InlineData("configure-installed")]
+    [InlineData("repair-installed")]
+    public void ServiceActionConfigureParsesLanPrefixes(string action)
+    {
+        var prefix = $"http://{SyntheticLanHost}:7777/";
+        var webPrefix = $"http://{SyntheticLanHost}:80/";
+        var options = DesktopNodeHostOptions.Parse([
+            "service-action",
+            action,
+            "--product-root",
+            "C:\\Program Files\\PureCVisor\\DesktopNode",
+            "--data-root",
+            "C:\\ProgramData\\PureCVisor\\desktop-node",
+            "--service-exe",
+            "C:\\Program Files\\PureCVisor\\DesktopNode\\DesktopNode.Host.exe",
+            "--prefix",
+            prefix,
+            "--web-prefix",
+            webPrefix,
+            "--allow-lan"
+        ]);
+
+        Assert.Equal(prefix, options.Prefix);
+        Assert.Equal(webPrefix, options.WebPrefix);
+        Assert.True(options.AllowLan);
+    }
+
+    [Fact]
+    public void ServiceActionConfigureRejectsLanPrefixWithoutAllowLan()
+    {
+        var error = Assert.Throws<ArgumentException>(() =>
+            DesktopNodeHostOptions.Parse([
+                "service-action",
+                "configure-installed",
+                "--prefix",
+                $"http://{SyntheticLanHost}:7777/",
+                "--web-prefix",
+                $"http://{SyntheticLanHost}:80/"
+            ]));
+
+        Assert.Contains("PCV_HOST_PREFIX_NOT_LOOPBACK", error.Message);
+    }
+
+    [Theory]
+    [InlineData("http://+:7777/", "http://+:80/")]
+    [InlineData("http://*:7777/", "http://*:80/")]
+    [InlineData("http://0.0.0.0:7777/", "http://0.0.0.0:80/")]
+    [InlineData("http://[::]:7777/", "http://[::]:80/")]
+    public void ServiceActionConfigureRejectsWildcardPrefixes(string prefix, string webPrefix)
+    {
+        var error = Assert.Throws<ArgumentException>(() =>
+            DesktopNodeHostOptions.Parse([
+                "service-action",
+                "repair-installed",
+                "--prefix",
+                prefix,
+                "--web-prefix",
+                webPrefix,
+                "--allow-lan"
+            ]));
+
+        Assert.Contains("PCV_HOST_PREFIX_WILDCARD", error.Message);
+    }
+
+    [Fact]
+    public void ServiceActionConfigureRejectsMismatchedHostsAndLanApiPortAndNonHttpScheme()
+    {
+        var mismatch = Assert.Throws<ArgumentException>(() =>
+            DesktopNodeHostOptions.Parse([
+                "service-action",
+                "configure-installed",
+                "--prefix",
+                $"http://{SyntheticLanHost}:7777/",
+                "--web-prefix",
+                "http://127.0.0.1:80/",
+                "--allow-lan"
+            ]));
+        Assert.Contains("PCV_HOST_PREFIX_HOST_MISMATCH", mismatch.Message);
+
+        var port = Assert.Throws<ArgumentException>(() =>
+            DesktopNodeHostOptions.Parse([
+                "service-action",
+                "configure-installed",
+                "--prefix",
+                $"http://{SyntheticLanHost}:7778/",
+                "--web-prefix",
+                $"http://{SyntheticLanHost}:80/",
+                "--allow-lan"
+            ]));
+        Assert.Contains("PCV_HOST_PREFIX_API_PORT", port.Message);
+
+        var scheme = Assert.Throws<ArgumentException>(() =>
+            DesktopNodeHostOptions.Parse([
+                "service-action",
+                "configure-installed",
+                "--prefix",
+                "https://127.0.0.1:7777/",
+                "--web-prefix",
+                "https://127.0.0.1:80/"
+            ]));
+        Assert.Contains("PCV_HOST_PREFIX_SCHEME", scheme.Message);
+    }
+
+    [Fact]
+    public void ServiceActionConfigureAcceptsLoopbackIpv6WithoutAllowLan()
+    {
+        var options = DesktopNodeHostOptions.Parse([
+            "service-action",
+            "configure-installed",
+            "--prefix",
+            "http://[::1]:7777/",
+            "--web-prefix",
+            "http://[::1]:80/"
+        ]);
+
+        Assert.Equal("http://[::1]:7777/", options.Prefix);
+        Assert.Equal("http://[::1]:80/", options.WebPrefix);
+        Assert.False(options.AllowLan);
+    }
+
+    [Fact]
+    public void ListenOptionsStillAcceptWildcardHostWhenAllowLanIsSet()
+    {
+        var options = DesktopNodeHostOptions.Parse([
+            "listen",
+            "--prefix",
+            "http://0.0.0.0:7777/",
+            "--allow-lan",
+            "--api-token-credential-target",
+            "PureCVisor/PureCVisorDesktopNode/api-token"
+        ]);
+
+        Assert.Equal("http://0.0.0.0:7777/", options.Prefix);
+        Assert.True(options.AllowLan);
+    }
 }

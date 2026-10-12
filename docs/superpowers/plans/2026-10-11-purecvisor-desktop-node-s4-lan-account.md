@@ -76,7 +76,7 @@
 
 ## Task 8: `configure-installed` LAN prefix 옵션 (D2 정정 A′, Task 4 앞)
 
-- [ ] Lane 1 제품 변경. `DesktopNode.Host.exe service-action configure-installed|repair-installed`가 `--prefix`, `--web-prefix`를 받는다.
+- [x] Lane 1 제품 변경. `DesktopNode.Host.exe service-action configure-installed|repair-installed`가 `--prefix`, `--web-prefix`를 받는다.
   - 옵션이 없으면 지금과 같은 service 명령줄이다(API `http://127.0.0.1:7777/`, Web `http://127.0.0.1:80/`, `--allow-lan` 없음).
   - 둘 중 하나라도 loopback이 아니면 `--allow-lan`이 필요하고(없으면 `PCV_HOST_PREFIX_NOT_LOOPBACK`), service 명령줄에 `--allow-lan`을 넣는다.
   - 거절: wildcard host(`+`, `*`, `0.0.0.0`, `[::]`), http가 아닌 scheme, API와 Web host 불일치, LAN에서 API port가 7777이 아닌 값
@@ -92,6 +92,8 @@
     design은 S4 설계 문서다. 형식은 PR #86의 queue 행(`e31b180`)과 같다.
   - 검증: `dotnet test src/DesktopNode.Host.Tests -c Release`, commit 뒤 clean HEAD에서 `dotnet test src/DesktopNode.sln -c Release`,
     packaging Pester, `git diff --check`. push, PR, green CI 뒤 merge. host mutation 없음. S4 통과를 주장하지 않는다.
+
+실행 기록(2026-10-12): `configure-installed|repair-installed`만 `--prefix`와 `--web-prefix`를 읽는다. 생략하면 service 명령줄은 API `http://127.0.0.1:7777/`, Web `http://127.0.0.1:80/`이고 `--allow-lan`이 없다. loopback이 아니면 `--allow-lan`이 필요하고 명령줄에 들어간다. 거절 코드는 wildcard `PCV_HOST_PREFIX_WILDCARD`, http가 아닌 scheme `PCV_HOST_PREFIX_SCHEME`, host 불일치 `PCV_HOST_PREFIX_HOST_MISMATCH`, `--allow-lan` 누락 `PCV_HOST_PREFIX_NOT_LOOPBACK`, LAN API port `PCV_HOST_PREFIX_API_PORT`다. `listen`은 `0.0.0.0`과 `--allow-lan`을 그대로 받는다. 방화벽 ops와 MSI custom action은 바꾸지 않았다. native 구성은 `--api-token-credential-target`과 `--batch-evidence-root`를 유지한다. `dotnet test src/DesktopNode.Host.Tests -c Release` 242/242. `release-train.json` queue 행은 PR 번호가 생긴 뒤 같은 branch에 넣는다. host mutation 없음. S4 통과를 주장하지 않는다. `dotnet test src/DesktopNode.sln -c Release`, packaging Pester, `git diff --check`는 이 commit의 clean HEAD에서 돌린다.
 
 ## Task 4: S4 리허설 R (설계 4절 task 2)
 
