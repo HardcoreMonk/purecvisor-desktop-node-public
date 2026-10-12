@@ -6,6 +6,9 @@
 - plan: `docs/superpowers/plans/2026-10-11-purecvisor-desktop-node-s4-lan-account.md`
 - 설계: `docs/superpowers/specs/2026-10-11-purecvisor-desktop-node-s4-lan-account-design.md`
 - 시연 순서표: `docs/ga-ready/demo/s4-lan-runbook.md`
+- 개정(2026-10-12, 2차, 승인 `1,2`): 단계 A(PR #92 merge)와 단계 B(사용자 admin 계정)는 끝났다. D2 정정으로 단계 B2(plan Task 8,
+  `configure-installed` LAN prefix 옵션)를 단계 C 앞에 더하고, 단계 C·E의 재구성 명령과 단계 F의 release train 문장을 바꿨다.
+  **다음은 단계 B2다.**
 
 이 지시서는 campaign plan을 대체하지 않는다. 내용이 충돌하면 `AGENTS.md`, `docs/AGENT_EXECUTION_CIRCUIT_BREAKER.md`,
 campaign plan, 이 지시서 순서로 따른다.
@@ -14,7 +17,7 @@ campaign plan, 이 지시서 순서로 따른다.
 
 사용자가 자기 PC 브라우저로 `http://<host-lan-ip>/`에 접속해 계정으로 로그인하고 S1(ISO로 VM 생성과 브라우저 콘솔),
 S2(template 복제), S3(checkpoint 생성·복원·예약)를 한다. 그 시연 기록으로 완료 기준 S4를 `passed`로 닫는다.
-제품 코드는 바꾸지 않는다. 설치 service 구성, 방화벽, 계정만 바꾸고 시연 뒤 되돌린다.
+제품 변경은 단계 B2 하나(`configure-installed` LAN prefix 옵션)다. 설치 service 구성, 방화벽, 계정은 시연 뒤 되돌린다.
 
 ## 1. 역할과 경계
 
@@ -25,6 +28,8 @@ S2(template 복제), S3(checkpoint 생성·복원·예약)를 한다. 그 시연
 - 승인 범위는 campaign `approval_locator` 그대로다.
   - Lane 1: 로컬 commit, push, PR, green CI 뒤 merge.
   - Lane 2: 설치본 `--allow-lan` 재구성, 방화벽 관리 규칙 두 개, 계정 생성·disable, ADR-0016 `pcv-it-s4-*` VM 생성·삭제.
+  - 2026-10-12 2차: plan Task 8 Lane 1 제품 변경(Host, Host.Tests, 관련 문서, release-train queue 행)과, Task 4·6에서 merge된
+    `main` 빌드본 `DesktopNode.Host.exe`로 설치 service를 재구성·복귀하는 것. service 실행 파일은 설치본 그대로 둔다.
   - 그 밖은 하지 않는다: MSI install/repair/uninstall, service install/delete, release train, `pcv-it-s4-*` 밖의 VM 변경,
     보존 VM `pcv-guest-installed-04253-r1`과 template `pcv-it-s2-source` 변경, `current-evidence.json` 수정.
 - admin 계정은 사용자만 만든다. Grok은 admin 계정을 만들지 않고 그 비밀번호를 받지도 않는다.
@@ -32,8 +37,10 @@ S2(template 복제), S3(checkpoint 생성·복원·예약)를 한다. 그 시연
   주소는 `<host-lan-ip>`, token 파일은 `<token-file>`로 쓴다. 리허설 비밀번호는 환경 변수 `PCV_S4_PASSWORD`로만 넘긴다.
 - 저장소 밖 파일(사용자 프로필의 plugin hook 등)은 고치지 않는다. Grok 시작 때의 `session_start hook ... failed, ignored`
   오류는 실패해도 세션이 계속되는(fail-open) 오류이므로 이 작업의 blocker가 아니다. 환경 조치는 사용자가 한다.
+- 셸이 Git Bash면 `MSYS_NO_PATHCONV=1`이 git `file://` clone 시험(`CutoverGitBoundaryTests.RejectsShallowHistory`)을 거짓 실패시킨다.
+  `dotnet test`는 PowerShell에서 돌리거나 `env -u MSYS_NO_PATHCONV`를 붙인다.
 
-## 2. 현재 상태 (Claude 감사, 2026-10-12)
+## 2. 1차 시작 상태 (Claude 감사, 2026-10-12. 단계 A·B는 끝났다)
 
 - Task 1(PR #90)과 Task 3(PR #91)은 merge됐다. Task 2(C5 runner 확인)는 `not_before` 2026-10-19다.
 - 작업 트리에 Task 3 보정이 커밋되지 않고 남아 있다. 파일 5개다.
@@ -119,13 +126,34 @@ pcvcli --protected-token-file <token-file> account create --username <admin> --r
 - 사용자가 끝났다고 하면 Grok은 `pcvcli --protected-token-file <token-file> account list`로 admin 역할 계정이 있는지만 확인한다.
   계정 이름은 기록에 `<admin>`으로 남긴다.
 
+### 단계 B2. Task 8 `configure-installed` LAN prefix 옵션 (Lane 1, 30분·tool batch 18회)
+
+명세의 단일 출처는 plan Task 8이다. 요약하면 다음과 같다.
+
+1. `lane1/` branch를 만든다. `configure-installed|repair-installed`가 `--prefix`, `--web-prefix`를 받게 한다. 옵션이 없으면 service
+   명령줄이 지금과 바이트 단위로 같아야 한다.
+2. loopback이 아니면 `--allow-lan`을 요구하고 명령줄에 넣는다. wildcard host, http가 아닌 scheme, API·Web host 불일치,
+   LAN에서 API port가 7777이 아닌 값을 거절한다.
+3. 명령 경로(`DesktopNodeHostServiceAction.cs`)와 native 구성(`DesktopNodeHostServiceAction.ServiceConfig.cs`)에 같은 값을 쓴다.
+   native 구성이 credential target과 batch evidence root를 유지하는 동작은 바꾸지 않는다.
+4. `DesktopNode.Host.Tests`에 plan Task 8의 시험을 더한다. README와, 인수를 고정하는 catalog·문서·시험이 있으면 맞춘다.
+5. `docs/ga-ready/release-train.json` `queue` 행을 더한다(PR #86 형식).
+6. 검증: `dotnet test src/DesktopNode.Host.Tests -c Release`, commit 뒤 clean HEAD에서 `dotnet test src/DesktopNode.sln -c Release`,
+   `pwsh -NoProfile -Command "Invoke-Pester -Path 'packaging/windows-desktop-node/tests' -Output Detailed"`, `git diff --check`.
+   plan Task 8에 실행 기록을 적는다.
+7. `pcv-ship`: push, PR, green CI 뒤 merge, merge 뒤 `main` run 확인. host mutation은 없다.
+
+완료 조건: Task 8이 `main`에 merge됐다. 설계 판단이 필요한 발견(예: 옵션 이름이나 검증 규칙이 기존 계약과 충돌)은 고치지 말고 보고한다.
+
 ### 단계 C. Task 4 리허설 R (Lane 2, 45분·tool batch 12회)
 
 런북 1절과 2절을 그대로 따른다. 요약하면 다음과 같다.
 
-1. 바꾸기 전 상태를 읽는다: service prefix, 방화벽 관리 규칙, 계정 목록, `pcv-it-s4-*` VM 없음, 보존 VM 이름.
-2. `DesktopNode.Host.exe service-action configure-installed`로 API `http://<host-lan-ip>:7777/`,
-   Web `http://<host-lan-ip>:80/`, `--allow-lan`, token source를 넣는다.
+1. 바꾸기 전 상태를 읽는다: service 명령줄 전체(경로는 자리 표시로), service prefix, 방화벽 관리 규칙, 계정 목록, `pcv-it-s4-*` VM 없음, 보존 VM 이름.
+2. Task 8이 merge된 `main`에서 `dotnet build src/DesktopNode.Host -c Release`로 만든 `<main-build>\DesktopNode.Host.exe`로 재구성한다.
+   `service-action configure-installed --product-root <product-root> --data-root <data-root> --service-exe <product-root>\DesktopNode.Host.exe --prefix http://<host-lan-ip>:7777/ --web-prefix http://<host-lan-ip>:80/ --allow-lan`
+   재구성 뒤 service 명령줄을 1번 기록과 비교한다. `--prefix`, `--web-prefix`, `--allow-lan`만 달라야 한다. 실행 파일 경로,
+   credential target, batch evidence root가 바뀌었으면 멈추고 단계 E 1번으로 되돌린다.
 3. 방화벽 관리 규칙 두 개를 연다. 둘 다 profile `Private`, remote `LocalSubnet`이다. API는 local port 7777,
    Web은 local port 80과 규칙 이름 `PureCVisor Desktop Node Web LAN`이다.
 4. operator 계정을 만든다. 비밀번호는 `PCV_S4_PASSWORD`로만 넘긴다.
@@ -157,7 +185,8 @@ pcvcli --protected-token-file <token-file> account create --username <admin> --r
 
 런북 4절 순서를 따른다. 순서가 중요하다.
 
-1. service prefix를 loopback으로 되돌린다. Web `http://127.0.0.1/`, API `http://127.0.0.1:7777/`이고 `--allow-lan`은 뺀다.
+1. 같은 `<main-build>` `configure-installed`를 `--prefix`, `--web-prefix`, `--allow-lan` 없이 실행해 loopback으로 되돌린다.
+   Web `http://127.0.0.1/`, API `http://127.0.0.1:7777/`이다. service 명령줄이 단계 C 1번 기록과 같은지 확인한다.
 2. 방화벽 관리 규칙 두 개를 지운다. PureCVisor 규칙 수가 0인지 확인한다.
 3. loopback으로 돌아온 뒤 operator를 끈다:
    `pcvcli --protected-token-file <token-file> account disable <operator> --yes`
@@ -177,7 +206,8 @@ pcvcli --protected-token-file <token-file> account create --username <admin> --r
    S4가 `met`인지 본다. C5는 Task 2 전이므로 `complete=true`가 아니어도 된다.
 5. `dotnet test src/DesktopNode.Verification.Tests -c Release`, `dotnet test src/DesktopNode.Delivery.Tests -c Release`(clean HEAD),
    `git diff --check`.
-6. 제품 변경이 없으므로 release train을 열지 않는다. plan Task 7 기록에 그 사실을 적는다.
+6. Task 8 제품 변경이 queue에 있으므로 S4 판정 뒤 release train 1회(2026-10-09 사전 승인)를 다음 campaign으로 연다.
+   이 campaign에서는 train을 실행하지 않는다. plan Task 7 기록에 그 사실을 적는다.
 7. `active-campaign.json`의 `next_task`를 Task 2로 둔다(`not_before` 2026-10-19).
 8. `pcv-ship`으로 PR, green CI 뒤 merge, merge 뒤 `main` run 확인까지 한다.
 

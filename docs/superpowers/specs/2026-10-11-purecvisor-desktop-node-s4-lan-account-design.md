@@ -27,6 +27,7 @@ S4는 설치본 `0.42.96-admin-smoke` 계열 제품을 이 호스트 밖의 브�
 | 방화벽 | `DesktopNode.Host.exe service-action firewall-enable|firewall-remove`가 관리 규칙 하나를 만든다. 기본 port `7777`, profile `Private`, remote `LocalSubnet` | Web Console port `80`에는 규칙이 없다. 원격 브라우저가 로그인 페이지를 받으려면 80도 열어야 한다 |
 | 계정 | `pcvcli account list|create|disable`. 첫 계정은 admin, 삭제 명령은 없고 마지막 enabled admin은 disable할 수 없다. 계정이 하나라도 있으면 `POST /api/v1/auth/loopback-session`은 `409 PCV_LOOPBACK_SESSION_DISABLED`다 | 계정을 만들면 이 호스트의 로컬 콘솔도 로그인해야 한다. 되돌리려면 `%ProgramData%` 아래 `accounts.json`을 손으로 치워야 한다 |
 | 기존 LAN 도구 | `Invoke-PcvOsMutationGateSmoke.ps1`은 별도 Host process를 `--allow-lan`과 LAN prefix로 띄워 확인하고 방화벽 규칙을 지운다(설치 service는 바꾸지 않는다) | 설치 service의 LAN 구성 경로는 시연된 적이 없다 |
+| 설치 service 구성 (2026-10-12 정정) | `service-action configure-installed|repair-installed`는 service 명령줄의 API·Web prefix를 `http://127.0.0.1:7777/`, `http://127.0.0.1:80/`로 고정한다(`DesktopNodeHostServiceAction.cs`, `DesktopNodeHostServiceAction.ServiceConfig.cs`). `--allow-lan`은 service 명령줄에 들어가지 않고 방화벽 승인(`DesktopNodeFirewallOps.cs`)에만 쓰인다. native 구성은 현재 service의 `--api-token-credential-target`과 `--batch-evidence-root`를 유지한다 | 제품 변경 없이는 설치 service를 LAN prefix로 바꿀 수 없다. 설치된 `listen`은 LAN prefix와 `--allow-lan`을 이미 받는다 |
 | 시연 guest | S1 guest는 Ubuntu Server(브라우저 없음)였다 | "다른 PC" 브라우저는 따로 정해야 한다 |
 
 ## 3. 결정 사항
@@ -52,6 +53,17 @@ S4는 설치본 `0.42.96-admin-smoke` 계열 제품을 이 호스트 밖의 브�
 권장: 시연은 A로 한다(제품 변경 없음, 사전 승인 범위). B는 LAN을 상시로 쓸 때의 개선이며 S4 판정에 필요하지 않다. 사용자가 LAN 상시
 사용을 원하면 B를 Lane 1 campaign으로 따로 승인받는다.
 
+정정(2026-10-12, 승인 `1,2`): 2절 "설치 service 구성" 행 때문에 A는 제품 변경 없이 할 수 없다. A를 A′로 바꾼다.
+
+- A′: `configure-installed`와 `repair-installed`가 `--prefix`, `--web-prefix`를 받는다. 옵션이 없으면 지금과 같은 loopback 명령줄이다.
+  loopback이 아니면 `--allow-lan`을 요구하고 service 명령줄에도 `--allow-lan`을 넣는다. wildcard host(`+`, `*`, `0.0.0.0`, `[::]`),
+  API와 Web host 불일치, LAN에서 API port가 7777이 아닌 값(CSP `connect-src http://*:7777`)은 거절한다. Host 변경과 시험이며 MSI custom
+  action은 바꾸지 않는다.
+- 리허설 R과 끝 상태 복귀의 재구성은 merge된 `main`에서 빌드한 `DesktopNode.Host.exe`로 한다. service 실행 파일은 설치본 그대로다.
+  Host와 Api 코드는 설치본 provenance `9ac8eb3` 이후 이 변경 말고는 바뀌지 않았다.
+- 제품 변경이 생겼으므로 S4 판정 뒤 release train 1회(2026-10-09 사전 승인)에 싣는다.
+- 원인: 2절을 쓸 때 `listen` 모드의 검증만 보고 service 구성 코드를 보지 않았다.
+
 ### D3. 방화벽과 끝 상태
 
 - 관리 규칙 두 개: API `7777`, Web `80`, profile `Private`, remote `LocalSubnet`. 지금 도구는 규칙 이름이 하나로 고정돼 있어 두 번째
@@ -76,12 +88,13 @@ S4는 설치본 `0.42.96-admin-smoke` 계열 제품을 이 호스트 밖의 브�
 ## 4. 승인 뒤 task 순서 (권장안 기준)
 
 1. Lane 1: `run-s4-lan-scenario.mjs`와 시험, 시연 순서표 문서. push, PR, green CI 뒤 merge.
-2. Lane 2(사전 승인 범위): 설치 service를 LAN prefix로 재구성, 방화벽 규칙 두 개, 에이전트 operator 계정 생성, 이 호스트 브라우저 리허설 R과
+1a. (2026-10-12 정정) Lane 1: D2 A′ 제품 변경(`configure-installed`의 `--prefix`, `--web-prefix`)과 시험. push, PR, green CI 뒤 merge.
+2. Lane 2(사전 승인 범위): merge된 `main` 빌드본 `configure-installed`로 설치 service를 LAN prefix로 재구성, 방화벽 규칙 두 개, 에이전트 operator 계정 생성, 이 호스트 브라우저 리허설 R과
    스크립트 1회. 기록.
 3. 사용자 시연 A: 사용자가 admin 계정을 만들고 자기 PC 브라우저로 S1~S3. 에이전트는 전후 상태를 기록하고 확인자 칸은 사용자가 채운다.
 4. Lane 2: 끝 상태(권장 loopback 복귀, 규칙 0), 에이전트 계정 disable, `pcv-it-s4-*` VM 정리. 기록.
 5. Lane 1: criteria S4 `passed`, 시연 기록 링크. push, PR, merge. 그 뒤 release train 1회(사전 승인 문장의 "이어서 release train 1회"),
-   적재할 제품 변경이 없으면 train은 열지 않고 그 사실을 적는다.
+   적재할 제품 변경이 없으면 train은 열지 않고 그 사실을 적는다. 2026-10-12 정정으로 1a가 생겼으므로 train을 연다.
 
 ## 5. 경계와 nonclaims
 
