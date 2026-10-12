@@ -3,7 +3,19 @@
   "contract": "pcv-release-train-v1",
   "design": "docs/superpowers/specs/2026-10-04-purecvisor-desktop-node-release-train-design.md",
   "operational_current": "0.42.96-admin-smoke",
-  "queue": [],
+  "queue": [
+    {
+      "pr": 94,
+      "merge_commit": "271ab040",
+      "area": "host",
+      "summary": "configure-installed와 repair-installed가 --prefix와 --web-prefix를 받고, loopback이 아니면 --allow-lan을 service 명령줄에 넣는다",
+      "lane2_probe": {
+        "family": "host.service.configure-lan",
+        "design": "docs/superpowers/specs/2026-10-11-purecvisor-desktop-node-s4-lan-account-design.md"
+      },
+      "risk_tier": "M"
+    }
+  ],
   "trains": [
     {
       "version": "0.42.89-admin-smoke",
