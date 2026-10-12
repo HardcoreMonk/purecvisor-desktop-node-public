@@ -6,12 +6,28 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
+import { deflateSync } from "node:zlib";
 
 const script = fileURLToPath(new URL("../scripts/run-s4-lan-scenario.mjs", import.meta.url));
 const probePassword = "s4-secret-probe";
 const accessToken = "s4-fake-access-token-do-not-leak";
 const refreshToken = "s4-fake-refresh-token-do-not-leak";
 const loopbackToken = "s4-loopback-token-do-not-leak";
+const visibleFrame = deflateSync(Buffer.from([1, 2, 3, 4])).toString("base64");
+const secrets = [probePassword, accessToken, refreshToken, loopbackToken];
+
+function assertNoSecrets(result, summaryText) {
+  for (const secret of secrets) {
+    assert.equal(summaryText.includes(secret), false, secret);
+    assert.equal(result.stdout.includes(secret), false, secret);
+    assert.equal(result.stderr.includes(secret), false, secret);
+  }
+}
+
+function writeJson(response, status, body) {
+  response.writeHead(status, { "content-type": "application/json" });
+  response.end(JSON.stringify(body));
+}
 
 function run(args, env = process.env) {
   return spawnSync(process.execPath, [script, ...args], { encoding: "utf8", env, windowsHide: true });
@@ -237,6 +253,226 @@ test("T9 a wildcard apiBaseUrl fails web-config before login", async () => {
     assert.equal(host.requests.includes("/api/v1/auth/login"), false);
     assert.equal(result.stdout.includes(probePassword), false);
     assert.equal(result.stderr.includes(probePassword), false);
+  } finally {
+    rmSync(out, { recursive: true, force: true });
+    await closeServer(host.server);
+  }
+});
+
+test("T10 S1 screen-after failure powers the console off before delete", async () => {
+  const calls = [];
+  let vmListed = false;
+  let frames = 0;
+  const host = await listen((request, response) => {
+    const url = (request.url || "").split("?")[0];
+    calls.push(`${request.method} ${url}`);
+    if (url === "/") {
+      response.writeHead(200, { "content-type": "text/html; charset=utf-8" });
+      response.end("<!doctype html><title>pcv</title>");
+      return;
+    }
+    if (url.startsWith("/pcv-config.js")) {
+      response.writeHead(200, { "content-type": "application/javascript" });
+      response.end(`window.PCV_DESKTOP_NODE_CONFIG = Object.freeze({"apiBaseUrl":"${host.base}"});\n`);
+      return;
+    }
+    if (url.startsWith("/api/v1/auth/loopback-session")) {
+      writeJson(response, 409, { ok: false, error: { code: "PCV_LOOPBACK_SESSION_DISABLED" }, data: { access_token: loopbackToken } });
+      return;
+    }
+    if (url.startsWith("/api/v1/auth/login")) {
+      writeJson(response, 200, {
+        ok: true,
+        data: { access_token: accessToken, refresh_token: refreshToken, session: { role: "operator", username: "s4-operator" } }
+      });
+      return;
+    }
+    if (request.method === "POST" && url === "/api/v1/vms") {
+      vmListed = true;
+      writeJson(response, 200, { ok: true, data: { job_id: "job-create" } });
+      return;
+    }
+    if (request.method === "GET" && url === "/api/v1/vms") {
+      writeJson(response, 200, { ok: true, data: vmListed ? [{ name: "pcv-it-s4-console" }] : [] });
+      return;
+    }
+    if (url.startsWith("/api/v1/jobs/")) {
+      writeJson(response, 200, { ok: true, data: { status: "succeeded" } });
+      return;
+    }
+    if (request.method === "POST" && url.endsWith("/start")) {
+      writeJson(response, 200, { ok: true, data: { job_id: "job-start" } });
+      return;
+    }
+    if (request.method === "POST" && url.endsWith("/console/input")) {
+      writeJson(response, 200, { ok: true, data: {} });
+      return;
+    }
+    if (request.method === "GET" && url.endsWith("/console/frame/640x480")) {
+      frames += 1;
+      if (frames === 1) {
+        writeJson(response, 200, { ok: true, data: { frame_base64: visibleFrame } });
+        return;
+      }
+      request.socket.destroy();
+      return;
+    }
+    if (request.method === "POST" && url.endsWith("/poweroff")) {
+      writeJson(response, 200, { ok: true, data: { job_id: "job-poweroff" } });
+      return;
+    }
+    if (request.method === "DELETE" && url === "/api/v1/vms/pcv-it-s4-console") {
+      vmListed = false;
+      writeJson(response, 200, { ok: true, data: { job_id: "job-delete" } });
+      return;
+    }
+    writeJson(response, 404, { ok: false, error: { code: "PCV_TEST_UNEXPECTED" } });
+  });
+  const out = mkdtempSync(join(tmpdir(), "pcv-s4-lan-"));
+  try {
+    const result = await runLive([
+      "--execute",
+      "--phases=s1",
+      `--web=${host.base}`,
+      "--user=s4-operator",
+      "--iso=artifacts/s4-fixture.iso",
+      `--out=${out}`
+    ], { ...process.env, PCV_S4_PASSWORD: probePassword });
+    const summaryText = readFileSync(join(out, "summary.json"), "utf8");
+    const poweroff = calls.indexOf("POST /api/v1/vms/pcv-it-s4-console/poweroff");
+    const deleted = calls.indexOf("DELETE /api/v1/vms/pcv-it-s4-console");
+    assert.equal(result.status, 1);
+    assert.ok(poweroff >= 0);
+    assert.ok(deleted > poweroff);
+    assertNoSecrets(result, summaryText);
+  } finally {
+    rmSync(out, { recursive: true, force: true });
+    await closeServer(host.server);
+  }
+});
+
+test("T11 a failed create job still deletes a leftover VM and records it when delete leaves it", async () => {
+  const calls = [];
+  let vmListed = false;
+  const host = await listen((request, response) => {
+    const url = (request.url || "").split("?")[0];
+    calls.push(`${request.method} ${url}`);
+    if (url === "/") {
+      response.writeHead(200, { "content-type": "text/html; charset=utf-8" });
+      response.end("<!doctype html><title>pcv</title>");
+      return;
+    }
+    if (url.startsWith("/pcv-config.js")) {
+      response.writeHead(200, { "content-type": "application/javascript" });
+      response.end(`window.PCV_DESKTOP_NODE_CONFIG = Object.freeze({"apiBaseUrl":"${host.base}"});\n`);
+      return;
+    }
+    if (url.startsWith("/api/v1/auth/loopback-session")) {
+      writeJson(response, 409, { ok: false, error: { code: "PCV_LOOPBACK_SESSION_DISABLED" }, data: { access_token: loopbackToken } });
+      return;
+    }
+    if (url.startsWith("/api/v1/auth/login")) {
+      writeJson(response, 200, {
+        ok: true,
+        data: { access_token: accessToken, refresh_token: refreshToken, session: { role: "operator", username: "s4-operator" } }
+      });
+      return;
+    }
+    if (request.method === "POST" && url === "/api/v1/vms") {
+      vmListed = true;
+      writeJson(response, 200, { ok: true, data: { job_id: "job-create" } });
+      return;
+    }
+    if (request.method === "GET" && url === "/api/v1/vms") {
+      writeJson(response, 200, { ok: true, data: vmListed ? [{ name: "pcv-it-s4-console" }] : [] });
+      return;
+    }
+    if (url === "/api/v1/jobs/job-create") {
+      writeJson(response, 200, { ok: true, data: { status: "failed", error: { code: "PCV_TEST_CREATE_FAILED" } } });
+      return;
+    }
+    if (url.startsWith("/api/v1/jobs/")) {
+      writeJson(response, 200, { ok: true, data: { status: "succeeded" } });
+      return;
+    }
+    if (request.method === "POST" && url.endsWith("/poweroff")) {
+      writeJson(response, 200, { ok: true, data: { job_id: "job-poweroff" } });
+      return;
+    }
+    if (request.method === "DELETE" && url === "/api/v1/vms/pcv-it-s4-console") {
+      writeJson(response, 200, { ok: true, data: { job_id: "job-delete" } });
+      return;
+    }
+    writeJson(response, 404, { ok: false, error: { code: "PCV_TEST_UNEXPECTED" } });
+  });
+  const out = mkdtempSync(join(tmpdir(), "pcv-s4-lan-"));
+  try {
+    const result = await runLive([
+      "--execute",
+      "--phases=s1",
+      `--web=${host.base}`,
+      "--user=s4-operator",
+      "--iso=artifacts/s4-fixture.iso",
+      `--out=${out}`
+    ], { ...process.env, PCV_S4_PASSWORD: probePassword });
+    const summaryText = readFileSync(join(out, "summary.json"), "utf8");
+    const summary = JSON.parse(summaryText);
+    assert.equal(result.status, 1);
+    assert.equal(calls.includes("DELETE /api/v1/vms/pcv-it-s4-console"), true);
+    assert.deepEqual(summary.vms_remaining, ["pcv-it-s4-console"]);
+    assertNoSecrets(result, summaryText);
+  } finally {
+    rmSync(out, { recursive: true, force: true });
+    await closeServer(host.server);
+  }
+});
+
+test("T12 --execute --phases=none --skip-auto stays pass", async () => {
+  const host = await listen((request, response) => {
+    const url = request.url || "";
+    if (url === "/") {
+      response.writeHead(200, { "content-type": "text/html; charset=utf-8" });
+      response.end("<!doctype html><title>pcv</title>");
+      return;
+    }
+    if (url.startsWith("/pcv-config.js")) {
+      response.writeHead(200, { "content-type": "application/javascript" });
+      response.end(`window.PCV_DESKTOP_NODE_CONFIG = Object.freeze({"apiBaseUrl":"${host.base}"});\n`);
+      return;
+    }
+    if (url.startsWith("/api/v1/auth/loopback-session")) {
+      writeJson(response, 409, { ok: false, error: { code: "PCV_LOOPBACK_SESSION_DISABLED" }, data: { access_token: loopbackToken } });
+      return;
+    }
+    if (url.startsWith("/api/v1/auth/login")) {
+      writeJson(response, 200, {
+        ok: true,
+        data: { access_token: accessToken, refresh_token: refreshToken, session: { role: "operator", username: "s4-operator" } }
+      });
+      return;
+    }
+    if (url.startsWith("/api/v1/vms")) {
+      writeJson(response, 200, { ok: true, data: [] });
+      return;
+    }
+    writeJson(response, 404, { ok: false, error: { code: "PCV_TEST_UNEXPECTED" } });
+  });
+  const out = mkdtempSync(join(tmpdir(), "pcv-s4-lan-"));
+  try {
+    const result = await runLive([
+      "--execute",
+      "--phases=none",
+      "--skip-auto",
+      `--web=${host.base}`,
+      "--user=s4-operator",
+      `--out=${out}`
+    ], { ...process.env, PCV_S4_PASSWORD: probePassword });
+    const summaryText = readFileSync(join(out, "summary.json"), "utf8");
+    const summary = JSON.parse(summaryText);
+    assert.equal(result.status, 0);
+    assert.equal(summary.result, "pass");
+    assert.equal(result.stdout.includes("pass-without-auto"), false);
+    assertNoSecrets(result, summaryText);
   } finally {
     rmSync(out, { recursive: true, force: true });
     await closeServer(host.server);

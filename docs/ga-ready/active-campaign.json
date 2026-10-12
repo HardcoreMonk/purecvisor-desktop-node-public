@@ -12,7 +12,7 @@
   ],
   "mutation_allowed": true,
   "current_write_allowed": false,
-  "next_step": "Task 3 is done (S4 LAN scenario script, plan-only, no host mutation, no S4 pass claim). Next executable task is Task 4 (Lane 2 rehearsal R). Task 2 waits until 2026-10-19.",
+  "next_step": "Task 3 is done (S4 LAN scenario script, plan-only, no host mutation, no S4 pass claim). Next executable task is Task 4 (Lane 2 rehearsal R). Task 4 시작 조건: 사용자 admin 계정. Task 2 waits until 2026-10-19.",
   "plan": "docs/superpowers/plans/2026-10-11-purecvisor-desktop-node-s4-lan-account.md",
   "task_queue": [
     "Task 1",

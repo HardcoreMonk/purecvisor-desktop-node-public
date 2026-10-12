@@ -378,9 +378,8 @@ async function createVm(name, spec) {
     generation: 2,
     ...spec
   });
-  const job = await waitJob(created, "create");
-  createdVms.push(name);
-  return job;
+  if (created.payload?.data?.job_id) createdVms.push(name);
+  return waitJob(created, "create");
 }
 
 async function deleteVm(name) {
@@ -625,6 +624,21 @@ async function cleanup() {
   }
   for (const name of createdVms) {
     if (name === vmNames.clone || name === vmNames.source) continue;
+    if (name === vmNames.console) {
+      let present = false;
+      try {
+        present = (await listVmNames()).includes(name);
+      } catch (error) {
+        cleanupErrors.push(scrub(error.message));
+      }
+      if (present) {
+        try {
+          await waitJob(await api("POST", `/api/v1/vms/${encodeURIComponent(name)}/poweroff`, {}), "poweroff");
+        } catch (error) {
+          cleanupErrors.push(scrub(error.message));
+        }
+      }
+    }
     try {
       await deleteVm(name);
     } catch (error) {
@@ -675,7 +689,7 @@ try {
   }
   const selectedPass = config.phases.every((phase) => summary.phases[phase].result === "pass" || summary.phases[phase].result === "pass-without-auto");
   if (!selectedPass) summary.result = "fail";
-  else if (config.skipAuto) summary.result = "pass-without-auto";
+  else if (config.skipAuto && config.phases.includes("s3")) summary.result = "pass-without-auto";
   else summary.result = "pass";
 } catch {
   summary.result = "fail";

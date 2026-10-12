@@ -59,13 +59,17 @@
 
 실행 기록(2026-10-12): `run-s4-lan-scenario.mjs`는 기본 plan-only이고 `--execute`만 요청을 보낸다. 비밀번호는 `PCV_S4_PASSWORD`만 읽으며 `--password`는 거절한다. 시연 순서표는 `docs/ga-ready/demo/s4-lan-runbook.md`다. `test:web-contracts`에 시험을 넣고 `web-verification-architecture-boundary.test.mjs`의 pin을 맞췄다. `node web/scripts/run-s4-lan-scenario.mjs` exit 0, `node --test web/node-tests/s4-lan-scenario.test.mjs` 9/9, `npm run test:required --prefix web` exit 0(`test:web-contracts` 273/273, parity 통과), `git diff --check` 통과. 새 파일 public source safety 스캔 발견 0. `npm run test:public-source-safety --prefix web`는 19/20이고 실패 1건은 기존 두 문서의 `network.observed-private-endpoint`(BL에 이미 있음)다. 설치본에 `--execute`를 보내지 않았다. S4 통과를 주장하지 않는다. Delivery·Verification 시험은 이 commit의 clean HEAD에서 돌린다.
 
+보정(2026-10-12): 계정이 0개일 때 admin이 아닌 역할은 `409 PCV_ACCOUNT_BOOTSTRAP_ADMIN_REQUIRED`다. 런북은 사용자가 loopback에서 admin을 먼저 만들고, LAN 재구성 뒤에 에이전트가 operator를 만들도록 바꿨다. admin이 생기면 loopback 세션이 닫힌다. `pcvcli` 전역 옵션은 명령어 앞이고, loopback 단계는 `--protected-token-file <token-file>`, LAN 단계의 operator 생성은 `--api http://<host-lan-ip>:7777`을 함께 쓴다. disable은 loopback 복귀 다음이며 기본 주소와 `--protected-token-file`이다. Task 4 전체 실행은 `--skip-auto`이고 기대는 `result=pass-without-auto`다. R은 자동 checkpoint를 증명하지 않는다. 스크립트 cleanup은 남은 console VM을 delete 전에 poweroff하고, poweroff 실패는 `cleanup_error`에 남긴 뒤 delete를 계속한다. `createVm`은 `job_id`를 받은 직후 `createdVms`에 넣는다. `--skip-auto`는 s3이 선택됐을 때만 `pass-without-auto`다. 설계 1절 2항은 S3를 "checkpoint 생성·복원·예약"이라고 하면서 "기존 시나리오와 같은 판정 값"이라고도 한다. 기존 S3 통과는 자동 checkpoint를 기다리므로, 작업 지시서 3절(2026-10-12)은 사용자 시연 A의 S3를 예약 실행까지 확인하는 것으로 정했다. 런북 3절 표의 S3 확인 문장("예약 checkpoint가 생기고")은 그대로 두고, 표 아래에 `next_due_at`이 지나야 예약 checkpoint가 생긴다는 문장을 더했다. 리허설 R은 `--skip-auto`, `result=pass-without-auto`다. 검증 수치는 이 문단 아래 보정 검증에 적는다.
+
+보정 검증(2026-10-12): `node web/scripts/run-s4-lan-scenario.mjs` exit 0(plan-only, 요청 없음). `node --test web/node-tests/s4-lan-scenario.test.mjs` 12/12. `npm run test:required --prefix web` exit 0(`test:web-contracts` 276/276, parity 통과). pin 시험은 실패하지 않았다. `npm run test:public-source-safety --prefix web`는 19/20이고 실패 1건은 기존 두 문서 `docs/ga-ready/demo/s1-browser-console-demo-2026-10-08.md`와 `docs/superpowers/plans/2026-10-08-purecvisor-desktop-node-s1-installed.md`의 `network.observed-private-endpoint`다. 새 발견은 없다. `git diff --check` 통과. host mutation 없음. S4 통과를 주장하지 않는다. Delivery·Verification 시험은 이 commit의 clean HEAD에서 돌린다.
+
 ## Task 4: S4 리허설 R (설계 4절 task 2)
 
-- [ ] Lane 2. 설치 service를 API `http://<host-lan-ip>:7777/`, Web `http://<host-lan-ip>:80/`로 재구성하고(`--allow-lan`, token source), 방화벽 관리 규칙 두 개(7777, 80, Private, LocalSubnet, Web 규칙 이름 `PureCVisor Desktop Node Web LAN`)를 연다. 에이전트 operator 계정을 실행 경계 비밀번호로 만든다. 이 호스트 브라우저로 `http://<host-lan-ip>/` 리허설을 하고 `run-s4-lan-scenario.mjs --phases=none` 뒤 전체 `--execute`를 1회 돌린다. 비밀번호, token, 실제 LAN IP는 기록하지 않는다. 끝 상태는 Task 6까지 유지한다.
+- [ ] Lane 2. 시작 조건: 사용자 admin 계정이 있다. 없으면 Task 4는 멈추고 사용자에게 요청한다. 설치 service를 API `http://<host-lan-ip>:7777/`, Web `http://<host-lan-ip>:80/`로 재구성하고(`--allow-lan`, token source), 방화벽 관리 규칙 두 개(7777, 80, Private, LocalSubnet, Web 규칙 이름 `PureCVisor Desktop Node Web LAN`)를 연다. 그 다음 에이전트 operator 계정을 실행 경계 비밀번호로 만든다. 이 호스트 브라우저로 `http://<host-lan-ip>/` 리허설을 하고 `run-s4-lan-scenario.mjs --phases=none` 뒤 전체 `--execute --skip-auto`를 1회 돌린다. 기대는 `result=pass-without-auto`다. R은 자동 checkpoint를 증명하지 않는다. 비밀번호, token, 실제 LAN IP는 기록하지 않는다. 끝 상태는 Task 6까지 유지한다.
 
 ## Task 5: S4 사용자 시연 A (설계 4절 task 3)
 
-- [ ] 사용자가 admin 계정을 직접 만들고 자기 PC 브라우저로 S1~S3을 시연한다. 에이전트는 시연 전후 상태(service 구성, 방화벽 규칙, 계정 목록, VM)를 읽어 기록하고 확인자 칸은 사용자가 채운다. 이 기록만 "다른 PC" 시연이다. 리허설 R은 S4 판정 근거로 쓰지 않는다.
+- [ ] Task 4 전에 만든 admin 계정으로 자기 PC 브라우저에서 S1~S3을 시연한다. 에이전트는 시연 전후 상태(service 구성, 방화벽 규칙, 계정 목록, VM)를 읽어 기록하고 확인자 칸은 사용자가 채운다. 이 기록만 "다른 PC" 시연이다. 리허설 R은 S4 판정 근거로 쓰지 않는다.
 
 ## Task 6: S4 끝 상태 (설계 4절 task 4)
 
