@@ -13,7 +13,8 @@
 
 설치본을 바꾸기 전에 아래를 읽어 적는다. 값은 자리 표시로만 남긴다. 이 절은 loopback 상태다.
 
-- service `PureCVisorDesktopNode`의 상태와 실행 인자. Web prefix와 API prefix가 loopback인지 본다.
+- service `PureCVisorDesktopNode`의 상태와 실행 인자 전체. Web prefix와 API prefix가 loopback인지 본다. 명령줄은 2절과 4절에서
+  비교하므로 경로를 `<product-root>`, `<data-root>` 같은 자리 표시로 바꿔 남긴다.
 - 방화벽 관리 규칙. 기대 시작점은 PureCVisor 규칙이 없거나 loopback 운영의 기존 규칙뿐이다.
 - 계정 목록. 리허설 operator 계정이 아직 없다. 계정이 0개일 수 있다.
 
@@ -32,9 +33,16 @@ LAN으로 바꾸기 전에 사용자가 admin 계정을 만든다. 계정이 0�
 
 ## 2. 리허설 R
 
-Lane 2 작업이 설치 service를 재구성한다. 제품 코드는 바꾸지 않는다. 시작 조건은 사전 단계의 admin 계정이다.
+Lane 2 작업이 설치 service를 재구성한다. 이 절에서는 제품 코드를 바꾸지 않고, plan Task 8에서 merge된 LAN prefix 옵션을 쓴다.
+시작 조건은 사전 단계의 admin 계정이다.
 
-1. `DesktopNode.Host.exe service-action configure-installed`로 API prefix `http://<host-lan-ip>:7777/`, Web prefix `http://<host-lan-ip>:80/`, `--allow-lan`, token source를 넣는다. 그 동안 `http://127.0.0.1/`은 듣지 않는다.
+1. Task 8이 merge된 `main`에서 `dotnet build src/DesktopNode.Host -c Release`로 만든 `DesktopNode.Host.exe`로 설치 service를 재구성한다.
+   그 위치는 `<main-build>`로 쓰고 기록에는 `main` SHA를 남긴다. service 실행 파일은 설치본 그대로다.
+
+   `<main-build>\DesktopNode.Host.exe service-action configure-installed --product-root <product-root> --data-root <data-root> --service-exe <product-root>\DesktopNode.Host.exe --prefix http://<host-lan-ip>:7777/ --web-prefix http://<host-lan-ip>:80/ --allow-lan`
+
+   재구성 뒤 service 명령줄을 다시 읽어 1절 기록과 비교한다. `--prefix`, `--web-prefix`, `--allow-lan`만 달라야 한다. 실행 파일 경로,
+   `--api-token-credential-target`, `--batch-evidence-root`가 바뀌었으면 멈추고 4절 첫 항목으로 되돌린다. 그 동안 `http://127.0.0.1/`은 듣지 않는다.
 2. 방화벽 관리 규칙 두 개를 연다. 둘 다 profile `Private`, remote `LocalSubnet`이다.
    API는 local port `7777`이다. Web은 `--firewall-local-port 80`과 `--firewall-rule-name "PureCVisor Desktop Node Web LAN"`이다.
 3. 에이전트가 operator를 실행 경계 비밀번호로 만든다. service는 LAN 주소만 듣는다. 비밀번호는 `PCV_S4_PASSWORD`로만 넘긴다.
@@ -74,7 +82,8 @@ Lane 2 작업이 설치 service를 재구성한다. 제품 코드는 바꾸지 �
 
 시연이 끝나면 Lane 2 작업이 아래를 되돌리고, 각각을 다시 읽어 확인한다. operator disable은 loopback 복귀 다음이다. 복귀 전에는 service가 LAN만 들으므로 disable에 `--api http://<host-lan-ip>:7777`이 필요하다. 이 순서표는 복귀를 먼저 한다.
 
-- service prefix를 loopback으로 되돌린다. Web `http://127.0.0.1/`, API `http://127.0.0.1:7777/`. `--allow-lan`은 빠진다.
+- 2절 1번의 `<main-build>` `configure-installed`를 `--prefix`, `--web-prefix`, `--allow-lan` 없이 실행해 service prefix를 loopback으로
+  되돌린다. Web `http://127.0.0.1/`, API `http://127.0.0.1:7777/`이고 `--allow-lan`은 빠진다. service 명령줄이 1절 기록과 같은지 확인한다.
 - 방화벽 관리 규칙 두 개를 제거한다. PureCVisor 규칙은 0이다.
 - 복귀 뒤에 리허설 operator를 끈다. 기본 주소 `http://127.0.0.1:7777`과 service bearer를 쓴다. admin 계정 파일을 지우지는 않는다.
 

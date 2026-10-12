@@ -36,6 +36,17 @@
 | Lane 2 | `--allow-lan`, 방화벽, 계정 생성·disable, `pcv-it-s4-*` VM 생성·삭제 |
 | 유지 | Task 2(C5 runner 확인)는 `not_before` 2026-10-19 그대로 큐에 남긴다 |
 
+## 사용자 결정 (2026-10-12, 2차)
+
+승인 원문: `1,2` (Task 4 정지 보고의 다음 승인). Grok이 Task 4 직전에 `configure-installed`가 prefix를 loopback으로 고정하고
+`--allow-lan`을 service 명령줄에 넣지 않는 것을 찾았고, Claude가 코드로 확인했다(설계 2절 "설치 service 구성" 행, D2 정정).
+
+| 항목 | 범위 |
+| --- | --- |
+| 1 | D2 정정 A′. `configure-installed`에 `--prefix`, `--web-prefix`를 넣는 Lane 1 제품 변경(Host, Host.Tests, 관련 문서, release-train queue 행). push, PR, green CI 뒤 merge. Task 8로 Task 4 앞에 둔다 |
+| 2 | Task 4와 Task 6의 설치 service 재구성·복귀는 merge된 `main` 빌드본 `DesktopNode.Host.exe`로 한다. service 실행 파일은 설치본 그대로다. release train은 S4 뒤 1회(2026-10-09 사전 승인) |
+| 상태 | Task 3 보정은 PR #92로 merge됐다. 사용자 admin 계정 `<admin>`이 있어 Task 4 시작 조건을 채웠다 |
+
 ## Global Constraints
 
 - 설치본은 operational current `0.42.96-admin-smoke`다. 보존 VM `pcv-guest-installed-04253-r1`과 template `pcv-it-s2-source`는 건드리지 않는다.
@@ -63,9 +74,28 @@
 
 보정 검증(2026-10-12): `node web/scripts/run-s4-lan-scenario.mjs` exit 0(plan-only, 요청 없음). `node --test web/node-tests/s4-lan-scenario.test.mjs` 12/12. `npm run test:required --prefix web` exit 0(`test:web-contracts` 276/276, parity 통과). pin 시험은 실패하지 않았다. `npm run test:public-source-safety --prefix web`는 19/20이고 실패 1건은 기존 두 문서 `docs/ga-ready/demo/s1-browser-console-demo-2026-10-08.md`와 `docs/superpowers/plans/2026-10-08-purecvisor-desktop-node-s1-installed.md`의 `network.observed-private-endpoint`다. 새 발견은 없다. `git diff --check` 통과. host mutation 없음. S4 통과를 주장하지 않는다. Delivery·Verification 시험은 이 commit의 clean HEAD에서 돌린다.
 
+## Task 8: `configure-installed` LAN prefix 옵션 (D2 정정 A′, Task 4 앞)
+
+- [ ] Lane 1 제품 변경. `DesktopNode.Host.exe service-action configure-installed|repair-installed`가 `--prefix`, `--web-prefix`를 받는다.
+  - 옵션이 없으면 지금과 같은 service 명령줄이다(API `http://127.0.0.1:7777/`, Web `http://127.0.0.1:80/`, `--allow-lan` 없음).
+  - 둘 중 하나라도 loopback이 아니면 `--allow-lan`이 필요하고(없으면 `PCV_HOST_PREFIX_NOT_LOOPBACK`), service 명령줄에 `--allow-lan`을 넣는다.
+  - 거절: wildcard host(`+`, `*`, `0.0.0.0`, `[::]`), http가 아닌 scheme, API와 Web host 불일치, LAN에서 API port가 7777이 아닌 값
+    (CSP `connect-src http://*:7777`). 형식 검증은 `listen` 모드와 같은 규칙을 쓴다.
+  - 명령 경로(`DesktopNodeHostServiceAction.cs`)와 native 구성(`DesktopNodeHostServiceAction.ServiceConfig.cs`)이 같은 값을 쓴다. native
+    구성은 지금처럼 현재 service의 `--api-token-credential-target`과 `--batch-evidence-root`를 유지한다.
+  - `listen` 모드, 방화벽 ops, MSI custom action은 바꾸지 않는다.
+  - 시험(`DesktopNode.Host.Tests`): 기본 명령줄 불변, LAN 명령줄의 prefix와 `--allow-lan`, `--allow-lan` 누락, wildcard, host 불일치,
+    API port, 두 경로 일치, LAN에서도 credential target과 batch evidence root 유지.
+  - 문서: `packaging/windows-desktop-node/README.md`의 service-action 옵션 설명(`--batch-evidence-root` 줄 근처)과, configure-installed
+    인수를 고정하는 다른 문서·catalog·시험이 있으면 함께 맞춘다.
+  - `docs/ga-ready/release-train.json` `queue`에 행을 더한다. area `host`, risk_tier `M`, `lane2_probe` family `host.service.configure-lan`,
+    design은 S4 설계 문서다. 형식은 PR #86의 queue 행(`e31b180`)과 같다.
+  - 검증: `dotnet test src/DesktopNode.Host.Tests -c Release`, commit 뒤 clean HEAD에서 `dotnet test src/DesktopNode.sln -c Release`,
+    packaging Pester, `git diff --check`. push, PR, green CI 뒤 merge. host mutation 없음. S4 통과를 주장하지 않는다.
+
 ## Task 4: S4 리허설 R (설계 4절 task 2)
 
-- [ ] Lane 2. 시작 조건: 사용자 admin 계정이 있다. 없으면 Task 4는 멈추고 사용자에게 요청한다. 설치 service를 API `http://<host-lan-ip>:7777/`, Web `http://<host-lan-ip>:80/`로 재구성하고(`--allow-lan`, token source), 방화벽 관리 규칙 두 개(7777, 80, Private, LocalSubnet, Web 규칙 이름 `PureCVisor Desktop Node Web LAN`)를 연다. 그 다음 에이전트 operator 계정을 실행 경계 비밀번호로 만든다. 이 호스트 브라우저로 `http://<host-lan-ip>/` 리허설을 하고 `run-s4-lan-scenario.mjs --phases=none` 뒤 전체 `--execute --skip-auto`를 1회 돌린다. 기대는 `result=pass-without-auto`다. R은 자동 checkpoint를 증명하지 않는다. 비밀번호, token, 실제 LAN IP는 기록하지 않는다. 끝 상태는 Task 6까지 유지한다.
+- [ ] Lane 2. 시작 조건: 사용자 admin 계정이 있고 Task 8이 merge됐다. admin 계정이 없으면 Task 4는 멈추고 사용자에게 요청한다. Task 8이 merge된 `main` 빌드본 `DesktopNode.Host.exe service-action configure-installed --prefix http://<host-lan-ip>:7777/ --web-prefix http://<host-lan-ip>:80/ --allow-lan`으로 설치 service를 재구성하고(전후 service 명령줄을 읽어 prefix와 `--allow-lan` 말고 바뀐 것이 없는지 확인), 방화벽 관리 규칙 두 개(7777, 80, Private, LocalSubnet, Web 규칙 이름 `PureCVisor Desktop Node Web LAN`)를 연다. 그 다음 에이전트 operator 계정을 실행 경계 비밀번호로 만든다. 이 호스트 브라우저로 `http://<host-lan-ip>/` 리허설을 하고 `run-s4-lan-scenario.mjs --phases=none` 뒤 전체 `--execute --skip-auto`를 1회 돌린다. 기대는 `result=pass-without-auto`다. R은 자동 checkpoint를 증명하지 않는다. 비밀번호, token, 실제 LAN IP는 기록하지 않는다. 끝 상태는 Task 6까지 유지한다.
 
 ## Task 5: S4 사용자 시연 A (설계 4절 task 3)
 
@@ -73,11 +103,11 @@
 
 ## Task 6: S4 끝 상태 (설계 4절 task 4)
 
-- [ ] Lane 2. 끝 상태는 loopback 복귀, 방화벽 규칙 0, 에이전트 operator 계정 disable, `pcv-it-s4-*` VM 정리다. 기록한다. 계정 파일 삭제는 이 task가 하지 않는다.
+- [ ] Lane 2. 끝 상태는 loopback 복귀(같은 `main` 빌드본 `configure-installed`를 prefix 옵션과 `--allow-lan` 없이 실행, Task 4 전 service 명령줄과 같아야 한다), 방화벽 규칙 0, 에이전트 operator 계정 disable, `pcv-it-s4-*` VM 정리다. 기록한다. 계정 파일 삭제는 이 task가 하지 않는다.
 
 ## Task 7: criteria S4 판정 (설계 4절 task 5)
 
-- [ ] Lane 1. 시연 기록이 설계 1절의 판정을 모두 담으면 `config/project-completion-criteria.json` S4를 `passed`로 두고 시연 기록 링크를 적는다. push, PR, green CI 뒤 merge. 적재할 제품 변경이 없으면 release train을 열지 않고 그 사실을 적는다. 이 task가 끝나면 남은 Task 2(C5, 2026-10-19 이후)를 `next_task`로 둔다. 판정 전에는 S4 통과를 주장하지 않는다.
+- [ ] Lane 1. 시연 기록이 설계 1절의 판정을 모두 담으면 `config/project-completion-criteria.json` S4를 `passed`로 두고 시연 기록 링크를 적는다. push, PR, green CI 뒤 merge. Task 8 제품 변경이 queue에 있으므로 S4 판정 뒤 release train 1회(2026-10-09 사전 승인)를 다음 campaign으로 연다. 이 campaign은 train을 실행하지 않는다. 이 task가 끝나면 남은 Task 2(C5, 2026-10-19 이후)를 `next_task`로 둔다. 판정 전에는 S4 통과를 주장하지 않는다.
 
 ## Nonclaims
 
