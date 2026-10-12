@@ -98,8 +98,6 @@ public static partial class DesktopNodeHostServiceAction
             : options.CredentialTarget;
 
         var listenPrefixes = ResolveListenPrefixes(options);
-        var prefix = listenPrefixes.Prefix;
-        var webPrefix = listenPrefixes.WebPrefix;
         var protectedToken = dataRoot is null ? null : Path.Combine(dataRoot, "api-token.dpapi.json");
         var accountFile = dataRoot is null ? null : Path.Combine(dataRoot, "accounts.json");
         var jwtSigningKeyFile = dataRoot is null ? null : Path.Combine(dataRoot, "jwt-signing-key.txt");
@@ -128,9 +126,9 @@ public static partial class DesktopNodeHostServiceAction
                 Quote(serviceExe),
                 "listen",
                 "--prefix",
-                Quote(prefix),
+                Quote(listenPrefixes.Prefix),
                 "--web-prefix",
-                Quote(webPrefix),
+                Quote(listenPrefixes.WebPrefix),
                 "--web-root",
                 Quote(webRoot),
                 "--job-store",
