@@ -276,8 +276,8 @@
       "basis": null,
       "out_of_scope_ref": null,
       "needs_design": true,
-      "status": "open",
-      "closed_by": null
+      "status": "closed",
+      "closed_by": "PR #95 (fix 08c50e08); Host 시험 ConfigureInstalled* 4건 PASS; 설치본 확인은 다음 release train Lane 2 probe host.service.configure-lan"
     }
   ]
 }
