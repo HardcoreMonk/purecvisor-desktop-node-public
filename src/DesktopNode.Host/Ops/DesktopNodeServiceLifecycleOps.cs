@@ -190,6 +190,11 @@ internal static class DesktopNodeServiceLifecycleOps
                 current = serviceController.Stop(plan.ServiceName, TimeSpan.FromSeconds(30));
             }
 
+            if (ConfigureInstalledRequiresStop(plan, current, configuration.BinaryPathName))
+            {
+                current = serviceController.Stop(plan.ServiceName, TimeSpan.FromSeconds(30));
+            }
+
             _ = serviceController.Configure(configuration, TimeSpan.FromSeconds(30));
             var started = serviceController.Start(plan.ServiceName, TimeSpan.FromSeconds(30));
             var ok = string.Equals(started.Status, "running", StringComparison.OrdinalIgnoreCase);
@@ -331,6 +336,17 @@ internal static class DesktopNodeServiceLifecycleOps
         {
             return DesktopNodeHostServiceAction.NativeServiceFailure(options, plan, current, ownerVerified, error.Code, error.Message);
         }
+    }
+
+    private static bool ConfigureInstalledRequiresStop(
+        DesktopNodeHostServiceActionPlan plan,
+        DesktopNodeWindowsServiceSnapshot current,
+        string expectedBinaryPathName)
+    {
+        return string.Equals(plan.NativeServiceOperation, "configure-installed", StringComparison.OrdinalIgnoreCase) &&
+            current.Exists &&
+            !string.Equals(current.Status, "stopped", StringComparison.OrdinalIgnoreCase) &&
+            !ServiceBinaryPathMatches(current.BinaryPathName, expectedBinaryPathName);
     }
 
     private static bool ServiceBinaryPathMatches(string? currentBinaryPathName, string expectedBinaryPathName)

@@ -25,7 +25,7 @@ source is rights-reserved and available for inspection; it is not licensed as op
 `SECURITY.md`, and `docs/PUBLIC_SOURCE_AUTHORITY.md` before using or reporting on the repository.
 
 Public source visibility does not publish a trusted installer or stable binary channel. The claims remain
-`public_trusted_signing=false`, `external_stable_publication=false`, and `promotion_eligible=false`.
+`public_trusted_signing=false` and `external_stable_publication=false`.
 
 ## 2026-07-14 historical predecessor
 
