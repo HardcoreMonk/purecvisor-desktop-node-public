@@ -449,24 +449,53 @@
     </div>
   </div>
   <dialog id="create-vm-dialog">
-    <form id="create-vm-form" method="dialog" class="create-form">
+    <form id="create-vm-form" method="dialog" class="create-form" novalidate>
       <div class="section-header">
         <div>
-          <p class="eyebrow">Provisioning</p>
-          <h2>Create VM</h2>
+          <p class="eyebrow" data-i18n="vm.create.wizard.eyebrow">프로비저닝</p>
+          <h2 data-i18n="vm.create.wizard.title">새 VM</h2>
         </div>
-        <button id="close-create-vm" type="button">Close</button>
+        <button id="close-create-vm" type="button" data-i18n="vm.create.wizard.close">닫기</button>
       </div>
-      <label>Name<input name="name" required value="internal-lab-01"></label>
-      <label>ISO path<input name="iso_path" required value="D:\iso\installer.iso"></label>
-      <label>VM root<input name="vm_root" required value="D:\PureCVisor\VMs"></label>
-      <div class="form-grid">
-        <label>CPU<input name="cpu" type="number" min="1" value="2"></label>
-        <label>Memory MB<input name="memory_mb" type="number" min="512" value="4096"></label>
-        <label>Disk GB<input name="disk_gb" type="number" min="1" value="40"></label>
-        <label>Generation<input name="generation" type="number" min="1" max="2" value="2"></label>
+      <ol id="create-vm-steps" class="pcv-wizard-steps" aria-label="만들기 단계">
+        <li><button type="button" id="create-vm-step-tab-1" class="pcv-wizard-step is-current" data-step="1" aria-current="step"><span class="pcv-wizard-index">1</span><span data-i18n="vm.create.wizard.step.basics">기본</span></button></li>
+        <li><button type="button" id="create-vm-step-tab-2" class="pcv-wizard-step" data-step="2"><span class="pcv-wizard-index">2</span><span data-i18n="vm.create.wizard.step.resources">자원</span></button></li>
+        <li><button type="button" id="create-vm-step-tab-3" class="pcv-wizard-step" data-step="3"><span class="pcv-wizard-index">3</span><span data-i18n="vm.create.wizard.step.install">설치와 네트워크</span></button></li>
+        <li><button type="button" id="create-vm-step-tab-4" class="pcv-wizard-step" data-step="4"><span class="pcv-wizard-index">4</span><span data-i18n="vm.create.wizard.step.confirm">확인</span></button></li>
+      </ol>
+      <div id="create-vm-panels">
+        <div id="create-vm-step-1" data-wizard-panel="1">
+          <label><span data-i18n="vm.create.wizard.name">이름</span><input name="name" autocomplete="off" placeholder="internal-lab-01" data-i18n-placeholder="vm.create.wizard.name_placeholder"></label>
+          <p id="create-vm-generation" data-i18n="vm.create.wizard.generation_value">Generation 2</p>
+          <p class="muted" data-i18n="vm.create.wizard.generation_note">서버는 Hyper-V 세대 2만 받습니다.</p>
+        </div>
+        <div id="create-vm-step-2" data-wizard-panel="2" hidden>
+          <div class="pcv-wizard-resources">
+            <label><span data-i18n="vm.create.wizard.cpu">vCPU</span><input name="cpu" type="number" min="1" max="32" step="1" value="2"></label>
+            <label><span data-i18n="vm.create.wizard.memory">메모리 (MB)</span><input name="memory_mb" type="number" min="512" max="262144" step="1" value="4096"></label>
+            <label><span data-i18n="vm.create.wizard.disk">디스크 (GB)</span><input name="disk_gb" type="number" min="8" max="4096" step="1" value="40"></label>
+          </div>
+          <p class="muted" data-i18n="vm.create.wizard.resource_hint">vCPU 1–32, 메모리 512–262144 MB, 디스크 8–4096 GB.</p>
+        </div>
+        <div id="create-vm-step-3" data-wizard-panel="3" hidden>
+          <label><span data-i18n="vm.create.wizard.iso">ISO 경로</span><input name="iso_path" autocomplete="off" placeholder="D:\iso\installer.iso" data-i18n-placeholder="vm.create.wizard.iso_placeholder"></label>
+          <p class="muted" id="create-vm-network-notice" data-i18n="vm.create.wizard.network_notice">Default Switch에 연결됩니다. 만든 뒤 하드웨어 탭에서 바꿀 수 있습니다.</p>
+          <details class="pcv-wizard-storage">
+            <summary data-i18n="vm.create.wizard.storage">저장 위치</summary>
+            <label><span data-i18n="vm.create.wizard.vm_root">VM 루트</span><input name="vm_root" autocomplete="off" placeholder="D:\PureCVisor\VMs" data-i18n-placeholder="vm.create.wizard.vm_root_placeholder"></label>
+            <p class="muted" data-i18n="vm.create.wizard.vm_root_hint">비워 두면 서버 기본 위치를 사용합니다.</p>
+          </details>
+        </div>
+        <div id="create-vm-step-4" data-wizard-panel="4" hidden>
+          <dl id="create-vm-summary" class="pcv-wizard-summary"></dl>
+        </div>
       </div>
-      <button type="submit">Queue Create Job</button>
+      <div id="create-vm-job" class="pcv-wizard-job" hidden></div>
+      <div id="create-vm-actions" class="pcv-wizard-actions">
+        <button type="button" id="create-vm-back" hidden data-i18n="vm.create.wizard.back">이전</button>
+        <button type="button" id="create-vm-next" disabled data-i18n="vm.create.wizard.next">다음</button>
+        <button type="submit" id="create-vm-submit" hidden data-i18n="vm.create.wizard.create">만들기</button>
+      </div>
     </form>
   </dialog>
 <script src="/pcv-config.js"></script>

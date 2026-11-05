@@ -537,13 +537,18 @@ async function main() {
     await requireClick(client, "#open-create-vm", "open-create-vm");
     await waitForExpression(client, "document.querySelector('#create-vm-dialog')?.open === true", 10000);
     await typeInto(client, '#create-vm-form input[name="name"]', vmName);
-    await typeInto(client, '#create-vm-form input[name="iso_path"]', isoPath);
-    await typeInto(client, '#create-vm-form input[name="vm_root"]', vmRoot);
+    await requireClick(client, "#create-vm-next", "create-vm-next-basics");
+    await waitForExpression(client, "document.querySelector('#create-vm-step-2')?.hidden === false", 10000);
     await typeInto(client, '#create-vm-form input[name="cpu"]', "1");
     await typeInto(client, '#create-vm-form input[name="memory_mb"]', "1024");
     await typeInto(client, '#create-vm-form input[name="disk_gb"]', "8");
-    await typeInto(client, '#create-vm-form input[name="generation"]', "2");
-    await runUiJob(client, actions, "vm.create", '#create-vm-form button[type="submit"]', null, outDir, screenshots, states);
+    await requireClick(client, "#create-vm-next", "create-vm-next-resources");
+    await waitForExpression(client, "document.querySelector('#create-vm-step-3')?.hidden === false", 10000);
+    await typeInto(client, '#create-vm-form input[name="iso_path"]', isoPath);
+    await typeInto(client, '#create-vm-form input[name="vm_root"]', vmRoot);
+    await requireClick(client, "#create-vm-next", "create-vm-next-install");
+    await waitForExpression(client, "document.querySelector('#create-vm-step-4')?.hidden === false && document.querySelector('#create-vm-submit')?.hidden === false", 10000);
+    await runUiJob(client, actions, "vm.create", "#create-vm-submit", null, outDir, screenshots, states);
     await waitForVm(client, vmName, Boolean, "vm.present-after-create", 120000);
 
     await selectVmInUi(client, vmName);

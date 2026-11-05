@@ -173,9 +173,9 @@ function bindEvents() {
       handleShellCommand(menuCommand.dataset.menuCommand);
     }
   });
+  if (typeof bindCreateVmWizard === 'function') bindCreateVmWizard();
   els.openCreateVm?.addEventListener('click', () => els.createDialog.showModal());
   els.closeCreateVm?.addEventListener('click', () => els.createDialog.close());
-  els.createVmForm?.addEventListener('submit', submitCreateVm);
   els.vmTable?.addEventListener('click', async (event) => {
     const button = event.target.closest('button[data-action="select-vm"]');
     const row = event.target.closest('tr[data-vm-id]');

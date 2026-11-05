@@ -126,7 +126,9 @@ push, noVNC·VNC WebSocket, cow·guestfs 복제 옵션.
 - 단계: 1 기본(이름, 세대), 2 자원(vCPU, 메모리, 디스크), 3 설치 미디어와 네트워크(ISO 경로, 스위치), 4 확인(요약).
 - 1단계는 생성 이름 규칙(7.2절 `IsValidVmCreateName`)과 목록 중복을 통과해야 다음으로 간다.
 - 예시 경로(`D:\iso\installer.iso` 등)를 초기값으로 채우지 않는다. placeholder로만 둔다.
-- 스위치 목록은 `network.inventory`에서 읽는다. 만들기 뒤 모달이 job 진행 줄로 바뀐다.
+- 2026-11-05 정정(Task 6 조사): 생성 API(`POST /api/v1/vms`)에는 스위치 필드가 없고 공급자가 항상 `Default Switch`를 연결한다
+  (`src/DesktopNode.HyperV/DesktopNodeHyperVWmiVmCreateProvider.cs:33`). 그래서 3단계는 스위치를 고르지 않고 "Default Switch에 연결되며 만든
+  뒤 하드웨어 탭에서 바꿀 수 있다"는 읽기 전용 안내를 둔다. 세대도 서버가 2만 받으므로 읽기 전용 표시다. 만들기 뒤 모달이 job 진행 줄로 바뀐다.
 
 ### 5.7 W7 삭제 확인 모달
 
