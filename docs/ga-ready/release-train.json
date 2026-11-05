@@ -99,6 +99,17 @@
         "design": "docs/superpowers/specs/2026-11-05-purecvisor-desktop-node-ui-redesign-design.md"
       },
       "risk_tier": "S"
+    },
+    {
+      "pr": 104,
+      "merge_commit": "213bfe36",
+      "area": "api",
+      "summary": "계정 비밀번호 재설정(admin·서비스 bearer)과 본인 변경 route, credential_version cv claim으로 재설정·변경·비활성화 뒤 기존 token 즉시 무효화, PCVCLI와 Web 진입점",
+      "lane2_probe": {
+        "family": "api.account.password",
+        "design": "docs/superpowers/specs/2026-11-05-purecvisor-desktop-node-ui-redesign-design.md"
+      },
+      "risk_tier": "L"
     }
   ],
   "trains": [
