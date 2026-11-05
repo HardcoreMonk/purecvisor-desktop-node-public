@@ -390,6 +390,7 @@ function mountVmDetailTabs(root, vmId) {
     });
   });
   bindVmMoreMenu(root);
+  if (typeof bindVmConsoleFrame === 'function') bindVmConsoleFrame();
   return api;
 }
 
