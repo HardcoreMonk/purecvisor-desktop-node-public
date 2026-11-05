@@ -18,20 +18,20 @@ function renderDiagnosticBundleList() {
   const rows = bundles.length
     ? bundles.map((bundle) => `<div class="triage-row diagnostic-bundle-row">
         <div>
-          <strong>${pcvEscapeHtml(getDiagnosticBundleId(bundle) || bundle.file_name || 'diagnostic bundle')}</strong>
-          <span class="muted">${pcvEscapeHtml([bundle.created_at, `${bundle.size_bytes ?? 0} bytes`, bundle.redaction_status].filter(Boolean).join(' / '))}</span>
+          <strong>${pcvEscapeHtml(getDiagnosticBundleId(bundle) || bundle.file_name || t('account.diag.fallback'))}</strong>
+          <span class="muted">${pcvEscapeHtml([bundle.created_at, t('account.diag.bytes', { size: bundle.size_bytes ?? 0 }), bundle.redaction_status].filter(Boolean).join(' / '))}</span>
         </div>
-        <span class="status-badge ok">${pcvEscapeHtml(bundle.archive_status || 'available')}</span>
+        <span class="status-badge ok">${pcvEscapeHtml(bundle.archive_status || t('account.diag.available'))}</span>
       </div>`).join('')
-    : '<div class="diagnostics-result"><span class="muted">Bundle list</span><strong>No retained bundles visible</strong><p>GET list route keeps pagination metadata separate from create/download.</p></div>';
+    : `<div class="diagnostics-result"><span class="muted">${pcvEscapeHtml(t('account.diag.empty_label'))}</span><strong>${pcvEscapeHtml(t('account.diag.empty_value'))}</strong><p>${pcvEscapeHtml(t('account.diag.empty_body'))}</p></div>`;
 
   return `<div class="diagnostics-result diagnostics-list">
     <div class="diagnostics-header">
       <div>
-        <span class="muted">Retained bundles</span>
+        <span class="muted">${pcvEscapeHtml(t('account.diag.retained'))}</span>
         <strong>${pcvEscapeHtml(page.returned ?? bundles.length)} / ${pcvEscapeHtml(page.count ?? bundles.length)}</strong>
       </div>
-      <span class="status-badge neutral">next_offset=${pcvEscapeHtml(nextOffset ?? 'none')}</span>
+      <span class="status-badge neutral">next_offset=${pcvEscapeHtml(nextOffset ?? t('account.diag.next_none'))}</span>
     </div>
     <div class="boundary-chip-row">
       <span>max_bundle_count=${pcvEscapeHtml(retention.max_bundle_count ?? 'unavailable')}</span>
@@ -40,8 +40,8 @@ function renderDiagnosticBundleList() {
     </div>
     <div class="triage-list">${rows}</div>
     <div class="diagnostics-actions">
-      <button type="button" data-action="diagnostic-list-next" ${hasNext ? '' : 'disabled aria-disabled="true"'}>Load more bundles</button>
-      <span class="muted">Read-only list pagination; no host mutation.</span>
+      <button type="button" data-action="diagnostic-list-next" ${hasNext ? '' : 'disabled aria-disabled="true"'}>${pcvEscapeHtml(t('account.diag.more'))}</button>
+      <span class="muted">${pcvEscapeHtml(t('account.diag.readonly'))}</span>
     </div>
   </div>`;
 }
@@ -68,7 +68,7 @@ function persistDiagnosticBundleDownload(download) {
 }
 
 async function createDiagnosticBundleFromPanel() {
-  requireRbac('diagnostics.create', 'diagnostic bundle create');
+  requireRbac('diagnostics.create', t('account.rbac.diag_create'));
   state.pendingDiagnosticAction = 'creating';
   state.lastDiagnosticAction = 'create';
   state.diagnosticBundleError = null;
@@ -93,7 +93,7 @@ async function createDiagnosticBundleFromPanel() {
 }
 
 async function downloadLatestDiagnosticBundle() {
-  requireRbac('diagnostics.read', 'diagnostic bundle download');
+  requireRbac('diagnostics.read', t('account.rbac.diag_download'));
   if (!getDiagnosticBundleId() && state.diagnosticBundles.length > 0) {
     state.diagnosticBundle = state.diagnosticBundles[0];
   }
@@ -101,7 +101,7 @@ async function downloadLatestDiagnosticBundle() {
   if (!bundleId) {
     state.diagnosticBundleError = normalizeError({
       code: 'PCV_DIAGNOSTIC_BUNDLE_NOT_SELECTED',
-      message: 'Create a diagnostic bundle before downloading it.',
+      message: t('account.diag.required'),
       detail: DESKTOP_NODE_API_ROUTES.diagnosticBundles
     });
     render();
@@ -183,8 +183,8 @@ async function refreshAccountSession(options = {}) {
   if (!state.authRefreshToken) {
     state.authError = normalizeError({
       code: 'PCV_REFRESH_TOKEN_REQUIRED',
-      message: 'Refresh token is not present in the browser session.',
-      detail: 'Login again before refreshing the account JWT.'
+      message: t('account.diag.refresh_missing'),
+      detail: t('account.diag.refresh_detail')
     });
     if (!silent) render();
     return;
@@ -222,7 +222,7 @@ async function logoutAccount() {
   } finally {
     clearAccountSessionState();
     state.authPending = false;
-    state.tokenActionMessage = 'account JWT session cleared; service bearer token state was not changed.';
+    state.tokenActionMessage = t('account.diag.jwt_cleared');
     await refreshAll();
     render();
   }
@@ -496,12 +496,12 @@ async function disableAccountFromButton(username) {
 
 async function openSelectedConsole() {
   const vmId = state.selectedVmId;
-  requireRbac('console.view', 'console view');
+  requireRbac('console.view', t('account.rbac.console'));
   if (!vmId) {
     throw normalizeError({
       code: 'PCV_CONSOLE_VM_REQUIRED',
-      message: 'Select a VM before opening console handoff.',
-      detail: 'The console route is scoped to /api/v1/vms/{id}/console.'
+      message: t('account.err.console_vm'),
+      detail: t('account.err.console_vm_detail')
     });
   }
 
@@ -520,7 +520,7 @@ function clearBrowserToken() {
   state.apiToken = '';
   clearAccountSessionState();
   if (els.apiToken) els.apiToken.value = '';
-  state.tokenActionMessage = 'browser token cleared; all views refresh; pending jobs are rechecked; token-required routes may show Auth required.';
+  state.tokenActionMessage = t('account.token.cleared');
   state.diagnosticBundleError = null;
   state.partialFailures = [];
   refreshAll();
@@ -542,7 +542,7 @@ function clearBrowserState() {
   state.diagnosticBundleError = null;
   state.pendingDiagnosticAction = '';
   state.lastDiagnosticAction = '';
-  state.tokenActionMessage = 'browser token cleared; all views refresh; pending jobs are rechecked; token-required routes may show Auth required.';
+  state.tokenActionMessage = t('account.token.cleared');
   state.error = null;
   try {
     window.localStorage.removeItem(JOB_HISTORY_KEY);

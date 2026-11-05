@@ -316,9 +316,9 @@
             <label class="filter-control">
               <span data-i18n="vm.list.sort">정렬</span>
               <select id="vm-sort" aria-label="VM sort">
-                <option value="name">Name</option>
-                <option value="state">State</option>
-                <option value="updated">Updated</option>
+                <option value="name" data-i18n="vm.list.sort.name">이름</option>
+                <option value="state" data-i18n="vm.list.sort.state">상태</option>
+                <option value="updated" data-i18n="vm.list.sort.updated">업데이트</option>
               </select>
             </label>
             <button id="vm-list-create" type="button" data-shell-action="open-create-vm" data-i18n="vm.list.create">+ 새 VM</button>
@@ -329,13 +329,13 @@
             <aside id="vm-detail-panel" class="vm-detail-panel" aria-live="polite">
               <div class="section-header">
                 <div>
-                  <p class="eyebrow">Selected VM</p>
-                  <h2 id="vm-detail-title">No VM selected</h2>
+                  <p class="eyebrow" data-i18n="vm.detail.eyebrow">선택한 VM</p>
+                  <h2 id="vm-detail-title" data-i18n="vm.detail.none_title">VM이 선택되지 않았습니다</h2>
                 </div>
-                <button id="close-vm-detail" type="button">Close</button>
+                <button id="close-vm-detail" type="button" data-i18n="vm.detail.close">닫기</button>
               </div>
               <div id="vm-detail-content">
-                <p class="muted">Select a VM row to inspect lifecycle controls and inventory details.</p>
+                <p class="muted" data-i18n="vm.detail.none_body">목록에서 VM을 고르면 수명 주기와 인벤터리를 볼 수 있습니다.</p>
               </div>
             </aside>
           </div>
