@@ -88,6 +88,17 @@
         "design": "docs/superpowers/specs/2026-11-05-purecvisor-desktop-node-ui-redesign-design.md"
       },
       "risk_tier": "M"
+    },
+    {
+      "pr": 103,
+      "merge_commit": "289d98ea",
+      "area": "web",
+      "summary": "새 셸 window.confirm 0: 남은 8곳을 조작별 앱 안 확인으로, VM·콘솔·계정 화면 영어 문구를 i18n 키로(ko/en 344키)",
+      "lane2_probe": {
+        "family": "web.console.confirm-copy",
+        "design": "docs/superpowers/specs/2026-11-05-purecvisor-desktop-node-ui-redesign-design.md"
+      },
+      "risk_tier": "S"
     }
   ],
   "trains": [
