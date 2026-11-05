@@ -112,101 +112,6 @@ public static partial class DesktopNodeCliCommandCatalog
         return body;
     }
 
-    private static DesktopNodeCliRequest AccountRequest(IReadOnlyList<string> args)
-    {
-        if (args.Count < 2)
-        {
-            throw Usage("Use: account list|create|disable.");
-        }
-
-        return args[1].ToLowerInvariant() switch
-        {
-            "list" => AccountList(args),
-            "create" => AccountCreate(args),
-            "disable" => AccountDisable(args),
-            _ => throw Usage("Use: account list|create|disable.")
-        };
-    }
-
-    private static DesktopNodeCliRequest AccountList(IReadOnlyList<string> args)
-    {
-        RequireShape(args, 2, "account list");
-        return new DesktopNodeCliRequest("GET", "/api/v1/accounts");
-    }
-
-    private static DesktopNodeCliRequest AccountCreate(IReadOnlyList<string> args)
-    {
-        const string usage = "account create --username NAME --role ROLE --password-env VAR|--password-stdin --yes";
-        if (args.Count < 3)
-        {
-            throw Usage("Use: " + usage + ".");
-        }
-
-        var parsed = ParseOptions(args.Skip(2).ToArray(), allowFlags: true);
-        var yes = HasFlag(parsed.Options, "--yes");
-        if (!yes)
-        {
-            throw new ArgumentException(
-                "PCV_CLI_CONFIRMATION_REQUIRED|" +
-                "Account create requires explicit confirmation.|" +
-                "Use: pcvcli " + usage + ".");
-        }
-
-        var username = Required(parsed.Options, "--username");
-        var role = Required(parsed.Options, "--role");
-        var passwordEnv = FirstOption(parsed.Options, "--password-env");
-        var passwordStdin = HasFlag(parsed.Options, "--password-stdin");
-        if (!string.IsNullOrWhiteSpace(passwordEnv) == passwordStdin)
-        {
-            throw Usage("Use exactly one of --password-env VAR or --password-stdin.");
-        }
-
-        string? password;
-        if (passwordStdin)
-        {
-            password = Console.IsInputRedirected ? Console.In.ReadLine() : null;
-        }
-        else
-        {
-            password = Environment.GetEnvironmentVariable(passwordEnv!);
-        }
-
-        var displayName = FirstOption(parsed.Options, "--display-name");
-        var body = new Dictionary<string, string?>(StringComparer.Ordinal)
-        {
-            ["username"] = username,
-            ["password"] = password ?? string.Empty,
-            ["role"] = role
-        };
-        if (!string.IsNullOrWhiteSpace(displayName))
-        {
-            body["display_name"] = displayName;
-        }
-
-        return new DesktopNodeCliRequest(
-            "POST",
-            "/api/v1/accounts",
-            JsonSerializer.Serialize(body, JsonOptions));
-    }
-
-    private static DesktopNodeCliRequest AccountDisable(IReadOnlyList<string> args)
-    {
-        const string usage = "account disable NAME --yes";
-        if (args.Count != 4 || !Is(args[3], "--yes"))
-        {
-            throw new ArgumentException(
-                "PCV_CLI_CONFIRMATION_REQUIRED|" +
-                "Account disable requires explicit confirmation.|" +
-                "Use: pcvcli " + usage + ".");
-        }
-
-        var username = args[2];
-        return new DesktopNodeCliRequest(
-            "POST",
-            $"/api/v1/accounts/{Segment(username)}/disable",
-            JsonSerializer.Serialize(new { confirm_username = username }, JsonOptions));
-    }
-
     private static DesktopNodeCliRequest HostRequest(IReadOnlyList<string> args)
     {
         RequireShape(args, 2, "host status");
@@ -1241,6 +1146,88 @@ public static partial class DesktopNodeCliCommandCatalog
             "next_slice=pcvcli-backend-command-gap-slice-2026-05-19");
     }
 
+    private static DesktopNodeCliRequest AccountRequest(IReadOnlyList<string> args)
+    {
+        if (args.Count < 2)
+        {
+            throw Usage("Use: account list|create|disable|reset-password|change-password.");
+        }
+
+        return args[1].ToLowerInvariant() switch
+        {
+            "list" => AccountList(args),
+            "create" => AccountCreate(args),
+            "disable" => AccountDisable(args),
+            "reset-password" => AccountResetPassword(args),
+            "change-password" => AccountChangePassword(args),
+            _ => throw Usage("Use: account list|create|disable|reset-password|change-password.")
+        };
+    }
+
+    private static DesktopNodeCliRequest AccountList(IReadOnlyList<string> args)
+    {
+        RequireShape(args, 2, "account list");
+        return new DesktopNodeCliRequest("GET", "/api/v1/accounts");
+    }
+
+    private static DesktopNodeCliRequest AccountCreate(IReadOnlyList<string> args)
+    {
+        const string usage = "account create --username NAME --role ROLE --password-env VAR|--password-stdin --yes";
+        if (args.Count < 3)
+        {
+            throw Usage("Use: " + usage + ".");
+        }
+
+        var parsed = ParseOptions(args.Skip(2).ToArray(), allowFlags: true);
+        RejectRawPasswordOptions(parsed.Options);
+        var yes = HasFlag(parsed.Options, "--yes");
+        if (!yes)
+        {
+            throw new ArgumentException(
+                "PCV_CLI_CONFIRMATION_REQUIRED|" +
+                "Account create requires explicit confirmation.|" +
+                "Use: pcvcli " + usage + ".");
+        }
+
+        var username = Required(parsed.Options, "--username");
+        var role = Required(parsed.Options, "--role");
+        var password = ReadPasswordChoice(parsed.Options);
+        var displayName = FirstOption(parsed.Options, "--display-name");
+        var body = new Dictionary<string, string?>(StringComparer.Ordinal)
+        {
+            ["username"] = username,
+            ["password"] = password ?? string.Empty,
+            ["role"] = role
+        };
+        if (!string.IsNullOrWhiteSpace(displayName))
+        {
+            body["display_name"] = displayName;
+        }
+
+        return new DesktopNodeCliRequest(
+            "POST",
+            "/api/v1/accounts",
+            JsonSerializer.Serialize(body, JsonOptions));
+    }
+
+    private static DesktopNodeCliRequest AccountDisable(IReadOnlyList<string> args)
+    {
+        const string usage = "account disable NAME --yes";
+        if (args.Count != 4 || !Is(args[3], "--yes"))
+        {
+            throw new ArgumentException(
+                "PCV_CLI_CONFIRMATION_REQUIRED|" +
+                "Account disable requires explicit confirmation.|" +
+                "Use: pcvcli " + usage + ".");
+        }
+
+        var username = args[2];
+        return new DesktopNodeCliRequest(
+            "POST",
+            $"/api/v1/accounts/{Segment(username)}/disable",
+            JsonSerializer.Serialize(new { confirm_username = username }, JsonOptions));
+    }
+
     public static string GetUsage()
     {
         return string.Join(Environment.NewLine, [
@@ -1289,6 +1276,8 @@ public static partial class DesktopNodeCliCommandCatalog
             "  pcvcli account list",
             "  pcvcli account create --username NAME --role ROLE --password-env VAR|--password-stdin --yes",
             "  pcvcli account disable NAME --yes",
+            "  pcvcli account reset-password NAME --password-env VAR|--password-stdin --yes",
+            "  pcvcli account change-password --current-password-env VAR --password-env VAR",
             "  pcvcli console novnc-target preview --host 127.0.0.1 --port 5900 [--allow-lan-target] [--reason TEXT]",
             "  pcvcli console novnc-target set --host 127.0.0.1 --port 5900 [--allow-lan-target] [--reason TEXT] --yes",
             "  pcvcli console novnc-target clear --yes"

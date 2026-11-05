@@ -848,3 +848,204 @@ test("disable uses a danger confirmDialog and shows PCV_ACCOUNT_LAST_ADMIN", asy
   assert.match(env.document.querySelector("#accounts-panel").textContent, /PCV_ACCOUNT_LAST_ADMIN/);
   assert.match(env.document.querySelector("#accounts-panel").textContent, /마지막 관리자 계정은 끌 수 없습니다/);
 });
+
+function passwordLeftovers() {
+  return env.document.querySelectorAll('input[type="password"]').filter((input) => input.value === SECRET || input.getAttribute("value") === SECRET);
+}
+
+function submitForm(form) {
+  form.dispatchEvent({ type: "submit", preventDefault() {}, stopPropagation() { this.cancelBubble = true; }, target: form });
+  return flush();
+}
+
+test("password reset is an admin row action and password change follows the signed-in account", () => {
+  resetSession(env);
+  env.state.accountDirectory = [
+    { username: "ada", role: "admin", enabled: true },
+    { username: "op", role: "operator", enabled: false }
+  ];
+  env.render();
+  const change = () => env.document.querySelector('[data-action="account-change-password"]');
+  const panelChange = () => env.document.querySelector("#accounts-panel").querySelector('[data-action="account-change-password"]');
+  assert.equal(panelChange(), null);
+  assert.equal(change().hidden, true);
+  assert.equal(env.document.querySelector("#account-session-panel").querySelector('[data-action="account-change-password"]'), null);
+  assert.equal(env.document.querySelectorAll('[data-action="account-reset-password"]').length, 2);
+  assert.equal(env.document.querySelector('[data-action="account-reset-password"][data-username="op"]').disabled, false);
+
+  env.state.authAccessToken = "jwt";
+  env.state.runtimePolicy = { auth: { rbac: true, mode: "account" } };
+  env.state.authSession = { username: "op", role: "operator", permissions: ["operate"] };
+  env.render();
+  assert.match(env.document.querySelector("#accounts-panel").textContent, /계정 권한이 없습니다/);
+  assert.equal(env.document.querySelector('[data-action="account-reset-password"]'), null);
+  assert.equal(panelChange(), null);
+  assert.equal(change().hidden, false);
+  assert.equal(change().textContent, "비밀번호 변경");
+  assert.equal(change().parentNode.id, "shell-topbar");
+
+  env.state.authSession = { username: "ada", role: "admin", permissions: ["account.manage"] };
+  env.render();
+  assert.equal(env.document.querySelectorAll('[data-action="account-reset-password"]').length, 2);
+  assert.equal(panelChange(), null);
+  assert.equal(change().hidden, false);
+  assert.equal(change().textContent, "비밀번호 변경");
+});
+
+test("password reset modal shows the target, sends confirm_username, and clears the fields", async () => {
+  resetSession(env);
+  env.state.authAccessToken = "jwt";
+  env.state.runtimePolicy = { auth: { rbac: true, mode: "account" } };
+  env.state.authSession = { username: "root", role: "admin", permissions: ["account.manage"] };
+  env.state.accountDirectory = [{ username: "ada", role: "operator", enabled: true }];
+  const calls = [];
+  stubDesktopApi(env, {
+    resetAccountPassword: async (username, body) => {
+      calls.push({ username, body: JSON.parse(JSON.stringify(body)) });
+      return { username, enabled: true };
+    }
+  });
+  env.render();
+  env.document.querySelector('[data-action="account-reset-password"]').click();
+  const form = env.document.getElementById("account-reset-form");
+  assert.match(form.textContent, /대상 계정: ada/);
+  assert.match(form.textContent, /12자 이상/);
+  form.querySelector('[name="password"]').value = "short";
+  form.querySelector('[name="password_confirm"]').value = "short";
+  await submitForm(form);
+  assert.equal(calls.length, 0);
+  form.querySelector('[name="password"]').value = SECRET;
+  form.querySelector('[name="password_confirm"]').value = "S3cret-pass-2";
+  await submitForm(form);
+  assert.equal(calls.length, 0);
+  form.querySelector('[name="password_confirm"]').value = SECRET;
+  await submitForm(form);
+  assert.deepEqual(calls, [{ username: "ada", body: { confirm_username: "ada", new_password: SECRET } }]);
+  assert.equal(passwordLeftovers().length, 0);
+  assert.equal(env.document.body.textContent.includes(SECRET), false);
+  assert.equal(env.document.querySelector(".pcv-confirm-danger"), null);
+});
+
+test("resetting the signed-in account clears the session and asks for login", async () => {
+  resetSession(env);
+  env.state.authAccessToken = "jwt";
+  env.state.authRefreshToken = "refresh";
+  env.state.runtimePolicy = { auth: { rbac: true, mode: "account" } };
+  env.state.authSession = { username: "ada", role: "admin", permissions: ["account.manage"] };
+  env.state.accountDirectory = [{ username: "ada", role: "admin", enabled: true }];
+  stubDesktopApi(env, {
+    resetAccountPassword: async () => ({ username: "ada", enabled: true })
+  });
+  env.render();
+  env.document.querySelector('[data-action="account-reset-password"]').click();
+  const form = env.document.getElementById("account-reset-form");
+  form.querySelector('[name="password"]').value = SECRET;
+  form.querySelector('[name="password_confirm"]').value = SECRET;
+  await submitForm(form);
+  assert.equal(env.state.authAccessToken, "");
+  assert.equal(env.state.authRefreshToken, "");
+  assert.equal(env.state.authSession, null);
+  assert.match(env.state.tokenActionMessage, /다시 로그인/);
+  assert.equal(passwordLeftovers().length, 0);
+  assert.equal(env.document.body.textContent.includes(SECRET), false);
+});
+
+test("password change sends current and new passwords, then stores the returned session", async () => {
+  resetSession(env);
+  env.state.authAccessToken = "old-access";
+  env.state.authRefreshToken = "old-refresh";
+  env.state.runtimePolicy = { auth: { rbac: true, mode: "account" } };
+  env.state.authSession = { username: "ada", role: "admin", permissions: ["account.manage"] };
+  env.state.accountDirectory = [{ username: "ada", role: "admin", enabled: true }];
+  const calls = [];
+  stubDesktopApi(env, {
+    changeAccountPassword: async (body) => {
+      calls.push(JSON.parse(JSON.stringify(body)));
+      return {
+        access_token: "new-access",
+        refresh_token: "new-refresh",
+        session: { username: "ada", role: "admin", permissions: ["account.manage"] }
+      };
+    }
+  });
+  env.render();
+  env.document.querySelector('[data-action="account-change-password"]').click();
+  const form = env.document.getElementById("account-change-form");
+  form.querySelector('[name="password"]').value = SECRET;
+  form.querySelector('[name="password_confirm"]').value = SECRET;
+  await submitForm(form);
+  assert.equal(calls.length, 0);
+  form.querySelector('[name="current_password"]').value = SECRET;
+  await submitForm(form);
+  assert.deepEqual(calls, [{ current_password: SECRET, new_password: SECRET }]);
+  assert.equal(env.state.authAccessToken, "new-access");
+  assert.equal(env.state.authRefreshToken, "new-refresh");
+  assert.equal(env.state.authSession.username, "ada");
+  assert.equal(passwordLeftovers().length, 0);
+  assert.equal(env.document.body.textContent.includes(SECRET), false);
+  assert.equal(JSON.stringify(env.state.accountDirectoryError || {}).includes(SECRET), false);
+});
+
+test("operator session shows the shell password change entry and submits current and new passwords", async () => {
+  resetSession(env);
+  env.state.apiToken = "";
+  env.state.authAccessToken = "old-access";
+  env.state.authRefreshToken = "old-refresh";
+  env.state.runtimePolicy = { auth: { rbac: true, mode: "account" } };
+  env.state.authSession = { username: "op", role: "operator", permissions: ["operate"] };
+  const calls = [];
+  stubDesktopApi(env, {
+    changeAccountPassword: async (body) => {
+      calls.push(JSON.parse(JSON.stringify(body)));
+      return {
+        access_token: "new-access",
+        refresh_token: "new-refresh",
+        session: { username: "op", role: "operator", permissions: ["operate"] }
+      };
+    }
+  });
+  env.render();
+  const index = fs.readFileSync(webRoot + "index.html", "utf8");
+  assert.match(index, /id="us"[\s\S]*id="account-change-password"[\s\S]*doLogout\(\)/);
+  const button = env.document.querySelector('[data-action="account-change-password"]');
+  assert.equal(button.hidden, false);
+  assert.equal(button.textContent, "비밀번호 변경");
+  assert.equal(env.document.querySelector("#accounts-panel").querySelector('[data-action="account-change-password"]'), null);
+  assert.equal(env.document.querySelector('#shell-sidebar [data-nav="accounts"]').hidden, true);
+  button.click();
+  const form = env.document.getElementById("account-change-form");
+  assert.ok(form);
+  form.querySelector('[name="current_password"]').value = SECRET;
+  form.querySelector('[name="password"]').value = SECRET;
+  form.querySelector('[name="password_confirm"]').value = SECRET;
+  await submitForm(form);
+  assert.deepEqual(calls, [{ current_password: SECRET, new_password: SECRET }]);
+  assert.equal(env.state.authAccessToken, "new-access");
+  assert.equal(env.state.authSession.username, "op");
+  assert.equal(passwordLeftovers().length, 0);
+  assert.equal(env.document.body.textContent.includes(SECRET), false);
+});
+
+test("service bearer and loopback sessions hide the password change entry", () => {
+  resetSession(env);
+  env.state.apiToken = "service-bearer-token";
+  env.state.authAccessToken = "";
+  env.state.authRefreshToken = "";
+  env.state.authSession = null;
+  env.render();
+  assert.equal(env.document.querySelector('[data-action="account-change-password"]').hidden, true);
+
+  env.state.apiToken = "";
+  env.state.authAccessToken = "loopback-jwt";
+  env.state.authSession = { username: "loopback-session", role: "admin", permissions: ["*"] };
+  env.render();
+  assert.equal(env.document.querySelector('[data-action="account-change-password"]').hidden, true);
+  assert.equal(env.document.querySelector("#account-session-panel").querySelector('[data-action="account-change-password"]'), null);
+
+  env.state.authSession = { username: "LOOPBACK-SESSION", role: "admin", permissions: ["*"] };
+  env.render();
+  assert.equal(env.document.querySelector('[data-action="account-change-password"]').hidden, true);
+  env.state.apiToken = "";
+  env.state.authAccessToken = "";
+  env.state.authSession = null;
+});

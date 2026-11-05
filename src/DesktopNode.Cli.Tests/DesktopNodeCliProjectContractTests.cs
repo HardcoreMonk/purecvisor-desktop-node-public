@@ -62,6 +62,8 @@ public sealed class DesktopNodeCliProjectContractTests
             "pcvcli account list",
             "pcvcli account create --username NAME --role ROLE --password-env VAR|--password-stdin --yes",
             "pcvcli account disable NAME --yes",
+            "pcvcli account reset-password NAME --password-env VAR|--password-stdin --yes",
+            "pcvcli account change-password --current-password-env VAR --password-env VAR",
             "pcvcli console novnc-target preview --host 127.0.0.1 --port 5900 [--allow-lan-target] [--reason TEXT]",
             "pcvcli console novnc-target set --host 127.0.0.1 --port 5900 [--allow-lan-target] [--reason TEXT] --yes",
             "pcvcli console novnc-target clear --yes",
@@ -161,7 +163,7 @@ public sealed class DesktopNodeCliProjectContractTests
         }
 
         Assert.Equal(29, featureCount);
-        Assert.Equal(82, routeCount);
+        Assert.Equal(84, routeCount);
         string[] stageLabels =
         [
             "code_tested",

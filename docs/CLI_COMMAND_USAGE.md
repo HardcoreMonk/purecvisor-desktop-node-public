@@ -4,7 +4,7 @@
 
 운영자 대상 용어와 제품 경계 문구는 `docs/OPERATOR_SURFACE_TERMS.md`에 모은다.
 
-`pcvcli.exe`는 설치된 PureCVisor Desktop Node Local API를 호출하는 .NET command-line client다. Web Console과 같은 API contract를 사용하며, Hyper-V helper나 Linux `purecvisor-single` runtime을 직접 실행하지 않는다. 현재 first-class CLI command surface는 host/runtime/ops/network/VM/job/diagnostics/account/console이며, Account/RBAC/JWT login/refresh/logout은 Web Console 또는 Web API 직접 호출 경로가 소유한다. `POST /api/v1/auth/loopback-session`도 Web Console 전용이다. PCVCLI는 설치본 protected token file을 계속 사용한다. 계정 create/disable은 service bearer로 `pcvcli account`를 쓴다. 비밀번호는 `--password-env` 또는 `--password-stdin`만 받고 argv에 두지 않는다. noVNC target preview/set/clear는 `pcvcli console novnc-target`이다.
+`pcvcli.exe`는 설치된 PureCVisor Desktop Node Local API를 호출하는 .NET command-line client다. Web Console과 같은 API contract를 사용하며, Hyper-V helper나 Linux `purecvisor-single` runtime을 직접 실행하지 않는다. 현재 first-class CLI command surface는 host/runtime/ops/network/VM/job/diagnostics/account/console이며, Account/RBAC/JWT login/refresh/logout은 Web Console 또는 Web API 직접 호출 경로가 소유한다. `POST /api/v1/auth/loopback-session`도 Web Console 전용이다. PCVCLI는 설치본 protected token file을 계속 사용한다. 계정 create/disable/reset-password는 service bearer로 `pcvcli account`를 쓴다. `change-password`는 로그인한 계정 access JWT가 필요하다. 비밀번호는 `--password-env`, reset의 `--password-stdin`, change의 `--current-password-env`만 받고 argv에 두지 않는다. noVNC target preview/set/clear는 `pcvcli console novnc-target`이다.
 
 이 문서는 설치된 제품을 사용하는 운영자와 repository checkout에서 CLI를 검증하는 개발자를 함께 대상으로 한다.
 
@@ -190,6 +190,8 @@ pcvcli network list
 | `pcvcli account list` | `GET /api/v1/accounts` | 계정 목록. password_hash 없음 |
 | `pcvcli account create --username NAME --role ROLE --password-env VAR|--password-stdin --yes` | `POST /api/v1/accounts` | 첫 계정은 admin. `--yes` 필수. 비밀번호는 env 또는 stdin |
 | `pcvcli account disable NAME --yes` | `POST /api/v1/accounts/{username}/disable` | disable. 마지막 enabled admin은 거절 |
+| `pcvcli account reset-password NAME --password-env VAR|--password-stdin --yes` | `POST /api/v1/accounts/{username}/password` | 비밀번호 재설정. `--yes` 필수. enabled 상태는 유지. 출력에 비밀번호 없음 |
+| `pcvcli account change-password --current-password-env VAR --password-env VAR` | `POST /api/v1/auth/password` | 로그인한 계정의 비밀번호 변경. stdin 옵션 없음. 출력에 비밀번호 없음 |
 
 예:
 
@@ -198,6 +200,9 @@ $env:PCV_ACCOUNT_PASSWORD = '<password>'
 pcvcli account create --username lab-admin --role admin --password-env PCV_ACCOUNT_PASSWORD --yes
 pcvcli account list
 pcvcli account disable lab-operator --yes
+pcvcli account reset-password lab-operator --password-env PCV_ACCOUNT_PASSWORD --yes
+$env:PCV_ACCOUNT_CURRENT_PASSWORD = '<password>'
+pcvcli account change-password --current-password-env PCV_ACCOUNT_CURRENT_PASSWORD --password-env PCV_ACCOUNT_PASSWORD
 ```
 
 ## 가상 머신 명령

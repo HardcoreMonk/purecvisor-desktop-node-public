@@ -87,8 +87,10 @@ var EP = (function () {
     AUTH_RBAC:                  function()      { return B() + '/auth/rbac'; },
     ACCOUNTS:                   function()      { return B() + '/accounts'; },
     ACCOUNT_DISABLE:            function(u)     { return B() + '/accounts/' + enc(u) + '/disable'; },
-    // Single Edge names kept for the ported modal module: registration is the Desktop Node account create route and
-    // there is no password change route on the Desktop Node (null makes the modal report the missing route).
+    ACCOUNT_PASSWORD:           function(u)     { return B() + '/accounts/' + enc(u) + '/' + 'password'; },
+    AUTH_PASSWORD_CHANGE:       function()      { return B() + '/auth/' + 'password'; },
+    // Single Edge names kept for the ported modal module. Registration is the Desktop Node account create route.
+    // AUTH_PASSWORD stays null: the ported modal is not the Desktop Node password change route.
     AUTH_REGISTER:              function()      { return B() + '/accounts'; },
     AUTH_PASSWORD:              function()      { return null; },
     VM_ACTIONS: VM_ACTIONS,

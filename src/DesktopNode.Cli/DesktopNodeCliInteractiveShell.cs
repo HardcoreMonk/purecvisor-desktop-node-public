@@ -85,6 +85,8 @@ public static class DesktopNodeCliInteractiveShell
         "account list",
         "account create ",
         "account disable ",
+        "account reset-password ",
+        "account change-password ",
         "console novnc-target preview ",
         "console novnc-target set ",
         "console novnc-target clear "

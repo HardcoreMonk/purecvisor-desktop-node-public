@@ -8,7 +8,7 @@ const scriptRoot = path.dirname(fileURLToPath(import.meta.url));
 const webRoot = path.resolve(scriptRoot, '..');
 const repoRoot = path.resolve(webRoot, '..');
 const ledgerPath = path.join(repoRoot, 'config', 'desktop-node-feature-surface-ledger.json');
-const routesPath = path.join(webRoot, 'src', 'served', 'routes.ts');
+const routesPath = path.join(webRoot, 'src', 'modules', 'core.ts');
 
 function fail(message) {
   throw new Error(`PCV_FEATURE_SURFACE_PARITY_FAILED|surface=web|${message}`);
@@ -45,15 +45,37 @@ function loadWebCoverage() {
     },
     fileName: routesPath
   }).outputText;
-  const context = vm.createContext({
-    normalizeError: (value) => value
-  });
-  vm.runInContext(
-    `${compiled}\nglobalThis.__pcvFeatureRouteCoverage = DESKTOP_NODE_ROUTE_COVERAGE;`,
-    context,
-    { filename: routesPath }
-  );
-  return Array.from(context.__pcvFeatureRouteCoverage ?? []);
+  const windowStub = {
+    location: { origin: 'http://127.0.0.1', hash: '' },
+    sessionStorage: {
+      getItem() { return null; },
+      setItem() {},
+      removeItem() {}
+    },
+    localStorage: {
+      getItem() { return null; },
+      setItem() {},
+      removeItem() {}
+    },
+    document: {
+      getElementById() { return null; },
+      addEventListener() {},
+      querySelector() { return null; },
+      querySelectorAll() { return []; }
+    },
+    addEventListener() {},
+    setTimeout() { return 0; },
+    clearTimeout() {},
+    navigator: { language: 'ko' }
+  };
+  windowStub.window = windowStub;
+  const context = vm.createContext(windowStub);
+  vm.runInContext(compiled, context, { filename: routesPath });
+  const coverage = context.DESKTOP_NODE_ROUTE_COVERAGE;
+  if (!Array.isArray(coverage)) {
+    fail('core coverage missing');
+  }
+  return Array.from(coverage);
 }
 
 const ledger = JSON.parse(fs.readFileSync(ledgerPath, 'utf8'));
@@ -118,8 +140,8 @@ for (const key of actual.keys()) {
   }
 }
 
-if (expected.size !== 78 || excludedCount !== 4) {
-  fail(`count mismatch|present=${expected.size}|excluded=${excludedCount}|expected_present=78|expected_excluded=4`);
+if (expected.size !== 80 || excludedCount !== 4) {
+  fail(`count mismatch|present=${expected.size}|excluded=${excludedCount}|expected_present=80|expected_excluded=4`);
 }
 
 process.stdout.write(`Feature surface parity PASS: web=${expected.size} excluded=${excludedCount}\n`);

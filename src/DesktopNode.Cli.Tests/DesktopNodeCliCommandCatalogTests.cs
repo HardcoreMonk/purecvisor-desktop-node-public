@@ -846,7 +846,7 @@ public sealed class DesktopNodeCliCommandCatalogTests
             }
         }
 
-        Assert.Equal(73, presentCount);
+        Assert.Equal(75, presentCount);
         Assert.Equal(9, excludedCount);
     }
 
@@ -876,6 +876,8 @@ public sealed class DesktopNodeCliCommandCatalogTests
         Assert.Contains("pcvcli account list", usage, StringComparison.Ordinal);
         Assert.Contains("pcvcli account create --username NAME --role ROLE --password-env VAR|--password-stdin --yes", usage, StringComparison.Ordinal);
         Assert.Contains("pcvcli account disable NAME --yes", usage, StringComparison.Ordinal);
+        Assert.Contains("pcvcli account reset-password NAME --password-env VAR|--password-stdin --yes", usage, StringComparison.Ordinal);
+        Assert.Contains("pcvcli account change-password --current-password-env VAR --password-env VAR", usage, StringComparison.Ordinal);
         Assert.Contains("pcvcli console novnc-target preview --host 127.0.0.1 --port 5900", usage, StringComparison.Ordinal);
         Assert.Contains("pcvcli console novnc-target set --host 127.0.0.1 --port 5900", usage, StringComparison.Ordinal);
         Assert.Contains("pcvcli console novnc-target clear --yes", usage, StringComparison.Ordinal);

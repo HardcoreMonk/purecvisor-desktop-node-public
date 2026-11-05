@@ -80,7 +80,10 @@ public sealed record DesktopNodeAccountUser(
     [property: JsonPropertyName("enabled")] bool Enabled = true,
     [property: JsonPropertyName("disabled_at")]
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    DateTimeOffset? DisabledAt = null);
+    DateTimeOffset? DisabledAt = null,
+    [property: JsonPropertyName("credential_version")]
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    int CredentialVersion = 0);
 
 public sealed record DesktopNodeAccountAuthFile(
     [property: JsonPropertyName("issuer")] string? Issuer,
@@ -188,7 +191,7 @@ public sealed record DesktopNodeAuthValidationResult(
     DesktopNodeApiError? Error,
     int StatusCode = 200);
 
-public sealed class DesktopNodeAccountAuthService
+public sealed partial class DesktopNodeAccountAuthService
 {
     private static readonly JsonSerializerOptions AccountFileJsonOptions = new()
     {
@@ -498,7 +501,8 @@ public sealed class DesktopNodeAccountAuthService
             next[account.Username] = account with
             {
                 Enabled = false,
-                DisabledAt = options.Now().ToUniversalTime()
+                DisabledAt = options.Now().ToUniversalTime(),
+                CredentialVersion = account.CredentialVersion + 1
             };
             var persist = TryPersist(next.Values.ToArray(), AccountMutationContract.BootstrapAccountsConfigured);
             if (persist is not null)
@@ -678,53 +682,10 @@ public sealed class DesktopNodeAccountAuthService
         };
     }
 
-    private static DesktopNodeAccountUser LoopbackSessionUser()
+    private string Sign(string signingInput)
     {
-        return new DesktopNodeAccountUser(
-            Id: "loopback-session",
-            Username: "loopback-session",
-            PasswordHash: "unused",
-            Role: "operator",
-            DisplayName: "Loopback session");
-    }
-
-    private object BuildLoopbackTokenPair()
-    {
-        return BuildTokenPair(LoopbackSessionUser(), "loopback_access", "loopback_refresh", "loopback_session");
-    }
-
-    private object BuildTokenPair(DesktopNodeAccountUser account)
-    {
-        return BuildTokenPair(account, "access", "refresh", grantType: null);
-    }
-
-    private object BuildTokenPair(
-        DesktopNodeAccountUser account,
-        string accessTokenType,
-        string refreshTokenType,
-        string? grantType)
-    {
-        var access = IssueToken(account, accessTokenType, options.EffectiveAccessTokenLifetime);
-        var refresh = IssueToken(account, refreshTokenType, options.EffectiveRefreshTokenLifetime);
-        var principal = ToPrincipal(account);
-        var now = options.Now().ToUniversalTime();
-        var data = new SortedDictionary<string, object?>
-        {
-            ["access_expires_at"] = now.Add(options.EffectiveAccessTokenLifetime).ToString("o"),
-            ["access_token"] = access,
-            ["expires_in"] = (int)options.EffectiveAccessTokenLifetime.TotalSeconds,
-            ["refresh_expires_at"] = now.Add(options.EffectiveRefreshTokenLifetime).ToString("o"),
-            ["refresh_expires_in"] = (int)options.EffectiveRefreshTokenLifetime.TotalSeconds,
-            ["refresh_token"] = refresh,
-            ["session"] = BuildSessionData(principal),
-            ["token_type"] = "Bearer"
-        };
-        if (grantType is not null)
-        {
-            data["grant_type"] = grantType;
-        }
-
-        return data;
+        using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(options.SigningKey!));
+        return DesktopNodeAccountPassword.Base64UrlEncode(hmac.ComputeHash(Encoding.ASCII.GetBytes(signingInput)));
     }
 
     private string IssueToken(DesktopNodeAccountUser account, string tokenType, TimeSpan lifetime)
@@ -750,6 +711,11 @@ public sealed class DesktopNodeAccountAuthService
             ["typ"] = tokenType,
             ["username"] = principal.Username
         };
+        if (tokenType is "access" or "refresh")
+        {
+            payload["cv"] = account.CredentialVersion;
+        }
+
         var headerSegment = DesktopNodeAccountPassword.Base64UrlEncode(JsonSerializer.SerializeToUtf8Bytes(header, RuntimePolicyContract.JsonOptions));
         var payloadSegment = DesktopNodeAccountPassword.Base64UrlEncode(JsonSerializer.SerializeToUtf8Bytes(payload, RuntimePolicyContract.JsonOptions));
         var signingInput = $"{headerSegment}.{payloadSegment}";
@@ -823,16 +789,21 @@ public sealed class DesktopNodeAccountAuthService
                 return JwtValidation.Fail(401, "PCV_JWT_INVALID", "JWT token is invalid.", "Subject, username, and role claims are required.");
             }
 
+            if (expectedType is "access" or "refresh" &&
+                accounts.TryGetValue(username, out var stored) &&
+                (ReadLong(payload, "cv") ?? 0L) != stored.CredentialVersion)
+            {
+                return JwtValidation.Fail(
+                    401,
+                    "PCV_TOKEN_CREDENTIAL_STALE",
+                    "The token was issued before the account credential changed.",
+                    "Login again after the password reset or change.");
+            }
+
             var displayName = ReadString(payload, "name") ?? username;
             var permissions = ReadStringArray(payload, "permissions");
             return JwtValidation.Success(new JwtPrincipal(subject, username, role, displayName, permissions, jwtId));
         }
-    }
-
-    private string Sign(string signingInput)
-    {
-        using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(options.SigningKey!));
-        return DesktopNodeAccountPassword.Base64UrlEncode(hmac.ComputeHash(Encoding.ASCII.GetBytes(signingInput)));
     }
 
     private static DesktopNodeAccountPrincipal ToPrincipal(DesktopNodeAccountUser account)
@@ -955,6 +926,10 @@ public sealed class DesktopNodeAccountAuthService
                 (404, "Account was not found.", "The username does not exist in the account file."),
             AccountMutationProblemCodes.ManageForbidden =>
                 (403, "Account manage permission is required.", "Use an admin JWT or the service bearer token."),
+            AccountMutationProblemCodes.PasswordMismatch =>
+                (401, "Current password did not match.", "Pass the account's current password."),
+            AccountMutationProblemCodes.PasswordChangeForbidden =>
+                (403, "Password change requires the signed-in account access token.", "Service bearer and loopback session tokens cannot change an account password."),
             _ =>
                 (400, "Account mutation was rejected.", code)
         };

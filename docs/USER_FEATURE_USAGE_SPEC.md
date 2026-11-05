@@ -66,7 +66,7 @@ PureCVisor Desktop Node는 Windows 10/11 Pro/Enterprise + Hyper-V host를 로컬
 | Jobs | [ `pcv.job.lifecycle` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-job-lifecycle) | Jobs/Activity | `pcvcli job ...` | `/jobs` |
 | Diagnostics list | [ `pcv.diagnostics.bundle` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-diagnostics-bundle) | Troubleshooting bundle 목록/pagination | `pcvcli diagnostics bundle list [--limit <n>] [--offset <n>]` | `GET /diagnostics/bundles?limit=&offset=` |
 | Diagnostics create/download | [ `pcv.diagnostics.bundle` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-diagnostics-bundle) | Troubleshooting create/download | `pcvcli diagnostics bundle create/download` | `POST /diagnostics/bundles`, `GET /diagnostics/bundles/{id}/download` |
-| Account/RBAC/JWT | [ `pcv.account.session` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-account-session) | Account login과 create/disable | `pcvcli account list/create/disable` | `/auth/...`, `/accounts` |
+| Account/RBAC/JWT | [ `pcv.account.session` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-account-session) | Account login, create/disable, 비밀번호 재설정·변경 | `pcvcli account list/create/disable/reset-password/change-password` | `/auth/...`, `/accounts`, `/accounts/{username}/password`, `/auth/password` |
 | Console capability discovery | [ `pcv.console.capabilities` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-console-capabilities) | Console/Troubleshooting capability card | API/Web Console 전용 | `GET /console/capabilities` |
 | VM console/noVNC handoff | [ `pcv.vm.console-handoff` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-console-handoff) | 선택 VM Console panel (readback, no save form) | `pcvcli vm console/vnc <vm>`; `pcvcli console novnc-target preview --host 127.0.0.1 --port 5900`; `pcvcli console novnc-target set --host 127.0.0.1 --port 5900 --yes`; `pcvcli console novnc-target clear --yes` | `GET /vms/{id}/console`; `POST /console/novnc-target/preview`; `POST /console/novnc-target`; `POST /console/novnc-target/clear` |
 | VM browser console | [ `pcv.vm.browser-console` ](FEATURE_IMPLEMENTATION_LEDGER.md#pcv-vm-browser-console) | VM 상세 Browser console 카드(VM Screen canvas, 크기·fps 선택, Start/Pause screen, 화면 클릭 뒤 키 입력, Send text, Ctrl+Alt+Del) | 제외: 브라우저 canvas stream이라 PCVCLI는 `vm console` handoff를 유지 | `GET /vms/{id}/console/frame/{size}`; `POST /vms/{id}/console/input` |
@@ -383,6 +383,8 @@ code=PCV_DIAGNOSTIC_BUNDLE_API_UNSUPPORTED
 | Logout | `POST /api/v1/auth/logout`, browser session token clear와 refresh/session revoke handoff |
 | Session | `GET /api/v1/auth/session`, 현재 username/role/permission 표시 |
 | RBAC | `GET /api/v1/auth/rbac`, permission matrix 표시 |
+| Password reset | `POST /api/v1/accounts/{username}/password`, `account.manage` 또는 서비스 bearer. 바디는 `confirm_username`, `new_password`. enabled 상태는 바꾸지 않는다. 비밀번호 값은 응답·감사에 없다 |
+| Password change | `POST /api/v1/auth/password`, 로그인한 계정 access JWT만. 바디는 `current_password`, `new_password`. 성공하면 새 access·refresh token 쌍. 서비스 bearer와 loopback 세션은 거절 |
 
 Auth route policy:
 
@@ -394,6 +396,8 @@ Auth route policy:
 | `POST /api/v1/auth/logout` | `NoBearerTokenRequired` | refresh/session token handoff |
 | `GET /api/v1/auth/session` | `TokenRequired` 또는 account JWT | bearer token 또는 account JWT |
 | `GET /api/v1/auth/rbac` | `TokenRequired` 또는 account JWT | bearer token 또는 account JWT |
+| `POST /api/v1/accounts/{username}/password` | `TokenRequired`, `account.manage` 또는 서비스 bearer | `confirm_username`이 path와 같아야 함. loopback 세션만으로는 거절 |
+| `POST /api/v1/auth/password` | `TokenRequired`, 로그인한 계정 access JWT만 | `current_password`, `new_password`. 서비스 bearer·loopback 세션 거절 |
 
 Token handling 원칙:
 

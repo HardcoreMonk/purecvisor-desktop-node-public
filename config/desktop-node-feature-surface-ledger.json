@@ -561,6 +561,60 @@
               "coverage_id": "account.disable"
             }
           }
+        },
+        {
+          "operation_id": "account.password.reset",
+          "method": "POST",
+          "route_template": "/api/v1/accounts/{username}/password",
+          "required_permission": "account.manage",
+          "present_surfaces": [
+            "api",
+            "cli",
+            "web"
+          ],
+          "excluded_surfaces": [],
+          "surface_bindings": {
+            "cli": {
+              "command": [
+                "account",
+                "reset-password",
+                "lab-operator",
+                "--password-env",
+                "PCV_ACCOUNT_PASSWORD",
+                "--yes"
+              ]
+            },
+            "web": {
+              "coverage_id": "account.password.reset"
+            }
+          }
+        },
+        {
+          "operation_id": "auth.password.change",
+          "method": "POST",
+          "route_template": "/api/v1/auth/password",
+          "required_permission": null,
+          "present_surfaces": [
+            "api",
+            "cli",
+            "web"
+          ],
+          "excluded_surfaces": [],
+          "surface_bindings": {
+            "cli": {
+              "command": [
+                "account",
+                "change-password",
+                "--current-password-env",
+                "PCV_ACCOUNT_CURRENT_PASSWORD",
+                "--password-env",
+                "PCV_ACCOUNT_PASSWORD"
+              ]
+            },
+            "web": {
+              "coverage_id": "auth.password.change"
+            }
+          }
         }
       ]
     },

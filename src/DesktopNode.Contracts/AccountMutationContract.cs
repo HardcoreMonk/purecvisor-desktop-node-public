@@ -14,6 +14,8 @@ public static class AccountMutationProblemCodes
     public const string LastAdmin = "PCV_ACCOUNT_LAST_ADMIN";
     public const string ConfirmationMismatch = "PCV_ACCOUNT_CONFIRMATION_MISMATCH";
     public const string ManageForbidden = "PCV_ACCOUNT_MANAGE_FORBIDDEN";
+    public const string PasswordMismatch = "PCV_ACCOUNT_PASSWORD_MISMATCH";
+    public const string PasswordChangeForbidden = "PCV_ACCOUNT_PASSWORD_CHANGE_FORBIDDEN";
 }
 
 public sealed record AccountMutationExistingAccount(
@@ -56,6 +58,18 @@ public sealed record AccountDisableEvaluation(
     string? Username,
     bool Enabled,
     string? Action);
+
+public sealed record AccountPasswordResetRequest(
+    string? Username,
+    string? ConfirmUsername,
+    string? NewPassword,
+    IReadOnlyList<AccountMutationExistingAccount> Existing,
+    AccountMutationAuthContext Auth);
+
+public sealed record AccountPasswordResetEvaluation(
+    bool Ok,
+    string? ErrorCode,
+    string? Username);
 
 public static class AccountMutationContract
 {
@@ -184,6 +198,48 @@ public static class AccountMutationContract
             ActionDisable);
     }
 
+    public static AccountPasswordResetEvaluation EvaluatePasswordReset(AccountPasswordResetRequest request)
+    {
+        var authError = RejectReadyAuth(request.Auth);
+        if (authError is not null)
+        {
+            return PasswordResetReject(authError);
+        }
+
+        var username = request.Username?.Trim();
+        if (string.IsNullOrWhiteSpace(username))
+        {
+            return PasswordResetReject(AccountMutationProblemCodes.UsernameInvalid);
+        }
+
+        var confirm = request.ConfirmUsername?.Trim();
+        if (!string.Equals(username, confirm, StringComparison.OrdinalIgnoreCase))
+        {
+            return PasswordResetReject(AccountMutationProblemCodes.ConfirmationMismatch);
+        }
+
+        var account = FindAccount(request.Existing ?? [], username);
+        if (account is null)
+        {
+            return PasswordResetReject(AccountMutationProblemCodes.NotFound);
+        }
+
+        var passwordError = EvaluateNewPassword(request.NewPassword, account.Username);
+        if (passwordError is not null)
+        {
+            return PasswordResetReject(passwordError);
+        }
+
+        return new AccountPasswordResetEvaluation(true, null, account.Username);
+    }
+
+    public static string? EvaluateNewPassword(string? password, string username)
+    {
+        return IsPasswordValid(password, username)
+            ? null
+            : AccountMutationProblemCodes.PasswordInvalid;
+    }
+
     private static string? RejectBootstrapAuth(AccountMutationAuthContext auth)
     {
         if (auth.HasServiceBearer)
@@ -277,5 +333,10 @@ public static class AccountMutationContract
     private static AccountDisableEvaluation DisableReject(string code)
     {
         return new AccountDisableEvaluation(false, code, null, false, null);
+    }
+
+    private static AccountPasswordResetEvaluation PasswordResetReject(string code)
+    {
+        return new AccountPasswordResetEvaluation(false, code, null);
     }
 }
