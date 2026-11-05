@@ -92,6 +92,8 @@ public sealed record ApiHandlerAdapterContract(
                 RuntimeReadOnly("/api/v1/accounts", "account.list", "ListAccounts", "pcv.account.session", "auth", "account.manage"),
                 RuntimeProductOperation("/api/v1/accounts", "account.create", "CreateAccount", "pcv.account.session", "auth", requiredPermission: "account.manage"),
                 RuntimeProductOperation("/api/v1/accounts/{username}/disable", "account.disable", "DisableAccount", "pcv.account.session", "auth", requiredPermission: "account.manage"),
+                RuntimeProductOperation("/api/v1/accounts/{username}/password", "account.password.reset", "ResetAccountPassword", "pcv.account.session", "auth", requiredPermission: "account.manage"),
+                RuntimeProductOperation("/api/v1/auth/password", "auth.password.change", "ChangeAccountPassword", "pcv.account.session", "auth", requiredPermission: null),
                 RuntimeReadOnly("/api/v1/console/capabilities", "console.capabilities", "GetConsoleCapabilities", "pcv.console.capabilities", "console"),
                 NativeReadOnly("/api/v1/network/inventory", "network.inventory", "NetworkInventory", "pcv.network.inventory", "hyperv-network"),
                 RuntimeReadOnly("/api/v1/vms/{vmId}/delete-status", "vm.delete-status", "GetVmDeleteStatus", "pcv.vm.delete", "jobs"),

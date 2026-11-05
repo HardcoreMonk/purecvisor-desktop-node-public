@@ -113,6 +113,50 @@ internal sealed class DesktopNodeApiAuthSessionHandler
             return AuthResult(accountAuth.DisableAccount(username, confirm, ResolveMutationAuth(request)));
         }
 
+        if (method == "POST" &&
+            DesktopNodeApiRuntimeRoutes.TryMatchContract(method, path, out var resetMatch) &&
+            string.Equals(resetMatch.Route.OperationName, "ResetAccountPassword", StringComparison.Ordinal))
+        {
+            var parsed = DesktopNodeApiRequestParsing.TryParseBody(request.Body, "account.password.reset");
+            if (!parsed.Ok)
+            {
+                return parsed.Response!;
+            }
+
+            var username = resetMatch.Parameters["username"];
+            return AuthResult(accountAuth.ResetPassword(
+                username,
+                ReadJsonString(parsed.Value!.Value, "confirm_username"),
+                ReadJsonString(parsed.Value!.Value, "new_password"),
+                ResolveMutationAuth(request),
+                ResolvePasswordResetActor(request)));
+        }
+
+        if (method == "POST" && path == "/api/v1/auth/password")
+        {
+            if (request.ServiceBearerAccepted || accountAuth.ValidateLoopbackAccessToken(request.Authorization).Ok)
+            {
+                return AuthResult(accountAuth.RejectPasswordChange());
+            }
+
+            var validation = accountAuth.ValidateAccessToken(request.Authorization);
+            if (!validation.Ok || validation.Principal is null)
+            {
+                return AuthValidationFailure("auth.password.change", validation);
+            }
+
+            var parsed = DesktopNodeApiRequestParsing.TryParseBody(request.Body, "auth.password.change");
+            if (!parsed.Ok)
+            {
+                return parsed.Response!;
+            }
+
+            return AuthResult(accountAuth.ChangePassword(
+                validation.Principal.Username,
+                ReadJsonString(parsed.Value!.Value, "current_password"),
+                ReadJsonString(parsed.Value!.Value, "new_password")));
+        }
+
         return DesktopNodeApiResponseFactory.Failure(
             404,
             "api.route",
@@ -269,6 +313,22 @@ internal sealed class DesktopNodeApiAuthSessionHandler
                 access.Principal is not null &&
                 accountAuth.HasPermission(access.Principal, NoVncTargetPolicy.PermissionConfigure),
             HasServiceBearer: request.ServiceBearerAccepted);
+    }
+
+    private string ResolvePasswordResetActor(DesktopNodeApiRequest request)
+    {
+        if (accountAuth.Ready)
+        {
+            var validation = accountAuth.ValidateAccessToken(request.Authorization);
+            if (validation.Ok &&
+                validation.Principal is not null &&
+                !string.IsNullOrWhiteSpace(validation.Principal.Username))
+            {
+                return validation.Principal.Username;
+            }
+        }
+
+        return request.ServiceBearerAccepted ? "service-bearer" : "unknown";
     }
 
     private AccountMutationAuthContext ResolveMutationAuth(DesktopNodeApiRequest request)

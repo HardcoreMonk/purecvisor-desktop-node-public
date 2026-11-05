@@ -29,7 +29,7 @@ flowchart LR
     I -->|"1 blocker"| J["promotion_eligible=false"]
 ```
 
-API는 모든 82개 route의 backend 경계다. Web Console과 PCVCLI는 각 route에 대해 실제
+API는 모든 84개 route의 backend 경계다. Web Console과 PCVCLI는 각 route에 대해 실제
 binding 또는 이유가 있는 제외 중 하나를 가져야 한다. 이 흐름은 surface 존재 여부와
 feature promotion evidence를 서로 다른 계약으로 유지한다.
 
@@ -44,7 +44,7 @@ feature promotion evidence를 서로 다른 계약으로 유지한다.
 | <a id="pcv-job-lifecycle"></a>`pcv.job.lifecycle` | Job lifecycle | 5 | 5 present / 0 excluded | 5 present / 0 excluded |
 | <a id="pcv-ops-summary"></a>`pcv.ops.summary` | Operations summary | 1 | 1 present / 0 excluded | 1 present / 0 excluded |
 | <a id="pcv-diagnostics-bundle"></a>`pcv.diagnostics.bundle` | Diagnostic bundles | 3 | 3 present / 0 excluded | 3 present / 0 excluded |
-| <a id="pcv-account-session"></a>`pcv.account.session` | Account and RBAC session | 9 | 9 present / 0 excluded | 3 present / 6 excluded |
+| <a id="pcv-account-session"></a>`pcv.account.session` | Account and RBAC session | 11 | 11 present / 0 excluded | 5 present / 6 excluded |
 | <a id="pcv-console-capabilities"></a>`pcv.console.capabilities` | Console capability discovery | 1 | 1 present / 0 excluded | 0 present / 1 excluded |
 | <a id="pcv-network-inventory"></a>`pcv.network.inventory` | Network inventory | 3 | 3 present / 0 excluded | 3 present / 0 excluded |
 | <a id="pcv-vm-delete"></a>`pcv.vm.delete` | VM delete lifecycle | 2 | 2 present / 0 excluded | 2 present / 0 excluded |
@@ -69,7 +69,7 @@ feature promotion evidence를 서로 다른 계약으로 유지한다.
 | <a id="pcv-vm-resource-limits"></a>`pcv.vm.resource-limits` | VM resource limits | 4 | 3 present / 1 excluded | 4 present / 0 excluded |
 <!-- END GENERATED FEATURE ID SUMMARY -->
 
-## 82-route surface 투영
+## 84-route surface 투영
 
 | Feature ID | Operation ID | Canonical API route | Permission | Web Console | PCVCLI |
 |---|---|---|---|---|---|
@@ -95,6 +95,8 @@ feature promotion evidence를 서로 다른 계약으로 유지한다.
 | `pcv.account.session` | `account.list` | `GET /api/v1/accounts` | `account.manage` | present — `account.list` | present — `pcvcli account list` |
 | `pcv.account.session` | `account.create` | `POST /api/v1/accounts` | `account.manage` | present — `account.create` | present — `pcvcli account create --username lab-admin --role admin --password-env PCV_ACCOUNT_PASSWORD --yes` |
 | `pcv.account.session` | `account.disable` | `POST /api/v1/accounts/{username}/disable` | `account.manage` | present — `account.disable` | present — `pcvcli account disable lab-operator --yes` |
+| `pcv.account.session` | `account.password.reset` | `POST /api/v1/accounts/{username}/password` | `account.manage` | present — `account.password.reset` | present — `pcvcli account reset-password lab-operator --password-env PCV_ACCOUNT_PASSWORD --yes` |
+| `pcv.account.session` | `auth.password.change` | `POST /api/v1/auth/password` | none | present — `auth.password.change` | present — `pcvcli account change-password --current-password-env PCV_ACCOUNT_CURRENT_PASSWORD --password-env PCV_ACCOUNT_PASSWORD` |
 | `pcv.console.capabilities` | `console.capabilities` | `GET /api/v1/console/capabilities` | `read` | present — `console.capabilities` | excluded — Global console capability discovery is API/Web-only; PCVCLI exposes VM-specific console handoff. |
 | `pcv.network.inventory` | `network.inventory` | `GET /api/v1/network/inventory` | `read` | present — `network.inventory` | present — `pcvcli network list` |
 | `pcv.network.inventory` | `vm.network.connect` | `POST /api/v1/vms/{vmId}/network` | `operate` | present — `vm.network.connect` | present — `pcvcli vm network connect vm-01 --switch pcv-lab-internal --yes` |

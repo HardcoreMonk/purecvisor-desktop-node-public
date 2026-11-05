@@ -129,7 +129,7 @@ public sealed class DesktopNodeAccountAuthStoreTests
 
         var refresh = service.Refresh(Body($"{{\"refresh_token\":\"{refreshToken}\"}}"));
         Assert.False(refresh.Ok);
-        Assert.Equal("PCV_REFRESH_ACCOUNT_NOT_FOUND", refresh.Error!.Code);
+        Assert.Equal("PCV_TOKEN_CREDENTIAL_STALE", refresh.Error!.Code);
     }
 
     [Fact]

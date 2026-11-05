@@ -38,11 +38,52 @@ function NAV_SECTIONS() {
       { id: 'helppage', key: 'nav.help', ico: 'ci-info' } ] }
   ];
 }
+function signedInAccountName() {
+  var session = (typeof state !== 'undefined' && state && state.authSession) || null;
+  var account = session && session.account;
+  return String((session && session.username) || (account && account.username) || '').trim();
+}
+function passwordChangeEntryVisible() {
+  if (typeof state === 'undefined' || !state) return false;
+  if (!String(state.authAccessToken || '').trim()) return false;
+  var name = signedInAccountName();
+  if (!name || name.toLowerCase() === 'loopback-session') return false;
+  return true;
+}
+function bindPasswordChangeEntry() {
+  var root = document.documentElement;
+  if (!root || root._pcvPasswordChangeBound) return;
+  root._pcvPasswordChangeBound = true;
+  document.addEventListener('click', function (event) {
+    var target = event.target;
+    var button = target && target.closest ? target.closest('[data-action="account-change-password"]') : null;
+    if (!button || button.hidden || button.disabled) return;
+    if (typeof openAccountChangeModal === 'function') openAccountChangeModal();
+  });
+}
+function syncPasswordChangeEntry() {
+  bindPasswordChangeEntry();
+  var host = document.getElementById('us') || document.getElementById('shell-topbar');
+  if (!host) return;
+  var button = document.getElementById('account-change-password');
+  if (!button) {
+    button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'btn';
+    button.id = 'account-change-password';
+    button.setAttribute('data-action', 'account-change-password');
+    host.appendChild(button);
+  }
+  button.textContent = (typeof t === 'function') ? t('account.change.open') : '비밀번호 변경';
+  button.hidden = !passwordChangeEntryVisible();
+}
 function syncAccountNav() {
   var node = document.querySelector('#shell-sidebar [data-nav="accounts"]');
-  if (!node) return;
-  var allowed = typeof canManageAccounts !== 'function' || canManageAccounts();
-  node.hidden = !allowed;
+  if (node) {
+    var allowed = typeof canManageAccounts !== 'function' || canManageAccounts();
+    node.hidden = !allowed;
+  }
+  syncPasswordChangeEntry();
 }
 var _snapshot = null;
 function itemLabel(it) { return t(it.key); }

@@ -273,6 +273,29 @@ function accountPasswordRules(form) {
   }];
 }
 
+function accountPasswordRulesFor(username) {
+  return [function (value) {
+    const password = String(value || '');
+    if (password.length < 12 || password.trim() === '') {
+      return accountRule('PCV_ACCOUNT_PASSWORD_INVALID', 'account.password.invalid');
+    }
+    const name = String(username || '').trim();
+    if (name && password.toLowerCase() === name.toLowerCase()) {
+      return accountRule('PCV_ACCOUNT_PASSWORD_INVALID', 'account.password.same_as_username');
+    }
+    return null;
+  }];
+}
+
+function accountCurrentPasswordRule(value) {
+  if (!String(value || '')) return accountRule('PCV_ACCOUNT_CURRENT_PASSWORD_REQUIRED', 'account.change.current_required');
+  return null;
+}
+
+function signedInUsername() {
+  return String(state.authSession && state.authSession.username || '').trim();
+}
+
 function accountConfirmRules(form) {
   return [function (value) {
     if (String(value || '') !== accountFieldValue(form, 'password')) {
@@ -333,6 +356,8 @@ function bindAccountsPanel() {
     if (!button || button.disabled) return;
     if (button.dataset.action === 'account-create-open') openAccountCreateModal();
     else if (button.dataset.action === 'account-disable') disableAccountFromButton(button.getAttribute('data-username'));
+    else if (button.dataset.action === 'account-reset-password') openAccountResetModal(button.getAttribute('data-username'));
+    else if (button.dataset.action === 'account-change-password') openAccountChangeModal();
   });
 }
 
@@ -370,11 +395,18 @@ function paintAccountsView() {
         'data-username': username
       }, t('account.disable.action'));
       disable.disabled = !!state.accountManagePending || !enabled;
+      const reset = PCV.uxlib.el('button', {
+        type: 'button',
+        class: 'btn',
+        'data-action': 'account-reset-password',
+        'data-username': username
+      }, t('account.reset.open'));
+      reset.disabled = !!state.accountManagePending;
       body.appendChild(PCV.uxlib.el('tr', {},
         PCV.uxlib.el('td', {}, username),
         PCV.uxlib.el('td', {}, String(account.role || '-')),
         PCV.uxlib.el('td', {}, accountEnabledText(account)),
-        PCV.uxlib.el('td', {}, disable)));
+        PCV.uxlib.el('td', {}, disable, reset)));
     });
   }
   const create = PCV.uxlib.el('button', { type: 'button', class: 'btn', 'data-action': 'account-create-open' }, t('account.create.open'));
@@ -494,6 +526,135 @@ async function disableAccountFromButton(username) {
   }
 }
 
+function openAccountResetModal(username) {
+  if (!PCV.uxlib || !PCV.components || !PCV.modalCore) return;
+  if (typeof canManageAccounts === 'function' && !canManageAccounts()) return;
+  const name = String(username || '').trim();
+  if (!name) return;
+  const ux = PCV.uxlib;
+  const password = ux.el('input', { name: 'password', type: 'password', autocomplete: 'new-password', 'aria-label': t('account.reset.password') });
+  const confirm = ux.el('input', { name: 'password_confirm', type: 'password', autocomplete: 'new-password', 'aria-label': t('account.reset.password_confirm') });
+  const submit = ux.el('button', { type: 'submit', class: 'btn' }, t('account.reset.submit'));
+  const form = ux.el('form', {
+    id: 'account-reset-form',
+    class: 'account-reset-form',
+    autocomplete: 'off',
+    novalidate: 'novalidate',
+    'data-username': name
+  },
+    ux.el('p', {}, t('account.reset.target', { username: name })),
+    ux.el('p', { class: 'muted' }, t('account.reset.policy')),
+    ux.el('label', {}, t('account.reset.password'), password),
+    ux.el('label', {}, t('account.reset.password_confirm'), confirm),
+    submit);
+  form._pcvAccountRefresh = PCV.components.bindValidation(form, {
+    password: accountPasswordRulesFor(name),
+    password_confirm: accountConfirmRules(form)
+  }, submit);
+  form.addEventListener('submit', (event) => {
+    resetAccountFromForm(event);
+  });
+  PCV.modalCore.open([
+    ux.el('h2', {}, t('account.reset.title')),
+    form
+  ], { backdropDismiss: true });
+}
+
+async function resetAccountFromForm(event) {
+  if (event && typeof event.preventDefault === 'function') event.preventDefault();
+  const form = (event && event.target && event.target.closest && event.target.closest('form')) || document.getElementById('account-reset-form');
+  if (!form) return;
+  touchAccountFields(form);
+  if (typeof form._pcvAccountRefresh === 'function' && !form._pcvAccountRefresh()) return;
+  const name = String(form.getAttribute('data-username') || '').trim();
+  const password = accountFieldValue(form, 'password');
+  state.accountManagePending = true;
+  state.accountDirectoryError = null;
+  render();
+  try {
+    await desktopApi.resetAccountPassword(name, { confirm_username: name, new_password: password });
+    if (signedInUsername().toLowerCase() === name.toLowerCase()) {
+      state.tokenActionMessage = t('account.reset.self_relogin');
+      clearAccountSessionState();
+    } else {
+      await refreshAll();
+    }
+  } catch (error) {
+    state.accountDirectoryError = scrubAccountSecret(normalizeError(error), password);
+  } finally {
+    clearAccountSecretFields(form);
+    clearAccountSecretFields(document);
+    state.accountManagePending = false;
+    if (PCV.modalCore && typeof PCV.modalCore.close === 'function') PCV.modalCore.close(true);
+    render();
+    clearAccountSecretFields(document);
+  }
+}
+
+function openAccountChangeModal() {
+  if (!PCV.uxlib || !PCV.components || !PCV.modalCore) return;
+  const name = signedInUsername();
+  if (!name) return;
+  const ux = PCV.uxlib;
+  const current = ux.el('input', { name: 'current_password', type: 'password', autocomplete: 'current-password', 'aria-label': t('account.change.current') });
+  const password = ux.el('input', { name: 'password', type: 'password', autocomplete: 'new-password', 'aria-label': t('account.change.password') });
+  const confirm = ux.el('input', { name: 'password_confirm', type: 'password', autocomplete: 'new-password', 'aria-label': t('account.change.password_confirm') });
+  const submit = ux.el('button', { type: 'submit', class: 'btn' }, t('account.change.submit'));
+  const form = ux.el('form', { id: 'account-change-form', class: 'account-change-form', autocomplete: 'off', novalidate: 'novalidate' },
+    ux.el('label', {}, t('account.change.current'), current),
+    ux.el('p', { class: 'muted' }, t('account.reset.policy')),
+    ux.el('label', {}, t('account.change.password'), password),
+    ux.el('label', {}, t('account.change.password_confirm'), confirm),
+    submit);
+  form._pcvAccountRefresh = PCV.components.bindValidation(form, {
+    current_password: [accountCurrentPasswordRule],
+    password: accountPasswordRulesFor(name),
+    password_confirm: accountConfirmRules(form)
+  }, submit);
+  form.addEventListener('submit', (event) => {
+    changeAccountFromForm(event);
+  });
+  PCV.modalCore.open([
+    ux.el('h2', {}, t('account.change.title')),
+    form
+  ], { backdropDismiss: true });
+}
+
+async function changeAccountFromForm(event) {
+  if (event && typeof event.preventDefault === 'function') event.preventDefault();
+  const form = (event && event.target && event.target.closest && event.target.closest('form')) || document.getElementById('account-change-form');
+  if (!form) return;
+  touchAccountFields(form);
+  const currentField = accountField(form, 'current_password');
+  if (currentField && typeof currentField.dispatchEvent === 'function') {
+    const emitted = typeof Event === 'function' ? new Event('input') : { type: 'input' };
+    currentField.dispatchEvent(emitted);
+  }
+  if (typeof form._pcvAccountRefresh === 'function' && !form._pcvAccountRefresh()) return;
+  const current = accountFieldValue(form, 'current_password');
+  const password = accountFieldValue(form, 'password');
+  state.accountManagePending = true;
+  state.accountDirectoryError = null;
+  render();
+  try {
+    const result = await desktopApi.changeAccountPassword({
+      current_password: current,
+      new_password: password
+    });
+    applyAccountSessionPayload(result);
+    await refreshAll();
+  } catch (error) {
+    state.accountDirectoryError = scrubAccountSecret(scrubAccountSecret(normalizeError(error), password), current);
+  } finally {
+    clearAccountSecretFields(form);
+    clearAccountSecretFields(document);
+    state.accountManagePending = false;
+    if (PCV.modalCore && typeof PCV.modalCore.close === 'function') PCV.modalCore.close(true);
+    render();
+    clearAccountSecretFields(document);
+  }
+}
+
 async function openSelectedConsole() {
   const vmId = state.selectedVmId;
   requireRbac('console.view', t('account.rbac.console'));
@@ -596,11 +757,13 @@ window.logoutAccount = logoutAccount;
 window.createAccountFromForm = createAccountFromForm;
 window.disableAccountFromButton = disableAccountFromButton;
 window.openAccountCreateModal = openAccountCreateModal;
+window.openAccountResetModal = openAccountResetModal;
+window.openAccountChangeModal = openAccountChangeModal;
 window.paintAccountsView = paintAccountsView;
 window.openSelectedConsole = openSelectedConsole;
 window.clearBrowserToken = clearBrowserToken;
 window.clearBrowserState = clearBrowserState;
 window.navigateToView = navigateToView;
 window.handleShellCommand = handleShellCommand;
-PCV.accounts = Object.assign(PCV.accounts || {}, { getDiagnosticBundleId, renderDiagnosticBundleList, persistDiagnosticBundleDownload, createDiagnosticBundleFromPanel, downloadLatestDiagnosticBundle, isLoopbackHostname, pcvEnsureLoopbackSession, loginAccountFromForm, refreshAccountSession, logoutAccount, createAccountFromForm, disableAccountFromButton, openSelectedConsole, clearBrowserToken, clearBrowserState, navigateToView, handleShellCommand });
+PCV.accounts = Object.assign(PCV.accounts || {}, { getDiagnosticBundleId, renderDiagnosticBundleList, persistDiagnosticBundleDownload, createDiagnosticBundleFromPanel, downloadLatestDiagnosticBundle, isLoopbackHostname, pcvEnsureLoopbackSession, loginAccountFromForm, refreshAccountSession, logoutAccount, createAccountFromForm, disableAccountFromButton, openAccountResetModal, openAccountChangeModal, resetAccountFromForm, changeAccountFromForm, openSelectedConsole, clearBrowserToken, clearBrowserState, navigateToView, handleShellCommand });
 })(window.PCV);

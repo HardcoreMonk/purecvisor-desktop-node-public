@@ -12,6 +12,8 @@ internal sealed partial class DesktopNodeApiJobReconciliationHandler
         ["diagnostic.bundle.create"] = "Diagnostic bundles are local evidence files; a failed bundle is recreated, not reconciled.",
         ["account.create"] = "Account store writes are synchronous and report their own outcome.",
         ["account.disable"] = "Account store writes are synchronous and report their own outcome.",
+        ["account.password.reset"] = "Account store writes are synchronous and report their own outcome.",
+        ["auth.password.change"] = "Account store writes are synchronous and report their own outcome.",
         ["vm.device.add"] = "A repeated add creates another NIC or DVD drive, and vm.list cannot tell which add applied.",
         ["vm.nic.add"] = "A repeated add creates another NIC, and vm.list cannot tell which add applied.",
         ["vm.dvd.add"] = "A repeated add creates another DVD drive, and vm.list cannot tell which add applied.",

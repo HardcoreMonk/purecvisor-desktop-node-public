@@ -71,8 +71,8 @@ public sealed class ApiHandlerAdapterContractTests
 
         var contract = ApiHandlerAdapterContract.CreateDefault();
         Assert.Equal(29, featureIds.Count);
-        Assert.Equal(82, ledgerRoutes.Count);
-        Assert.Equal(82, contract.Routes.Count);
+        Assert.Equal(84, ledgerRoutes.Count);
+        Assert.Equal(84, contract.Routes.Count);
         foreach (var route in contract.Routes)
         {
             Assert.Matches("^pcv\\.[a-z0-9._-]+$", route.FeatureId);
@@ -111,8 +111,8 @@ public sealed class ApiHandlerAdapterContractTests
         var contract = ApiHandlerAdapterContract.CreateDefault();
         var routes = contract.Routes.ToDictionary(route => (route.Method, route.RouteTemplate));
 
-        Assert.Equal(82, contract.Routes.Count);
-        Assert.Equal(82, routes.Count);
+        Assert.Equal(84, contract.Routes.Count);
+        Assert.Equal(84, routes.Count);
 
         AssertRoute(routes[("GET", "/api/v1/runtime/policy")], "GET", "RuntimePolicy", MutationStance.ReadOnly);
         AssertRoute(routes[("GET", "/api/v1/host/status")], "GET", "HostStatus", MutationStance.ReadOnly);
@@ -201,7 +201,7 @@ public sealed class ApiHandlerAdapterContractTests
         AssertRoute(routes[("POST", "/api/v1/vms/{vmId}/set-vcpu")], "POST", "QueueSetVmVcpu", MutationStance.QueuedMutation);
         AssertRoute(routes[("POST", "/api/v1/vms/{vmId}/disk-resize")], "POST", "QueueResizeVmDisk", MutationStance.QueuedMutation);
         AssertRoute(routes[("DELETE", "/api/v1/vms/{vmId}")], "DELETE", "QueueDeleteVm", MutationStance.QueuedMutation);
-        Assert.Equal(21, contract.Routes.Count(route => route.MutationStance == MutationStance.ProductOperation));
+        Assert.Equal(23, contract.Routes.Count(route => route.MutationStance == MutationStance.ProductOperation));
         Assert.Equal(37, contract.Routes.Count(route => route.MutationStance == MutationStance.QueuedMutation));
         Assert.DoesNotContain(contract.Routes, route => route.RouteTemplate == "/api/v1/vms/{vmId}/lifecycle/{action}");
         Assert.DoesNotContain(contract.Routes, route => route.RouteTemplate.Contains("/evidence", StringComparison.OrdinalIgnoreCase));
@@ -229,9 +229,9 @@ public sealed class ApiHandlerAdapterContractTests
                 System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(snapshot)))
             .ToLowerInvariant();
 
-        Assert.Equal("98dba4d1b1fa11a243ce9e02437e0ad17cb23fc01be2286554458c45cda56c9f", digest);
+        Assert.Equal("43d89b636a62455ceb49a34d82fcf4773fc5f75b9516806b204ae2fab0fef625", digest);
         Assert.Equal(24, routes.Count(route => route.MutationStance == MutationStance.ReadOnly));
-        Assert.Equal(21, routes.Count(route => route.MutationStance == MutationStance.ProductOperation));
+        Assert.Equal(23, routes.Count(route => route.MutationStance == MutationStance.ProductOperation));
         Assert.Equal(37, routes.Count(route => route.MutationStance == MutationStance.QueuedMutation));
         Assert.Equal(14, routes.Select(route => route.RouteFamily).Distinct(StringComparer.Ordinal).Count());
     }
@@ -268,7 +268,9 @@ public sealed class ApiHandlerAdapterContractTests
             {
                 if (route.RouteTemplate.StartsWith("/api/v1/auth/", StringComparison.Ordinal))
                 {
-                    Assert.Equal("NoBearerTokenRequired", route.AuthPolicy);
+                    Assert.Equal(
+                        route.OperationId == "auth.password.change" ? "TokenRequired" : "NoBearerTokenRequired",
+                        route.AuthPolicy);
                 }
                 else
                 {
