@@ -77,6 +77,17 @@
         "design": "docs/superpowers/specs/2026-11-05-purecvisor-desktop-node-ui-redesign-design.md"
       },
       "risk_tier": "M"
+    },
+    {
+      "pr": 102,
+      "merge_commit": "eb0bdcf7",
+      "area": "web",
+      "summary": "사이드바 묶음과 템플릿·계정 화면, VM 목록 상태 칩·템플릿 배지·행 주 조작, 계정 만들기·끄기 모달(진단에서 이동)",
+      "lane2_probe": {
+        "family": "web.console.shell-views",
+        "design": "docs/superpowers/specs/2026-11-05-purecvisor-desktop-node-ui-redesign-design.md"
+      },
+      "risk_tier": "M"
     }
   ],
   "trains": [
