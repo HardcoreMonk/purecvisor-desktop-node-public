@@ -64,6 +64,8 @@
 
 - [ ] `not_before` 2026-10-19. 이관 전 `train-04296-finish-20261011` Task 8(원래 `completion-20261008` Task 10)이다. Ubuntu 26 runner의 첫 `main` Development Gates와 Public Boundary run이 green이면 `config/project-completion-criteria.json` 위험 행을 `status=closed`, `closed_by`에 run id로 닫는다. 실패하면 `ubuntu-24.04` pin을 판단해 backlog 행으로 보고한다. push, PR, green CI 뒤 merge.
 
+이관(2026-11-05): `ui-redesign-20261105` Task 14로 옮겼다.
+
 ## Task 3: S4 LAN 시나리오 스크립트 (설계 4절 task 1)
 
 - [x] `web/scripts/run-s4-lan-scenario.mjs`와 `web/node-tests/s4-lan-scenario.test.mjs`를 추가하고 `web/package.json`에 `scenario:s4-lan`과 `test:web-contracts` 항목을 더한다. 시연 순서표는 `docs/ga-ready/demo/s4-lan-runbook.md`다. 기본은 plan-only이고 이 task는 `--execute`로 설치본에 요청을 보내지 않는다. 검증: `node web/scripts/run-s4-lan-scenario.mjs`, `node --test web/node-tests/s4-lan-scenario.test.mjs`, `npm run test:required --prefix web`, `npm run test:public-source-safety --prefix web`, `git diff --check`, clean HEAD에서 `dotnet test src/DesktopNode.Delivery.Tests -c Release`, `dotnet test src/DesktopNode.Verification.Tests -c Release`. push, PR, green CI 뒤 merge. host mutation 없음. S4 통과를 주장하지 않는다.
@@ -105,13 +107,19 @@
 
 - [ ] Task 4 전에 만든 admin 계정으로 자기 PC 브라우저에서 S1~S3을 시연한다. 에이전트는 시연 전후 상태(service 구성, 방화벽 규칙, 계정 목록, VM)를 읽어 기록하고 확인자 칸은 사용자가 채운다. 이 기록만 "다른 PC" 시연이다. 리허설 R은 S4 판정 근거로 쓰지 않는다.
 
+이관(2026-11-05): 시연 진행 중(로그인, S1 확인, S2에서 복제 이름 칸 배치 결함으로 멈춤)에 `ui-redesign-20261105` Task 11로 옮겼다.
+
 ## Task 6: S4 끝 상태 (설계 4절 task 4)
 
 - [ ] Lane 2. 끝 상태는 loopback 복귀(같은 `main` 빌드본 `configure-installed`를 prefix 옵션과 `--allow-lan` 없이 실행, Task 4 전 service 명령줄과 같아야 한다), 방화벽 규칙 0, 에이전트 operator 계정 disable, `pcv-it-s4-*` VM 정리다. 기록한다. 계정 파일 삭제는 이 task가 하지 않는다.
 
+이관(2026-11-05): `ui-redesign-20261105` Task 12로 옮겼다.
+
 ## Task 7: criteria S4 판정 (설계 4절 task 5)
 
 - [ ] Lane 1. 시연 기록이 설계 1절의 판정을 모두 담으면 `config/project-completion-criteria.json` S4를 `passed`로 두고 시연 기록 링크를 적는다. push, PR, green CI 뒤 merge. Task 8 제품 변경이 queue에 있으므로 S4 판정 뒤 release train 1회(2026-10-09 사전 승인)를 다음 campaign으로 연다. 이 campaign은 train을 실행하지 않는다. 이 task가 끝나면 남은 Task 2(C5, 2026-10-19 이후)를 `next_task`로 둔다. 판정 전에는 S4 통과를 주장하지 않는다.
+
+이관(2026-11-05): `ui-redesign-20261105` Task 13으로 옮겼다. 이 campaign은 2026-11-05에 닫혔다(`ui-redesign-20261105` `closed_predecessor`).
 
 ## Nonclaims
 

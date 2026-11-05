@@ -1,5 +1,14 @@
 # Desktop Node ADR 인덱스
 
+## 2026-11-05 현재 기준
+
+ADR-0019를 채택해 Web Console 정보 구조와 상호작용 규칙을 정한다. ADR-0018 구조는 유지하고, 사이드바 묶음(템플릿·계정 화면
+신설)과 VM 상세 6개 탭, 필수 입력 첫 칸·요청 전 검사·자리 진행 표시·앱 안 확인·한국어 우선 규칙, 콘솔 맞춤(기본 `1024x768`)과
+전체 화면, 옛 콘솔 동결 뒤 퇴역, 비밀번호 재설정을 결정한다. 2026-11-05 S4 사용자 시연에서 드러난 복제 이름 칸 배치와 콘솔 크기
+결함이 계기다. 구현은 campaign `ui-redesign-20261105`이고 S4 남은 task는 그 campaign으로 이관했다(S4는 열려 있다).
+적용 문서는 `docs/adr/0019-web-console-information-architecture-and-interaction-rules.md`, 설계는
+`docs/superpowers/specs/2026-11-05-purecvisor-desktop-node-ui-redesign-design.md`다.
+
 ## 2026-10-10 현재 기준
 
 ADR-0018을 채택해 Web Console이 Single Edge(`HardcoreMonk/purecvisor` `ui/`) 프론트엔드 구조와 공통 모듈을 차용한다. Linux

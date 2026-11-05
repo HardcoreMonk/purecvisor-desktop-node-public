@@ -29,10 +29,9 @@ installed service console이다. 첫 화면은 marketing이나 landing page가 �
 현재 service/API/VM/job/diagnostic 상태를 빠르게 확인하고 조작하는 작업면이어야
 한다.
 
-현재 운영 제품은 `0.42.74-admin-smoke`다. Web Console과 PCVCLI가 active operator
-surface이고 TUI는 absent다. 최신 닫힌 manual-admin package-pair는
-`0.42.73-admin-smoke -> 0.42.74-admin-smoke`이며 feature qualification은
-`promotion_eligible=false`다.
+Web Console과 PCVCLI가 active operator surface이고 TUI는 absent다. 운영 버전, 마지막 닫힌
+package-pair, feature qualification은 이 문서에 적지 않는다. `docs/ga-ready/current-evidence.json`과 `README.md`
+생성 블록을 따른다.
 
 운영자가 먼저 보는 정보:
 
@@ -77,25 +76,27 @@ command palette(`Ctrl+K`), 환경설정(`Ctrl+P`: 테마, 언어, Local API 주�
 
 ## Visual Theme
 
-기본 인상은 dark operation console이다. 장식보다 판독성, 상태 식별, 정보 밀도,
-빠른 비교를 우선한다.
+기본 테마는 흰 캔버스의 `supanova`다(`web/src/modules/theme.ts`, `web/index.html`이 저장값이 없으면 심는다). 선택 테마는
+`supanova`, `supanova-cyan`, `supanova-hicontrast`, `supanova-mockup`이다. 장식보다 판독성, 상태 식별, 정보 밀도, 빠른 비교를
+우선한다.
 
-권장 token:
+기본 token(`web/style.css` `[data-theme="supanova"]`):
 
 | Token | Default | Role |
 |---|---:|---|
-| `--bg` | `#0a0f1a` | page background |
-| `--bg2` | `#0f1525` | shell, toolbar, sidebar |
-| `--bg3` | `#141c2e` | rows, fields, compact panels |
-| `--bg-panel` | `rgba(15,21,37,.72)` | card/panel surface |
-| `--border` | `#1e293b` | divider |
-| `--border-panel` | `rgba(255,255,255,.08)` | panel hairline |
-| `--fg` | `#e0f0ff` | primary text |
-| `--fg2` | `#8895b5` | secondary text |
-| `--accent` | `#22d3ee` | focus, selected, primary action |
-| `--green` | `#34d399` | running, healthy, success |
-| `--yellow` | `#fbbf24` | warning, pending |
-| `--red` | `#f43f5e` | error, destructive, blocked |
+| `--bg` | `#ffffff` | page background |
+| `--bg2` | `#f5f7fa` | shell, toolbar, sidebar |
+| `--bg3` | `#edf1f5` | rows, fields, compact panels |
+| `--border` | `#dce1e8` | divider |
+| `--fg` | `#171c24` | primary text |
+| `--fg2` | `#5c6675` | secondary text |
+| `--accent` | `#12627a` | focus, selected, primary action |
+| `--green` | `#18794e` | running, healthy, success |
+| `--yellow` | `#8a6100` | warning, pending |
+| `--red` | `#b42332` | error, destructive, blocked |
+
+`:root`의 남색 값(`--bg #0a0f1a`, `--accent #22d3ee` 등)은 테마 속성이 붙기 전의 폴백이다. 새 화면은 폴백 값이 아니라 위 token
+이름으로 색을 쓴다.
 
 규칙:
 
@@ -158,6 +159,22 @@ width를 사용해 hover/loading/error state가 layout shift를 만들지 않게
 - 긴 설명문은 table cell이 아니라 detail panel이나 troubleshooting row로 보낸다.
 - numeric/status columns는 monospace 또는 고정 폭을 사용한다.
 - row action은 오른쪽 끝에 짧은 button group으로 묶는다.
+
+### Interaction rules (ADR-0019)
+
+2026-11-05 ADR-0019가 새 셸의 정보 구조와 상호작용 규칙을 정했다. 설계는
+`docs/superpowers/specs/2026-11-05-purecvisor-desktop-node-ui-redesign-design.md`이고, campaign `ui-redesign-20261105`가
+단계별로 적용한다. 적용 전 화면은 아래 옛 규칙을 따른다.
+
+- 필수 입력은 그 조작을 여는 모달의 첫 칸에 두고 제안값을 채운다. 복제 이름은 `<원본>-clone`이다.
+- 형식과 중복은 요청 전에 칸 아래에 알리고, 통과해야 주 버튼이 켜진다.
+- job은 조작한 자리에서 접수, 실행 중, 완료, 실패를 한 줄로 보여 준다.
+- 삭제, 복원, 강제 끄기, 잠금 해제는 결과를 설명하는 앱 안 확인 모달로 묻는다. 삭제는 대상 이름을 입력해야 버튼이 켜진다.
+  새 셸은 `window.confirm`을 쓰지 않는다.
+- VM 상세는 요약, 콘솔, 체크포인트, 하드웨어, 게스트, 작업 기록 탭이다. 콘솔은 기본 `1024x768`, 창에 맞춤, 전체 화면, 키보드
+  입력 상태 표시를 둔다.
+- 컴포넌트는 normal, hover, focus, active, disabled, loading, empty, error 상태를 구분한다. 빈 목록과 읽기 실패는 다른 문구다.
+- 옛 콘솔(`web/index.legacy.html`, `web/app.js`, `web/src/served-app.ts`, `web/src/served/*.ts`)은 퇴역 task 전까지 고치지 않는다.
 
 ### Modals
 
