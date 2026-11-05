@@ -2,8 +2,8 @@
   "schema_version": 1,
   "contract": "pcv-active-campaign-v1",
   "status": "open",
-  "id": "s4-lan-account-20261011",
-  "intent": "Scenario S4 (log in with an account from another PC on the LAN and use S1-S3). 2026-10-12 approval 1 accepted D1-A, D2-A, D3, D4, and D5 and added design section 4 tasks 1-5. Task 3 is the scenario script. Task 4 rehearses on this host, Task 5 is the user demo, Task 6 restores loopback, and Task 7 closes criteria S4. Task 2 (C5 runner check) stays not before 2026-10-19. No release train until Task 7 finds product payload. 2026-10-12 approval \"1,2\" corrected D2: Task 8 (configure-installed --prefix/--web-prefix with --allow-lan, Lane 1 product change) runs before Task 4, and Task 4 and Task 6 reconfigure the installed service with the Host.exe built from merged main.",
+  "id": "ui-redesign-20261105",
+  "intent": "Web Console UI/UX redesign after the 2026-11-05 S4 user demo exposed layout and interaction defects (clone name field buried in the resource grid, 640x480 console without fit, one-scroll VM detail, window.confirm, BL-0020). 2026-11-05 approval \"1,2,3,4,5\" accepted the redesign: sidebar groups and six VM detail tabs, screens W1-W7, incremental replacement of the Single Edge shell modules with the legacy console frozen and retired in Task 9 (legacy-retirement merged), password reset API in scope, and opening this campaign from Task 1. The same day the user chose to carry s4-lan-account-20261011 Tasks 5, 6, 7 and 2 into this campaign as Tasks 11-14. Claude designs and reviews; grok researches and implements.",
   "working_authority": "source_head",
   "allowed_lanes": [
     "0",
@@ -12,41 +12,46 @@
   ],
   "mutation_allowed": true,
   "current_write_allowed": false,
-  "next_step": "Task 4 rehearsal R passed on main 07ec434. End state stays LAN until Task 6: service listens with LAN prefixes and --allow-lan, two Private/LocalSubnet firewall rules (7777 and 80), operator account enabled. Next is Task 5 user demo. Task 2 waits until 2026-10-19. configure-installed did not restart an already-running service; stop then start loaded the new command line (BL-0023).",
-  "plan": "docs/superpowers/plans/2026-10-11-purecvisor-desktop-node-s4-lan-account.md",
+  "next_step": "Run Task 1 (P0 design docs) from docs/superpowers/plans/2026-11-05-purecvisor-desktop-node-ui-redesign.md, then the queue in order. Carried Task 11 (S4 user demo, in progress at S2) runs as soon as the user reports demo results and goes ahead of the UI queue, followed by Tasks 12 and 13. Each PR merges only after the user's merge approval.",
+  "plan": "docs/superpowers/plans/2026-11-05-purecvisor-desktop-node-ui-redesign.md",
   "task_queue": [
     "Task 1",
     "Task 2",
     "Task 3",
-    "Task 8",
     "Task 4",
     "Task 5",
     "Task 6",
-    "Task 7"
+    "Task 7",
+    "Task 8",
+    "Task 9",
+    "Task 10",
+    "Task 11",
+    "Task 12",
+    "Task 13",
+    "Task 14"
   ],
   "task_lanes": {
-    "Task 4": "2",
-    "Task 6": "2"
+    "Task 12": "2"
   },
   "task_not_before": {
-    "Task 2": "2026-10-19"
+    "Task 14": "2026-10-19"
   },
   "carried_from": {
-    "Task 2": "train-04296-finish-20261011 Task 8"
+    "Task 11": "s4-lan-account-20261011 Task 5",
+    "Task 12": "s4-lan-account-20261011 Task 6",
+    "Task 13": "s4-lan-account-20261011 Task 7",
+    "Task 14": "s4-lan-account-20261011 Task 2 (from train-04296-finish-20261011 Task 8)"
   },
-  "next_task": "Task 5",
-  "completed_tasks": [
-    "Task 1",
-    "Task 3",
-    "Task 8",
-    "Task 4"
-  ],
+  "next_task": "Task 1",
+  "completed_tasks": [],
   "commit_policy": "local-commit-per-task",
   "push_allowed": true,
-  "merge_policy": "after-green-ci",
-  "checkpoint_limit": 8,
-  "approval_locator": "User-Approval: 2026-09-27 campaign runner commit policy local-commit-per-task; User-Approval: 2026-10-11 \"1,2,3\" on the train-04296-20261011 Task 8 hold report, item 3 (after the train the S4 campaign, then the legacy-retirement campaign, as approved on 2026-10-10 items 2 and 3; closing criteria S3 and carrying the C5 check happen in the first S4 PR); 2026-10-10 item 2 (open the S4 campaign after the train; installed --allow-lan and firewall changes only within that campaign's existing pre-approval); 2026-10-09 audit item 3 pre-approval (S4: log in with an account from another PC on the LAN and use S1-S3, then one release train; installed --allow-lan and firewall changes pre-approved); ADR-0016 standing approval (2026-10-07): pcv-it- prefixed VM create/configure/delete, disks under artifacts; User-Approval: 2026-10-12 \"1\" (S4 design D1-A, D2-A, D3, D4, D5; add design section 4 tasks 1-5 to this campaign; Lane 1 PRs merge after green CI; Lane 2 is the pre-approved --allow-lan, firewall, account create/disable, and ADR-0016 pcv-it-s4-* VM create/delete); User-Approval: 2026-10-12 \"1,2\" (D2 correction A-prime: configure-installed gets --prefix/--web-prefix with --allow-lan as Lane 1 Task 8, PR merge after green CI; Task 4 and Task 6 reconfigure the installed service with the Host.exe built from merged main, installed service binary unchanged; release train once after S4 per 2026-10-09 pre-approval)",
-  "next_approval_required": [],
+  "merge_policy": "none",
+  "checkpoint_limit": 14,
+  "approval_locator": "User-Approval: 2026-09-27 campaign runner commit policy local-commit-per-task; User-Approval: 2026-11-05 \"1,2,3,4,5\" on the Web Console redesign proposal (1 sidebar groups with new Templates and Accounts views and six VM detail tabs; 2 screens W1-W7, details reviewed by PR screenshots; 3 incremental Single Edge module replacement, legacy console frozen then retired in this campaign, merging the 2026-10-10 approval 3 legacy-retirement campaign; 4 password reset API, CLI and Web in scope; 5 open this campaign from P0, S4 demo and train order unchanged and run in parallel); User-Approval: 2026-11-05 campaign question answer \"UI campaign + S4 carry-over\" (carry s4-lan-account-20261011 Tasks 5, 6, 7, 2 as Tasks 11-14); carried S4 approvals: 2026-10-09 audit item 3 pre-approval (installed --allow-lan and firewall changes), 2026-10-12 \"1\" (Lane 2 is --allow-lan, firewall, account create/disable, ADR-0016 pcv-it-s4-* VM create/delete), 2026-10-12 \"1,2\" (Task 6 reconfigures the installed service with the Host.exe built from merged main; release train once after S4); User-Approval: 2026-11-05 \"1,2\" (1 S4 Task 5 user demo, 2 release train departure after the S4 judgment); User-Approval: 2026-11-05 S4 account reissue on user request (create admin pcv-admin2, disable pcv-admin after login check); ADR-0016 standing approval (2026-10-07): pcv-it- prefixed VM create/configure/delete; merge: each PR needs an explicit user merge approval sentence (merge_policy none)",
+  "next_approval_required": [
+    "After Task 13 (S4 judgment): depart the release train (queue PR #94, #95 and any merged UI payload) either as tasks inside this campaign or by pausing this campaign and opening a train campaign."
+  ],
   "stop_on": [
     "same-cause-fail-3",
     "budget",
@@ -58,5 +63,5 @@
     "dirty-tree-at-start"
   ],
   "out_of_scope_is_not_next_step": true,
-  "closed_predecessor": "train-04296-finish-20261011"
+  "closed_predecessor": "s4-lan-account-20261011"
 }
