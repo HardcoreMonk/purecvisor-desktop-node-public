@@ -52,7 +52,9 @@
 
 ## Task 2: 공통 컴포넌트 (P1)
 
-- [ ] grok 구현, Claude 리뷰. 새 셸에 확인 모달(제목, 결과 설명, 이름 입력 확인 옵션, 포커스 가둠, Esc), 입력 칸 검사와 칸 아래 오류 표시, 알림, job 진행 줄(접수·실행 중·완료·실패), 탭, 빈 상태와 읽기 실패 구분 컴포넌트를 `web/src/modules`에 더하고 `modules.json` 순서를 맞춘다. node 시험으로 각 컴포넌트의 상태와 키보드 동작을 고정한다. 검증: `npm run build:served --prefix web`, `npm run test:required --prefix web`, `git diff --check`. push, PR. merge는 사용자 승인 뒤.
+- [x] grok 구현, Claude 리뷰. 새 셸에 확인 모달(제목, 결과 설명, 이름 입력 확인 옵션, 포커스 가둠, Esc), 입력 칸 검사와 칸 아래 오류 표시, 알림, job 진행 줄(접수·실행 중·완료·실패), 탭, 빈 상태와 읽기 실패 구분 컴포넌트를 `web/src/modules`에 더하고 `modules.json` 순서를 맞춘다. node 시험으로 각 컴포넌트의 상태와 키보드 동작을 고정한다. 검증: `npm run build:served --prefix web`, `npm run test:required --prefix web`, `git diff --check`. push, PR. merge는 사용자 승인 뒤.
+
+실행 기록(2026-11-05): 새 모듈 `web/src/modules/components.ts`(`modules.json`에서 `modal` 다음)가 `PCV.components`를 연다: `confirmDialog`(포커스 순환, Esc 취소, danger는 배경 클릭 무시, `typedName` 정확 일치 전 확인 꺼짐), `bindValidation`(첫 입력·blur 전에는 submit만 끄고 문장은 숨김), `validators`(`hyperVName`·`vmCreateName`은 C# `IsValidHyperVName`·`IsValidVmCreateName`과 같은 UTF-16 판정, `.`·`..` 거절, `notSameAs` Ordinal, `notIn` 대문자 비교), `toast`(닫기 버튼, success·info 5초 자동 닫힘과 hover·focus 중 멈춤, error는 남김), `renderJobProgress`·`trackJob`(서버 상태 queued·running·succeeded·failed·canceled, canceled는 별도 단계, 2초 폴링, 종료에서 멈춤), `renderTabs`(tablist ARIA, 화살표·Home·End, `rememberKey` 저장 실패 허용), `emptyState`·`loadError`(다른 문구와 클래스, 제목 수준 옵션). `modal-core.ts`에 `backdropDismiss` 옵션(기본 동작 유지). 기존 `PCV.ui` toast·customConfirm·emptyState는 아직 바꾸지 않았다. 화면 연결은 Task 3부터다. grok 구현 뒤 Claude 리뷰 1차에서 6건(toast 누적, canceled 단계, 폴링 간격, 검사 문장 시점, 중복 비교, 제목 수준)을 고쳤다. 유니코드 차이: `notIn`의 `toUpperCase`는 `ß`→`SS` 같은 길이 변화가 있어 .NET `OrdinalIgnoreCase`와 일부 다르며, 최종 중복은 서버 WMI가 판정한다. 검증(Claude 재실행): `npm run test:required --prefix web` exit 0, `node --test` 284/284(새 `ui-components.test.mjs` 8건 포함), domsafe 82(ceiling 그대로), eslint 0 errors(기존 경고 1), parity current, `git diff --check` 통과, 옛 콘솔 파일 diff 없음. host mutation 없음.
 
 ## Task 3: VM 상세 탭, 헤더 조작, 복제 모달 (P2)
 
