@@ -772,7 +772,7 @@ test("header and more-menu confirms do not call window.confirm", () => {
     assert.equal(sliceFn(name).includes("window.confirm"), false, name);
   });
   ["queueVmAttach", "queueVmQosDirectControl", "queueVmGuestExecutionControl", "queueVmManage", "queueVmGuestFile"].forEach((name) => {
-    assert.equal(sliceFn(name).includes("window.confirm"), true, name);
+    assert.equal(sliceFn(name).includes("window.confirm"), false, name);
   });
 });
 

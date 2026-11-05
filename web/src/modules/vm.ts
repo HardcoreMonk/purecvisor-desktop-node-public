@@ -204,8 +204,8 @@ function getNetworkSwitches() {
 }
 
 function formatNetworkBoolean(value) {
-  if (value === true) return 'enabled';
-  if (value === false) return 'disabled';
+  if (value === true) return t('vm.net.enabled');
+  if (value === false) return t('vm.net.disabled');
   return '-';
 }
 
@@ -214,11 +214,11 @@ function renderNetworkFailureGuidance(error) {
   const code = error.code || 'PCV_NETWORK_INVENTORY_UNAVAILABLE';
   const parity = code === 'PCV_NATIVE_PARITY_INCOMPLETE' || String(error.detail || error.message || '').toLowerCase().includes('parity');
   const detail = parity
-    ? 'native parity failure: helper fallback is intentionally excluded; check the C# native adapter evidence before retrying.'
-    : error.detail || 'Network inventory read failed without mutating Hyper-V switches, IP configuration, or firewall rules.';
+    ? t('vm.net.error_parity')
+    : error.detail || t('vm.net.error_fallback');
   return `<div class="activity-warning network-error-state">
     <strong>${pcvEscapeHtml(code)}</strong>
-    <span>${pcvEscapeHtml(error.message || 'Network inventory unavailable.')}</span>
+    <span>${pcvEscapeHtml(error.message || t('vm.net.error_unavailable'))}</span>
     <p>${pcvEscapeHtml(detail)}</p>
   </div>`;
 }
@@ -233,18 +233,18 @@ function renderNetworkChangeReadback(switches) {
   const externalCount = rows.filter((item) => String(item?.type || item?.switch_type || '').toLowerCase() === 'external').length;
   return `<div class="network-change-readback">
       <div class="diagnostics-grid">
-        <div class="diagnostics-fact"><span class="muted">switch create</span><strong>service-action only</strong></div>
-        <div class="diagnostics-fact"><span class="muted">product switches</span><strong>${pcvEscapeHtml(productCount)}</strong></div>
-        <div class="diagnostics-fact"><span class="muted">reserved</span><strong>${pcvEscapeHtml(reservedCount)}</strong></div>
-        <div class="diagnostics-fact"><span class="muted">external</span><strong>${pcvEscapeHtml(externalCount === 0 ? 'none' : 'present')}</strong></div>
-        <div class="diagnostics-fact"><span class="muted">vm.network.connect</span><strong>VM detail</strong></div>
-        <div class="diagnostics-fact"><span class="muted">NAT/DHCP</span><strong>excluded</strong></div>
+        <div class="diagnostics-fact"><span class="muted">${pcvEscapeHtml(t('vm.net.switch_create'))}</span><strong>${pcvEscapeHtml(t('vm.net.service_only'))}</strong></div>
+        <div class="diagnostics-fact"><span class="muted">${pcvEscapeHtml(t('vm.net.product'))}</span><strong>${pcvEscapeHtml(productCount)}</strong></div>
+        <div class="diagnostics-fact"><span class="muted">${pcvEscapeHtml(t('vm.net.reserved'))}</span><strong>${pcvEscapeHtml(reservedCount)}</strong></div>
+        <div class="diagnostics-fact"><span class="muted">${pcvEscapeHtml(t('vm.net.external'))}</span><strong>${pcvEscapeHtml(externalCount === 0 ? t('vm.net.none') : t('vm.net.present'))}</strong></div>
+        <div class="diagnostics-fact"><span class="muted">${pcvEscapeHtml(t('vm.net.connect_label'))}</span><strong>${pcvEscapeHtml(t('vm.net.connect_value'))}</strong></div>
+        <div class="diagnostics-fact"><span class="muted">${pcvEscapeHtml(t('vm.net.nat'))}</span><strong>${pcvEscapeHtml(t('vm.net.excluded'))}</strong></div>
       </div>
       <div class="boundary-chip-row">
-        <span>no switch create form</span>
-        <span>no NAT editor</span>
-        <span>no DHCP editor</span>
-        <span>switch connect in VM detail</span>
+        <span>${pcvEscapeHtml(t('vm.net.chip_create'))}</span>
+        <span>${pcvEscapeHtml(t('vm.net.chip_nat'))}</span>
+        <span>${pcvEscapeHtml(t('vm.net.chip_dhcp'))}</span>
+        <span>${pcvEscapeHtml(t('vm.net.chip_connect'))}</span>
       </div>
     </div>`;
 }
@@ -260,7 +260,7 @@ function renderNetworkInventory() {
     item?.is_default === true ? 'default' : ''
   ].join(' '));
   const source = inventory.source || 'network.inventory';
-  const mutationMode = inventory.mutating === true ? 'mutating' : 'read-only';
+  const mutationMode = inventory.mutating === true ? t('vm.net.mutating') : t('vm.net.readonly');
   const defaultSwitchCount = switches.filter((item) => item?.is_default === true || String(item?.name || '').toLowerCase() === 'default switch').length;
   const errorHtml = renderNetworkFailureGuidance(state.networkError);
   const rows = switches.map((item) => {
@@ -277,19 +277,19 @@ function renderNetworkInventory() {
 
   els.networkInventoryPanel.innerHTML = `
     ${errorHtml}
-    ${renderTableStateSummary('Switches', switches.length, allSwitches.length, state.networkFilter, 'read-only Hyper-V inventory')}
+    ${renderTableStateSummary(t('vm.net.switches'), switches.length, allSwitches.length, state.networkFilter, t('vm.net.summary_note'))}
     ${renderNetworkChangeReadback(allSwitches)}
     <div class="network-summary-grid">
-      <div class="network-summary-card"><span class="muted">Source</span><strong>${pcvEscapeHtml(source)}</strong></div>
-      <div class="network-summary-card"><span class="muted">Mutation</span><strong>${pcvEscapeHtml(mutationMode)}</strong></div>
-      <div class="network-summary-card"><span class="muted">Switches</span><strong>${pcvEscapeHtml(switches.length)}</strong></div>
-      <div class="network-summary-card"><span class="muted">Default</span><strong>${pcvEscapeHtml(defaultSwitchCount)}</strong></div>
+      <div class="network-summary-card"><span class="muted">${pcvEscapeHtml(t('vm.net.source'))}</span><strong>${pcvEscapeHtml(source)}</strong></div>
+      <div class="network-summary-card"><span class="muted">${pcvEscapeHtml(t('vm.net.mutation'))}</span><strong>${pcvEscapeHtml(mutationMode)}</strong></div>
+      <div class="network-summary-card"><span class="muted">${pcvEscapeHtml(t('vm.net.switches'))}</span><strong>${pcvEscapeHtml(switches.length)}</strong></div>
+      <div class="network-summary-card"><span class="muted">${pcvEscapeHtml(t('vm.net.default'))}</span><strong>${pcvEscapeHtml(defaultSwitchCount)}</strong></div>
     </div>
     <div class="network-table-wrap">
       ${switches.length === 0
-        ? '<p class="muted network-empty-state">No Hyper-V switches returned by the Desktop Node API. This read-only view does not create switches, assign IP addresses, or change firewall policy.</p>'
+        ? `<p class="muted network-empty-state">${pcvEscapeHtml(t('vm.net.empty'))}</p>`
         : `<table class="network-table">
-            <thead><tr><th>Name</th><th>Type</th><th>Default</th><th>Management OS</th><th>Adapter</th></tr></thead>
+            <thead><tr><th>${pcvEscapeHtml(t('vm.net.col.name'))}</th><th>${pcvEscapeHtml(t('vm.net.col.type'))}</th><th>${pcvEscapeHtml(t('vm.net.col.default'))}</th><th>${pcvEscapeHtml(t('vm.net.col.mgmt'))}</th><th>${pcvEscapeHtml(t('vm.net.col.adapter'))}</th></tr></thead>
             <tbody>${rows}</tbody>
           </table>`}
     </div>`;
@@ -912,11 +912,11 @@ function fillCheckpointList(root, vmId) {
 function renderVmDetail() {
   const vm = state.selectedVm;
   if (!vm) {
-    els.vmDetailTitle.textContent = 'No VM selected';
+    els.vmDetailTitle.textContent = t('vm.detail.none_title');
     state.selectedVmCheckpoints = [];
     state.selectedVmReadbacks = null;
     state.selectedVmQosControl = null;
-    els.vmDetailContent.innerHTML = '<p class="muted">Select a VM row to inspect lifecycle controls and inventory details.</p>';
+    els.vmDetailContent.innerHTML = `<p class="muted">${pcvEscapeHtml(t('vm.detail.none_body'))}</p>`;
     return;
   }
 
@@ -934,23 +934,23 @@ function renderVmDetail() {
   const storage = flattenNamedList(vm.storage, ['path', 'size_gb', 'attached']);
   const network = flattenNamedList(vm.network, ['name', 'switch', 'mode']);
   const dvdMedia = Array.isArray(vm.dvd_media)
-    ? (vm.dvd_media.length > 0 ? flattenNamedList(vm.dvd_media, ['path']) : 'none')
-    : 'not reported';
+    ? (vm.dvd_media.length > 0 ? flattenNamedList(vm.dvd_media, ['path']) : t('vm.detail.none'))
+    : t('vm.detail.not_reported');
   const details = [
-    ['State', vm.state || vm.status],
-    ['ID', vm.id],
-    ['CPU', vm.cpu?.count ?? vm.cpu ?? vm.vcpu ?? vm.processor_count],
-    ['Startup Memory MB', vm.memory?.startup_mb ?? vm.memory_mb],
-    ['Assigned Memory MB', vm.memory?.assigned_mb ?? vm.memory_assigned_mb],
-    ['Generation', vm.generation],
-    ['Storage', storage],
-    ['DVD Media', dvdMedia],
-    ['Network', network],
-    ['Checkpoints', vm.checkpoints?.count ?? vm.checkpoints_count],
-    ['Console', formatConsoleValue(vm.console)],
-    ['Managed', vm.managed_by_purecvisor],
-    ['Template', templateLocked ? 'locked' : 'no'],
-    ['Notes', vm.error?.message || vm.notes]
+    [t('vm.detail.label.state'), vm.state || vm.status],
+    [t('vm.detail.label.id'), vm.id],
+    [t('vm.detail.label.cpu'), vm.cpu?.count ?? vm.cpu ?? vm.vcpu ?? vm.processor_count],
+    [t('vm.detail.label.memory_startup'), vm.memory?.startup_mb ?? vm.memory_mb],
+    [t('vm.detail.label.memory_assigned'), vm.memory?.assigned_mb ?? vm.memory_assigned_mb],
+    [t('vm.detail.label.generation'), vm.generation],
+    [t('vm.detail.label.storage'), storage],
+    [t('vm.detail.label.dvd'), dvdMedia],
+    [t('vm.detail.label.network'), network],
+    [t('vm.detail.label.checkpoints'), vm.checkpoints?.count ?? vm.checkpoints_count],
+    [t('vm.detail.label.console'), formatConsoleValue(vm.console)],
+    [t('vm.detail.label.managed'), vm.managed_by_purecvisor],
+    [t('vm.detail.label.template'), templateLocked ? t('vm.detail.locked') : t('vm.detail.unlocked')],
+    [t('vm.detail.label.notes'), vm.error?.message || vm.notes]
   ];
   const vmName = getVmName(vm);
   const deleteDisabled = isVmActionPending(vmId) || !canOperate || templateLocked ? ' disabled' : '';
@@ -1107,40 +1107,40 @@ function renderExportImportReadback(vm, vmId, actionDisabled = '') {
   const off = power === 'off' || power === 'stopped';
   const securityPresent = vm?.security_features_present === true;
   const exportEligible = managed && generation === 2 && off && !securityPresent;
-  const securityLabel = securityPresent ? 'present' : 'not reported';
+  const securityLabel = securityPresent ? t('vm.export.security_present') : t('vm.export.security_absent');
   return `<div class="export-import-readback">
       <div class="mini-section-header">
         <div>
-          <p class="eyebrow">Hyper-V export/import</p>
-          <h3>Export / Import</h3>
+          <p class="eyebrow">${pcvEscapeHtml(t('vm.export.eyebrow'))}</p>
+          <h3>${pcvEscapeHtml(t('vm.export.title'))}</h3>
         </div>
       </div>
       <div class="diagnostics-grid">
-        <div class="diagnostics-fact"><span class="muted">export</span><strong>${pcvEscapeHtml(exportEligible ? 'eligible' : 'blocked')}</strong></div>
-        <div class="diagnostics-fact"><span class="muted">managed</span><strong>${pcvEscapeHtml(managed ? 'yes' : 'no')}</strong></div>
-        <div class="diagnostics-fact"><span class="muted">generation</span><strong>${pcvEscapeHtml(formatObjectValue(vm?.generation))}</strong></div>
-        <div class="diagnostics-fact"><span class="muted">power</span><strong>${pcvEscapeHtml(formatObjectValue(vm?.state || vm?.status))}</strong></div>
-        <div class="diagnostics-fact"><span class="muted">security features</span><strong>${pcvEscapeHtml(securityLabel)}</strong></div>
-        <div class="diagnostics-fact"><span class="muted">import</span><strong>new identity</strong></div>
+        <div class="diagnostics-fact"><span class="muted">${pcvEscapeHtml(t('vm.export.export'))}</span><strong>${pcvEscapeHtml(exportEligible ? t('vm.export.eligible') : t('vm.export.blocked'))}</strong></div>
+        <div class="diagnostics-fact"><span class="muted">${pcvEscapeHtml(t('vm.export.managed'))}</span><strong>${pcvEscapeHtml(managed ? t('vm.export.yes') : t('vm.export.no'))}</strong></div>
+        <div class="diagnostics-fact"><span class="muted">${pcvEscapeHtml(t('vm.export.generation'))}</span><strong>${pcvEscapeHtml(formatObjectValue(vm?.generation))}</strong></div>
+        <div class="diagnostics-fact"><span class="muted">${pcvEscapeHtml(t('vm.export.power'))}</span><strong>${pcvEscapeHtml(formatObjectValue(vm?.state || vm?.status))}</strong></div>
+        <div class="diagnostics-fact"><span class="muted">${pcvEscapeHtml(t('vm.export.security'))}</span><strong>${pcvEscapeHtml(securityLabel)}</strong></div>
+        <div class="diagnostics-fact"><span class="muted">${pcvEscapeHtml(t('vm.export.import'))}</span><strong>${pcvEscapeHtml(t('vm.export.import_value'))}</strong></div>
       </div>
       <form class="vm-resource-form export-import-form" data-action="vm-export" data-vm-id="${pcvEscapeHtml(vmId)}">
-        <input name="directory" type="text" placeholder="Export directory" aria-label="Export directory"${actionDisabled}>
-        <button type="submit" data-action="vm-export-preview"${actionDisabled}>Preview export</button>
-        <button type="submit" data-action="vm-export-apply"${actionDisabled}>Export VM</button>
+        <input name="directory" type="text" placeholder="${pcvEscapeHtml(t('vm.export.dir_placeholder'))}" aria-label="${pcvEscapeHtml(t('vm.export.dir_placeholder'))}"${actionDisabled}>
+        <button type="submit" data-action="vm-export-preview"${actionDisabled}>${pcvEscapeHtml(t('vm.export.preview'))}</button>
+        <button type="submit" data-action="vm-export-apply"${actionDisabled}>${pcvEscapeHtml(t('vm.export.apply'))}</button>
       </form>
       <form class="vm-resource-form export-import-form" data-action="vm-import" data-vm-id="${pcvEscapeHtml(vmId)}">
-        <input name="name" type="text" placeholder="New VM name" aria-label="Import VM name"${actionDisabled}>
-        <input name="directory" type="text" placeholder="Export package directory" aria-label="Import package directory"${actionDisabled}>
-        <label><input name="has_vmcx" type="checkbox"${actionDisabled}> package has .vmcx</label>
-        <button type="submit" data-action="vm-import-preview"${actionDisabled}>Preview import</button>
-        <button type="submit" data-action="vm-import-apply"${actionDisabled}>Import VM</button>
+        <input name="name" type="text" placeholder="${pcvEscapeHtml(t('vm.export.name_placeholder'))}" aria-label="${pcvEscapeHtml(t('vm.export.import_name'))}"${actionDisabled}>
+        <input name="directory" type="text" placeholder="${pcvEscapeHtml(t('vm.export.package_placeholder'))}" aria-label="${pcvEscapeHtml(t('vm.export.package_dir'))}"${actionDisabled}>
+        <label><input name="has_vmcx" type="checkbox"${actionDisabled}> ${pcvEscapeHtml(t('vm.export.has_vmcx'))}</label>
+        <button type="submit" data-action="vm-import-preview"${actionDisabled}>${pcvEscapeHtml(t('vm.export.preview_import'))}</button>
+        <button type="submit" data-action="vm-import-apply"${actionDisabled}>${pcvEscapeHtml(t('vm.export.apply_import'))}</button>
       </form>
       ${renderExportImportPreview(vmId)}
       <div class="boundary-chip-row">
-        <span>preview before export/import</span>
-        <span>new VM identity on import</span>
-        <span>no OVF</span>
-        <span>no TPM key copy</span>
+        <span>${pcvEscapeHtml(t('vm.export.chip_preview'))}</span>
+        <span>${pcvEscapeHtml(t('vm.export.chip_identity'))}</span>
+        <span>${pcvEscapeHtml(t('vm.export.chip_ovf'))}</span>
+        <span>${pcvEscapeHtml(t('vm.export.chip_tpm'))}</span>
       </div>
     </div>`;
 }
@@ -1189,7 +1189,7 @@ function renderCheckpointScheduleReadback(vm, vmId, actionDisabled = '') {
 function renderVmWorkbenchContext() {
   const vm = state.selectedVm;
   if (!vm) {
-    els.vmWorkbenchContext.innerHTML = '<p class="muted">Select a VM to focus lifecycle controls, checkpoints, and related current activity.</p>';
+    els.vmWorkbenchContext.innerHTML = `<p class="muted">${pcvEscapeHtml(t('vm.workbench.empty'))}</p>`;
     return;
   }
 
@@ -1202,18 +1202,18 @@ function renderVmWorkbenchContext() {
       return haystack.includes(vmId.toLowerCase()) || haystack.includes(vmName.toLowerCase());
     });
   const activityHtml = activity
-    ? `<span>${pcvEscapeHtml(activity.operation || 'job')}</span>${stateBadge(activity.status)}`
-    : '<span class="muted">No related current activity visible.</span>';
+    ? `<span>${pcvEscapeHtml(activity.operation || t('vm.workbench.job'))}</span>${stateBadge(activity.status)}`
+    : `<span class="muted">${pcvEscapeHtml(t('vm.workbench.none'))}</span>`;
 
   els.vmWorkbenchContext.innerHTML = `
     <div class="vm-context-card">
       <div>
-        <span class="muted">Selected VM</span>
+        <span class="muted">${pcvEscapeHtml(t('vm.workbench.selected'))}</span>
         <strong>${pcvEscapeHtml(vmName)}</strong>
       </div>
       <div>${stateBadge(vm.state || vm.status)}</div>
       <div class="vm-context-activity">
-        <span class="muted">Related activity</span>
+        <span class="muted">${pcvEscapeHtml(t('vm.workbench.activity'))}</span>
         ${activityHtml}
       </div>
     </div>`;
@@ -1269,7 +1269,7 @@ function readbackFieldSummary(payload, bucketName, fields) {
       return value === undefined || value === null || value === '' ? '' : `${field}=${formatObjectValue(value)}`;
     })
     .filter(Boolean);
-  return parts.length > 0 ? parts.join(' / ') : 'payload available';
+  return parts.length > 0 ? parts.join(' / ') : t('vm.readback.payload');
 }
 
 function readbackErrorFor(readbacks, key) {
@@ -1285,8 +1285,8 @@ function renderReadbackCard(readbacks, key, title, bucketName, fields) {
     : payload
       ? readbackFieldSummary(payload, bucketName, fields)
       : readbacks?.loading
-        ? 'Loading'
-        : 'Not loaded';
+        ? t('vm.readback.loading')
+        : t('vm.readback.not_loaded');
   const detail = error?.detail || '';
   return `<div class="qos-readback-card">
     <span class="muted">${pcvEscapeHtml(title)}</span>
@@ -1299,24 +1299,24 @@ function renderReadbackCard(readbacks, key, title, bucketName, fields) {
 function renderVmQosGuestReadback(vmId) {
   const readbacks = getSelectedVmReadbacks(vmId);
   const updated = readbacks?.updated_at ? new Date(readbacks.updated_at).toLocaleString() : '-';
-  const loadingLabel = readbacks?.loading ? 'Loading' : 'Refresh';
+  const loadingLabel = readbacks?.loading ? t('vm.readback.loading') : t('vm.readback.refresh');
   return `<section class="qos-readback-panel">
     <div class="mini-section-header">
       <div>
-        <p class="eyebrow">QoS / Guest Readback</p>
-        <h3>Hyper-V readback surface</h3>
+        <p class="eyebrow">${pcvEscapeHtml(t('vm.readback.eyebrow'))}</p>
+        <h3>${pcvEscapeHtml(t('vm.readback.title'))}</h3>
       </div>
       <button data-action="vm-qos-guest-refresh" data-vm-id="${pcvEscapeHtml(vmId)}"${readbacks?.loading ? ' disabled' : ''}>${pcvEscapeHtml(loadingLabel)}</button>
     </div>
     <div class="qos-readback-grid">
-      ${renderReadbackCard(readbacks, 'blkio', 'blkio', 'storage_qos', ['linux_blkio_compatible', 'mutation_supported'])}
-      ${renderReadbackCard(readbacks, 'bandwidth', 'bandwidth', 'network_qos', ['linux_bandwidth_compatible', 'mutation_supported'])}
-      ${renderReadbackCard(readbacks, 'guest_agent', 'guest-agent-status', 'guest_agent', ['status', 'qemu_guest_agent', 'guest_exec_supported'])}
-      ${renderReadbackCard(readbacks, 'guest_ping', 'guest-ping', 'guest_ping', ['reachable', 'guest_heartbeat_verified'])}
-      ${renderReadbackCard(readbacks, 'memory_stats', 'memory-stats', 'memory', ['startup_mb', 'assigned_mb', 'dynamic'])}
-      ${renderReadbackCard(readbacks, 'cpu_stats', 'cpu-stats', 'cpu', ['count'])}
+      ${renderReadbackCard(readbacks, 'blkio', t('vm.readback.blkio'), 'storage_qos', ['linux_blkio_compatible', 'mutation_supported'])}
+      ${renderReadbackCard(readbacks, 'bandwidth', t('vm.readback.bandwidth'), 'network_qos', ['linux_bandwidth_compatible', 'mutation_supported'])}
+      ${renderReadbackCard(readbacks, 'guest_agent', t('vm.readback.guest_agent'), 'guest_agent', ['status', 'qemu_guest_agent', 'guest_exec_supported'])}
+      ${renderReadbackCard(readbacks, 'guest_ping', t('vm.readback.guest_ping'), 'guest_ping', ['reachable', 'guest_heartbeat_verified'])}
+      ${renderReadbackCard(readbacks, 'memory_stats', t('vm.readback.memory'), 'memory', ['startup_mb', 'assigned_mb', 'dynamic'])}
+      ${renderReadbackCard(readbacks, 'cpu_stats', t('vm.readback.cpu'), 'cpu', ['count'])}
     </div>
-    <p class="muted">updated_at=${pcvEscapeHtml(updated)} / vm.limit remains CLI/API queued mutation</p>
+    <p class="muted">${pcvEscapeHtml(t('vm.readback.note', { time: updated }))}</p>
   </section>`;
 }
 
@@ -1327,7 +1327,7 @@ function getSelectedVmQosControl(vmId) {
 
 function renderQosControlResult(control) {
   if (!control) {
-    return '<p class="muted">No QoS direct-control preview or apply has been run for this VM in this browser session.</p>';
+    return `<p class="muted">${pcvEscapeHtml(t('vm.qosui.empty'))}</p>`;
   }
 
   const status = control.error ? 'degraded' : control.loading ? 'loading' : control.mode || 'tracked';
@@ -1335,13 +1335,13 @@ function renderQosControlResult(control) {
     ? `${control.error.code}: ${control.error.message}`
     : control.result
       ? formatObjectValue(control.result)
-      : 'pending';
+      : t('vm.qosui.pending');
   const updated = control.updated_at ? new Date(control.updated_at).toLocaleString() : '-';
   return `<div class="qos-control-result">
     <span class="muted">${pcvEscapeHtml(control.kind || 'qos')} ${pcvEscapeHtml(control.mode || 'control')}</span>
     ${stateBadge(status)}
     <strong>${pcvEscapeHtml(detail)}</strong>
-    <p class="muted">updated_at=${pcvEscapeHtml(updated)}</p>
+    <p class="muted">${pcvEscapeHtml(t('vm.qosui.updated', { time: updated }))}</p>
   </div>`;
 }
 
@@ -1357,77 +1357,115 @@ function renderVmQosDirectControl(vmId) {
   return `<section class="qos-control-panel">
     <div class="mini-section-header">
       <div>
-        <p class="eyebrow">QoS Direct Control</p>
-        <h3>ADR-0008 preview and apply</h3>
+        <p class="eyebrow">${pcvEscapeHtml(t('vm.qosui.eyebrow'))}</p>
+        <h3>${pcvEscapeHtml(t('vm.qosui.title'))}</h3>
       </div>
-      <span class="status-badge ${canOperate ? 'ok' : 'warn'}">${canOperate ? 'operate' : 'operate required'}</span>
+      <span class="status-badge ${canOperate ? 'ok' : 'warn'}">${pcvEscapeHtml(canOperate ? t('vm.qosui.operate') : t('vm.qosui.operate_required'))}</span>
     </div>
     <div class="qos-control-grid">
       <form class="qos-control-form" data-qos-kind="storage" data-vm-id="${pcvEscapeHtml(vmId)}">
-        <label>Disk<input name="disk" autocomplete="off" value="disk0"${actionDisabled}></label>
-        <label>Maximum IOPS<input name="maximum_iops" type="number" min="0" step="1" value="120"${actionDisabled}></label>
-        <label>Minimum IOPS<input name="minimum_iops" type="number" min="0" step="1" value="0"${actionDisabled}></label>
+        <label>${pcvEscapeHtml(t('vm.qosui.disk'))}<input name="disk" autocomplete="off" value="disk0"${actionDisabled}></label>
+        <label>${pcvEscapeHtml(t('vm.qosui.max_iops'))}<input name="maximum_iops" type="number" min="0" step="1" value="120"${actionDisabled}></label>
+        <label>${pcvEscapeHtml(t('vm.qosui.min_iops'))}<input name="minimum_iops" type="number" min="0" step="1" value="0"${actionDisabled}></label>
         <div class="qos-control-actions">
-          <button type="submit" data-action="vm-qos-storage-preview"${actionDisabled}>Preview</button>
-          <button type="submit" class="danger-button" data-action="vm-qos-storage-apply"${actionDisabled}>Apply</button>
+          <button type="submit" data-action="vm-qos-storage-preview"${actionDisabled}>${pcvEscapeHtml(t('vm.qosui.preview'))}</button>
+          <button type="submit" class="danger-button" data-action="vm-qos-storage-apply"${actionDisabled}>${pcvEscapeHtml(t('vm.qosui.apply'))}</button>
         </div>
       </form>
       <form class="qos-control-form" data-qos-kind="network" data-vm-id="${pcvEscapeHtml(vmId)}">
-        <label>Adapter<input name="adapter" autocomplete="off" value="adapter0"${actionDisabled}></label>
-        <label>Maximum Kbps<input name="maximum_kbps" type="number" min="0" step="1" value="20480"${actionDisabled}></label>
-        <label>Minimum Kbps<input name="minimum_kbps" type="number" min="0" step="1" value="0"${actionDisabled}></label>
+        <label>${pcvEscapeHtml(t('vm.qosui.adapter'))}<input name="adapter" autocomplete="off" value="adapter0"${actionDisabled}></label>
+        <label>${pcvEscapeHtml(t('vm.qosui.max_kbps'))}<input name="maximum_kbps" type="number" min="0" step="1" value="20480"${actionDisabled}></label>
+        <label>${pcvEscapeHtml(t('vm.qosui.min_kbps'))}<input name="minimum_kbps" type="number" min="0" step="1" value="0"${actionDisabled}></label>
         <div class="qos-control-actions">
-          <button type="submit" data-action="vm-qos-network-preview"${actionDisabled}>Preview</button>
-          <button type="submit" class="danger-button" data-action="vm-qos-network-apply"${actionDisabled}>Apply</button>
+          <button type="submit" data-action="vm-qos-network-preview"${actionDisabled}>${pcvEscapeHtml(t('vm.qosui.preview'))}</button>
+          <button type="submit" class="danger-button" data-action="vm-qos-network-apply"${actionDisabled}>${pcvEscapeHtml(t('vm.qosui.apply'))}</button>
         </div>
       </form>
     </div>
     ${renderQosControlResult(control)}
     <div class="mini-section-header">
       <div>
-        <p class="eyebrow">Guest Execution Direct Control</p>
-        <h3>ADR-0009 queued execution and channel lifecycle</h3>
+        <p class="eyebrow">${pcvEscapeHtml(t('vm.guestui.eyebrow'))}</p>
+        <h3>${pcvEscapeHtml(t('vm.guestui.title'))}</h3>
       </div>
-      <span class="status-badge ${canGuestExec && canGuestChannel ? 'ok' : 'warn'}">guest.exec + guest.channel.configure required</span>
+      <span class="status-badge ${canGuestExec && canGuestChannel ? 'ok' : 'warn'}">${pcvEscapeHtml(t('vm.guestui.badge'))}</span>
     </div>
     <div class="qos-control-grid">
       <form class="qos-control-form" data-guest-execution-kind="exec" data-vm-id="${pcvEscapeHtml(vmId)}">
-        <label>Credential reference<input name="credential_ref" autocomplete="off" placeholder="wincred:target"${guestExecDisabled}></label>
-        <label>Timeout seconds<input name="timeout_sec" type="number" min="1" max="600" step="1" value="60"${guestExecDisabled}></label>
-        <label>Command<input name="command" autocomplete="off" placeholder="hostname"${guestExecDisabled}></label>
+        <label>${pcvEscapeHtml(t('vm.guestui.cred'))}<input name="credential_ref" autocomplete="off" placeholder="wincred:target"${guestExecDisabled}></label>
+        <label>${pcvEscapeHtml(t('vm.guestui.timeout'))}<input name="timeout_sec" type="number" min="1" max="600" step="1" value="60"${guestExecDisabled}></label>
+        <label>${pcvEscapeHtml(t('vm.guestui.command'))}<input name="command" autocomplete="off" placeholder="hostname"${guestExecDisabled}></label>
         <div class="qos-control-actions">
-          <button type="submit" data-action="vm-guest-exec-preview"${guestExecDisabled}>Preview exec</button>
-          <button type="submit" class="danger-button" data-action="vm-guest-exec"${guestExecDisabled}>Queue exec</button>
+          <button type="submit" data-action="vm-guest-exec-preview"${guestExecDisabled}>${pcvEscapeHtml(t('vm.guestui.preview_exec'))}</button>
+          <button type="submit" class="danger-button" data-action="vm-guest-exec"${guestExecDisabled}>${pcvEscapeHtml(t('vm.guestui.queue_exec'))}</button>
         </div>
       </form>
       <form class="qos-control-form" data-guest-execution-kind="channel" data-vm-id="${pcvEscapeHtml(vmId)}">
-        <label>Credential reference<input name="credential_ref" autocomplete="off" placeholder="wincred:target"${guestChannelDisabled}></label>
-        <label>Timeout seconds<input name="timeout_sec" type="number" min="1" max="600" step="1" value="30"${guestChannelDisabled}></label>
+        <label>${pcvEscapeHtml(t('vm.guestui.cred'))}<input name="credential_ref" autocomplete="off" placeholder="wincred:target"${guestChannelDisabled}></label>
+        <label>${pcvEscapeHtml(t('vm.guestui.timeout'))}<input name="timeout_sec" type="number" min="1" max="600" step="1" value="30"${guestChannelDisabled}></label>
         <div class="qos-control-actions">
-          <button type="submit" data-action="guest-agent-channel-preview"${guestChannelDisabled}>Preview channel</button>
-          <button type="submit" data-action="guest-agent-ensure-channel" data-guest-channel-mode="verify"${guestChannelDisabled}>Verify channel</button>
-          <button type="submit" class="danger-button" data-action="guest-agent-ensure-channel" data-guest-channel-mode="repair"${guestChannelDisabled}>Repair channel</button>
+          <button type="submit" data-action="guest-agent-channel-preview"${guestChannelDisabled}>${pcvEscapeHtml(t('vm.guestui.preview_channel'))}</button>
+          <button type="submit" data-action="guest-agent-ensure-channel" data-guest-channel-mode="verify"${guestChannelDisabled}>${pcvEscapeHtml(t('vm.guestui.verify'))}</button>
+          <button type="submit" class="danger-button" data-action="guest-agent-ensure-channel" data-guest-channel-mode="repair"${guestChannelDisabled}>${pcvEscapeHtml(t('vm.guestui.repair'))}</button>
         </div>
       </form>
       <form class="qos-control-form" data-action="vm-guest-file" data-vm-id="${pcvEscapeHtml(vmId)}">
-        <label>Host path<input name="host_path" autocomplete="off" placeholder="C:\\ProgramData\\PureCVisor\\desktop-node\\guest-files\\payload.iso"${guestExecDisabled}></label>
-        <label>Guest path<input name="guest_path" autocomplete="off" placeholder="C:\\Users\\Public\\PureCVisor\\payload.iso"${guestExecDisabled}></label>
-        <label>Credential reference<input name="credential_ref" autocomplete="off" placeholder="wincred:target"${guestExecDisabled}></label>
-        <label>Timeout seconds<input name="timeout_sec" type="number" min="1" max="600" step="1" value="60"${guestExecDisabled}></label>
+        <label>${pcvEscapeHtml(t('vm.guestui.host'))}<input name="host_path" autocomplete="off" placeholder="C:\\ProgramData\\PureCVisor\\desktop-node\\guest-files\\payload.iso"${guestExecDisabled}></label>
+        <label>${pcvEscapeHtml(t('vm.guestui.guest'))}<input name="guest_path" autocomplete="off" placeholder="C:\\Users\\Public\\PureCVisor\\payload.iso"${guestExecDisabled}></label>
+        <label>${pcvEscapeHtml(t('vm.guestui.cred'))}<input name="credential_ref" autocomplete="off" placeholder="wincred:target"${guestExecDisabled}></label>
+        <label>${pcvEscapeHtml(t('vm.guestui.timeout'))}<input name="timeout_sec" type="number" min="1" max="600" step="1" value="60"${guestExecDisabled}></label>
         <div class="qos-control-actions">
-          <button type="submit" class="danger-button" data-action="vm-guest-file"${guestExecDisabled}>Copy host file</button>
+          <button type="submit" class="danger-button" data-action="vm-guest-file"${guestExecDisabled}>${pcvEscapeHtml(t('vm.guestui.copy'))}</button>
         </div>
       </form>
     </div>
-    <p class="muted">Guest command output is reduced to audit digests; raw stdout/stderr and credential values are not rendered.</p>
-    <p class="muted">Guest file copy is host-to-guest only, allowlisted, and does not use HGFS.</p>
-    <p class="muted">Account/noVNC target config mutation remains ADR-0010 deferred.</p>
+    <p class="muted">${pcvEscapeHtml(t('vm.guestui.note_output'))}</p>
+    <p class="muted">${pcvEscapeHtml(t('vm.guestui.note_copy'))}</p>
+    <p class="muted">${pcvEscapeHtml(t('vm.guestui.note_deferred'))}</p>
   </section>`;
 }
 
 // --- legacy mutate.ts ---
+function vmActionName(action) {
+  if (action === 'start') return t('vm.action.start');
+  if (action === 'shutdown') return t('vm.action.shutdown');
+  if (action === 'poweroff') return t('vm.action.poweroff');
+  if (action === 'restart') return t('vm.action.restart');
+  if (action === 'save') return t('vm.action.save');
+  if (action === 'resume-saved') return t('vm.action.resume_saved');
+  if (action === 'pause') return t('vm.action.pause');
+  if (action === 'resume') return t('vm.action.resume');
+  if (action === 'eject') return t('vm.action.eject');
+  if (action === 'set-memory') return t('vm.action.set_memory');
+  if (action === 'set-vcpu') return t('vm.action.set_vcpu');
+  if (action === 'disk-resize') return t('vm.action.disk_resize');
+  return String(action || '');
+}
+
+function vmModeName(mode) {
+  if (mode === 'apply') return t('vm.mode.apply');
+  if (mode === 'preview') return t('vm.mode.preview');
+  if (mode === 'exec') return t('vm.mode.exec');
+  if (mode === 'repair') return t('vm.mode.repair');
+  if (mode === 'verify') return t('vm.mode.verify');
+  if (mode === 'clear') return t('vm.mode.clear');
+  if (mode === 'set') return t('vm.mode.set');
+  return String(mode || '');
+}
+
+async function askVmConfirm(opts) {
+  if (!PCV.components || typeof PCV.components.confirmDialog !== 'function') return false;
+  return PCV.components.confirmDialog({
+    title: opts.title,
+    message: opts.message,
+    confirmLabel: opts.confirmLabel,
+    cancelLabel: t('ui.confirm.cancel'),
+    danger: opts.danger === true
+  });
+}
+
 async function queueVmLifecycle(vmId, action) {
-  requireRbac('operate', `VM ${action}`);
+  requireRbac('operate', vmActionName(action));
   if (action === 'poweroff' || action === 'restart' || action === 'save' || action === 'resume-saved') {
     const vm = state.selectedVm || findCachedVm(vmId);
     const name = getVmName(vm);
@@ -1479,18 +1517,23 @@ async function queueVmLifecycle(vmId, action) {
 }
 
 async function queueVmAttach(vmId, isoPath) {
-  requireRbac('operate', 'VM attach');
+  requireRbac('operate', t('vm.rbac.attach'));
   const path = String(isoPath || '').trim();
   if (!path) {
     throw normalizeError({
       code: 'PCV_VM_ATTACH_ISO_REQUIRED',
-      message: 'Enter an ISO path.',
-      detail: 'iso_path is required before queueing vm.attach.'
+      message: t('vm.err.iso_required'),
+      detail: t('vm.err.iso_required_detail')
     });
   }
-  if (!window.confirm(buildVmAttachConfirmation(vmId, path))) {
-    return;
-  }
+  const vm = state.selectedVm || findCachedVm(vmId);
+  const accepted = await askVmConfirm({
+    title: t('vm.confirm.attach.title'),
+    message: t('vm.confirm.attach.message', { name: getVmName(vm), path }),
+    confirmLabel: t('vm.confirm.attach.confirm'),
+    danger: false
+  });
+  if (!accepted) return;
 
   state.actionPending = true;
   setVmActionPending(vmId, 'attach');
@@ -1511,13 +1554,13 @@ async function queueVmAttach(vmId, isoPath) {
 }
 
 async function queueVmResourceMutation(vmId, action, valueName, rawValue) {
-  requireRbac('operate', `VM ${action}`);
+  requireRbac('operate', vmActionName(action));
   const value = Number.parseInt(String(rawValue ?? ''), 10);
   if (!Number.isFinite(value)) {
     throw normalizeError({
       code: 'PCV_VM_RESOURCE_VALUE_REQUIRED',
-      message: 'Enter a numeric VM resource value.',
-      detail: `${valueName} must be an integer before queueing ${action}.`
+      message: t('vm.err.resource_required'),
+      detail: t('vm.err.resource_required_detail', { name: valueName, action: vmActionName(action) })
     });
   }
 
@@ -1545,7 +1588,7 @@ function readRequiredText(formData, name, errorCode, message) {
     throw normalizeError({
       code: errorCode,
       message,
-      detail: `${name} is required before queueing this operation.`
+      detail: t('vm.err.field_required', { name })
     });
   }
 
@@ -1557,8 +1600,8 @@ function readNonNegativeInt(formData, name) {
   if (!Number.isFinite(value) || value < 0) {
     throw normalizeError({
       code: 'PCV_VM_QOS_VALUE_INVALID',
-      message: 'Enter a non-negative QoS value.',
-      detail: `${name} must be an integer greater than or equal to zero.`
+      message: t('vm.err.qos_nonneg'),
+      detail: t('vm.err.qos_nonneg_detail', { name })
     });
   }
 
@@ -1571,7 +1614,7 @@ function readBoundedInt(formData, name, min, max, errorCode, message) {
     throw normalizeError({
       code: errorCode,
       message,
-      detail: `${name} must be an integer between ${min} and ${max}.`
+      detail: t('vm.err.bound_detail', { name, min: String(min), max: String(max) })
     });
   }
 
@@ -1581,14 +1624,14 @@ function readBoundedInt(formData, name, min, max, errorCode, message) {
 function readVmQosPayload(kind, formData) {
   if (kind === 'storage') {
     return {
-      disk: readRequiredText(formData, 'disk', 'PCV_VM_QOS_STORAGE_DISK_REQUIRED', 'Enter a storage disk before previewing or applying QoS.'),
+      disk: readRequiredText(formData, 'disk', 'PCV_VM_QOS_STORAGE_DISK_REQUIRED', t('vm.err.qos_disk')),
       maximum_iops: readNonNegativeInt(formData, 'maximum_iops'),
       minimum_iops: readNonNegativeInt(formData, 'minimum_iops')
     };
   }
 
   return {
-    adapter: readRequiredText(formData, 'adapter', 'PCV_VM_QOS_NETWORK_ADAPTER_REQUIRED', 'Enter a network adapter before previewing or applying QoS.'),
+    adapter: readRequiredText(formData, 'adapter', 'PCV_VM_QOS_NETWORK_ADAPTER_REQUIRED', t('vm.err.qos_adapter')),
     maximum_kbps: readNonNegativeInt(formData, 'maximum_kbps'),
     minimum_kbps: readNonNegativeInt(formData, 'minimum_kbps')
   };
@@ -1600,20 +1643,20 @@ function readVmGuestExecPayload(formData) {
       formData,
       'credential_ref',
       'PCV_GUEST_EXEC_CREDENTIAL_REF_REQUIRED',
-      'Enter a protected credential reference before queueing guest execution.'),
+      t('vm.err.guest_cred')),
     timeout_sec: readBoundedInt(
       formData,
       'timeout_sec',
       1,
       600,
       'PCV_GUEST_EXEC_TIMEOUT_INVALID',
-      'Enter a guest execution timeout between 1 and 600 seconds.'),
+      t('vm.err.guest_timeout')),
     command: [
       readRequiredText(
         formData,
         'command',
         'PCV_GUEST_EXEC_COMMAND_REQUIRED',
-        'Enter a guest command before queueing guest execution.')
+        t('vm.err.guest_command'))
     ]
   };
 }
@@ -1624,24 +1667,24 @@ function readVmGuestFilePayload(formData) {
       formData,
       'host_path',
       'PCV_GUEST_FILE_PATH_NOT_ALLOWED',
-      'Enter an allowlisted host file path before previewing or copying.'),
+      t('vm.err.guest_file_host')),
     guest_path: readRequiredText(
       formData,
       'guest_path',
       'PCV_GUEST_FILE_PATH_NOT_ALLOWED',
-      'Enter an allowlisted guest file path before previewing or copying.'),
+      t('vm.err.guest_file_guest')),
     credential_ref: readRequiredText(
       formData,
       'credential_ref',
       'PCV_GUEST_FILE_CREDENTIAL_REF_REQUIRED',
-      'Enter a protected credential reference before previewing or copying a guest file.'),
+      t('vm.err.guest_file_cred')),
     timeout_sec: readBoundedInt(
       formData,
       'timeout_sec',
       1,
       600,
       'PCV_GUEST_EXEC_TIMEOUT_INVALID',
-      'Enter a guest file timeout between 1 and 600 seconds.'),
+      t('vm.err.guest_file_timeout')),
     direction: 'host-to-guest'
   };
 }
@@ -1656,44 +1699,53 @@ function readVmGuestChannelPayload(formData, mode) {
       formData,
       'credential_ref',
       'PCV_GUEST_EXEC_CREDENTIAL_REF_REQUIRED',
-      'Enter a protected credential reference before verifying the guest channel.'),
+      t('vm.err.channel_cred')),
     timeout_sec: readBoundedInt(
       formData,
       'timeout_sec',
       1,
       600,
       'PCV_GUEST_EXEC_TIMEOUT_INVALID',
-      'Enter a guest channel timeout between 1 and 600 seconds.')
+      t('vm.err.channel_timeout'))
   };
 }
 
 function buildVmQosConfirmation(vmId, kind, payload) {
+  const vm = state.selectedVm || findCachedVm(vmId);
   const target = kind === 'storage' ? payload.disk : payload.adapter;
   const maximum = kind === 'storage' ? payload.maximum_iops : payload.maximum_kbps;
   const minimum = kind === 'storage' ? payload.minimum_iops : payload.minimum_kbps;
-  return [
-    `Apply ${kind} QoS policy to VM ${vmId}?`,
-    `Target: ${target}`,
-    `Maximum: ${maximum}`,
-    `Minimum: ${minimum}`,
-    'This queues a Hyper-V host mutation using the ADR-0008 policy contract.',
-    'Use preview first when changing a non-reset value.'
-  ].join('\n');
+  return t('vm.confirm.qos.message', {
+    name: getVmName(vm),
+    kind: kind === 'storage' ? t('vm.qos.kind.storage') : t('vm.qos.kind.network'),
+    target: String(target ?? ''),
+    maximum: String(maximum ?? ''),
+    minimum: String(minimum ?? '')
+  });
 }
 
 function buildVmGuestExecutionConfirmation(vmId, mode) {
-  return [
-    `Queue ${mode} for VM ${vmId}?`,
-    'This operation uses a protected credential reference and writes guest-execution-audit-v1 evidence.',
-    'Raw stdout/stderr and credential values are not rendered in the Web Console.'
-  ].join('\n');
+  const vm = state.selectedVm || findCachedVm(vmId);
+  const name = getVmName(vm);
+  return mode === 'repair'
+    ? t('vm.confirm.guest_repair.message', { name })
+    : t('vm.confirm.guest_exec.message', { name });
 }
 
 async function queueVmQosDirectControl(vmId, kind, mode, payload) {
-  requireRbac('operate', `VM ${kind} QoS ${mode}`);
+  requireRbac('operate', t('vm.rbac.qos', {
+    kind: kind === 'storage' ? t('vm.qos.kind.storage') : t('vm.qos.kind.network'),
+    mode: vmModeName(mode)
+  }));
   const apply = mode === 'apply';
-  if (apply && !window.confirm(buildVmQosConfirmation(vmId, kind, payload))) {
-    return;
+  if (apply) {
+    const accepted = await askVmConfirm({
+      title: t('vm.confirm.qos.title'),
+      message: buildVmQosConfirmation(vmId, kind, payload),
+      confirmLabel: t('vm.confirm.qos.confirm'),
+      danger: false
+    });
+    if (!accepted) return;
   }
 
   const actionKey = `qos-${kind}-${mode}`;
@@ -1734,7 +1786,11 @@ async function queueVmQosDirectControl(vmId, kind, mode, payload) {
       error: null
     };
     state.connectionState = 'connected';
-    state.shellMessage = `VM ${kind} QoS ${mode} completed for ${vmId}.`;
+    state.shellMessage = t('vm.shell.qos_done', {
+      name: vmId,
+      kind: kind === 'storage' ? t('vm.qos.kind.storage') : t('vm.qos.kind.network'),
+      mode: vmModeName(mode)
+    });
   } catch (error) {
     const normalized = normalizeError(error);
     state.error = normalized;
@@ -1756,9 +1812,16 @@ async function queueVmQosDirectControl(vmId, kind, mode, payload) {
 
 async function queueVmGuestExecutionControl(vmId, mode, payload) {
   const requiredPermission = mode === 'exec' ? 'guest.exec' : 'guest.channel.configure';
-  requireRbac(requiredPermission, `VM guest ${mode}`);
-  if ((mode === 'exec' || mode === 'repair') && !window.confirm(buildVmGuestExecutionConfirmation(vmId, mode))) {
-    return;
+  requireRbac(requiredPermission, t('vm.rbac.guest', { mode: vmModeName(mode) }));
+  if (mode === 'exec' || mode === 'repair') {
+    const repair = mode === 'repair';
+    const accepted = await askVmConfirm({
+      title: repair ? t('vm.confirm.guest_repair.title') : t('vm.confirm.guest_exec.title'),
+      message: buildVmGuestExecutionConfirmation(vmId, mode),
+      confirmLabel: repair ? t('vm.confirm.guest_repair.confirm') : t('vm.confirm.guest_exec.confirm'),
+      danger: repair
+    });
+    if (!accepted) return;
   }
 
   const actionKey = `guest-${mode}`;
@@ -1794,7 +1857,7 @@ async function queueVmGuestExecutionControl(vmId, mode, payload) {
       error: null
     };
     state.connectionState = 'connected';
-    state.shellMessage = `VM guest ${mode} queued for ${vmId}.`;
+    state.shellMessage = t('vm.shell.guest_queued', { name: vmId, mode: vmModeName(mode) });
   } catch (error) {
     const normalized = normalizeError(error);
     state.error = normalized;
@@ -1815,14 +1878,17 @@ async function queueVmGuestExecutionControl(vmId, mode, payload) {
 }
 
 async function refreshVmDeleteStatus(vmId) {
-  requireRbac('read', 'VM delete status');
+  requireRbac('read', t('vm.rbac.delete_status'));
   state.actionPending = true;
   setVmActionPending(vmId, 'delete-status');
   state.error = null;
   render();
   try {
     const status = await desktopApi.getVmDeleteStatus(vmId);
-    state.shellMessage = `Delete status ${status?.name || vmId}: ${status?.status || 'unknown'}`;
+    state.shellMessage = t('vm.shell.delete_status', {
+      name: status?.name || vmId,
+      status: status?.status || t('vm.state.unknown')
+    });
     state.connectionState = 'connected';
   } catch (error) {
     state.error = normalizeError(error);
@@ -1834,11 +1900,15 @@ async function refreshVmDeleteStatus(vmId) {
 }
 
 async function queueVmManage(vmId) {
-  requireRbac('operate', 'VM manage');
+  requireRbac('operate', t('vm.rbac.manage'));
   const vm = state.selectedVm || findCachedVm(vmId);
-  if (!window.confirm(buildVmManageConfirmation(vmId, vm))) {
-    return;
-  }
+  const accepted = await askVmConfirm({
+    title: t('vm.confirm.manage.title'),
+    message: t('vm.confirm.manage.message', { name: getVmName(vm) }),
+    confirmLabel: t('vm.confirm.manage.confirm'),
+    danger: false
+  });
+  if (!accepted) return;
 
   state.actionPending = true;
   setVmActionPending(vmId, 'manage');
@@ -1859,16 +1929,26 @@ async function queueVmManage(vmId) {
 }
 
 async function queueVmGuestFile(vmId, payload) {
-  requireRbac('guest.exec', 'VM guest file');
+  requireRbac('guest.exec', t('vm.rbac.guest_file'));
   state.actionPending = true;
   setVmActionPending(vmId, 'guest-file');
   state.error = null;
   render();
   try {
     const preview = await desktopApi.previewVmGuestFile(vmId, payload);
-    if (!window.confirm(buildVmGuestFileConfirmation(vmId, payload, preview))) {
-      return;
-    }
+    const sizeBytes = preview?.size_bytes;
+    const size = sizeBytes === null || sizeBytes === undefined || sizeBytes === '' ? '-' : String(sizeBytes);
+    const accepted = await askVmConfirm({
+      title: t('vm.confirm.guest_file.title'),
+      message: t('vm.confirm.guest_file.message', {
+        host: String(payload?.host_path || ''),
+        guest: String(payload?.guest_path || ''),
+        size
+      }),
+      confirmLabel: t('vm.confirm.guest_file.confirm'),
+      danger: true
+    });
+    if (!accepted) return;
 
     const job = await desktopApi.queueVmGuestFile(vmId, payload);
     pcvTrackJob(job);
@@ -1884,7 +1964,7 @@ async function queueVmGuestFile(vmId, payload) {
 }
 
 async function queueVmTemplateLock(vmId, locked) {
-  requireRbac('operate', 'VM template lock');
+  requireRbac('operate', t('vm.rbac.template_lock'));
   const vm = state.selectedVm || findCachedVm(vmId);
   if (locked) {
     const accepted = await PCV.components.confirmDialog({
@@ -1926,13 +2006,13 @@ async function queueVmTemplateLock(vmId, locked) {
 }
 
 async function queueVmClone(vmId, rawName, rawRoot) {
-  requireRbac('operate', 'VM clone');
+  requireRbac('operate', t('vm.rbac.clone'));
   const name = String(rawName || '').trim();
   if (!name) {
     throw normalizeError({
       code: 'PCV_VM_CLONE_NAME_REQUIRED',
-      message: 'Enter a target VM name.',
-      detail: 'name is required before queueing vm.clone.'
+      message: t('vm.err.clone_name'),
+      detail: t('vm.err.clone_name_detail')
     });
   }
 
@@ -1959,14 +2039,14 @@ async function queueVmClone(vmId, rawName, rawRoot) {
 }
 
 async function queueVmDelete(vmId) {
-  requireRbac('operate', 'VM delete');
+  requireRbac('operate', t('vm.rbac.delete'));
   const vm = state.selectedVm || findCachedVm(vmId);
   const vmState = getVmState(vm);
   if (isRunningVmState(vmState)) {
     throw normalizeError({
       code: 'PCV_VM_DELETE_RUNNING_BLOCKED',
-      message: 'Power off the VM before deleting it.',
-      detail: 'The Web Console blocks delete for running VMs. Use Power off first, then queue Delete VM again.'
+      message: t('vm.err.delete_running'),
+      detail: t('vm.err.delete_running_detail')
     });
   }
   const vmName = getVmName(vm);
@@ -2001,7 +2081,7 @@ async function queueVmDelete(vmId) {
 }
 
 async function queueCheckpointCreate(vmId, checkpointName) {
-  requireRbac('operate', 'checkpoint create');
+  requireRbac('operate', t('vm.rbac.checkpoint_create'));
   const name = checkpointName == null ? '' : String(checkpointName);
   const issue = checkpointNameIssue(name, currentCheckpointNames());
   if (issue) {
@@ -2028,7 +2108,7 @@ async function queueCheckpointCreate(vmId, checkpointName) {
 }
 
 async function queueCheckpointRestore(vmId, checkpointId) {
-  requireRbac('operate', 'checkpoint restore');
+  requireRbac('operate', t('vm.rbac.checkpoint_restore'));
   const vm = state.selectedVm || (typeof findCachedVm === 'function' ? findCachedVm(vmId) : null);
   const running = typeof isRunningVmState === 'function' && isRunningVmState(typeof getVmState === 'function' ? getVmState(vm) : '');
   const name = checkpointLabel(checkpointId);
@@ -2057,7 +2137,7 @@ async function queueCheckpointRestore(vmId, checkpointId) {
 }
 
 async function queueCheckpointDelete(vmId, checkpointId) {
-  requireRbac('operate', 'checkpoint delete');
+  requireRbac('operate', t('vm.rbac.checkpoint_delete'));
   const name = checkpointLabel(checkpointId);
   if (!PCV.components || typeof PCV.components.confirmDialog !== 'function') return;
   const accepted = await PCV.components.confirmDialog({
@@ -2392,7 +2472,7 @@ async function submitCreateVmWizard(event) {
   if (!createWizardStepsOk()) return;
   const payload = readCreateWizardPayload();
   try {
-    if (typeof requireRbac === 'function') requireRbac('operate', 'VM create');
+    if (typeof requireRbac === 'function') requireRbac('operate', t('vm.rbac.create'));
     const job = await desktopApi.createVm(payload);
     if (typeof pcvTrackJob === 'function') pcvTrackJob(job);
     showCreateJob(job, payload.name);

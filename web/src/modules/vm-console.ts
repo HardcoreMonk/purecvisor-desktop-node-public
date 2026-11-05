@@ -6,8 +6,8 @@ window.PCV = window.PCV || {};
 (function (PCV) {
 // --- legacy render-console.ts ---
 function formatConsoleLabel(value, fallback = '-') {
-  if (value === true) return 'enabled';
-  if (value === false) return 'disabled';
+  if (value === true) return t('vm.console.panel.enabled');
+  if (value === false) return t('vm.console.panel.disabled');
   if (value === null || value === undefined || value === '') return fallback;
   return String(value).replace(/_/g, ' ');
 }
@@ -39,15 +39,15 @@ function getConsoleAccessProjection(source, fallbackSource = {}) {
     noVnc.websocket_path ||
     noVnc.path ||
     noVnc.reason ||
-    (noVncEnabled ? 'noVNC bridge is configured.' : 'Windows VNC/WebSocket bridge is not configured.');
+    (noVncEnabled ? t('vm.console.panel.bridge_on') : t('vm.console.panel.bridge_off'));
   const nextAction =
     card.next_action ||
     sourceObject.next_action ||
     fallbackCard.next_action ||
     fallbackObject.next_action ||
     (noVncEnabled
-      ? 'Open the noVNC browser session for this VM, or use vmconnect from the host console.'
-      : 'Use local vmconnect handoff; configure noVNC bridge only when browser streaming is required.');
+      ? t('vm.console.panel.next_on')
+      : t('vm.console.panel.next_off'));
 
   return {
     accountPermission:
@@ -76,47 +76,47 @@ function renderConsolePanel() {
   const selectedVm = state.selectedVmId || '';
   const projection = getConsoleAccessProjection(state.consoleSession || capabilities, capabilities);
   const sessionProjection = state.consoleSession ? getConsoleAccessProjection(state.consoleSession, capabilities) : null;
-  const currentRole = asObject(state.authSession).role || 'not signed in';
+  const currentRole = asObject(state.authSession).role || t('vm.console.panel.signed_out');
   const allowed = rbacAllows('console.view');
   const disabled = selectedVm && allowed ? '' : ' disabled aria-disabled="true"';
-  const status = projection.noVncEnabled ? 'noVNC available' : `noVNC ${formatConsoleLabel(projection.noVncStatus)}`;
+  const status = projection.noVncEnabled ? t('vm.console.panel.novnc_on') : t('vm.console.panel.novnc_off', { status: formatConsoleLabel(projection.noVncStatus) });
   const errorHtml = state.consoleError
-    ? `<div class="diagnostics-result error"><span class="muted">Console</span><strong>${pcvEscapeHtml(state.consoleError.code)}</strong><p>${pcvEscapeHtml(state.consoleError.message)} ${pcvEscapeHtml(state.consoleError.detail)}</p></div>`
+    ? `<div class="diagnostics-result error"><span class="muted">${pcvEscapeHtml(t('vm.console.panel.error'))}</span><strong>${pcvEscapeHtml(state.consoleError.code)}</strong><p>${pcvEscapeHtml(state.consoleError.message)} ${pcvEscapeHtml(state.consoleError.detail)}</p></div>`
     : '';
   const sessionHtml = state.consoleSession
-    ? `<div class="diagnostics-result"><span class="muted">Console session</span><strong>${pcvEscapeHtml(state.consoleSession.vm_id || selectedVm)}</strong><p>${pcvEscapeHtml(sessionProjection.windowsTransport)} / ${pcvEscapeHtml(formatConsoleLabel(sessionProjection.noVncStatus))} / ${pcvEscapeHtml(sessionProjection.noVncPathOrReason)}</p></div>`
+    ? `<div class="diagnostics-result"><span class="muted">${pcvEscapeHtml(t('vm.console.panel.session'))}</span><strong>${pcvEscapeHtml(state.consoleSession.vm_id || selectedVm)}</strong><p>${pcvEscapeHtml(sessionProjection.windowsTransport)} / ${pcvEscapeHtml(formatConsoleLabel(sessionProjection.noVncStatus))} / ${pcvEscapeHtml(sessionProjection.noVncPathOrReason)}</p></div>`
     : '';
 
   els.accountConsolePanel.innerHTML = `<div class="diagnostics-card account-console-card">
     <div class="diagnostics-header">
       <div>
-        <span class="muted">Account/Console</span>
-        <strong>noVNC / Hyper-V Console</strong>
+        <span class="muted">${pcvEscapeHtml(t('vm.console.panel.account'))}</span>
+        <strong>${pcvEscapeHtml(t('vm.console.panel.title'))}</strong>
       </div>
       <span class="status-badge ${projection.noVncEnabled ? 'ok' : 'warn'}">${pcvEscapeHtml(status)}</span>
     </div>
     <div class="diagnostics-grid">
-      <div class="diagnostics-fact"><span class="muted">account permission</span><strong>${pcvEscapeHtml(projection.accountPermission)}</strong></div>
-      <div class="diagnostics-fact"><span class="muted">current role</span><strong>${pcvEscapeHtml(currentRole)}</strong></div>
-      <div class="diagnostics-fact"><span class="muted">Windows console</span><strong>${pcvEscapeHtml(`${projection.windowsType} / ${projection.windowsTransport}`)}</strong></div>
-      <div class="diagnostics-fact"><span class="muted">noVNC enabled</span><strong>${pcvEscapeHtml(formatConsoleLabel(projection.noVncEnabled))}</strong></div>
-      <div class="diagnostics-fact"><span class="muted">noVNC status</span><strong>${pcvEscapeHtml(formatConsoleLabel(projection.noVncStatus))}</strong></div>
-      <div class="diagnostics-fact"><span class="muted">noVNC reason_code</span><strong>${pcvEscapeHtml(formatConsoleLabel(projection.noVncReasonCode))}</strong></div>
-      <div class="diagnostics-fact"><span class="muted">noVNC path/reason</span><strong>${pcvEscapeHtml(projection.noVncPathOrReason)}</strong></div>
-      <div class="diagnostics-fact"><span class="muted">Selected VM</span><strong>${pcvEscapeHtml(selectedVm || '-')}</strong></div>
+      <div class="diagnostics-fact"><span class="muted">${pcvEscapeHtml(t('vm.console.panel.permission'))}</span><strong>${pcvEscapeHtml(projection.accountPermission)}</strong></div>
+      <div class="diagnostics-fact"><span class="muted">${pcvEscapeHtml(t('vm.console.panel.role'))}</span><strong>${pcvEscapeHtml(currentRole)}</strong></div>
+      <div class="diagnostics-fact"><span class="muted">${pcvEscapeHtml(t('vm.console.panel.windows'))}</span><strong>${pcvEscapeHtml(`${projection.windowsType} / ${projection.windowsTransport}`)}</strong></div>
+      <div class="diagnostics-fact"><span class="muted">${pcvEscapeHtml(t('vm.console.panel.novnc_enabled'))}</span><strong>${pcvEscapeHtml(formatConsoleLabel(projection.noVncEnabled))}</strong></div>
+      <div class="diagnostics-fact"><span class="muted">${pcvEscapeHtml(t('vm.console.panel.novnc_status'))}</span><strong>${pcvEscapeHtml(formatConsoleLabel(projection.noVncStatus))}</strong></div>
+      <div class="diagnostics-fact"><span class="muted">${pcvEscapeHtml(t('vm.console.panel.reason_code'))}</span><strong>${pcvEscapeHtml(formatConsoleLabel(projection.noVncReasonCode))}</strong></div>
+      <div class="diagnostics-fact"><span class="muted">${pcvEscapeHtml(t('vm.console.panel.path'))}</span><strong>${pcvEscapeHtml(projection.noVncPathOrReason)}</strong></div>
+      <div class="diagnostics-fact"><span class="muted">${pcvEscapeHtml(t('vm.console.panel.selected'))}</span><strong>${pcvEscapeHtml(selectedVm || '-')}</strong></div>
     </div>
     <div class="diagnostics-actions">
-      <button type="button" data-action="console-open-selected"${disabled}>Open selected console</button>
+      <button type="button" data-action="console-open-selected"${disabled}>${pcvEscapeHtml(t('vm.console.panel.open'))}</button>
       <span class="muted">${pcvEscapeHtml(projection.nextAction)}</span>
     </div>
     ${sessionHtml}
     ${errorHtml}
     <div class="boundary-chip-row">
-      <span>no Linux console backend</span>
-      <span>no host mutation</span>
-      <span>no target save form</span>
-      <span>CLI/API configure only</span>
-      <span>contract: ${pcvEscapeHtml(projection.contract)}</span>
+      <span>${pcvEscapeHtml(t('vm.console.panel.chip_linux'))}</span>
+      <span>${pcvEscapeHtml(t('vm.console.panel.chip_mutation'))}</span>
+      <span>${pcvEscapeHtml(t('vm.console.panel.chip_target'))}</span>
+      <span>${pcvEscapeHtml(t('vm.console.panel.chip_cli'))}</span>
+      <span>${pcvEscapeHtml(t('vm.console.panel.chip_contract', { contract: projection.contract }))}</span>
     </div>
   </div>`;
 }
@@ -125,49 +125,17 @@ function getBetaFollowupItems() {
   const configuredItems = asArray(readNested(state.opsSummary || {}, ['beta_followup', 'items']));
   if (configuredItems.length) {
     return configuredItems.map((item) => ({
-      label: item.label || item.name || 'follow-up',
-      status: item.status || item.state || 'tracked',
+      label: item.label || item.name || t('vm.beta.followup'),
+      status: item.status || item.state || t('vm.beta.tracked'),
       detail: item.detail || item.evidence || ''
     }));
   }
 
-  return [
-    {
-      label: 'Installed listener QA automation',
-      status: 'ready',
-      detail: 'capture-installed-listener-qa.mjs covers real listener navigation, diagnostics create/download, screenshots, and token non-observation.'
-    },
-    {
-      label: 'service token revoke handoff',
-      status: 'operator-owned',
-      detail: 'The browser clears only its saved token; protected service token rotation/revoke remains an elevated operator path.'
-    },
-    {
-      label: 'diagnostic retention pagination',
-      status: 'code-level applied',
-      detail: 'Server-side bundle creation/download and retention are active; pagination remains tracked as a future list-route hardening item.'
-    },
-    {
-      label: 'VM delete guarded',
-      status: 'guarded UI',
-      detail: 'Delete stays behind selection, managed-marker guard, running-state block, and API job tracking.'
-    },
-    {
-      label: 'ops cockpit P0/P1/P2',
-      status: 'surface-active',
-      detail: 'Dashboard, activity, network, evidence, monitoring, and troubleshooting views are wired for beta validation.'
-    },
-    {
-      label: 'public distribution bundle',
-      status: 'local descriptor bundle',
-      detail: 'Public distribution/operations expansion is tracked by non-mutating bundle evidence; public signing and external publication are not claimed.'
-    },
-    {
-      label: 'Browser host boundary',
-      status: 'host mutation not started from browser',
-      detail: 'MSI, firewall, trust-store, LAN, signed build, updater, and rollback mutation remain outside this Web Console surface.'
-    }
-  ];
+  return [1, 2, 3, 4, 5, 6, 7].map((index) => ({
+    label: t(`vm.beta.item${index}.label`),
+    status: t(`vm.beta.item${index}.status`),
+    detail: t(`vm.beta.item${index}.detail`)
+  }));
 }
 
 function renderBetaFollowup() {
@@ -177,24 +145,24 @@ function renderBetaFollowup() {
   els.betaFollowupPanel.innerHTML = `<div class="diagnostics-card beta-followup-card">
     <div class="diagnostics-header">
       <div>
-        <span class="muted">Beta readiness</span>
-        <strong>Follow-up Status</strong>
+        <span class="muted">${pcvEscapeHtml(t('vm.beta.eyebrow'))}</span>
+        <strong>${pcvEscapeHtml(t('vm.beta.title'))}</strong>
       </div>
-      <span class="status-badge ok">tracked</span>
+      <span class="status-badge ok">${pcvEscapeHtml(t('vm.beta.tracked'))}</span>
     </div>
     <div class="triage-list">
       ${items.map((item) => `<div class="triage-row">
         <div>
           <strong>${pcvEscapeHtml(item.label)}</strong>
-          <p>${pcvEscapeHtml(item.detail || 'Tracked for beta validation.')}</p>
+          <p>${pcvEscapeHtml(item.detail || t('vm.beta.fallback'))}</p>
         </div>
         <span class="status-badge ${String(item.status).toLowerCase().includes('not') || String(item.status).toLowerCase().includes('blocked') ? 'warn' : 'ok'}">${pcvEscapeHtml(item.status)}</span>
       </div>`).join('')}
     </div>
     <div class="boundary-chip-row">
-      <span>host mutation not started from browser</span>
-      <span>token values hidden</span>
-      <span>public publication not claimed</span>
+      <span>${pcvEscapeHtml(t('vm.beta.chip_host'))}</span>
+      <span>${pcvEscapeHtml(t('vm.beta.chip_token'))}</span>
+      <span>${pcvEscapeHtml(t('vm.beta.chip_public'))}</span>
     </div>
   </div>`;
 }
@@ -203,18 +171,18 @@ function renderTroubleshooting() {
   const host = state.host || {};
   const policy = state.runtimePolicy || {};
   const cards = [
-    ['Host readiness', host.supported === false ? 'Needs attention' : 'Ready', 'Check Hyper-V support, admin context, VMMS, and Default Switch state.'],
-    ['VMMS', formatPolicyValue(readNested(host, ['hyperv', 'vmms_running'])), 'VM lifecycle requests require the Hyper-V management service to be available.'],
-    ['Listener exposure', formatPolicyValue(readNested(policy, ['network', 'current_exposure']) || readNested(policy, ['network', 'bind'])), 'Loopback is the default. LAN mode requires explicit approval and token source proof.'],
-    ['Token storage', formatPolicyValue(readNested(policy, ['auth', 'token_storage']) || readNested(policy, ['token', 'storage'])), 'Token values are never rendered in this console.'],
-    ['Job store', formatPolicyValue(readNested(policy, ['job_runtime', 'state_store', 'persistence'])), 'Schema v2 migration stores load; newer unsupported schemas return PCV_JOB_STORE_SCHEMA_UNSUPPORTED without quarantine.'],
-    ['Diagnostics boundary', 'read-only', 'Evidence path, token value, and host mutation command inputs are not rendered here.']
+    [t('vm.trouble.host'), host.supported === false ? t('vm.trouble.host_bad') : t('vm.trouble.host_ok'), t('vm.trouble.host_detail')],
+    [t('vm.trouble.vmms'), formatPolicyValue(readNested(host, ['hyperv', 'vmms_running'])), t('vm.trouble.vmms_detail')],
+    [t('vm.trouble.listener'), formatPolicyValue(readNested(policy, ['network', 'current_exposure']) || readNested(policy, ['network', 'bind'])), t('vm.trouble.listener_detail')],
+    [t('vm.trouble.token'), formatPolicyValue(readNested(policy, ['auth', 'token_storage']) || readNested(policy, ['token', 'storage'])), t('vm.trouble.token_detail')],
+    [t('vm.trouble.jobs'), formatPolicyValue(readNested(policy, ['job_runtime', 'state_store', 'persistence'])), t('vm.trouble.jobs_detail')],
+    [t('vm.trouble.boundary'), t('vm.trouble.boundary_value'), t('vm.trouble.boundary_detail')]
   ];
   const errors = [
-    ['PCV_AUTH_REQUIRED', 'Token is missing or rejected.'],
-    ['PCV_JOB_STORE_SCHEMA_UNSUPPORTED', 'Job store was written by a newer unsupported runtime. Stop and investigate before any migration apply.'],
-    ['PCV_VM_NOT_MANAGED_BY_PURECVISOR', 'The API blocked destructive VM mutation before provider mutation.'],
-    ['PCV_VM_SHUTDOWN_NOT_AVAILABLE', 'Guest shutdown integration is unavailable for the selected VM.']
+    ['PCV_AUTH_REQUIRED', t('vm.trouble.err_auth')],
+    ['PCV_JOB_STORE_SCHEMA_UNSUPPORTED', t('vm.trouble.err_schema')],
+    ['PCV_VM_NOT_MANAGED_BY_PURECVISOR', t('vm.trouble.err_managed')],
+    ['PCV_VM_SHUTDOWN_NOT_AVAILABLE', t('vm.trouble.err_shutdown')]
   ];
 
   els.troubleshootingPanel.innerHTML = `
@@ -242,19 +210,34 @@ const VM_LIFECYCLE_ACTIONS = {
   'vm-eject': 'eject'
 };
 
+async function askConsoleConfirm(opts) {
+  if (!PCV.components || typeof PCV.components.confirmDialog !== 'function') return false;
+  return PCV.components.confirmDialog({
+    title: opts.title,
+    message: opts.message,
+    confirmLabel: opts.confirmLabel,
+    cancelLabel: t('ui.confirm.cancel'),
+    danger: opts.danger === true
+  });
+}
+
 async function queueVmRename(vmId, newName) {
-  requireRbac('operate', 'VM rename');
+  requireRbac('operate', t('vm.rbac.rename'));
   const target = String(newName || '').trim();
   if (!target) {
     throw normalizeError({
       code: 'PCV_VM_RENAME_TARGET_REQUIRED',
-      message: 'Enter a new VM name.',
-      detail: 'new_name is required before queueing vm.rename.'
+      message: t('vm.err.rename_required'),
+      detail: t('vm.err.rename_required_detail')
     });
   }
-  if (!window.confirm(`Rename VM '${vmId}' to '${target}'?\n\nThe VM keeps its ID and disks. Scripts that use the old name must change.`)) {
-    return;
-  }
+  const accepted = await askConsoleConfirm({
+    title: t('vm.confirm.rename.title'),
+    message: t('vm.confirm.rename.message', { name: vmId, target }),
+    confirmLabel: t('vm.confirm.rename.confirm'),
+    danger: false
+  });
+  if (!accepted) return;
 
   state.actionPending = true;
   setVmActionPending(vmId, 'rename');
@@ -288,9 +271,11 @@ function readCheckpointSchedulePayload(data) {
 }
 
 function buildCheckpointScheduleConfirmation(vmId, mode, payload) {
+  const interval = payload && payload.interval_minutes != null ? String(payload.interval_minutes) : '-';
+  const retention = payload && payload.retention_max != null ? String(payload.retention_max) : '-';
   return mode === 'clear'
-    ? `Clear the periodic checkpoint schedule for VM '${vmId}'?\n\nExisting checkpoints stay. Scheduled checkpoints stop until a new schedule is saved.`
-    : `Save the periodic checkpoint schedule for VM '${vmId}'?\n\ninterval_minutes=${payload.interval_minutes ?? '-'} / retention_max=${payload.retention_max ?? '-'}`;
+    ? t('vm.checkpoint.schedule.clear_message')
+    : t('vm.checkpoint.schedule.save_message', { interval, retention });
 }
 
 async function confirmCheckpointScheduleChange(mode, payload) {
@@ -310,7 +295,7 @@ async function confirmCheckpointScheduleChange(mode, payload) {
 }
 
 async function queueCheckpointScheduleControl(vmId, mode, payload) {
-  requireRbac('operate', `Checkpoint schedule ${mode}`);
+  requireRbac('operate', t('vm.rbac.schedule', { mode: mode === 'clear' ? t('vm.mode.clear') : mode === 'set' ? t('vm.mode.set') : t('vm.mode.preview') }));
   if (mode !== 'preview') {
     const accepted = await confirmCheckpointScheduleChange(mode, payload);
     if (!accepted) return;
@@ -363,15 +348,25 @@ function readExportImportPayload(kind, data) {
 
 function buildExportImportConfirmation(vmId, kind, payload) {
   return kind === 'export'
-    ? `Export VM '${vmId}' to '${payload.directory}'?\n\nHyper-V writes an export package there. The VM itself does not change.`
-    : `Import '${payload.directory}' as new VM '${payload.name}'?\n\nThe import gets a new VM identity and the managed marker. Disks are copied under the VM root.`;
+    ? t('vm.confirm.export.message', { name: vmId, directory: String(payload?.directory || '') })
+    : t('vm.confirm.import.message', { directory: String(payload?.directory || ''), target: String(payload?.name || '') });
 }
 
 async function queueVmExportImportControl(vmId, kind, mode, payload) {
-  requireRbac('operate', `VM ${kind} ${mode}`);
+  requireRbac('operate', t('vm.rbac.transfer', {
+    kind: kind === 'export' ? t('vm.kind.export') : t('vm.kind.import'),
+    mode: mode === 'apply' ? t('vm.mode.apply') : t('vm.mode.preview')
+  }));
   const apply = mode === 'apply';
-  if (apply && !window.confirm(buildExportImportConfirmation(vmId, kind, payload))) {
-    return;
+  if (apply) {
+    const importing = kind === 'import';
+    const accepted = await askConsoleConfirm({
+      title: importing ? t('vm.confirm.import.title') : t('vm.confirm.export.title'),
+      message: buildExportImportConfirmation(vmId, kind, payload),
+      confirmLabel: importing ? t('vm.confirm.import.confirm') : t('vm.confirm.export.confirm'),
+      danger: importing
+    });
+    if (!accepted) return;
   }
 
   state.actionPending = true;
@@ -401,10 +396,11 @@ async function queueVmExportImportControl(vmId, kind, mode, payload) {
 function renderExportImportPreview(vmId) {
   const preview = state.vmExportImportPreview;
   if (!preview || preview.vm_id !== vmId) {
-    return '<p class="muted">Preview an export or import before running it.</p>';
+    return `<p class="muted">${pcvEscapeHtml(t('vm.export.preview_empty'))}</p>`;
   }
   const updated = preview.updated_at ? new Date(preview.updated_at).toLocaleString() : '-';
-  return `<p class="muted">${pcvEscapeHtml(preview.kind)} preview ${pcvEscapeHtml(updated)}: ${pcvEscapeHtml(formatObjectValue(preview.result))}</p>`;
+  const kindLabel = preview.kind === 'import' ? t('vm.kind.import') : t('vm.kind.export');
+  return `<p class="muted">${pcvEscapeHtml(t('vm.export.preview_ready', { kind: kindLabel, time: updated, body: formatObjectValue(preview.result) }))}</p>`;
 }
 
 function renderSwitchOptions() {
@@ -412,7 +408,7 @@ function renderSwitchOptions() {
   const switches = asArray(inventory.switches || inventory.items || inventory.networks)
     .map((item) => String(item?.name || '').trim())
     .filter(Boolean);
-  return ['<option value="">Select switch</option>']
+  return [`<option value="">${pcvEscapeHtml(t('vm.export.select_switch'))}</option>`]
     .concat(switches.map((name) => `<option value="${pcvEscapeHtml(name)}">${pcvEscapeHtml(name)}</option>`))
     .join('');
 }
@@ -430,16 +426,23 @@ function readVmNetworkChangePayload(kind, data) {
 }
 
 function buildVmNetworkChangeConfirmation(vmId, kind, payload) {
-  return kind === 'connect'
-    ? `Connect VM '${vmId}' to switch '${payload.switch}'?\n\nThe first network adapter is retargeted. The VM must be Off.`
-    : `Add a ${payload.device === 'dvd' ? 'DVD drive' : 'network adapter'} to VM '${vmId}'?\n\nThe VM must be Off. Each add creates another device.`;
+  if (kind === 'connect') {
+    return t('vm.confirm.net_connect.message', { name: vmId, switchName: String(payload?.switch || '') });
+  }
+  const device = payload && payload.device === 'dvd' ? t('vm.confirm.device.dvd') : t('vm.confirm.device.nic');
+  return t('vm.confirm.device_add.message', { name: vmId, device });
 }
 
 async function queueVmNetworkChange(vmId, kind, payload) {
-  requireRbac('operate', kind === 'connect' ? 'VM switch connect' : 'VM device add');
-  if (!window.confirm(buildVmNetworkChangeConfirmation(vmId, kind, payload))) {
-    return;
-  }
+  requireRbac('operate', kind === 'connect' ? t('vm.rbac.switch_connect') : t('vm.rbac.device_add'));
+  const connect = kind === 'connect';
+  const accepted = await askConsoleConfirm({
+    title: connect ? t('vm.confirm.net_connect.title') : t('vm.confirm.device_add.title'),
+    message: buildVmNetworkChangeConfirmation(vmId, kind, payload),
+    confirmLabel: connect ? t('vm.confirm.net_connect.confirm') : t('vm.confirm.device_add.confirm'),
+    danger: connect
+  });
+  if (!accepted) return;
 
   state.actionPending = true;
   setVmActionPending(vmId, kind === 'connect' ? 'network-connect' : 'device-add');
@@ -462,7 +465,7 @@ async function queueVmNetworkChange(vmId, kind, payload) {
 }
 
 async function previewVmGuestExecutionControl(vmId, kind, payload) {
-  requireRbac(kind === 'exec' ? 'guest.exec' : 'guest.channel.configure', `VM guest ${kind} preview`);
+  requireRbac(kind === 'exec' ? 'guest.exec' : 'guest.channel.configure', kind === 'exec' ? t('vm.guestui.preview_exec') : t('vm.guestui.preview_channel'));
   const controlKind = kind === 'exec' ? 'guest-execution' : 'guest-channel';
   const control = (patch) => ({ vm_id: vmId, kind: controlKind, mode: 'preview', loading: false, updated_at: new Date().toISOString(), result: null, error: null, ...patch });
   state.actionPending = true;
@@ -929,7 +932,7 @@ async function pollVmConsoleFrame(vmId, generation) {
 }
 
 function startVmConsoleFrame(vmId) {
-  requireRbac('console.view', 'VM screen');
+  requireRbac('console.view', t('vm.rbac.screen'));
   const panel = els.vmDetailPanel;
   const pref = readVmConsolePref();
   const sizeValue = panel?.querySelector('select[data-console-frame="size"]')?.value || pref.size;
@@ -971,7 +974,7 @@ function getVmConsoleVirtualKey(code) {
 }
 
 async function sendVmConsoleKeyboard(vmId, payload) {
-  requireRbac('console.input', 'VM console input');
+  requireRbac('console.input', t('vm.rbac.input'));
   try {
     await desktopApi.sendVmConsoleInput(vmId, payload);
   } catch (error) {
