@@ -228,52 +228,257 @@ async function logoutAccount() {
   }
 }
 
-async function createAccountFromForm(event) {
-  event.preventDefault();
-  const form = event.target.closest('form#account-create-form') || event.currentTarget;
-  const data = new FormData(form);
-  const username = String(data.get('username') || '').trim();
-  const password = String(data.get('password') || '');
-  const role = String(data.get('role') || 'admin').trim() || 'admin';
-  const displayName = String(data.get('display_name') || '').trim();
-  const bootstrap = isAccountBootstrapOpen();
-  if (!window.confirm(buildAccountCreateConfirmation(username, role, bootstrap))) {
+const ACCOUNT_USERNAME = /^[A-Za-z][A-Za-z0-9._-]{2,31}$/;
+const ACCOUNT_ROLES = ['viewer', 'operator', 'admin'];
+
+function accountField(form, name) {
+  if (!form || !form.querySelector) return null;
+  return form.querySelector('[name="' + name + '"]');
+}
+
+function accountFieldValue(form, name) {
+  const field = accountField(form, name);
+  return field ? String(field.value || '') : '';
+}
+
+function accountRule(code, messageKey) {
+  return { code: code, messageKey: messageKey };
+}
+
+function accountUsernameRule(value) {
+  const name = String(value || '').trim();
+  if (!ACCOUNT_USERNAME.test(name) || name.toLowerCase() === 'loopback-session') {
+    return accountRule('PCV_ACCOUNT_USERNAME_INVALID', 'account.username.invalid');
+  }
+  return null;
+}
+
+function accountRoleRule(value) {
+  const role = String(value || '').trim().toLowerCase();
+  if (ACCOUNT_ROLES.indexOf(role) < 0) return accountRule('PCV_ACCOUNT_ROLE_INVALID', 'account.role.invalid');
+  return null;
+}
+
+function accountPasswordRules(form) {
+  return [function (value) {
+    const password = String(value || '');
+    if (password.length < 12 || password.trim() === '') {
+      return accountRule('PCV_ACCOUNT_PASSWORD_INVALID', 'account.password.invalid');
+    }
+    const username = accountFieldValue(form, 'username').trim();
+    if (username && password.toLowerCase() === username.toLowerCase()) {
+      return accountRule('PCV_ACCOUNT_PASSWORD_INVALID', 'account.password.same_as_username');
+    }
+    return null;
+  }];
+}
+
+function accountConfirmRules(form) {
+  return [function (value) {
+    if (String(value || '') !== accountFieldValue(form, 'password')) {
+      return accountRule('PCV_ACCOUNT_PASSWORD_MISMATCH', 'account.password.mismatch');
+    }
+    return null;
+  }];
+}
+
+function accountFormValid(form) {
+  if (accountUsernameRule(accountFieldValue(form, 'username'))) return false;
+  if (accountRoleRule(isAccountBootstrapOpen() ? 'admin' : accountFieldValue(form, 'role'))) return false;
+  const passwordRules = accountPasswordRules(form);
+  if (passwordRules[0](accountFieldValue(form, 'password'))) return false;
+  const confirmRules = accountConfirmRules(form);
+  if (confirmRules[0](accountFieldValue(form, 'password_confirm'))) return false;
+  return true;
+}
+
+function touchAccountFields(form) {
+  ['username', 'role', 'password', 'password_confirm'].forEach((name) => {
+    const field = accountField(form, name);
+    if (!field || typeof field.dispatchEvent !== 'function') return;
+    const emitted = typeof Event === 'function' ? new Event('input') : { type: 'input' };
+    field.dispatchEvent(emitted);
+  });
+}
+
+function scrubAccountSecret(error, secret) {
+  if (!error || !secret) return error;
+  const wipe = (value) => typeof value === 'string' ? value.split(secret).join('') : value;
+  return Object.assign({}, error, {
+    message: wipe(error.message),
+    detail: wipe(error.detail)
+  });
+}
+
+function clearAccountSecretFields(scope) {
+  const root = scope || document;
+  if (!root || typeof root.querySelectorAll !== 'function') return;
+  Array.prototype.forEach.call(root.querySelectorAll('input[type="password"]'), (input) => {
+    if (!input || input.id === 'account-password' || input.id === 'login-pass') return;
+    input.value = '';
+    if (typeof input.setAttribute === 'function') input.setAttribute('value', '');
+  });
+}
+
+function accountEnabledText(account) {
+  return account?.enabled === false ? t('account.list.disabled') : t('account.list.enabled');
+}
+
+function bindAccountsPanel() {
+  const panel = document.getElementById('accounts-panel');
+  if (!panel || panel._pcvAccountsBound || typeof panel.addEventListener !== 'function') return;
+  panel._pcvAccountsBound = true;
+  panel.addEventListener('click', (event) => {
+    const button = event.target && event.target.closest ? event.target.closest('button[data-action]') : null;
+    if (!button || button.disabled) return;
+    if (button.dataset.action === 'account-create-open') openAccountCreateModal();
+    else if (button.dataset.action === 'account-disable') disableAccountFromButton(button.getAttribute('data-username'));
+  });
+}
+
+function paintAccountsView() {
+  const root = document.getElementById('accounts-panel');
+  if (!root || !PCV.uxlib) return;
+  PCV.uxlib.clearEl(root);
+  bindAccountsPanel();
+  if (typeof canManageAccounts === 'function' && !canManageAccounts()) {
+    root.appendChild(PCV.uxlib.el('div', { class: 'pcv-account-denied', role: 'status' },
+      PCV.uxlib.el('h2', {}, t('account.denied.title')),
+      PCV.uxlib.el('p', {}, t('account.denied.body'))));
     return;
   }
+  const error = state.accountDirectoryError;
+  if (error) {
+    const serverText = [error.message, error.detail].filter(Boolean).join(' ');
+    const lastAdmin = error.code === 'PCV_ACCOUNT_LAST_ADMIN' ? t('account.error.last_admin') : '';
+    root.appendChild(PCV.uxlib.el('div', { class: 'pcv-account-error', role: 'alert' },
+      PCV.uxlib.el('strong', {}, String(error.code || '')),
+      PCV.uxlib.el('p', {}, [lastAdmin, serverText].filter(Boolean).join(' '))));
+  }
+  const accounts = asArray(state.accountDirectory).filter((account) => account && account.username);
+  const body = PCV.uxlib.el('tbody');
+  if (!accounts.length) {
+    body.appendChild(PCV.uxlib.el('tr', {}, PCV.uxlib.el('td', { colspan: '4' }, t('account.list.empty'))));
+  } else {
+    accounts.forEach((account) => {
+      const username = String(account.username || '');
+      const enabled = account.enabled !== false;
+      const disable = PCV.uxlib.el('button', {
+        type: 'button',
+        class: 'btn',
+        'data-action': 'account-disable',
+        'data-username': username
+      }, t('account.disable.action'));
+      disable.disabled = !!state.accountManagePending || !enabled;
+      body.appendChild(PCV.uxlib.el('tr', {},
+        PCV.uxlib.el('td', {}, username),
+        PCV.uxlib.el('td', {}, String(account.role || '-')),
+        PCV.uxlib.el('td', {}, accountEnabledText(account)),
+        PCV.uxlib.el('td', {}, disable)));
+    });
+  }
+  const create = PCV.uxlib.el('button', { type: 'button', class: 'btn', 'data-action': 'account-create-open' }, t('account.create.open'));
+  create.disabled = !!state.accountManagePending;
+  root.appendChild(create);
+  root.appendChild(PCV.uxlib.el('table', { class: 'pcv-vm-table account-directory-table' },
+    PCV.uxlib.el('thead', {}, PCV.uxlib.el('tr', {},
+      PCV.uxlib.el('th', {}, t('account.list.username')),
+      PCV.uxlib.el('th', {}, t('account.list.role')),
+      PCV.uxlib.el('th', {}, t('account.list.state')),
+      PCV.uxlib.el('th', {}, ''))),
+    body));
+}
+
+function openAccountCreateModal() {
+  if (!PCV.uxlib || !PCV.components || !PCV.modalCore) return;
+  if (typeof canManageAccounts === 'function' && !canManageAccounts()) return;
+  const ux = PCV.uxlib;
+  const bootstrap = isAccountBootstrapOpen();
+  const username = ux.el('input', { name: 'username', type: 'text', autocomplete: 'off', 'aria-label': t('account.create.username') });
+  const role = ux.el('select', { name: 'role', 'aria-label': t('account.create.role') },
+    ux.el('option', { value: 'viewer' }, 'viewer'),
+    ux.el('option', { value: 'operator' }, 'operator'),
+    ux.el('option', { value: 'admin' }, 'admin'));
+  role.value = bootstrap ? 'admin' : 'viewer';
+  if (bootstrap) role.disabled = true;
+  const password = ux.el('input', { name: 'password', type: 'password', autocomplete: 'new-password', 'aria-label': t('account.create.password') });
+  const confirm = ux.el('input', { name: 'password_confirm', type: 'password', autocomplete: 'new-password', 'aria-label': t('account.create.password_confirm') });
+  const submit = ux.el('button', { type: 'submit', class: 'btn' }, t('account.create.submit'));
+  const form = ux.el('form', { id: 'account-create-form', class: 'account-create-form', autocomplete: 'off', novalidate: 'novalidate' },
+    ux.el('label', {}, t('account.create.username'), username),
+    ux.el('label', {}, t('account.create.role'), role),
+    bootstrap ? ux.el('p', { class: 'muted' }, t('account.create.bootstrap_note')) : null,
+    ux.el('label', {}, t('account.create.password'), password),
+    ux.el('label', {}, t('account.create.password_confirm'), confirm),
+    submit);
+  form._pcvAccountRefresh = PCV.components.bindValidation(form, {
+    username: [accountUsernameRule],
+    role: [accountRoleRule],
+    password: accountPasswordRules(form),
+    password_confirm: accountConfirmRules(form)
+  }, submit);
+  form.addEventListener('submit', (event) => {
+    createAccountFromForm(event);
+  });
+  PCV.modalCore.open([
+    ux.el('h2', {}, t('account.create.title')),
+    form
+  ], { backdropDismiss: true });
+}
+
+async function createAccountFromForm(event) {
+  if (event && typeof event.preventDefault === 'function') event.preventDefault();
+  const form = (event && event.target && event.target.closest && event.target.closest('form')) || document.getElementById('account-create-form');
+  if (!form) return;
+  touchAccountFields(form);
+  if (typeof form._pcvAccountRefresh === 'function' && !form._pcvAccountRefresh()) return;
+  if (!accountFormValid(form)) return;
+  const username = accountFieldValue(form, 'username').trim();
+  const password = accountFieldValue(form, 'password');
+  const role = isAccountBootstrapOpen() ? 'admin' : (accountFieldValue(form, 'role').trim().toLowerCase() || 'viewer');
+  const accepted = await PCV.components.confirmDialog({
+    title: t('account.create.confirm_title'),
+    message: t('account.create.confirm_message', { username: username, role: role }),
+    confirmLabel: t('account.create.confirm'),
+    cancelLabel: t('ui.confirm.cancel'),
+    danger: false
+  });
+  if (!accepted) return;
 
   state.accountManagePending = true;
   state.accountDirectoryError = null;
   render();
   try {
-    const payload = {
-      username,
-      password,
-      role: bootstrap ? 'admin' : role,
-      display_name: displayName || undefined
-    };
-    await desktopApi.createAccount(payload);
-    const passwordInput = form.querySelector('input[name="password"]');
-    if (passwordInput) passwordInput.value = '';
-    if (bootstrap) {
-      const result = await desktopApi.loginAccount({ username, password });
+    await desktopApi.createAccount({ username: username, password: password, role: role });
+    if (isAccountBootstrapOpen()) {
+      const result = await desktopApi.loginAccount({ username: username, password: password });
       applyAccountSessionPayload(result);
       state.connectionState = 'connected';
     }
     await refreshAll();
   } catch (error) {
-    state.accountDirectoryError = normalizeError(error);
+    state.accountDirectoryError = scrubAccountSecret(normalizeError(error), password);
   } finally {
+    clearAccountSecretFields(form);
+    clearAccountSecretFields(document);
     state.accountManagePending = false;
+    if (PCV.modalCore && typeof PCV.modalCore.close === 'function') PCV.modalCore.close(true);
     render();
+    clearAccountSecretFields(document);
   }
 }
 
 async function disableAccountFromButton(username) {
   const name = String(username || '').trim();
   if (!name) return;
-  if (!window.confirm(buildAccountDisableConfirmation(name))) {
-    return;
-  }
+  const accepted = await PCV.components.confirmDialog({
+    title: t('account.disable.confirm_title'),
+    message: t('account.disable.confirm_message', { username: name }),
+    confirmLabel: t('account.disable.confirm'),
+    cancelLabel: t('ui.confirm.cancel'),
+    danger: true
+  });
+  if (!accepted) return;
 
   state.accountManagePending = true;
   state.accountDirectoryError = null;
@@ -348,6 +553,10 @@ function clearBrowserState() {
 }
 
 function navigateToView(view) {
+  if (typeof navigateTo === 'function') {
+    navigateTo(view);
+    return;
+  }
   setActiveView(view);
   window.location.hash = `#${state.activeView}`;
   render();
@@ -386,6 +595,8 @@ window.refreshAccountSession = refreshAccountSession;
 window.logoutAccount = logoutAccount;
 window.createAccountFromForm = createAccountFromForm;
 window.disableAccountFromButton = disableAccountFromButton;
+window.openAccountCreateModal = openAccountCreateModal;
+window.paintAccountsView = paintAccountsView;
 window.openSelectedConsole = openSelectedConsole;
 window.clearBrowserToken = clearBrowserToken;
 window.clearBrowserState = clearBrowserState;

@@ -8,10 +8,12 @@ window.PCV = window.PCV || {};
 type PcvView =
   | 'dashboard'
   | 'vms'
+  | 'templates'
   | 'network'
   | 'jobs'
   | 'activity'
   | 'evidence'
+  | 'accounts'
   | 'troubleshooting';
 
 type PcvConnectionState = 'idle' | 'connected' | 'degraded' | 'auth' | 'error';
@@ -421,7 +423,7 @@ function clearAccountSessionState(): void {
 }
 
 // --- legacy routes.ts ---
-const VALID_VIEWS: ReadonlySet<string> = new Set(['dashboard', 'vms', 'network', 'jobs', 'activity', 'evidence', 'troubleshooting']);
+const VALID_VIEWS: ReadonlySet<string> = new Set(['dashboard', 'vms', 'templates', 'network', 'jobs', 'activity', 'evidence', 'accounts', 'troubleshooting']);
 
 const DESKTOP_NODE_API_ROUTES: Readonly<PcvRouteRegistry> = Object.freeze({
   opsSummary: '/api/v1/ops/summary',

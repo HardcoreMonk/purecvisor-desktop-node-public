@@ -410,92 +410,12 @@ function renderAccountSession() {
       <span>RBAC gates destructive actions</span>
     </div>
     ${errorHtml}
-  </div>
-  ${renderAccountDirectory()}`;
+  </div>`;
 }
 
 function renderAccountDirectory() {
-  const bootstrap = isAccountBootstrapOpen();
-  const canManage = canManageAccounts();
-  const pending = state.accountManagePending || state.authPending;
-  const disabledAttr = pending ? ' disabled' : '';
-  const directoryError = state.accountDirectoryError
-    ? `<div class="diagnostics-result error"><span class="muted">Accounts</span><strong>${pcvEscapeHtml(state.accountDirectoryError.code)}</strong><p>${pcvEscapeHtml(state.accountDirectoryError.message)} ${pcvEscapeHtml(state.accountDirectoryError.detail)}</p></div>`
-    : '';
-
-  if (bootstrap) {
-    return `<div class="token-rotation-card account-directory-card">
-    <div class="diagnostics-header">
-      <div>
-        <span class="muted">Accounts</span>
-        <strong>Create first admin</strong>
-      </div>
-      <span class="status-badge warn">no-default-account</span>
-    </div>
-    <form id="account-create-form" class="account-login-form" autocomplete="off">
-      <label>Username<input name="username" type="text" autocomplete="off" aria-label="new account username"${disabledAttr}></label>
-      <label>Password<input name="password" type="password" autocomplete="new-password" aria-label="new account password"${disabledAttr}></label>
-      <label>Display name<input name="display_name" type="text" autocomplete="off" aria-label="new account display name"${disabledAttr}></label>
-      <input type="hidden" name="role" value="admin">
-      <button type="submit"${disabledAttr}>Create first admin</button>
-    </form>
-    <div class="boundary-chip-row">
-      <span>loopback bootstrap only</span>
-      <span>password stays out of the DOM after submit</span>
-      <span>no default account</span>
-    </div>
-    ${directoryError}
-  </div>`;
-  }
-
-  if (!canManage) {
-    return '';
-  }
-
-  const accounts = asArray(state.accountDirectory);
-  const rows = accounts.length
-    ? accounts.map((account) => {
-        const username = String(account?.username || '');
-        const enabled = account?.enabled !== false;
-        return `<tr>
-        <td>${pcvEscapeHtml(username)}</td>
-        <td>${pcvEscapeHtml(account?.role || '-')}</td>
-        <td>${pcvEscapeHtml(enabled ? 'enabled' : 'disabled')}</td>
-        <td><button type="button" class="danger-button" data-action="account-disable" data-username="${pcvEscapeHtml(username)}"${pending || !enabled ? ' disabled' : ''}>Disable</button></td>
-      </tr>`;
-      }).join('')
-    : '<tr><td colspan="4">No accounts listed.</td></tr>';
-
-  return `<div class="token-rotation-card account-directory-card">
-    <div class="diagnostics-header">
-      <div>
-        <span class="muted">Accounts</span>
-        <strong>Create / disable</strong>
-      </div>
-      <span class="status-badge ok">${pcvEscapeHtml(state.accountDirectory?.bootstrap_state || 'accounts-configured')}</span>
-    </div>
-    <table class="data-table account-directory-table">
-      <thead><tr><th>Username</th><th>Role</th><th>State</th><th></th></tr></thead>
-      <tbody>${rows}</tbody>
-    </table>
-    <form id="account-create-form" class="account-login-form" autocomplete="off">
-      <label>Username<input name="username" type="text" autocomplete="off" aria-label="new account username"${disabledAttr}></label>
-      <label>Password<input name="password" type="password" autocomplete="new-password" aria-label="new account password"${disabledAttr}></label>
-      <label>Role<select name="role" aria-label="new account role"${disabledAttr}>
-        <option value="admin">admin</option>
-        <option value="operator">operator</option>
-        <option value="viewer">viewer</option>
-      </select></label>
-      <label>Display name<input name="display_name" type="text" autocomplete="off" aria-label="new account display name"${disabledAttr}></label>
-      <button type="submit"${disabledAttr}>Create account</button>
-    </form>
-    <div class="boundary-chip-row">
-      <span>account.manage required</span>
-      <span>last enabled admin cannot be disabled</span>
-      <span>password stays out of the DOM after submit</span>
-    </div>
-    ${directoryError}
-  </div>`;
+  // The account directory is painted once on #accounts-panel. Diagnostics keeps the session card only.
+  return '';
 }
 
 // --- legacy render-monitoring.ts ---
@@ -889,26 +809,34 @@ function renderAssetStatus() {
 }
 
 function getViewLabel(view) {
-  return {
-    dashboard: 'Dashboard',
-    vms: 'VM Assets',
-    network: 'Network',
-    jobs: 'Jobs',
-    activity: 'Activity',
-    evidence: 'Evidence',
-    troubleshooting: 'Troubleshooting'
-  }[view] || 'Dashboard';
+  const keys = {
+    dashboard: 'nav.dashboard',
+    vms: 'nav.vms',
+    templates: 'nav.templates',
+    network: 'nav.network',
+    jobs: 'nav.jobs',
+    activity: 'nav.activity',
+    evidence: 'nav.evidence',
+    accounts: 'nav.accounts',
+    troubleshooting: 'nav.troubleshooting'
+  };
+  const key = keys[view] || 'nav.dashboard';
+  return typeof t === 'function' ? t(key) : key;
 }
 
 function buildCommandPaletteItems() {
-  const viewItems = ['dashboard', 'vms', 'network', 'jobs', 'activity', 'evidence', 'troubleshooting']
-    .map((view) => ({
-      id: `view:${view}`,
-      label: getViewLabel(view),
-      detail: `Open ${getViewLabel(view)}`,
-      tone: view === state.activeView ? 'ok' : 'info',
-      view
-    }));
+  const viewItems = ['dashboard', 'vms', 'templates', 'network', 'jobs', 'activity', 'evidence', 'accounts', 'troubleshooting']
+    .filter((view) => view !== 'accounts' || typeof canManageAccounts !== 'function' || canManageAccounts())
+    .map((view) => {
+      const label = getViewLabel(view);
+      return {
+        id: `view:${view}`,
+        label,
+        detail: typeof t === 'function' ? t('shell.view.open', { label }) : label,
+        tone: view === state.activeView ? 'ok' : 'info',
+        view
+      };
+    });
   const commandItems = [
     { id: 'command:refresh', label: 'Refresh all', detail: 'Reload current Desktop Node API state.', tone: 'info', command: 'refresh' },
     { id: 'command:create-vm', label: 'Create VM', detail: 'Open the Windows-native VM create dialog.', tone: 'warn', command: 'open-create-vm' },
@@ -1110,6 +1038,8 @@ function render() {
   try { renderMonitoring(); } catch (e) { if (window._DEBUG) console.warn('render:renderMonitoring', e); }
   try { renderIncidentCommand(); } catch (e) { if (window._DEBUG) console.warn('render:renderIncidentCommand', e); }
   try { renderAccountSession(); } catch (e) { if (window._DEBUG) console.warn('render:renderAccountSession', e); }
+  try { if (typeof paintAccountsView === 'function') paintAccountsView(); } catch (e) { if (window._DEBUG) console.warn('render:paintAccountsView', e); }
+  try { if (window.PCV && PCV.shell && typeof PCV.shell.syncAccountNav === 'function') PCV.shell.syncAccountNav(); } catch (e) { if (window._DEBUG) console.warn('render:syncAccountNav', e); }
   try { renderConsolePanel(); } catch (e) { if (window._DEBUG) console.warn('render:renderConsolePanel', e); }
   try { renderTokenRotation(); } catch (e) { if (window._DEBUG) console.warn('render:renderTokenRotation', e); }
   try { renderDiagnosticsBundle(); } catch (e) { if (window._DEBUG) console.warn('render:renderDiagnosticsBundle', e); }

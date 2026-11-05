@@ -72,10 +72,12 @@ function _renderContentPaint(tab, generation) {
       var routes = {
       dashboard: () => (typeof render === 'function' ? render() : null),
       vms: () => (typeof render === 'function' ? render() : null),
+      templates: () => (typeof render === 'function' ? render() : null),
       network: () => (typeof render === 'function' ? render() : null),
       jobs: () => (typeof render === 'function' ? render() : null),
       activity: () => (typeof render === 'function' ? render() : null),
       evidence: () => (typeof render === 'function' ? render() : null),
+      accounts: () => (typeof render === 'function' ? render() : null),
       troubleshooting: () => (typeof render === 'function' ? render() : null),
       helppage: () => PCV.help && PCV.help.render ? PCV.help.render(b) : null
       };
@@ -172,13 +174,15 @@ function toggleFS() {
 window.toggleFS = toggleFS;
 var CMD_ACTIONS = PCV.filterEditionItems([
   { icon: 'ci-plus-circle', label: _L('새 VM', 'New VM'), hint: 'Ctrl+N', role: 'operator', action: () => showCreate() },
-  { icon: 'ci-house-01', label: _L('운영 대시보드', 'Dashboard'), action: () => window.navigateTo('dashboard') },
-  { icon: 'ci-desktop', label: _L('VM 자산', 'VM Inventory'), action: () => window.navigateTo('vms') },
+  { icon: 'ci-house-01', label: _L('대시보드', 'Dashboard'), action: () => window.navigateTo('dashboard') },
+  { icon: 'ci-desktop', label: _L('가상 머신', 'Virtual Machines'), action: () => window.navigateTo('vms') },
+  { icon: 'ci-file-document', label: _L('템플릿', 'Templates'), action: () => window.navigateTo('templates') },
   { icon: 'ci-globe', label: _L('네트워크', 'Network'), action: () => window.navigateTo('network') },
   { icon: 'ci-refresh', label: _L('작업', 'Jobs'), action: () => window.navigateTo('jobs') },
-  { icon: 'ci-warning', label: _L('이벤트 센터', 'Event Center'), action: () => window.navigateTo('activity') },
+  { icon: 'ci-warning', label: _L('이벤트', 'Events'), action: () => window.navigateTo('activity') },
   { icon: 'ci-file-document', label: _L('증적', 'Evidence'), action: () => window.navigateTo('evidence') },
-  { icon: 'ci-users', label: _L('진단과 계정', 'Diagnostics and Accounts'), action: () => window.navigateTo('troubleshooting') },
+  { icon: 'ci-users', label: _L('계정', 'Accounts'), action: () => window.navigateTo('accounts') },
+  { icon: 'ci-settings', label: _L('진단', 'Diagnostics'), action: () => window.navigateTo('troubleshooting') },
   { icon: 'ci-info', label: _L('도움말', 'Help'), action: () => window.navigateTo('helppage') },
   { icon: 'ci-settings', label: _L('환경설정', 'Preferences'), action: () => showPrefs() },
   { icon: 'ci-monitor', label: _L('테마 전환', 'Toggle Theme'), action: () => toggleTheme() },
@@ -272,13 +276,15 @@ function _cmdIcon(symbol) {
 }
 function _cmdPalettePages() {
   return PCV.filterEditionItems([
-    { id: 'dashboard', label: _L('운영 대시보드', 'Dashboard'), icon: 'ci-house-01' },
+    { id: 'dashboard', label: _L('대시보드', 'Dashboard'), icon: 'ci-house-01' },
     { id: 'vms', label: _L('가상 머신', 'Virtual Machines'), icon: 'ci-desktop' },
+    { id: 'templates', label: _L('템플릿', 'Templates'), icon: 'ci-file-document' },
     { id: 'network', label: _L('네트워크', 'Network'), icon: 'ci-globe' },
     { id: 'jobs', label: _L('작업', 'Jobs'), icon: 'ci-refresh' },
-    { id: 'activity', label: _L('이벤트 센터', 'Event Center'), icon: 'ci-warning' },
+    { id: 'activity', label: _L('이벤트', 'Events'), icon: 'ci-warning' },
     { id: 'evidence', label: _L('증적', 'Evidence'), icon: 'ci-file-document' },
-    { id: 'troubleshooting', label: _L('진단과 계정', 'Diagnostics and Accounts'), icon: 'ci-users' },
+    { id: 'accounts', label: _L('계정', 'Accounts'), icon: 'ci-users' },
+    { id: 'troubleshooting', label: _L('진단', 'Diagnostics'), icon: 'ci-settings' },
     { id: 'helppage', label: _L('도움말', 'Help'), icon: 'ci-info' },
   ]);
 }

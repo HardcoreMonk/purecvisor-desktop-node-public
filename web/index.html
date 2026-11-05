@@ -286,32 +286,42 @@
 
         <section id="vms" class="section app-view" data-view="vms">
           <div id="view-vms">
-          <div class="section-header">
+          <div class="section-header vm-list-toolbar">
             <div>
               <p class="eyebrow">Inventory</p>
-              <h2>VM Workbench</h2>
+              <h2 data-i18n="nav.vms">가상 머신</h2>
             </div>
             <label class="filter-control">
-              Filter
-              <input id="vm-filter" type="search" autocomplete="off" placeholder="Name, state, note">
+              <span data-i18n="vm.list.search">이름</span>
+              <input id="vm-filter" type="search" autocomplete="off" placeholder="이름" data-i18n-placeholder="vm.list.search_placeholder">
             </label>
+            <div id="vm-state-chips" class="pcv-chip-row" role="group" aria-label="VM 상태">
+              <button type="button" class="pcv-chip is-active" data-vm-chip="all" aria-pressed="true">
+                <span data-i18n="vm.list.chip.all">전체</span>
+                <span class="pcv-chip-count" data-chip-count="all">0</span>
+              </button>
+              <button type="button" class="pcv-chip" data-vm-chip="running" aria-pressed="false">
+                <span data-i18n="vm.list.chip.running">실행 중</span>
+                <span class="pcv-chip-count" data-chip-count="running">0</span>
+              </button>
+              <button type="button" class="pcv-chip" data-vm-chip="off" aria-pressed="false">
+                <span data-i18n="vm.list.chip.off">꺼짐</span>
+                <span class="pcv-chip-count" data-chip-count="off">0</span>
+              </button>
+              <button type="button" class="pcv-chip" data-vm-chip="template" aria-pressed="false">
+                <span data-i18n="vm.list.chip.template">템플릿</span>
+                <span class="pcv-chip-count" data-chip-count="template">0</span>
+              </button>
+            </div>
             <label class="filter-control">
-              State
-              <select id="vm-state-filter" aria-label="VM state filter">
-                <option value="all">All</option>
-                <option value="running">Running</option>
-                <option value="off">Off</option>
-                <option value="failed">Failed</option>
-              </select>
-            </label>
-            <label class="filter-control">
-              Sort
+              <span data-i18n="vm.list.sort">정렬</span>
               <select id="vm-sort" aria-label="VM sort">
                 <option value="name">Name</option>
                 <option value="state">State</option>
                 <option value="updated">Updated</option>
               </select>
             </label>
+            <button id="vm-list-create" type="button" data-shell-action="open-create-vm" data-i18n="vm.list.create">+ 새 VM</button>
           </div>
           <div id="vm-workbench-context" class="vm-workbench-context"></div>
           <div class="vm-workspace">
@@ -329,6 +339,18 @@
               </div>
             </aside>
           </div>
+          </div>
+        </section>
+
+        <section id="templates" class="section app-view" data-view="templates">
+          <div id="view-templates">
+          <div class="section-header">
+            <div>
+              <p class="eyebrow" data-i18n="vm.template.eyebrow">워크로드</p>
+              <h2 data-i18n="vm.template.title">템플릿</h2>
+            </div>
+          </div>
+          <div id="template-table" class="table-wrap"></div>
           </div>
         </section>
 
@@ -406,6 +428,18 @@
           </div>
         </section>
 
+        <section id="accounts" class="section app-view" data-view="accounts">
+          <div id="view-accounts">
+          <div class="section-header">
+            <div>
+              <p class="eyebrow" data-i18n="account.eyebrow">시스템</p>
+              <h2 data-i18n="account.title">계정</h2>
+            </div>
+          </div>
+          <div id="accounts-panel"></div>
+          </div>
+        </section>
+
         <section id="troubleshooting" class="section app-view" data-view="troubleshooting">
           <div id="view-troubleshooting">
           <div class="section-header">
@@ -414,6 +448,7 @@
               <h2>Incident Command</h2>
             </div>
           </div>
+          <p class="pcv-account-jump"><a href="#/accounts" data-view-link="accounts" data-i18n="account.open">계정 화면으로</a></p>
           <div id="incident-panel" class="incident-panel"></div>
           <div id="account-session-panel" class="account-session-panel">
             <form id="account-login-form" class="account-login-form" autocomplete="off">
