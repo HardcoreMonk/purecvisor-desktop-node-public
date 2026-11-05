@@ -20,23 +20,32 @@ function shellIcon(symbol, cls) {
 }
 function NAV_SECTIONS() {
   return [
-    { label: null, items: [ { id: 'dashboard', ko: '운영 대시보드', en: 'Dashboard', ico: 'ci-house-01' } ] },
+    { label: L('운영', 'Operations'), items: [
+      { id: 'dashboard', key: 'nav.dashboard', ico: 'ci-house-01' } ] },
     { label: L('워크로드', 'Workloads'), items: [
-      { id: 'vms', ko: '가상 머신', en: 'Virtual Machines', ico: 'ci-desktop', cnt: 'vms' } ] },
+      { id: 'vms', key: 'nav.vms', ico: 'ci-desktop', cnt: 'vms' },
+      { id: 'templates', key: 'nav.templates', ico: 'ci-file-document' } ] },
     { label: L('인프라', 'Infrastructure'), items: [
-      { id: 'network', ko: '네트워크', en: 'Network', ico: 'ci-globe' } ] },
+      { id: 'network', key: 'nav.network', ico: 'ci-globe' } ] },
     { label: L('관제', 'Monitoring'), items: [
-      { id: 'jobs', ko: '작업', en: 'Jobs', ico: 'ci-refresh', dot: 'jobs' },
-      { id: 'activity', ko: '이벤트 센터', en: 'Event Center', ico: 'ci-warning', dot: 'alerts' },
-      { id: 'evidence', ko: '증적', en: 'Evidence', ico: 'ci-file-document', dot: 'evidence' } ] },
+      { id: 'jobs', key: 'nav.jobs', ico: 'ci-refresh', dot: 'jobs' },
+      { id: 'activity', key: 'nav.activity', ico: 'ci-warning', dot: 'alerts' },
+      { id: 'evidence', key: 'nav.evidence', ico: 'ci-file-document', dot: 'evidence' } ] },
     { label: L('시스템', 'System'), items: [
-      { id: 'troubleshooting', ko: '진단과 계정', en: 'Diagnostics and Accounts', ico: 'ci-settings' } ] },
+      { id: 'accounts', key: 'nav.accounts', ico: 'ci-users' },
+      { id: 'troubleshooting', key: 'nav.troubleshooting', ico: 'ci-settings' } ] },
     { label: L('도움말', 'Help'), items: [
-      { id: 'helppage', ko: '도움말', en: 'Help', ico: 'ci-info' } ] }
+      { id: 'helppage', key: 'nav.help', ico: 'ci-info' } ] }
   ];
 }
+function syncAccountNav() {
+  var node = document.querySelector('#shell-sidebar [data-nav="accounts"]');
+  if (!node) return;
+  var allowed = typeof canManageAccounts !== 'function' || canManageAccounts();
+  node.hidden = !allowed;
+}
 var _snapshot = null;
-function itemLabel(it) { return L(it.ko, it.en); }
+function itemLabel(it) { return t(it.key); }
 function navTarget(id) {
   return id;
 }
@@ -91,6 +100,7 @@ function buildSidebar() {
   var first = wrap.querySelector('.shell-navitem');
   if (first) first.setAttribute('tabindex', '0');
   root.appendChild(wrap);
+  syncAccountNav();
 }
 function buildTopbar() {
   var el = PCV.uxlib.el;
@@ -182,6 +192,7 @@ function update(snapshot) {
   dot('jobs', !!(s.jobs && (s.jobs.failed > 0 || s.jobs.active > 0)), s.jobs && s.jobs.failed > 0 ? 'crit' : 'warn');
   dot('alerts', !!(s.alerts && s.alerts.crit > 0), 'crit');
   dot('evidence', !!(s.evidence && s.evidence.issues > 0), 'warn');
+  syncAccountNav();
   buildStatusbar();
 }
 function crumbFor(tabId) {
@@ -214,5 +225,5 @@ function setActive(tabId) {
     crumb.appendChild(el('b', null, c.item));
   }
 }
-PCV.shell = { mount: mount, update: update, setActive: setActive, NAV_SECTIONS: NAV_SECTIONS, buildSegments: buildSegments };
+PCV.shell = { mount: mount, update: update, setActive: setActive, NAV_SECTIONS: NAV_SECTIONS, buildSegments: buildSegments, syncAccountNav: syncAccountNav };
 })(window.PCV);

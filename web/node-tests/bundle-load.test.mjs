@@ -183,7 +183,7 @@ test("i18n.js and app.bundle.js evaluate in the index.html DOM and expose every 
   assert.equal(sandbox.EP.VM_LIST(), "http://127.0.0.1:7777/api/v1/vms", "endpoint surface uses the configured API base");
   assert.equal(sandbox.EP.CHECKPOINT_SCHEDULE("pcv it/s3"), "http://127.0.0.1:7777/api/v1/vms/pcv%20it%2Fs3/checkpoints/schedule");
   assert.throws(() => sandbox.EP.VM_ACTION("x", "format-disk"), /PCV_ROUTE_ACTION_INVALID/);
-  assert.deepEqual(JSON.parse(JSON.stringify(PCV.shell.NAV_SECTIONS().flatMap((section) => section.items.map((item) => item.id)))), ["dashboard", "vms", "network", "jobs", "activity", "evidence", "troubleshooting", "helppage"]);
+  assert.deepEqual(JSON.parse(JSON.stringify(PCV.shell.NAV_SECTIONS().flatMap((section) => section.items.map((item) => item.id)))), ["dashboard", "vms", "templates", "network", "jobs", "activity", "evidence", "accounts", "troubleshooting", "helppage"]);
   assert.equal(typeof sandbox.render, "function", "legacy render dispatcher exported");
   assert.equal(typeof sandbox.pcvEscapeHtml, "function", "legacy escapeHtml renamed away from the Single Edge global");
   assert.equal(sandbox.escapeHtml(null), "", "Single Edge escapeHtml stays the global");
@@ -221,11 +221,11 @@ test("the Single Edge nav keeps the chosen section shown through sidebar, hash a
   document.dispatch("DOMContentLoaded");
   await new Promise((resolve) => setTimeout(resolve, 50));
   const shown = () => document.querySelectorAll(".app-view").filter((section) => !section.hidden).map((section) => section.dataset.view);
-  assert.equal(document.querySelectorAll(".app-view").length, 8, "seven legacy views plus the help section");
+  assert.equal(document.querySelectorAll(".app-view").length, 10, "legacy views, templates, accounts, and the help section");
   const troubleshooting = document.getElementById("troubleshooting");
   const marker = { nodeType: 1, marker: "legacy-troubleshooting-panel" };
   troubleshooting.appendChild(marker);
-  for (const view of ["dashboard", "vms", "network", "jobs", "activity", "evidence", "troubleshooting", "helppage"]) {
+  for (const view of ["dashboard", "vms", "templates", "network", "jobs", "activity", "evidence", "accounts", "troubleshooting", "helppage"]) {
     sandbox.navigateTo(view);
     assert.deepEqual(shown(), [view], `${view} after the sidebar navigation`);
     sandbox.render();

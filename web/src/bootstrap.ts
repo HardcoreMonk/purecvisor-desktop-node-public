@@ -116,6 +116,12 @@ function bindEvents() {
     state.vmStateFilter = els.vmStateFilter.value || 'all';
     render();
   });
+  document.getElementById('vm-state-chips')?.addEventListener('click', (event) => {
+    const chip = event.target.closest('[data-vm-chip]');
+    if (!chip) return;
+    state.vmStateFilter = chip.getAttribute('data-vm-chip') || 'all';
+    render();
+  });
   els.vmSort?.addEventListener('change', () => {
     state.vmSort = els.vmSort.value || 'name';
     render();
@@ -177,9 +183,58 @@ function bindEvents() {
   els.openCreateVm?.addEventListener('click', () => els.createDialog.showModal());
   els.closeCreateVm?.addEventListener('click', () => els.createDialog.close());
   els.vmTable?.addEventListener('click', async (event) => {
-    const button = event.target.closest('button[data-action="select-vm"]');
+    const action = event.target.closest('button[data-action]');
     const row = event.target.closest('tr[data-vm-id]');
+    if (action && action.dataset.action && action.dataset.action !== 'select-vm') {
+      event.preventDefault();
+      if (action.disabled) return;
+      const actionVmId = action.dataset.vmId || row?.dataset.vmId;
+      if (!actionVmId) return;
+      state.error = null;
+      try {
+        if (action.dataset.action === 'vm-row-start') await queueVmLifecycle(actionVmId, 'start');
+        else if (action.dataset.action === 'vm-row-console') {
+          window.__pcvVmDetailTab = 'console';
+          await loadVmDetail(actionVmId);
+          state.connectionState = 'connected';
+        } else if (action.dataset.action === 'vm-row-clone') openVmCloneModal(actionVmId);
+      } catch (error) {
+        state.error = normalizeError(error);
+      }
+      render();
+      return;
+    }
+    const button = action && action.dataset.action === 'select-vm' ? action : null;
     const vmId = button?.dataset.vmId || row?.dataset.vmId;
+    if (!vmId) return;
+    state.error = null;
+    try {
+      await loadVmDetail(vmId);
+      state.connectionState = 'connected';
+    } catch (error) {
+      state.error = normalizeError(error);
+    }
+    render();
+  });
+  els.templateTable?.addEventListener('click', async (event) => {
+    const action = event.target.closest('button[data-action]');
+    const row = event.target.closest('tr[data-vm-id]');
+    if (action) {
+      event.preventDefault();
+      if (action.disabled) return;
+      const actionVmId = action.dataset.vmId || row?.dataset.vmId;
+      if (!actionVmId) return;
+      state.error = null;
+      try {
+        if (action.dataset.action === 'vm-row-clone') openVmCloneModal(actionVmId);
+        else if (action.dataset.action === 'vm-template-unlock') await queueVmTemplateLock(actionVmId, false);
+      } catch (error) {
+        state.error = normalizeError(error);
+        render();
+      }
+      return;
+    }
+    const vmId = row?.dataset.vmId;
     if (!vmId) return;
     state.error = null;
     try {
@@ -398,6 +453,7 @@ function init() {
     jobSort: byId('job-sort'),
     networkFilter: byId('network-filter'),
     vmTable: byId('vm-table'),
+    templateTable: byId('template-table'),
     networkInventoryPanel: byId('network-inventory-panel'),
     vmDetailPanel: byId('vm-detail-panel'),
     vmWorkbenchContext: byId('vm-workbench-context'),
