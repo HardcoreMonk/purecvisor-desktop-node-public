@@ -25,6 +25,14 @@
         "design": "docs/superpowers/specs/2026-10-11-purecvisor-desktop-node-s4-lan-account-design.md"
       },
       "risk_tier": "M"
+    },
+    {
+      "pr": 97,
+      "merge_commit": "13fc25dd",
+      "area": "web",
+      "summary": "Web Console 공통 컴포넌트(PCV.components: 확인 모달, 입력 검사, 알림, job 진행 줄, 탭, 빈 상태)를 번들에 더한다. 화면 연결은 뒤 PR이다",
+      "lane2_probe": null,
+      "risk_tier": "S"
     }
   ],
   "trains": [

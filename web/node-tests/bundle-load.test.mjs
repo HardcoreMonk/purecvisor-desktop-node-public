@@ -173,7 +173,7 @@ test("i18n.js and app.bundle.js evaluate in the index.html DOM and expose every 
   assert.ok(PCV, "window.PCV");
   assert.equal(typeof sandbox.I18N.t, "function");
   assert.equal(sandbox._L("가", "a"), "가");
-  const namespaces = { endpoints: "endpoints", api: "api", events: "events", ui: "ui", uxlib: "uxlib", metrics: "metrics", charts: "charts", theme: "theme", "modal-core": "modalCore", modal: "modal", nav: "nav", shell: "shell", mobile: "mobile", prefs: "prefs", help: "help", core: "core", "desktop-api": "desktopApi", vm: "vm", "vm-console": "vmConsole", ops: "ops", monitor: "monitor", accounts: "accounts", "filter-state": null };
+  const namespaces = { endpoints: "endpoints", api: "api", events: "events", ui: "ui", uxlib: "uxlib", metrics: "metrics", charts: "charts", theme: "theme", "modal-core": "modalCore", modal: "modal", components: "components", nav: "nav", shell: "shell", mobile: "mobile", prefs: "prefs", help: "help", core: "core", "desktop-api": "desktopApi", vm: "vm", "vm-console": "vmConsole", ops: "ops", monitor: "monitor", accounts: "accounts", "filter-state": null };
   for (const name of order.modules) {
     const ns = namespaces[name];
     if (ns === null) continue;

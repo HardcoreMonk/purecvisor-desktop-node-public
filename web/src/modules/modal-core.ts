@@ -1,6 +1,6 @@
 // @ts-nocheck
 // Ported from purecvisor ui/modules/modal-core.js (Apache-2.0, same author) for the Desktop Node Web Console (ADR-0018,
-// pcv-single-edge-frontend-structure-v1). Desktop Node changes: none.
+// pcv-single-edge-frontend-structure-v1). Desktop Node change: opts.backdropDismiss false skips the backdrop click and still leaves Esc.
 window.PCV = window.PCV || {};
 (function (PCV) {
   var openDialogs = [];
@@ -27,8 +27,8 @@ window.PCV = window.PCV || {};
     _syncMcId();
     if (cb) { try { cb(); } catch {} }
   }
-  function _wireDialog(dlg, noDismiss) {
-    if (!noDismiss) {
+  function _wireDialog(dlg, noDismiss, backdropDismiss) {
+    if (!noDismiss && backdropDismiss !== false) {
       dlg.addEventListener('click', function (e) {
         if (e.target !== dlg) return;
         var r = dlg.getBoundingClientRect();
@@ -73,7 +73,7 @@ window.PCV = window.PCV || {};
         var w = (typeof opts.width === 'number' ? opts.width + 'px' : opts.width);
         dlg.style.width = 'min(' + w + ', 94vw)';
       }
-      _wireDialog(dlg, opts.noDismiss);
+      _wireDialog(dlg, opts.noDismiss, opts.backdropDismiss);
       document.body.appendChild(dlg);
       openDialogs.push(dlg);
       _syncMcId();
@@ -97,7 +97,7 @@ window.PCV = window.PCV || {};
       }
       dlg._pcvOnClose = (typeof opts.onClose === 'function') ? opts.onClose : null;
       dlg._pcvNoDismiss = opts.noDismiss === true;
-      _wireDialog(dlg, opts.noDismiss);
+      _wireDialog(dlg, opts.noDismiss, opts.backdropDismiss);
       document.body.appendChild(dlg);
       openDialogs.push(dlg);
       _syncMcId();

@@ -5667,3 +5667,123 @@ dialog::backdrop {
       transform: none;
     }
 }
+
+.pcv-confirm-message,
+.pcv-empty-body,
+.pcv-load-error-detail,
+.pcv-toast-detail,
+.pcv-job-detail {
+  color: var(--fg2);
+}
+
+.pcv-confirm-actions,
+.pcv-tablist,
+.pcv-job,
+.pcv-toast {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  align-items: center;
+}
+
+.pcv-confirm-actions {
+  justify-content: flex-end;
+  margin-top: var(--space-md);
+}
+
+.pcv-confirm-typed,
+.pcv-field-error {
+  display: block;
+  width: 100%;
+}
+
+.pcv-confirm-typed,
+.pcv-tab,
+.toast.pcv-toast,
+.pcv-job,
+.pcv-empty,
+.pcv-load-error {
+  background: var(--bg2);
+  color: var(--fg);
+  border: 1px solid var(--border);
+}
+
+.pcv-confirm-danger,
+.pcv-field-error,
+.pcv-toast-error,
+.pcv-job-failed,
+.pcv-load-error {
+  border-color: var(--red);
+}
+
+.pcv-confirm-danger,
+.pcv-field-error {
+  color: var(--red);
+}
+
+.pcv-field-error {
+  margin-top: var(--space-xs);
+}
+
+input[aria-invalid="true"],
+textarea[aria-invalid="true"] {
+  border-color: var(--red);
+}
+
+.pcv-toast-success,
+.pcv-job-succeeded {
+  border-color: var(--green);
+}
+
+.pcv-job-canceled {
+  border-color: var(--yellow);
+}
+
+.pcv-toast-close {
+  margin-left: auto;
+}
+
+.pcv-toast-info,
+.pcv-tab[aria-selected="true"] {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.pcv-tablist {
+  border-bottom: 1px solid var(--border);
+}
+
+.pcv-tab {
+  color: var(--fg2);
+}
+
+.pcv-empty,
+.pcv-load-error,
+.pcv-job,
+.toast.pcv-toast {
+  padding: var(--space-md);
+}
+
+.pcv-confirm-typed:focus-visible,
+.pcv-confirm-actions button:focus-visible,
+.pcv-tab:focus-visible,
+.pcv-toast-action:focus-visible,
+.pcv-toast-close:focus-visible,
+.pcv-job-details:focus-visible,
+.pcv-empty button:focus-visible,
+.pcv-load-error button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@media (max-width: 520px) {
+  .pcv-confirm-actions button,
+  .pcv-tab,
+  .pcv-toast-action,
+  .pcv-toast-close,
+  .pcv-job-details,
+  .pcv-empty button,
+  .pcv-load-error button {
+    width: auto;
+  }
+}
