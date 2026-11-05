@@ -274,7 +274,7 @@ async function queueVmRename(vmId, newName) {
   }
 }
 
-const VM_DETAIL_EXTENSION_CLICK_ACTIONS = new Set(['checkpoint-schedule-clear', 'vm-console-frame-start', 'vm-console-frame-stop', 'vm-console-input-cad']);
+const VM_DETAIL_EXTENSION_CLICK_ACTIONS = new Set(['checkpoint-schedule-clear', 'vm-console-frame-start', 'vm-console-frame-stop', 'vm-console-input-cad', 'vm-console-fit', 'vm-console-actual', 'vm-console-fullscreen']);
 
 function readCheckpointSchedulePayload(data) {
   const payload = {};
@@ -510,14 +510,24 @@ async function handleVmDetailExtensionClick(button) {
     stopVmConsoleFrame();
     render();
   } else if (button.dataset.action === 'vm-console-input-cad') {
+    if (button.disabled || !rbacAllows('console.input')) return;
     await sendVmConsoleKeyboard(button.dataset.vmId, { kind: 'ctrl-alt-del' });
+  } else if (button.dataset.action === 'vm-console-fit') {
+    writeVmConsolePref({ fit: 'fit' });
+    applyVmConsoleDisplay();
+  } else if (button.dataset.action === 'vm-console-actual') {
+    writeVmConsolePref({ fit: 'actual' });
+    applyVmConsoleDisplay();
+  } else if (button.dataset.action === 'vm-console-fullscreen') {
+    await requestVmConsoleFullscreen();
   }
 }
 
 // S1 browser console (design pcv-s1-browser-console-v1 §6): the frame route returns a zlib-compressed RGB565 frame;
 // the browser inflates it with DecompressionStream('deflate') and paints it on a canvas. Polling repaints only the canvas.
-const VM_CONSOLE_FRAME_SIZES = ['640x480', '800x600', '1024x768'];
+const VM_CONSOLE_FRAME_SIZES = ['1024x768', '800x600', '640x480'];
 const VM_CONSOLE_FRAME_FPS = [1, 2, 5];
+const VM_CONSOLE_DEFAULT_SIZE = '1024x768';
 
 function decodeRgb565ToRgba(bytes, width, height) {
   const rgba = new Uint8ClampedArray(width * height * 4);
@@ -544,36 +554,285 @@ function getVmConsoleFrameControl(vmId) {
   return control && control.vm_id === vmId ? control : null;
 }
 
+function readVmConsolePref() {
+  const pref = { fit: 'fit', size: VM_CONSOLE_DEFAULT_SIZE, fps: 2 };
+  try {
+    const storedFit = localStorage.getItem('pcv-console-fit');
+    if (storedFit === 'fit' || storedFit === 'actual') pref.fit = storedFit;
+    const storedSize = localStorage.getItem('pcv-console-size');
+    if (VM_CONSOLE_FRAME_SIZES.includes(storedSize)) pref.size = storedSize;
+    const storedFps = Number(localStorage.getItem('pcv-console-fps'));
+    if (VM_CONSOLE_FRAME_FPS.includes(storedFps)) pref.fps = storedFps;
+  } catch (err) {
+    return { fit: 'fit', size: VM_CONSOLE_DEFAULT_SIZE, fps: 2 };
+  }
+  return pref;
+}
+
+function writeVmConsolePref(partial) {
+  const next = partial || {};
+  try {
+    if (next.fit === 'fit' || next.fit === 'actual') localStorage.setItem('pcv-console-fit', next.fit);
+    if (VM_CONSOLE_FRAME_SIZES.includes(next.size)) localStorage.setItem('pcv-console-size', next.size);
+    const fps = Number(next.fps);
+    if (VM_CONSOLE_FRAME_FPS.includes(fps)) localStorage.setItem('pcv-console-fps', String(fps));
+  } catch (err) {
+    return false;
+  }
+  return true;
+}
+
+function consoleDisplayScale(mode, frameWidth, frameHeight, containerWidth, viewportHeight) {
+  const width = Number(frameWidth) || 0;
+  const height = Number(frameHeight) || 0;
+  const container = Number(containerWidth) || 0;
+  const viewport = Number(viewportHeight) || 0;
+  if (mode === 'actual') return 1;
+  if (!(width > 0) || !(container > 0)) return 1;
+  let scale = container / width;
+  if (viewport > 0 && height > 0) scale = Math.min(scale, viewport / height);
+  return scale;
+}
+
+function vmConsoleStageVisible() {
+  if (document.hidden) return false;
+  const canvas = document.getElementById('vm-console-frame-canvas');
+  if (!canvas) return false;
+  let node = canvas;
+  while (node && node.nodeType !== 9) {
+    if (node.hidden) return false;
+    if (node.classList && typeof node.classList.contains === 'function' && node.classList.contains('hidden')) return false;
+    node = node.parentNode;
+  }
+  return true;
+}
+
+function vmConsoleFrameStatusText(vm, control, running, size, fps) {
+  if (control?.error) return `${control.error.code}: ${control.error.message}`;
+  if (running) return t('vm.console.status.streaming', { size, fps });
+  const vmState = String(vm?.state || vm?.status || '').toLowerCase();
+  if (vmState === 'running') return t('vm.console.status.paused');
+  return t('vm.console.status.not_running');
+}
+
+function consoleFullscreenSupported() {
+  try {
+    const root = document.documentElement;
+    return Boolean(document.fullscreenEnabled && root && typeof root.requestFullscreen === 'function');
+  } catch (err) {
+    return false;
+  }
+}
+
+function renderVmConsoleInputChip() {
+  if (!rbacAllows('console.input')) {
+    return `<span id="pcv-console-input-chip" class="pcv-console-chip" data-state="denied">${pcvEscapeHtml(t('vm.console.input.denied'))}</span>`;
+  }
+  return `<span id="pcv-console-input-chip" class="pcv-console-chip" data-state="idle">${pcvEscapeHtml(t('vm.console.input.idle'))}</span>`;
+}
+
+function applyVmConsoleDisplay() {
+  const stage = document.getElementById('pcv-console-stage');
+  const canvas = document.getElementById('vm-console-frame-canvas');
+  const pref = readVmConsolePref();
+  const fullscreen = Boolean(stage && document.fullscreenElement === stage);
+  const mode = fullscreen ? 'fit' : pref.fit;
+  const frameWidth = Number(canvas?.width) || 0;
+  const frameHeight = Number(canvas?.height) || 0;
+  const containerWidth = fullscreen
+    ? (window.innerWidth || stage.clientWidth || stage.offsetWidth || 0)
+    : (stage ? (stage.clientWidth || stage.offsetWidth || 0) : 0);
+  const viewportHeight = window.innerHeight || 0;
+  const scale = consoleDisplayScale(mode, frameWidth, frameHeight, containerWidth, viewportHeight);
+  if (canvas && frameWidth > 0 && frameHeight > 0) {
+    canvas.style.width = `${Math.max(1, Math.round(frameWidth * scale))}px`;
+    canvas.style.height = `${Math.max(1, Math.round(frameHeight * scale))}px`;
+  }
+  if (stage && stage.classList && typeof stage.classList.toggle === 'function') {
+    stage.classList.toggle('pcv-console-actual', mode === 'actual');
+  }
+  const fitButton = document.getElementById('pcv-console-fit');
+  const actualButton = document.getElementById('pcv-console-actual');
+  if (fitButton && typeof fitButton.setAttribute === 'function') fitButton.setAttribute('aria-pressed', mode === 'fit' ? 'true' : 'false');
+  if (actualButton && typeof actualButton.setAttribute === 'function') actualButton.setAttribute('aria-pressed', mode === 'actual' ? 'true' : 'false');
+  const control = state && state.vmConsoleFrame;
+  if (control) control.displayScale = scale;
+  const sizeText = frameWidth > 0 && frameHeight > 0 ? `${frameWidth}x${frameHeight}` : (control?.size || pref.size);
+  const sizeEl = document.getElementById('pcv-console-size-label');
+  if (sizeEl) sizeEl.textContent = t('vm.console.footer.size', { size: sizeText });
+  const scaleEl = document.getElementById('pcv-console-scale');
+  if (scaleEl) scaleEl.textContent = t('vm.console.footer.scale', { scale: Math.round(scale * 100) });
+  const ageEl = document.getElementById('pcv-console-age');
+  if (ageEl) {
+    if (control?.updatedAt) {
+      const seconds = Math.max(0, Math.round((Date.now() - control.updatedAt) / 1000));
+      ageEl.textContent = t('vm.console.footer.age', { seconds });
+    } else {
+      ageEl.textContent = t('vm.console.footer.age_none');
+    }
+  }
+  return scale;
+}
+
+async function requestVmConsoleFullscreen() {
+  const stage = document.getElementById('pcv-console-stage');
+  const button = document.getElementById('pcv-console-fullscreen');
+  const note = document.getElementById('pcv-console-fullscreen-note');
+  if (!stage || typeof stage.requestFullscreen !== 'function') {
+    if (button) button.disabled = true;
+    if (note) note.textContent = t('vm.console.fullscreen.denied');
+    return;
+  }
+  try {
+    await stage.requestFullscreen();
+    applyVmConsoleDisplay();
+  } catch (err) {
+    if (button) button.disabled = true;
+    if (note) note.textContent = t('vm.console.fullscreen.denied');
+  }
+}
+
+function syncVmConsoleInputChip() {
+  const chip = document.getElementById('pcv-console-input-chip');
+  if (!chip) return;
+  const canvas = document.getElementById('vm-console-frame-canvas');
+  if (!rbacAllows('console.input')) {
+    chip.dataset.state = 'denied';
+    chip.textContent = t('vm.console.input.denied');
+    return;
+  }
+  if (canvas && document.activeElement === canvas) {
+    chip.dataset.state = 'active';
+    chip.textContent = t('vm.console.input.active');
+    return;
+  }
+  chip.dataset.state = 'idle';
+  chip.textContent = t('vm.console.input.idle');
+}
+
+function onConsoleChromeClick(event) {
+  const target = event && event.target;
+  const button = target && typeof target.closest === 'function' ? target.closest('button[data-action]') : target;
+  if (!button || !button.dataset) return;
+  const action = button.dataset.action;
+  if (action !== 'vm-console-fit' && action !== 'vm-console-actual' && action !== 'vm-console-fullscreen') return;
+  if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
+  return handleVmDetailExtensionClick(button);
+}
+
+function onConsoleSelectChange(event) {
+  const select = event && event.target;
+  if (!select) return;
+  const kind = select.dataset ? (select.dataset.consoleFrame || '') : '';
+  const attr = !kind && typeof select.getAttribute === 'function' ? select.getAttribute('data-console-frame') : kind;
+  const control = state.vmConsoleFrame;
+  if (attr === 'size') {
+    const size = VM_CONSOLE_FRAME_SIZES.includes(select.value) ? select.value : VM_CONSOLE_DEFAULT_SIZE;
+    writeVmConsolePref({ size });
+    if (control && control.running) control.size = size;
+    const parts = size.split('x');
+    const canvas = document.getElementById('vm-console-frame-canvas');
+    if (canvas && parts.length === 2) {
+      canvas.width = Number(parts[0]);
+      canvas.height = Number(parts[1]);
+    }
+    applyVmConsoleDisplay();
+  } else if (attr === 'fps') {
+    const fps = Number(select.value);
+    if (!VM_CONSOLE_FRAME_FPS.includes(fps)) return;
+    writeVmConsolePref({ fps });
+    if (control && control.running) control.fps = fps;
+  }
+}
+
+function onVmConsoleVisibilityChange() {
+  const control = state.vmConsoleFrame;
+  if (!control?.running) return;
+  if (!vmConsoleStageVisible()) return;
+  if (control.timer) window.clearTimeout(control.timer);
+  control.timer = null;
+  pollVmConsoleFrame(control.vm_id, control.generation);
+}
+
+function bindVmConsoleFrame() {
+  const root = document.getElementById('pcv-console-card');
+  if (root && root.dataset && root.dataset.pcvBound !== '1') {
+    root.dataset.pcvBound = '1';
+    if (typeof root.addEventListener === 'function') {
+      root.addEventListener('click', onConsoleChromeClick);
+      root.addEventListener('change', onConsoleSelectChange);
+    }
+  }
+  const canvas = document.getElementById('vm-console-frame-canvas');
+  if (canvas && canvas.dataset && canvas.dataset.pcvBound !== '1') {
+    canvas.dataset.pcvBound = '1';
+    if (typeof canvas.addEventListener === 'function') {
+      canvas.addEventListener('focus', syncVmConsoleInputChip);
+      canvas.addEventListener('blur', syncVmConsoleInputChip);
+    }
+  }
+  if (!window.__pcvConsoleVisibilityBound) {
+    window.__pcvConsoleVisibilityBound = true;
+    if (document && typeof document.addEventListener === 'function') {
+      document.addEventListener('visibilitychange', onVmConsoleVisibilityChange);
+      document.addEventListener('fullscreenchange', applyVmConsoleDisplay);
+    }
+    if (typeof window.addEventListener === 'function') window.addEventListener('resize', applyVmConsoleDisplay);
+  }
+  ensureVmConsoleKeyBinding();
+  applyVmConsoleDisplay();
+  syncVmConsoleInputChip();
+}
+
 function renderVmConsoleFrameCard(vm, vmId, canViewConsole) {
   const control = getVmConsoleFrameControl(vmId);
+  const pref = readVmConsolePref();
   const running = control?.running === true;
-  const size = control?.size || VM_CONSOLE_FRAME_SIZES[0];
-  const fps = control?.fps || 2;
-  const [width, height] = size.split('x');
+  const size = control?.size || pref.size;
+  const fps = control?.fps || pref.fps;
+  const mode = pref.fit === 'actual' ? 'actual' : 'fit';
+  const [width, height] = String(size).split('x');
   const disabled = canViewConsole ? '' : ' disabled';
-  const vmState = String(vm.state || vm.status || '').toLowerCase();
-  const status = control?.error
-    ? `${control.error.code}: ${control.error.message}`
-    : running
-      ? `streaming ${size} at ${fps} fps`
-      : vmState === 'running' ? 'paused' : 'VM is not running; start it to see its screen.';
-  return `<div class="checkpoint-panel vm-console-frame-panel">
+  const fullscreenDisabled = (!canViewConsole || !consoleFullscreenSupported()) ? ' disabled' : '';
+  const status = vmConsoleFrameStatusText(vm, control, running, size, fps);
+  const stageClass = mode === 'actual' ? 'pcv-console-stage pcv-console-actual' : 'pcv-console-stage';
+  const footerAge = control?.updatedAt
+    ? t('vm.console.footer.age', { seconds: Math.max(0, Math.round((Date.now() - control.updatedAt) / 1000)) })
+    : t('vm.console.footer.age_none');
+  const sizeOptions = VM_CONSOLE_FRAME_SIZES.map((item) => `<option value="${item}"${item === size ? ' selected' : ''}>${pcvEscapeHtml(item)}</option>`).join('');
+  const fpsOptions = VM_CONSOLE_FRAME_FPS.map((item) => `<option value="${item}"${Number(item) === Number(fps) ? ' selected' : ''}>${pcvEscapeHtml(t('vm.console.fps_option', { fps: item }))}</option>`).join('');
+  return `<div id="pcv-console-card" class="checkpoint-panel vm-console-frame-panel pcv-console">
       <div class="mini-section-header">
         <div>
-          <p class="eyebrow">Browser console</p>
-          <h3>VM Screen</h3>
-        </div>
-        <div class="diagnostics-actions">
-          <select data-console-frame="size" aria-label="console frame size"${disabled}>${VM_CONSOLE_FRAME_SIZES.map((item) => `<option value="${item}"${item === size ? ' selected' : ''}>${item}</option>`).join('')}</select>
-          <select data-console-frame="fps" aria-label="console frame rate"${disabled}>${VM_CONSOLE_FRAME_FPS.map((item) => `<option value="${item}"${item === fps ? ' selected' : ''}>${item} fps</option>`).join('')}</select>
-          <button data-action="vm-console-frame-start" data-vm-id="${pcvEscapeHtml(vmId)}"${running ? ' disabled' : disabled}>Start screen</button>
-          <button data-action="vm-console-frame-stop" data-vm-id="${pcvEscapeHtml(vmId)}"${running ? '' : ' disabled'}>Pause screen</button>
+          <p class="eyebrow">${pcvEscapeHtml(t('vm.console.eyebrow'))}</p>
+          <h3>${pcvEscapeHtml(t('vm.console.title'))}</h3>
         </div>
       </div>
-      <canvas id="vm-console-frame-canvas" class="vm-console-frame-canvas" tabindex="0" width="${pcvEscapeHtml(width)}" height="${pcvEscapeHtml(height)}" style="width:100%;max-width:${pcvEscapeHtml(width)}px;background:#000"></canvas>
+      <div class="pcv-console-toolbar diagnostics-actions">
+        <button type="button" id="pcv-console-fit" data-action="vm-console-fit" aria-pressed="${mode === 'fit' ? 'true' : 'false'}"${disabled}>${pcvEscapeHtml(t('vm.console.fit'))}</button>
+        <button type="button" id="pcv-console-actual" data-action="vm-console-actual" aria-pressed="${mode === 'actual' ? 'true' : 'false'}"${disabled}>${pcvEscapeHtml(t('vm.console.actual'))}</button>
+        <select data-console-frame="size" aria-label="${pcvEscapeHtml(t('vm.console.size'))}"${disabled}>${sizeOptions}</select>
+        <select data-console-frame="fps" aria-label="${pcvEscapeHtml(t('vm.console.fps'))}"${disabled}>${fpsOptions}</select>
+        <button type="button" data-action="vm-console-frame-start" data-vm-id="${pcvEscapeHtml(vmId)}"${running ? ' disabled' : disabled}>${pcvEscapeHtml(t('vm.console.start'))}</button>
+        <button type="button" data-action="vm-console-frame-stop" data-vm-id="${pcvEscapeHtml(vmId)}"${running ? '' : ' disabled'}>${pcvEscapeHtml(t('vm.console.pause'))}</button>
+        <button type="button" id="pcv-console-fullscreen" data-action="vm-console-fullscreen"${fullscreenDisabled}>${pcvEscapeHtml(t('vm.console.fullscreen'))}</button>
+        <button type="button" id="pcv-console-cad" data-action="vm-console-input-cad" data-vm-id="${pcvEscapeHtml(vmId)}"${rbacAllows('console.input') ? '' : ' disabled'}>${pcvEscapeHtml(t('vm.console.cad'))}</button>
+        ${renderVmConsoleInputChip()}
+      </div>
+      <div id="pcv-console-stage" class="${stageClass}">
+        <canvas id="vm-console-frame-canvas" class="vm-console-frame-canvas pcv-console-frame-canvas" tabindex="0" width="${pcvEscapeHtml(width)}" height="${pcvEscapeHtml(height)}"></canvas>
+      </div>
+      <p id="pcv-console-fullscreen-note" class="muted"></p>
       <p id="vm-console-frame-status" class="muted">${pcvEscapeHtml(status)}</p>
       ${renderVmConsoleInputControls(vmId)}
-      <p class="muted">Screen view needs console.view. vmconnect handoff stays available from the Console button.</p>
+      <p class="pcv-console-footer muted">
+        <span id="pcv-console-size-label">${pcvEscapeHtml(t('vm.console.footer.size', { size }))}</span>
+        <span id="pcv-console-scale">${pcvEscapeHtml(t('vm.console.footer.scale', { scale: 100 }))}</span>
+        <span id="pcv-console-age">${pcvEscapeHtml(footerAge)}</span>
+        <span>${pcvEscapeHtml(t('vm.console.release'))}</span>
+      </p>
+      <p class="muted">${canViewConsole ? '' : pcvEscapeHtml(t('vm.console.need_view'))}</p>
+      <p><button type="button" data-action="vm-console" data-vm-id="${pcvEscapeHtml(vmId)}"${disabled}>${pcvEscapeHtml(t('vm.console.vmconnect'))}</button></p>
     </div>`;
 }
 
@@ -581,8 +840,13 @@ function paintVmConsoleFrame() {
   ensureVmConsoleKeyBinding();
   const control = state.vmConsoleFrame;
   const canvas = document.getElementById('vm-console-frame-canvas');
-  if (!control?.image || !canvas || canvas.width !== control.image.width || canvas.height !== control.image.height) return;
+  if (!control?.image || !canvas) return;
+  if (canvas.width !== control.image.width || canvas.height !== control.image.height) {
+    canvas.width = control.image.width;
+    canvas.height = control.image.height;
+  }
   canvas.getContext('2d')?.putImageData(control.image, 0, 0);
+  applyVmConsoleDisplay();
 }
 
 function setVmConsoleFrameStatus(text) {
@@ -590,11 +854,35 @@ function setVmConsoleFrameStatus(text) {
   if (element) element.textContent = text;
 }
 
+function vmConsolePollDelay(control) {
+  const fps = Number(control?.fps) || 2;
+  return Math.max(1, Math.round(1000 / fps));
+}
+
+function scheduleVmConsolePoll(vmId, generation) {
+  const control = state.vmConsoleFrame;
+  if (!control || control.vm_id !== vmId || control.generation !== generation || !control.running) return;
+  if (control.timer) window.clearTimeout(control.timer);
+  control.timer = window.setTimeout(() => pollVmConsoleFrame(vmId, generation), vmConsolePollDelay(control));
+}
+
+function selectedVmMatchesConsole(vmId) {
+  try {
+    return getVmId(state.selectedVm || {}) === vmId;
+  } catch (err) {
+    return false;
+  }
+}
+
 async function pollVmConsoleFrame(vmId, generation) {
   const control = state.vmConsoleFrame;
   if (!control || control.vm_id !== vmId || control.generation !== generation || !control.running) return;
-  if (document.hidden || getVmId(state.selectedVm || {}) !== vmId) {
+  if (!selectedVmMatchesConsole(vmId)) {
     stopVmConsoleFrame();
+    return;
+  }
+  if (!vmConsoleStageVisible()) {
+    scheduleVmConsolePoll(vmId, generation);
     return;
   }
   try {
@@ -603,28 +891,35 @@ async function pollVmConsoleFrame(vmId, generation) {
     const rgb565 = await inflateConsoleFrame(data.frame_base64);
     control.image = new ImageData(decodeRgb565ToRgba(rgb565, data.width, data.height), data.width, data.height);
     control.error = null;
+    control.updatedAt = Date.now();
     paintVmConsoleFrame();
-    setVmConsoleFrameStatus(`streaming ${control.size} at ${control.fps} fps / ${new Date().toLocaleTimeString()}`);
+    setVmConsoleFrameStatus(t('vm.console.status.streaming', { size: control.size, fps: control.fps }));
   } catch (error) {
     const normalized = normalizeError(error);
     if (normalized.code !== 'PCV_CONSOLE_RATE_LIMITED') {
       control.error = normalized;
       control.running = false;
+      if (control.timer) window.clearTimeout(control.timer);
+      control.timer = null;
       render();
       return;
     }
   }
-  control.timer = window.setTimeout(() => pollVmConsoleFrame(vmId, generation), Math.round(1000 / control.fps));
+  scheduleVmConsolePoll(vmId, generation);
 }
 
 function startVmConsoleFrame(vmId) {
   requireRbac('console.view', 'VM screen');
   const panel = els.vmDetailPanel;
-  const size = panel?.querySelector('select[data-console-frame="size"]')?.value || VM_CONSOLE_FRAME_SIZES[0];
-  const fps = Number(panel?.querySelector('select[data-console-frame="fps"]')?.value || 2);
+  const pref = readVmConsolePref();
+  const sizeValue = panel?.querySelector('select[data-console-frame="size"]')?.value || pref.size;
+  const fpsValue = Number(panel?.querySelector('select[data-console-frame="fps"]')?.value || pref.fps);
+  const size = VM_CONSOLE_FRAME_SIZES.includes(sizeValue) ? sizeValue : VM_CONSOLE_DEFAULT_SIZE;
+  const fps = VM_CONSOLE_FRAME_FPS.includes(fpsValue) ? fpsValue : 2;
+  writeVmConsolePref({ size, fps });
   stopVmConsoleFrame();
   const generation = Date.now();
-  state.vmConsoleFrame = { vm_id: vmId, size, fps, running: true, generation, image: null, error: null, timer: null };
+  state.vmConsoleFrame = { vm_id: vmId, size, fps, running: true, generation, image: null, error: null, timer: null, updatedAt: null, displayScale: 1 };
   render();
   pollVmConsoleFrame(vmId, generation);
 }
@@ -688,13 +983,12 @@ function ensureVmConsoleKeyBinding() {
 
 function renderVmConsoleInputControls(vmId) {
   if (!rbacAllows('console.input')) {
-    return '<p class="muted">Keyboard input needs console.input; the screen stays read-only.</p>';
+    return `<p class="muted">${pcvEscapeHtml(t('vm.console.input.readonly'))}</p>`;
   }
   return `<form class="vm-resource-form" data-action="vm-console-text" data-vm-id="${pcvEscapeHtml(vmId)}">
-        <p class="muted">Click the screen to type into the VM. Keys go as press and release; passwords are not recorded.</p>
-        <input name="text" maxlength="256" autocomplete="off" placeholder="Text to type (printable ASCII)" aria-label="console text">
-        <button type="submit" data-action="vm-console-text">Send text</button>
-        <button type="button" data-action="vm-console-input-cad" data-vm-id="${pcvEscapeHtml(vmId)}">Ctrl+Alt+Del</button>
+        <p class="muted">${pcvEscapeHtml(t('vm.console.text.help'))}</p>
+        <input name="text" maxlength="256" autocomplete="off" placeholder="${pcvEscapeHtml(t('vm.console.text.placeholder'))}" aria-label="${pcvEscapeHtml(t('vm.console.text.label'))}">
+        <button type="submit" data-action="vm-console-text">${pcvEscapeHtml(t('vm.console.text.send'))}</button>
       </form>`;
 }
 
@@ -736,10 +1030,18 @@ window.sendVmConsoleKeyboard = sendVmConsoleKeyboard;
 window.handleVmConsoleKeyEvent = handleVmConsoleKeyEvent;
 window.ensureVmConsoleKeyBinding = ensureVmConsoleKeyBinding;
 window.renderVmConsoleInputControls = renderVmConsoleInputControls;
+window.consoleDisplayScale = consoleDisplayScale;
+window.readVmConsolePref = readVmConsolePref;
+window.writeVmConsolePref = writeVmConsolePref;
+window.bindVmConsoleFrame = bindVmConsoleFrame;
+window.syncVmConsoleInputChip = syncVmConsoleInputChip;
+window.applyVmConsoleDisplay = applyVmConsoleDisplay;
+window.requestVmConsoleFullscreen = requestVmConsoleFullscreen;
+window.vmConsoleStageVisible = vmConsoleStageVisible;
 window.VM_LIFECYCLE_ACTIONS = VM_LIFECYCLE_ACTIONS;
 window.VM_DETAIL_EXTENSION_CLICK_ACTIONS = VM_DETAIL_EXTENSION_CLICK_ACTIONS;
 window.VM_CONSOLE_FRAME_SIZES = VM_CONSOLE_FRAME_SIZES;
 window.VM_CONSOLE_FRAME_FPS = VM_CONSOLE_FRAME_FPS;
 window.VM_CONSOLE_VIRTUAL_KEYS = VM_CONSOLE_VIRTUAL_KEYS;
-PCV.vmConsole = Object.assign(PCV.vmConsole || {}, { formatConsoleLabel, getConsoleAccessProjection, renderConsolePanel, getBetaFollowupItems, renderBetaFollowup, renderTroubleshooting, queueVmRename, readCheckpointSchedulePayload, buildCheckpointScheduleConfirmation, queueCheckpointScheduleControl, renderCheckpointSchedulePreview, readExportImportPayload, buildExportImportConfirmation, queueVmExportImportControl, renderExportImportPreview, renderSwitchOptions, readVmNetworkChangePayload, buildVmNetworkChangeConfirmation, queueVmNetworkChange, previewVmGuestExecutionControl, handleVmGuestPreviewSubmit, handleVmDetailExtensionSubmit, handleVmDetailExtensionClick, decodeRgb565ToRgba, inflateConsoleFrame, getVmConsoleFrameControl, renderVmConsoleFrameCard, paintVmConsoleFrame, setVmConsoleFrameStatus, pollVmConsoleFrame, startVmConsoleFrame, stopVmConsoleFrame, getVmConsoleVirtualKey, sendVmConsoleKeyboard, handleVmConsoleKeyEvent, ensureVmConsoleKeyBinding, renderVmConsoleInputControls, VM_LIFECYCLE_ACTIONS, VM_DETAIL_EXTENSION_CLICK_ACTIONS, VM_CONSOLE_FRAME_SIZES, VM_CONSOLE_FRAME_FPS, VM_CONSOLE_VIRTUAL_KEYS });
+PCV.vmConsole = Object.assign(PCV.vmConsole || {}, { formatConsoleLabel, getConsoleAccessProjection, renderConsolePanel, getBetaFollowupItems, renderBetaFollowup, renderTroubleshooting, queueVmRename, readCheckpointSchedulePayload, buildCheckpointScheduleConfirmation, queueCheckpointScheduleControl, renderCheckpointSchedulePreview, readExportImportPayload, buildExportImportConfirmation, queueVmExportImportControl, renderExportImportPreview, renderSwitchOptions, readVmNetworkChangePayload, buildVmNetworkChangeConfirmation, queueVmNetworkChange, previewVmGuestExecutionControl, handleVmGuestPreviewSubmit, handleVmDetailExtensionSubmit, handleVmDetailExtensionClick, decodeRgb565ToRgba, inflateConsoleFrame, getVmConsoleFrameControl, renderVmConsoleFrameCard, paintVmConsoleFrame, setVmConsoleFrameStatus, pollVmConsoleFrame, startVmConsoleFrame, stopVmConsoleFrame, getVmConsoleVirtualKey, sendVmConsoleKeyboard, handleVmConsoleKeyEvent, ensureVmConsoleKeyBinding, renderVmConsoleInputControls, consoleDisplayScale, readVmConsolePref, writeVmConsolePref, bindVmConsoleFrame, syncVmConsoleInputChip, applyVmConsoleDisplay, requestVmConsoleFullscreen, vmConsoleStageVisible, VM_LIFECYCLE_ACTIONS, VM_DETAIL_EXTENSION_CLICK_ACTIONS, VM_CONSOLE_FRAME_SIZES, VM_CONSOLE_FRAME_FPS, VM_CONSOLE_VIRTUAL_KEYS });
 })(window.PCV);

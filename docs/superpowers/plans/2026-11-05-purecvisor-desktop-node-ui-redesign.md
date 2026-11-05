@@ -64,11 +64,13 @@
 
 ## Task 4: 콘솔 탭 (P3)
 
-- [ ] grok 구현, Claude 리뷰. 기본 프레임을 `1024x768`으로 바꾸고, 창에 맞춤(기본)과 실제 크기, 전체 화면(Fullscreen API), Ctrl+Alt+Del, 갱신 fps 선택, 키보드 입력 상태 표시를 더한다. frame·input API는 그대로 쓰고 noVNC·WebSocket은 넣지 않는다. 맞춤 배율과 입력 상태를 시험으로 고정한다. 검증: Task 2와 같다. push, PR. merge는 사용자 승인 뒤.
+- [x] grok 구현, Claude 리뷰. 기본 프레임을 `1024x768`으로 바꾸고, 창에 맞춤(기본)과 실제 크기, 전체 화면(Fullscreen API), Ctrl+Alt+Del, 갱신 fps 선택, 키보드 입력 상태 표시를 더한다. frame·input API는 그대로 쓰고 noVNC·WebSocket은 넣지 않는다. 맞춤 배율과 입력 상태를 시험으로 고정한다. 검증: Task 2와 같다. push, PR. merge는 사용자 승인 뒤.
+
+실행 기록(2026-11-05): 조사: frame route는 `^([0-9]{3,4})x([0-9]{3,4})$`이고 어댑터가 너비 160~1024·높이 120~768을 허용한다(`DesktopNodeApiConsoleRouteHandler.Frame.cs:14`, `DesktopNodeHyperVNativeAdapter.ConsoleFrame.cs:9-14`). 입력 API는 `kind=key|text|ctrl-alt-del`이고 Ctrl+Alt+Del은 Hyper-V `TypeCtrlAltDel`로 이미 간다(`DesktopNodeApiConsoleRouteHandler.Input.cs:52`). Esc는 VM 키 `0x1B`라 해제 단축키가 아니며 해제는 캔버스 포커스가 빠질 때다. `web/src/modules/vm-console.ts`: 크기 목록 `1024x768`(기본)·`800x600`·`640x480`, 창에 맞춤(`min(컨테이너 너비/프레임 너비, 화면 높이/프레임 높이)`)과 실제 크기(스테이지 스크롤), 전체 화면(거부·미지원이면 버튼을 끄고 안내), Ctrl+Alt+Del(`console.input` 없으면 꺼짐), 입력 상태 칩(입력 중, 콘솔을 클릭하면 입력, 입력 권한 없음), 바닥 줄(프레임 크기, 배율, 마지막 갱신, 해제 안내), 콘솔 탭이 숨거나 문서가 hidden이면 frame 요청을 쉬고 다시 보이면 이어 감, 선택 기억(`pcv-console-fit`·`pcv-console-size`·`pcv-console-fps`, 저장 실패 허용), 프레임 카드 문구 i18n. 서버 기본 상수(640×480), 옛 콘솔, 시나리오 스크립트의 `640x480` 요청은 그대로다. Claude 리뷰는 수정 요청 없이 통과했다. 새로 확인한 `vm-console.ts`의 `window.confirm`(이름 바꾸기, 체크포인트 일정, 내보내기·가져오기, 네트워크 변경)은 Task 5(일정)와 Task 7(나머지)에 배정했다. 검증: `npm run test:required --prefix web` exit 0, `node --test` 305/305(새 `vm-console-view.test.mjs` 10건), domsafe 82, parity current, feature surface `web=78`, `git diff --check` 통과, 옛 콘솔 파일 diff 없음. host mutation 없음.
 
 ## Task 5: 체크포인트 탭과 예약 즉시 반영 (P4)
 
-- [ ] grok 구현, Claude 리뷰. checkpoint 목록·만들기·복원·삭제를 탭으로 옮기고 복원·삭제는 확인 모달로 바꾼다. 예약 저장·해제와 checkpoint 생성·복원 job이 끝나면 선택 VM 상세를 다시 읽고 탭을 다시 그린다(BL-0020). 빈 목록과 읽기 실패를 구분한다. 검증: Task 2와 같고, 저장 직후 카드가 갱신되는 시험을 포함한다. BL-0020은 PR 번호로 닫는다. push, PR. merge는 사용자 승인 뒤.
+- [ ] grok 구현, Claude 리뷰. checkpoint 목록·만들기·복원·삭제를 탭으로 옮기고 복원·삭제와 `vm-console.ts`의 체크포인트 일정 변경 확인은 확인 모달로 바꾼다. 예약 저장·해제와 checkpoint 생성·복원 job이 끝나면 선택 VM 상세를 다시 읽고 탭을 다시 그린다(BL-0020). 빈 목록과 읽기 실패를 구분한다. 검증: Task 2와 같고, 저장 직후 카드가 갱신되는 시험을 포함한다. BL-0020은 PR 번호로 닫는다. push, PR. merge는 사용자 승인 뒤.
 
 ## Task 6: 새 VM 마법사 (P5)
 
@@ -76,7 +78,7 @@
 
 ## Task 7: 사이드바 개편, 템플릿·계정 화면, 한국어화 (P6a)
 
-- [ ] grok 구현, Claude 리뷰. 사이드바를 운영·워크로드·인프라·관제·시스템·도움말 묶음으로 바꾸고 템플릿 화면(잠긴 VM 목록, 복제 주 조작)과 admin 전용 계정 화면(목록, 생성, 비활성화)을 진단에서 분리한다. 상세 화면의 영어 고정 문구를 i18n 키로 옮긴다. W1 VM 목록(상태 칩과 개수, 템플릿 배지와 필터, 상태별 행 주 조작과 `⋯` 메뉴)을 이 task에서 바꾼다(2026-11-05 Task 3 리뷰에서 배정). 남은 새 셸 `window.confirm`(ISO 연결, QoS 적용, 게스트 실행·수리, 관리, 게스트 파일)을 `confirmDialog`로 바꾼다. Task 1이 template 표시에 API 보강이 필요하다고 적었으면 그 변경은 이 task 앞에 별도 task로 승인받는다. 검증: Task 2와 같다. push, PR. merge는 사용자 승인 뒤.
+- [ ] grok 구현, Claude 리뷰. 사이드바를 운영·워크로드·인프라·관제·시스템·도움말 묶음으로 바꾸고 템플릿 화면(잠긴 VM 목록, 복제 주 조작)과 admin 전용 계정 화면(목록, 생성, 비활성화)을 진단에서 분리한다. 상세 화면의 영어 고정 문구를 i18n 키로 옮긴다. W1 VM 목록(상태 칩과 개수, 템플릿 배지와 필터, 상태별 행 주 조작과 `⋯` 메뉴)을 이 task에서 바꾼다(2026-11-05 Task 3 리뷰에서 배정). 남은 새 셸 `window.confirm`(ISO 연결, QoS 적용, 게스트 실행·수리, 관리, 게스트 파일, 그리고 `vm-console.ts`의 이름 바꾸기·내보내기·가져오기·네트워크 변경)을 `confirmDialog`로 바꾼다. `vm-console.ts`의 계정 콘솔·베타 후속·진단 영어 문구도 i18n으로 옮긴다. Task 1이 template 표시에 API 보강이 필요하다고 적었으면 그 변경은 이 task 앞에 별도 task로 승인받는다. 검증: Task 2와 같다. push, PR. merge는 사용자 승인 뒤.
 
 ## Task 8: 비밀번호 재설정 (P6b)
 

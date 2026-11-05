@@ -5890,3 +5890,67 @@ textarea[aria-invalid="true"] {
     width: auto;
   }
 }
+
+.pcv-console-toolbar,
+.pcv-console-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.pcv-console-footer {
+  margin-top: var(--space-sm);
+  color: var(--fg2);
+}
+
+.pcv-console-stage {
+  overflow: hidden;
+  max-width: 100%;
+  background: var(--fg);
+}
+
+.pcv-console-stage.pcv-console-actual {
+  overflow: auto;
+}
+
+.pcv-console-stage:fullscreen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--fg);
+}
+
+.pcv-console-frame-canvas,
+.vm-console-frame-canvas {
+  display: block;
+  background: var(--fg);
+}
+
+.pcv-console-chip[data-state="active"] {
+  color: var(--green);
+}
+
+.pcv-console-chip[data-state="idle"] {
+  color: var(--fg2);
+}
+
+.pcv-console-chip[data-state="denied"] {
+  color: var(--red);
+}
+
+.pcv-console-frame-canvas:focus-visible,
+.pcv-console button:focus-visible,
+.pcv-console select:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@media (max-width: 520px) {
+  .pcv-console button {
+    width: auto;
+  }
+}
