@@ -76,7 +76,9 @@
 
 ## Task 6: 새 VM 마법사 (P5)
 
-- [ ] grok 구현, Claude 리뷰. 생성 dialog를 네 단계(기본, 자원, 설치 미디어와 네트워크, 확인)로 바꾼다. 1단계는 이름 규칙과 중복을 통과해야 다음으로 간다. 예시 경로를 초기값으로 채우지 않는다. 스위치 목록은 `network.inventory`에서 읽는다. 만들기 뒤 job 진행 줄을 보인다. 검증: Task 2와 같다. push, PR. merge는 사용자 승인 뒤.
+- [x] grok 구현, Claude 리뷰. 생성 dialog를 네 단계(기본, 자원, 설치 미디어와 네트워크, 확인)로 바꾼다. 1단계는 이름 규칙과 중복을 통과해야 다음으로 간다. 예시 경로를 초기값으로 채우지 않는다. 스위치 목록은 `network.inventory`에서 읽는다. 만들기 뒤 job 진행 줄을 보인다. 검증: Task 2와 같다. push, PR. merge는 사용자 승인 뒤.
+
+실행 기록(2026-11-05): 조사: 생성 route `POST /api/v1/vms`는 범위 검사 없이 job을 넣고, 어댑터가 `name`(`IsValidVmCreateName`), `cpu` 1~32, `memory_mb` 512~262144, `disk_gb` 8~4096, `generation`(없으면 2, 2만 허용), 비어 있지 않은 `iso_path`, 선택 `vm_root`(공백이면 서버 기본)를 본다. 생성 바디에 스위치 필드가 없고 공급자가 항상 `Default Switch`를 연결한다(`DesktopNodeHyperVWmiVmCreateProvider.cs:33`). 그래서 설계 5.6절의 "스위치 목록을 읽는다"를 정정했고, 3단계는 스위치를 고르지 않고 "Default Switch에 연결되며 만든 뒤 하드웨어 탭에서 바꿀 수 있다"는 읽기 전용 안내를 둔다. 구현: 기존 `#create-vm-dialog`·`#create-vm-form` id와 input name을 유지해 shell·browser fixture 계약을 그대로 두고 안을 4단계 마법사로 바꿨다(단계 표시, 이전·다음, 화살표 이동, 단계별 `bindValidation`, 1단계 이름은 required·vmCreateName·notIn, 자원 기본 vCPU 2·4096 MB·40 GB, 세대는 읽기 전용 `Generation 2`, 예시 이름·ISO·VM 루트는 placeholder만, `vm_root`는 접힌 칸에 값이 있을 때만 전송, 만들기 뒤 dialog 안 job 진행과 새 VM 열기, 실패 시 코드와 고칠 방법, 입력 중 닫기는 한 번 `confirmDialog`). `web/scripts/capture-destructive-lifecycle-ui-qa.mjs` 생성 흐름을 마법사에 맞췄다(실행하지 않고 `node --check`만). Claude 리뷰 1차에서 3건(효과 없는 스위치 선택, 세대 선택지, QA 스크립트)을 고쳤다. `events.ts`의 `readCreatePayload`·`submitCreateVm`은 이제 옛 콘솔만 쓰므로 Task 9에서 정리한다. 검증: `npm run test:required --prefix web` exit 0, `node --test` 323/323(새 `vm-create-wizard.test.mjs` 10건), domsafe 82, parity current, `git diff --check` 통과, 옛 콘솔 파일 diff 없음. host mutation 없음.
 
 ## Task 7: 사이드바 개편, 템플릿·계정 화면, 한국어화 (P6a)
 
@@ -88,7 +90,7 @@
 
 ## Task 9: 옛 콘솔 퇴역 (P7, legacy-retirement)
 
-- [ ] grok 구현, Claude 리뷰. `web/index.legacy.html`, `web/app.js`, `web/styles.css`, `web/src/served-app.ts`, `web/src/served/*.ts`를 걷어 내고, 그 파일을 읽는 계약 시험(`web-static-contracts.mjs`, parity manifest, browser fixture), Pester, `web/payload-manifest.json`과 `WebPayload.wxs`(`Update-PcvWebPayloadWix.ps1 -Apply`), 서비스 워커 프리캐시를 새 셸 기준으로 옮긴다. 시작 전에 옛 콘솔에만 있는 기능이 남았는지 grok이 목록을 내고, 남은 것이 있으면 멈추고 묻는다. 검증: `npm run test:required --prefix web`, `pwsh -NoProfile -Command "Invoke-Pester -Path 'packaging/windows-desktop-node/tests'"`, `pwsh -NoProfile -Command "Invoke-Pester -Path 'packaging/windows-desktop-node/installer/tests'"`, clean HEAD에서 `dotnet test src/DesktopNode.sln -c Release`. 제품 payload 변경이므로 queue 행을 더한다. push, PR. merge는 사용자 승인 뒤.
+- [ ] grok 구현, Claude 리뷰. `web/index.legacy.html`, `web/app.js`, `web/styles.css`, `web/src/served-app.ts`, `web/src/served/*.ts`를 걷어 내고, 그 파일을 읽는 계약 시험(`web-static-contracts.mjs`, parity manifest, browser fixture), Pester, `web/payload-manifest.json`과 `WebPayload.wxs`(`Update-PcvWebPayloadWix.ps1 -Apply`), 서비스 워커 프리캐시를 새 셸 기준으로 옮긴다. 시작 전에 옛 콘솔에만 있는 기능이 남았는지 grok이 목록을 내고, 남은 것이 있으면 멈추고 묻는다. 새 셸에서 더 쓰이지 않는 `web/src/modules/events.ts`의 `readCreatePayload`·`submitCreateVm`과 그 정적 계약(`web.static.vm-create-payload`)도 함께 옮기거나 걷어 낸다. 검증: `npm run test:required --prefix web`, `pwsh -NoProfile -Command "Invoke-Pester -Path 'packaging/windows-desktop-node/tests'"`, `pwsh -NoProfile -Command "Invoke-Pester -Path 'packaging/windows-desktop-node/installer/tests'"`, clean HEAD에서 `dotnet test src/DesktopNode.sln -c Release`. 제품 payload 변경이므로 queue 행을 더한다. push, PR. merge는 사용자 승인 뒤.
 
 ## Task 10: 품질 게이트와 종료 검증 (P8)
 

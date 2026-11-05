@@ -12,7 +12,7 @@
   ],
   "mutation_allowed": true,
   "current_write_allowed": false,
-  "next_step": "Task 1 merged in PR #96 (216b404), Task 2 in PR #97 (38ddf86), Task 3 in PR #98 (c0eec38), Task 4 in PR #99 (7f16115). Task 5 (P4 checkpoint tab and BL-0020 immediate schedule readback) is committed on lane1/ui-redesign-p4-20261105 and waits for the user's merge approval. Run Task 6 from docs/superpowers/plans/2026-11-05-purecvisor-desktop-node-ui-redesign.md after that merge, then the queue in order. Carried Task 11 (S4 user demo, in progress at S2) runs as soon as the user reports demo results and goes ahead of the UI queue, followed by Tasks 12 and 13. Each PR merges only after the user's merge approval.",
+  "next_step": "Task 1 merged in PR #96 (216b404), Task 2 in PR #97 (38ddf86), Task 3 in PR #98 (c0eec38), Task 4 in PR #99 (7f16115), Task 5 in PR #100 (64bc74b, BL-0020 closed). Task 6 (P5 new VM four-step wizard; create API has no switch field, so the network step is a read-only Default Switch notice) is committed on lane1/ui-redesign-p5-20261105 and waits for the user's merge approval. Run Task 7 from docs/superpowers/plans/2026-11-05-purecvisor-desktop-node-ui-redesign.md after that merge, then the queue in order. Carried Task 11 (S4 user demo, in progress at S2) runs as soon as the user reports demo results and goes ahead of the UI queue, followed by Tasks 12 and 13. Each PR merges only after the user's merge approval.",
   "plan": "docs/superpowers/plans/2026-11-05-purecvisor-desktop-node-ui-redesign.md",
   "task_queue": [
     "Task 1",
@@ -42,13 +42,14 @@
     "Task 13": "s4-lan-account-20261011 Task 7",
     "Task 14": "s4-lan-account-20261011 Task 2 (from train-04296-finish-20261011 Task 8)"
   },
-  "next_task": "Task 6",
+  "next_task": "Task 7",
   "completed_tasks": [
     "Task 1",
     "Task 2",
     "Task 3",
     "Task 4",
-    "Task 5"
+    "Task 5",
+    "Task 6"
   ],
   "commit_policy": "local-commit-per-task",
   "push_allowed": true,
@@ -56,7 +57,7 @@
   "checkpoint_limit": 14,
   "approval_locator": "User-Approval: 2026-09-27 campaign runner commit policy local-commit-per-task; User-Approval: 2026-11-05 \"1,2,3,4,5\" on the Web Console redesign proposal (1 sidebar groups with new Templates and Accounts views and six VM detail tabs; 2 screens W1-W7, details reviewed by PR screenshots; 3 incremental Single Edge module replacement, legacy console frozen then retired in this campaign, merging the 2026-10-10 approval 3 legacy-retirement campaign; 4 password reset API, CLI and Web in scope; 5 open this campaign from P0, S4 demo and train order unchanged and run in parallel); User-Approval: 2026-11-05 campaign question answer \"UI campaign + S4 carry-over\" (carry s4-lan-account-20261011 Tasks 5, 6, 7, 2 as Tasks 11-14); carried S4 approvals: 2026-10-09 audit item 3 pre-approval (installed --allow-lan and firewall changes), 2026-10-12 \"1\" (Lane 2 is --allow-lan, firewall, account create/disable, ADR-0016 pcv-it-s4-* VM create/delete), 2026-10-12 \"1,2\" (Task 6 reconfigures the installed service with the Host.exe built from merged main; release train once after S4); User-Approval: 2026-11-05 \"1,2\" (1 S4 Task 5 user demo, 2 release train departure after the S4 judgment); User-Approval: 2026-11-05 S4 account reissue on user request (create admin pcv-admin2, disable pcv-admin after login check); ADR-0016 standing approval (2026-10-07): pcv-it- prefixed VM create/configure/delete; merge: each PR needs an explicit user merge approval sentence (merge_policy none)",
   "next_approval_required": [
-    "Merge the lane1/ui-redesign-p4-20261105 PR (Task 5 P4 checkpoint tab, closes BL-0020) after green Required CI.",
+    "Merge the lane1/ui-redesign-p5-20261105 PR (Task 6 P5 new VM wizard) after green Required CI.",
     "After Task 13 (S4 judgment): depart the release train (queue PR #94, #95 and any merged UI payload) either as tasks inside this campaign or by pausing this campaign and opening a train campaign."
   ],
   "stop_on": [

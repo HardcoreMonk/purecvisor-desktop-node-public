@@ -66,6 +66,17 @@
         "design": "docs/superpowers/specs/2026-11-05-purecvisor-desktop-node-ui-redesign-design.md"
       },
       "risk_tier": "M"
+    },
+    {
+      "pr": 101,
+      "merge_commit": "f0db33e4",
+      "area": "web",
+      "summary": "새 VM 4단계 마법사: 단계별 검사, 예시 값 초기값 제거, 읽기 전용 세대와 Default Switch 안내, 만들기 뒤 job 진행과 새 VM 열기",
+      "lane2_probe": {
+        "family": "web.console.vm-create",
+        "design": "docs/superpowers/specs/2026-11-05-purecvisor-desktop-node-ui-redesign-design.md"
+      },
+      "risk_tier": "M"
     }
   ],
   "trains": [
