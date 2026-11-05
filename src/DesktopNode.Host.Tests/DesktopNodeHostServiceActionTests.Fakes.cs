@@ -55,6 +55,7 @@ public sealed partial class DesktopNodeHostServiceActionTests
         public DesktopNodeWindowsServiceSnapshot? StoppedSnapshot { get; init; }
         public DesktopNodeWindowsServiceSnapshot? ConfiguredSnapshot { get; init; }
         public DesktopNodeWindowsServiceSnapshot? DeletedSnapshot { get; init; }
+        public Exception? StopException { get; init; }
 
         public List<string> Calls { get; } = [];
         public List<DesktopNodeWindowsServiceConfiguration> Configurations { get; } = [];
@@ -74,6 +75,11 @@ public sealed partial class DesktopNodeHostServiceActionTests
         public DesktopNodeWindowsServiceSnapshot Stop(string serviceName, TimeSpan timeout)
         {
             Calls.Add("stop");
+            if (StopException is not null)
+            {
+                throw StopException;
+            }
+
             return StoppedSnapshot ?? MutatedSnapshot ?? Snapshot;
         }
 

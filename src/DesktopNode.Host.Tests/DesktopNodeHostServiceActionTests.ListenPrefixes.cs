@@ -235,4 +235,169 @@ public sealed partial class DesktopNodeHostServiceActionTests
             }
         }
     }
+
+    [Fact]
+    public async Task ConfigureInstalledStopsRunningServiceWhenCommandLineChangesToLan()
+    {
+        var dataRoot = Path.Combine(Path.GetTempPath(), "pcv-host-service-configure-lan-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(dataRoot);
+        try
+        {
+            var loopbackOptions = ConfigurePrefixOptions(dataRoot: dataRoot);
+            var loopbackPlan = DesktopNodeHostServiceAction.CreatePlan(loopbackOptions);
+            var loopbackConfiguration = DesktopNodeHostServiceAction.CreateServiceConfiguration(loopbackPlan, loopbackOptions);
+            var controller = RunningOwnedService(loopbackConfiguration.BinaryPathName);
+            const string lanPrefix = "http://192.0.2.10:7777/";
+            const string lanWebPrefix = "http://192.0.2.10:80/";
+
+            var result = await ExecuteWithHardenerAsync(
+                ConfigurePrefixOptions(
+                    prefix: lanPrefix,
+                    webPrefix: lanWebPrefix,
+                    allowLan: true,
+                    dataRoot: dataRoot),
+                controller,
+                new RecordingFileAclHardener());
+
+            Assert.True(result.Ok);
+            Assert.Equal(["query", "stop", "configure", "start"], controller.Calls);
+            var binaryPath = Assert.Single(controller.Configurations).BinaryPathName;
+            Assert.Contains($"--prefix \"{lanPrefix}\"", binaryPath);
+            Assert.Contains($"--web-prefix \"{lanWebPrefix}\"", binaryPath);
+            Assert.Contains("--allow-lan", binaryPath);
+        }
+        finally
+        {
+            if (Directory.Exists(dataRoot))
+            {
+                Directory.Delete(dataRoot, recursive: true);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task ConfigureInstalledStopsRunningServiceWhenCommandLineReturnsToLoopback()
+    {
+        var dataRoot = Path.Combine(Path.GetTempPath(), "pcv-host-service-configure-loopback-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(dataRoot);
+        try
+        {
+            const string lanPrefix = "http://192.0.2.10:7777/";
+            const string lanWebPrefix = "http://192.0.2.10:80/";
+            var lanOptions = ConfigurePrefixOptions(
+                prefix: lanPrefix,
+                webPrefix: lanWebPrefix,
+                allowLan: true,
+                dataRoot: dataRoot);
+            var lanPlan = DesktopNodeHostServiceAction.CreatePlan(lanOptions);
+            var lanConfiguration = DesktopNodeHostServiceAction.CreateServiceConfiguration(lanPlan, lanOptions);
+            var controller = RunningOwnedService(lanConfiguration.BinaryPathName);
+
+            var result = await ExecuteWithHardenerAsync(
+                ConfigurePrefixOptions(dataRoot: dataRoot),
+                controller,
+                new RecordingFileAclHardener());
+
+            Assert.True(result.Ok);
+            Assert.Equal(["query", "stop", "configure", "start"], controller.Calls);
+            var binaryPath = Assert.Single(controller.Configurations).BinaryPathName;
+            Assert.Contains("--prefix \"http://127.0.0.1:7777/\"", binaryPath);
+            Assert.Contains("--web-prefix \"http://127.0.0.1:80/\"", binaryPath);
+            Assert.DoesNotContain("--allow-lan", binaryPath);
+            Assert.DoesNotContain("192.0.2.10", binaryPath);
+        }
+        finally
+        {
+            if (Directory.Exists(dataRoot))
+            {
+                Directory.Delete(dataRoot, recursive: true);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task ConfigureInstalledConfiguresAndStartsRunningServiceWhenCommandLineMatches()
+    {
+        var dataRoot = Path.Combine(Path.GetTempPath(), "pcv-host-service-configure-match-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(dataRoot);
+        try
+        {
+            var options = ConfigurePrefixOptions(dataRoot: dataRoot);
+            var plan = DesktopNodeHostServiceAction.CreatePlan(options);
+            var configuration = DesktopNodeHostServiceAction.CreateServiceConfiguration(plan, options);
+            var controller = RunningOwnedService(configuration.BinaryPathName);
+
+            var result = await ExecuteWithHardenerAsync(options, controller, new RecordingFileAclHardener());
+
+            Assert.True(result.Ok);
+            Assert.Equal(["query", "configure", "start"], controller.Calls);
+            Assert.Single(controller.Configurations);
+            Assert.Equal(configuration.BinaryPathName, controller.Configurations[0].BinaryPathName);
+        }
+        finally
+        {
+            if (Directory.Exists(dataRoot))
+            {
+                Directory.Delete(dataRoot, recursive: true);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task ConfigureInstalledPropagatesStopFailureWhenRunningCommandLineDiffers()
+    {
+        var dataRoot = Path.Combine(Path.GetTempPath(), "pcv-host-service-configure-stop-fail-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(dataRoot);
+        try
+        {
+            var loopbackOptions = ConfigurePrefixOptions(dataRoot: dataRoot);
+            var loopbackPlan = DesktopNodeHostServiceAction.CreatePlan(loopbackOptions);
+            var loopbackConfiguration = DesktopNodeHostServiceAction.CreateServiceConfiguration(loopbackPlan, loopbackOptions);
+            var stopError = new DesktopNodeWindowsServiceControllerException(
+                "PCV_HOST_SERVICE_STOP_FAILED",
+                "The Desktop Node service could not be stopped.",
+                new InvalidOperationException("injected"));
+            var controller = RunningOwnedService(loopbackConfiguration.BinaryPathName, stopError);
+            const string lanPrefix = "http://192.0.2.11:7777/";
+            const string lanWebPrefix = "http://192.0.2.11:80/";
+
+            var result = await ExecuteWithHardenerAsync(
+                ConfigurePrefixOptions(
+                    prefix: lanPrefix,
+                    webPrefix: lanWebPrefix,
+                    allowLan: true,
+                    dataRoot: dataRoot),
+                controller,
+                new RecordingFileAclHardener());
+
+            Assert.False(result.Ok);
+            Assert.Equal(stopError.Code, result.ErrorCode);
+            Assert.Equal(stopError.Message, result.ErrorMessage);
+            Assert.Equal(["query", "stop"], controller.Calls);
+            Assert.Empty(controller.Configurations);
+        }
+        finally
+        {
+            if (Directory.Exists(dataRoot))
+            {
+                Directory.Delete(dataRoot, recursive: true);
+            }
+        }
+    }
+
+    private static FakeWindowsServiceController RunningOwnedService(string binaryPathName, Exception? stopException = null)
+    {
+        var running = new DesktopNodeWindowsServiceSnapshot(
+            ServiceName: "PureCVisorDesktopNode",
+            Exists: true,
+            Status: "running",
+            BinaryPathName: binaryPathName,
+            Win32ExitCode: 0);
+        return new FakeWindowsServiceController
+        {
+            Snapshot = running,
+            StartedSnapshot = running,
+            StopException = stopException
+        };
+    }
 }
