@@ -174,6 +174,411 @@ function renderNetworkInventory() {
 }
 
 // --- legacy render-vm-detail.ts ---
+function vmPowerKind(vm) {
+  const value = String(getVmState(vm) || '').toLowerCase();
+  if (value.includes('running') || value === 'on') return 'running';
+  if (value.includes('paused')) return 'paused';
+  if (value.includes('saved')) return 'saved';
+  return 'off';
+}
+
+function vmCheckpointCount(vm) {
+  const raw = vm?.checkpoints?.count ?? vm?.checkpoints_count ?? (Array.isArray(vm?.checkpoints) ? vm.checkpoints.length : 0);
+  const count = Number(raw);
+  return Number.isFinite(count) ? count : 0;
+}
+
+function renderVmPowerButtons(vmId, kind, actionDisabled, lockedMutationDisabled) {
+  const id = pcvEscapeHtml(vmId);
+  if (kind === 'running') {
+    return `<button type="button" data-action="vm-shutdown" data-vm-id="${id}"${lockedMutationDisabled}>${pcvEscapeHtml(t('vm.power.shutdown'))}</button><button type="button" data-action="vm-restart" data-vm-id="${id}"${lockedMutationDisabled}>${pcvEscapeHtml(t('vm.power.restart'))}</button>`;
+  }
+  if (kind === 'paused') {
+    return `<button type="button" data-action="vm-resume" data-vm-id="${id}"${lockedMutationDisabled}>${pcvEscapeHtml(t('vm.power.resume'))}</button>`;
+  }
+  if (kind === 'saved') {
+    return `<button type="button" data-action="vm-resume-saved" data-vm-id="${id}"${lockedMutationDisabled}>${pcvEscapeHtml(t('vm.power.resume_saved'))}</button>`;
+  }
+  return `<button type="button" data-action="vm-start" data-vm-id="${id}"${actionDisabled}>${pcvEscapeHtml(t('vm.power.start'))}</button>`;
+}
+
+function clearNode(node) {
+  if (!node) return;
+  while (node.firstChild) node.removeChild(node.firstChild);
+}
+
+function sameVmToken(value, expected) {
+  const left = String(value == null ? '' : value);
+  const right = String(expected == null ? '' : expected);
+  return left.length > 0 && right.length > 0 && left.toUpperCase() === right.toUpperCase();
+}
+
+function jobVmIdentityValues(job) {
+  const params = job && job.params && typeof job.params === 'object' && !Array.isArray(job.params) ? job.params : null;
+  if (!params) return [];
+  return ['name', 'vm_name', 'source', 'new_name'].map((key) => params[key]).filter((value) => typeof value === 'string' || typeof value === 'number');
+}
+
+function collectVmJobs(vmId, vmName) {
+  const seen = new Set();
+  const rows = [];
+  const pools = [];
+  if (Array.isArray(state.serverJobs)) pools.push.apply(pools, state.serverJobs);
+  if (Array.isArray(state.trackedJobs)) pools.push.apply(pools, state.trackedJobs);
+  pools.forEach((job) => {
+    if (!job || typeof job !== 'object') return;
+    const hit = jobVmIdentityValues(job).some((value) => sameVmToken(value, vmId) || sameVmToken(value, vmName));
+    if (!hit) return;
+    const key = String(job.job_id || job.id || '');
+    if (key) {
+      if (seen.has(key)) return;
+      seen.add(key);
+    }
+    rows.push(job);
+  });
+  return rows;
+}
+
+function fillVmJobs(container, vmId, recentOnly) {
+  if (!container) return;
+  clearNode(container);
+  const jobs = collectVmJobs(vmId, getVmName(state.selectedVm));
+  const list = recentOnly && jobs.length > 3 ? jobs.slice(jobs.length - 3) : jobs;
+  if (!list.length) {
+    if (PCV.components && typeof PCV.components.emptyState === 'function') {
+      container.appendChild(PCV.components.emptyState({
+        titleKey: 'vm.jobs.empty_title',
+        bodyKey: 'vm.jobs.empty_body'
+      }));
+    } else {
+      const title = document.createElement('p');
+      title.textContent = t('vm.jobs.empty_title');
+      const body = document.createElement('p');
+      body.textContent = t('vm.jobs.empty_body');
+      container.appendChild(title);
+      container.appendChild(body);
+    }
+    return;
+  }
+  list.forEach((job) => {
+    if (PCV.components && typeof PCV.components.renderJobProgress === 'function') {
+      container.appendChild(PCV.components.renderJobProgress(job));
+    }
+  });
+  if (recentOnly) {
+    const more = document.createElement('button');
+    more.type = 'button';
+    more.setAttribute('data-action', 'vm-open-jobs-tab');
+    more.textContent = t('vm.jobs.open_tab');
+    container.appendChild(more);
+  }
+}
+
+function nodeInside(ancestor, node) {
+  let current = node;
+  while (current) {
+    if (current === ancestor) return true;
+    current = current.parentNode;
+  }
+  return false;
+}
+
+function bindVmMoreMenu(root) {
+  const toggle = root.querySelector('[data-action="vm-more-toggle"]');
+  const menu = root.querySelector('[role="menu"]');
+  if (!toggle || !menu) return;
+  function enabledItems() {
+    return Array.prototype.filter.call(menu.querySelectorAll('[role="menuitem"]'), (item) => !item.disabled);
+  }
+  function closeMenu() {
+    menu.hidden = true;
+    toggle.setAttribute('aria-expanded', 'false');
+  }
+  function openMenu() {
+    menu.hidden = false;
+    toggle.setAttribute('aria-expanded', 'true');
+    const items = enabledItems();
+    if (items[0] && typeof items[0].focus === 'function') items[0].focus();
+  }
+  toggle.addEventListener('click', (event) => {
+    if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
+    if (menu.hidden) openMenu();
+    else closeMenu();
+  });
+  menu.addEventListener('keydown', (event) => {
+    const items = enabledItems();
+    if (event.key === 'Escape') {
+      if (typeof event.preventDefault === 'function') event.preventDefault();
+      closeMenu();
+      if (typeof toggle.focus === 'function') toggle.focus();
+      return;
+    }
+    if (!items.length) return;
+    const current = items.indexOf(event.target);
+    let next = -1;
+    if (event.key === 'ArrowDown') next = current < 0 ? 0 : (current + 1) % items.length;
+    else if (event.key === 'ArrowUp') next = current < 0 ? items.length - 1 : (current - 1 + items.length) % items.length;
+    else if (event.key === 'Home') next = 0;
+    else if (event.key === 'End') next = items.length - 1;
+    else return;
+    if (typeof event.preventDefault === 'function') event.preventDefault();
+    if (items[next] && typeof items[next].focus === 'function') items[next].focus();
+  });
+  if (!window.__pcvVmMenuOutsideBound) {
+    window.__pcvVmMenuOutsideBound = true;
+    document.addEventListener('click', (event) => {
+      const menus = document.querySelectorAll('.pcv-vm-menu');
+      Array.prototype.forEach.call(menus, (openMenu) => {
+        if (!openMenu || openMenu.hidden) return;
+        const wrap = openMenu.parentNode;
+        if (wrap && nodeInside(wrap, event.target)) return;
+        openMenu.hidden = true;
+        const opener = wrap && wrap.querySelector ? wrap.querySelector('[data-action="vm-more-toggle"]') : null;
+        if (opener) opener.setAttribute('aria-expanded', 'false');
+      });
+    });
+  }
+}
+
+function mountVmDetailTabs(root, vmId) {
+  const host = root.querySelector('[data-pcv-vm-tabs]');
+  if (!host || !PCV.components || typeof PCV.components.renderTabs !== 'function') return null;
+  const tabs = [
+    { id: 'summary', labelKey: 'vm.tab.summary' },
+    { id: 'console', labelKey: 'vm.tab.console' },
+    { id: 'checkpoints', labelKey: 'vm.tab.checkpoints' },
+    { id: 'hardware', labelKey: 'vm.tab.hardware' },
+    { id: 'guest', labelKey: 'vm.tab.guest' },
+    { id: 'jobs', labelKey: 'vm.tab.jobs' }
+  ];
+  const api = PCV.components.renderTabs(host, tabs, window.__pcvVmDetailTab || '', (id) => {
+    window.__pcvVmDetailTab = id;
+  }, { rememberKey: 'pcv-vm-detail-tab' });
+  const buttons = host.querySelectorAll('[role="tab"]');
+  let active = tabs[0] ? tabs[0].id : '';
+  Array.prototype.forEach.call(buttons, (button, index) => {
+    if (button.getAttribute('aria-selected') === 'true' && tabs[index]) active = tabs[index].id;
+  });
+  window.__pcvVmDetailTab = active;
+  tabs.forEach((tab, index) => {
+    const source = root.querySelector(`[data-pcv-tab-source="${tab.id}"]`);
+    if (source && api.panels[index]) api.panels[index].appendChild(source);
+  });
+  const jobsSource = root.querySelector('[data-pcv-tab-source="jobs"]');
+  fillVmJobs(jobsSource || api.panels[5], vmId, false);
+  const recent = root.querySelector('[data-pcv-recent-jobs]');
+  if (recent) fillVmJobs(recent, vmId, true);
+  root.querySelectorAll('[data-action="vm-open-jobs-tab"]').forEach((button) => {
+    button.addEventListener('click', () => {
+      window.__pcvVmDetailTab = 'jobs';
+      api.select('jobs');
+    });
+  });
+  const openConsole = root.querySelector('[data-action="vm-open-console-tab"]');
+  if (openConsole) {
+    openConsole.addEventListener('click', () => {
+      if (openConsole.disabled) return;
+      window.__pcvVmDetailTab = 'console';
+      api.select('console');
+    });
+  }
+  root.querySelectorAll('[data-action="vm-clone-open"]').forEach((button) => {
+    button.addEventListener('click', (event) => {
+      if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
+      if (button.disabled) return;
+      openVmCloneModal(button.getAttribute('data-vm-id') || vmId);
+    });
+  });
+  bindVmMoreMenu(root);
+  return api;
+}
+
+function currentVmNames() {
+  const rows = Array.isArray(state.vms) ? state.vms : [];
+  return rows.map((vm) => {
+    try { return getVmName(vm); } catch (err) { return ''; }
+  }).filter(Boolean);
+}
+
+function suggestCloneName(sourceName, names) {
+  const taken = new Set((names || []).map((name) => String(name).toUpperCase()));
+  const base = `${sourceName}-clone`;
+  if (!taken.has(base.toUpperCase())) return base;
+  let index = 2;
+  let candidate = `${sourceName}-clone-${index}`;
+  while (taken.has(candidate.toUpperCase())) {
+    index += 1;
+    candidate = `${sourceName}-clone-${index}`;
+  }
+  return candidate;
+}
+
+function cloneRequestPayload(vmId, name, vmRoot) {
+  const payload = { confirm_name: vmId, name: String(name || '') };
+  const root = String(vmRoot || '').trim();
+  if (root) payload.vm_root = root;
+  return payload;
+}
+
+function cloneFixText(code) {
+  if (code === 'PCV_VM_CLONE_NAME_CONFLICT') return t('vm.clone.fix.conflict');
+  if (code === 'PCV_VM_ALREADY_EXISTS') return t('vm.clone.fix.duplicate');
+  if (code === 'PCV_VM_CLONE_NAME_REQUIRED') return t('vm.clone.fix.required');
+  if (code === 'PCV_VM_NAME_INVALID' || code === 'PCV_VM_CLONE_NAME_INVALID') return t('vm.clone.fix.invalid');
+  if (code === 'PCV_VM_CLONE_CONFIRMATION_MISMATCH') return t('vm.clone.fix.mismatch');
+  return t('vm.clone.fix.generic');
+}
+
+function showClonePreview(panel, preview) {
+  clearNode(panel);
+  const bytes = preview && preview.planned_copy_bytes;
+  const line = document.createElement('p');
+  line.textContent = t('vm.clone.preview_ok', {
+    bytes: bytes === null || bytes === undefined || bytes === '' ? '-' : String(bytes)
+  });
+  panel.appendChild(line);
+}
+
+function showClonePreviewError(panel, error) {
+  clearNode(panel);
+  const normalized = typeof normalizeError === 'function' ? normalizeError(error) : { code: '' };
+  const line = document.createElement('p');
+  line.textContent = t('vm.clone.preview_fail', {
+    code: normalized.code || '',
+    fix: cloneFixText(normalized.code)
+  });
+  panel.appendChild(line);
+}
+
+function cloneOpenLink(name) {
+  const link = document.createElement('a');
+  link.href = '#vms';
+  link.textContent = t('vm.clone.open_new');
+  link.addEventListener('click', (event) => {
+    if (event && typeof event.preventDefault === 'function') event.preventDefault();
+    openClonedVm(name);
+  });
+  return link;
+}
+
+function showCloneJob(host, job, name) {
+  clearNode(host);
+  if (!job || !PCV.components || typeof PCV.components.renderJobProgress !== 'function') return;
+  host.appendChild(PCV.components.renderJobProgress(job));
+  const phaseOf = (row) => String((row && (row.status || row.state)) || '').toLowerCase();
+  if (phaseOf(job) === 'succeeded') host.appendChild(cloneOpenLink(name));
+  const jobId = job.job_id || job.id;
+  if (!jobId || typeof PCV.components.trackJob !== 'function') return;
+  if (phaseOf(job) === 'succeeded' || phaseOf(job) === 'failed' || phaseOf(job) === 'canceled') return;
+  PCV.components.trackJob(jobId, (next) => {
+    clearNode(host);
+    host.appendChild(PCV.components.renderJobProgress(next));
+    if (phaseOf(next) === 'succeeded') host.appendChild(cloneOpenLink(name));
+  });
+}
+
+async function openClonedVm(name) {
+  const sameName = (vm) => String(getVmName(vm)).toUpperCase() === String(name || '').toUpperCase();
+  const listed = (Array.isArray(state.vms) ? state.vms : []).find(sameName);
+  state.selectedVmId = listed ? getVmId(listed) : name;
+  if (typeof loadVms === 'function') {
+    try { await loadVms(); } catch (err) { /* the open link still points at the chosen name */ }
+  }
+  const after = (Array.isArray(state.vms) ? state.vms : []).find(sameName);
+  if (after) state.selectedVmId = getVmId(after);
+  if (typeof refreshSelectedVm === 'function') await refreshSelectedVm();
+  if (typeof render === 'function') render();
+  if (PCV.modalCore && typeof PCV.modalCore.close === 'function') PCV.modalCore.close(true);
+}
+
+function openVmCloneModal(vmId) {
+  const vm = (state.selectedVm && getVmId(state.selectedVm) === vmId) ? state.selectedVm : (findCachedVm(vmId) || state.selectedVm);
+  const sourceName = getVmName(vm);
+  const names = currentVmNames();
+  const suggested = suggestCloneName(sourceName, names);
+  const ux = PCV.uxlib;
+  const components = PCV.components;
+  const title = ux.el('h2', {}, t('vm.clone.title'));
+  const subtitle = ux.el('p', { class: 'pcv-clone-subtitle' }, t('vm.clone.subtitle', {
+    name: sourceName,
+    lock: t(isTemplateLockedVm(vm) ? 'vm.clone.lock_on' : 'vm.clone.lock_off'),
+    power: getVmState(vm) || t('vm.state.unknown')
+  }));
+  const nameInput = ux.el('input', {
+    name: 'name',
+    type: 'text',
+    autocomplete: 'off',
+    'aria-label': t('vm.clone.name_label')
+  });
+  nameInput.value = suggested;
+  const form = ux.el('form', { class: 'pcv-clone-form' }, ux.el('label', {}, t('vm.clone.name_label'), nameInput));
+  const vmRootInput = ux.el('input', {
+    name: 'vm_root',
+    type: 'text',
+    autocomplete: 'off',
+    'aria-label': t('vm.clone.vm_root')
+  });
+  const storage = ux.el('details', { class: 'pcv-clone-storage' },
+    ux.el('summary', {}, t('vm.clone.storage_summary')),
+    ux.el('label', {}, t('vm.clone.vm_root'), vmRootInput));
+  const previewBtn = ux.el('button', { type: 'button', class: 'btn' }, t('vm.clone.preview'));
+  const startBtn = ux.el('button', { type: 'button', class: 'btn' }, t('vm.clone.start'));
+  const previewPanel = ux.el('div', { class: 'pcv-clone-preview', role: 'status' });
+  const jobHost = ux.el('div', { class: 'pcv-clone-job' });
+  let previewedName = '';
+  function syncStart() {
+    startBtn.disabled = !(previewedName && nameInput.value === previewedName);
+  }
+  startBtn.disabled = true;
+  nameInput.addEventListener('input', () => {
+    previewedName = '';
+    syncStart();
+  });
+  components.bindValidation(form, {
+    name: [
+      components.validators.required,
+      components.validators.hyperVName,
+      components.validators.notSameAs(sourceName),
+      components.validators.notIn(names)
+    ]
+  }, previewBtn);
+  form.addEventListener('submit', (event) => {
+    if (event && typeof event.preventDefault === 'function') event.preventDefault();
+    if (!previewBtn.disabled && typeof previewBtn.click === 'function') previewBtn.click();
+  });
+  previewBtn.addEventListener('click', async () => {
+    if (previewBtn.disabled) return;
+    const name = nameInput.value;
+    const payload = cloneRequestPayload(vmId, name, vmRootInput.value);
+    try {
+      const preview = await desktopApi.previewVmClone(vmId, payload);
+      if (nameInput.value !== name) return;
+      previewedName = name;
+      syncStart();
+      showClonePreview(previewPanel, preview);
+    } catch (error) {
+      previewedName = '';
+      syncStart();
+      showClonePreviewError(previewPanel, error);
+    }
+  });
+  startBtn.addEventListener('click', async () => {
+    if (startBtn.disabled || nameInput.value !== previewedName) return;
+    const name = nameInput.value;
+    startBtn.disabled = true;
+    try {
+      const job = await queueVmClone(vmId, name, vmRootInput.value);
+      showCloneJob(jobHost, job, name);
+    } catch (error) {
+      showClonePreviewError(previewPanel, error);
+      syncStart();
+    }
+  });
+  const body = ux.el('div', { class: 'pcv-clone-modal' }, title, subtitle, form, storage, previewBtn, startBtn, previewPanel, jobHost);
+  PCV.modalCore.open(body, { wide: true });
+  return body;
+}
+
 function renderVmDetail() {
   const vm = state.selectedVm;
   if (!vm) {
@@ -217,89 +622,155 @@ function renderVmDetail() {
     ['Template', templateLocked ? 'locked' : 'no'],
     ['Notes', vm.error?.message || vm.notes]
   ];
-  const templateLockButton = templateLocked
-    ? `<button data-action="vm-template-unlock" data-vm-id="${pcvEscapeHtml(vmId)}"${actionDisabled}>Unlock template</button>`
-    : `<button data-action="vm-template-lock" data-vm-id="${pcvEscapeHtml(vmId)}"${actionDisabled}>Lock template</button>`;
+  const vmName = getVmName(vm);
+  const deleteDisabled = isVmActionPending(vmId) || !canOperate || templateLocked ? ' disabled' : '';
+  const id = pcvEscapeHtml(vmId);
+  const templateMenuItem = templateLocked
+    ? `<button type="button" role="menuitem" data-action="vm-template-unlock" data-vm-id="${id}"${actionDisabled}>${pcvEscapeHtml(t('vm.menu.unlock'))}</button>`
+    : `<button type="button" role="menuitem" data-action="vm-template-lock" data-vm-id="${id}"${actionDisabled}>${pcvEscapeHtml(t('vm.menu.lock'))}</button>`;
+  const templateCloneButton = templateLocked
+    ? `<button type="button" class="btn" data-action="vm-clone-open" data-vm-id="${id}"${actionDisabled}>${pcvEscapeHtml(t('vm.menu.clone'))}</button>`
+    : '';
+  const stateText = getVmState(vm) || t('vm.state.unknown');
 
   els.vmDetailContent.innerHTML = `
-    <div class="lifecycle-actions">
-      <button data-action="vm-start" data-vm-id="${pcvEscapeHtml(vmId)}"${actionDisabled}>Start</button>
-      <button data-action="vm-shutdown" data-vm-id="${pcvEscapeHtml(vmId)}"${lockedMutationDisabled}>Shutdown</button>
-      <button class="danger-button" data-action="vm-poweroff" data-vm-id="${pcvEscapeHtml(vmId)}"${lockedMutationDisabled}>Power off</button>
-      <button class="danger-button" data-action="vm-restart" data-vm-id="${pcvEscapeHtml(vmId)}"${lockedMutationDisabled}>Restart</button>
-      <button data-action="vm-save" data-vm-id="${pcvEscapeHtml(vmId)}"${lockedMutationDisabled}>Save</button>
-      <button data-action="vm-resume-saved" data-vm-id="${pcvEscapeHtml(vmId)}"${lockedMutationDisabled}>Resume saved</button>
-      <button data-action="vm-pause" data-vm-id="${pcvEscapeHtml(vmId)}"${lockedMutationDisabled}>Pause</button>
-      <button data-action="vm-resume" data-vm-id="${pcvEscapeHtml(vmId)}"${lockedMutationDisabled}>Resume</button>
-      <button data-action="vm-eject" data-vm-id="${pcvEscapeHtml(vmId)}"${lockedMutationDisabled}>Eject media</button>
-      <button data-action="vm-delete-status" data-vm-id="${pcvEscapeHtml(vmId)}"${actionDisabled}>Delete status</button>
-      <button data-action="vm-manage" data-vm-id="${pcvEscapeHtml(vmId)}"${lockedMutationDisabled}>Manage VM</button>
-      ${templateLockButton}
-      <button data-action="vm-clone" data-vm-id="${pcvEscapeHtml(vmId)}"${actionDisabled}>Clone VM</button>
-      <button class="danger-button" data-action="vm-delete" data-vm-id="${pcvEscapeHtml(vmId)}"${lockedMutationDisabled}>Delete VM</button>
-      <button data-action="vm-console" data-vm-id="${pcvEscapeHtml(vmId)}"${consoleDisabled}>Console</button>
-      ${pendingVmAction ? `<span class="muted">Pending action: ${pcvEscapeHtml(pendingVmAction)}</span>` : ''}
-      ${templateLocked ? '<span class="muted">Template lock: start, clone, and unlock only.</span>' : ''}
-      ${!canOperate ? '<span class="muted">RBAC: operate permission required for lifecycle actions.</span>' : ''}
-    </div>
-    <div class="vm-resource-grid">
-      <form class="vm-resource-form" data-action="vm-attach" data-vm-id="${pcvEscapeHtml(vmId)}">
-        <input name="iso_path" type="text" placeholder="ISO path" aria-label="ISO path"${lockedMutationDisabled}>
-        <button type="submit"${lockedMutationDisabled}>Attach media</button>
-      </form>
-      <form class="vm-resource-form" data-action="vm-rename" data-vm-id="${pcvEscapeHtml(vmId)}">
-        <input name="new_name" type="text" placeholder="New VM name" aria-label="New VM name"${lockedMutationDisabled}>
-        <button type="submit"${lockedMutationDisabled}>Rename VM</button>
-      </form>
-      <form class="vm-resource-form" data-action="vm-network-connect" data-vm-id="${pcvEscapeHtml(vmId)}">
-        <select name="switch" aria-label="Switch to connect"${lockedMutationDisabled}>${renderSwitchOptions()}</select>
-        <button type="submit"${lockedMutationDisabled}>Connect switch</button>
-      </form>
-      <form class="vm-resource-form" data-action="vm-device-add" data-vm-id="${pcvEscapeHtml(vmId)}">
-        <select name="device" aria-label="Device kind"${lockedMutationDisabled}><option value="nic">Network adapter</option><option value="dvd">DVD drive</option></select>
-        <select name="switch" aria-label="Network adapter switch"${lockedMutationDisabled}>${renderSwitchOptions()}</select>
-        <input name="iso_path" type="text" placeholder="DVD ISO path (optional)" aria-label="DVD ISO path"${lockedMutationDisabled}>
-        <button type="submit"${lockedMutationDisabled}>Add device</button>
-      </form>
-      <form class="vm-resource-form" data-action="vm-set-memory" data-vm-id="${pcvEscapeHtml(vmId)}">
-        <input name="memory_mb" type="number" min="512" max="262144" step="128" placeholder="Memory MB" aria-label="memory MB"${lockedMutationDisabled}>
-        <button type="submit"${lockedMutationDisabled}>Set memory</button>
-      </form>
-      <form class="vm-resource-form" data-action="vm-set-vcpu" data-vm-id="${pcvEscapeHtml(vmId)}">
-        <input name="cpu" type="number" min="1" max="32" step="1" placeholder="vCPU" aria-label="vCPU"${lockedMutationDisabled}>
-        <button type="submit"${lockedMutationDisabled}>Set vCPU</button>
-      </form>
-      <form class="vm-resource-form" data-action="vm-disk-resize" data-vm-id="${pcvEscapeHtml(vmId)}">
-        <input name="disk_gb" type="number" min="8" max="4096" step="1" placeholder="Disk GB" aria-label="disk GB"${lockedMutationDisabled}>
-        <button type="submit"${lockedMutationDisabled}>Resize disk</button>
-      </form>
-      <form class="vm-resource-form" data-action="vm-clone" data-vm-id="${pcvEscapeHtml(vmId)}">
-        <input name="name" autocomplete="off" placeholder="Target VM name" aria-label="clone target name"${actionDisabled}>
-        <button type="submit" data-action="vm-clone"${actionDisabled}>Clone VM</button>
-      </form>
-    </div>
-    <div class="details-grid detail-grid">
-      ${details.map(([label, value]) => `<div class="kv"><span>${pcvEscapeHtml(label)}</span><strong>${pcvEscapeHtml(formatObjectValue(value))}</strong></div>`).join('')}
-    </div>
-    ${renderVmConsoleFrameCard(vm, vmId, canViewConsole)}
-    ${renderExportImportReadback(vm, vmId, actionDisabled)}
-    ${renderVmQosGuestReadback(vmId)}
-    ${renderVmQosDirectControl(vmId)}
-    <div class="checkpoint-panel">
-      <div class="mini-section-header">
-        <div>
-          <p class="eyebrow">Checkpoints</p>
-          <h3>VM Checkpoints</h3>
-        </div>
-        <button data-action="checkpoint-refresh" data-vm-id="${pcvEscapeHtml(vmId)}"${checkpointRefreshDisabled}>Refresh checkpoints</button>
+    <header class="pcv-vm-header">
+      <nav class="pcv-vm-crumb" aria-label="${pcvEscapeHtml(t('vm.crumb.label'))}">
+        <span>${pcvEscapeHtml(t('vm.crumb.vms'))}</span>
+        <span aria-hidden="true"> › </span>
+        <span>${pcvEscapeHtml(vmName)}</span>
+      </nav>
+      <div class="pcv-vm-title-row">
+        <h2 class="pcv-vm-name">${pcvEscapeHtml(vmName)}</h2>
+        <div class="pcv-vm-badges">${stateBadge(stateText)}${templateLocked ? `<span class="badge badge-warn">${pcvEscapeHtml(t('vm.badge.template'))}</span>` : ''}</div>
       </div>
-      ${renderCheckpointScheduleReadback(vm, vmId, actionDisabled)}
-      <form class="checkpoint-form" data-action="checkpoint-create" data-vm-id="${pcvEscapeHtml(vmId)}">
-        <input name="checkpoint_name" autocomplete="off" placeholder="Checkpoint name" aria-label="checkpoint name"${checkpointMutationDisabled}>
-        <button type="submit"${checkpointMutationDisabled}>Create checkpoint</button>
-      </form>
-      <div class="checkpoint-list">${renderCheckpointList(vmId)}</div>
-    </div>`;
+      <div class="pcv-vm-actions">
+        ${renderVmPowerButtons(vmId, vmPowerKind(vm), actionDisabled, lockedMutationDisabled)}
+        <button type="button" data-action="vm-open-console-tab" data-vm-id="${id}"${consoleDisabled}>${pcvEscapeHtml(t('vm.console.open'))}</button>
+        ${templateCloneButton}
+        <div class="pcv-vm-menu-wrap">
+          <button type="button" data-action="vm-more-toggle" aria-haspopup="menu" aria-expanded="false" aria-controls="pcv-vm-more-menu">${pcvEscapeHtml(t('vm.menu.more'))}</button>
+          <div id="pcv-vm-more-menu" class="pcv-vm-menu" role="menu" hidden>
+            <button type="button" role="menuitem" data-action="vm-clone-open" data-vm-id="${id}"${actionDisabled}>${pcvEscapeHtml(t('vm.menu.clone'))}</button>
+            ${templateMenuItem}
+            <button type="button" role="menuitem" data-action="vm-export-focus" data-vm-id="${id}"${actionDisabled}>${pcvEscapeHtml(t('vm.menu.export'))}</button>
+            <button type="button" role="menuitem" data-action="vm-console" data-vm-id="${id}"${consoleDisabled}>${pcvEscapeHtml(t('vm.menu.vmconnect'))}</button>
+            <button type="button" role="menuitem" class="pcv-menu-danger" data-action="vm-poweroff" data-vm-id="${id}"${lockedMutationDisabled}>${pcvEscapeHtml(t('vm.menu.poweroff'))}</button>
+            <button type="button" role="menuitem" class="pcv-menu-danger" data-action="vm-delete" data-vm-id="${id}"${deleteDisabled}>${pcvEscapeHtml(t('vm.menu.delete'))}</button>
+          </div>
+        </div>
+      </div>
+      ${pendingVmAction ? `<p class="muted">${pcvEscapeHtml(t('vm.pending', { action: String(pendingVmAction) }))}</p>` : ''}
+      ${templateLocked ? `<p class="muted">${pcvEscapeHtml(t('vm.lock.note'))}</p>` : ''}
+      ${!canOperate ? `<p class="muted">${pcvEscapeHtml(t('vm.rbac.operate'))}</p>` : ''}
+    </header>
+    <div data-pcv-vm-tabs></div>
+    <div data-pcv-tab-source="summary">
+      <div class="details-grid detail-grid">
+        ${details.map(([label, value]) => `<div class="kv"><span>${pcvEscapeHtml(label)}</span><strong>${pcvEscapeHtml(formatObjectValue(value))}</strong></div>`).join('')}
+      </div>
+      ${renderVmQosGuestReadback(vmId)}
+      <div class="pcv-vm-recent">
+        <h3>${pcvEscapeHtml(t('vm.jobs.recent'))}</h3>
+        <div data-pcv-recent-jobs></div>
+      </div>
+      ${renderExportImportReadback(vm, vmId, actionDisabled)}
+      <div class="lifecycle-actions pcv-vm-other-actions">
+        <h3>${pcvEscapeHtml(t('vm.summary.other'))}</h3>
+        <button type="button" data-action="vm-save" data-vm-id="${id}"${lockedMutationDisabled}>${pcvEscapeHtml(t('vm.power.save'))}</button>
+        <button type="button" data-action="vm-pause" data-vm-id="${id}"${lockedMutationDisabled}>${pcvEscapeHtml(t('vm.power.pause'))}</button>
+        <button type="button" data-action="vm-eject" data-vm-id="${id}"${lockedMutationDisabled}>${pcvEscapeHtml(t('vm.power.eject'))}</button>
+        <button type="button" data-action="vm-manage" data-vm-id="${id}"${lockedMutationDisabled}>${pcvEscapeHtml(t('vm.power.manage'))}</button>
+        <button type="button" data-action="vm-delete-status" data-vm-id="${id}"${actionDisabled}>${pcvEscapeHtml(t('vm.power.delete_status'))}</button>
+      </div>
+    </div>
+    <div data-pcv-tab-source="console">
+      ${renderVmConsoleFrameCard(vm, vmId, canViewConsole)}
+    </div>
+    <div data-pcv-tab-source="checkpoints">
+      <div class="checkpoint-panel">
+        <div class="mini-section-header">
+          <div>
+            <p class="eyebrow">Checkpoints</p>
+            <h3>VM Checkpoints</h3>
+          </div>
+          <button data-action="checkpoint-refresh" data-vm-id="${id}"${checkpointRefreshDisabled}>Refresh checkpoints</button>
+        </div>
+        ${renderCheckpointScheduleReadback(vm, vmId, actionDisabled)}
+        <form class="checkpoint-form" data-action="checkpoint-create" data-vm-id="${id}">
+          <input name="checkpoint_name" autocomplete="off" placeholder="Checkpoint name" aria-label="checkpoint name"${checkpointMutationDisabled}>
+          <button type="submit"${checkpointMutationDisabled}>Create checkpoint</button>
+        </form>
+        <div class="checkpoint-list">${renderCheckpointList(vmId)}</div>
+      </div>
+    </div>
+    <div data-pcv-tab-source="hardware">
+      <div class="vm-resource-grid">
+        <div class="pcv-hw-cell">
+          <p class="pcv-hw-label">${pcvEscapeHtml(t('vm.hw.iso'))}</p>
+          <p class="pcv-hw-help">${pcvEscapeHtml(t('vm.hw.iso_help'))}</p>
+          <form class="vm-resource-form" data-action="vm-attach" data-vm-id="${id}">
+            <input name="iso_path" type="text" placeholder="${pcvEscapeHtml(t('vm.hw.iso_placeholder'))}" aria-label="${pcvEscapeHtml(t('vm.hw.iso'))}"${lockedMutationDisabled}>
+            <button type="submit"${lockedMutationDisabled}>${pcvEscapeHtml(t('vm.hw.iso_apply'))}</button>
+          </form>
+        </div>
+        <div class="pcv-hw-cell">
+          <p class="pcv-hw-label">${pcvEscapeHtml(t('vm.hw.rename'))}</p>
+          <p class="pcv-hw-help">${pcvEscapeHtml(t('vm.hw.rename_help'))}</p>
+          <form class="vm-resource-form" data-action="vm-rename" data-vm-id="${id}">
+            <input name="new_name" type="text" placeholder="${pcvEscapeHtml(t('vm.hw.rename_placeholder'))}" aria-label="${pcvEscapeHtml(t('vm.hw.rename'))}"${lockedMutationDisabled}>
+            <button type="submit"${lockedMutationDisabled}>${pcvEscapeHtml(t('vm.hw.rename_apply'))}</button>
+          </form>
+        </div>
+        <div class="pcv-hw-cell">
+          <p class="pcv-hw-label">${pcvEscapeHtml(t('vm.hw.switch'))}</p>
+          <p class="pcv-hw-help">${pcvEscapeHtml(t('vm.hw.switch_help'))}</p>
+          <form class="vm-resource-form" data-action="vm-network-connect" data-vm-id="${id}">
+            <select name="switch" aria-label="${pcvEscapeHtml(t('vm.hw.switch'))}"${lockedMutationDisabled}>${renderSwitchOptions()}</select>
+            <button type="submit"${lockedMutationDisabled}>${pcvEscapeHtml(t('vm.hw.switch_apply'))}</button>
+          </form>
+        </div>
+        <div class="pcv-hw-cell">
+          <p class="pcv-hw-label">${pcvEscapeHtml(t('vm.hw.device'))}</p>
+          <p class="pcv-hw-help">${pcvEscapeHtml(t('vm.hw.device_help'))}</p>
+          <form class="vm-resource-form" data-action="vm-device-add" data-vm-id="${id}">
+            <select name="device" aria-label="${pcvEscapeHtml(t('vm.hw.device'))}"${lockedMutationDisabled}><option value="nic">${pcvEscapeHtml(t('vm.hw.device_nic'))}</option><option value="dvd">${pcvEscapeHtml(t('vm.hw.device_dvd'))}</option></select>
+            <select name="switch" aria-label="${pcvEscapeHtml(t('vm.hw.switch'))}"${lockedMutationDisabled}>${renderSwitchOptions()}</select>
+            <input name="iso_path" type="text" placeholder="${pcvEscapeHtml(t('vm.hw.dvd_placeholder'))}" aria-label="${pcvEscapeHtml(t('vm.hw.dvd_placeholder'))}"${lockedMutationDisabled}>
+            <button type="submit"${lockedMutationDisabled}>${pcvEscapeHtml(t('vm.hw.device_apply'))}</button>
+          </form>
+        </div>
+        <div class="pcv-hw-cell">
+          <p class="pcv-hw-label">${pcvEscapeHtml(t('vm.hw.memory'))}</p>
+          <p class="pcv-hw-help">${pcvEscapeHtml(t('vm.hw.memory_help'))}</p>
+          <form class="vm-resource-form" data-action="vm-set-memory" data-vm-id="${id}">
+            <input name="memory_mb" type="number" min="512" max="262144" step="128" placeholder="${pcvEscapeHtml(t('vm.hw.memory_placeholder'))}" aria-label="${pcvEscapeHtml(t('vm.hw.memory'))}"${lockedMutationDisabled}>
+            <button type="submit"${lockedMutationDisabled}>${pcvEscapeHtml(t('vm.hw.memory_apply'))}</button>
+          </form>
+        </div>
+        <div class="pcv-hw-cell">
+          <p class="pcv-hw-label">${pcvEscapeHtml(t('vm.hw.vcpu'))}</p>
+          <p class="pcv-hw-help">${pcvEscapeHtml(t('vm.hw.vcpu_help'))}</p>
+          <form class="vm-resource-form" data-action="vm-set-vcpu" data-vm-id="${id}">
+            <input name="cpu" type="number" min="1" max="32" step="1" placeholder="${pcvEscapeHtml(t('vm.hw.vcpu_placeholder'))}" aria-label="${pcvEscapeHtml(t('vm.hw.vcpu'))}"${lockedMutationDisabled}>
+            <button type="submit"${lockedMutationDisabled}>${pcvEscapeHtml(t('vm.hw.vcpu_apply'))}</button>
+          </form>
+        </div>
+        <div class="pcv-hw-cell">
+          <p class="pcv-hw-label">${pcvEscapeHtml(t('vm.hw.disk'))}</p>
+          <p class="pcv-hw-help">${pcvEscapeHtml(t('vm.hw.disk_help'))}</p>
+          <form class="vm-resource-form" data-action="vm-disk-resize" data-vm-id="${id}">
+            <input name="disk_gb" type="number" min="8" max="4096" step="1" placeholder="${pcvEscapeHtml(t('vm.hw.disk_placeholder'))}" aria-label="${pcvEscapeHtml(t('vm.hw.disk'))}"${lockedMutationDisabled}>
+            <button type="submit"${lockedMutationDisabled}>${pcvEscapeHtml(t('vm.hw.disk_apply'))}</button>
+          </form>
+        </div>
+      </div>
+    </div>
+    <div data-pcv-tab-source="guest">
+      ${renderVmQosDirectControl(vmId)}
+    </div>
+    <div data-pcv-tab-source="jobs"></div>`;
+  mountVmDetailTabs(els.vmDetailContent, vmId);
 }
 
 function renderExportImportReadback(vm, vmId, actionDisabled = '') {
@@ -614,9 +1085,36 @@ function renderVmQosDirectControl(vmId) {
 // --- legacy mutate.ts ---
 async function queueVmLifecycle(vmId, action) {
   requireRbac('operate', `VM ${action}`);
-  const requiresConfirmation = action === 'poweroff' || action === 'restart' || action === 'save' || action === 'resume-saved';
-  if (requiresConfirmation && !window.confirm(buildVmLifecycleConfirmation(vmId, action))) {
-    return;
+  if (action === 'poweroff' || action === 'restart' || action === 'save' || action === 'resume-saved') {
+    const vm = state.selectedVm || findCachedVm(vmId);
+    const name = getVmName(vm);
+    const vmState = getVmState(vm) || t('vm.state.unknown');
+    let title = t('vm.restart.title');
+    let message = t('vm.restart.message', { name, state: vmState });
+    let confirmLabel = t('vm.restart.confirm');
+    let danger = false;
+    if (action === 'poweroff') {
+      title = t('vm.poweroff.title');
+      message = t('vm.poweroff.message', { name, state: vmState });
+      confirmLabel = t('vm.poweroff.confirm');
+      danger = true;
+    } else if (action === 'save') {
+      title = t('vm.save.title');
+      message = t('vm.save.message', { name, state: vmState });
+      confirmLabel = t('vm.save.confirm');
+    } else if (action === 'resume-saved') {
+      title = t('vm.resume_saved.title');
+      message = t('vm.resume_saved.message', { name, state: vmState });
+      confirmLabel = t('vm.resume_saved.confirm');
+    }
+    const accepted = await PCV.components.confirmDialog({
+      title,
+      message,
+      confirmLabel,
+      cancelLabel: t('ui.confirm.cancel'),
+      danger
+    });
+    if (!accepted) return;
   }
 
   state.actionPending = true;
@@ -1045,8 +1543,25 @@ async function queueVmGuestFile(vmId, payload) {
 async function queueVmTemplateLock(vmId, locked) {
   requireRbac('operate', 'VM template lock');
   const vm = state.selectedVm || findCachedVm(vmId);
-  if (!window.confirm(buildVmTemplateLockConfirmation(vmId, vm, locked))) {
-    return;
+  if (locked) {
+    const accepted = await PCV.components.confirmDialog({
+      title: t('vm.lock.title'),
+      message: t('vm.lock.message', {
+        name: getVmName(vm),
+        state: getVmState(vm) || t('vm.state.unknown')
+      }),
+      confirmLabel: t('vm.lock.confirm'),
+      cancelLabel: t('ui.confirm.cancel')
+    });
+    if (!accepted) return;
+  } else {
+    const accepted = await PCV.components.confirmDialog({
+      title: t('vm.unlock.title'),
+      message: t('vm.unlock.message', { name: getVmName(vm) }),
+      confirmLabel: t('vm.unlock.confirm'),
+      cancelLabel: t('ui.confirm.cancel')
+    });
+    if (!accepted) return;
   }
 
   state.actionPending = true;
@@ -1067,7 +1582,7 @@ async function queueVmTemplateLock(vmId, locked) {
   }
 }
 
-async function queueVmClone(vmId, rawName) {
+async function queueVmClone(vmId, rawName, rawRoot) {
   requireRbac('operate', 'VM clone');
   const name = String(rawName || '').trim();
   if (!name) {
@@ -1078,25 +1593,21 @@ async function queueVmClone(vmId, rawName) {
     });
   }
 
-  const vm = state.selectedVm || findCachedVm(vmId);
-  const payload = { confirm_name: vmId, name };
+  const payload = cloneRequestPayload(vmId, name, rawRoot);
 
   state.actionPending = true;
   setVmActionPending(vmId, 'clone');
   state.error = null;
   render();
   try {
-    const preview = await desktopApi.previewVmClone(vmId, payload);
-    if (!window.confirm(buildVmCloneConfirmation(vmId, vm, name, preview))) {
-      return;
-    }
-
     const job = await desktopApi.queueVmClone(vmId, payload);
     pcvTrackJob(job);
     state.connectionState = 'connected';
     startPolling();
+    return job;
   } catch (error) {
     state.error = normalizeError(error);
+    throw error;
   } finally {
     state.actionPending = false;
     clearVmActionPending(vmId);
@@ -1115,9 +1626,16 @@ async function queueVmDelete(vmId) {
       detail: 'The Web Console blocks delete for running VMs. Use Power off first, then queue Delete VM again.'
     });
   }
-  if (!window.confirm(buildVmDeleteConfirmation(vmId, vm))) {
-    return;
-  }
+  const vmName = getVmName(vm);
+  const accepted = await PCV.components.confirmDialog({
+    title: t('vm.delete.title'),
+    message: t('vm.delete.message', { name: vmName, checkpoints: String(vmCheckpointCount(vm)) }),
+    confirmLabel: t('vm.delete.confirm_label'),
+    cancelLabel: t('ui.confirm.cancel'),
+    danger: true,
+    typedName: vmName
+  });
+  if (!accepted) return;
 
   state.actionPending = true;
   setVmActionPending(vmId, 'delete');
@@ -1249,9 +1767,12 @@ window.queueVmManage = queueVmManage;
 window.queueVmGuestFile = queueVmGuestFile;
 window.queueVmTemplateLock = queueVmTemplateLock;
 window.queueVmClone = queueVmClone;
+window.openVmCloneModal = openVmCloneModal;
+window.suggestCloneName = suggestCloneName;
+window.collectVmJobs = collectVmJobs;
 window.queueVmDelete = queueVmDelete;
 window.queueCheckpointCreate = queueCheckpointCreate;
 window.queueCheckpointRestore = queueCheckpointRestore;
 window.queueCheckpointDelete = queueCheckpointDelete;
-PCV.vm = Object.assign(PCV.vm || {}, { matchesVmFilter, getVmUpdatedValue, compareVms, renderVms, getNetworkInventory, getNetworkSwitches, formatNetworkBoolean, renderNetworkFailureGuidance, renderNetworkChangeReadback, renderNetworkInventory, renderVmDetail, renderExportImportReadback, renderCheckpointScheduleReadback, renderVmWorkbenchContext, renderCheckpointList, getSelectedVmReadbacks, readbackBucket, readbackFieldSummary, readbackErrorFor, renderReadbackCard, renderVmQosGuestReadback, getSelectedVmQosControl, renderQosControlResult, renderVmQosDirectControl, queueVmLifecycle, queueVmAttach, queueVmResourceMutation, readRequiredText, readNonNegativeInt, readBoundedInt, readVmQosPayload, readVmGuestExecPayload, readVmGuestFilePayload, readVmGuestChannelPayload, buildVmQosConfirmation, buildVmGuestExecutionConfirmation, queueVmQosDirectControl, queueVmGuestExecutionControl, refreshVmDeleteStatus, queueVmManage, queueVmGuestFile, queueVmTemplateLock, queueVmClone, queueVmDelete, queueCheckpointCreate, queueCheckpointRestore, queueCheckpointDelete });
+PCV.vm = Object.assign(PCV.vm || {}, { matchesVmFilter, getVmUpdatedValue, compareVms, renderVms, getNetworkInventory, getNetworkSwitches, formatNetworkBoolean, renderNetworkFailureGuidance, renderNetworkChangeReadback, renderNetworkInventory, renderVmDetail, renderExportImportReadback, renderCheckpointScheduleReadback, renderVmWorkbenchContext, renderCheckpointList, getSelectedVmReadbacks, readbackBucket, readbackFieldSummary, readbackErrorFor, renderReadbackCard, renderVmQosGuestReadback, getSelectedVmQosControl, renderQosControlResult, renderVmQosDirectControl, queueVmLifecycle, queueVmAttach, queueVmResourceMutation, readRequiredText, readNonNegativeInt, readBoundedInt, readVmQosPayload, readVmGuestExecPayload, readVmGuestFilePayload, readVmGuestChannelPayload, buildVmQosConfirmation, buildVmGuestExecutionConfirmation, queueVmQosDirectControl, queueVmGuestExecutionControl, refreshVmDeleteStatus, queueVmManage, queueVmGuestFile, queueVmTemplateLock, queueVmClone, queueVmDelete, queueCheckpointCreate, queueCheckpointRestore, queueCheckpointDelete, openVmCloneModal, suggestCloneName, collectVmJobs });
 })(window.PCV);

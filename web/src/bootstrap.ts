@@ -251,8 +251,7 @@ function bindEvents() {
         await queueVmAttach(form.dataset.vmId, data.get('iso_path'));
         form.reset();
       } else if (form.dataset.action === 'vm-clone') {
-        await queueVmClone(form.dataset.vmId, data.get('name'));
-        form.reset();
+        await openVmCloneModal(form.dataset.vmId);
       } else {
         await handleVmDetailExtensionSubmit(form, data, submitterAction);
       }
@@ -281,12 +280,16 @@ function bindEvents() {
         await queueVmTemplateLock(button.dataset.vmId, true);
       } else if (button.dataset.action === 'vm-template-unlock') {
         await queueVmTemplateLock(button.dataset.vmId, false);
-      } else if (button.dataset.action === 'vm-clone') {
-        if (button.closest('form[data-action="vm-clone"]')) {
-          return;
-        }
-        const cloneForm = els.vmDetailPanel.querySelector('form[data-action="vm-clone"]');
-        await queueVmClone(button.dataset.vmId, cloneForm ? new FormData(cloneForm).get('name') : '');
+      } else if (button.dataset.action === 'vm-clone' || button.dataset.action === 'vm-clone-open') {
+        await openVmCloneModal(button.dataset.vmId);
+      } else if (button.dataset.action === 'vm-more-toggle') {
+        // The menu toggle listener owns open and close. Re-rendering here would rebuild the menu shut.
+      } else if (button.dataset.action === 'vm-open-console-tab') {
+        window.__pcvVmDetailTab = 'console';
+      } else if (button.dataset.action === 'vm-open-jobs-tab') {
+        window.__pcvVmDetailTab = 'jobs';
+      } else if (button.dataset.action === 'vm-export-focus') {
+        window.__pcvVmDetailTab = 'summary';
       } else if (button.dataset.action === 'vm-delete') {
         await queueVmDelete(button.dataset.vmId);
       } else if (button.dataset.action === 'vm-console') {
@@ -305,7 +308,12 @@ function bindEvents() {
     } catch (error) {
       state.error = normalizeError(error);
     }
+    if (button.dataset.action === 'vm-more-toggle') return;
     render();
+    if (button.dataset.action === 'vm-export-focus') {
+      const exportDirectory = els.vmDetailPanel.querySelector('form[data-action="vm-export"] input[name="directory"]');
+      if (exportDirectory && typeof exportDirectory.focus === 'function') exportDirectory.focus();
+    }
   });
   els.jobsPanel?.addEventListener('click', async (event) => {
     const button = event.target.closest('button[data-action]');
