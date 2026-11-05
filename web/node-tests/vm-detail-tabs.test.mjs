@@ -768,10 +768,10 @@ test("header and more-menu confirms do not call window.confirm", () => {
     const next = rest.search(/\nasync function |\n\/\/ exports/);
     return next < 0 ? source.slice(start) : source.slice(start, start + 1 + next);
   }
-  ["queueVmLifecycle", "queueVmTemplateLock", "queueVmClone", "queueVmDelete"].forEach((name) => {
+  ["queueVmLifecycle", "queueVmTemplateLock", "queueVmClone", "queueVmDelete", "queueCheckpointRestore", "queueCheckpointDelete"].forEach((name) => {
     assert.equal(sliceFn(name).includes("window.confirm"), false, name);
   });
-  ["queueVmAttach", "queueVmQosDirectControl", "queueVmGuestExecutionControl", "queueVmManage", "queueVmGuestFile", "queueCheckpointRestore", "queueCheckpointDelete"].forEach((name) => {
+  ["queueVmAttach", "queueVmQosDirectControl", "queueVmGuestExecutionControl", "queueVmManage", "queueVmGuestFile"].forEach((name) => {
     assert.equal(sliceFn(name).includes("window.confirm"), true, name);
   });
 });

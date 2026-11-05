@@ -240,8 +240,8 @@
       "basis": null,
       "out_of_scope_ref": null,
       "needs_design": false,
-      "status": "open",
-      "closed_by": null
+      "status": "closed",
+      "closed_by": "PR #100 (feat 16da5810); 새 셸 체크포인트 탭이 예약 저장·해제와 checkpoint job 완료 뒤 VM 상세와 목록을 다시 읽어 즉시 다시 그린다(web/node-tests/vm-checkpoints-tab.test.mjs). 옛 콘솔은 ui-redesign-20261105 Task 9 퇴역으로 정리. 설치본 확인은 다음 release train Lane 2 probe web.console.checkpoints"
     },
     {
       "id": "BL-0021",

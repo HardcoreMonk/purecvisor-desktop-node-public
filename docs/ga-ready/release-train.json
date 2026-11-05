@@ -55,6 +55,17 @@
         "design": "docs/superpowers/specs/2026-11-05-purecvisor-desktop-node-ui-redesign-design.md"
       },
       "risk_tier": "M"
+    },
+    {
+      "pr": 100,
+      "merge_commit": "16da5810",
+      "area": "web",
+      "summary": "VM 체크포인트 탭: 목록과 만들기 모달, 복원·삭제 확인 모달, 예약 카드, job 완료 뒤 상세와 목록을 다시 읽어 바로 반영(BL-0020)",
+      "lane2_probe": {
+        "family": "web.console.checkpoints",
+        "design": "docs/superpowers/specs/2026-11-05-purecvisor-desktop-node-ui-redesign-design.md"
+      },
+      "risk_tier": "M"
     }
   ],
   "trains": [

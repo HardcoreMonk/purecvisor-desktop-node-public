@@ -293,10 +293,27 @@ function buildCheckpointScheduleConfirmation(vmId, mode, payload) {
     : `Save the periodic checkpoint schedule for VM '${vmId}'?\n\ninterval_minutes=${payload.interval_minutes ?? '-'} / retention_max=${payload.retention_max ?? '-'}`;
 }
 
+async function confirmCheckpointScheduleChange(mode, payload) {
+  if (!PCV.components || typeof PCV.components.confirmDialog !== 'function') return false;
+  const clear = mode === 'clear';
+  const interval = payload && payload.interval_minutes != null ? String(payload.interval_minutes) : '-';
+  const retention = payload && payload.retention_max != null ? String(payload.retention_max) : '-';
+  return PCV.components.confirmDialog({
+    title: clear ? t('vm.checkpoint.schedule.clear_title') : t('vm.checkpoint.schedule.save_title'),
+    message: clear
+      ? t('vm.checkpoint.schedule.clear_message')
+      : t('vm.checkpoint.schedule.save_message', { interval, retention }),
+    confirmLabel: clear ? t('vm.checkpoint.schedule.clear') : t('vm.checkpoint.schedule.save'),
+    cancelLabel: t('ui.confirm.cancel'),
+    danger: false
+  });
+}
+
 async function queueCheckpointScheduleControl(vmId, mode, payload) {
   requireRbac('operate', `Checkpoint schedule ${mode}`);
-  if (mode !== 'preview' && !window.confirm(buildCheckpointScheduleConfirmation(vmId, mode, payload))) {
-    return;
+  if (mode !== 'preview') {
+    const accepted = await confirmCheckpointScheduleChange(mode, payload);
+    if (!accepted) return;
   }
 
   state.actionPending = true;
@@ -311,6 +328,8 @@ async function queueCheckpointScheduleControl(vmId, mode, payload) {
         : await desktopApi.clearCheckpointSchedule(vmId);
     if (mode === 'preview') {
       state.checkpointSchedulePreview = { vm_id: vmId, updated_at: new Date().toISOString(), result };
+    } else if (typeof watchCheckpointSurface === 'function') {
+      watchCheckpointSurface(vmId, result);
     } else {
       pcvTrackJob(result);
       startPolling();
@@ -328,10 +347,11 @@ async function queueCheckpointScheduleControl(vmId, mode, payload) {
 function renderCheckpointSchedulePreview(vmId) {
   const preview = state.checkpointSchedulePreview;
   if (!preview || preview.vm_id !== vmId) {
-    return '<p class="muted">Preview the schedule before saving it.</p>';
+    return `<p class="muted">${pcvEscapeHtml(t('vm.checkpoint.schedule.preview_empty'))}</p>`;
   }
   const updated = preview.updated_at ? new Date(preview.updated_at).toLocaleString() : '-';
-  return `<p class="muted">schedule preview ${pcvEscapeHtml(updated)}: ${pcvEscapeHtml(formatObjectValue(preview.result))}</p>`;
+  const body = typeof formatObjectValue === 'function' ? formatObjectValue(preview.result) : '';
+  return `<p class="muted">${pcvEscapeHtml(t('vm.checkpoint.schedule.preview_ready', { time: updated, body }))}</p>`;
 }
 
 function readExportImportPayload(kind, data) {

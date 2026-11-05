@@ -389,6 +389,14 @@ function mountVmDetailTabs(root, vmId) {
       openVmCloneModal(button.getAttribute('data-vm-id') || vmId);
     });
   });
+  root.querySelectorAll('[data-action="checkpoint-create-open"]').forEach((button) => {
+    button.addEventListener('click', (event) => {
+      if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
+      if (button.disabled) return;
+      openCheckpointCreateModal(button.getAttribute('data-vm-id') || vmId);
+    });
+  });
+  fillCheckpointList(root, vmId);
   bindVmMoreMenu(root);
   if (typeof bindVmConsoleFrame === 'function') bindVmConsoleFrame();
   return api;
@@ -580,6 +588,205 @@ function openVmCloneModal(vmId) {
   return body;
 }
 
+function currentCheckpointNames() {
+  return asArray(state.selectedVmCheckpoints).map((item) => {
+    if (typeof getCheckpointName !== 'function') return '';
+    try { return String(getCheckpointName(item) || ''); } catch (err) { return ''; }
+  }).filter(Boolean);
+}
+
+function isCheckpointDisplayName(name) {
+  if (name.length < 1 || name.length > 128 || name !== name.trim()) return false;
+  for (let index = 0; index < name.length; index += 1) {
+    const code = name.charCodeAt(index);
+    const ch = name.charAt(index);
+    if (code <= 0x1F || (code >= 0x7F && code <= 0x9F) || ch === '/' || ch === '\\') return false;
+  }
+  return true;
+}
+
+function checkpointNameIssue(value, names) {
+  const name = value == null ? '' : String(value);
+  if (name.trim() === '') return { code: 'PCV_CHECKPOINT_NAME_REQUIRED', messageKey: 'vm.checkpoint.name.required' };
+  if (!isCheckpointDisplayName(name)) return { code: 'PCV_CHECKPOINT_NAME_INVALID', messageKey: 'vm.checkpoint.name.invalid' };
+  const needle = name.toUpperCase();
+  const list = Array.isArray(names) ? names : [];
+  for (let index = 0; index < list.length; index += 1) {
+    if (String(list[index]).toUpperCase() === needle) return { code: 'PCV_VM_ALREADY_EXISTS', messageKey: 'vm.checkpoint.name.duplicate' };
+  }
+  return null;
+}
+
+function checkpointNameRules(names) {
+  return [(value) => checkpointNameIssue(value, names)];
+}
+
+function suggestCheckpointName(names, now) {
+  const taken = new Set((names || []).map((name) => String(name).toUpperCase()));
+  const date = now instanceof Date ? now : new Date();
+  const pad = (part) => String(part).padStart(2, '0');
+  const stamp = `${date.getFullYear()}${pad(date.getMonth() + 1)}${pad(date.getDate())}-${pad(date.getHours())}${pad(date.getMinutes())}`;
+  let candidate = `checkpoint-${stamp}`;
+  if (!taken.has(candidate.toUpperCase())) return candidate;
+  let index = 2;
+  candidate = `checkpoint-${stamp}-${index}`;
+  while (taken.has(candidate.toUpperCase())) {
+    index += 1;
+    candidate = `checkpoint-${stamp}-${index}`;
+  }
+  return candidate;
+}
+
+function sameSelectedVm(vmId) {
+  return String(state.selectedVmId || '') === String(vmId || '');
+}
+
+function checkpointErrorDetail(error) {
+  if (!error || typeof error !== 'object') return '';
+  return String(error.message || error.detail || error.code || '');
+}
+
+async function refreshCheckpointSurface(vmId) {
+  if (!sameSelectedVm(vmId)) return;
+  try {
+    if (typeof refreshSelectedVm === 'function') {
+      await refreshSelectedVm();
+    } else if (typeof desktopApi !== 'undefined' && desktopApi && typeof desktopApi.getVm === 'function') {
+      const vm = await desktopApi.getVm(vmId);
+      if (!sameSelectedVm(vmId)) return;
+      state.selectedVm = vm;
+    }
+    if (!sameSelectedVm(vmId)) return;
+    if (typeof desktopApi !== 'undefined' && desktopApi && typeof desktopApi.getVmCheckpoints === 'function') {
+      const checkpoints = await desktopApi.getVmCheckpoints(vmId);
+      if (!sameSelectedVm(vmId)) return;
+      state.selectedVmCheckpoints = asArray(checkpoints);
+      state.checkpointListError = null;
+    } else if (sameSelectedVm(vmId)) {
+      state.checkpointListError = null;
+    }
+  } catch (error) {
+    if (!sameSelectedVm(vmId)) return;
+    state.checkpointListError = typeof normalizeError === 'function' ? normalizeError(error) : error;
+  }
+  if (sameSelectedVm(vmId) && typeof render === 'function') render();
+}
+
+function watchCheckpointSurface(vmId, job) {
+  const jobId = job && (job.job_id || job.id);
+  const phase = String((job && (job.status || job.state)) || '').toLowerCase();
+  if (typeof pcvTrackJob === 'function') pcvTrackJob(job);
+  if (!jobId || phase === 'succeeded') {
+    refreshCheckpointSurface(vmId);
+    return;
+  }
+  if (phase === 'failed' || phase === 'canceled') return;
+  if (PCV.components && typeof PCV.components.trackJob === 'function') {
+    PCV.components.trackJob(jobId, (next) => {
+      const nextPhase = String((next && (next.status || next.state)) || '').toLowerCase();
+      if (nextPhase === 'succeeded') refreshCheckpointSurface(vmId);
+    });
+  }
+}
+
+function checkpointCreateBlocked(vmId) {
+  const pending = typeof isCheckpointActionPending === 'function' && isCheckpointActionPending(vmId, 'create');
+  const operate = typeof rbacAllows !== 'function' || rbacAllows('operate');
+  const locked = typeof isTemplateLockedVm === 'function' && isTemplateLockedVm(state.selectedVm);
+  return Boolean(pending || !operate || locked);
+}
+
+function checkpointLabel(checkpointId) {
+  const rows = asArray(state.selectedVmCheckpoints);
+  for (let index = 0; index < rows.length; index += 1) {
+    if (typeof getCheckpointId === 'function' && getCheckpointId(rows[index]) === String(checkpointId || '')) {
+      return typeof getCheckpointName === 'function' ? String(getCheckpointName(rows[index])) : String(checkpointId || '');
+    }
+  }
+  return String(checkpointId || '');
+}
+
+function showCheckpointJob(host, job) {
+  clearNode(host);
+  if (!job || !PCV.components || typeof PCV.components.renderJobProgress !== 'function') return;
+  host.appendChild(PCV.components.renderJobProgress(job));
+  const phaseOf = (row) => String((row && (row.status || row.state)) || '').toLowerCase();
+  const jobId = job.job_id || job.id;
+  if (!jobId || typeof PCV.components.trackJob !== 'function') return;
+  if (phaseOf(job) === 'succeeded' || phaseOf(job) === 'failed' || phaseOf(job) === 'canceled') return;
+  PCV.components.trackJob(jobId, (next) => {
+    clearNode(host);
+    if (host.isConnected === false) return;
+    host.appendChild(PCV.components.renderJobProgress(next));
+  });
+}
+
+function openCheckpointCreateModal(vmId) {
+  if (checkpointCreateBlocked(vmId)) return null;
+  const names = currentCheckpointNames();
+  const suggested = suggestCheckpointName(names);
+  const ux = PCV.uxlib;
+  const components = PCV.components;
+  const title = ux.el('h2', {}, t('vm.checkpoint.create_title'));
+  const nameInput = ux.el('input', {
+    name: 'name',
+    type: 'text',
+    autocomplete: 'off',
+    'aria-label': t('vm.checkpoint.name_label')
+  });
+  nameInput.value = suggested;
+  const form = ux.el('form', { class: 'pcv-checkpoint-create-form' }, ux.el('label', {}, t('vm.checkpoint.name_label'), nameInput));
+  const startBtn = ux.el('button', { type: 'button', class: 'btn' }, t('vm.checkpoint.create'));
+  const jobHost = ux.el('div', { class: 'pcv-checkpoint-job' });
+  components.bindValidation(form, { name: checkpointNameRules(names) }, startBtn);
+  form.addEventListener('submit', (event) => {
+    if (event && typeof event.preventDefault === 'function') event.preventDefault();
+    if (!startBtn.disabled && typeof startBtn.click === 'function') startBtn.click();
+  });
+  startBtn.addEventListener('click', async () => {
+    if (startBtn.disabled) return;
+    const name = nameInput.value;
+    startBtn.disabled = true;
+    try {
+      const job = await queueCheckpointCreate(vmId, name);
+      showCheckpointJob(jobHost, job);
+    } catch (error) {
+      startBtn.disabled = false;
+      const normalized = typeof normalizeError === 'function' ? normalizeError(error) : null;
+      const line = document.createElement('p');
+      line.textContent = normalized ? String(normalized.message || normalized.detail || normalized.code || '') : '';
+      clearNode(jobHost);
+      jobHost.appendChild(line);
+    }
+  });
+  const body = ux.el('div', { class: 'pcv-checkpoint-create-modal' }, title, form, startBtn, jobHost);
+  PCV.modalCore.open(body);
+  return body;
+}
+
+function fillCheckpointList(root, vmId) {
+  const host = root && typeof root.querySelector === 'function' ? root.querySelector('[data-pcv-checkpoint-list]') : null;
+  if (!host || !PCV.components) return;
+  if (state.checkpointListError) {
+    clearNode(host);
+    host.appendChild(PCV.components.loadError({
+      titleKey: 'vm.checkpoint.load_error',
+      detail: checkpointErrorDetail(state.checkpointListError),
+      onRetry: () => { refreshCheckpointSurface(vmId); }
+    }));
+    return;
+  }
+  if (asArray(state.selectedVmCheckpoints).length === 0) {
+    clearNode(host);
+    host.appendChild(PCV.components.emptyState({
+      titleKey: 'vm.checkpoint.empty.title',
+      bodyKey: 'vm.checkpoint.empty.body',
+      actionLabelKey: 'vm.checkpoint.empty.action',
+      onAction: () => { openCheckpointCreateModal(vmId); }
+    }));
+  }
+}
+
 function renderVmDetail() {
   const vm = state.selectedVm;
   if (!vm) {
@@ -692,17 +899,14 @@ function renderVmDetail() {
       <div class="checkpoint-panel">
         <div class="mini-section-header">
           <div>
-            <p class="eyebrow">Checkpoints</p>
-            <h3>VM Checkpoints</h3>
+            <p class="eyebrow">${pcvEscapeHtml(t('vm.checkpoint.eyebrow'))}</p>
+            <h3>${pcvEscapeHtml(t('vm.checkpoint.title'))}</h3>
           </div>
-          <button data-action="checkpoint-refresh" data-vm-id="${id}"${checkpointRefreshDisabled}>Refresh checkpoints</button>
+          <button type="button" data-action="checkpoint-refresh" data-vm-id="${id}"${checkpointRefreshDisabled}>${pcvEscapeHtml(t('vm.checkpoint.refresh'))}</button>
+          <button type="button" data-action="checkpoint-create-open" data-vm-id="${id}"${checkpointMutationDisabled}>${pcvEscapeHtml(t('vm.checkpoint.create'))}</button>
         </div>
         ${renderCheckpointScheduleReadback(vm, vmId, actionDisabled)}
-        <form class="checkpoint-form" data-action="checkpoint-create" data-vm-id="${id}">
-          <input name="checkpoint_name" autocomplete="off" placeholder="Checkpoint name" aria-label="checkpoint name"${checkpointMutationDisabled}>
-          <button type="submit"${checkpointMutationDisabled}>Create checkpoint</button>
-        </form>
-        <div class="checkpoint-list">${renderCheckpointList(vmId)}</div>
+        <div class="checkpoint-list" data-pcv-checkpoint-list>${renderCheckpointList(vmId)}</div>
       </div>
     </div>
     <div data-pcv-tab-source="hardware">
@@ -819,6 +1023,14 @@ function renderExportImportReadback(vm, vmId, actionDisabled = '') {
     </div>`;
 }
 
+function checkpointScheduleStatusText(status) {
+  const folded = String(status || '').toLowerCase();
+  if (folded === 'disabled') return t('vm.checkpoint.schedule.off');
+  if (folded === 'waiting') return t('vm.checkpoint.schedule.status.waiting');
+  if (folded === 'due') return t('vm.checkpoint.schedule.status.due');
+  return formatObjectValue(status);
+}
+
 function renderCheckpointScheduleReadback(vm, vmId, actionDisabled = '') {
   const schedule = asObject(vm?.checkpoint_schedule);
   const enabled = schedule.enabled === true;
@@ -826,27 +1038,28 @@ function renderCheckpointScheduleReadback(vm, vmId, actionDisabled = '') {
   const count = Number(vm?.checkpoints?.count ?? vm?.checkpoints_count ?? 0);
   const retention = schedule.retention_max;
   const capacityBlocked = enabled && retention != null && Number.isFinite(Number(retention)) && count >= Number(retention);
-  const statusLabel = capacityBlocked ? 'blocked capacity' : formatObjectValue(status);
+  const statusLabel = capacityBlocked ? t('vm.checkpoint.schedule.status.blocked') : checkpointScheduleStatusText(status);
+  const id = pcvEscapeHtml(vmId);
   return `<div class="checkpoint-schedule-readback">
       <div class="diagnostics-grid">
-        <div class="diagnostics-fact"><span class="muted">schedule</span><strong>${pcvEscapeHtml(enabled ? 'enabled' : 'disabled')}</strong></div>
-        <div class="diagnostics-fact"><span class="muted">status</span><strong>${pcvEscapeHtml(statusLabel)}</strong></div>
-        <div class="diagnostics-fact"><span class="muted">interval minutes</span><strong>${pcvEscapeHtml(formatObjectValue(schedule.interval_minutes))}</strong></div>
-        <div class="diagnostics-fact"><span class="muted">retention max</span><strong>${pcvEscapeHtml(formatObjectValue(retention))}</strong></div>
-        <div class="diagnostics-fact"><span class="muted">last enqueued</span><strong>${pcvEscapeHtml(formatObjectValue(schedule.last_enqueued_at))}</strong></div>
-        <div class="diagnostics-fact"><span class="muted">next due</span><strong>${pcvEscapeHtml(formatObjectValue(schedule.next_due_at))}</strong></div>
+        <div class="diagnostics-fact"><span class="muted">${pcvEscapeHtml(t('vm.checkpoint.schedule.enabled'))}</span><strong>${pcvEscapeHtml(enabled ? t('vm.checkpoint.schedule.on') : t('vm.checkpoint.schedule.off'))}</strong></div>
+        <div class="diagnostics-fact"><span class="muted">${pcvEscapeHtml(t('vm.checkpoint.schedule.status'))}</span><strong>${pcvEscapeHtml(statusLabel)}</strong></div>
+        <div class="diagnostics-fact"><span class="muted">${pcvEscapeHtml(t('vm.checkpoint.schedule.interval'))}</span><strong>${pcvEscapeHtml(formatObjectValue(schedule.interval_minutes))}</strong></div>
+        <div class="diagnostics-fact"><span class="muted">${pcvEscapeHtml(t('vm.checkpoint.schedule.retention'))}</span><strong>${pcvEscapeHtml(formatObjectValue(retention))}</strong></div>
+        <div class="diagnostics-fact"><span class="muted">${pcvEscapeHtml(t('vm.checkpoint.schedule.last'))}</span><strong>${pcvEscapeHtml(formatObjectValue(schedule.last_enqueued_at))}</strong></div>
+        <div class="diagnostics-fact"><span class="muted">${pcvEscapeHtml(t('vm.checkpoint.schedule.next'))}</span><strong>${pcvEscapeHtml(formatObjectValue(schedule.next_due_at))}</strong></div>
       </div>
-      <form class="vm-resource-form checkpoint-schedule-form" data-action="checkpoint-schedule" data-vm-id="${pcvEscapeHtml(vmId)}">
-        <input name="interval_minutes" type="number" min="1" step="1" placeholder="Interval minutes" aria-label="Checkpoint interval minutes"${actionDisabled}>
-        <input name="retention_max" type="number" min="1" step="1" placeholder="Retention max" aria-label="Checkpoint retention max"${actionDisabled}>
-        <button type="submit" data-action="checkpoint-schedule-preview"${actionDisabled}>Preview schedule</button>
-        <button type="submit" data-action="checkpoint-schedule-set"${actionDisabled}>Save schedule</button>
-        <button type="button" class="danger-button" data-action="checkpoint-schedule-clear" data-vm-id="${pcvEscapeHtml(vmId)}"${actionDisabled}>Clear schedule</button>
+      <form class="vm-resource-form checkpoint-schedule-form" data-action="checkpoint-schedule" data-vm-id="${id}">
+        <input name="interval_minutes" type="number" min="60" max="10080" step="1" placeholder="${pcvEscapeHtml(t('vm.checkpoint.schedule.help_interval'))}" aria-label="${pcvEscapeHtml(t('vm.checkpoint.schedule.interval'))}"${actionDisabled}>
+        <input name="retention_max" type="number" min="1" max="32" step="1" placeholder="${pcvEscapeHtml(t('vm.checkpoint.schedule.help_retention'))}" aria-label="${pcvEscapeHtml(t('vm.checkpoint.schedule.retention'))}"${actionDisabled}>
+        <button type="submit" data-action="checkpoint-schedule-preview"${actionDisabled}>${pcvEscapeHtml(t('vm.checkpoint.schedule.preview'))}</button>
+        <button type="submit" data-action="checkpoint-schedule-set"${actionDisabled}>${pcvEscapeHtml(t('vm.checkpoint.schedule.save'))}</button>
+        <button type="button" class="danger-button" data-action="checkpoint-schedule-clear" data-vm-id="${id}"${actionDisabled}>${pcvEscapeHtml(t('vm.checkpoint.schedule.clear'))}</button>
       </form>
       ${renderCheckpointSchedulePreview(vmId)}
       <div class="boundary-chip-row">
-        <span>preview before save</span>
-        <span>no infinite retention</span>
+        <span>${pcvEscapeHtml(t('vm.checkpoint.schedule.chip_preview'))}</span>
+        <span>${pcvEscapeHtml(t('vm.checkpoint.schedule.chip_retention'))}</span>
       </div>
     </div>`;
 }
@@ -886,27 +1099,34 @@ function renderVmWorkbenchContext() {
 
 // --- legacy render-qos.ts ---
 function renderCheckpointList(vmId) {
+  if (state.checkpointListError) return '';
   const checkpoints = asArray(state.selectedVmCheckpoints);
+  if (checkpoints.length === 0) return '';
   const canOperate = rbacAllows('operate');
   const templateLocked = isTemplateLockedVm(state.selectedVm);
-  if (checkpoints.length === 0) {
-    return '<p class="muted">No checkpoints returned for this VM.</p>';
-  }
-
-  return checkpoints.map((checkpoint) => {
+  const rows = checkpoints.map((checkpoint) => {
     const checkpointId = getCheckpointId(checkpoint);
     const checkpointDisabled = isCheckpointActionPending(vmId, checkpointId) || !canOperate || templateLocked ? ' disabled' : '';
-    return `<div class="checkpoint-row">
-      <div>
-        <strong>${pcvEscapeHtml(getCheckpointName(checkpoint))}</strong>
-        <div class="muted">${pcvEscapeHtml(formatCheckpointMeta(checkpoint))}</div>
-      </div>
-      <div class="checkpoint-actions">
-        <button data-action="checkpoint-restore" data-vm-id="${pcvEscapeHtml(vmId)}" data-checkpoint-id="${pcvEscapeHtml(checkpointId)}"${checkpointDisabled}>Restore</button>
-        <button class="danger-button" data-action="checkpoint-delete" data-vm-id="${pcvEscapeHtml(vmId)}" data-checkpoint-id="${pcvEscapeHtml(checkpointId)}"${checkpointDisabled}>Delete</button>
-      </div>
-    </div>`;
+    const id = pcvEscapeHtml(vmId);
+    const cp = pcvEscapeHtml(checkpointId);
+    const created = checkpoint?.created_at || checkpoint?.creation_time || checkpoint?.created;
+    return `<tr>
+      <td>${pcvEscapeHtml(getCheckpointName(checkpoint))}</td>
+      <td>${pcvEscapeHtml(formatObjectValue(created))}</td>
+      <td class="pcv-checkpoint-actions">
+        <button type="button" data-action="checkpoint-restore" data-vm-id="${id}" data-checkpoint-id="${cp}"${checkpointDisabled}>${pcvEscapeHtml(t('vm.checkpoint.restore'))}</button>
+        <button type="button" class="danger-button" data-action="checkpoint-delete" data-vm-id="${id}" data-checkpoint-id="${cp}"${checkpointDisabled}>${pcvEscapeHtml(t('vm.checkpoint.delete'))}</button>
+      </td>
+    </tr>`;
   }).join('');
+  return `<table class="pcv-checkpoint-table">
+      <thead><tr>
+        <th>${pcvEscapeHtml(t('vm.checkpoint.col.name'))}</th>
+        <th>${pcvEscapeHtml(t('vm.checkpoint.col.created'))}</th>
+        <th>${pcvEscapeHtml(t('vm.checkpoint.col.actions'))}</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
 }
 
 function getSelectedVmReadbacks(vmId) {
@@ -1660,12 +1880,12 @@ async function queueVmDelete(vmId) {
 
 async function queueCheckpointCreate(vmId, checkpointName) {
   requireRbac('operate', 'checkpoint create');
-  const name = String(checkpointName || '').trim();
-  if (!name) {
+  const name = checkpointName == null ? '' : String(checkpointName);
+  const issue = checkpointNameIssue(name, currentCheckpointNames());
+  if (issue) {
     throw normalizeError({
-      code: 'PCV_FORM_INVALID',
-      message: 'Checkpoint name is required.',
-      detail: 'Enter a checkpoint name before creating a checkpoint.'
+      code: issue.code,
+      message: t(issue.messageKey)
     });
   }
 
@@ -1675,9 +1895,10 @@ async function queueCheckpointCreate(vmId, checkpointName) {
   render();
   try {
     const job = await desktopApi.createCheckpoint(vmId, name);
-    pcvTrackJob(job);
+    watchCheckpointSurface(vmId, job);
     state.connectionState = 'connected';
-    startPolling();
+    if (typeof startPolling === 'function') startPolling();
+    return job;
   } finally {
     state.checkpointPending = false;
     clearCheckpointActionPending(vmId, 'create');
@@ -1686,18 +1907,27 @@ async function queueCheckpointCreate(vmId, checkpointName) {
 
 async function queueCheckpointRestore(vmId, checkpointId) {
   requireRbac('operate', 'checkpoint restore');
-  if (!window.confirm(buildCheckpointRestoreConfirmation(vmId, checkpointId))) {
-    return;
-  }
+  const vm = state.selectedVm || (typeof findCachedVm === 'function' ? findCachedVm(vmId) : null);
+  const running = typeof isRunningVmState === 'function' && isRunningVmState(typeof getVmState === 'function' ? getVmState(vm) : '');
+  const name = checkpointLabel(checkpointId);
+  if (!PCV.components || typeof PCV.components.confirmDialog !== 'function') return;
+  const accepted = await PCV.components.confirmDialog({
+    title: t('vm.checkpoint.restore.title'),
+    message: running ? t('vm.checkpoint.restore.running', { name }) : t('vm.checkpoint.restore.message', { name }),
+    confirmLabel: t('vm.checkpoint.restore'),
+    cancelLabel: t('ui.confirm.cancel'),
+    danger: true
+  });
+  if (!accepted) return;
   state.checkpointPending = true;
   setCheckpointActionPending(vmId, checkpointId, 'restore');
   state.error = null;
   render();
   try {
     const job = await desktopApi.restoreCheckpoint(vmId, checkpointId);
-    pcvTrackJob(job);
+    watchCheckpointSurface(vmId, job);
     state.connectionState = 'connected';
-    startPolling();
+    if (typeof startPolling === 'function') startPolling();
   } finally {
     state.checkpointPending = false;
     clearCheckpointActionPending(vmId, checkpointId);
@@ -1706,18 +1936,25 @@ async function queueCheckpointRestore(vmId, checkpointId) {
 
 async function queueCheckpointDelete(vmId, checkpointId) {
   requireRbac('operate', 'checkpoint delete');
-  if (!window.confirm(buildCheckpointDeleteConfirmation(vmId, checkpointId))) {
-    return;
-  }
+  const name = checkpointLabel(checkpointId);
+  if (!PCV.components || typeof PCV.components.confirmDialog !== 'function') return;
+  const accepted = await PCV.components.confirmDialog({
+    title: t('vm.checkpoint.delete.title'),
+    message: t('vm.checkpoint.delete.message', { name }),
+    confirmLabel: t('vm.checkpoint.delete'),
+    cancelLabel: t('ui.confirm.cancel'),
+    danger: true
+  });
+  if (!accepted) return;
   state.checkpointPending = true;
   setCheckpointActionPending(vmId, checkpointId, 'delete');
   state.error = null;
   render();
   try {
     const job = await desktopApi.deleteCheckpoint(vmId, checkpointId);
-    pcvTrackJob(job);
+    watchCheckpointSurface(vmId, job);
     state.connectionState = 'connected';
-    startPolling();
+    if (typeof startPolling === 'function') startPolling();
   } finally {
     state.checkpointPending = false;
     clearCheckpointActionPending(vmId, checkpointId);
@@ -1775,5 +2012,9 @@ window.queueVmDelete = queueVmDelete;
 window.queueCheckpointCreate = queueCheckpointCreate;
 window.queueCheckpointRestore = queueCheckpointRestore;
 window.queueCheckpointDelete = queueCheckpointDelete;
-PCV.vm = Object.assign(PCV.vm || {}, { matchesVmFilter, getVmUpdatedValue, compareVms, renderVms, getNetworkInventory, getNetworkSwitches, formatNetworkBoolean, renderNetworkFailureGuidance, renderNetworkChangeReadback, renderNetworkInventory, renderVmDetail, renderExportImportReadback, renderCheckpointScheduleReadback, renderVmWorkbenchContext, renderCheckpointList, getSelectedVmReadbacks, readbackBucket, readbackFieldSummary, readbackErrorFor, renderReadbackCard, renderVmQosGuestReadback, getSelectedVmQosControl, renderQosControlResult, renderVmQosDirectControl, queueVmLifecycle, queueVmAttach, queueVmResourceMutation, readRequiredText, readNonNegativeInt, readBoundedInt, readVmQosPayload, readVmGuestExecPayload, readVmGuestFilePayload, readVmGuestChannelPayload, buildVmQosConfirmation, buildVmGuestExecutionConfirmation, queueVmQosDirectControl, queueVmGuestExecutionControl, refreshVmDeleteStatus, queueVmManage, queueVmGuestFile, queueVmTemplateLock, queueVmClone, queueVmDelete, queueCheckpointCreate, queueCheckpointRestore, queueCheckpointDelete, openVmCloneModal, suggestCloneName, collectVmJobs });
+window.openCheckpointCreateModal = openCheckpointCreateModal;
+window.suggestCheckpointName = suggestCheckpointName;
+window.refreshCheckpointSurface = refreshCheckpointSurface;
+window.watchCheckpointSurface = watchCheckpointSurface;
+PCV.vm = Object.assign(PCV.vm || {}, { matchesVmFilter, getVmUpdatedValue, compareVms, renderVms, getNetworkInventory, getNetworkSwitches, formatNetworkBoolean, renderNetworkFailureGuidance, renderNetworkChangeReadback, renderNetworkInventory, renderVmDetail, renderExportImportReadback, renderCheckpointScheduleReadback, renderVmWorkbenchContext, renderCheckpointList, getSelectedVmReadbacks, readbackBucket, readbackFieldSummary, readbackErrorFor, renderReadbackCard, renderVmQosGuestReadback, getSelectedVmQosControl, renderQosControlResult, renderVmQosDirectControl, queueVmLifecycle, queueVmAttach, queueVmResourceMutation, readRequiredText, readNonNegativeInt, readBoundedInt, readVmQosPayload, readVmGuestExecPayload, readVmGuestFilePayload, readVmGuestChannelPayload, buildVmQosConfirmation, buildVmGuestExecutionConfirmation, queueVmQosDirectControl, queueVmGuestExecutionControl, refreshVmDeleteStatus, queueVmManage, queueVmGuestFile, queueVmTemplateLock, queueVmClone, queueVmDelete, queueCheckpointCreate, queueCheckpointRestore, queueCheckpointDelete, openVmCloneModal, suggestCloneName, collectVmJobs, openCheckpointCreateModal, suggestCheckpointName, refreshCheckpointSurface, watchCheckpointSurface });
 })(window.PCV);

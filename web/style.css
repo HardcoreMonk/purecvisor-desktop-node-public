@@ -5954,3 +5954,42 @@ textarea[aria-invalid="true"] {
     width: auto;
   }
 }
+
+.pcv-checkpoint-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.pcv-checkpoint-table th,
+.pcv-checkpoint-table td {
+  text-align: left;
+  padding: var(--space-sm);
+  border-bottom: 1px solid var(--border);
+  color: var(--fg);
+}
+
+.pcv-checkpoint-actions {
+  display: flex;
+  gap: var(--space-sm);
+}
+
+.pcv-checkpoint-create-modal,
+.checkpoint-schedule-readback {
+  color: var(--fg);
+}
+
+.pcv-checkpoint-create-form input:focus-visible,
+.checkpoint-schedule-form input:focus-visible,
+.checkpoint-panel button:focus-visible,
+.pcv-checkpoint-create-modal button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@media (max-width: 520px) {
+  .checkpoint-panel button,
+  .pcv-checkpoint-create-modal button,
+  .checkpoint-schedule-form button {
+    width: auto;
+  }
+}
