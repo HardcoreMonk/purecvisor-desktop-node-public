@@ -44,6 +44,17 @@
         "design": "docs/superpowers/specs/2026-11-05-purecvisor-desktop-node-ui-redesign-design.md"
       },
       "risk_tier": "M"
+    },
+    {
+      "pr": 99,
+      "merge_commit": "8b0ae171",
+      "area": "web",
+      "summary": "VM 콘솔 탭: 기본 1024x768, 창에 맞춤과 실제 크기, 전체 화면, Ctrl+Alt+Del, 키보드 입력 상태 칩, 탭이 숨으면 frame 폴링을 쉰다",
+      "lane2_probe": {
+        "family": "web.console.frame-view",
+        "design": "docs/superpowers/specs/2026-11-05-purecvisor-desktop-node-ui-redesign-design.md"
+      },
+      "risk_tier": "M"
     }
   ],
   "trains": [
