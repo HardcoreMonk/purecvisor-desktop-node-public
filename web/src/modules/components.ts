@@ -538,6 +538,7 @@ window.PCV = window.PCV || {};
         'aria-controls': panelId,
         tabindex: on ? '0' : '-1'
       }, text(tab.labelKey));
+      button.addEventListener('click', function () { select(tab.id, true); });
       button.tabIndex = on ? 0 : -1;
       var panel = el('div', { class: 'pcv-tabpanel', role: 'tabpanel', id: panelId, 'aria-labelledby': button.id });
       panel.hidden = !on;

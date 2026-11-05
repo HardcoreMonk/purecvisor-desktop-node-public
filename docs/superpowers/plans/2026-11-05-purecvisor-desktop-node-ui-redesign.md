@@ -58,7 +58,9 @@
 
 ## Task 3: VM 상세 탭, 헤더 조작, 복제 모달 (P2)
 
-- [ ] grok 구현, Claude 리뷰. VM 상세를 6개 탭으로 나누고 마지막 탭을 기억한다. 헤더에는 상태 배지, 전원 조작, 콘솔 열기, 더 보기 메뉴(복제, 템플릿 잠금, 내보내기, vmconnect, 강제 끄기, 삭제)를 둔다. 자원 격자는 하드웨어 탭으로 옮긴다. 복제는 모달 하나로 바꾼다: 새 VM 이름이 첫 칸이고 `<원본>-clone`을 제안하며, 규칙·중복을 요청 전에 검사하고 `clone/preview` 결과를 모달 안에 보인 뒤 시작한다. 새 셸에서 복제의 `window.confirm`을 없앤다. 빈 이름이면 API를 부르지 않고, 이름이 있으면 `{confirm_name, name}`으로 preview 다음 clone을 부르는 시험을 더한다. 검증: Task 2와 같고, 탭 전환 가시성 시험을 포함한다. push, PR. merge는 사용자 승인 뒤.
+- [x] grok 구현, Claude 리뷰. VM 상세를 6개 탭으로 나누고 마지막 탭을 기억한다. 헤더에는 상태 배지, 전원 조작, 콘솔 열기, 더 보기 메뉴(복제, 템플릿 잠금, 내보내기, vmconnect, 강제 끄기, 삭제)를 둔다. 자원 격자는 하드웨어 탭으로 옮긴다. 복제는 모달 하나로 바꾼다: 새 VM 이름이 첫 칸이고 `<원본>-clone`을 제안하며, 규칙·중복을 요청 전에 검사하고 `clone/preview` 결과를 모달 안에 보인 뒤 시작한다. 새 셸에서 복제의 `window.confirm`을 없앤다. 빈 이름이면 API를 부르지 않고, 이름이 있으면 `{confirm_name, name}`으로 preview 다음 clone을 부르는 시험을 더한다. 검증: Task 2와 같고, 탭 전환 가시성 시험을 포함한다. push, PR. merge는 사용자 승인 뒤.
+
+실행 기록(2026-11-05): `web/src/modules/vm.ts`에 VM 상세 헤더(경로, 이름, 상태 배지와 템플릿 배지, 상태별 전원 조작, 콘솔 열기, 더 보기 메뉴: 복제…, 템플릿 잠금·잠금 해제…, 내보내기…, vmconnect, 강제 끄기…, 삭제…; `role=menu`, 화살표·Home·End·Esc·바깥 클릭)와 6개 탭(`PCV.components.renderTabs`, 기억 키 `pcv-vm-detail-tab`, 6개 패널을 모두 그리고 hidden 전환)을 넣고 기존 내용을 옮겼다(요약: KV·QoS 읽기·최근 작업·내보내기, 콘솔·체크포인트: 기존 패널, 하드웨어: 라벨과 도움말이 붙은 자원 폼, 게스트: QoS 직접 제어와 게스트 실행, 작업 기록: job 스냅샷 `params.name`·`vm_name`·`source`·`new_name`을 대소문자 무시 정확 비교). 상단 이름 없는 `Clone VM`과 자원 격자의 clone form을 없애고 복제 모달(`openVmCloneModal`: 첫 칸 새 VM 이름, 제안 `<원본>-clone`·`-clone-N`, required·hyperVName·notSameAs·notIn 검사, 미리보기 성공 뒤에만 복제 시작, 이름을 바꾸면 다시 꺼짐, 모달 안 job 진행 줄, 새 VM 열기)으로 바꿨다. 삭제(danger + 이름 입력), 강제 끄기(danger), 잠금 해제, 다시 시작, 저장, 저장 상태 재개, 템플릿으로 잠금은 `confirmDialog`다. 실행 중 VM 삭제는 기존처럼 확인 전에 `PCV_VM_DELETE_RUNNING_BLOCKED`로 막는다(서버 delete route는 전원 상태를 보지 않는다). `renderTabs`에 탭 click 처리를 더했다. Claude 리뷰 1차에서 4건(작업 기록 부분 문자열 오탐, 탭 click 위치, 확인 방식 혼재, 삭제 비활성 조건)을 고쳤다. 남은 새 셸 `window.confirm`: ISO 연결, QoS 적용, 게스트 실행·수리, 관리, 게스트 파일(Task 7), checkpoint 복원·삭제(Task 5). VM 상세 hash 탭 열기는 기존 nav에 그 경로가 없어 넣지 않았다. 검증: `npm run test:required --prefix web` exit 0, `node --test` 295/295(새 `vm-detail-tabs.test.mjs` 10건 포함), domsafe 82(ceiling 그대로), parity current, feature surface `web=78`, `git diff --check` 통과, 옛 콘솔 파일 diff 없음. host mutation 없음.
 
 ## Task 4: 콘솔 탭 (P3)
 
@@ -74,7 +76,7 @@
 
 ## Task 7: 사이드바 개편, 템플릿·계정 화면, 한국어화 (P6a)
 
-- [ ] grok 구현, Claude 리뷰. 사이드바를 운영·워크로드·인프라·관제·시스템·도움말 묶음으로 바꾸고 템플릿 화면(잠긴 VM 목록, 복제 주 조작)과 admin 전용 계정 화면(목록, 생성, 비활성화)을 진단에서 분리한다. 상세 화면의 영어 고정 문구를 i18n 키로 옮긴다. Task 1이 template 표시에 API 보강이 필요하다고 적었으면 그 변경은 이 task 앞에 별도 task로 승인받는다. 검증: Task 2와 같다. push, PR. merge는 사용자 승인 뒤.
+- [ ] grok 구현, Claude 리뷰. 사이드바를 운영·워크로드·인프라·관제·시스템·도움말 묶음으로 바꾸고 템플릿 화면(잠긴 VM 목록, 복제 주 조작)과 admin 전용 계정 화면(목록, 생성, 비활성화)을 진단에서 분리한다. 상세 화면의 영어 고정 문구를 i18n 키로 옮긴다. W1 VM 목록(상태 칩과 개수, 템플릿 배지와 필터, 상태별 행 주 조작과 `⋯` 메뉴)을 이 task에서 바꾼다(2026-11-05 Task 3 리뷰에서 배정). 남은 새 셸 `window.confirm`(ISO 연결, QoS 적용, 게스트 실행·수리, 관리, 게스트 파일)을 `confirmDialog`로 바꾼다. Task 1이 template 표시에 API 보강이 필요하다고 적었으면 그 변경은 이 task 앞에 별도 task로 승인받는다. 검증: Task 2와 같다. push, PR. merge는 사용자 승인 뒤.
 
 ## Task 8: 비밀번호 재설정 (P6b)
 

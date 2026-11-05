@@ -33,6 +33,17 @@
       "summary": "Web Console 공통 컴포넌트(PCV.components: 확인 모달, 입력 검사, 알림, job 진행 줄, 탭, 빈 상태)를 번들에 더한다. 화면 연결은 뒤 PR이다",
       "lane2_probe": null,
       "risk_tier": "S"
+    },
+    {
+      "pr": 98,
+      "merge_commit": "ab9b6704",
+      "area": "web",
+      "summary": "VM 상세를 헤더·더 보기 메뉴와 6개 탭으로 나누고, 복제를 이름이 첫 칸인 모달(검사, 미리보기 뒤 시작, 진행 표시)로, 삭제·강제 끄기 등 확인을 앱 안 모달로 바꾼다",
+      "lane2_probe": {
+        "family": "web.console.vm-detail",
+        "design": "docs/superpowers/specs/2026-11-05-purecvisor-desktop-node-ui-redesign-design.md"
+      },
+      "risk_tier": "M"
     }
   ],
   "trains": [

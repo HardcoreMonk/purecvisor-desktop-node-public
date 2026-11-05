@@ -527,6 +527,28 @@ test("tabs move with arrows, Home, and End, and ignore a broken rememberKey stor
   assert.equal(again.querySelectorAll('[role="tab"]')[1].getAttribute("aria-selected"), "true");
 });
 
+test("tab click selects that panel", () => {
+  const sandbox = createEnv();
+  const container = sandbox.document.createElement("div");
+  sandbox.document.body.appendChild(container);
+  const seen = [];
+  const tabs = [{ id: "summary", labelKey: "ui.job.queued" }, { id: "console", labelKey: "ui.job.running" }, { id: "jobs", labelKey: "ui.job.succeeded" }];
+  sandbox.PCV.components.renderTabs(container, tabs, "summary", (id) => seen.push(id));
+  const buttons = container.querySelectorAll('[role="tab"]');
+  const panels = container.querySelectorAll('[role="tabpanel"]');
+  buttons[2].click();
+  assert.equal(buttons[2].getAttribute("aria-selected"), "true");
+  assert.equal(buttons[0].getAttribute("aria-selected"), "false");
+  assert.equal(panels[2].hidden, false);
+  assert.equal(panels[0].hidden, true);
+  assert.equal(panels[1].hidden, true);
+  buttons[0].click();
+  assert.equal(buttons[0].getAttribute("aria-selected"), "true");
+  assert.equal(panels[0].hidden, false);
+  assert.equal(panels[2].hidden, true);
+  assert.deepEqual(seen, ["jobs", "summary"]);
+});
+
 test("empty state and load error use different copy and classes", () => {
   const sandbox = createEnv();
   let acted = 0;
