@@ -70,7 +70,9 @@
 
 ## Task 5: 체크포인트 탭과 예약 즉시 반영 (P4)
 
-- [ ] grok 구현, Claude 리뷰. checkpoint 목록·만들기·복원·삭제를 탭으로 옮기고 복원·삭제와 `vm-console.ts`의 체크포인트 일정 변경 확인은 확인 모달로 바꾼다. 예약 저장·해제와 checkpoint 생성·복원 job이 끝나면 선택 VM 상세를 다시 읽고 탭을 다시 그린다(BL-0020). 빈 목록과 읽기 실패를 구분한다. 검증: Task 2와 같고, 저장 직후 카드가 갱신되는 시험을 포함한다. BL-0020은 PR 번호로 닫는다. push, PR. merge는 사용자 승인 뒤.
+- [x] grok 구현, Claude 리뷰. checkpoint 목록·만들기·복원·삭제를 탭으로 옮기고 복원·삭제와 `vm-console.ts`의 체크포인트 일정 변경 확인은 확인 모달로 바꾼다. 예약 저장·해제와 checkpoint 생성·복원 job이 끝나면 선택 VM 상세를 다시 읽고 탭을 다시 그린다(BL-0020). 빈 목록과 읽기 실패를 구분한다. 검증: Task 2와 같고, 저장 직후 카드가 갱신되는 시험을 포함한다. BL-0020은 PR 번호로 닫는다. push, PR. merge는 사용자 승인 뒤.
+
+실행 기록(2026-11-05): 조사: checkpoint 생성 route는 빈 이름을 `PCV_CHECKPOINT_NAME_REQUIRED`로 거절하고 어댑터가 `IsValidHyperVName`(1~128자, 앞뒤 공백·제어 문자·`/`·`\` 금지, `.`·`..`은 허용)으로 검사한다. 목록 항목은 `name`, `vm_name`, `created_at`, `is_current`뿐이라 수동/예약 구분 열은 넣지 않았다(due worker의 `pcv-schedule-` 접두는 스키마가 아니다). 예약 readback은 `enabled`, `interval_minutes`, `retention_max`, `next_due_at`, `last_enqueued_at`, `status`이고 `last_result`는 없다. BL-0020 원인: 예약 저장·해제와 checkpoint job이 `pcvTrackJob`으로 기록만 되고 상세를 다시 읽지 않아 카드가 이전 `state.selectedVm`을 그렸다. 고친 방식: `watchCheckpointSurface`가 `PCV.components.trackJob`으로 완료를 받아 `refreshCheckpointSurface`가 상세와 목록을 다시 읽고 그리며, 그 사이 다른 VM을 골랐으면 덮어쓰지 않는다. 체크포인트 탭: 이름·만든 시각·복원…·삭제… 표, 만들기 모달(제안 `checkpoint-YYYYMMDD-HHmm`, 서버와 같은 이름 검사, 목록 중복 예고), 복원·삭제 danger 확인(복원은 현재 상태를 잃는다는 문장과 실행 중 안내), 예약 카드(사용 여부, 간격, 보존, 다음 실행, 상태, 마지막 등록), 예약 저장·끄기 `confirmDialog`, 빈 목록 `emptyState`와 읽기 실패 `loadError`, 탭 문구 i18n. Claude 리뷰는 수정 요청 없이 통과했다. 옛 콘솔의 같은 결함은 Task 9 퇴역으로 정리한다. 검증: `npm run test:required --prefix web` exit 0, `node --test` 313/313(새 `vm-checkpoints-tab.test.mjs` 8건), domsafe 82, parity current, `git diff --check` 통과, 옛 콘솔 파일 diff 없음. host mutation 없음.
 
 ## Task 6: 새 VM 마법사 (P5)
 
@@ -78,7 +80,7 @@
 
 ## Task 7: 사이드바 개편, 템플릿·계정 화면, 한국어화 (P6a)
 
-- [ ] grok 구현, Claude 리뷰. 사이드바를 운영·워크로드·인프라·관제·시스템·도움말 묶음으로 바꾸고 템플릿 화면(잠긴 VM 목록, 복제 주 조작)과 admin 전용 계정 화면(목록, 생성, 비활성화)을 진단에서 분리한다. 상세 화면의 영어 고정 문구를 i18n 키로 옮긴다. W1 VM 목록(상태 칩과 개수, 템플릿 배지와 필터, 상태별 행 주 조작과 `⋯` 메뉴)을 이 task에서 바꾼다(2026-11-05 Task 3 리뷰에서 배정). 남은 새 셸 `window.confirm`(ISO 연결, QoS 적용, 게스트 실행·수리, 관리, 게스트 파일, 그리고 `vm-console.ts`의 이름 바꾸기·내보내기·가져오기·네트워크 변경)을 `confirmDialog`로 바꾼다. `vm-console.ts`의 계정 콘솔·베타 후속·진단 영어 문구도 i18n으로 옮긴다. Task 1이 template 표시에 API 보강이 필요하다고 적었으면 그 변경은 이 task 앞에 별도 task로 승인받는다. 검증: Task 2와 같다. push, PR. merge는 사용자 승인 뒤.
+- [ ] grok 구현, Claude 리뷰. 사이드바를 운영·워크로드·인프라·관제·시스템·도움말 묶음으로 바꾸고 템플릿 화면(잠긴 VM 목록, 복제 주 조작)과 admin 전용 계정 화면(목록, 생성, 비활성화)을 진단에서 분리한다. 상세 화면의 영어 고정 문구를 i18n 키로 옮긴다. W1 VM 목록(상태 칩과 개수, 템플릿 배지와 필터, 상태별 행 주 조작과 `⋯` 메뉴)을 이 task에서 바꾼다(2026-11-05 Task 3 리뷰에서 배정). 남은 새 셸 `window.confirm`(ISO 연결, QoS 적용, 게스트 실행·수리, 관리, 게스트 파일, 그리고 `vm-console.ts`의 이름 바꾸기·내보내기·가져오기·네트워크 변경, `accounts.ts`의 계정 만들기·끄기)을 `confirmDialog`로 바꾼다. `vm-console.ts`의 계정 콘솔·베타 후속·진단 영어 문구도 i18n으로 옮긴다. Task 1이 template 표시에 API 보강이 필요하다고 적었으면 그 변경은 이 task 앞에 별도 task로 승인받는다. 검증: Task 2와 같다. push, PR. merge는 사용자 승인 뒤.
 
 ## Task 8: 비밀번호 재설정 (P6b)
 
