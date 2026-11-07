@@ -151,12 +151,11 @@ function buildTopbar() {
   root.appendChild(el('div', { class: 'shell-crumb', id: 'shell-crumb' }, 'Desktop Node'));
   root.appendChild(el('div', {
     class: 'shell-search', role: 'button', tabindex: '0',
-    'aria-label': L('글로벌 검색 열기', 'Open global search'),
     onClick: function () { if (typeof toggleGlobalSearch === 'function') toggleGlobalSearch(); }
   },
     shellIcon('ci-search', 'shell-search-ico'),
     el('span', { class: 'shell-search-ph' }, L('검색', 'Search')),
-    el('kbd', null, 'Ctrl+K')));
+    el('kbd', { 'aria-hidden': 'true' }, 'Ctrl+K')));
   var right = el('div', { class: 'shell-topbar-r' });
   right.appendChild(el('span', {
     id: 'shell-sync', class: 'shell-sync', role: 'status',

@@ -11,5 +11,6 @@
 | Coolicons | 1.2.2 subset | Web Console SVG 아이콘 sprite | CC BY 4.0 (출처 표기: Coolicons by Kryston Schwarze) | `web/vendor/coolicons/` |
 | Chart.js | 4.4.4 | Web Console 차트 렌더링 | MIT | `web/vendor/chart.umd.min.js` |
 | PureCVisor Single Edge Web UI 공통 모듈 | `HardcoreMonk/purecvisor` `ed147de` | 셸·nav·theme·modal·ui·uxlib·mobile·charts·help·i18n·api 구조(파일 머리에 출처 주석) | Apache License 2.0 (같은 저작자) | `web/src/modules/`, `web/style.css`, `web/index.html`, `web/sw.js` |
+| axe-core | 4.14.0 | Web 접근성 검사 개발 도구, 설치본 미포함 | MPL-2.0 | `web/package.json` devDependency |
 
 가져오지 않는 것: qrcode(TOTP 전용), noVNC(Desktop Node는 자체 console frame route를 쓴다).
