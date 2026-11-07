@@ -2,11 +2,11 @@
   "generatedBy": "src/generate-parity-manifest.ts",
   "regeneratedBy": "scripts/regenerate-static-parity.mjs",
   "phase": "phase25",
-  "servedAsset": "app.js",
+  "servedAsset": "app.bundle.js",
   "replacesServedAsset": true,
-  "indexScriptSrc": "/app.js",
+  "indexScriptSrc": "app.bundle.js?v=single-edge-v1",
   "typeScriptEntry": "src/app.ts",
-  "servedTypeScriptEntry": "src/served-app.ts",
+  "servedTypeScriptEntry": "src/bootstrap.ts",
   "userVisibleFixtureEntry": "src/user-visible-fixtures.ts",
   "userVisibleFixtureNames": [
     "emptyInventory",
@@ -16,8 +16,8 @@
   "scaffold": {
     "decisionCandidate": "static-asset-parity-scaffold-first",
     "runtimeReplacement": "default",
-    "servedAsset": "app.js",
-    "servedTypeScriptEntry": "src/served-app.ts"
+    "servedAsset": "app.bundle.js",
+    "servedTypeScriptEntry": "src/bootstrap.ts"
   },
   "localApiRoutes": {
     "opsSummary": "/api/v1/ops/summary",

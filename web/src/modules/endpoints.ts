@@ -1,9 +1,8 @@
 // @ts-nocheck
 // Ported from purecvisor ui/modules/endpoints.js (Apache-2.0, same author) for the Desktop Node Web Console (ADR-0018,
-// pcv-single-edge-frontend-structure-v1). Desktop Node changes: the surface lists the Desktop Node Local API routes of
-// the legacy web/src/served/routes.ts registry only (no containers, storage, OVN, VPC, Suricata, DPDK, SR-IOV, push, RPC
-// or TOTP), API_BASE comes from /pcv-config.js, actions are validated against the route contract and there is no edition
-// switch (the Desktop Node is one edition).
+// pcv-single-edge-frontend-structure-v1). Desktop Node changes: the surface lists the Desktop Node Local API routes
+// only. Linux Single Edge routes stay out of this file. API_BASE comes from /pcv-config.js, actions are validated
+// against the route contract, and there is no edition switch (the Desktop Node is one edition).
 window.PCV = window.PCV || {};
 (function (PCV) {
 var EP = (function () {

@@ -4,11 +4,11 @@ export type StaticAssetParityManifest = {
   generatedBy: "src/generate-parity-manifest.ts";
   regeneratedBy: "scripts/regenerate-static-parity.mjs";
   phase: "phase25";
-  servedAsset: "app.js";
+  servedAsset: "app.bundle.js";
   replacesServedAsset: true;
-  indexScriptSrc: "/app.js";
+  indexScriptSrc: "app.bundle.js?v=single-edge-v1";
   typeScriptEntry: "src/app.ts";
-  servedTypeScriptEntry: "src/served-app.ts";
+  servedTypeScriptEntry: "src/bootstrap.ts";
   userVisibleFixtureEntry: "src/user-visible-fixtures.ts";
   userVisibleFixtureNames: readonly ["emptyInventory", "runningVmAndJob", "unsupportedHost"];
   scaffold: typeof phase25WebConsoleScaffold;
@@ -36,7 +36,7 @@ export function buildStaticAssetParityManifest(): StaticAssetParityManifest {
     phase: "phase25",
     servedAsset: phase25WebConsoleScaffold.servedAsset,
     replacesServedAsset: true,
-    indexScriptSrc: "/app.js",
+    indexScriptSrc: "app.bundle.js?v=single-edge-v1",
     typeScriptEntry: "src/app.ts",
     servedTypeScriptEntry: phase25WebConsoleScaffold.servedTypeScriptEntry,
     userVisibleFixtureEntry: "src/user-visible-fixtures.ts",

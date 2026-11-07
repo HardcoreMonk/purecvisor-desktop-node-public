@@ -5,8 +5,7 @@ import { fileURLToPath } from "node:url";
 
 // ADR-0018 (Single Edge frontend structure): web/index.html is the Single Edge index.html structure (login page,
 // app shell, icon defs, theme bootstrap, splash) carrying the Desktop Node content sections; it is served at /
-// since campaign single-edge-frontend-structure-20261010 Task 16a. The legacy console stays at web/index.legacy.html
-// (its own contracts) until a later campaign retires it. These checks keep the shell's shape.
+// since campaign single-edge-frontend-structure-20261010 Task 16a. These checks keep the shell's shape.
 
 const INDEX = fileURLToPath(new URL("../index.html", import.meta.url));
 const html = fs.readFileSync(INDEX, "utf8");

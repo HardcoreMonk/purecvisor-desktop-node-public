@@ -4,17 +4,12 @@ import { fileURLToPath } from "node:url";
 import vm from "node:vm";
 
 const webRoot = dirname(dirname(fileURLToPath(import.meta.url)));
-const appScript = readFileSync(join(webRoot, "app.js"), "utf8");
-const indexText = readFileSync(join(webRoot, "index.legacy.html"), "utf8");
+const appScript = readFileSync(join(webRoot, "app.bundle.js"), "utf8");
+const i18nScript = readFileSync(join(webRoot, "i18n.js"), "utf8");
+const indexText = readFileSync(join(webRoot, "index.html"), "utf8");
 
 const requiredIds = [
-  "connection-form",
-  "api-base-url",
-  "api-token",
-  "clear-token",
   "refresh-all",
-  "connection-state",
-  "asset-status",
   "alert-region",
   "dashboard",
   "vms",
@@ -39,7 +34,7 @@ const requiredIds = [
   "metric-grid",
   "host-details",
   "vm-filter",
-  "vm-state-filter",
+  "vm-state-chips",
   "vm-sort",
   "vm-table",
   "network-inventory-panel",
@@ -57,34 +52,97 @@ const requiredIds = [
   "close-create-vm",
   "create-vm-dialog",
   "create-vm-form",
-  "status-connection",
-  "status-host",
-  "status-updated",
-  "status-vm-count",
-  "status-view",
+  "shell-sidebar",
+  "shell-topbar",
+  "shell-statusbar",
   "hero-workload",
   "hero-host-mode",
   "hero-alerts"
 ];
 
 class FixtureElement {
-  constructor(id) {
-    this.id = id;
+  constructor(tag, id) {
+    this.tagName = String(tag || "div").toUpperCase();
+    this.id = id || "";
     this.className = "";
     this.dataset = {};
-    this.innerHTML = "";
-    this.hidden = false;
-    this.listeners = new Map();
-    this.open = false;
-    this.textContent = "";
-    this.value = "";
     this.attributes = {};
+    this.children = [];
+    this.parentNode = null;
+    this.style = {};
+    this.hidden = false;
+    this.inert = false;
+    this.open = false;
+    this.disabled = false;
+    this.value = "";
+    this.textContent = "";
+    this.innerHTML = "";
+    this.listeners = new Map();
+    this.classList = {
+      add: (...names) => { for (const name of names) if (!this._classes().includes(name)) this.className = `${this.className} ${name}`.trim(); },
+      remove: (...names) => { this.className = this._classes().filter((name) => !names.includes(name)).join(" "); },
+      toggle: (name, force) => {
+        const on = force === undefined ? !this._classes().includes(name) : !!force;
+        if (on) this.classList.add(name);
+        else this.classList.remove(name);
+        return on;
+      },
+      contains: (name) => this._classes().includes(name)
+    };
+  }
+
+  _classes() {
+    return this.className.split(/\s+/).filter(Boolean);
+  }
+
+  get isConnected() {
+    return true;
+  }
+
+  get firstChild() {
+    return this.children[0] || null;
+  }
+
+  get offsetWidth() {
+    return 100;
   }
 
   addEventListener(type, handler) {
     const handlers = this.listeners.get(type) ?? [];
     handlers.push(handler);
     this.listeners.set(type, handlers);
+  }
+
+  removeEventListener() {}
+
+  dispatchEvent() {
+    return true;
+  }
+
+  appendChild(child) {
+    this.children.push(child);
+    if (child && typeof child === "object") child.parentNode = this;
+    return child;
+  }
+
+  insertBefore(child) {
+    this.children.unshift(child);
+    if (child && typeof child === "object") child.parentNode = this;
+    return child;
+  }
+
+  removeChild(child) {
+    this.children = this.children.filter((item) => item !== child);
+    if (child && typeof child === "object") child.parentNode = null;
+    return child;
+  }
+
+  replaceChildren() {
+    this.children = [];
+  }
+
+  remove() {
+    this.parentNode?.removeChild(this);
   }
 
   removeAttribute(name) {
@@ -95,15 +153,41 @@ class FixtureElement {
   setAttribute(name, value) {
     this.attributes[name] = String(value);
     if (name === "hidden") this.hidden = true;
+    if (name === "id") this.id = String(value);
+    if (name === "class") this.className = String(value);
+    if (name === "data-view-link") this.dataset.viewLink = String(value);
+    if (name === "data-view") this.dataset.view = String(value);
   }
 
-  close() {
-    this.open = false;
+  getAttribute(name) {
+    return Object.prototype.hasOwnProperty.call(this.attributes, name) ? this.attributes[name] : null;
+  }
+
+  hasAttribute(name) {
+    return Object.prototype.hasOwnProperty.call(this.attributes, name);
+  }
+
+  querySelector() {
+    return null;
+  }
+
+  querySelectorAll() {
+    return [];
   }
 
   closest() {
     return null;
   }
+
+  contains() {
+    return false;
+  }
+
+  focus() {}
+
+  blur() {}
+
+  click() {}
 
   reset() {
     this.value = "";
@@ -112,6 +196,16 @@ class FixtureElement {
   showModal() {
     this.open = true;
   }
+
+  close() {
+    this.open = false;
+  }
+
+  getBoundingClientRect() {
+    return { left: 0, top: 0, right: 100, bottom: 100, width: 100, height: 100 };
+  }
+
+  scrollIntoView() {}
 }
 
 function createLocalStorage(initialEntries = []) {
@@ -167,50 +261,85 @@ function createDocument() {
 
   function getElementById(id) {
     if (!elements.has(id)) {
-      elements.set(id, new FixtureElement(id));
+      elements.set(id, new FixtureElement("div", id));
     }
 
     return elements.get(id);
   }
 
-  for (const id of requiredIds) {
+  const indexIds = [...indexText.matchAll(/ id="([^"]+)"/g)].map((match) => match[1]);
+  for (const id of [...requiredIds, ...indexIds]) {
     getElementById(id);
   }
 
-  const viewNames = ["dashboard", "vms", "network", "jobs", "activity", "evidence", "troubleshooting"];
+  const viewNames = ["dashboard", "vms", "templates", "network", "jobs", "activity", "evidence", "accounts", "troubleshooting", "helppage"];
   const viewLinks = viewNames.map((view) => {
-    const element = new FixtureElement(`link-${view}`);
+    const element = new FixtureElement("a", `link-${view}`);
     element.dataset.viewLink = view;
+    element.setAttribute("data-view-link", view);
     element.href = `#${view}`;
     elements.set(element.id, element);
     return element;
   });
   const appViews = viewNames.map((view) => {
     const element = getElementById(view);
+    element.tagName = "SECTION";
     element.className = "section app-view";
     element.dataset.view = view;
+    element.setAttribute("data-view", view);
     return element;
   });
+  const cb = getElementById("cb");
+  cb.querySelectorAll = (selector) => (selector === ".app-view" ? appViews.slice() : []);
+  cb.querySelector = (selector) => {
+    const match = /^\.app-view\[data-view="([^"]+)"\]$/.exec(selector);
+    return match ? appViews.find((view) => view.dataset.view === match[1]) || null : null;
+  };
+  for (const view of appViews) cb.appendChild(view);
+  const body = new FixtureElement("body", "");
+  const documentElement = new FixtureElement("html", "");
+  documentElement.lang = "en";
+  const head = new FixtureElement("head", "");
 
   return {
     elements,
+    body,
+    head,
+    documentElement,
+    hidden: false,
+    readyState: "complete",
+    title: "",
+    activeElement: null,
     addEventListener(type, handler) {
       const handlers = listeners.get(type) ?? [];
       handlers.push(handler);
       listeners.set(type, handlers);
     },
+    removeEventListener() {},
     createElement(tagName) {
       return new FixtureElement(tagName);
     },
+    createElementNS(_namespace, tagName) {
+      return new FixtureElement(tagName);
+    },
+    createTextNode(text) {
+      return { nodeType: 3, textContent: String(text) };
+    },
+    createDocumentFragment() {
+      return new FixtureElement("fragment");
+    },
     dispatch(type) {
       for (const handler of listeners.get(type) ?? []) {
-        handler();
+        handler({ type });
       }
     },
     getElementById,
+    querySelector() {
+      return null;
+    },
     querySelectorAll(selector) {
       if (selector === "[data-view-link]") return viewLinks;
-      if (selector === ".app-view") return appViews;
+      if (selector === ".app-view") return appViews.slice();
       return [];
     },
     viewLinks
@@ -1097,12 +1226,11 @@ async function runFixture(options = {}) {
     operation: "vm.create",
     status: "queued"
   }];
-  const localStorage = createLocalStorage(initialTrackedJobs === null ? [] : [
-    [
-      "pcvDesktopTrackedJobs.v1",
-      JSON.stringify(initialTrackedJobs)
-    ]
-  ]);
+  const storedJobs = initialTrackedJobs === null ? [] : [[
+    "pcvDesktopTrackedJobs.v1",
+    JSON.stringify(initialTrackedJobs)
+  ]];
+  const localStorage = createLocalStorage([["pcv-lang", "en"], ...storedJobs]);
   const initialAccountSession = Object.prototype.hasOwnProperty.call(options, "initialAccountSession")
     ? options.initialAccountSession
     : {
@@ -1124,47 +1252,90 @@ async function runFixture(options = {}) {
   const document = createDocument();
   const windowListeners = new Map();
   const fixtureFetch = createFixtureFetch(options);
-  const window = {
-    AbortController,
-    addEventListener(type, handler) {
-      const handlers = windowListeners.get(type) ?? [];
-      handlers.push(handler);
-      windowListeners.set(type, handlers);
-    },
-    clearInterval() {},
-    confirm: () => true,
-    dispatch(type) {
-      for (const handler of windowListeners.get(type) ?? []) {
-        handler();
-      }
-    },
-    fetch: fixtureFetch,
-    Headers: FixtureHeaders,
-    localStorage,
-    sessionStorage,
-    location: { origin: "http://127.0.0.1:7777", hash: "#dashboard", hostname: options.locationHostname || "127.0.0.1" },
-    setInterval: () => 1
-  };
-
   const context = {
     AbortController,
+    Blob,
+    URL,
+    URLSearchParams,
+    TextEncoder,
+    TextDecoder,
     FormData: class FixtureFormData {
       get() {
         return "";
       }
     },
-    clearInterval: window.clearInterval,
+    Headers: FixtureHeaders,
+    Node: FixtureElement,
+    HTMLElement: FixtureElement,
+    clearInterval() {},
+    clearTimeout() {},
+    setInterval() { return 1; },
+    setTimeout() { return 1; },
+    requestAnimationFrame() { return 1; },
+    cancelAnimationFrame() {},
+    queueMicrotask,
     console,
     document,
     fetch: fixtureFetch,
-    Headers: FixtureHeaders,
     localStorage,
     sessionStorage,
-    setInterval: window.setInterval,
-    window
+    navigator: { userAgent: "node", language: "en", onLine: true },
+    location: {
+      origin: "http://127.0.0.1:7777",
+      hash: "#dashboard",
+      hostname: options.locationHostname || "127.0.0.1",
+      pathname: "/index.html",
+      search: "",
+      href: "http://127.0.0.1:7777/index.html",
+      replace() {}
+    },
+    history: { replaceState() {}, pushState() {} },
+    matchMedia: () => ({ matches: false, addEventListener() {}, removeEventListener() {}, addListener() {} }),
+    MutationObserver: class { observe() {} disconnect() {} },
+    ResizeObserver: class { observe() {} disconnect() {} },
+    performance: { now: () => Date.now(), timing: {}, getEntriesByType: () => [] },
+    PCV_DESKTOP_NODE_CONFIG: Object.freeze({ apiBaseUrl: "http://127.0.0.1:7777" }),
+    confirm: () => true,
+    alert() {},
+    open() { return null; },
+    getComputedStyle: () => ({ visibility: "visible", getPropertyValue: () => "" }),
+    addEventListener(type, handler) {
+      const handlers = windowListeners.get(type) ?? [];
+      handlers.push(handler);
+      windowListeners.set(type, handlers);
+    },
+    removeEventListener() {},
+    dispatchEvent() { return true; },
+    dispatch(type) {
+      for (const handler of windowListeners.get(type) ?? []) handler({ type });
+    },
+    atob,
+    btoa,
+    encodeURIComponent,
+    decodeURIComponent,
+    structuredClone,
+    Intl,
+    Date,
+    Math,
+    JSON,
+    Number,
+    String,
+    Object,
+    Array,
+    Map,
+    Set,
+    RegExp,
+    Error,
+    TypeError,
+    Promise
   };
+  context.window = context;
+  context.self = context;
+  context.globalThis = context;
 
-  vm.runInNewContext(appScript, context, { filename: "app.js" });
+  vm.createContext(context);
+  vm.runInContext(i18nScript, context, { filename: "i18n.js" });
+  vm.runInContext(appScript, context, { filename: "app.bundle.js" });
   document.dispatch("DOMContentLoaded");
   await flush();
 
@@ -1185,8 +1356,8 @@ async function runFixture(options = {}) {
   }
   await flush();
 
-  window.__pcvFetchCalls = fixtureFetch.fetchCalls;
-  return { document, window, context, fetchCalls: fixtureFetch.fetchCalls };
+  context.__pcvFetchCalls = fixtureFetch.fetchCalls;
+  return { document, window: context, context, fetchCalls: fixtureFetch.fetchCalls };
 }
 
 const { document, window, context } = await runFixture();
@@ -1206,7 +1377,7 @@ const renderedText = [...document.elements.values()]
   .join("\n");
 const combinedText = `${indexText}\n${renderedText}`;
 
-for (const value of ["Ops Cockpit", "Ready", "Network Inventory", "Default Switch", "fixture-ethernet", "read-only", "pcv-browser-fixture", "Delete VM", "QoS / Guest Readback", "linux_blkio_compatible=false", "linux_bandwidth_compatible=false", "qemu_guest_agent=false", "guest_heartbeat_verified=false", "startup_mb=4096", "count=2", "DVD Media", "pcv-browser-fixture-tools.iso", "job-browser-fixture", "req-browser-fixture", "Operator Activity", "Pagination", "next_offset", "max_terminal_jobs", "Job edge cases", "active running jobs", "failed job retry", "retained terminal jobs", "Monitoring", "Token policy", "Checkpoint warnings", "Route timeout", "30s", "Request limit", "120/min", "Burst limit", "20", "Retry-After", "15s", "Incident Command", "Failed jobs", "Token Rotation", "rotation handoff", "Clear browser token", "no service token mutation", "browser token empty", "Token-required route status", "%ProgramData%\\PureCVisor\\desktop-node\\api-token.dpapi.json", "Diagnostic Bundle", "CollectDiagnostics", "API action", "Create bundle", "Download latest", "Account/Console", "account permission", "current role", "Windows console", "noVNC enabled", "noVNC status", "noVNC reason_code", "noVNC path/reason", "no target save form", "CLI/API configure only", "Preview schedule", "name=\"interval_minutes\"", "preview before save", "no infinite retention", "Preview export", "Preview import", "preview before export/import", "new VM identity on import", "no OVF", "no TPM key copy", "network-change-readback", "no switch create form", "no NAT editor", "no DHCP editor", "switch connect in VM detail", "Connect switch", "Add device", "Hyper-V export/import", "/api/v1/console/novnc/pcv-browser-fixture", "Open selected console", "Open the noVNC browser session for this VM, or use vmconnect from the host console.", "Current evidence", "runtime-api-current-evidence-rollup-v1", "0.42.22-admin-smoke -&gt; 0.42.23-admin-smoke", "Manual admin next", "0.42.55-admin-smoke -&gt; next-admin-smoke-required", "not-opened-no-next-product-payload-target", "Runtime/API registry bridge", "runtime-api-diagnostics-ops-summary-registry-bridge-v2", "DesktopNodeApiRuntimeRoutes", "4 routes", "GET /api/v1/ops/summary -&gt; OpsSummary", "GET /api/v1/diagnostics/bundles", "POST /api/v1/diagnostics/bundles -&gt; CreateDiagnosticBundle", "route detail metadata only", "Host Ops lifecycle buckets", "service-action-eventlog-firewall-truststore-credential-manager-data-root-separated", "service-action", "DesktopNodeServiceLifecycleOps", "windows-service-control-manager", "credential-manager-system-proof", "allowlisted-programdata-root", "Host mutation: not performed by diagnostics view", "Retained bundles", "Load more bundles", "next_offset=none", "max_bundle_count=50", "pcv-diag-20260509T010101Z-abcdef12", "served-by-download-route", "application/vnd.purecvisor.diagnostic-bundle+json", "no host mutation", "token values", "Authorization headers", "%ProgramData%\\PureCVisor\\desktop-node\\diagnostics", "Installed listener QA automation", "service token revoke handoff", "diagnostic retention pagination", "VM delete guarded", "ops cockpit P0/P1/P2", "public distribution bundle", "host mutation not started from browser", "PCV_JOB_STORE_SCHEMA_UNSUPPORTED", "Asset", "app.js"]) {
+for (const value of ["Ops Cockpit", "Ready", "Network Inventory", "Default Switch", "fixture-ethernet", "read-only", "pcv-browser-fixture", "data-action=\"vm-delete\"", "QoS / Guest readback", "linux_blkio_compatible=false", "linux_bandwidth_compatible=false", "qemu_guest_agent=false", "guest_heartbeat_verified=false", "startup_mb=4096", "count=2", "DVD media", "pcv-browser-fixture-tools.iso", "job-browser-fixture", "req-browser-fixture", "Operator Activity", "Pagination", "next_offset", "max_terminal_jobs", "Job edge cases", "active running jobs", "failed job retry", "retained terminal jobs", "Monitoring", "Token policy", "Checkpoint warnings", "Route timeout", "30s", "Request limit", "120/min", "Burst limit", "20", "Retry-After", "15s", "Incident Command", "Failed jobs", "Token Rotation", "rotation handoff", "Clear browser token", "no service token mutation", "browser token empty", "Token-required route status", "%ProgramData%\\PureCVisor\\desktop-node\\api-token.dpapi.json", "Diagnostic Bundle", "CollectDiagnostics", "API action", "Create bundle", "Download latest", "Account/Console", "account permission", "current role", "Windows console", "noVNC enabled", "noVNC status", "noVNC reason_code", "noVNC path/reason", "no target save form", "CLI/API configure only", "data-action=\"checkpoint-schedule-preview\"", "name=\"interval_minutes\"", "Preview before save", "No infinite retention", "Preview export", "Preview import", "preview before export/import", "new VM identity on import", "no OVF", "no TPM key copy", "network-change-readback", "no switch create form", "no NAT editor", "no DHCP editor", "switch connect in VM detail", "Connect switch", "Add device", "Hyper-V export/import", "/api/v1/console/novnc/pcv-browser-fixture", "Open selected console", "Open the noVNC browser session for this VM, or use vmconnect from the host console.", "Current evidence", "runtime-api-current-evidence-rollup-v1", "0.42.22-admin-smoke -&gt; 0.42.23-admin-smoke", "Manual admin next", "0.42.55-admin-smoke -&gt; next-admin-smoke-required", "not-opened-no-next-product-payload-target", "Runtime/API registry bridge", "runtime-api-diagnostics-ops-summary-registry-bridge-v2", "DesktopNodeApiRuntimeRoutes", "4 routes", "GET /api/v1/ops/summary -&gt; OpsSummary", "GET /api/v1/diagnostics/bundles", "POST /api/v1/diagnostics/bundles -&gt; CreateDiagnosticBundle", "route detail metadata only", "Host Ops lifecycle buckets", "service-action-eventlog-firewall-truststore-credential-manager-data-root-separated", "service-action", "DesktopNodeServiceLifecycleOps", "windows-service-control-manager", "credential-manager-system-proof", "allowlisted-programdata-root", "Host mutation: not performed by diagnostics view", "Retained bundles", "Load more bundles", "next_offset=none", "max_bundle_count=50", "pcv-diag-20260509T010101Z-abcdef12", "served-by-download-route", "application/vnd.purecvisor.diagnostic-bundle+json", "no host mutation", "token values", "Authorization headers", "%ProgramData%\\PureCVisor\\desktop-node\\diagnostics", "Installed listener QA automation", "service token revoke handoff", "diagnostic retention pagination", "VM delete guarded", "ops cockpit P0/P1/P2", "public distribution bundle", "host mutation not started from browser", "PCV_JOB_STORE_SCHEMA_UNSUPPORTED", "app.bundle.js"]) {
   requireIncludes(combinedText, value, "browser fixture rendered output");
 }
 
@@ -1261,10 +1432,10 @@ requireIncludes(document.getElementById("beta-followup-panel").innerHTML, "publi
 requireIncludes(document.getElementById("beta-followup-panel").innerHTML, "host mutation not started from browser", "beta follow-up panel");
 await context.clearBrowserToken();
 await flush();
-requireIncludes(document.getElementById("token-rotation-panel").innerHTML, "browser token cleared", "token clear refresh");
-requireIncludes(document.getElementById("token-rotation-panel").innerHTML, "all views refresh", "token clear refresh");
+requireIncludes(document.getElementById("token-rotation-panel").innerHTML, "The browser token was cleared", "token clear refresh");
+requireIncludes(document.getElementById("token-rotation-panel").innerHTML, "All views refresh", "token clear refresh");
 requireIncludes(document.getElementById("token-rotation-panel").innerHTML, "pending jobs are rechecked", "token clear refresh");
-requireIncludes(document.getElementById("token-rotation-panel").innerHTML, "token-required routes may show Auth required", "token clear refresh");
+requireIncludes(document.getElementById("token-rotation-panel").innerHTML, "auth is required", "token clear refresh");
 requireEvidencePanel(document, [
   "full-admin-host-mutation-gate-20260506-212527-0384",
   "0.38.4-admin-smoke",
@@ -1350,26 +1521,17 @@ requireNotIncludes(rateLimitPriority, "[object Object]", "problem-details priori
 
 const partialFailureRun = await runFixture({ failVmListProblemDetails: true, skipVmSelect: true });
 const partialFailureAlert = partialFailureRun.document.getElementById("alert-region").innerHTML;
-const partialFailureConnection = partialFailureRun.document.getElementById("connection-state").textContent;
 requireIncludes(partialFailureAlert, "PCV_PARTIAL_REFRESH_DEGRADED", "partial failure alert");
 requireIncludes(partialFailureAlert, "PCV_ROUTE_TIMEOUT", "partial failure alert");
 requireIncludes(partialFailureAlert, "retry_after_seconds=15", "partial failure alert");
 requireIncludes(partialFailureAlert, "route_timeout_seconds=30", "partial failure alert");
 requireIncludes(partialFailureAlert, "req-problem-details-fixture", "partial failure alert");
-requireIncludes(partialFailureConnection, "Degraded", "partial failure connection state");
 requireIncludes(partialFailureRun.document.getElementById("host-details").innerHTML, "Windows", "partial failure host panel");
-// The footer connection text and the #connection-state badge must never contradict
-// each other. Before this assertion existed the badge read "Degraded" while the
-// footer collapsed every non-connected state to "Not connected".
-const partialFailureStatusConnection = partialFailureRun.document.getElementById("status-connection").textContent;
-requireIncludes(partialFailureStatusConnection, "Degraded", "partial failure status bar connection");
-if (partialFailureStatusConnection !== partialFailureConnection) {
-  fail(`status bar connection "${partialFailureStatusConnection}" must match connection badge "${partialFailureConnection}"`);
-}
-// Partial failure shows only the routes that loaded: host.status succeeded, vm.list did not.
-requireIncludes(partialFailureRun.document.getElementById("status-host").textContent, "Windows browser fixture", "partial failure status bar host");
-requireIncludes(partialFailureRun.document.getElementById("status-vm-count").textContent, "VM: —", "partial failure status bar vm count");
+// The connection badge and the five footer strings are not on this shell.
+// A failed vm.list leaves the workload chip as an em dash while the host
+// panel and host-mode chip still show the host status that did load.
 requireIncludes(partialFailureRun.document.getElementById("hero-workload").textContent, "—", "partial failure hero workload");
+requireIncludes(partialFailureRun.document.getElementById("hero-host-mode").textContent, "Ready", "partial failure hero host mode");
 
 const emptyJobsRun = await runFixture({ jobs: [], initialTrackedJobs: [] });
 const emptyJobsHtml = emptyJobsRun.document.getElementById("jobs-panel").innerHTML;
@@ -1380,8 +1542,8 @@ requireIncludes(emptyJobsHtml, "failed job retry", "empty jobs panel");
 const networkFailureRun = await runFixture({ failNetworkProblemDetails: true });
 const networkFailureHtml = networkFailureRun.document.getElementById("network-inventory-panel").innerHTML;
 requireIncludes(networkFailureHtml, "PCV_NATIVE_PARITY_INCOMPLETE", "network native parity failure");
-requireIncludes(networkFailureHtml, "native parity failure", "network native parity failure");
-requireIncludes(networkFailureHtml, "helper fallback is intentionally excluded", "network native parity failure");
+requireIncludes(networkFailureHtml, "Native parity failed", "network native parity failure");
+requireIncludes(networkFailureHtml, "Helper fallback is intentionally excluded", "network native parity failure");
 
 const diagnosticUnsupportedRun = await runFixture({
   diagnosticFailure: {
@@ -1620,33 +1782,9 @@ for (const value of ["Create Linux VM", "ubuntu-24.04"]) {
 const unauthenticatedRun = await runFixture({ failAllAuth: true });
 const unauthDoc = unauthenticatedRun.document;
 
-const unauthFooter = [
-  "status-connection",
-  "status-host",
-  "status-updated",
-  "status-vm-count"
-].map((id) => unauthDoc.getElementById(id).textContent).join(" | ");
-
-requireIncludes(unauthFooter, "Not connected", "unauthenticated status bar");
-requireNotIncludes(unauthFooter, "pcv-node-a", "unauthenticated status bar");
-requireNotIncludes(unauthFooter, "VM: 3/3", "unauthenticated status bar");
-requireIncludes(unauthFooter, "VM: —", "unauthenticated status bar");
-// "Updated" is a "last refresh attempt" timestamp, not a "last successful load"
-// timestamp (state.lastRefreshedAt is set on every completed refresh, success or
-// failure, so hasRefreshedOperation() can tell "never synced" apart from "synced,
-// and this specific field failed"). A completed-but-fully-failed refresh legitimately
-// shows "Updated Xs ago" alongside "—" everywhere else: that is an honest report of
-// when the attempt happened, not fabricated operational data, so it is intentionally
-// not asserted to be "—" here.
-requireIncludes(unauthFooter, "Updated ", "unauthenticated status bar");
-requireIncludes(unauthFooter, "ago", "unauthenticated status bar");
-
-// The Local API answers every 401 with operation "api.auth", so a per-route
-// operation match cannot tell which route failed. An auth failure must invalidate
-// every gated value; otherwise these read back as "VM: 0/0" and "Ready".
-requireNotIncludes(unauthFooter, "VM: 0/0", "unauthenticated status bar");
-requireIncludes(unauthDoc.getElementById("status-host").textContent, "—", "unauthenticated status bar");
-
+// The connection badge and footer strings are not on this shell. Hero chips
+// are the inventory and host readback: an auth failure must not show a healthy
+// host or a definitive VM count.
 const unauthHero = [
   "hero-workload",
   "hero-host-mode",
@@ -1685,28 +1823,14 @@ requireIncludes(unauthCockpit, '<span class="muted">Checkpoint warnings</span><s
 // expires at T2. The load gate must stop presenting the T1 values as current.
 const sessionExpiry = { expired: false };
 const sessionExpiryRun = await runFixture({ authExpiry: sessionExpiry, skipVmSelect: true });
-const loadedFooter = [
-  "status-connection",
-  "status-host",
-  "status-vm-count"
-].map((id) => sessionExpiryRun.document.getElementById(id).textContent).join(" | ");
-requireIncludes(loadedFooter, "Connected", "authenticated status bar");
-requireIncludes(loadedFooter, "Windows browser fixture", "authenticated status bar");
-requireIncludes(loadedFooter, "VM: 0/1", "authenticated status bar");
+requireIncludes(sessionExpiryRun.document.getElementById("host-details").innerHTML, "Windows", "authenticated host panel");
+requireIncludes(sessionExpiryRun.document.getElementById("hero-workload").textContent, "0/1", "authenticated hero chips");
 requireIncludes(sessionExpiryRun.document.getElementById("hero-host-mode").textContent, "Ready", "authenticated hero chips");
 
 sessionExpiry.expired = true;
 await sessionExpiryRun.context.refreshAll();
 await flush();
-const staleFooter = [
-  "status-connection",
-  "status-host",
-  "status-vm-count"
-].map((id) => sessionExpiryRun.document.getElementById(id).textContent).join(" | ");
-requireIncludes(staleFooter, "Not connected", "expired-session status bar");
-requireNotIncludes(staleFooter, "Windows browser fixture", "expired-session status bar");
-requireNotIncludes(staleFooter, "VM: 0/1", "expired-session status bar");
-requireIncludes(staleFooter, "VM: —", "expired-session status bar");
+requireNotIncludes(sessionExpiryRun.document.getElementById("hero-workload").textContent, "0/1", "expired-session hero chips");
 if (sessionExpiryRun.document.getElementById("hero-host-mode").textContent !== "—") {
   fail(`expired-session hero host mode must be — but was "${sessionExpiryRun.document.getElementById("hero-host-mode").textContent}"`);
 }

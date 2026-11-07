@@ -6,38 +6,10 @@ const webRoot = dirname(dirname(fileURLToPath(import.meta.url)));
 
 const paths = {
   packageJson: join(webRoot, "package.json"),
-  index: join(webRoot, "index.legacy.html"), // the legacy console page, formerly index.html (Single Edge shell since Task 16a)
+  index: join(webRoot, "index.html"),
   appSource: join(webRoot, "src", "app.ts"),
   fixtureSource: join(webRoot, "src", "user-visible-fixtures.ts"),
-  servedSource: join(webRoot, "src", "served-app.ts"),
-  // scripts/build-served-asset.mjs 의 servedSourceParts 와 같은 집합을 유지해야 한다. 여기서
-  // 빠진 part 는 아래 requireIncludes 검사가 보지 못하므로, 그 part 로 옮겨진 심볼이 사라져도
-  // parity 검사가 통과한다.
-  servedSourceParts: [
-    join(webRoot, "src", "served", "types.ts"),
-    join(webRoot, "src", "served", "state.ts"),
-    join(webRoot, "src", "served", "routes.ts"),
-    join(webRoot, "src", "served", "errors.ts"),
-    join(webRoot, "src", "served", "api-client.ts"),
-    join(webRoot, "src", "served", "evidence.ts"),
-    join(webRoot, "src", "served", "summary.ts"),
-    join(webRoot, "src", "served", "table.ts"),
-    join(webRoot, "src", "served", "rbac.ts"),
-    join(webRoot, "src", "served", "render-ops.ts"),
-    join(webRoot, "src", "served", "render-inventory.ts"),
-    join(webRoot, "src", "served", "render-qos.ts"),
-    join(webRoot, "src", "served", "render-vm-detail.ts"),
-    join(webRoot, "src", "served", "render-jobs.ts"),
-    join(webRoot, "src", "served", "render-monitoring.ts"),
-    join(webRoot, "src", "served", "render-panels.ts"),
-    join(webRoot, "src", "served", "render-console.ts"),
-    join(webRoot, "src", "served", "render-activity.ts"),
-    join(webRoot, "src", "served", "render-shell.ts"),
-    join(webRoot, "src", "served", "load.ts"),
-    join(webRoot, "src", "served", "mutate.ts"),
-    join(webRoot, "src", "served", "job-polling.ts"),
-    join(webRoot, "src", "served", "actions.ts")
-  ],
+  moduleOrder: join(webRoot, "src", "modules.json"),
   generatorSource: join(webRoot, "src", "generate-parity-manifest.ts"),
   servedBuilderScript: join(webRoot, "scripts", "build-served-asset.mjs"),
   regenerateScript: join(webRoot, "scripts", "regenerate-static-parity.mjs"),
@@ -58,10 +30,10 @@ const expected = {
   regeneratedBy: "scripts/regenerate-static-parity.mjs",
   decisionCandidate: "static-asset-parity-scaffold-first",
   runtimeReplacement: "default",
-  servedAsset: "app.js",
-  indexScriptSrc: "/app.js",
+  servedAsset: "app.bundle.js",
+  indexScriptSrc: "app.bundle.js?v=single-edge-v1",
   typeScriptEntry: "src/app.ts",
-  servedTypeScriptEntry: "src/served-app.ts",
+  servedTypeScriptEntry: "src/bootstrap.ts",
   userVisibleFixtureEntry: "src/user-visible-fixtures.ts",
   fixtureNames: ["emptyInventory", "runningVmAndJob", "unsupportedHost"],
   manifestOutput: "generated/parity/static-asset-parity.manifest.json",
@@ -115,10 +87,12 @@ const packageJson = JSON.parse(readText(paths.packageJson));
 const index = readText(paths.index);
 const appSource = readText(paths.appSource);
 const fixtureSource = readText(paths.fixtureSource);
-const servedSource = [
-  ...paths.servedSourceParts.map(readText),
-  readText(paths.servedSource)
-].join("\n");
+const moduleOrder = JSON.parse(readText(paths.moduleOrder));
+const shellSourcePaths = [
+  ...(Array.isArray(moduleOrder.modules) ? moduleOrder.modules : []).map((name) => join(webRoot, "src", "modules", `${name}.ts`)),
+  join(webRoot, moduleOrder.bootstrap)
+];
+const shellSource = shellSourcePaths.map(readText).join("\n");
 const generatorSource = readText(paths.generatorSource);
 const servedBuilderScript = readText(paths.servedBuilderScript);
 const regenerateScript = readText(paths.regenerateScript);
@@ -139,9 +113,9 @@ requireEqual(
 );
 requireEqual(packageJson.scripts?.["browser:fixture"], "node scripts/verify-browser-fixture.mjs", "package browser:fixture script");
 
-requireIncludes(index, '<script src="/app.js" defer></script>', "index.legacy.html");
-requireNotIncludes(index, "src/app.ts", "index.legacy.html");
-requireNotIncludes(index, "dist/", "index.legacy.html");
+requireIncludes(index, '<script src="app.bundle.js?v=single-edge-v1"></script>', "index.html");
+requireNotIncludes(index, "src/app.ts", "index.html");
+requireNotIncludes(index, "dist/", "index.html");
 
 requireEqual(manifest.generatedBy, expected.generatedBy, "manifest.generatedBy");
 requireEqual(manifest.regeneratedBy, expected.regeneratedBy, "manifest.regeneratedBy");
@@ -199,13 +173,13 @@ requireIncludes(regenerateScript, expected.browserFixtureCommand, "scripts/regen
 requireIncludes(regenerateScript, "--write", "scripts/regenerate-static-parity.mjs");
 requireIncludes(regenerateScript, "--check", "scripts/regenerate-static-parity.mjs");
 
-requireIncludes(servedSource, "DOMContentLoaded", "src/served-app.ts");
-requireIncludes(servedSource, "apiFetch", "src/served-app.ts");
-requireIncludes(servedSource, "/api/v1/ops/summary", "src/served-app.ts");
-requireIncludes(servedSource, "renderOpsCockpit", "src/served-app.ts");
-requireIncludes(servedSource, "renderIncidentCommand", "src/served-app.ts");
-requireIncludes(servedSource, "/api/v1/host/status", "src/served-app.ts");
-requireIncludes(servedSource, "/api/v1/vms", "src/served-app.ts");
+requireIncludes(shellSource, "DOMContentLoaded", "shell source");
+requireIncludes(shellSource, "apiFetch", "shell source");
+requireIncludes(shellSource, "/api/v1/ops/summary", "shell source");
+requireIncludes(shellSource, "renderOpsCockpit", "shell source");
+requireIncludes(shellSource, "renderIncidentCommand", "shell source");
+requireIncludes(shellSource, "/api/v1/host/status", "shell source");
+requireIncludes(shellSource, "/api/v1/vms", "shell source");
 requireIncludes(servedBuilderScript, "typescript", "scripts/build-served-asset.mjs");
 requireIncludes(servedBuilderScript, "src/served-app.ts", "scripts/build-served-asset.mjs");
 requireIncludes(servedBuilderScript, "app.js", "scripts/build-served-asset.mjs");
@@ -245,7 +219,7 @@ const scannedText = [
   JSON.stringify(packageJson),
   readText(fileURLToPath(import.meta.url)),
   appSource,
-  servedSource,
+  shellSource,
   fixtureSource,
   generatorSource,
   servedBuilderScript,

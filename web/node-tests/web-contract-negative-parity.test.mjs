@@ -21,7 +21,7 @@ const pesterSummary = JSON.stringify({
   failed: 1,
   skipped: 0,
   not_run: 49,
-  failure: "Expected app-root"
+  failure: "Expected regular expression 'id=\"app\"' to match the index, but it did not match."
 });
 const nodeTap = [
   "TAP version 13",

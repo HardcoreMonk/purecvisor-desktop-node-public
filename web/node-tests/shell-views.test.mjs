@@ -451,7 +451,7 @@ function createEnv() {
   vmTable.id = "vm-table";
   const chips = document.createElement("div");
   chips.id = "vm-state-chips";
-  for (const name of ["all", "running", "off", "template"]) {
+  for (const name of ["all", "running", "off", "template", "failed"]) {
     const button = document.createElement("button");
     button.setAttribute("data-vm-chip", name);
     const count = document.createElement("span");
@@ -709,6 +709,7 @@ test("VM chips count the name-filtered inventory and the pressed chip filters th
   assert.equal(count("running"), "2");
   assert.equal(count("off"), "1");
   assert.equal(count("template"), "1");
+  assert.equal(count("failed"), "0");
   env.document.querySelector('[data-vm-chip="template"]').click();
   assert.equal(env.state.vmStateFilter, "template");
   assert.equal(env.document.querySelectorAll("#vm-table tr[data-vm-id]").length, 1);
@@ -720,6 +721,29 @@ test("VM chips count the name-filtered inventory and the pressed chip filters th
   assert.equal(count("off"), "1");
   assert.equal(count("running"), "0");
   assert.equal(count("template"), "0");
+  assert.equal(count("failed"), "0");
+});
+
+test("the Failed chip counts and filters VMs whose state text includes failed", () => {
+  resetSession(env);
+  env.state.vms = [
+    { id: "run-1", name: "run-1", state: "Running", generation: 2 },
+    { id: "fail-1", name: "fail-1", state: "Failed", generation: 2 },
+    { id: "start-fail", name: "start-fail", status: "StartFailed", generation: 2 }
+  ];
+  env.renderVms();
+  const count = (name) => env.document.querySelector(`[data-chip-count="${name}"]`).textContent;
+  assert.equal(count("failed"), "2");
+  assert.equal(count("all"), "3");
+  assert.equal(count("running"), "1");
+  env.document.querySelector('[data-vm-chip="failed"]').click();
+  assert.equal(env.state.vmStateFilter, "failed");
+  const rows = [...env.document.querySelectorAll("#vm-table tr[data-vm-id]")].map((row) => row.getAttribute("data-vm-id"));
+  assert.deepEqual(hostValue(rows), ["fail-1", "start-fail"]);
+  env.state.vms = [{ id: "run-1", name: "run-1", state: "Running" }];
+  env.state.vmStateFilter = "all";
+  env.renderVms();
+  assert.equal(count("failed"), "0");
 });
 
 test("the VM row primary action follows template lock, then running, then off", () => {

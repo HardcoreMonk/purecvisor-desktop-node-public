@@ -165,7 +165,7 @@ push, noVNC·VNC WebSocket, cow·guestfs 복제 옵션.
 
 ### 7.3 계정
 
-- route: `GET/POST /api/v1/accounts`, `POST /api/v1/accounts/{username}/disable`(`account.manage`). 재설정·변경 route는 없다.
+- route: `GET/POST /api/v1/accounts`, `POST /api/v1/accounts/{username}/disable`(`account.manage`). 재설정·변경 route는 설계 당시에는 없었고, Task 8(PR #104)이 부록 A대로 `POST /api/v1/accounts/{username}/password`와 `POST /api/v1/auth/password`를 더했다.
 - 사용자 이름 `^[A-Za-z][A-Za-z0-9._-]{2,31}$`, 비밀번호 12자 이상이고 사용자 이름과 다름. 해시는 PBKDF2-SHA256 10만 회.
 - refresh 폐기는 프로세스 메모리의 `jti` 집합뿐이고, access JWT(기본 15분)를 무효화할 수단이 없다. 마지막 admin 비활성화는
   `PCV_ACCOUNT_LAST_ADMIN`(409)으로 막는다.
@@ -178,6 +178,8 @@ push, noVNC·VNC WebSocket, cow·guestfs 복제 옵션.
 - 옛 콘솔은 Task 9 전까지 동결한다. `web/contracts/web-static-contracts.mjs` `verifyVmLifecycleActions`(`:1060-1096`)는 옛 파일만 읽으므로
   새 셸 변경으로 깨지지 않는다. 깨지면 그 변경을 멈추고 보고한다.
 - MSI payload 파일 이름은 바뀌지 않는다(Task 9 전). `config/*spec*.json`은 웹 파일 해시를 고정하지 않는다.
+  다만 제품 descriptor spec의 `required_literals`는 `web\app.js`, `web\styles.css` 파일 이름 문자열을 고정하고, descriptor·invoke spec의
+  `module_sha256`는 그 이름을 필수 경로로 가진 `PcvDesktopNodeProduct.psm1`을 고정한다. Task 9b가 옛 파일을 payload에서 뺄 때 함께 바꾼다.
 - 새 route(Task 8)는 route·operation·permission 고정값(카탈로그 `ApiHandlerAdapterContract.cs`, route coverage, snapshot SHA, Host fixture,
   ratchet)을 같은 PR에서 맞추고 `release-train.json` queue 행을 더한다.
 

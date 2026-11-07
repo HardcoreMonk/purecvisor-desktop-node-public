@@ -31,9 +31,9 @@ if ($failed.Count -eq 1 -and $result.FailedCount -eq 1) { exit 1 }
 exit 2`;
 const REQUIRED_FILES = Object.freeze([
   "web/tests/PcvDesktopWeb.Static.Tests.ps1",
-  "web/index.legacy.html",
-  "web/styles.css",
-  "web/app.js",
+  "web/index.html",
+  "web/style.css",
+  "web/app.bundle.js",
   "web/scripts/build-served-asset.mjs"
 ]);
 
@@ -335,11 +335,11 @@ function copyFixture(repositoryRoot, fixtureRoot) {
     fs.mkdirSync(path.dirname(destination), { recursive: true });
     fs.copyFileSync(source, destination);
   }
-  const indexPath = path.join(fixtureRoot, "web", "index.legacy.html");
+  const indexPath = path.join(fixtureRoot, "web", "index.html");
   const index = fs.readFileSync(indexPath, "utf8");
-  const matches = [...index.matchAll(/id="app-root"/g)];
+  const matches = [...index.matchAll(/id="app"/g)];
   if (matches.length !== 1) throw unsafe("fixture_defect=app-root-count-invalid");
-  fs.writeFileSync(indexPath, index.replace("id=\"app-root\"", ""), "utf8");
+  fs.writeFileSync(indexPath, index.replace("id=\"app\"", ""), "utf8");
 }
 
 function childSucceededAsExpected(result) {
@@ -371,7 +371,7 @@ function verifyPester(result, roots) {
     summary.total !== 50 || summary.passed !== 0 || summary.failed !== 1
     || summary.skipped !== 0 || summary.notRun !== 49
   ) throw unsafe("pester_summary=unexpected", output, roots);
-  if (typeof parsed.failure !== "string" || !parsed.failure.includes("app-root")) {
+  if (typeof parsed.failure !== "string" || !parsed.failure.includes("id=\"app\"")) {
     throw unsafe("pester_failure=wrong-label", output, roots);
   }
   return summary;

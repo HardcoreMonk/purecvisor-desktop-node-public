@@ -89,44 +89,6 @@ async function refreshAll() {
   }
 }
 
-function readCreatePayload(form) {
-  const data = new FormData(form);
-  const payload = {
-    name: String(data.get('name') || '').trim(),
-    iso_path: String(data.get('iso_path') || '').trim(),
-    cpu: Number(data.get('cpu')),
-    memory_mb: Number(data.get('memory_mb')),
-    disk_gb: Number(data.get('disk_gb')),
-    vm_root: String(data.get('vm_root') || '').trim(),
-    generation: Number(data.get('generation'))
-  };
-  if (!payload.name || !payload.iso_path || !payload.vm_root) {
-    throw normalizeError({
-      code: 'PCV_FORM_INVALID',
-      message: 'Required fields are missing.',
-      detail: 'Name, ISO path, and VM root are required.'
-    });
-  }
-  return payload;
-}
-
-async function submitCreateVm(event) {
-  event.preventDefault();
-  state.error = null;
-  try {
-    requireRbac('operate', 'VM create');
-    const payload = readCreatePayload(event.currentTarget);
-    const job = await desktopApi.createVm(payload);
-    pcvTrackJob(job);
-    els.createDialog.close();
-    state.connectionState = 'connected';
-    startPolling();
-  } catch (error) {
-    state.error = normalizeError(error);
-  }
-  render();
-}
-
 function pcvTrackJob(job) {
   if (!job?.job_id) return;
   const existingIndex = state.trackedJobs.findIndex((item) => item.job_id === job.job_id);
@@ -263,8 +225,6 @@ PCV.events = {
 window.loadAll = refreshAll;
 // exports
 window.refreshAll = refreshAll;
-window.readCreatePayload = readCreatePayload;
-window.submitCreateVm = submitCreateVm;
 window.pcvTrackJob = pcvTrackJob;
 window.pollTrackedJobs = pollTrackedJobs;
 window.hasActiveTrackedJobs = hasActiveTrackedJobs;
@@ -278,5 +238,5 @@ window.cancelJob = cancelJob;
 window.retryJob = retryJob;
 window.reconcileJob = reconcileJob;
 window.loadNextJobPage = loadNextJobPage;
-PCV.events = Object.assign(PCV.events || {}, { refreshAll, readCreatePayload, submitCreateVm, pcvTrackJob, pollTrackedJobs, hasActiveTrackedJobs, resetJobPollDelay, increaseJobPollDelay, clearPollingTimer, scheduleNextPoll, runPollTick, startPolling, cancelJob, retryJob, reconcileJob, loadNextJobPage });
+PCV.events = Object.assign(PCV.events || {}, { refreshAll, pcvTrackJob, pollTrackedJobs, hasActiveTrackedJobs, resetJobPollDelay, increaseJobPollDelay, clearPollingTimer, scheduleNextPoll, runPollTick, startPolling, cancelJob, retryJob, reconcileJob, loadNextJobPage });
 })(window.PCV);

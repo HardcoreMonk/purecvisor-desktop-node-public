@@ -210,8 +210,8 @@ test("the bootstrap binds the index.html elements, renders every panel and start
   assert.equal(sandbox.els.connectionForm, null, "shell-only legacy elements are absent and tolerated");
   assert.match(sandbox.els.vmTable.innerHTML, /No VMs|muted/, "VM table rendered an empty state");
   assert.ok(sandbox.fetchLog.some((entry) => entry.url.endsWith("/api/v1/auth/loopback-session") && entry.method === "POST"), "loopback session requested on a loopback host");
-  const fatal = warnings.filter((line) => /bootstrap:init|bootstrap:shell|render:/.test(line) && !/render:renderConnectionState|render:renderStatusBar|render:renderAssetStatus|render:renderWorkspaceTabs|render:renderVmAssetList|render:renderHeroChips|render:applyUiPreferences/.test(line));
-  assert.deepEqual(fatal, [], "no unexpected bootstrap or render failures");
+  const fatal = warnings.filter((line) => /bootstrap:init|bootstrap:shell|render:/.test(line));
+  assert.deepEqual(fatal, [], "render() does not take a catch path on the new shell DOM");
 });
 
 test("the Single Edge nav keeps the chosen section shown through sidebar, hash and the legacy re-render (BL-0019)", async () => {

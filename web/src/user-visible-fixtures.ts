@@ -89,8 +89,8 @@ function buildFixture(snapshot: WebConsoleSnapshot) {
 export const webConsoleUserVisibleParityContract = {
   generatedBy: "src/user-visible-fixtures.ts",
   runtimeReplacement: "default",
-  servedAsset: "app.js",
-  servedTypeScriptEntry: "src/served-app.ts",
+  servedAsset: "app.bundle.js",
+  servedTypeScriptEntry: "src/bootstrap.ts",
   replacesServedAsset: true,
   fixtureNames: [
     "emptyInventory",

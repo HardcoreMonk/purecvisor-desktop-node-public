@@ -1,8 +1,7 @@
 // @ts-nocheck
 // Ported from purecvisor ui/app.js (Apache-2.0, same author): bootstrap position and window.PCV conventions.
-// Desktop Node bootstrap for web/app.bundle.js (ADR-0018): the legacy entry part (web/src/served-app.ts: element
-// bindings, event wiring, init) kept verbatim with the shell elements that index.next.html does not carry guarded,
-// followed by the Single Edge startup (shell mount, session restore).
+// Desktop Node bootstrap for web/app.bundle.js (ADR-0018): element bindings, event wiring, and init, with shell
+// elements that index.html does not carry guarded, followed by the Single Edge startup (shell mount, session restore).
 window.PCV = window.PCV || {};
 window.PCV.config = Object.assign({}, window.PCV.config || {}, {
   EDITION: 'desktop-node',
@@ -112,10 +111,6 @@ function bindEvents() {
     state.vmFilter = els.vmFilter.value;
     render();
   });
-  els.vmStateFilter?.addEventListener('change', () => {
-    state.vmStateFilter = els.vmStateFilter.value || 'all';
-    render();
-  });
   document.getElementById('vm-state-chips')?.addEventListener('click', (event) => {
     const chip = event.target.closest('[data-vm-chip]');
     if (!chip) return;
@@ -127,7 +122,6 @@ function bindEvents() {
     render();
   });
   bindJobAndNetworkFilterEvents();
-  els.assetSearchInput?.addEventListener('input', renderVmAssetList);
   document.addEventListener('keydown', (event) => {
     if ((event.ctrlKey || event.metaKey) && String(event.key || '').toLowerCase() === 'k') {
       event.preventDefault();
@@ -148,16 +142,6 @@ function bindEvents() {
           render();
         });
       }
-    }
-  });
-  els.vmAssetList?.addEventListener('click', async (event) => {
-    const button = event.target.closest('[data-action="select-asset-vm"]');
-    if (!button) return;
-    try {
-      await selectVmFromShell(button.dataset.vmId);
-    } catch (error) {
-      state.error = normalizeError(error);
-      render();
     }
   });
   document.addEventListener('click', (event) => {
@@ -425,20 +409,9 @@ function init() {
     commandPaletteResults: byId('command-palette-results'),
     clearToken: byId('clear-token'),
     refreshAll: byId('refresh-all'),
-    connectionState: byId('connection-state'),
-    statusConnection: byId('status-connection'),
-    statusHost: byId('status-host'),
-    statusUpdated: byId('status-updated'),
-    statusVmCount: byId('status-vm-count'),
-    statusView: byId('status-view'),
     heroWorkload: byId('hero-workload'),
     heroHostMode: byId('hero-host-mode'),
     heroAlerts: byId('hero-alerts'),
-    assetStatus: byId('asset-status'),
-    assetCount: byId('asset-count'),
-    assetSearchInput: byId('asset-search-input'),
-    vmAssetList: byId('vm-asset-list'),
-    workspaceTabbar: byId('workspace-tabbar'),
     alertRegion: byId('alert-region'),
     opsSummaryPanel: byId('ops-summary-panel'),
     priorityPanel: byId('priority-panel'),
@@ -446,7 +419,6 @@ function init() {
     metricGrid: byId('metric-grid'),
     hostDetails: byId('host-details'),
     vmFilter: byId('vm-filter'),
-    vmStateFilter: byId('vm-state-filter'),
     vmSort: byId('vm-sort'),
     jobFilter: byId('job-filter'),
     jobStatusFilter: byId('job-status-filter'),

@@ -4,11 +4,10 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
 // ADR-0018: web/src/modules/endpoints.ts is the Single Edge EP surface shape carrying the Desktop Node Local API routes.
-// Until Task 16 removes the legacy registry, every route fragment it builds must exist in web/src/served/routes.ts, and
-// no Linux Single Edge route may appear.
+// Every route fragment it builds must exist in web/src/modules/core.ts, and no Linux Single Edge route may appear.
 
 const endpoints = fs.readFileSync(fileURLToPath(new URL("../src/modules/endpoints.ts", import.meta.url)), "utf8");
-const legacyRoutes = fs.readFileSync(fileURLToPath(new URL("../src/served/routes.ts", import.meta.url)), "utf8");
+const routeRegistry = fs.readFileSync(fileURLToPath(new URL("../src/modules/core.ts", import.meta.url)), "utf8");
 const api = fs.readFileSync(fileURLToPath(new URL("../src/modules/api.ts", import.meta.url)), "utf8");
 const events = fs.readFileSync(fileURLToPath(new URL("../src/modules/events.ts", import.meta.url)), "utf8");
 
@@ -30,13 +29,13 @@ test("the Desktop Node endpoint surface lists the routes the console uses and no
   assert.match(code, /window\.PCV_DESKTOP_NODE_CONFIG/, "API_BASE comes from pcv-config.js");
 });
 
-test("every route fragment of the endpoint surface exists in the legacy route registry", () => {
+test("every route fragment of the endpoint surface exists in the Desktop Node route registry", () => {
   const fragments = [...codeOnly(endpoints).matchAll(/'(\/[a-z0-9\-/?=&]+)'/g)].map((match) => match[1]).filter((fragment) => fragment !== "/" && fragment !== "/api/v1");
   assert.ok(fragments.length > 40, `fragments ${fragments.length}`);
-  const missing = fragments.filter((fragment) => !legacyRoutes.includes(fragment));
-  assert.deepEqual(missing, [], "fragments absent from web/src/served/routes.ts");
+  const missing = fragments.filter((fragment) => !routeRegistry.includes(fragment));
+  assert.deepEqual(missing, [], "fragments absent from web/src/modules/core.ts");
   for (const action of ["'start', 'shutdown', 'poweroff', 'restart', 'save', 'resume-saved', 'pause', 'resume', 'rename', 'eject'", "'cancel', 'retry', 'reconcile'"]) {
-    assert.ok(endpoints.includes(action) && legacyRoutes.includes(action), `action list ${action}`);
+    assert.ok(endpoints.includes(action) && routeRegistry.includes(action), `action list ${action}`);
   }
 });
 

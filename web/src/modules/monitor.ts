@@ -673,32 +673,6 @@ function hasRefreshedOperation(operation) {
   return !failures.some((failure) => failure?.operation === operation);
 }
 
-function renderStatusBar() {
-  if (els.statusConnection) {
-    els.statusConnection.textContent = getStatusBarConnectionLabel();
-  }
-  if (els.statusHost) {
-    const caption = hasRefreshedOperation('host.status')
-      ? readNested(state.host, ['windows', 'caption'])
-      : undefined;
-    els.statusHost.textContent = caption ? String(caption) : '—';
-  }
-  if (els.statusUpdated) {
-    els.statusUpdated.textContent = `Updated ${pcvFormatRelativeTime(state.lastRefreshedAt)}`;
-  }
-  if (els.statusVmCount) {
-    if (hasRefreshedOperation('vm.list')) {
-      const counts = getSummaryVmCounts();
-      els.statusVmCount.textContent = `VM: ${counts.running}/${counts.total}`;
-    } else {
-      els.statusVmCount.textContent = 'VM: —';
-    }
-  }
-  if (els.statusView) {
-    els.statusView.textContent = state.activeView;
-  }
-}
-
 function renderHeroChips() {
   if (els.heroWorkload) {
     if (hasRefreshedOperation('vm.list')) {
@@ -719,34 +693,6 @@ function renderHeroChips() {
       ? '—'
       : String((state.partialFailures || []).length);
   }
-}
-
-const CONNECTION_STATE_LABELS = {
-  idle: 'Idle',
-  connected: 'Connected',
-  degraded: 'Degraded',
-  auth: 'Auth required',
-  error: 'Error'
-};
-
-function getConnectionStateLabel() {
-  return CONNECTION_STATE_LABELS[state.connectionState] || 'Idle';
-}
-
-// #connection-state and the footer read the same label map so they can never
-// contradict each other (a partial failure showed 'Degraded' in the badge and
-// 'Not connected' in the footer before). Spec §6 pins the footer wording for the
-// pre-load and unauthenticated rows to 'Not connected'; those two states are not
-// contradicted by the badge's 'Idle'/'Auth required', which say the same thing.
-function getStatusBarConnectionLabel() {
-  return state.connectionState === 'idle' || state.connectionState === 'auth'
-    ? 'Not connected'
-    : getConnectionStateLabel();
-}
-
-function renderConnectionState() {
-  els.connectionState.className = `connection-state state-${state.connectionState}`;
-  els.connectionState.textContent = getConnectionStateLabel();
 }
 
 function needsAuthGate() {
@@ -802,10 +748,6 @@ function applyUiPreferences() {
   if (els.languageSelect && els.languageSelect.value !== state.language) {
     els.languageSelect.value = state.language;
   }
-}
-
-function renderAssetStatus() {
-  els.assetStatus.innerHTML = `<span class="muted">Asset</span><strong>${pcvEscapeHtml(WEB_ASSET_LABEL)}</strong>`;
 }
 
 function getViewLabel(view) {
@@ -943,57 +885,6 @@ async function runCommandPaletteItem(commandId) {
   }
 }
 
-function renderWorkspaceTabs() {
-  if (!els.workspaceTabbar) return;
-  const views = ['dashboard', 'vms', 'network', 'jobs', 'activity', 'evidence', 'troubleshooting'];
-  els.workspaceTabbar.innerHTML = views.map((view) => {
-    const active = view === state.activeView;
-    return `<a class="workspace-tab${active ? ' active' : ''}" role="tab" aria-selected="${active ? 'true' : 'false'}" href="#${pcvEscapeHtml(view)}" data-view-link="${pcvEscapeHtml(view)}">${pcvEscapeHtml(getViewLabel(view))}<button type="button" aria-label="${pcvEscapeHtml(getViewLabel(view))} tab pinned">x</button></a>`;
-  }).join('');
-}
-
-function getAssetFilterText() {
-  return String(els.assetSearchInput?.value || state.vmFilter || '').trim().toLowerCase();
-}
-
-function renderVmAssetList() {
-  if (!els.vmAssetList) return;
-  const filter = getAssetFilterText();
-  const vms = asArray(state.vms)
-    .filter((vm) => {
-      if (!filter) return true;
-      return [getVmName(vm), getVmId(vm), getVmState(vm), vm?.notes]
-        .join(' ')
-        .toLowerCase()
-        .includes(filter);
-    })
-    .slice(0, 50);
-  if (els.assetCount) {
-    els.assetCount.textContent = String(vms.length);
-  }
-  if (vms.length === 0) {
-    els.vmAssetList.innerHTML = '<p class="muted">No VM assets match the current filter.</p>';
-    return;
-  }
-  els.vmAssetList.innerHTML = vms.map((vm) => {
-    const vmId = getVmId(vm);
-    const active = vmId && vmId === state.selectedVmId;
-    const cpu = vm.cpu?.count ?? vm.cpu ?? vm.vcpu ?? vm.processor_count ?? '-';
-    const memory = vm.memory?.startup_mb ?? vm.memory_mb ?? vm.memory ?? '-';
-    const memoryLabel = Number.isFinite(Number(memory)) ? `${Math.round(Number(memory) / 1024)}G` : memory;
-    const stateLabel = getVmState(vm) || '-';
-    return `<button type="button" class="asset-row${active ? ' active' : ''}" data-action="select-asset-vm" data-vm-id="${pcvEscapeHtml(vmId)}">
-      <span class="asset-check"></span>
-      <span class="asset-star">☆</span>
-      <span class="asset-health"></span>
-      <strong>${pcvEscapeHtml(getVmName(vm))}</strong>
-      <span>${pcvEscapeHtml(cpu)}</span>
-      <span>${pcvEscapeHtml(memoryLabel)}</span>
-      <span>${pcvEscapeHtml(stateLabel)}</span>
-    </button>`;
-  }).join('');
-}
-
 function renderActiveView() {
   // BL-0019: in the Single Edge shell PCV.nav owns the shown section; the legacy view state only follows it.
   const navView = window.PCV && window.PCV.nav && typeof window.PCV.nav.activeView === 'function' ? window.PCV.nav.activeView() : null;
@@ -1014,14 +905,9 @@ function render() {
   try { renderActiveView(); } catch (e) { if (window._DEBUG) console.warn('render:renderActiveView', e); }
   try { applyUiPreferences(); } catch (e) { if (window._DEBUG) console.warn('render:applyUiPreferences', e); }
   try { renderError(); } catch (e) { if (window._DEBUG) console.warn('render:renderError', e); }
-  try { renderConnectionState(); } catch (e) { if (window._DEBUG) console.warn('render:renderConnectionState', e); }
   try { renderAuthGate(); } catch (e) { if (window._DEBUG) console.warn('render:renderAuthGate', e); }
-  try { renderStatusBar(); } catch (e) { if (window._DEBUG) console.warn('render:renderStatusBar', e); }
   try { renderHeroChips(); } catch (e) { if (window._DEBUG) console.warn('render:renderHeroChips', e); }
-  try { renderAssetStatus(); } catch (e) { if (window._DEBUG) console.warn('render:renderAssetStatus', e); }
   try { renderCommandPalette(); } catch (e) { if (window._DEBUG) console.warn('render:renderCommandPalette', e); }
-  try { renderWorkspaceTabs(); } catch (e) { if (window._DEBUG) console.warn('render:renderWorkspaceTabs', e); }
-  try { renderVmAssetList(); } catch (e) { if (window._DEBUG) console.warn('render:renderVmAssetList', e); }
   try { renderOpsCockpit(); } catch (e) { if (window._DEBUG) console.warn('render:renderOpsCockpit', e); }
   try { renderMetrics(); } catch (e) { if (window._DEBUG) console.warn('render:renderMetrics', e); }
   try { renderHost(); } catch (e) { if (window._DEBUG) console.warn('render:renderHost', e); }
@@ -1080,16 +966,11 @@ window.renderTroubleshootingEvidence = renderTroubleshootingEvidence;
 window.renderError = renderError;
 window.pcvFormatRelativeTime = pcvFormatRelativeTime;
 window.hasRefreshedOperation = hasRefreshedOperation;
-window.renderStatusBar = renderStatusBar;
 window.renderHeroChips = renderHeroChips;
-window.getConnectionStateLabel = getConnectionStateLabel;
-window.getStatusBarConnectionLabel = getStatusBarConnectionLabel;
-window.renderConnectionState = renderConnectionState;
 window.needsAuthGate = needsAuthGate;
 window.bindAlertRegionAuthGate = bindAlertRegionAuthGate;
 window.renderAuthGate = renderAuthGate;
 window.applyUiPreferences = applyUiPreferences;
-window.renderAssetStatus = renderAssetStatus;
 window.getViewLabel = getViewLabel;
 window.buildCommandPaletteItems = buildCommandPaletteItems;
 window.getCommandPaletteMatches = getCommandPaletteMatches;
@@ -1098,11 +979,7 @@ window.openCommandPalette = openCommandPalette;
 window.closeCommandPalette = closeCommandPalette;
 window.handleCommandSearch = handleCommandSearch;
 window.runCommandPaletteItem = runCommandPaletteItem;
-window.renderWorkspaceTabs = renderWorkspaceTabs;
-window.getAssetFilterText = getAssetFilterText;
-window.renderVmAssetList = renderVmAssetList;
 window.renderActiveView = renderActiveView;
 window.render = render;
-window.CONNECTION_STATE_LABELS = CONNECTION_STATE_LABELS;
-PCV.monitor = Object.assign(PCV.monitor || {}, { getDiagnosticActionPolicy, buildPartialRefreshError, collectRefreshFailures, getPriorityItems, renderMetrics, renderHost, renderOpsSummaryCard, renderOpsCockpit, renderRuntimeApiRegistryBridge, renderHostOpsLifecycleBucketTable, renderDiagnosticsBundle, renderTokenRotation, renderAccountSession, renderAccountDirectory, readNested, formatPolicyValue, countJobsByStatus, getVmCheckpointCount, countVmCheckpointWarnings, countSelectedOldCheckpointWarnings, buildMonitoringSignals, evidenceStatusMessage, renderEvidenceDashboard, renderCurrentEvidenceSummary, renderMonitoring, renderTroubleshootingEvidence, renderError, pcvFormatRelativeTime, hasRefreshedOperation, renderStatusBar, renderHeroChips, getConnectionStateLabel, getStatusBarConnectionLabel, renderConnectionState, needsAuthGate, bindAlertRegionAuthGate, renderAuthGate, applyUiPreferences, renderAssetStatus, getViewLabel, buildCommandPaletteItems, getCommandPaletteMatches, renderCommandPalette, openCommandPalette, closeCommandPalette, handleCommandSearch, runCommandPaletteItem, renderWorkspaceTabs, getAssetFilterText, renderVmAssetList, renderActiveView, render, CONNECTION_STATE_LABELS });
+PCV.monitor = Object.assign(PCV.monitor || {}, { getDiagnosticActionPolicy, buildPartialRefreshError, collectRefreshFailures, getPriorityItems, renderMetrics, renderHost, renderOpsSummaryCard, renderOpsCockpit, renderRuntimeApiRegistryBridge, renderHostOpsLifecycleBucketTable, renderDiagnosticsBundle, renderTokenRotation, renderAccountSession, renderAccountDirectory, readNested, formatPolicyValue, countJobsByStatus, getVmCheckpointCount, countVmCheckpointWarnings, countSelectedOldCheckpointWarnings, buildMonitoringSignals, evidenceStatusMessage, renderEvidenceDashboard, renderCurrentEvidenceSummary, renderMonitoring, renderTroubleshootingEvidence, renderError, pcvFormatRelativeTime, hasRefreshedOperation, renderHeroChips, needsAuthGate, bindAlertRegionAuthGate, renderAuthGate, applyUiPreferences, getViewLabel, buildCommandPaletteItems, getCommandPaletteMatches, renderCommandPalette, openCommandPalette, closeCommandPalette, handleCommandSearch, runCommandPaletteItem, renderActiveView, render });
 })(window.PCV);

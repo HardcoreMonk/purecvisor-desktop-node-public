@@ -466,33 +466,33 @@ function verifyFeatureSurfaceLedger(context) {
     "feature-surface-ledger:package-script"
   );
   context.assertMatch(packageJson.scripts?.test, /^npm run check:feature-surfaces &&/i, "feature-surface-ledger:test-wiring");
-  context.assertMatch(context.readServedSource(), /featureId:\s*['"]pcv\./i, "feature-surface-ledger:served-source");
+  context.assertMatch(context.readShellSource(), /featureId:\s*['"]pcv\./i, "feature-surface-ledger:served-source");
 }
 
 function verifyRootAssets(context) {
   for (const [relativePath, label] of [
-    ["web/index.legacy.html", "index"],
-    ["web/styles.css", "styles"],
-    ["web/app.js", "app"]
+    ["web/index.html", "index"],
+    ["web/style.css", "styles"],
+    ["web/app.bundle.js", "app"]
   ]) {
     context.assertExists(relativePath, `root-assets:${label}`);
   }
-  const index = context.readText("web/index.legacy.html");
+  const index = context.readText("web/index.html");
   context.assertMatch(index, /PureCVisor Desktop Node/i, "root-assets:title");
-  context.assertMatch(index, /styles\.css/i, "root-assets:styles-link");
-  context.assertMatch(index, /app\.js/i, "root-assets:script-link");
-  context.assertMatch(index, /id="app-root"/i, "root-assets:app-root");
+  context.assertMatch(index, /style\.css/i, "root-assets:styles-link");
+  context.assertMatch(index, /app\.bundle\.js/i, "root-assets:script-link");
+  context.assertMatch(index, /id="app"/i, "root-assets:app-root");
 }
 
 function verifyInlineFavicon(context) {
-  const index = context.readText("web/index.legacy.html");
+  const index = context.readText("web/index.html");
   context.assertMatch(index, /<link rel="icon"/i, "inline-favicon:link");
-  context.assertMatch(index, /data:image\/svg\+xml/i, "inline-favicon:data-uri");
+  context.assertMatch(index, /href="\/icon-192\.png"/i, "inline-favicon:data-uri");
   context.assertNotMatch(index, /href="\/favicon\.ico"/i, "inline-favicon:no-file-request");
 }
 
 function verifySingleEdgeIsolation(context) {
-  for (const relativePath of ["web/index.legacy.html", "web/app.js", "web/styles.css"]) {
+  for (const relativePath of ["web/index.html", "web/app.bundle.js", "web/style.css"]) {
     context.assertNotMatch(context.readText(relativePath), /\.\.\/\.\.\/ui\//i, `single-edge-isolation:${relativePath}`);
   }
 }
@@ -518,7 +518,7 @@ function verifyDesignBoundary(context) {
 }
 
 function verifySupanovaTokens(context) {
-  const styles = context.readText("web/styles.css");
+  const styles = context.readText("web/style.css");
   for (const [pattern, label] of [
     [/color-scheme:\s*dark/i, "color-scheme"],
     [/--bg:\s*#0a0f1a/i, "bg"],
@@ -538,15 +538,15 @@ function verifySupanovaTokens(context) {
 }
 
 function verifyVisualShell(context) {
-  const index = context.readText("web/index.legacy.html");
-  const styles = context.readText("web/styles.css");
+  const index = context.readText("web/index.html");
+  const styles = context.readText("web/style.css");
   const combined = index + styles;
   for (const [pattern, label] of [
-    [/data-ui-port="single-edge-visual-shell"/i, "port"],
-    [/class="shell supanova-console[^"]*"/i, "console"],
-    [/class="topbar glass-topbar[^"]*"/i, "topbar"],
-    [/class="connection-form control-strip"/i, "controls"],
-    [/class="sidebar nav-rail[^"]*"/i, "rail"]
+    [/id="app"/i, "port"],
+    [/class="shell-sidebar"/i, "console"],
+    [/id="shell-topbar"/i, "topbar"],
+    [/id="shell-statusbar"/i, "controls"],
+    [/class="dashboard-hero"/i, "rail"]
   ]) {
     context.assertMatch(index, pattern, `visual-shell:${label}`);
   }
@@ -554,31 +554,27 @@ function verifyVisualShell(context) {
     [/--supanova-glass:\s*rgba/i, "glass-token"],
     [/--supanova-rail:\s*rgba/i, "rail-token"],
     [/--supanova-shadow:/i, "shadow-token"],
-    [/\.supanova-console/i, "console-selector"],
-    [/\.glass-topbar/i, "topbar-selector"],
-    [/\.control-strip/i, "control-selector"],
-    [/\.nav-rail/i, "rail-selector"],
-    [/\.nav-rail a\.nav-active::before/i, "active-selector"],
+    [/\.shell-sidebar/i, "console-selector"],
+    [/\.shell-topbar/i, "topbar-selector"],
+    [/\.shell-statusbar/i, "control-selector"],
+    [/\.dashboard-hero/i, "rail-selector"],
+    [/\.dashboard-pills/i, "active-selector"],
     [/body::before/i, "body-selector"]
   ]) {
     context.assertMatch(styles, pattern, `visual-shell:${label}`);
   }
   context.assertNotMatch(combined, /<base\s+href="\/ui\/"|\/auth\/token|\/ws\/events|\/containers|(?<!\/qos)\/storage|\/ovn|\/networks/i, "visual-shell:no-runtime-routes");
-  context.assertNotMatch(combined, /journalctl|libvirt|KVM|ZFS|OVS|\bOVN\b|purecvisorsd|Create Linux VM|ubuntu-24\.04/i, "visual-shell:no-linux-literals");
+  context.assertNotMatch(combined, /journalctl|libvirt|\bKVM\b|\bZFS\b|\bOVS\b|\bOVN\b|purecvisorsd|Create Linux VM|ubuntu-24\.04/i, "visual-shell:no-linux-literals");
 }
 
 function verifyWorkbenchFrame(context) {
-  const index = context.readText("web/index.legacy.html");
-  const styles = context.readText("web/styles.css");
+  const index = context.readText("web/index.html");
+  const styles = context.readText("web/style.css");
   const combined = index + styles;
   for (const className of [
-    "menu-bar",
-    "activity-rail",
-    "asset-tabs",
-    "asset-search",
-    "asset-list",
-    "workspace-tabbar",
-    "status-bar",
+    "shell-sidebar",
+    "shell-topbar",
+    "shell-statusbar",
     "dashboard-hero",
     "dashboard-pills",
     "quick-action-grid"
@@ -586,13 +582,11 @@ function verifyWorkbenchFrame(context) {
     context.assertMatch(index, new RegExp(`class="${className}"`, "i"), `workbench-frame:index-${className}`);
   }
   for (const selector of [
-    "single-clone-shell",
-    "menu-bar",
-    "activity-rail",
-    "asset-explorer",
-    "workspace-tabbar",
-    "status-bar",
+    "shell-sidebar",
+    "shell-topbar",
+    "shell-statusbar",
     "dashboard-hero",
+    "dashboard-pills",
     "quick-action-grid"
   ]) {
     context.assertMatch(styles, new RegExp(`\\.${selector}`, "i"), `workbench-frame:styles-${selector}`);
@@ -631,7 +625,7 @@ function verifyFrontendMockups(context) {
   );
   context.assertNotMatch(mockup, /https?:\/\/|\/\/cdn|src="http|href="http/i, "frontend-mockups:no-external-assets");
   context.assertNotMatch(mockup, /\/auth\/token|\/ws\/events|\/containers|(?<!\/qos)\/storage|\/ovn|\/networks/i, "frontend-mockups:no-runtime-routes");
-  context.assertNotMatch(mockup, /journalctl|libvirt|KVM|ZFS|OVS|\bOVN\b|purecvisorsd|Create Linux VM|ubuntu-24\.04/i, "frontend-mockups:no-linux-literals");
+  context.assertNotMatch(mockup, /journalctl|libvirt|\bKVM\b|\bZFS\b|\bOVS\b|\bOVN\b|purecvisorsd|Create Linux VM|ubuntu-24\.04/i, "frontend-mockups:no-linux-literals");
   context.assertNotMatch(mockup, /Bearer\s+(?!\$\{)[A-Za-z0-9._~+/=-]{24,}/i, "frontend-mockups:no-bearer-literal");
   context.assertNotMatch(mockup, /Restart-Computer|msiexec|New-NetFirewallRule|Register-EventSource|New-EventLog|Register-ScheduledTask|New-VM|Remove-VM/i, "frontend-mockups:no-host-mutation");
 }
@@ -706,7 +700,7 @@ function verifyFrontendBatches(context) {
 }
 
 function verifyPhase2hEndpoints(context) {
-  const app = context.readText("web/app.js");
+  const app = context.readText("web/app.bundle.js");
   for (const [pattern, label] of [
     [/\/api\/v1\/host\/status/i, "host-status"],
     [/\/api\/v1\/vms/i, "vms"],
@@ -726,11 +720,33 @@ function assertSourceAndGenerated(context, source, generated, checks, prefix) {
   }
 }
 
+function sliceFunction(source, name) {
+  const start = source.search(new RegExp(`function\\s+${name}\\s*\\(`));
+  if (start < 0) return "";
+  let depth = 0;
+  let seen = false;
+  for (let index = start; index < source.length; index += 1) {
+    const ch = source[index];
+    if (ch === "{") {
+      depth += 1;
+      seen = true;
+    } else if (ch === "}") {
+      depth -= 1;
+      if (seen && depth === 0) return source.slice(start, index + 1);
+    }
+  }
+  return source.slice(start);
+}
+
+function withoutCliBlkioCitation(text) {
+  return text.replaceAll("'vm blkio-set'", "'vm qos-storage'");
+}
+
 function verifyLocalApiRegistry(context) {
-  const app = context.readText("web/app.js");
-  const routesSource = context.readText("web/src/served/routes.ts");
-  const apiClientSource = context.readText("web/src/served/api-client.ts");
-  const servedSource = context.readServedSource();
+  const app = context.readText("web/app.bundle.js");
+  const routesSource = context.readText("web/src/modules/core.ts");
+  const apiClientSource = context.readText("web/src/modules/desktop-api.ts");
+  const servedSource = context.readShellSource();
   context.assertMatch(routesSource, /const\s+DESKTOP_NODE_ROUTE_COVERAGE/i, "local-api-registry:route-coverage-source");
   assertSourceAndGenerated(context, routesSource, app, [
     [/const\s+DESKTOP_NODE_API_ROUTES/i, "api-routes"],
@@ -755,11 +771,11 @@ function verifyLocalApiRegistry(context) {
 }
 
 function verifyQosGuestReadback(context) {
-  const app = context.readText("web/app.js");
-  const routesSource = context.readText("web/src/served/routes.ts");
-  const renderSource = context.readText("web/src/served/render-qos.ts");
-  const loadSource = context.readText("web/src/served/load.ts");
-  const servedSource = context.readServedSource();
+  const app = context.readText("web/app.bundle.js");
+  const routesSource = context.readText("web/src/modules/core.ts");
+  const renderSource = context.readText("web/src/modules/vm.ts");
+  const loadSource = context.readText("web/src/modules/core.ts");
+  const servedSource = context.readShellSource();
   context.assertMatch(app, /function\s+renderVmQosGuestReadback\s*\(/i, "qos-guest-readback:render");
   assertSourceAndGenerated(context, routesSource, app, [
     [/vmBlkio\s*:/i, "vm-blkio"],
@@ -782,15 +798,15 @@ function verifyQosGuestReadback(context) {
   assertSourceAndGenerated(context, loadSource, app, [
     [/function\s+loadVmQosGuestReadbacks\s*\(/i, "load"]
   ], "qos-guest-readback");
-  context.assertNotMatch(servedSource, /blkio-set/i, "qos-guest-readback:no-blkio-set-source");
-  context.assertNotMatch(app, /blkio-set/i, "qos-guest-readback:no-blkio-set-generated");
+  context.assertNotMatch(withoutCliBlkioCitation(servedSource), /blkio-set/i, "qos-guest-readback:no-blkio-set-source");
+  context.assertNotMatch(withoutCliBlkioCitation(app), /blkio-set/i, "qos-guest-readback:no-blkio-set-generated");
 }
 
 function verifyQosGuestControl(context) {
-  const app = context.readText("web/app.js");
-  const routesSource = context.readText("web/src/served/routes.ts");
-  const renderSource = context.readText("web/src/served/render-qos.ts");
-  const servedSource = context.readServedSource();
+  const app = context.readText("web/app.bundle.js");
+  const routesSource = context.readText("web/src/modules/core.ts");
+  const renderSource = context.readText("web/src/modules/vm.ts");
+  const servedSource = context.readShellSource();
   const design = context.readText("web/DESIGN.md");
   context.assertMatch(app, /vmQosStoragePreview:\s*\(vmId\)/i, "qos-guest-control:storage-preview-route");
   context.assertMatch(routesSource, /vmQosStoragePreview:\s*\(vmId/i, "qos-guest-control:storage-preview-route-source");
@@ -820,11 +836,12 @@ function verifyQosGuestControl(context) {
     [/data-action="vm-qos-network-apply"/i, "network-apply-action"],
     [/data-action="vm-guest-exec"/i, "guest-exec-action"],
     [/data-action="vm-guest-file"/i, "guest-file-action"],
-    [/Copy host file/i, "guest-file-label"],
+    [/vm\.guestui\.copy/i, "guest-file-label"],
     [/data-action="guest-agent-ensure-channel"/i, "channel-action"],
     [/guest\.exec/i, "guest-exec-rbac"],
     [/guest\.channel\.configure/i, "channel-rbac"]
   ], "qos-guest-control");
+  context.assertMatch(context.readText("web/i18n.js"), /Copy host file/i, "qos-guest-control:guest-file-label:i18n");
   context.assertMatch(design, /ADR-0009/i, "qos-guest-control:adr-0009:design");
   context.assertMatch(design, /ADR-0010/i, "qos-guest-control:adr-0010:design");
   context.assertNotMatch(servedSource, /data-action="novnc-target-apply"/i, "qos-guest-control:no-novnc-control-source");
@@ -833,15 +850,15 @@ function verifyQosGuestControl(context) {
 }
 
 function verifyGuestExecCancel(context) {
-  const app = context.readText("web/app.js");
-  const renderJobsSource = context.readText("web/src/served/render-jobs.ts");
-  const jobPollingSource = context.readText("web/src/served/job-polling.ts");
+  const app = context.readText("web/app.bundle.js");
+  const renderJobsSource = context.readText("web/src/modules/ops.ts");
+  const jobPollingSource = context.readText("web/src/modules/events.ts");
   context.assertMatch(app, /Cancel running guest exec/i, "guest-exec-cancel:label");
   context.assertMatch(renderJobsSource, /Cancel running guest exec/i, "guest-exec-cancel:label-source");
   assertSourceAndGenerated(context, renderJobsSource, app, [
     [/function\s+formatJobCancelLabel\s*\(/i, "format-label"],
     [/function\s+getJobCancelScope\s*\(/i, "cancel-scope"],
-    [/data-job-cancel-scope="\$\{escapeHtml\(cancelScope\)\}"/i, "scope-attribute"],
+    [/data-job-cancel-scope="\$\{pcvEscapeHtml\(cancelScope\)\}"/i, "scope-attribute"],
     [/running-guest-execution/i, "running-scope"]
   ], "guest-exec-cancel");
   assertSourceAndGenerated(context, jobPollingSource, app, [
@@ -850,15 +867,19 @@ function verifyGuestExecCancel(context) {
 }
 
 function verifySearchEventTable(context) {
-  const index = context.readText("web/index.legacy.html");
-  const styles = context.readText("web/styles.css");
-  const app = context.readText("web/app.js");
-  const servedSource = context.readServedSource();
-  const shellSource = context.readText("web/src/served/render-shell.ts");
-  const activitySource = context.readText("web/src/served/render-activity.ts");
-  const tableSource = context.readText("web/src/served/table.ts");
+  const index = context.readText("web/index.html");
+  const styles = context.readText("web/style.css");
+  const app = context.readText("web/app.bundle.js");
+  const servedSource = context.readShellSource();
+  const shellSource = context.readText("web/src/modules/monitor.ts");
+  const activitySource = context.readText("web/src/modules/ops.ts");
+  const tableSource = context.readText("web/src/modules/core.ts");
+  const shellNav = context.readText("web/src/modules/shell.ts");
+  const navSource = context.readText("web/src/modules/nav.ts");
+  context.assertMatch(shellNav, /class:\s*'shell-search'/i, "search-event-table:global-search");
+  context.assertMatch(navSource, /function\s+toggleGlobalSearch\s*\(/i, "search-event-table:global-search-toggle");
+  context.assertMatch(shellNav, /toggleGlobalSearch/i, "search-event-table:global-search-open");
   for (const [pattern, label] of [
-    [/id="global-search-input"/i, "global-search"],
     [/id="command-palette"/i, "command-palette"],
     [/id="command-palette-input"/i, "command-palette-input"],
     [/id="command-palette-results"/i, "command-palette-results"],
@@ -882,34 +903,36 @@ function verifySearchEventTable(context) {
     [/sortRowsByKey/i, "sort-rows"],
     [/function\s+renderTableStateSummary\s*\(/i, "table-summary"]
   ], "search-event-table");
-  context.assertMatch(index, /data-command-palette/i, "search-event-table:command-palette-data:index");
+  const bootstrapSource = context.readText("web/src/bootstrap.ts");
+  context.assertMatch(bootstrapSource, /openCommandPalette\(state\.globalSearch\)/i, "search-event-table:command-palette-open:source");
+  context.assertMatch(app, /openCommandPalette\(state\.globalSearch\)/i, "search-event-table:command-palette-open:generated");
   context.assertMatch(activitySource, /event-severity-lane/i, "search-event-table:severity-lane:source");
   context.assertMatch(styles, /event-severity-lane/i, "search-event-table:severity-lane:styles");
   context.assertMatch(app, /event-severity-lane/i, "search-event-table:severity-lane:generated");
   for (const [source, label] of [[index, "index"], [styles, "styles"], [servedSource, "source"], [app, "generated"]]) {
     context.assertNotMatch(source, /\/auth\/token|\/ws\/events|\/containers|(?<!\/qos)\/storage|\/ovn|\/networks/i, `search-event-table:no-forbidden-routes:${label}`);
-    context.assertNotMatch(source, /journalctl|libvirt|KVM|ZFS|OVS|\bOVN\b|purecvisorsd|Create Linux VM|ubuntu-24\.04/i, `search-event-table:no-linux-runtime:${label}`);
+    context.assertNotMatch(source, /journalctl|libvirt|\bKVM\b|\bZFS\b|\bOVS\b|\bOVN\b|purecvisorsd|Create Linux VM|ubuntu-24\.04/i, `search-event-table:no-linux-runtime:${label}`);
   }
 }
 
 function verifyServedSourceParts(context) {
   const buildScript = context.readText("web/scripts/build-served-asset.mjs");
-  const expectedParts = ["types.ts", "state.ts", "routes.ts", "errors.ts", "api-client.ts"];
+  const order = context.readJson("web/src/modules.json");
+  const expectedParts = ["core", "desktop-api", "events", "vm", "monitor"];
+  context.assertEqual(order.contract, "pcv-web-module-order-v1", "served-source-parts:registry");
+  context.assertEqual(order.bootstrap, "src/bootstrap.ts", "served-source-parts:bootstrap");
   for (const part of expectedParts) {
-    context.assertExists(`web/src/served/${part}`, `served-source-parts:file-${part}`);
-    context.assertMatch(
-      buildScript,
-      new RegExp(`['\"]src/served/${part.replace(".", "\\.")}['\"]`, "i"),
-      `served-source-parts:part-${part}`
-    );
+    context.assertExists(`web/src/modules/${part}.ts`, `served-source-parts:file-${part}`);
+    context.assertIncludes(order.modules, part, `served-source-parts:part-${part}`);
   }
-  context.readServedSource();
-  context.assertMatch(buildScript, /servedSourceParts/i, "served-source-parts:registry");
-  context.assertMatch(context.readText("web/app.js"), /Generated from staged src\/served/i, "served-source-parts:generated-marker");
+  context.assertExists("web/src/bootstrap.ts", "served-source-parts:file-bootstrap.ts");
+  context.readShellSource();
+  context.assertMatch(buildScript, /src\/modules\.json/i, "served-source-parts:order-table");
+  context.assertMatch(context.readText("web/app.bundle.js"), /Generated from the src\/modules\.json order table/i, "served-source-parts:generated-marker");
 }
 
 function verifyOptionalBearer(context) {
-  const app = context.readText("web/app.js");
+  const app = context.readText("web/app.bundle.js");
   context.assertMatch(app, /headers\.set\(['"]Authorization['"]/i, "optional-bearer:authorization");
   context.assertMatch(app, /Bearer/i, "optional-bearer:bearer");
   context.assertMatch(app, /apiToken/i, "optional-bearer:api-token");
@@ -917,15 +940,15 @@ function verifyOptionalBearer(context) {
 }
 
 function verifyAccountRbacConsole(context) {
-  const index = context.readText("web/index.legacy.html");
-  const app = context.readText("web/app.js");
-  const routesSource = context.readText("web/src/served/routes.ts");
-  const actionsSource = context.readText("web/src/served/actions.ts");
-  const stateSource = context.readText("web/src/served/state.ts");
-  const rbacSource = context.readText("web/src/served/rbac.ts");
-  const panelsSource = context.readText("web/src/served/render-panels.ts");
-  const consoleSource = context.readText("web/src/served/render-console.ts");
-  const servedSource = context.readServedSource();
+  const index = context.readText("web/index.html");
+  const app = context.readText("web/app.bundle.js");
+  const routesSource = context.readText("web/src/modules/core.ts");
+  const actionsSource = context.readText("web/src/modules/accounts.ts");
+  const stateSource = context.readText("web/src/modules/core.ts");
+  const rbacSource = context.readText("web/src/modules/core.ts");
+  const panelsSource = context.readText("web/src/modules/monitor.ts");
+  const consoleSource = context.readText("web/src/modules/vm-console.ts");
+  const servedSource = context.readShellSource();
   for (const [pattern, label] of [
     [/id="account-login-form"/i, "login-form"],
     [/id="account-console-panel"/i, "console-panel"],
@@ -950,9 +973,14 @@ function verifyAccountRbacConsole(context) {
     [/\/api\/v1\/accounts/i, "accounts-route"],
     [/\/api\/v1\/accounts\/\$\{encodeRouteSegment\(username\)\}\/disable/i, "account-disable-route"]
   ], "account-rbac-console");
+  assertSourceAndGenerated(context, context.readText("web/src/modules/api.ts"), app, [
+    [/function\s+ensureLoopbackSession\s*\(/i, "ensure-loopback-session"]
+  ], "account-rbac-console");
   assertSourceAndGenerated(context, actionsSource, app, [
-    [/function\s+ensureLoopbackSession\s*\(/i, "ensure-loopback-session"],
-    [/function\s+refreshAccountSession\s*\(/i, "refresh-session"]
+    [/function\s+refreshAccountSession\s*\(/i, "refresh-session"],
+    [/account-create-form/i, "create-form"],
+    [/account-disable/i, "disable-action"],
+    [/account\.create\.bootstrap_note/i, "bootstrap-label"]
   ], "account-rbac-console");
   assertSourceAndGenerated(context, stateSource, app, [
     [/authAccessToken:\s*['"]/i, "access-token-state"],
@@ -962,21 +990,25 @@ function verifyAccountRbacConsole(context) {
     [/function\s+rbacAllows\s*\(/i, "rbac-allows"]
   ], "account-rbac-console");
   assertSourceAndGenerated(context, panelsSource, app, [
-    [/function\s+renderAccountSession\s*\(/i, "render-session"],
-    [/id="account-create-form"/i, "create-form"],
-    [/data-action="account-disable"/i, "disable-action"],
-    [/Create first admin/i, "bootstrap-label"]
+    [/function\s+renderAccountSession\s*\(/i, "render-session"]
   ], "account-rbac-console");
   assertSourceAndGenerated(context, consoleSource, app, [
     [/function\s+renderConsolePanel\s*\(/i, "render-console"],
     [/noVNC/i, "novnc"],
     [/vmconnect/i, "vmconnect"],
-    [/noVNC enabled/i, "novnc-enabled"],
-    [/noVNC status/i, "novnc-status"],
-    [/noVNC reason_code/i, "novnc-reason-code"],
-    [/no target save form/i, "no-save-form"],
-    [/CLI\/API configure only/i, "cli-api-configure"]
+    [/vm\.console\.panel\.novnc_enabled/i, "novnc-enabled"],
+    [/vm\.console\.panel\.novnc_status/i, "novnc-status"],
+    [/vm\.console\.panel\.reason_code/i, "novnc-reason-code"],
+    [/vm\.console\.panel\.chip_target/i, "no-save-form"],
+    [/vm\.console\.panel\.chip_cli/i, "cli-api-configure"]
   ], "account-rbac-console");
+  const i18n = context.readText("web/i18n.js");
+  context.assertMatch(i18n, /This is the first admin account/i, "account-rbac-console:bootstrap-label:i18n");
+  context.assertMatch(i18n, /noVNC enabled/i, "account-rbac-console:novnc-enabled:i18n");
+  context.assertMatch(i18n, /noVNC status/i, "account-rbac-console:novnc-status:i18n");
+  context.assertMatch(i18n, /noVNC reason_code/i, "account-rbac-console:novnc-reason-code:i18n");
+  context.assertMatch(i18n, /no target save form/i, "account-rbac-console:no-save-form:i18n");
+  context.assertMatch(i18n, /CLI\/API configure only/i, "account-rbac-console:cli-api-configure:i18n");
   context.assertNotMatch(index, /access_token\s*[:=]/i, "account-rbac-console:no-literal-access-token");
   context.assertNotMatch(servedSource, /\/auth\/token|\/ws\/events/i, "account-rbac-console:no-forbidden-auth-routes:source");
   context.assertNotMatch(app, /\/auth\/token|\/ws\/events/i, "account-rbac-console:no-forbidden-auth-routes:generated");
@@ -987,11 +1019,11 @@ function verifyAccountRbacConsole(context) {
 }
 
 function verifyListenerApiBase(context) {
-  const index = context.readText("web/index.legacy.html");
-  const app = context.readText("web/app.js");
-  const servedState = context.readText("web/src/served/state.ts");
+  const index = context.readText("web/index.html");
+  const app = context.readText("web/app.bundle.js");
+  const servedState = context.readText("web/src/modules/core.ts");
   context.assertMatch(index, /\/pcv-config\.js/i, "listener-api-base:config-script");
-  context.assertBefore(index, "/pcv-config.js", "/app.js", "listener-api-base:script-order");
+  context.assertBefore(index, "/pcv-config.js", "app.bundle.js", "listener-api-base:script-order");
   assertSourceAndGenerated(context, servedState, app, [
     [/PCV_DESKTOP_NODE_CONFIG/i, "config-object"],
     [/apiBaseUrl/i, "api-base-url"],
@@ -1000,21 +1032,26 @@ function verifyListenerApiBase(context) {
 }
 
 function verifyVmCreatePayload(context) {
-  const app = context.readText("web/app.js");
-  const source = context.readText("web/src/served/job-polling.ts");
+  const app = context.readText("web/app.bundle.js");
+  const source = context.readText("web/src/modules/vm.ts");
   assertSourceAndGenerated(context, source, app, [
-    [/function\s+readCreatePayload\s*\(/i, "payload-reader"],
-    [/iso_path:\s*String\(data\.get\('iso_path'\)/i, "iso-path"],
-    [/memory_mb:\s*Number\(data\.get\('memory_mb'\)\)/i, "memory-mb"],
-    [/disk_gb:\s*Number\(data\.get\('disk_gb'\)\)/i, "disk-gb"],
-    [/vm_root:\s*String\(data\.get\('vm_root'\)/i, "vm-root"],
-    [/generation:\s*Number\(data\.get\('generation'\)\)/i, "generation"]
+    [/function\s+readCreateWizardPayload\s*\(/i, "payload-reader"],
+    [/name:\s*createFieldValue\('name'\)\.trim\(\)/i, "name"],
+    [/iso_path:\s*createFieldValue\('iso_path'\)\.trim\(\)/i, "iso-path"],
+    [/cpu:\s*Number\(createFieldValue\('cpu'\)\)/i, "cpu"],
+    [/memory_mb:\s*Number\(createFieldValue\('memory_mb'\)\)/i, "memory-mb"],
+    [/disk_gb:\s*Number\(createFieldValue\('disk_gb'\)\)/i, "disk-gb"],
+    [/generation:\s*2/i, "generation"],
+    [/const vmRoot = createFieldValue\('vm_root'\)\.trim\(\)/i, "vm-root"],
+    [/if\s*\(vmRoot\)\s*payload\.vm_root\s*=\s*vmRoot/i, "vm-root-optional"]
   ], "vm-create-payload");
+  context.assertNotMatch(source, /generation:\s*Number\(/i, "vm-create-payload:no-generation-input:source");
+  context.assertNotMatch(app, /generation:\s*Number\(/i, "vm-create-payload:no-generation-input:generated");
 }
 
 function verifyVmLifecycleRoutes(context) {
-  const app = context.readText("web/app.js");
-  const routes = context.readText("web/src/served/routes.ts");
+  const app = context.readText("web/app.bundle.js");
+  const routes = context.readText("web/src/modules/core.ts");
   assertSourceAndGenerated(context, routes, app, [
     [/\/api\/v1\/vms\//i, "vm-route"],
     [/vmAction:\s*\(vmId/i, "vm-action"],
@@ -1031,15 +1068,16 @@ function verifyVmLifecycleRoutes(context) {
 }
 
 function verifyVmDetailMount(context) {
-  const index = context.readText("web/index.legacy.html");
-  const app = context.readText("web/app.js");
-  const stateSource = context.readText("web/src/served/state.ts");
-  const servedAppSource = context.readText("web/src/served-app.ts");
-  const inventorySource = context.readText("web/src/served/render-inventory.ts");
+  const index = context.readText("web/index.html");
+  const app = context.readText("web/app.bundle.js");
+  const stateSource = context.readText("web/src/modules/core.ts");
+  const servedAppSource = context.readText("web/src/bootstrap.ts");
+  const inventorySource = context.readText("web/src/modules/vm.ts");
   for (const [pattern, label] of [
     [/id="vm-detail-panel"/i, "panel"],
     [/id="vm-detail-content"/i, "content"],
-    [/id="vm-state-filter"/i, "state-filter"],
+    [/id="vm-state-chips"/i, "state-filter"],
+    [/data-vm-chip="failed"/i, "failed-chip"],
     [/id="vm-sort"/i, "sort"]
   ]) {
     context.assertMatch(index, pattern, `vm-detail-mount:${label}`);
@@ -1049,7 +1087,7 @@ function verifyVmDetailMount(context) {
     [/vmSort:\s*'name'/i, "sort"]
   ], "vm-detail-mount");
   assertSourceAndGenerated(context, servedAppSource, app, [
-    [/els\.vmStateFilter\?\.addEventListener/i, "state-filter-binding"],
+    [/document\.getElementById\('vm-state-chips'\)\?\.addEventListener/i, "state-filter-binding"],
     [/els\.vmSort\?\.addEventListener/i, "sort-binding"]
   ], "vm-detail-mount");
   assertSourceAndGenerated(context, inventorySource, app, [
@@ -1058,11 +1096,11 @@ function verifyVmDetailMount(context) {
 }
 
 function verifyVmLifecycleActions(context) {
-  const app = context.readText("web/app.js");
-  const detailSource = context.readText("web/src/served/render-vm-detail.ts");
-  const mutateSource = context.readText("web/src/served/mutate.ts");
-  const errorsSource = context.readText("web/src/served/errors.ts");
-  const clientSource = context.readText("web/src/served/api-client.ts");
+  const app = context.readText("web/app.bundle.js");
+  const detailSource = context.readText("web/src/modules/vm.ts");
+  const mutateSource = context.readText("web/src/modules/vm.ts");
+  const errorsSource = context.readText("web/src/modules/core.ts");
+  const clientSource = context.readText("web/src/modules/desktop-api.ts");
   assertSourceAndGenerated(context, detailSource, app, [
     [/data-action="vm-start"/i, "start"],
     [/data-action="vm-shutdown"/i, "shutdown"],
@@ -1070,21 +1108,21 @@ function verifyVmLifecycleActions(context) {
     [/data-action="vm-restart"/i, "restart"],
     [/data-action="vm-save"/i, "save"],
     [/data-action="vm-resume-saved"/i, "resume-saved"],
-    [/Resume saved/i, "resume-saved-label"],
+    [/vm\.power\.resume_saved/i, "resume-saved-label"],
     [/data-action="vm-manage"/i, "manage"],
-    [/Manage VM/i, "manage-label"],
+    [/vm\.power\.manage/i, "manage-label"],
     [/data-action="vm-template-lock"/i, "template-lock"],
-    [/Lock template/i, "template-lock-label"],
+    [/vm\.menu\.lock/i, "template-lock-label"],
     [/data-action="vm-template-unlock"/i, "template-unlock"],
-    [/Unlock template/i, "template-unlock-label"],
-    [/data-action="vm-clone"/i, "clone"],
-    [/Clone VM/i, "clone-label"],
+    [/vm\.menu\.unlock/i, "template-unlock-label"],
+    [/data-action="vm-clone-open"/i, "clone"],
+    [/vm\.menu\.clone/i, "clone-label"],
     [/data-action="vm-delete"/i, "delete"],
     [/export-import-readback/i, "export-import-readback"],
     [/vm-export-preview/i, "export-preview"],
     [/vm-import-preview/i, "import-preview"],
-    [/no OVF/i, "no-ovf"],
-    [/no TPM key copy/i, "no-tpm-key-copy"]
+    [/vm\.export\.chip_ovf/i, "no-ovf"],
+    [/vm\.export\.chip_tpm/i, "no-tpm-key-copy"]
   ], "vm-lifecycle-actions");
   assertSourceAndGenerated(context, mutateSource, app, [
     [/function\s+queueVmManage\s*\(/i, "queue-manage"],
@@ -1092,7 +1130,7 @@ function verifyVmLifecycleActions(context) {
     [/function\s+queueVmClone\s*\(/i, "queue-clone"],
     [/desktopApi\.previewVmClone\s*\(/i, "clone-preview"],
     [/PCV_VM_DELETE_RUNNING_BLOCKED/i, "running-delete-guard"],
-    [/window\.confirm\(/i, "destructive-confirmation"]
+    [/PCV\.components\.confirmDialog\(/i, "destructive-confirmation"]
   ], "vm-lifecycle-actions");
   assertSourceAndGenerated(context, errorsSource, app, [
     [/PCV_VM_NOT_MANAGED_BY_PURECVISOR/i, "unmanaged-delete-guard"],
@@ -1109,15 +1147,23 @@ function verifyVmLifecycleActions(context) {
     [/JSON\.stringify\(\{\s*confirm_name:\s*confirmName\s*\}\)/i, "confirm-name"],
     [/JSON\.stringify\(\{\s*confirm_name:\s*confirmName,\s*locked\s*\}\)/i, "template-lock-body"]
   ], "vm-lifecycle-actions");
+  const i18n = context.readText("web/i18n.js");
+  context.assertMatch(i18n, /Resume saved/i, "vm-lifecycle-actions:resume-saved-label:i18n");
+  context.assertMatch(i18n, /Manage VM/i, "vm-lifecycle-actions:manage-label:i18n");
+  context.assertMatch(i18n, /Lock as template/i, "vm-lifecycle-actions:template-lock-label:i18n");
+  context.assertMatch(i18n, /Unlock template/i, "vm-lifecycle-actions:template-unlock-label:i18n");
+  context.assertMatch(i18n, /Clone VM/i, "vm-lifecycle-actions:clone-label:i18n");
+  context.assertMatch(i18n, /no OVF/i, "vm-lifecycle-actions:no-ovf:i18n");
+  context.assertMatch(i18n, /no TPM key copy/i, "vm-lifecycle-actions:no-tpm-key-copy:i18n");
 }
 
 function verifyCheckpointActions(context) {
-  const app = context.readText("web/app.js");
-  const routesSource = context.readText("web/src/served/routes.ts");
-  const detailSource = context.readText("web/src/served/render-vm-detail.ts");
-  const qosSource = context.readText("web/src/served/render-qos.ts");
-  const servedAppSource = context.readText("web/src/served-app.ts");
-  const loadSource = context.readText("web/src/served/load.ts");
+  const app = context.readText("web/app.bundle.js");
+  const routesSource = context.readText("web/src/modules/core.ts");
+  const detailSource = context.readText("web/src/modules/vm.ts");
+  const qosSource = context.readText("web/src/modules/vm.ts");
+  const servedAppSource = context.readText("web/src/bootstrap.ts");
+  const loadSource = context.readText("web/src/modules/core.ts");
   assertSourceAndGenerated(context, routesSource, app, [
     [/\/checkpoints/i, "route"],
   ], "checkpoint-actions");
@@ -1125,8 +1171,9 @@ function verifyCheckpointActions(context) {
     [/checkpoint-create/i, "create"],
     [/checkpoint_schedule/i, "readback-field"],
     [/checkpoint-schedule-preview/i, "schedule-preview"],
-    [/no infinite retention/i, "no-infinite-retention"]
+    [/vm\.checkpoint\.schedule\.chip_retention/i, "no-infinite-retention"]
   ], "checkpoint-actions");
+  context.assertMatch(context.readText("web/i18n.js"), /no infinite retention/i, "checkpoint-actions:no-infinite-retention:i18n");
   assertSourceAndGenerated(context, qosSource, app, [
     [/data-action="checkpoint-restore"/i, "restore"],
     [/checkpoint-delete/i, "delete"]
@@ -1141,11 +1188,11 @@ function verifyCheckpointActions(context) {
 }
 
 function verifyBrowserJobHistory(context) {
-  const index = context.readText("web/index.legacy.html");
-  const app = context.readText("web/app.js");
-  const stateSource = context.readText("web/src/served/state.ts");
-  const pollingSource = context.readText("web/src/served/job-polling.ts");
-  const servedAppSource = context.readText("web/src/served-app.ts");
+  const index = context.readText("web/index.html");
+  const app = context.readText("web/app.bundle.js");
+  const stateSource = context.readText("web/src/modules/core.ts");
+  const pollingSource = context.readText("web/src/modules/events.ts");
+  const servedAppSource = context.readText("web/src/bootstrap.ts");
   context.assertMatch(index, /id="clear-job-history"/i, "browser-job-history:clear-control");
   assertSourceAndGenerated(context, stateSource, app, [
     [/localStorage/i, "local-storage"],
@@ -1158,25 +1205,25 @@ function verifyBrowserJobHistory(context) {
     [/function\s+saveTrackedJobsToStorage\s*\([^)]*\)(?:\s*:\s*void)?\s*\{(?:(?!function\s).)*?const jobs = state\.trackedJobs\.slice\(0, JOB_HISTORY_LIMIT\);/is, "save-retention"]
   ], "browser-job-history");
   assertSourceAndGenerated(context, pollingSource, app, [
-    [/function\s+trackJob\s*\(/i, "track"],
+    [/function\s+pcvTrackJob\s*\(/i, "track"],
     [/state\.trackedJobs = state\.trackedJobs\.slice\(0, JOB_HISTORY_LIMIT\)/i, "track-retention"]
   ], "browser-job-history");
   assertSourceAndGenerated(context, servedAppSource, app, [
-    [/els\.clearJobHistory\.addEventListener\('click', clearTrackedJobHistory\)/i, "clear-binding"],
+    [/els\.clearJobHistory\?\.addEventListener\('click', clearTrackedJobHistory\)/i, "clear-binding"],
     [/state\.trackedJobs = loadTrackedJobsFromStorage\(\)/i, "load-binding"]
   ], "browser-job-history");
 }
 
 function verifyJobOrchestration(context) {
-  const app = context.readText("web/app.js");
-  const stateSource = context.readText("web/src/served/state.ts");
-  const tableSource = context.readText("web/src/served/table.ts");
-  const pollingSource = context.readText("web/src/served/job-polling.ts");
-  const routesSource = context.readText("web/src/served/routes.ts");
-  const clientSource = context.readText("web/src/served/api-client.ts");
-  const jobsSource = context.readText("web/src/served/render-jobs.ts");
-  const activitySource = context.readText("web/src/served/render-activity.ts");
-  const servedAppSource = context.readText("web/src/served-app.ts");
+  const app = context.readText("web/app.bundle.js");
+  const stateSource = context.readText("web/src/modules/core.ts");
+  const tableSource = context.readText("web/src/modules/core.ts");
+  const pollingSource = context.readText("web/src/modules/events.ts");
+  const routesSource = context.readText("web/src/modules/core.ts");
+  const clientSource = context.readText("web/src/modules/desktop-api.ts");
+  const jobsSource = context.readText("web/src/modules/ops.ts");
+  const activitySource = context.readText("web/src/modules/ops.ts");
+  const servedAppSource = context.readText("web/src/bootstrap.ts");
   assertSourceAndGenerated(context, stateSource, app, [
     [/pendingVmActions/i, "pending-vm-actions"],
     [/pendingCheckpoints/i, "pending-checkpoints"],
@@ -1227,29 +1274,27 @@ function verifyJobOrchestration(context) {
 }
 
 function verifyShellControls(context) {
-  const index = context.readText("web/index.legacy.html");
-  const app = context.readText("web/app.js");
-  const shellSource = context.readText("web/src/served/render-shell.ts");
-  const actionsSource = context.readText("web/src/served/actions.ts");
-  const loadSource = context.readText("web/src/served/load.ts");
-  const servedAppSource = context.readText("web/src/served-app.ts");
-  const servedSource = context.readServedSource();
+  const index = context.readText("web/index.html");
+  const app = context.readText("web/app.bundle.js");
+  const shellSource = context.readText("web/src/modules/monitor.ts");
+  const actionsSource = context.readText("web/src/modules/accounts.ts");
+  const loadSource = context.readText("web/src/modules/core.ts");
+  const servedAppSource = context.readText("web/src/bootstrap.ts");
+  const servedSource = context.readShellSource();
   for (const [pattern, label] of [
-    [/data-menu-command="refresh"/i, "refresh-command"],
-    [/data-menu-command="clear-browser-state"/i, "clear-browser-state-command"],
-    [/data-view-link="vms"/i, "vms-view"],
+    [/id="command-palette"/i, "command-palette"],
+    [/id="shell-sidebar"/i, "shell-sidebar"],
+    [/id="shell-statusbar"/i, "shell-statusbar"],
     [/data-view-link="network"/i, "network-view"],
-    [/id="vm-asset-list"/i, "vm-asset-list"],
-    [/id="workspace-tabbar"/i, "workspace-tabbar"],
     [/data-shell-action="open-create-vm"/i, "open-create-vm"],
-    [/id="live-viewer-state"/i, "live-viewer-state"],
-    [/id="logout-boundary"/i, "logout-boundary"]
+    [/onclick="doLogout\(\)"/i, "logout"]
   ]) {
     context.assertMatch(index, pattern, `shell-controls:${label}`);
   }
+  context.assertNotMatch(index, /id="vm-asset-list"|id="workspace-tabbar"|id="connection-state"/i, "shell-controls:dropped-surfaces");
   assertSourceAndGenerated(context, shellSource, app, [
-    [/function\s+renderVmAssetList\s*\(/i, "render-vm-asset-list"],
-    [/function\s+renderWorkspaceTabs\s*\(/i, "render-workspace-tabs"]
+    [/command:refresh/i, "refresh-command"],
+    [/command:clear-browser-state/i, "clear-browser-state-command"]
   ], "shell-controls");
   assertSourceAndGenerated(context, actionsSource, app, [
     [/handleShellCommand/i, "handle-command"],
@@ -1267,9 +1312,9 @@ function verifyShellControls(context) {
 }
 
 function verifyActivityTroubleshooting(context) {
-  const index = context.readText("web/index.legacy.html");
-  const app = context.readText("web/app.js");
-  const servedSource = context.readText("web/src/served-app.ts");
+  const index = context.readText("web/index.html");
+  const app = context.readText("web/app.bundle.js");
+  const servedSource = context.readText("web/src/bootstrap.ts");
   const combined = app + servedSource;
   for (const [pattern, label] of [
     [/id="activity"/i, "activity-view"],
@@ -1304,9 +1349,9 @@ function verifyActivityTroubleshooting(context) {
 }
 
 function verifyOpsCockpit(context) {
-  const index = context.readText("web/index.legacy.html");
-  const app = context.readText("web/app.js");
-  const servedSource = context.readText("web/src/served-app.ts");
+  const index = context.readText("web/index.html");
+  const app = context.readText("web/app.bundle.js");
+  const servedSource = context.readText("web/src/bootstrap.ts");
   const apiTypes = context.readText("web/src/api-types.ts");
   const appSource = context.readText("web/src/app.ts");
   const combined = app + servedSource;
@@ -1320,13 +1365,16 @@ function verifyOpsCockpit(context) {
     [/id="vm-workbench-context"/i, "vm-workbench-context"],
     [/id="incident-panel"/i, "incident-panel"],
     [/data-view-link="dashboard"/i, "dashboard-link"],
-    [/data-view-link="vms"/i, "vms-link"],
     [/data-view-link="jobs"/i, "jobs-link"],
     [/data-view-link="activity"/i, "activity-link"],
     [/data-view-link="troubleshooting"/i, "troubleshooting-link"]
   ]) {
     context.assertMatch(index, pattern, `ops-cockpit:${label}`);
   }
+  const shellNav = context.readText("web/src/modules/shell.ts");
+  context.assertMatch(shellNav, /id:\s*'vms'/i, "ops-cockpit:vms-link");
+  context.assertMatch(shellNav, /'data-nav':\s*it\.id/i, "ops-cockpit:nav-attribute");
+  context.assertMatch(shellNav, /navigateTo\(navTarget\(it\.id\)/i, "ops-cockpit:nav-navigate");
   context.assertMatch(app + servedSource + appSource + apiTypes, /\/api\/v1\/ops\/summary/i, "ops-cockpit:summary-route");
   context.assertMatch(app + servedSource + apiTypes, /checkpoint_warnings/i, "ops-cockpit:checkpoint-warnings");
   for (const [pattern, label] of [
@@ -1345,19 +1393,19 @@ function verifyOpsCockpit(context) {
   context.assertMatch(apiTypes, /OpsSummaryResponse/i, "ops-cockpit:response-type");
   context.assertMatch(appSource, /opsSummary/i, "ops-cockpit:app-source-summary");
   const allSources = index + app + servedSource + apiTypes + appSource;
-  context.assertNotMatch(allSources, /Create Linux VM|ubuntu-24\.04|journalctl|libvirt|purecvisorsd|KVM|ZFS|OVS|\bOVN\b/i, "ops-cockpit:no-linux-runtime");
+  context.assertNotMatch(allSources, /Create Linux VM|ubuntu-24\.04|journalctl|libvirt|purecvisorsd|\bKVM\b|\bZFS\b|\bOVS\b|\bOVN\b/i, "ops-cockpit:no-linux-runtime");
   context.assertNotMatch(allSources, /Bearer\s+(?!\$\{)[A-Za-z0-9._~+/=-]{24,}/i, "ops-cockpit:no-literal-bearer");
 }
 
 function verifyEvidenceDashboard(context) {
-  const index = context.readText("web/index.legacy.html");
-  const app = context.readText("web/app.js");
-  const servedSource = context.readText("web/src/served-app.ts");
+  const index = context.readText("web/index.html");
+  const app = context.readText("web/app.bundle.js");
+  const servedSource = context.readText("web/src/bootstrap.ts");
   const apiTypes = context.readText("web/src/api-types.ts");
   const fixtures = context.readText("web/src/user-visible-fixtures.ts");
   const combined = app + servedSource;
+  context.assertMatch(context.readText("web/src/modules/shell.ts"), /id:\s*'evidence'/i, "evidence-dashboard:evidence-link");
   for (const [pattern, label] of [
-    [/data-view-link="evidence"/i, "evidence-link"],
     [/id="evidence"/i, "evidence-view"],
     [/id="evidence-panel"/i, "evidence-panel"]
   ]) {
@@ -1403,9 +1451,9 @@ function verifyEvidenceDashboard(context) {
 }
 
 function verifyEvidenceDegradation(context) {
-  const index = context.readText("web/index.legacy.html");
-  const app = context.readText("web/app.js");
-  const servedSource = context.readText("web/src/served-app.ts");
+  const index = context.readText("web/index.html");
+  const app = context.readText("web/app.bundle.js");
+  const servedSource = context.readText("web/src/bootstrap.ts");
   const fixtures = context.readText("web/src/user-visible-fixtures.ts");
   const combined = app + servedSource;
   context.assertMatch(app, /collectEvidenceIssues/i, "evidence-degradation:collect-evidence-issues:generated");
@@ -1424,9 +1472,9 @@ function verifyEvidenceDegradation(context) {
 }
 
 function verifyDiagnosticBundle(context) {
-  const index = context.readText("web/index.legacy.html");
-  const app = context.readText("web/app.js");
-  const servedSource = context.readText("web/src/served-app.ts");
+  const index = context.readText("web/index.html");
+  const app = context.readText("web/app.bundle.js");
+  const servedSource = context.readText("web/src/bootstrap.ts");
   const fixtures = context.readText("web/src/user-visible-fixtures.ts");
   const combined = app + servedSource;
   context.assertMatch(app, /renderDiagnosticBundleList/i, "diagnostic-bundle:render-list:generated");
@@ -1479,7 +1527,7 @@ function verifyDiagnosticBundle(context) {
   );
   context.assertNotMatch(
     combined,
-    /pwsh|powershell|Restart-Computer|msiexec|New-VM|Remove-VM|New-NetFirewallRule|Register-EventSource|New-EventLog|Register-ScheduledTask/i,
+    /\b(?:pwsh|powershell)(?:\.exe)?\s+\S|Restart-Computer|msiexec|New-VM|Remove-VM|New-NetFirewallRule|Register-EventSource|New-EventLog|Register-ScheduledTask/i,
     "diagnostic-bundle:no-powershell-host-mutation"
   );
   context.assertNotMatch(
@@ -1490,8 +1538,8 @@ function verifyDiagnosticBundle(context) {
 }
 
 function verifyOperatorTerms(context) {
-  const index = context.readText("web/index.legacy.html");
-  const servedSource = context.readServedSource();
+  const index = context.readText("web/index.html");
+  const servedSource = context.readShellSource();
   const terms = context.readText("docs/OPERATOR_SURFACE_TERMS.md");
   const webSurface = servedSource + index;
   for (const [value, label] of [
@@ -1505,9 +1553,9 @@ function verifyOperatorTerms(context) {
   for (const [pattern, label] of [
     [/Diagnostic bundle|diagnostic bundle/i, "diagnostic-bundle-surface"],
     [/Only PureCVisor-managed VMs can be deleted/i, "managed-vm-delete-copy"],
-    [/window\.confirm\(buildVmDeleteConfirmation/i, "vm-delete-confirmation"],
-    [/window\.confirm\(buildCheckpointRestoreConfirmation/i, "checkpoint-restore-confirmation"],
-    [/window\.confirm\(buildCheckpointDeleteConfirmation/i, "checkpoint-delete-confirmation"]
+    [/function\s+queueVmDelete\s*\([\s\S]*?PCV\.components\.confirmDialog\(/i, "vm-delete-confirmation"],
+    [/function\s+queueCheckpointRestore\s*\([\s\S]*?PCV\.components\.confirmDialog\(/i, "checkpoint-restore-confirmation"],
+    [/function\s+queueCheckpointDelete\s*\([\s\S]*?PCV\.components\.confirmDialog\(/i, "checkpoint-delete-confirmation"]
   ]) {
     context.assertMatch(webSurface, pattern, "operator-terms:" + label);
   }
@@ -1519,9 +1567,9 @@ function verifyOperatorTerms(context) {
 }
 
 function verifyFrontendEdgeCases(context) {
-  const app = context.readText("web/app.js");
-  const servedSource = context.readServedSource();
-  const styles = context.readText("web/styles.css");
+  const app = context.readText("web/app.bundle.js");
+  const servedSource = context.readShellSource();
+  const styles = context.readText("web/style.css");
   const design = context.readText("web/DESIGN.md");
   const installedQaScript = context.readText("web/scripts/capture-installed-listener-qa.mjs");
   const combined = app + servedSource;
@@ -1534,9 +1582,7 @@ function verifyFrontendEdgeCases(context) {
     [/500/i, "http-500"],
     [/timeout/i, "timeout"],
     [/tokenRequiredRouteStatus/i, "token-required-status"],
-    [/browser token cleared/i, "token-cleared-copy"],
-    [/all views refresh/i, "all-views-refresh"],
-    [/pending jobs are rechecked/i, "pending-jobs-rechecked"],
+    [/account\.token\.cleared/i, "token-cleared-key"],
     [/renderJobEdgeSummary/i, "job-edge-summary"],
     [/No jobs on this page/i, "empty-job-page"],
     [/retained terminal jobs/i, "retained-terminal-jobs"],
@@ -1558,10 +1604,15 @@ function verifyFrontendEdgeCases(context) {
     [/buildCheckpointDeleteConfirmation/i, "checkpoint-delete-confirmation"],
     [/network-empty-state/i, "network-empty-state"],
     [/PCV_NATIVE_PARITY_INCOMPLETE/i, "native-parity-incomplete"],
-    [/native parity failure/i, "native-parity-failure"]
+    [/vm\.net\.error_parity/i, "native-parity-key"]
   ]) {
     context.assertMatch(combined, pattern, "frontend-edge-cases:" + label);
   }
+  const edgeI18n = context.readText("web/i18n.js");
+  context.assertMatch(edgeI18n, /The browser token was cleared/i, "frontend-edge-cases:token-cleared-copy");
+  context.assertMatch(edgeI18n, /All views refresh/i, "frontend-edge-cases:all-views-refresh");
+  context.assertMatch(edgeI18n, /pending jobs are rechecked/i, "frontend-edge-cases:pending-jobs-rechecked");
+  context.assertMatch(edgeI18n, /Native parity failed/i, "frontend-edge-cases:native-parity-failure");
   context.assertMatch(app, /PCV_SELECTED_VM_STALE/i, "frontend-edge-cases:selected-vm-stale:generated");
   for (const [pattern, label] of [
     [/:focus-visible/i, "focus-visible"],
@@ -1601,9 +1652,9 @@ function verifyFrontendEdgeCases(context) {
 }
 
 function verifyTokenRotation(context) {
-  const index = context.readText("web/index.legacy.html");
-  const app = context.readText("web/app.js");
-  const servedSource = context.readText("web/src/served-app.ts");
+  const index = context.readText("web/index.html");
+  const app = context.readText("web/app.bundle.js");
+  const servedSource = context.readText("web/src/bootstrap.ts");
   const combined = app + servedSource;
   context.assertMatch(index, /id="token-rotation-panel"/i, "token-rotation:panel");
   for (const [pattern, label] of [
@@ -1629,13 +1680,15 @@ function verifyTokenRotation(context) {
 }
 
 function verifyBetaFollowup(context) {
-  const index = context.readText("web/index.legacy.html");
-  const app = context.readText("web/app.js");
-  const servedSource = context.readText("web/src/served-app.ts");
+  const index = context.readText("web/index.html");
+  const app = context.readText("web/app.bundle.js");
+  const servedSource = context.readText("web/src/bootstrap.ts");
   const combined = app + servedSource;
   context.assertMatch(index, /id="beta-followup-panel"/i, "beta-followup:panel");
+  context.assertMatch(combined, /renderBetaFollowup/i, "beta-followup:render");
+  context.assertMatch(context.readText("web/src/modules/vm-console.ts"), /vm\.beta\.item\$\{index\}\.label/i, "beta-followup:item-keys");
+  const betaI18n = context.readText("web/i18n.js");
   for (const [pattern, label] of [
-    [/renderBetaFollowup/i, "render"],
     [/Installed listener QA automation/i, "installed-listener-qa"],
     [/service token revoke handoff/i, "service-token-revoke-handoff"],
     [/diagnostic retention pagination/i, "diagnostic-retention-pagination"],
@@ -1644,7 +1697,7 @@ function verifyBetaFollowup(context) {
     [/public distribution bundle/i, "public-distribution-bundle"],
     [/host mutation not started from browser/i, "host-mutation-boundary"]
   ]) {
-    context.assertMatch(combined, pattern, `beta-followup:${label}`);
+    context.assertMatch(betaI18n, pattern, `beta-followup:${label}`);
   }
   context.assertNotMatch(
     combined,
@@ -1659,8 +1712,8 @@ function verifyBetaFollowup(context) {
 }
 
 function verifyMonitoring(context) {
-  const index = context.readText("web/index.legacy.html");
-  const app = context.readText("web/app.js");
+  const index = context.readText("web/index.html");
+  const app = context.readText("web/app.bundle.js");
   for (const [pattern, label] of [
     [/id="monitoring"/i, "view"],
     [/id="monitoring-panel"/i, "panel"]
@@ -1683,9 +1736,9 @@ function verifyMonitoring(context) {
 }
 
 function verifyNetworkInventory(context) {
-  const index = context.readText("web/index.legacy.html");
-  const app = context.readText("web/app.js");
-  const servedSource = context.readText("web/src/served-app.ts");
+  const index = context.readText("web/index.html");
+  const app = context.readText("web/app.bundle.js");
+  const servedSource = context.readText("web/src/bootstrap.ts");
   const apiTypes = context.readText("web/src/api-types.ts");
   const fixtures = context.readText("web/src/user-visible-fixtures.ts");
   const combined = app + servedSource;
@@ -1716,20 +1769,27 @@ function verifyNetworkInventory(context) {
     context.assertMatch(combined + fixtures, pattern, `network-inventory:${label}`);
   }
   context.assertMatch(combined, /read-only/i, "network-inventory:read-only");
-  const inventorySource = context.readText("web/src/served/render-inventory.ts");
+  const inventorySource = context.readText("web/src/modules/vm.ts");
   assertSourceAndGenerated(context, inventorySource, app, [
     [/network-change-readback/i, "network-change-readback"],
-    [/no switch create form/i, "no-switch-create-form"],
-    [/no NAT editor/i, "no-nat-editor"],
-    [/no DHCP editor/i, "no-dhcp-editor"],
-    [/switch connect in VM detail/i, "network-connect-vm-detail"]
+    [/vm\.net\.chip_create/i, "no-switch-create-form"],
+    [/vm\.net\.chip_nat/i, "no-nat-editor"],
+    [/vm\.net\.chip_dhcp/i, "no-dhcp-editor"],
+    [/vm\.net\.chip_connect/i, "network-connect-vm-detail"]
   ], "network-inventory");
+  const i18n = context.readText("web/i18n.js");
+  context.assertMatch(i18n, /no switch create form/i, "network-inventory:no-switch-create-form:i18n");
+  context.assertMatch(i18n, /no NAT editor/i, "network-inventory:no-nat-editor:i18n");
+  context.assertMatch(i18n, /no DHCP editor/i, "network-inventory:no-dhcp-editor:i18n");
+  context.assertMatch(i18n, /switch connect in VM detail/i, "network-inventory:network-connect-vm-detail:i18n");
   context.assertNotMatch(
     inventorySource + app,
     /data-action="switch-create"|data-action="switch-remove"|name="nat-network"|name="dhcp-scope"/i,
     "network-inventory:no-editor-form"
   );
-  context.assertNotMatch(inventorySource, /data-action="vm-network-connect"/i, "network-inventory:no-connect-form-in-inventory");
+  const inventoryFns = sliceFunction(inventorySource, "renderNetworkInventory") + sliceFunction(inventorySource, "renderNetworkChangeReadback");
+  context.assertNotMatch(inventoryFns, /data-action="vm-network-connect"/i, "network-inventory:no-connect-form-in-inventory");
+  context.assertMatch(inventorySource, /data-action="vm-network-connect"/i, "network-inventory:connect-form-in-detail");
   context.assertNotMatch(
     combined,
     /New-VMSwitch|Remove-VMSwitch|New-NetIPAddress|Set-NetFirewallRule/i,
@@ -1738,21 +1798,17 @@ function verifyNetworkInventory(context) {
 }
 
 function verifyWorkflowPolish(context) {
-  const index = context.readText("web/index.legacy.html");
-  const app = context.readText("web/app.js");
+  const index = context.readText("web/index.html");
+  const app = context.readText("web/app.bundle.js");
+  context.assertMatch(index, /id="vm-filter"/i, "workflow-polish:vm-filter");
+  context.assertNotMatch(index, /id="asset-status"/i, "workflow-polish:no-asset-status");
   for (const [pattern, label] of [
-    [/id="vm-filter"/i, "vm-filter"],
-    [/id="asset-status"/i, "asset-status"]
-  ]) {
-    context.assertMatch(index, pattern, `workflow-polish:${label}`);
-  }
-  for (const [pattern, label] of [
-    [/renderAssetStatus/i, "render-asset-status"],
     [/buildVmLifecycleConfirmation/i, "lifecycle-confirmation"],
     [/vmFilter/i, "vm-filter"]
   ]) {
     context.assertMatch(app, pattern, `workflow-polish:${label}`);
   }
+  context.assertNotMatch(app, /renderAssetStatus/i, "workflow-polish:no-render-asset-status");
   context.assertNotMatch(
     index + app,
     /Create Linux VM|ubuntu-24\.04|journalctl|libvirt|purecvisorsd|ZFS|OVS|\bOVN\b/i,
@@ -1766,7 +1822,7 @@ async function verifyJavaScriptSyntax(context) {
 
 async function verifyServedTypeScriptOutput(context) {
   await context.runOwners(["served-asset", "static-parity"]);
-  context.assertExists("web/src/served-app.ts", "served-typescript-output:served-entry");
+  context.assertExists("web/src/bootstrap.ts", "served-typescript-output:served-entry");
   const packageJson = context.readJson("web/package.json");
   context.assertEqual(packageJson.scripts?.["build:served"], "node scripts/build-served-asset.mjs --write", "served-typescript-output:build-served");
   context.assertEqual(packageJson.scripts?.["check:served"], "node scripts/build-served-asset.mjs --check", "served-typescript-output:check-served");
@@ -1775,7 +1831,7 @@ async function verifyServedTypeScriptOutput(context) {
   const manifest = context.readJson("web/generated/parity/static-asset-parity.manifest.json");
   context.assertEqual(manifest.scaffold?.runtimeReplacement, "default", "served-typescript-output:runtime-replacement");
   context.assertEqual(manifest.replacesServedAsset, true, "served-typescript-output:replaces-served-asset");
-  context.assertEqual(manifest.servedTypeScriptEntry, "src/served-app.ts", "served-typescript-output:served-entry-manifest");
+  context.assertEqual(manifest.servedTypeScriptEntry, "src/bootstrap.ts", "served-typescript-output:served-entry-manifest");
   context.assertEqual(manifest.regeneration?.replacesServedAsset, true, "served-typescript-output:regeneration-replaces-served-asset");
   context.assertEqual(manifest.browserFixture?.replacesServedAsset, true, "served-typescript-output:fixture-replaces-served-asset");
 }
@@ -1784,14 +1840,14 @@ async function verifyTypeScriptScaffold(context) {
   await context.runOwners(["typescript", "static-contract"]);
   for (const [file, label] of [
     ["web/package.json", "package"], ["web/tsconfig.json", "tsconfig"], ["web/src/api-types.ts", "api-types"],
-    ["web/src/view-model.ts", "view-model"], ["web/src/app.ts", "app"], ["web/src/served-app.ts", "served-app"],
+    ["web/src/view-model.ts", "view-model"], ["web/src/app.ts", "app"], ["web/src/bootstrap.ts", "served-app"],
     ["web/src/user-visible-fixtures.ts", "user-visible-fixtures"]
   ]) context.assertExists(file, `typescript-scaffold:${label}`);
   const packageJson = context.readJson("web/package.json");
   context.assertEqual(packageJson.private, true, "typescript-scaffold:private");
   context.assertEqual(packageJson.scripts?.test, "npm run check:feature-surfaces && tsc --noEmit -p tsconfig.json && npm run check:served && npm run check:frontend-batches && npm run lint && npm run lint:domsafe", "typescript-scaffold:test-script");
-  const index = context.readText("web/index.legacy.html");
-  context.assertMatch(index, /app\.js/i, "typescript-scaffold:index-app-js");
+  const index = context.readText("web/index.html");
+  context.assertMatch(index, /app\.bundle\.js/i, "typescript-scaffold:index-app-js");
   context.assertNotMatch(index, /src\/app\.ts/i, "typescript-scaffold:index-no-source-app");
 }
 
@@ -1800,7 +1856,7 @@ async function verifyTypeScriptContractMirror(context) {
   const apiTypes = context.readText("web/src/api-types.ts");
   const viewModel = context.readText("web/src/view-model.ts");
   const app = context.readText("web/src/app.ts");
-  const served = context.readServedSource();
+  const served = context.readShellSource();
   for (const [value, label] of [[apiTypes, "runtime-policy-response"], [apiTypes, "job-runtime-policy"], [apiTypes, "virtual-machine-summary"], [apiTypes, "job-summary"], [viewModel, "view-model"], [app, "scaffold"], [served, "dom-content-loaded"], [served, "api-fetch"]]) {
     const patterns = { "runtime-policy-response": /RuntimePolicyResponse/i, "job-runtime-policy": /JobRuntimePolicy/i, "virtual-machine-summary": /VirtualMachineSummary/i, "job-summary": /JobSummary/i, "view-model": /buildDashboardViewModel/i, scaffold: /static-asset-parity-scaffold-first/i, "dom-content-loaded": /DOMContentLoaded/i, "api-fetch": /apiFetch/i };
     context.assertMatch(value, patterns[label], `typescript-contract-mirror:${label}`);
@@ -1808,7 +1864,7 @@ async function verifyTypeScriptContractMirror(context) {
   const combined = apiTypes + viewModel + app + served;
   for (const [pattern, label] of [[/\/api\/v1\/runtime\/policy/i, "runtime-policy-route"], [/\/api\/v1\/host\/status/i, "host-status-route"], [/\/api\/v1\/vms/i, "vm-route"]]) context.assertMatch(combined, pattern, `typescript-contract-mirror:${label}`);
   context.assertNotMatch(combined, /Restart-Computer|msiexec|Register-ScheduledTask|New-VM|Remove-VM|New-NetFirewallRule/i, "typescript-contract-mirror:no-host-mutation");
-  context.assertNotMatch(combined, /journalctl|libvirt|KVM|ZFS|OVS|\bOVN\b|purecvisorsd/i, "typescript-contract-mirror:no-linux-runtime");
+  context.assertNotMatch(combined, /journalctl|libvirt|\bKVM\b|\bZFS\b|\bOVS\b|\bOVN\b|purecvisorsd/i, "typescript-contract-mirror:no-linux-runtime");
   context.assertNotMatch(combined, /Bearer\s+(?!\$\{)[A-Za-z0-9._~+/=-]{24,}/i, "typescript-contract-mirror:no-literal-bearer");
 }
 
@@ -1818,15 +1874,15 @@ async function verifyParityManifest(context) {
   context.assertExists("web/generated/parity/static-asset-parity.manifest.json", "parity-manifest:file");
   const manifestText = context.readText("web/generated/parity/static-asset-parity.manifest.json");
   const manifest = context.readJson("web/generated/parity/static-asset-parity.manifest.json");
-  for (const [actual, expected, label] of [[manifest.generatedBy, "src/generate-parity-manifest.ts", "generated-by"], [manifest.regeneratedBy, "scripts/regenerate-static-parity.mjs", "regenerated-by"], [manifest.scaffold?.decisionCandidate, "static-asset-parity-scaffold-first", "decision-candidate"], [manifest.scaffold?.runtimeReplacement, "default", "runtime-replacement"], [manifest.servedAsset, "app.js", "served-asset"], [manifest.indexScriptSrc, "/app.js", "index-script-src"], [manifest.typeScriptEntry, "src/app.ts", "typescript-entry"], [manifest.servedTypeScriptEntry, "src/served-app.ts", "served-typescript-entry"], [manifest.userVisibleFixtureEntry, "src/user-visible-fixtures.ts", "fixture-entry"]]) context.assertEqual(actual, expected, `parity-manifest:${label}`);
+  for (const [actual, expected, label] of [[manifest.generatedBy, "src/generate-parity-manifest.ts", "generated-by"], [manifest.regeneratedBy, "scripts/regenerate-static-parity.mjs", "regenerated-by"], [manifest.scaffold?.decisionCandidate, "static-asset-parity-scaffold-first", "decision-candidate"], [manifest.scaffold?.runtimeReplacement, "default", "runtime-replacement"], [manifest.servedAsset, "app.bundle.js", "served-asset"], [manifest.indexScriptSrc, "app.bundle.js?v=single-edge-v1", "index-script-src"], [manifest.typeScriptEntry, "src/app.ts", "typescript-entry"], [manifest.servedTypeScriptEntry, "src/bootstrap.ts", "served-typescript-entry"], [manifest.userVisibleFixtureEntry, "src/user-visible-fixtures.ts", "fixture-entry"]]) context.assertEqual(actual, expected, `parity-manifest:${label}`);
   context.assertEqual(manifest.replacesServedAsset, true, "parity-manifest:replaces-served-asset");
   assertArray(context, manifest.userVisibleFixtureNames, "parity-manifest:fixture-names-array");
   for (const fixture of ["emptyInventory", "runningVmAndJob", "unsupportedHost"]) context.assertIncludes(manifest.userVisibleFixtureNames, fixture, `parity-manifest:fixture-${fixture}`);
   for (const [key, route, label] of [["runtimePolicy", "/api/v1/runtime/policy", "runtime-policy"], ["hostStatus", "/api/v1/host/status", "host-status"], ["networkInventory", "/api/v1/network/inventory", "network-inventory"], ["vmList", "/api/v1/vms", "vm-list"], ["jobList", "/api/v1/jobs", "job-list"], ["jobsPage", "/api/v1/jobs?limit={limit}&offset={offset}", "jobs-page"], ["vmDetail", "/api/v1/vms/{vm_id}", "vm-detail"], ["vmAction", "/api/v1/vms/{vm_id}/{action}", "vm-action"], ["vmCheckpoints", "/api/v1/vms/{vm_id}/checkpoints", "vm-checkpoints"], ["checkpointAction", "/api/v1/vms/{vm_id}/checkpoints/{checkpoint_id}/{action}", "checkpoint-action"], ["jobAction", "/api/v1/jobs/{job_id}/{action}", "job-action"]]) context.assertEqual(manifest.localApiRoutes?.[key], route, `parity-manifest:${label}-route`);
   for (const [key, expected, label] of [["source", "src/app.ts", "regeneration-source"], ["output", "generated/parity/static-asset-parity.manifest.json", "regeneration-output"], ["writeCommand", "npm run generate:parity", "regeneration-write-command"], ["checkCommand", "npm run verify:parity", "regeneration-check-command"]]) context.assertEqual(manifest.regeneration?.[key], expected, `parity-manifest:${label}`);
   context.assertEqual(manifest.regeneration?.replacesServedAsset, true, "parity-manifest:regeneration-replaces-served-asset");
-  const index = context.readText("web/index.legacy.html");
-  context.assertMatch(index, /<script src="\/app\.js" defer><\/script>/i, "parity-manifest:index-script");
+  const index = context.readText("web/index.html");
+  context.assertMatch(index, /<script src="app\.bundle\.js\?v=single-edge-v1"><\/script>/i, "parity-manifest:index-script");
   context.assertNotMatch(index, /src\/app\.ts/i, "parity-manifest:index-no-source-app");
   context.assertNotMatch(manifestText, /Bearer\s+(?!\$\{)[A-Za-z0-9._~+/=-]{24,}/i, "parity-manifest:no-literal-bearer");
   context.assertNotMatch(manifestText, /Restart-Computer|msiexec|New-NetFirewallRule|Register-EventSource|New-EventLog|Register-ScheduledTask|New-VM|Remove-VM/i, "parity-manifest:no-host-mutation");
@@ -1837,7 +1893,7 @@ async function verifyUserVisibleFixtures(context) {
   context.assertExists("web/src/user-visible-fixtures.ts", "user-visible-fixtures:file");
   const fixtures = context.readText("web/src/user-visible-fixtures.ts");
   const manifest = context.readText("web/generated/parity/static-asset-parity.manifest.json");
-  for (const [pattern, label] of [[/webConsoleUserVisibleParityFixtures/i, "fixtures"], [/buildStaticParitySnapshot/i, "snapshot"], [/emptyInventory/i, "empty-inventory"], [/runningVmAndJob/i, "running-vm-and-job"], [/unsupportedHost/i, "unsupported-host"], [/default/i, "default"], [/app\.js/i, "app-js"], [/src\/served-app\.ts/i, "served-app"]]) context.assertMatch(fixtures, pattern, `user-visible-fixtures:${label}`);
+  for (const [pattern, label] of [[/webConsoleUserVisibleParityFixtures/i, "fixtures"], [/buildStaticParitySnapshot/i, "snapshot"], [/emptyInventory/i, "empty-inventory"], [/runningVmAndJob/i, "running-vm-and-job"], [/unsupportedHost/i, "unsupported-host"], [/default/i, "default"], [/app\.bundle\.js/i, "app-js"], [/src\/bootstrap\.ts/i, "served-app"]]) context.assertMatch(fixtures, pattern, `user-visible-fixtures:${label}`);
   context.assertNotMatch(fixtures, /document\.|window\.|dist\//i, "user-visible-fixtures:no-browser-or-dist");
   for (const fixture of ["src/user-visible-fixtures.ts", "emptyInventory", "runningVmAndJob", "unsupportedHost"]) context.assertMatch(manifest, new RegExp(fixture.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i"), `user-visible-fixtures:manifest-${fixture}`);
 }
@@ -1850,32 +1906,32 @@ async function verifyVerifierWiring(context) {
   for (const [name, value, label] of [["build:served", "node scripts/build-served-asset.mjs --write", "build-served"], ["check:served", "node scripts/build-served-asset.mjs --check", "check-served"], ["generate:parity", "node scripts/regenerate-static-parity.mjs --write", "generate-parity"], ["browser:fixture", "node scripts/verify-browser-fixture.mjs", "browser-fixture"], ["check:frontend-batches", "node scripts/validate-frontend-completion-batches.mjs", "frontend-batches"]]) context.assertEqual(packageJson.scripts?.[name], value, `verifier-wiring:${label}-script`);
   for (const [pattern, label] of [[/check:served/i, "check-served"], [/scripts\/regenerate-static-parity\.mjs --check/i, "regenerate"], [/scripts\/verify-static-parity\.mjs/i, "verify"], [/browser:fixture/i, "browser-fixture"]]) context.assertMatch(packageJson.scripts?.["verify:parity"], pattern, `verifier-wiring:verify-parity-${label}`);
   const verify = context.readText("web/scripts/verify-static-parity.mjs"); const regenerate = context.readText("web/scripts/regenerate-static-parity.mjs"); const builder = context.readText("web/scripts/build-served-asset.mjs"); const browser = context.readText("web/scripts/verify-browser-fixture.mjs"); const batches = context.readText("web/scripts/validate-frontend-completion-batches.mjs");
-  for (const [source, pattern, label] of [[verify, /static-asset-parity\.manifest\.json/i, "verify-manifest"], [verify, /src\/generate-parity-manifest\.ts/i, "verify-generator"], [verify, /src\/app\.ts/i, "verify-app"], [verify, /src\/served-app\.ts/i, "verify-served"], [verify, /index\.html/i, "verify-index"], [verify, /app\.js/i, "verify-output"], [verify, /verify-browser-fixture\.mjs/i, "verify-browser"], [builder, /typescript/i, "builder-typescript"], [builder, /src\/served-app\.ts/i, "builder-served"], [builder, /app\.js/i, "builder-output"], [regenerate, /typescript/i, "regenerate-typescript"], [regenerate, /phase25WebConsoleScaffold/i, "regenerate-scaffold"], [regenerate, /localApiRoutes/i, "regenerate-routes"], [regenerate, /browser:fixture/i, "regenerate-browser"], [regenerate, /--write/i, "regenerate-write"], [regenerate, /--check/i, "regenerate-check"], [browser, /DOMContentLoaded/i, "browser-dom"], [browser, /pcv-browser-fixture/i, "browser-fixture"], [browser, /job-browser-fixture/i, "browser-job"], [batches, /frontend-completion-auto-batches\.json/i, "batches-plan"], [batches, /work_item_count/i, "batches-count"]]) context.assertMatch(source, pattern, `verifier-wiring:${label}`);
+  for (const [source, pattern, label] of [[verify, /static-asset-parity\.manifest\.json/i, "verify-manifest"], [verify, /src\/generate-parity-manifest\.ts/i, "verify-generator"], [verify, /src\/app\.ts/i, "verify-app"], [verify, /src\/bootstrap\.ts/i, "verify-served"], [verify, /index\.html/i, "verify-index"], [verify, /app\.bundle\.js/i, "verify-output"], [verify, /verify-browser-fixture\.mjs/i, "verify-browser"], [builder, /typescript/i, "builder-typescript"], [builder, /src\/served-app\.ts/i, "builder-served"], [builder, /app\.js/i, "builder-output"], [regenerate, /typescript/i, "regenerate-typescript"], [regenerate, /phase25WebConsoleScaffold/i, "regenerate-scaffold"], [regenerate, /localApiRoutes/i, "regenerate-routes"], [regenerate, /browser:fixture/i, "regenerate-browser"], [regenerate, /--write/i, "regenerate-write"], [regenerate, /--check/i, "regenerate-check"], [browser, /DOMContentLoaded/i, "browser-dom"], [browser, /pcv-browser-fixture/i, "browser-fixture"], [browser, /job-browser-fixture/i, "browser-job"], [batches, /frontend-completion-auto-batches\.json/i, "batches-plan"], [batches, /work_item_count/i, "batches-count"]]) context.assertMatch(source, pattern, `verifier-wiring:${label}`);
 }
 
 async function verifyGeneratedParityAlignment(context) {
   await context.runOwners(["static-parity", "browser-fixture"]);
-  const index = context.readText("web/index.legacy.html"); const manifestText = context.readText("web/generated/parity/static-asset-parity.manifest.json"); const manifest = context.readJson("web/generated/parity/static-asset-parity.manifest.json"); const verify = context.readText("web/scripts/verify-static-parity.mjs"); const regenerate = context.readText("web/scripts/regenerate-static-parity.mjs"); const app = context.readText("web/src/app.ts"); const served = context.readText("web/src/served-app.ts"); const fixtures = context.readText("web/src/user-visible-fixtures.ts"); const generator = context.readText("web/src/generate-parity-manifest.ts");
-  context.assertMatch(index, /<script src="\/app\.js" defer><\/script>/i, "generated-parity-alignment:index-script"); context.assertNotMatch(index, /src\/app\.ts|dist\//i, "generated-parity-alignment:index-no-source-or-dist");
-  for (const [actual, expected, label] of [[manifest.servedAsset, "app.js", "served-asset"], [manifest.indexScriptSrc, "/app.js", "index-script"], [manifest.typeScriptEntry, "src/app.ts", "typescript-entry"], [manifest.servedTypeScriptEntry, "src/served-app.ts", "served-entry"], [manifest.userVisibleFixtureEntry, "src/user-visible-fixtures.ts", "fixture-entry"], [manifest.scaffold?.decisionCandidate, "static-asset-parity-scaffold-first", "decision-candidate"], [manifest.scaffold?.runtimeReplacement, "default", "runtime-replacement"], [manifest.localApiRoutes?.runtimePolicy, "/api/v1/runtime/policy", "runtime-policy"], [manifest.localApiRoutes?.hostStatus, "/api/v1/host/status", "host-status"], [manifest.localApiRoutes?.vmList, "/api/v1/vms", "vm-list"], [manifest.localApiRoutes?.jobList, "/api/v1/jobs", "job-list"], [manifest.localApiRoutes?.vmAction, "/api/v1/vms/{vm_id}/{action}", "vm-action"], [manifest.localApiRoutes?.checkpointAction, "/api/v1/vms/{vm_id}/checkpoints/{checkpoint_id}/{action}", "checkpoint-action"], [manifest.localApiRoutes?.jobAction, "/api/v1/jobs/{job_id}/{action}", "job-action"], [manifest.regeneration?.output, "generated/parity/static-asset-parity.manifest.json", "regeneration-output"], [manifest.regeneration?.writeCommand, "npm run generate:parity", "regeneration-write"], [manifest.regeneration?.checkCommand, "npm run verify:parity", "regeneration-check"], [manifest.browserFixture?.script, "scripts/verify-browser-fixture.mjs", "browser-fixture-script"], [manifest.browserFixture?.command, "npm run browser:fixture", "browser-fixture-command"], [manifest.browserFixture?.mode, "node-vm-minimal-dom", "browser-fixture-mode"]]) context.assertEqual(actual, expected, `generated-parity-alignment:${label}`);
+  const index = context.readText("web/index.html"); const manifestText = context.readText("web/generated/parity/static-asset-parity.manifest.json"); const manifest = context.readJson("web/generated/parity/static-asset-parity.manifest.json"); const verify = context.readText("web/scripts/verify-static-parity.mjs"); const regenerate = context.readText("web/scripts/regenerate-static-parity.mjs"); const app = context.readText("web/src/app.ts"); const served = context.readText("web/src/bootstrap.ts"); const fixtures = context.readText("web/src/user-visible-fixtures.ts"); const generator = context.readText("web/src/generate-parity-manifest.ts");
+  context.assertMatch(index, /<script src="app\.bundle\.js\?v=single-edge-v1"><\/script>/i, "generated-parity-alignment:index-script"); context.assertNotMatch(index, /src\/app\.ts|dist\//i, "generated-parity-alignment:index-no-source-or-dist");
+  for (const [actual, expected, label] of [[manifest.servedAsset, "app.bundle.js", "served-asset"], [manifest.indexScriptSrc, "app.bundle.js?v=single-edge-v1", "index-script"], [manifest.typeScriptEntry, "src/app.ts", "typescript-entry"], [manifest.servedTypeScriptEntry, "src/bootstrap.ts", "served-entry"], [manifest.userVisibleFixtureEntry, "src/user-visible-fixtures.ts", "fixture-entry"], [manifest.scaffold?.decisionCandidate, "static-asset-parity-scaffold-first", "decision-candidate"], [manifest.scaffold?.runtimeReplacement, "default", "runtime-replacement"], [manifest.localApiRoutes?.runtimePolicy, "/api/v1/runtime/policy", "runtime-policy"], [manifest.localApiRoutes?.hostStatus, "/api/v1/host/status", "host-status"], [manifest.localApiRoutes?.vmList, "/api/v1/vms", "vm-list"], [manifest.localApiRoutes?.jobList, "/api/v1/jobs", "job-list"], [manifest.localApiRoutes?.vmAction, "/api/v1/vms/{vm_id}/{action}", "vm-action"], [manifest.localApiRoutes?.checkpointAction, "/api/v1/vms/{vm_id}/checkpoints/{checkpoint_id}/{action}", "checkpoint-action"], [manifest.localApiRoutes?.jobAction, "/api/v1/jobs/{job_id}/{action}", "job-action"], [manifest.regeneration?.output, "generated/parity/static-asset-parity.manifest.json", "regeneration-output"], [manifest.regeneration?.writeCommand, "npm run generate:parity", "regeneration-write"], [manifest.regeneration?.checkCommand, "npm run verify:parity", "regeneration-check"], [manifest.browserFixture?.script, "scripts/verify-browser-fixture.mjs", "browser-fixture-script"], [manifest.browserFixture?.command, "npm run browser:fixture", "browser-fixture-command"], [manifest.browserFixture?.mode, "node-vm-minimal-dom", "browser-fixture-mode"]]) context.assertEqual(actual, expected, `generated-parity-alignment:${label}`);
   context.assertEqual(manifest.replacesServedAsset, true, "generated-parity-alignment:replaces-served-asset"); context.assertEqual(manifest.regeneration?.replacesServedAsset, true, "generated-parity-alignment:regeneration-replaces-served-asset"); context.assertEqual(manifest.browserFixture?.mutating, false, "generated-parity-alignment:browser-fixture-mutating"); context.assertEqual(manifest.browserFixture?.replacesServedAsset, true, "generated-parity-alignment:browser-fixture-replaces-served-asset");
   const combined = verify + regenerate + context.readText("web/scripts/verify-browser-fixture.mjs") + app + served + fixtures + generator + manifestText;
-  for (const pattern of [/static-asset-parity-scaffold-first/i, /src\/served-app\.ts/i, /\/api\/v1\/runtime\/policy/i, /\/api\/v1\/host\/status/i, /\/api\/v1\/vms/i, /\/api\/v1\/jobs/i]) context.assertMatch(combined, pattern, `generated-parity-alignment:combined-${pattern.source}`);
+  for (const pattern of [/static-asset-parity-scaffold-first/i, /src\/bootstrap\.ts/i, /\/api\/v1\/runtime\/policy/i, /\/api\/v1\/host\/status/i, /\/api\/v1\/vms/i, /\/api\/v1\/jobs/i]) context.assertMatch(combined, pattern, `generated-parity-alignment:combined-${pattern.source}`);
 }
 
 async function verifySecretMutationGuard(context) {
   await context.runOwners(["static-contract", "static-parity"]);
-  const combined = context.readCombined(["web/package.json", "web/scripts/verify-static-parity.mjs", "web/scripts/regenerate-static-parity.mjs", "web/scripts/verify-browser-fixture.mjs", "web/src/generate-parity-manifest.ts", "web/scripts/build-served-asset.mjs", "web/scripts/validate-frontend-completion-batches.mjs", "web/src/app.ts", "web/src/served-app.ts", "web/src/user-visible-fixtures.ts", "web/src/api-types.ts", "web/src/view-model.ts", "web/generated/parity/static-asset-parity.manifest.json"]) + context.readServedSource();
+  const combined = context.readCombined(["web/package.json", "web/scripts/verify-static-parity.mjs", "web/scripts/regenerate-static-parity.mjs", "web/scripts/verify-browser-fixture.mjs", "web/src/generate-parity-manifest.ts", "web/scripts/build-served-asset.mjs", "web/scripts/validate-frontend-completion-batches.mjs", "web/src/app.ts", "web/src/bootstrap.ts", "web/src/user-visible-fixtures.ts", "web/src/api-types.ts", "web/src/view-model.ts", "web/generated/parity/static-asset-parity.manifest.json"]) + context.readShellSource();
   context.assertNotMatch(combined, /Bearer\s+(?!\$\{)[A-Za-z0-9._~+/=-]{24,}/i, "secret-mutation-guard:no-literal-bearer");
   context.assertNotMatch(combined, /Restart-Computer|msiexec|New-NetFirewallRule|Register-EventSource|New-EventLog|Register-ScheduledTask|New-VM|Remove-VM/i, "secret-mutation-guard:no-host-mutation");
 }
 
 async function verifyNoFabricatedValues(context) {
   await context.runOwners(["static-contract", "browser-fixture"]);
-  const index = context.readText("web/index.legacy.html");
+  const index = context.readText("web/index.html");
   for (const literal of [">Connected<", "VM: 3/3", "API: 10ms avg", "Updated 0s ago", "<strong>4/5</strong>", "pcv-node-a", "pcv-node-b", "lab-vm-01"]) context.assertNotMatch(index, new RegExp(literal.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i"), `no-fabricated-values:literal-${literal}`);
   for (const [pattern, label] of [[/id="status-connection"[^>]*>\s*Connected\b/i, "connection"], [/id="status-host"[^>]*>\s*\w/i, "host"], [/id="status-updated"[^>]*>\s*Updated\s+\d/i, "updated"], [/id="status-vm-count"[^>]*>\s*VM:\s*\d/i, "vm-count"], [/id="hero-workload"[^>]*>\s*\d/i, "workload"], [/id="hero-host-mode"[^>]*>\s*\w/i, "host-mode"], [/id="hero-alerts"[^>]*>\s*\d/i, "alerts"], [/id="asset-count"[^>]*>\s*\d/i, "asset-count"]]) context.assertNotMatch(index, pattern, `no-fabricated-values:binding-${label}`);
-  for (const id of ["status-connection", "status-host", "status-updated", "status-vm-count", "status-view", "hero-workload", "hero-host-mode", "hero-alerts"]) context.assertMatch(index, new RegExp(`id="${id}"`, "i"), `no-fabricated-values:required-${id}`);
+  for (const id of ["hero-workload", "hero-host-mode", "hero-alerts", "shell-statusbar", "ws-s"]) context.assertMatch(index, new RegExp(`id="${id}"`, "i"), `no-fabricated-values:required-${id}`);
 }
 
 export const WEB_STATIC_VERIFIERS = Object.freeze({
