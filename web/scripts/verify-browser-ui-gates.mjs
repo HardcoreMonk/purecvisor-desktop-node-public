@@ -13,6 +13,7 @@ const baselinePath = path.join(repoRoot, "web", "config", "browser-ui-gates-base
 const BASELINE_CONTRACT = "pcv-browser-ui-gates-baseline-v2";
 const BASELINE_TODO_REASON = "TODO: 눈으로 확인 뒤 이유를 적는다";
 const BASELINE_UPDATE_HINT = "의도한 변경이면 `node web/scripts/verify-browser-ui-gates.mjs --write-baseline` 뒤 새 reason을 확인하라";
+const BASELINE_STALE_HINT = "기준선에만 있는 incomplete는 경고다. 지우려면 `node web/scripts/verify-browser-ui-gates.mjs --write-baseline --prune`";
 const VIEWPORT = { width: 1280, height: 720 };
 const THEMES = ["supanova", "supanova-cyan"];
 const DEMO_TOKEN = "pcv-demo-token";
@@ -866,13 +867,34 @@ function compareBaseline(observed, entries) {
       continue;
     }
     if (item.count > Number(baseline.count)) problems.push({ kind: "increased", baseline: baseline.count, ...item });
-    if (item.count < Number(baseline.count)) problems.push({ kind: "stale", message: "기준선을 줄여라", baseline: baseline.count, ...item });
+    else if (item.count < Number(baseline.count)) problems.push({ kind: "decreased", baseline: baseline.count, ...item });
   }
   for (const entry of entries) {
     if (seen.has(baselineKey(entry))) continue;
-    problems.push({ kind: "stale", message: "기준선을 줄여라", screen: entry.screen, theme: entry.theme, result: entry.result || "violation", rule: entry.rule, target: entry.target, count: 0, baseline: entry.count });
+    problems.push({
+      kind: "stale",
+      screen: entry.screen,
+      theme: entry.theme,
+      result: entry.result || "violation",
+      rule: entry.rule,
+      target: entry.target,
+      count: 0,
+      baseline: entry.count,
+      messageKey: entry.messageKey || ""
+    });
   }
   return problems;
+}
+
+function formatBaselineProblem(problem) {
+  const contrast = problem.contrast || null;
+  const messageKey = (contrast && contrast.message) || problem.messageKey || "";
+  let line = `axe ${problem.kind} ${problem.result || "violation"} ${problem.screen} ${problem.theme} ${problem.rule} ${problem.target} count=${problem.count}`;
+  if ((problem.result || "") === "incomplete" || messageKey) line += ` messageKey=${messageKey}`;
+  if (contrast && contrast.fg) line += ` fg=${contrast.fg}`;
+  if (contrast && contrast.bg) line += ` bg=${contrast.bg}`;
+  if (contrast && contrast.ratio != null && contrast.ratio !== "") line += ` ratio=${contrast.ratio}`;
+  return line;
 }
 
 function messageKeyOf(item) {
@@ -911,25 +933,37 @@ function inheritReasons(incompleteItems, entries) {
   return reasonMap;
 }
 
-function buildBaselineGroups(incompleteItems, entries) {
+function buildBaselineGroups(incompleteItems, entries, prune) {
   const reasonMap = inheritReasons(incompleteItems, entries);
+  const previous = new Map(entries.map((entry) => [baselineKey(entry), entry]));
+  const seen = new Set();
   const groups = new Map();
+  const place = (kind, rule, messageKey, storedKey, count) => {
+    const groupKey = reasonGroupKey(kind, rule, messageKey);
+    const reason = reasonMap.has(groupKey) ? reasonMap.get(groupKey) : BASELINE_TODO_REASON;
+    let group = groups.get(groupKey);
+    if (!group) {
+      group = { kind, rule, messageKey, reason, keys: new Map() };
+      groups.set(groupKey, group);
+    }
+    const prior = group.keys.get(storedKey);
+    group.keys.set(storedKey, prior ? Math.max(prior, count) : count);
+  };
   for (const item of incompleteItems) {
     const kind = item.result || "incomplete";
-    const messageKey = messageKeyOf(item);
-    const key = reasonGroupKey(kind, item.rule, messageKey);
-    const reason = reasonMap.has(key) ? reasonMap.get(key) : BASELINE_TODO_REASON;
-    let group = groups.get(key);
-    if (!group) {
-      group = { kind, rule: item.rule, messageKey, reason, keys: new Map() };
-      groups.set(key, group);
-    }
-    const storedKey = `${item.screen}|${item.theme}|${item.target}`;
-    const count = Number(item.count || 1);
-    const previous = group.keys.get(storedKey);
-    group.keys.set(storedKey, previous ? Math.max(previous, count) : count);
+    seen.add(baselineKey(item));
+    const old = previous.get(baselineKey(item));
+    const count = Math.max(Number(item.count || 1), old ? Number(old.count || 1) : 0);
+    place(kind, item.rule, messageKeyOf(item), `${item.screen}|${item.theme}|${item.target}`, count);
   }
-  return [...groups.values()]
+  if (!prune) {
+    for (const entry of entries) {
+      if (seen.has(baselineKey(entry))) continue;
+      if ((entry.result || "incomplete") !== "incomplete") continue;
+      place(entry.result || "incomplete", entry.rule, entry.messageKey || "", `${entry.screen}|${entry.theme}|${entry.target}`, Number(entry.count || 1));
+    }
+  }
+  const serialized = [...groups.values()]
     .sort((a, b) => reasonGroupKey(a.kind, a.rule, a.messageKey).localeCompare(reasonGroupKey(b.kind, b.rule, b.messageKey)))
     .map((group) => {
       const keys = [...group.keys.keys()].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
@@ -938,6 +972,19 @@ function buildBaselineGroups(incompleteItems, entries) {
       if (counts.some((count) => count !== 1)) stored.counts = counts;
       return stored;
     });
+  const beforeKeys = new Set(entries.filter((entry) => (entry.result || "incomplete") === "incomplete").map((entry) => baselineKey(entry)));
+  const afterKeys = new Set();
+  for (const group of serialized) {
+    for (const value of group.keys) {
+      const parts = splitBaselineKey(value);
+      afterKeys.add(baselineKey({ screen: parts.screen, theme: parts.theme, result: group.kind, rule: group.rule, target: parts.target }));
+    }
+  }
+  let added = 0;
+  let removed = 0;
+  for (const key of afterKeys) if (!beforeKeys.has(key)) added += 1;
+  for (const key of beforeKeys) if (!afterKeys.has(key)) removed += 1;
+  return { groups: serialized, added, removed, after: afterKeys.size };
 }
 
 function writeBaseline(groups) {
@@ -1017,6 +1064,7 @@ async function main() {
     ok: false,
     contract: "pcv-browser-ui-gates-v1",
     elapsed_ms: 0,
+    platform: process.platform,
     browser: "",
     viewport: VIEWPORT,
     screens: [],
@@ -1026,7 +1074,7 @@ async function main() {
     violation_count: 0,
     incomplete_count: 0,
     web_root: "",
-    baseline: { entries: 0, unexpected: [], stale: [], increased: [] },
+    baseline: { entries: 0, unexpected: [], stale: [], increased: [], decreased: [], stale_count: 0, decreased_count: 0 },
     requests: [],
     request_total: 0,
     differences: DIFFERENCES.slice(),
@@ -1048,6 +1096,7 @@ async function main() {
   };
   try {
     const writeBaselineRequested = hasFlag("write-baseline");
+    const pruneBaseline = writeBaselineRequested && hasFlag("prune");
     const loadedBaseline = loadBaseline();
     if (!writeBaselineRequested) {
       const todo = loadedBaseline.entries.find((entry) => isTodoReason(entry.reason));
@@ -1474,25 +1523,32 @@ async function main() {
         baselineRejected = true;
         console.error(summary.violation_count > 0 ? "violations remain; baseline not written" : "assertions failed; baseline not written");
       } else {
-        const groups = buildBaselineGroups(incompleteItems, loadedBaseline.entries);
-        const after = writeBaseline(groups);
-        console.log(`기준선 ${loadedBaseline.entries.length}→${after}`);
+        const merged = buildBaselineGroups(incompleteItems, loadedBaseline.entries, pruneBaseline);
+        const after = writeBaseline(merged.groups);
+        console.log(`기준선 ${loadedBaseline.entries.length}→${after} 추가 ${merged.added} 제거 ${merged.removed}`);
         summary.baseline.entries = after;
       }
     } else {
       problems = compareBaseline(observed, loadedBaseline.entries);
     }
+    const failures = problems.filter((item) => item.kind === "unexpected" || item.kind === "increased");
+    const warnings = problems.filter((item) => item.kind === "stale" || item.kind === "decreased");
     summary.baseline.unexpected = problems.filter((item) => item.kind === "unexpected").map(redactFinding);
     summary.baseline.increased = problems.filter((item) => item.kind === "increased").map(redactFinding);
+    summary.baseline.decreased = problems.filter((item) => item.kind === "decreased").map(redactFinding);
     summary.baseline.stale = problems.filter((item) => item.kind === "stale").map(redactFinding);
+    summary.baseline.stale_count = summary.baseline.stale.length;
+    summary.baseline.decreased_count = summary.baseline.decreased.length;
     summary.axe_observed = violationItems.map(redactFinding);
     summary.axe_incomplete = incompleteItems.map(redactFinding);
-    if (problems.length) {
-      for (const problem of problems.slice(0, 40)) {
-        const shrink = problem.kind === "stale" ? " 기준선을 줄여라" : "";
-        console.error(`axe ${problem.kind} ${problem.result || "violation"} ${problem.screen} ${problem.theme} ${problem.rule} ${problem.target} count=${problem.count}${shrink}`);
-      }
+    if (failures.length) {
+      for (const problem of failures.slice(0, 40)) console.error(formatBaselineProblem(problem));
       console.error(BASELINE_UPDATE_HINT);
+    }
+    if (warnings.length) {
+      for (const problem of warnings.slice(0, 40)) console.error(formatBaselineProblem(problem));
+      if (summary.baseline.stale_count) console.error(`${BASELINE_STALE_HINT} (${summary.baseline.stale_count})`);
+      if (summary.baseline.decreased_count) console.error(`incomplete count가 기준선보다 적다. 합집합이라 경고만 한다 (${summary.baseline.decreased_count})`);
     }
   } catch (error) {
     summary.fatal = String(error.message || error);
@@ -1509,11 +1565,11 @@ async function main() {
     await killBrowser(browser, profileDir);
     if (server) await new Promise((resolve) => server.close(resolve));
     if (profileDir) profileRemoved = await removeDir(profileDir);
-    const baselineFailed = summary.baseline.unexpected.length + summary.baseline.increased.length + summary.baseline.stale.length;
-    summary.ok = !summary.fatal && failed.length === 0 && baselineFailed === 0 && !baselineRejected && profileRemoved !== false;
+    const baselineFailed = summary.baseline.unexpected.length + summary.baseline.increased.length;
+    summary.ok = !summary.fatal && failed.length === 0 && baselineFailed === 0 && summary.violation_count === 0 && !baselineRejected && profileRemoved !== false;
     if (!profileRemoved) summary.fatal = summary.fatal || "browser profile was not removed";
     writeFileSync(path.join(artifactDir, "summary.json"), `${JSON.stringify(summary, null, 2)}\n`);
-    const line = `browser-ui-gates ok=${summary.ok} elapsed_ms=${summary.elapsed_ms} assertions=${assertions.length} failed=${failed.length} violations=${summary.violation_count} incomplete=${summary.incomplete_count} baseline=${summary.baseline.entries}`;
+    const line = `browser-ui-gates ok=${summary.ok} elapsed_ms=${summary.elapsed_ms} assertions=${assertions.length} failed=${failed.length} violations=${summary.violation_count} incomplete=${summary.incomplete_count} baseline=${summary.baseline.entries} stale=${summary.baseline.stale_count || 0} platform=${summary.platform} browser=${summary.browser}`;
     console.log(line);
     if (!summary.ok) process.exitCode = 1;
   }

@@ -10,7 +10,7 @@
 ## 실행
 
 - 명령: `node web/scripts/verify-browser-ui-gates.mjs --screenshots docs/ga-ready/demo/ui-redesign-p8-20261108`
-- 기준선 갱신: `node web/scripts/verify-browser-ui-gates.mjs --write-baseline`. 위반이 있으면 파일을 쓰지 않는다. 새 messageKey의 reason은 `TODO: 눈으로 확인 뒤 이유를 적는다`이고, TODO가 있으면 일반 실행이 실패한다.
+- 기준선 갱신: `node web/scripts/verify-browser-ui-gates.mjs --write-baseline`. 기본은 합집합이다. 이번 실행의 incomplete key를 기존 key에 더하고, 같은 key의 count는 줄이지 않는다. reason은 `(kind, rule, messageKey)`로 이어받는다. 이번 실행에 없는 key는 남긴다. `--prune`을 같이 주면 그 key를 지운다. 출력은 `기준선 N→M 추가 A 제거 B`다. 위반이 있거나 단언이 실패하면 파일을 쓰지 않는다. 새 messageKey의 reason은 `TODO: 눈으로 확인 뒤 이유를 적는다`이고, TODO가 있으면 일반 실행이 실패한다. 기준선에 없는 새 incomplete는 실패다. 기준선에만 있는 항목은 경고로 출력하고 summary에 개수를 남기며 실패하지 않는다. 마지막 줄에 `platform`과 브라우저 이름을 쓴다.
 - 브라우저: `msedge.exe`. 헤드리스, viewport 1280×720, `deviceScaleFactor` 1, `--lang=ko`.
 - 결과: `ok=true`, `elapsed_ms=22487`, 단언 121, 실패 0, 위반 0, `incomplete` 1893, 기준선 1893. 산출 `artifacts/browser-ui-gates/20261107T182238Z/summary.json`.
 - 캡처는 각 화면의 두 테마 검사 뒤에 기본 테마 `supanova`로 되돌린 다음 한 장이다.
