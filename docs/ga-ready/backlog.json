@@ -326,6 +326,18 @@
       "needs_design": false,
       "status": "open",
       "closed_by": null
+    },
+    {
+      "id": "BL-0028",
+      "found_on": "2026-11-08",
+      "source": "docs/superpowers/plans/2026-11-08-purecvisor-desktop-node-train-04297.md Task 3a (clean-host base VHD 재생성)",
+      "summary": "보존 VM pcv-guest-installed-04253-r1의 disk는 differencing VHD이고, 부모가 read-only archive 저장소의 artifacts/image-cache 아래 20348.169 평가판 VHD였다. 2026-11-05 재클론 뒤 그 부모 파일이 없어 이 VM은 지금 시작할 수 없다. Task 3a는 같은 원본을 public 저장소 artifacts/image-cache에 다시 받았지만 VM의 부모 경로와 다르다. 부모를 옛 경로에 되돌릴지, 다시 연결할지(Set-VHD -ParentPath), VM 보존을 끝낼지는 보존 VM 변경이라 사용자 결정이다. Invoke-PcvInternalCleanHostInstallUpdateRollbackSmoke.ps1의 DefaultSourceBaseVhdPath도 archive 경로를 가리킨다.",
+      "classification": "undecided",
+      "basis": null,
+      "out_of_scope_ref": null,
+      "needs_design": false,
+      "status": "open",
+      "closed_by": null
     }
   ]
 }
