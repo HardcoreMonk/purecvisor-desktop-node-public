@@ -118,6 +118,14 @@
       "summary": "Web Console Task 9a: contracts and tests on the new shell, Failed VM chip, dead legacy render code removed (legacy files unchanged)",
       "lane2_probe": null,
       "risk_tier": "M"
+    },
+    {
+      "pr": 106,
+      "merge_commit": "3d2fd89e",
+      "area": "web",
+      "summary": "Web Console Task 9b: legacy console files deleted (old addresses 404), MSI web payload, product module paths and spec pins on the new shell",
+      "lane2_probe": null,
+      "risk_tier": "M"
     }
   ],
   "trains": [
