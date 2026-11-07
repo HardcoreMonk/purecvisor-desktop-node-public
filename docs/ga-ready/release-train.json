@@ -110,6 +110,14 @@
         "design": "docs/superpowers/specs/2026-11-05-purecvisor-desktop-node-ui-redesign-design.md"
       },
       "risk_tier": "L"
+    },
+    {
+      "pr": 105,
+      "merge_commit": "8403d47d",
+      "area": "web",
+      "summary": "Web Console Task 9a: contracts and tests on the new shell, Failed VM chip, dead legacy render code removed (legacy files unchanged)",
+      "lane2_probe": null,
+      "risk_tier": "M"
     }
   ],
   "trains": [
