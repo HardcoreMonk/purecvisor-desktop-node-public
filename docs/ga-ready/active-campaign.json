@@ -2,19 +2,21 @@
   "schema_version": 1,
   "contract": "pcv-active-campaign-v1",
   "status": "open",
-  "id": "ui-redesign-20261105",
-  "intent": "Web Console UI/UX redesign after the 2026-11-05 S4 user demo exposed layout and interaction defects (clone name field buried in the resource grid, 640x480 console without fit, one-scroll VM detail, window.confirm, BL-0020). 2026-11-05 approval \"1,2,3,4,5\" accepted the redesign: sidebar groups and six VM detail tabs, screens W1-W7, incremental replacement of the Single Edge shell modules with the legacy console frozen and retired in Task 9 (legacy-retirement merged), password reset API in scope, and opening this campaign from Task 1. The same day the user chose to carry s4-lan-account-20261011 Tasks 5, 6, 7 and 2 into this campaign as Tasks 11-14. Claude designs and reviews; grok researches and implements.",
+  "id": "train-04297-20261108",
+  "intent": "Release train 0.42.97-admin-smoke departed ahead of the S4 judgment on the 2026-11-08 user instruction to put the new Web Console screens on the installed product first: queue PR #94-#107 (configure-installed LAN options, the whole Web Console redesign, password reset API) from package to Lane 3, with the S4 demo state (accounts, LAN exposure) parked and restored around the train, then the carried S4 demo, end state, judgment and C5 check.",
   "working_authority": "source_head",
   "allowed_lanes": [
     "0",
     "1",
-    "2"
+    "2",
+    "3"
   ],
   "mutation_allowed": true,
-  "current_write_allowed": false,
-  "next_step": "Task 1 merged in PR #96 (216b404), Task 2 in PR #97 (38ddf86), Task 3 in PR #98 (c0eec38), Task 4 in PR #99 (7f16115), Task 5 in PR #100 (64bc74b, BL-0020 closed), Task 6 in PR #101 (7bdfe3d), Task 7a in PR #102 (4912e52), Task 7b in PR #103 (3c578de, BL-0024 opened). Task 8 in PR #104 (75bf851). Task 9 is split into 9a and 9b (user decision 2026-11-06: port only the Failed VM chip, drop the other legacy-only surfaces, keep old addresses at 404). Task 9a in PR #105 (0028f42). Task 9b in PR #106 (adb823b). Task 10 (browser UI gates with axe-core 4.14.0 as a dev-only dependency, 26 screens in two themes, 121 assertions, axe violations 0 and incomplete contrast baseline 1893, per-screen screenshots, narrow accent-button contrast fix keeping the current dark look, BL-0026 and BL-0027 opened) is committed on lane1/ui-redesign-p8-20261108 and waits for the user's merge approval. Installed rollout and the S1-S3 re-demo of the UI changes go to the release train. Then the queue in order from docs/superpowers/plans/2026-11-05-purecvisor-desktop-node-ui-redesign.md. Carried Task 11 (S4 user demo, in progress at S2) runs as soon as the user reports demo results and goes ahead of the UI queue, followed by Tasks 12 and 13. Each PR merges only after the user's merge approval.",
-  "plan": "docs/superpowers/plans/2026-11-05-purecvisor-desktop-node-ui-redesign.md",
+  "current_write_allowed": true,
+  "next_step": "Run Task 0 from docs/superpowers/plans/2026-11-08-purecvisor-desktop-node-train-04297.md, then the queue in order. Train branch lane1/train-04297-20261108 is PR A (Lane 3 is a separate PR B from main). Each PR merges only after the user's merge approval.",
+  "plan": "docs/superpowers/plans/2026-11-08-purecvisor-desktop-node-train-04297.md",
   "task_queue": [
+    "Task 0",
     "Task 1",
     "Task 2",
     "Task 3",
@@ -28,41 +30,42 @@
     "Task 11",
     "Task 12",
     "Task 13",
-    "Task 14"
+    "Task 14",
+    "Task 15",
+    "Task 16",
+    "Task 17"
   ],
   "task_lanes": {
-    "Task 12": "2"
+    "Task 2": "2",
+    "Task 4": "2",
+    "Task 5": "2",
+    "Task 6": "2",
+    "Task 7": "2",
+    "Task 8": "2",
+    "Task 9": "2",
+    "Task 11": "3",
+    "Task 12": "3",
+    "Task 15": "2"
   },
   "task_not_before": {
-    "Task 14": "2026-10-19"
+    "Task 17": "2026-10-19"
   },
   "carried_from": {
-    "Task 11": "s4-lan-account-20261011 Task 5",
-    "Task 12": "s4-lan-account-20261011 Task 6",
-    "Task 13": "s4-lan-account-20261011 Task 7",
-    "Task 14": "s4-lan-account-20261011 Task 2 (from train-04296-finish-20261011 Task 8)"
+    "Task 14": "ui-redesign-20261105 Task 11 (s4-lan-account-20261011 Task 5)",
+    "Task 15": "ui-redesign-20261105 Task 12 (s4-lan-account-20261011 Task 6)",
+    "Task 16": "ui-redesign-20261105 Task 13 (s4-lan-account-20261011 Task 7)",
+    "Task 17": "ui-redesign-20261105 Task 14 (s4-lan-account-20261011 Task 2)"
   },
-  "next_task": "Task 11",
-  "completed_tasks": [
-    "Task 1",
-    "Task 2",
-    "Task 3",
-    "Task 4",
-    "Task 5",
-    "Task 6",
-    "Task 7",
-    "Task 8",
-    "Task 9",
-    "Task 10"
-  ],
+  "next_task": "Task 0",
+  "completed_tasks": [],
   "commit_policy": "local-commit-per-task",
   "push_allowed": true,
   "merge_policy": "none",
-  "checkpoint_limit": 14,
-  "approval_locator": "User-Approval: 2026-09-27 campaign runner commit policy local-commit-per-task; User-Approval: 2026-11-05 \"1,2,3,4,5\" on the Web Console redesign proposal (1 sidebar groups with new Templates and Accounts views and six VM detail tabs; 2 screens W1-W7, details reviewed by PR screenshots; 3 incremental Single Edge module replacement, legacy console frozen then retired in this campaign, merging the 2026-10-10 approval 3 legacy-retirement campaign; 4 password reset API, CLI and Web in scope; 5 open this campaign from P0, S4 demo and train order unchanged and run in parallel); User-Approval: 2026-11-05 campaign question answer \"UI campaign + S4 carry-over\" (carry s4-lan-account-20261011 Tasks 5, 6, 7, 2 as Tasks 11-14); carried S4 approvals: 2026-10-09 audit item 3 pre-approval (installed --allow-lan and firewall changes), 2026-10-12 \"1\" (Lane 2 is --allow-lan, firewall, account create/disable, ADR-0016 pcv-it-s4-* VM create/delete), 2026-10-12 \"1,2\" (Task 6 reconfigures the installed service with the Host.exe built from merged main; release train once after S4); User-Approval: 2026-11-05 \"1,2\" (1 S4 Task 5 user demo, 2 release train departure after the S4 judgment); User-Approval: 2026-11-05 S4 account reissue on user request (create admin pcv-admin2, disable pcv-admin after login check); ADR-0016 standing approval (2026-10-07): pcv-it- prefixed VM create/configure/delete; User-Approval: 2026-11-07 \"1,2\" (1 Task 9b Lane 1 budget extended once by 30 minutes and 18 tool batches; 2 for grok-implemented tasks the wait for grok does not count against the lane wall-clock budget, the tool-batch budget still applies); User-Approval: 2026-11-08 axe-core question answer \"axe-core 추가\" (axe-core as an exact-version web devDependency only, not in the MSI, notice row added); User-Approval: 2026-11-08 \"1,2\" (1 Task 10 Lane 1 budget extended once by 30 minutes and 18 tool batches, grok wait excluded; 2 keep the current dark look by restoring the Part 2 palette, narrow contrast fixes, track axe incomplete contrast results in the baseline, drop the CI apt Chrome step, light theme to backlog); merge: each PR needs an explicit user merge approval sentence (merge_policy none)",
+  "checkpoint_limit": 18,
+  "approval_locator": "User-Approval: 2026-09-27 campaign runner commit policy local-commit-per-task; User-Approval: 2026-11-08 user instruction \"새 화면을 먼저 반영해\" and answer \"1,2,3,4\" (1 depart release train 0.42.97 now, close ui-redesign-20261105 and carry its Tasks 11-14, queue PR #94-#107; 2 Lane 2 host mutation: unsigned dev MSI build including the 0.42.96 baseline rebuild, pair upgrade tests and fullgate with msiexec install/upgrade/repair/uninstall including REMOVE_DATA, service stop/start, ADR-0016 pcv-it- VMs, installed current-card and probes; 3 S4 state preservation: back up accounts.json and the service command line outside the repo and product data, remove accounts and return to loopback for the train, restore accounts after and re-apply LAN with the new configure-installed (--allow-lan, two managed firewall rules), resume the S4 demo on 0.42.97, preserved VM, template and pcv-it-s4-console untouched (stop and ask if tooling requires); 4 Lane 3 promote current-evidence.json to 0.42.97-admin-smoke); carried S4 approvals: 2026-10-09 audit item 3 pre-approval (installed --allow-lan and firewall changes), 2026-10-12 \"1\" (Lane 2 is --allow-lan, firewall, account create/disable, ADR-0016 pcv-it-s4-* VM create/delete), 2026-10-12 \"1,2\" (Task 6 reconfigures the installed service with the Host.exe built from merged main; release train once after S4); User-Approval: 2026-11-05 S4 account reissue on user request (create admin pcv-admin2, disable pcv-admin after login check); ADR-0016 standing approval (2026-10-07): pcv-it- prefixed VM create/configure/delete; merge: each PR needs an explicit user merge approval sentence (merge_policy none)",
   "next_approval_required": [
-    "Merge the lane1/ui-redesign-p8-20261108 PR (Task 10 browser UI gates with axe-core, per-screen screenshots) after green Required CI.",
-    "After Task 13 (S4 judgment): depart the release train (queue PR #94, #95 and any merged UI payload) either as tasks inside this campaign or by pausing this campaign and opening a train campaign."
+    "Merge the train PR A (lane1/train-04297-20261108) after green Required CI.",
+    "Merge the Lane 3 PR B (0.42.97-admin-smoke promotion) after green Required CI."
   ],
   "stop_on": [
     "same-cause-fail-3",
@@ -75,5 +78,5 @@
     "dirty-tree-at-start"
   ],
   "out_of_scope_is_not_next_step": true,
-  "closed_predecessor": "s4-lan-account-20261011"
+  "closed_predecessor": "ui-redesign-20261105"
 }

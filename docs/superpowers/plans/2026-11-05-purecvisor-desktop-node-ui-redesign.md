@@ -116,17 +116,25 @@ CI 보정(2026-11-08): PR #107 첫 Required CI `web`(run `42402970457`, ubuntu-l
 
 - [ ] 원래 문장: Task 4 전에 만든 admin 계정으로 자기 PC 브라우저에서 S1~S3을 시연한다. 에이전트는 시연 전후 상태(service 구성, 방화벽 규칙, 계정 목록, VM)를 읽어 기록하고 확인자 칸은 사용자가 채운다. 이 기록만 "다른 PC" 시연이다. 리허설 R은 S4 판정 근거로 쓰지 않는다. 2026-11-05 변경: 사용자가 `pcv-admin` 비밀번호를 잊어 사용자 요청으로 새 admin `pcv-admin2`를 만들고(비밀번호는 사용자 전용 파일로만 전달), 다른 PC 로그인 확인 뒤 `pcv-admin`을 disable했다. 시연 기록은 `docs/ga-ready/demo/s4-lan-demo-2026-11-05.md`다. 사용자가 시연 결과를 알리면 UI 큐보다 먼저 이 task를 처리한다.
 
+이관(2026-11-08, 승인 `1,2,3,4`): `train-04297-20261108` Task 14. release train `0.42.97`을 S4 판정보다 먼저 출발하며 이 campaign은 닫는다.
+
 ## Task 12: S4 끝 상태 (이관: 같은 campaign Task 6)
 
 - [ ] Lane 2. 원래 문장: 끝 상태는 loopback 복귀(같은 `main` 빌드본 `configure-installed`를 prefix 옵션과 `--allow-lan` 없이 실행, Task 4 전 service 명령줄과 같아야 한다), 방화벽 규칙 0, 에이전트 operator 계정 disable, `pcv-it-s4-*` VM 정리다. 기록한다. 계정 파일 삭제는 이 task가 하지 않는다. 2026-11-05 메모: 지금 `main`의 `configure-installed`는 BL-0023 수정으로 실행 중 service를 다시 시작한다.
+
+이관(2026-11-08, 승인 `1,2,3,4`): `train-04297-20261108` Task 15. release train `0.42.97`을 S4 판정보다 먼저 출발하며 이 campaign은 닫는다.
 
 ## Task 13: criteria S4 판정 (이관: 같은 campaign Task 7)
 
 - [ ] Lane 1. 원래 문장: 시연 기록이 설계 1절의 판정을 모두 담으면 `config/project-completion-criteria.json` S4를 `passed`로 두고 시연 기록 링크를 적는다. push, PR, green CI 뒤 merge(이 campaign에서는 사용자 merge 승인 뒤). 판정 전에는 S4 통과를 주장하지 않는다. 판정 뒤 release train 출발 방식을 `next_approval_required`로 묻는다.
 
+이관(2026-11-08, 승인 `1,2,3,4`): `train-04297-20261108` Task 16. release train `0.42.97`을 S4 판정보다 먼저 출발하며 이 campaign은 닫는다.
+
 ## Task 14: C5 runner 확인 (이관: 같은 campaign Task 2)
 
 - [ ] 원래 문장: `not_before` 2026-10-19. Ubuntu 26 runner의 첫 `main` Development Gates와 Public Boundary run이 green이면 `config/project-completion-criteria.json` 위험 행을 `status=closed`, `closed_by`에 run id로 닫는다. 실패하면 `ubuntu-24.04` pin을 판단해 backlog 행으로 보고한다. push, PR. merge는 사용자 승인 뒤.
+
+이관(2026-11-08, 승인 `1,2,3,4`): `train-04297-20261108` Task 17. release train `0.42.97`을 S4 판정보다 먼저 출발하며 이 campaign은 닫는다.
 
 ## Nonclaims
 
