@@ -68,7 +68,9 @@
 
 ## Task 3: package
 
-- [ ] clean HEAD에서 `build.ps1 -Version 0.42.97-admin-smoke -MsiProductVersion 0.42.97 -SigningMode AllowUnsignedDev -SigningTrustModel LocalTest -OutputRoot artifacts/admin-smoke-package-20261108-04297`, `New-PcvAdminSmokeUpdatePackage.ps1 -BuildSeconds <build 초>`. `train-facts`로 package 문서(`docs/ga-ready/trains/0.42.97-admin-smoke.train-facts-input.json`, narrative는 적재 변경 행). 검증: `train-evidence --check`, `TrainEvidenceGoldenTests`·`TrainFactsBuilderTests`. host mutation 없음. 로컬 commit(Task 1 기록 포함).
+- [x] clean HEAD에서 `build.ps1 -Version 0.42.97-admin-smoke -MsiProductVersion 0.42.97 -SigningMode AllowUnsignedDev -SigningTrustModel LocalTest -OutputRoot artifacts/admin-smoke-package-20261108-04297`, `New-PcvAdminSmokeUpdatePackage.ps1 -BuildSeconds <build 초>`. `train-facts`로 package 문서(`docs/ga-ready/trains/0.42.97-admin-smoke.train-facts-input.json`, narrative는 적재 변경 행). 검증: `train-evidence --check`, `TrainEvidenceGoldenTests`·`TrainFactsBuilderTests`. host mutation 없음. 로컬 commit(Task 1 기록 포함).
+
+실행 기록(2026-11-08): Task 2보다 먼저 했다. Task 2의 loopback 전환에 이 package의 `main` 빌드 `DesktopNode.Host.exe`(`host-publish`)를 쓰려는 순서 조정이고 범위는 같다. clean HEAD `3a8da14`(product source는 payload `9036c62`와 같고 그 뒤 commit은 문서뿐)에서 build `40`초, `build_utc` `2026-11-07T20:30:36Z`, provenance `3a8da146e1d1d39bad2b6d5ff04b008deed8bdc8`, WiX `5.0.2+aa65968c`, unsigned(`AllowUnsignedDev`/`LocalTest`). MSI SHA-256 `cc7127b63ef909f0e91378ac0e4e7987597ea1cb4e5dda225669c82f3fc7e6d7`, payload `29`개 aggregate `e2a0fd6b6be2764e4313d238a2450ce61f8d8062600d6932da0c1b20481c3641`(옛 콘솔 `web/app.js`, `web/styles.css`, `web/index.legacy.html`이 빠져 32→29), update ZIP SHA-256 `fdb2dce5a80d132c72321b0c352d49a55f1b440586133dacb324e3f08e5e4723`(entry 29), catalog SHA-256 `3eb365cd1adb89d27548bd6e4316090f65bbb1987d66b83ab83ea68c81443feb`. `train-facts` package `generated=20` `narrative=3`(입력의 `fullgate_final_firewall_rule_count`는 문자열이어야 해서 한 번 고쳐 다시 돌렸다), `train-evidence --write` 뒤 `--check` `current`. `TrainEvidenceGoldenTests`·`TrainFactsBuilderTests` `23/23`. host mutation 없음. operational current는 `0.42.96-admin-smoke` 그대로다.
 
 ## Task 4: pair
 

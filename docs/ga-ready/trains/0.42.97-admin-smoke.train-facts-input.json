@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "contract": "pcv-train-facts-input-v1",
+  "version": "0.42.97-admin-smoke",
+  "baseline_version": "0.42.96-admin-smoke",
+  "canonical_current_evidence": "0.42.96-admin-smoke",
+  "date": "2026-11-08",
+  "documents": {
+    "package": "docs/ga-ready/evidence/admin-smoke-package-2026-11-08-04297.md"
+  },
+  "sources": {
+    "package_root": "artifacts/admin-smoke-package-20261108-04297",
+    "baseline_package_root": "artifacts/admin-smoke-package-20261108-04296r",
+    "campaign_root": "artifacts/manual-admin-campaign-20261108-04296-04297",
+    "target_update_catalog": "artifacts/admin-smoke-package-20261108-04297/PureCVisorDesktopNode-0.42.97-admin-smoke-update-catalog.json",
+    "signer_thumbprint": "8C5F3B5030D3A54B1150C2C30CFD9868800DF0C6",
+    "fullgate_batch_id": "full-admin-host-mutation-gate-20261108-04297",
+    "iso_path": "artifacts/smoke-media-20261108/pcv-route-parity-smoke-20261108.iso",
+    "current_card_root": "artifacts/installed-operator-surface-current-card-20261108-04297",
+    "fullgate_final_firewall_rule_count": "0"
+  },
+  "narrative": {
+    "package": {
+      "background": "release train `0.42.97`의 package다. 2026-11-08 사용자 지시(새 Web Console 화면을 설치본에 먼저 반영)와 승인 `1,2,3,4`로 S4 판정보다 먼저 출발한 campaign `train-04297-20261108`의 train이며 queue 94·95(`configure-installed`의 LAN 옵션과 실행 중 service 재시작), 97~103·105~107(Web Console 재설계, 옛 콘솔 퇴역, 브라우저 품질 게이트), 104(계정 비밀번호 재설정 API)를 싣는다. 옛 콘솔 파일 3개(`web/app.js`, `web/styles.css`, `web/index.legacy.html`)가 빠져 payload 파일은 29개. build 40초. pair baseline은 같은 날 `0.42.96` payload source `87a7deb`에서 다시 빌드한 package다(재클론으로 원래 artifact가 없음).",
+      "train_carriages": "`PR #94` (변경 `271ab040`, host), `PR #95` (변경 `08c50e08`, host), `PR #97` (변경 `13fc25dd`, web), `PR #98` (변경 `ab9b6704`, web), `PR #99` (변경 `8b0ae171`, web), `PR #100` (변경 `16da5810`, web), `PR #101` (변경 `f0db33e4`, web), `PR #102` (변경 `eb0bdcf7`, web), `PR #103` (변경 `289d98ea`, web), `PR #104` (변경 `213bfe36`, api), `PR #105` (변경 `8403d47d`, web), `PR #106` (변경 `3d2fd89e`, web), `PR #107` (변경 `449a62ce`, web); payload: PR #107 merge",
+      "lane2_probes": "`host.service.configure-lan`(S4 계정 복원 뒤 LAN 재적용, PR #94·#95), `web.console.vm-detail`·`web.console.frame-view`·`web.console.checkpoints`·`web.console.vm-create`·`web.console.shell-views`·`web.console.confirm-copy`(설치본 새 셸 브라우저 확인), `api.account.password`(계정 비밀번호 재설정)"
+    }
+  }
+}
