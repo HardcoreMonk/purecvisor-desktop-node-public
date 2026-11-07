@@ -11,8 +11,8 @@ import { buildDashboardViewModel } from "./view-model";
 export const phase25WebConsoleScaffold = {
   decisionCandidate: "static-asset-parity-scaffold-first",
   runtimeReplacement: "default",
-  servedAsset: "app.js",
-  servedTypeScriptEntry: "src/served-app.ts"
+  servedAsset: "app.bundle.js",
+  servedTypeScriptEntry: "src/bootstrap.ts"
 } as const;
 
 export const localApiRoutes = {

@@ -116,7 +116,7 @@ function buildManifest() {
     phase: "phase25",
     servedAsset: scaffold.servedAsset,
     replacesServedAsset: true,
-    indexScriptSrc: "/app.js",
+    indexScriptSrc: "app.bundle.js?v=single-edge-v1",
     typeScriptEntry: "src/app.ts",
     servedTypeScriptEntry: scaffold.servedTypeScriptEntry,
     userVisibleFixtureEntry: "src/user-visible-fixtures.ts",

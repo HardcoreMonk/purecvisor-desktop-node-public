@@ -28,6 +28,7 @@ function matchesVmStateChip(vm, stateFilter) {
   if (filter === 'template') return isTemplateLockedVm(vm);
   if (filter === 'running') return vmPowerKind(vm) === 'running';
   if (filter === 'off') return vmPowerKind(vm) === 'off';
+  if (filter === 'failed') return getVmState(vm).toLowerCase().includes('failed');
   return getVmState(vm).toLowerCase().includes(filter);
 }
 
@@ -90,7 +91,13 @@ function paintVmChips(named) {
   const chips = document.querySelectorAll('#vm-state-chips [data-vm-chip]');
   if (!chips || !chips.length) return;
   const current = String(state.vmStateFilter || 'all').toLowerCase();
-  const counts = { all: named.length, running: 0, off: 0, template: 0 };
+  const counts = {
+    all: named.length,
+    running: 0,
+    off: 0,
+    template: 0,
+    failed: named.filter((vm) => matchesVmStateChip(vm, 'failed')).length
+  };
   named.forEach((vm) => {
     const kind = vmPowerKind(vm);
     if (kind === 'running') counts.running += 1;

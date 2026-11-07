@@ -23,7 +23,7 @@ const OWNER_COMMANDS = {
     ["scripts/verify-static-parity.mjs"]
   ],
   "browser-fixture": [["scripts/verify-browser-fixture.mjs"]],
-  "node-check": [["--check", "app.js"]],
+  "node-check": [["--check", "app.bundle.js"]],
   "static-contract": []
 };
 
@@ -700,6 +700,16 @@ export function createWebContractContext({
       return readCombined(parts.map((part) => `web/${part}`));
     }
 
+    function readShellSource() {
+      const order = readJson("web/src/modules.json");
+      const modules = Array.isArray(order?.modules) ? order.modules : [];
+      const paths = modules.map((name) => `web/src/modules/${name}.ts`);
+      if (typeof order?.bootstrap === "string" && order.bootstrap) {
+        paths.push(`web/${order.bootstrap}`);
+      }
+      return readCombined(paths);
+    }
+
     function assertionFailure(label) {
       const detail = typeof label === "string" && label ? label : "invalid-label";
       const error = new WebContractError(
@@ -804,6 +814,7 @@ export function createWebContractContext({
       readJson,
       readCombined,
       readServedSource,
+      readShellSource,
       assertExists,
       assertMatch,
       assertNotMatch,

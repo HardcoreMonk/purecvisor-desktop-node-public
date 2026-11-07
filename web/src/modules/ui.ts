@@ -296,7 +296,7 @@ function ciIcon(name) {
 }
 var EVT_ICONS = {
   auth: ciIcon('lock'), ws: ciIcon('globe'), vm: ciIcon('desktop-tower'), ctr: ciIcon('layers'), snap: ciIcon('camera'),
-  net: ciIcon('globe'), storage: ciIcon('data'), cluster: ciIcon('layers'), ovn: ciIcon('layers'),
+  net: ciIcon('globe'), storage: ciIcon('data'), cluster: ciIcon('layers'),
   alert: ciIcon('bell'), gpu: ciIcon('monitor'), docker: ciIcon('layers'), terraform: ciIcon('file-document'),
   federation: ciIcon('cloud'), config: ciIcon('settings'), template: ciIcon('file-document'), backup: ciIcon('save'),
   error: ciIcon('close-circle'), ok: ciIcon('circle-check'), info: ciIcon('info')
@@ -309,7 +309,7 @@ function _evtIcon(m) {
   if (ml.includes('ctr ') || ml.includes('container') || ml.includes('lxc')) return EVT_ICONS.ctr;
   if (ml.includes('snapshot') || ml.includes('rollback')) return EVT_ICONS.snap;
   if (ml.includes('cluster') || ml.includes('drain') || ml.includes('maintenance')) return EVT_ICONS.cluster;
-  if (ml.includes('network') || ml.includes('ovn') || ml.includes('acl')) return EVT_ICONS.net;
+  if (ml.includes('network') || ml.includes('acl')) return EVT_ICONS.net;
   if (ml.includes('pool') || ml.includes('zvol') || ml.includes('storage')) return EVT_ICONS.storage;
   if (ml.includes('gpu')) return EVT_ICONS.gpu;
   if (ml.includes('docker') || ml.includes('oci')) return EVT_ICONS.docker;

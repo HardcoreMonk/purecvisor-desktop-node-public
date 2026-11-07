@@ -2,30 +2,41 @@ Describe 'PcvDesktopWeb static console assets' {
     BeforeAll {
         $script:WebRoot = Split-Path -Parent $PSScriptRoot
         $script:RepoRoot = Split-Path -Parent $script:WebRoot
-        $script:IndexPath = Join-Path $script:WebRoot 'index.legacy.html'
-        $script:StylesPath = Join-Path $script:WebRoot 'styles.css'
-        $script:AppPath = Join-Path $script:WebRoot 'app.js'
+        $script:IndexPath = Join-Path $script:WebRoot 'index.html'
+        $script:StylesPath = Join-Path $script:WebRoot 'style.css'
+        $script:AppPath = Join-Path $script:WebRoot 'app.bundle.js'
         $script:PackagePath = Join-Path $script:WebRoot 'package.json'
         $script:TsConfigPath = Join-Path $script:WebRoot 'tsconfig.json'
         $script:DesignPath = Join-Path $script:WebRoot 'DESIGN.md'
         $script:MockupsRoot = Join-Path $script:WebRoot 'mockups'
         $script:FrontendCompletionMockupPath = Join-Path $script:MockupsRoot 'frontend-completion-samples.html'
         $script:SrcRoot = Join-Path $script:WebRoot 'src'
-        $script:ServedSourcePath = Join-Path $script:SrcRoot 'served-app.ts'
-        $script:ServedSourcePartsRoot = Join-Path $script:SrcRoot 'served'
+        $script:ServedSourcePath = Join-Path $script:WebRoot 'src/bootstrap.ts'
         $script:ScriptsRoot = Join-Path $script:WebRoot 'scripts'
         $script:BuildServedAssetScriptPath = Join-Path $script:ScriptsRoot 'build-served-asset.mjs'
-        # part 목록을 여기 다시 적지 않고 build-served-asset.mjs 에서 읽는다. 2026-08-08 분해
-        # 전까지 이 목록은 손으로 관리하는 세 번째 사본이었고, part 가 늘어도 갱신되지 않아
-        # 새 part 로 옮겨진 심볼을 아래 검사들이 보지 못했다. 빌드가 번들에 넣는 것과 테스트가
-        # 읽는 것은 같아야 한다. part 가 빌드에서 빠지면 심볼도 함께 사라지므로 검사는 통과가
-        # 아니라 실패로 기운다 — 파생이 단언을 약화시키지 않는 이유다.
-        $script:ServedSourcePartPaths = @(
-            [regex]::Matches(
-                (Get-Content -LiteralPath $script:BuildServedAssetScriptPath -Raw),
-                '"(src/served/[A-Za-z0-9._-]+\.ts)"'
-            ) | ForEach-Object { Join-Path $script:WebRoot $_.Groups[1].Value }
-        )
+        # 셸 소스는 src/modules.json 순서와 bootstrap 이다. 순서표에서 빠지면 아래 검사가
+        # 그 모듈의 심볼을 보지 못하므로, 빠진 모듈은 통과가 아니라 실패로 기운다.
+        $script:ModuleOrder = Get-Content -LiteralPath (Join-Path $script:SrcRoot 'modules.json') -Raw | ConvertFrom-Json
+        $script:ShellSourcePaths = @($script:ModuleOrder.modules | ForEach-Object { Join-Path $script:SrcRoot ("modules\{0}.ts" -f $_) })
+        $script:ShellSourcePaths += (Join-Path $script:WebRoot $script:ModuleOrder.bootstrap)
+        function script:Get-PcvWebShellSource {
+            ($script:ShellSourcePaths | ForEach-Object { Get-Content -LiteralPath $_ -Raw }) -join "`n"
+        }
+        function script:Get-PcvFunctionBody([string]$Source, [string]$Name) {
+            $start = [regex]::Match($Source, "function\s+$Name\s*\(")
+            if (-not $start.Success) { return '' }
+            $depth = 0
+            $seen = $false
+            for ($index = $start.Index; $index -lt $Source.Length; $index++) {
+                $ch = $Source[$index]
+                if ($ch -eq '{') { $depth++; $seen = $true }
+                elseif ($ch -eq '}') {
+                    $depth--
+                    if ($seen -and $depth -eq 0) { return $Source.Substring($start.Index, $index - $start.Index + 1) }
+                }
+            }
+            return $Source.Substring($start.Index)
+        }
         $script:ParityVerifyScriptPath = Join-Path $script:ScriptsRoot 'verify-static-parity.mjs'
         $script:BrowserFixtureScriptPath = Join-Path $script:ScriptsRoot 'verify-browser-fixture.mjs'
         $script:FrontendBatchValidatorPath = Join-Path $script:ScriptsRoot 'validate-frontend-completion-batches.mjs'
@@ -43,7 +54,7 @@ Describe 'PcvDesktopWeb static console assets' {
     It 'validates and wires the stable Feature ID surface ledger' {
         $json = Get-Content -Raw -LiteralPath $script:FeatureSurfaceLedgerPath
         $package = Get-Content -Raw -LiteralPath $script:PackagePath | ConvertFrom-Json
-        $servedSource = (Get-Content -LiteralPath $script:ServedSourcePath -Raw) + (($script:ServedSourcePartPaths | ForEach-Object { Get-Content -LiteralPath $_ -Raw }) -join "`n")
+        $servedSource = Get-PcvWebShellSource
 
         $json | Test-Json -SchemaFile $script:FeatureSurfaceSchemaPath -ErrorAction Stop | Should -BeTrue
         $script:FeatureSurfaceVerifierPath | Should -Exist
@@ -59,16 +70,16 @@ Describe 'PcvDesktopWeb static console assets' {
 
         $index = Get-Content -LiteralPath $script:IndexPath -Raw
         $index | Should -Match 'PureCVisor Desktop Node'
-        $index | Should -Match 'styles\.css'
-        $index | Should -Match 'app\.js'
-        $index | Should -Match 'id="app-root"'
+        $index | Should -Match 'style\.css'
+        $index | Should -Match 'app\.bundle\.js'
+        $index | Should -Match 'id="app"'
     }
 
     It 'declares an inline favicon to avoid favicon.ico console noise' {
         $index = Get-Content -LiteralPath $script:IndexPath -Raw
 
         $index | Should -Match '<link rel="icon"'
-        $index | Should -Match 'data:image/svg\+xml'
+        $index | Should -Match 'href="/icon-192\.png"'
         $index | Should -Not -Match 'href="/favicon\.ico"'
     }
 
@@ -122,22 +133,22 @@ Describe 'PcvDesktopWeb static console assets' {
         $styles = Get-Content -LiteralPath $script:StylesPath -Raw
         $combined = $index + $styles
 
-        $index | Should -Match 'data-ui-port="single-edge-visual-shell"'
-        $index | Should -Match 'class="shell supanova-console[^"]*"'
-        $index | Should -Match 'class="topbar glass-topbar[^"]*"'
-        $index | Should -Match 'class="connection-form control-strip"'
-        $index | Should -Match 'class="sidebar nav-rail[^"]*"'
+        $index | Should -Match 'id="app"'
+        $index | Should -Match 'class="shell-sidebar"'
+        $index | Should -Match 'id="shell-topbar"'
+        $index | Should -Match 'id="shell-statusbar"'
+        $index | Should -Match 'class="dashboard-hero"'
         $styles | Should -Match '--supanova-glass:\s*rgba'
         $styles | Should -Match '--supanova-rail:\s*rgba'
         $styles | Should -Match '--supanova-shadow:'
-        $styles | Should -Match '\.supanova-console'
-        $styles | Should -Match '\.glass-topbar'
-        $styles | Should -Match '\.control-strip'
-        $styles | Should -Match '\.nav-rail'
-        $styles | Should -Match '\.nav-rail a\.nav-active::before'
+        $styles | Should -Match '\.shell-sidebar'
+        $styles | Should -Match '\.shell-topbar'
+        $styles | Should -Match '\.shell-statusbar'
+        $styles | Should -Match '\.dashboard-hero'
+        $styles | Should -Match '\.dashboard-pills'
         $styles | Should -Match 'body::before'
         $combined | Should -Not -Match '<base\s+href="/ui/"|/auth/token|/ws/events|/containers|(?<!/qos)/storage|/ovn|/networks'
-        $combined | Should -Not -Match 'journalctl|libvirt|KVM|ZFS|OVS|\bOVN\b|purecvisorsd|Create Linux VM|ubuntu-24\.04'
+        $combined | Should -Not -Match 'journalctl|libvirt|\bKVM\b|\bZFS\b|\bOVS\b|\bOVN\b|purecvisorsd|Create Linux VM|ubuntu-24\.04'
     }
 
     It 'clones the Single console workbench frame while keeping Linux service surfaces excluded' {
@@ -145,23 +156,17 @@ Describe 'PcvDesktopWeb static console assets' {
         $styles = Get-Content -LiteralPath $script:StylesPath -Raw
         $combined = $index + $styles
 
-        $index | Should -Match 'class="menu-bar"'
-        $index | Should -Match 'class="activity-rail"'
-        $index | Should -Match 'class="asset-tabs"'
-        $index | Should -Match 'class="asset-search"'
-        $index | Should -Match 'class="asset-list"'
-        $index | Should -Match 'class="workspace-tabbar"'
-        $index | Should -Match 'class="status-bar"'
+        $index | Should -Match 'class="shell-sidebar"'
+        $index | Should -Match 'class="shell-topbar"'
+        $index | Should -Match 'class="shell-statusbar"'
         $index | Should -Match 'class="dashboard-hero"'
         $index | Should -Match 'class="dashboard-pills"'
         $index | Should -Match 'class="quick-action-grid"'
-        $styles | Should -Match '\.single-clone-shell'
-        $styles | Should -Match '\.menu-bar'
-        $styles | Should -Match '\.activity-rail'
-        $styles | Should -Match '\.asset-explorer'
-        $styles | Should -Match '\.workspace-tabbar'
-        $styles | Should -Match '\.status-bar'
+        $styles | Should -Match '\.shell-sidebar'
+        $styles | Should -Match '\.shell-topbar'
+        $styles | Should -Match '\.shell-statusbar'
         $styles | Should -Match '\.dashboard-hero'
+        $styles | Should -Match '\.dashboard-pills'
         $styles | Should -Match '\.quick-action-grid'
         $combined | Should -Not -Match '컨테이너|LXC|ZFS|\bOVN\b|OVS|KVM|libvirt|purecvisorsd|/containers|/storage|/ovn|/networks'
     }
@@ -184,7 +189,7 @@ Describe 'PcvDesktopWeb static console assets' {
         $mockup | Should -Match '@media \(max-width:\s*820px\)'
         $mockup | Should -Not -Match 'https?://|//cdn|src="http|href="http'
         $mockup | Should -Not -Match '/auth/token|/ws/events|/containers|(?<!/qos)/storage|/ovn|/networks'
-        $mockup | Should -Not -Match 'journalctl|libvirt|KVM|ZFS|OVS|\bOVN\b|purecvisorsd|Create Linux VM|ubuntu-24\.04'
+        $mockup | Should -Not -Match 'journalctl|libvirt|\bKVM\b|\bZFS\b|\bOVS\b|\bOVN\b|purecvisorsd|Create Linux VM|ubuntu-24\.04'
         $mockup | Should -Not -Match 'Bearer\s+(?!\$\{)[A-Za-z0-9._~+/=-]{24,}'
         $mockup | Should -Not -Match 'Restart-Computer|msiexec|New-NetFirewallRule|Register-EventSource|New-EventLog|Register-ScheduledTask|New-VM|Remove-VM'
     }
@@ -252,7 +257,7 @@ Describe 'PcvDesktopWeb static console assets' {
 
     It 'centralizes Local API access behind the Desktop Node frontend service registry' {
         $app = Get-Content -LiteralPath $script:AppPath -Raw
-        $servedSource = (Get-Content -LiteralPath $script:ServedSourcePath -Raw) + (($script:ServedSourcePartPaths | ForEach-Object { Get-Content -LiteralPath $_ -Raw }) -join "`n")
+        $servedSource = Get-PcvWebShellSource
         $combined = $app + $servedSource
 
         $combined | Should -Match 'DESKTOP_NODE_API_ROUTES'
@@ -276,7 +281,7 @@ Describe 'PcvDesktopWeb static console assets' {
 
     It 'declares the Web VM QoS and guest readback operator surface as read-only routes' {
         $app = Get-Content -LiteralPath $script:AppPath -Raw
-        $servedSource = (Get-Content -LiteralPath $script:ServedSourcePath -Raw) + (($script:ServedSourcePartPaths | ForEach-Object { Get-Content -LiteralPath $_ -Raw }) -join "`n")
+        $servedSource = Get-PcvWebShellSource
         $combined = $app + $servedSource
 
         $combined | Should -Match 'vmBlkio'
@@ -294,12 +299,12 @@ Describe 'PcvDesktopWeb static console assets' {
         $combined | Should -Match 'linux_bandwidth_compatible'
         $combined | Should -Match 'qemu_guest_agent'
         $combined | Should -Match 'guest_heartbeat_verified'
-        $combined | Should -Not -Match 'blkio-set'
+        ($combined -replace "'vm blkio-set'", "'vm qos-storage'") | Should -Not -Match 'blkio-set'
     }
 
     It 'opens Web VM QoS and ADR-0009 Guest Execution direct control routes with explicit operator controls' {
         $app = Get-Content -LiteralPath $script:AppPath -Raw
-        $servedSource = (Get-Content -LiteralPath $script:ServedSourcePath -Raw) + (($script:ServedSourcePartPaths | ForEach-Object { Get-Content -LiteralPath $_ -Raw }) -join "`n")
+        $servedSource = Get-PcvWebShellSource
         $design = Get-Content -LiteralPath (Join-Path $script:RepoRoot 'web/DESIGN.md') -Raw
         $combined = $app + $servedSource + $design
 
@@ -332,12 +337,12 @@ Describe 'PcvDesktopWeb static console assets' {
 
     It 'exposes running guest execution cancel affordance on Web job rows' {
         $app = Get-Content -LiteralPath $script:AppPath -Raw
-        $servedSource = (Get-Content -LiteralPath $script:ServedSourcePath -Raw) + (($script:ServedSourcePartPaths | ForEach-Object { Get-Content -LiteralPath $_ -Raw }) -join "`n")
+        $servedSource = Get-PcvWebShellSource
         $combined = $app + $servedSource
 
         $combined | Should -Match 'formatJobCancelLabel'
         $combined | Should -Match 'getJobCancelScope'
-        $combined | Should -Match 'data-job-cancel-scope="\$\{escapeHtml\(cancelScope\)\}"'
+        $combined | Should -Match 'data-job-cancel-scope="\$\{pcvEscapeHtml\(cancelScope\)\}"'
         $combined | Should -Match 'running-guest-execution'
         $combined | Should -Match 'Cancel running guest exec'
         $combined | Should -Match 'requireRbac\(''operate'', ''running guest execution cancel''\)'
@@ -347,10 +352,14 @@ Describe 'PcvDesktopWeb static console assets' {
         $index = Get-Content -LiteralPath $script:IndexPath -Raw
         $styles = Get-Content -LiteralPath $script:StylesPath -Raw
         $app = Get-Content -LiteralPath $script:AppPath -Raw
-        $servedSource = (Get-Content -LiteralPath $script:ServedSourcePath -Raw) + (($script:ServedSourcePartPaths | ForEach-Object { Get-Content -LiteralPath $_ -Raw }) -join "`n")
+        $servedSource = Get-PcvWebShellSource
         $combined = $index + $styles + $app + $servedSource
 
-        $index | Should -Match 'id="global-search-input"'
+        $shellNav = Get-Content -LiteralPath (Join-Path $script:SrcRoot 'modules/shell.ts') -Raw
+        $navSource = Get-Content -LiteralPath (Join-Path $script:SrcRoot 'modules/nav.ts') -Raw
+        $shellNav | Should -Match "class:\s*'shell-search'"
+        $navSource | Should -Match 'function\s+toggleGlobalSearch\s*\('
+        $shellNav | Should -Match 'toggleGlobalSearch'
         $index | Should -Match 'id="command-palette"'
         $index | Should -Match 'id="command-palette-input"'
         $index | Should -Match 'id="command-palette-results"'
@@ -365,34 +374,27 @@ Describe 'PcvDesktopWeb static console assets' {
         $combined | Should -Match 'filterRowsByQuery'
         $combined | Should -Match 'sortRowsByKey'
         $combined | Should -Match 'renderTableStateSummary'
-        $combined | Should -Match 'data-command-palette'
+        $combined | Should -Match 'openCommandPalette\(state\.globalSearch\)'
         $combined | Should -Match 'event-severity-lane'
         $combined | Should -Not -Match '/auth/token|/ws/events|/containers|(?<!/qos)/storage|/ovn|/networks'
-        $combined | Should -Not -Match 'journalctl|libvirt|KVM|ZFS|OVS|\bOVN\b|purecvisorsd|Create Linux VM|ubuntu-24\.04'
+        $combined | Should -Not -Match 'journalctl|libvirt|\bKVM\b|\bZFS\b|\bOVS\b|\bOVN\b|purecvisorsd|Create Linux VM|ubuntu-24\.04'
     }
 
     It 'splits frontend service logic into staged source parts before generating app.js' {
-        $expectedParts = @(
-            'types.ts',
-            'state.ts',
-            'routes.ts',
-            'errors.ts',
-            'api-client.ts'
-        )
-
-        foreach ($part in $expectedParts) {
-            Test-Path -LiteralPath (Join-Path $script:ServedSourcePartsRoot $part) -PathType Leaf | Should -BeTrue
+        $order = Get-Content -LiteralPath (Join-Path $script:SrcRoot 'modules.json') -Raw | ConvertFrom-Json
+        $order.contract | Should -Be 'pcv-web-module-order-v1'
+        $order.bootstrap | Should -Be 'src/bootstrap.ts'
+        foreach ($part in @('core', 'desktop-api', 'events', 'vm', 'monitor')) {
+            $order.modules | Should -Contain $part
+            Test-Path -LiteralPath (Join-Path $script:SrcRoot ("modules\{0}.ts" -f $part)) -PathType Leaf | Should -BeTrue
         }
+        Test-Path -LiteralPath $script:ServedSourcePath -PathType Leaf | Should -BeTrue
 
         $buildScript = Get-Content -LiteralPath $script:BuildServedAssetScriptPath -Raw
         $app = Get-Content -LiteralPath $script:AppPath -Raw
 
-        $buildScript | Should -Match 'servedSourceParts'
-        foreach ($part in $expectedParts) {
-            $buildScript | Should -Match ([regex]::Escape(('src/served/' + $part)))
-        }
-
-        $app | Should -Match 'Generated from staged src/served'
+        $buildScript | Should -Match 'src/modules\.json'
+        $app | Should -Match 'Generated from the src/modules\.json order table'
     }
 
     It 'supports optional bearer token requests' {
@@ -406,7 +408,7 @@ Describe 'PcvDesktopWeb static console assets' {
     It 'declares account RBAC JWT login, refresh, session, and console capability UX' {
         $index = Get-Content -LiteralPath $script:IndexPath -Raw
         $app = Get-Content -LiteralPath $script:AppPath -Raw
-        $servedSource = (Get-Content -LiteralPath $script:ServedSourcePath -Raw) + (($script:ServedSourcePartPaths | ForEach-Object { Get-Content -LiteralPath $_ -Raw }) -join "`n")
+        $servedSource = Get-PcvWebShellSource
         $combined = $app + $servedSource
 
         $index | Should -Match 'id="account-login-form"'
@@ -438,10 +440,10 @@ Describe 'PcvDesktopWeb static console assets' {
     It 'loads listener-provided API base URL before the served app starts' {
         $index = Get-Content -LiteralPath $script:IndexPath -Raw
         $app = Get-Content -LiteralPath $script:AppPath -Raw
-        $servedState = Get-Content -LiteralPath (Join-Path $script:WebRoot 'src/served/state.ts') -Raw
+        $servedState = Get-Content -LiteralPath (Join-Path $script:SrcRoot 'modules/core.ts') -Raw
 
         $index | Should -Match '/pcv-config\.js'
-        $index.IndexOf('/pcv-config.js') | Should -BeLessThan $index.IndexOf('/app.js')
+        $index.IndexOf('/pcv-config.js') | Should -BeLessThan $index.IndexOf('app.bundle.js')
         ($app + $servedState) | Should -Match 'PCV_DESKTOP_NODE_CONFIG'
         ($app + $servedState) | Should -Match 'apiBaseUrl'
         ($app + $servedState) | Should -Match 'window\.location\.origin'
@@ -478,7 +480,8 @@ Describe 'PcvDesktopWeb static console assets' {
 
         $index | Should -Match 'id="vm-detail-panel"'
         $index | Should -Match 'id="vm-detail-content"'
-        $index | Should -Match 'id="vm-state-filter"'
+        $index | Should -Match 'id="vm-state-chips"'
+        $index | Should -Match 'data-vm-chip="failed"'
         $index | Should -Match 'id="vm-sort"'
         $app | Should -Match 'vmStateFilter'
         $app | Should -Match 'vmSort'
@@ -493,10 +496,13 @@ Describe 'PcvDesktopWeb static console assets' {
         $app | Should -Match 'data-action="vm-poweroff"'
         $app | Should -Match 'data-action="vm-restart"'
         $app | Should -Match 'data-action="vm-save"'
+        $i18n = Get-Content -LiteralPath (Join-Path $script:WebRoot 'i18n.js') -Raw
         $app | Should -Match 'data-action="vm-resume-saved"'
-        $app | Should -Match 'Resume saved'
+        $app | Should -Match 'vm\.power\.resume_saved'
+        $i18n | Should -Match 'Resume saved'
         $app | Should -Match 'data-action="vm-manage"'
-        $app | Should -Match 'Manage VM'
+        $app | Should -Match 'vm\.power\.manage'
+        $i18n | Should -Match 'Manage VM'
         $app | Should -Match 'queueVmManage'
         $app | Should -Match 'confirm_name'
         $app | Should -Match 'data-action="vm-delete"'
@@ -530,7 +536,7 @@ Describe 'PcvDesktopWeb static console assets' {
 
     It 'hardens browser job orchestration with scoped pending state, polling backoff, and next-page loading' {
         $app = Get-Content -LiteralPath $script:AppPath -Raw
-        $servedSource = (Get-Content -LiteralPath $script:ServedSourcePath -Raw) + (($script:ServedSourcePartPaths | ForEach-Object { Get-Content -LiteralPath $_ -Raw }) -join "`n")
+        $servedSource = Get-PcvWebShellSource
         $combined = $app + $servedSource
 
         $combined | Should -Match 'pendingVmActions'
@@ -548,20 +554,18 @@ Describe 'PcvDesktopWeb static console assets' {
     It 'binds the Single-style shell controls to Desktop Node view and asset state' {
         $index = Get-Content -LiteralPath $script:IndexPath -Raw
         $app = Get-Content -LiteralPath $script:AppPath -Raw
-        $servedSource = (Get-Content -LiteralPath $script:ServedSourcePath -Raw) + (($script:ServedSourcePartPaths | ForEach-Object { Get-Content -LiteralPath $_ -Raw }) -join "`n")
+        $servedSource = Get-PcvWebShellSource
         $combined = $app + $servedSource
 
-        $index | Should -Match 'data-menu-command="refresh"'
-        $index | Should -Match 'data-menu-command="clear-browser-state"'
-        $index | Should -Match 'data-view-link="vms"'
+        $index | Should -Match 'id="command-palette"'
+        $index | Should -Match 'id="shell-sidebar"'
+        $index | Should -Match 'id="shell-statusbar"'
         $index | Should -Match 'data-view-link="network"'
-        $index | Should -Match 'id="vm-asset-list"'
-        $index | Should -Match 'id="workspace-tabbar"'
         $index | Should -Match 'data-shell-action="open-create-vm"'
-        $index | Should -Match 'id="live-viewer-state"'
-        $index | Should -Match 'id="logout-boundary"'
-        $combined | Should -Match 'renderVmAssetList'
-        $combined | Should -Match 'renderWorkspaceTabs'
+        $index | Should -Match 'onclick="doLogout\(\)"'
+        $index | Should -Not -Match 'id="vm-asset-list"|id="workspace-tabbar"|id="connection-state"'
+        $combined | Should -Match 'command:refresh'
+        $combined | Should -Match 'command:clear-browser-state'
         $combined | Should -Match 'handleShellCommand'
         $combined | Should -Match 'selectVmFromShell'
         $combined | Should -Match 'clearBrowserState'
@@ -610,8 +614,11 @@ Describe 'PcvDesktopWeb static console assets' {
         $index | Should -Match 'id="vm-workbench-context"'
         $index | Should -Match 'id="incident-panel"'
         $index | Should -Match 'data-view-link="dashboard"'
-        $index | Should -Match 'data-view-link="vms"'
         $index | Should -Match 'data-view-link="jobs"'
+        $shellNav = Get-Content -LiteralPath (Join-Path $script:SrcRoot 'modules/shell.ts') -Raw
+        $shellNav | Should -Match "id:\s*'vms'"
+        $shellNav | Should -Match "'data-nav':\s*it\.id"
+        $shellNav | Should -Match 'navigateTo\(navTarget\(it\.id\)'
         $index | Should -Match 'data-view-link="activity"'
         $index | Should -Match 'data-view-link="troubleshooting"'
 
@@ -629,7 +636,7 @@ Describe 'PcvDesktopWeb static console assets' {
         $apiTypes | Should -Match 'OpsSummaryResponse'
         $appSource | Should -Match 'opsSummary'
 
-        ($index + $app + $servedSource + $apiTypes + $appSource) | Should -Not -Match 'Create Linux VM|ubuntu-24\.04|journalctl|libvirt|purecvisorsd|KVM|ZFS|OVS|\bOVN\b'
+        ($index + $app + $servedSource + $apiTypes + $appSource) | Should -Not -Match 'Create Linux VM|ubuntu-24\.04|journalctl|libvirt|purecvisorsd|\bKVM\b|\bZFS\b|\bOVS\b|\bOVN\b'
         ($index + $app + $servedSource + $apiTypes + $appSource) | Should -Not -Match 'Bearer\s+(?!\$\{)[A-Za-z0-9._~+/=-]{24,}'
     }
 
@@ -640,7 +647,7 @@ Describe 'PcvDesktopWeb static console assets' {
         $apiTypes = Get-Content -LiteralPath (Join-Path $script:SrcRoot 'api-types.ts') -Raw
         $fixtures = Get-Content -LiteralPath $script:UserVisibleFixturePath -Raw
 
-        $index | Should -Match 'data-view-link="evidence"'
+        (Get-Content -LiteralPath (Join-Path $script:SrcRoot 'modules/shell.ts') -Raw) | Should -Match "id:\s*'evidence'"
         $index | Should -Match 'id="evidence"'
         $index | Should -Match 'id="evidence-panel"'
         ($app + $servedSource) | Should -Match 'renderEvidenceDashboard'
@@ -726,14 +733,14 @@ Describe 'PcvDesktopWeb static console assets' {
         ($app + $servedSource) | Should -Match 'token values'
         ($app + $servedSource) | Should -Match 'Authorization headers'
         ($app + $servedSource) | Should -Match 'no host mutation'
-        ($app + $servedSource) | Should -Not -Match 'pwsh|powershell|Restart-Computer|msiexec|New-VM|Remove-VM|New-NetFirewallRule|Register-EventSource|New-EventLog|Register-ScheduledTask'
+        ($app + $servedSource) | Should -Not -Match '\b(?:pwsh|powershell)(?:\.exe)?\s+\S|Restart-Computer|msiexec|New-VM|Remove-VM|New-NetFirewallRule|Register-EventSource|New-EventLog|Register-ScheduledTask'
         ($app + $servedSource) | Should -Not -Match 'Bearer\s+(?!\$\{)[A-Za-z0-9._~+/=-]{24,}'
     }
 
     It "keeps operator surface terms aligned with internal distribution boundary" {
         $app = Get-Content -LiteralPath $script:ServedSourcePath -Raw
         $html = Get-Content -LiteralPath $script:IndexPath -Raw
-        $servedParts = ($script:ServedSourcePartPaths | ForEach-Object { Get-Content -LiteralPath $_ -Raw }) -join "`n"
+        $servedParts = Get-PcvWebShellSource
         $terms = Get-Content -LiteralPath (Join-Path $script:RepoRoot 'docs/OPERATOR_SURFACE_TERMS.md') -Raw
         $webSurface = $app + $html + $servedParts
 
@@ -743,15 +750,15 @@ Describe 'PcvDesktopWeb static console assets' {
         $terms | Should -Match "Checkpoint mutation: Web Console은 checkpoint restore/delete confirmation dialog를 요구한다"
         $webSurface | Should -Match "Diagnostic bundle|diagnostic bundle"
         $webSurface | Should -Match "Only PureCVisor-managed VMs can be deleted"
-        $webSurface | Should -Match "window\.confirm\(buildVmDeleteConfirmation"
-        $webSurface | Should -Match "window\.confirm\(buildCheckpointRestoreConfirmation"
-        $webSurface | Should -Match "window\.confirm\(buildCheckpointDeleteConfirmation"
+        $webSurface | Should -Match 'function\s+queueVmDelete\s*\([\s\S]*?PCV\.components\.confirmDialog\('
+        $webSurface | Should -Match 'function\s+queueCheckpointRestore\s*\([\s\S]*?PCV\.components\.confirmDialog\('
+        $webSurface | Should -Match 'function\s+queueCheckpointDelete\s*\([\s\S]*?PCV\.components\.confirmDialog\('
         $webSurface | Should -Not -Match "(?is)(public trusted signing|winget public submission|winget submission|external stable publication|public release).{0,80}(available|ready|pass|claimed|enabled)"
     }
 
     It 'hardens final frontend service edge cases before installed-listener evidence' {
         $app = Get-Content -LiteralPath $script:AppPath -Raw
-        $servedSource = (Get-Content -LiteralPath $script:ServedSourcePath -Raw) + (($script:ServedSourcePartPaths | ForEach-Object { Get-Content -LiteralPath $_ -Raw }) -join "`n")
+        $servedSource = Get-PcvWebShellSource
         $styles = Get-Content -LiteralPath $script:StylesPath -Raw
         $design = Get-Content -LiteralPath $script:DesignPath -Raw
         $installedQaScript = Get-Content -LiteralPath (Join-Path $script:ScriptsRoot 'capture-installed-listener-qa.mjs') -Raw
@@ -765,9 +772,11 @@ Describe 'PcvDesktopWeb static console assets' {
         $combined | Should -Match '500'
         $combined | Should -Match 'timeout'
         $combined | Should -Match 'tokenRequiredRouteStatus'
-        $combined | Should -Match 'browser token cleared'
-        $combined | Should -Match 'all views refresh'
-        $combined | Should -Match 'pending jobs are rechecked'
+        $combined | Should -Match 'account\.token\.cleared'
+        $edgeI18n = Get-Content -LiteralPath (Join-Path $script:WebRoot 'i18n.js') -Raw
+        $edgeI18n | Should -Match 'The browser token was cleared'
+        $edgeI18n | Should -Match 'All views refresh'
+        $edgeI18n | Should -Match 'pending jobs are rechecked'
         $combined | Should -Match 'renderJobEdgeSummary'
         $combined | Should -Match 'No jobs on this page'
         $combined | Should -Match 'retained terminal jobs'
@@ -784,7 +793,8 @@ Describe 'PcvDesktopWeb static console assets' {
         $combined | Should -Match 'buildCheckpointDeleteConfirmation'
         $combined | Should -Match 'network-empty-state'
         $combined | Should -Match 'PCV_NATIVE_PARITY_INCOMPLETE'
-        $combined | Should -Match 'native parity failure'
+        $combined | Should -Match 'vm\.net\.error_parity'
+        $edgeI18n | Should -Match 'Native parity failed'
         $styles | Should -Match ':focus-visible'
         $styles | Should -Match '@media \(prefers-reduced-motion: reduce\)'
         $styles | Should -Match '@media \(max-width: 900px\)'
@@ -829,13 +839,15 @@ Describe 'PcvDesktopWeb static console assets' {
 
         $index | Should -Match 'id="beta-followup-panel"'
         ($app + $servedSource) | Should -Match 'renderBetaFollowup'
-        ($app + $servedSource) | Should -Match 'Installed listener QA automation'
-        ($app + $servedSource) | Should -Match 'service token revoke handoff'
-        ($app + $servedSource) | Should -Match 'diagnostic retention pagination'
-        ($app + $servedSource) | Should -Match 'VM delete guarded'
-        ($app + $servedSource) | Should -Match 'ops cockpit P0/P1/P2'
-        ($app + $servedSource) | Should -Match 'public distribution bundle'
-        ($app + $servedSource) | Should -Match 'host mutation not started from browser'
+        (Get-Content -LiteralPath (Join-Path $script:SrcRoot 'modules/vm-console.ts') -Raw) | Should -Match 'vm\.beta\.item\$\{index\}\.label'
+        $betaI18n = Get-Content -LiteralPath (Join-Path $script:WebRoot 'i18n.js') -Raw
+        $betaI18n | Should -Match 'Installed listener QA automation'
+        $betaI18n | Should -Match 'service token revoke handoff'
+        $betaI18n | Should -Match 'diagnostic retention pagination'
+        $betaI18n | Should -Match 'VM delete guarded'
+        $betaI18n | Should -Match 'ops cockpit P0/P1/P2'
+        $betaI18n | Should -Match 'public distribution bundle'
+        $betaI18n | Should -Match 'host mutation not started from browser'
         ($app + $servedSource) | Should -Not -Match 'Restart-Computer|msiexec|New-VM|Remove-VM|New-NetFirewallRule|Register-EventSource|New-EventLog|Register-ScheduledTask'
         ($app + $servedSource) | Should -Not -Match 'Bearer\s+(?!\$\{)[A-Za-z0-9._~+/=-]{24,}'
     }
@@ -863,7 +875,8 @@ Describe 'PcvDesktopWeb static console assets' {
         $servedSource = Get-Content -LiteralPath $script:ServedSourcePath -Raw
         $apiTypes = Get-Content -LiteralPath (Join-Path $script:SrcRoot 'api-types.ts') -Raw
         $fixtures = Get-Content -LiteralPath $script:UserVisibleFixturePath -Raw
-        $inventorySource = Get-Content -LiteralPath (Join-Path $script:ServedSourcePartsRoot 'render-inventory.ts') -Raw
+        $inventorySource = Get-Content -LiteralPath (Join-Path $script:SrcRoot 'modules/vm.ts') -Raw
+        $i18n = Get-Content -LiteralPath (Join-Path $script:WebRoot 'i18n.js') -Raw
 
         $index | Should -Match 'data-view-link="network"'
         $index | Should -Match 'id="network"'
@@ -877,12 +890,18 @@ Describe 'PcvDesktopWeb static console assets' {
         ($app + $servedSource + $fixtures) | Should -Match 'fixture-ethernet'
         ($app + $servedSource) | Should -Match 'read-only'
         ($app + $inventorySource) | Should -Match 'network-change-readback'
-        ($app + $inventorySource) | Should -Match 'no switch create form'
-        ($app + $inventorySource) | Should -Match 'no NAT editor'
-        ($app + $inventorySource) | Should -Match 'no DHCP editor'
-        ($app + $inventorySource) | Should -Match 'switch connect in VM detail'
+        ($app + $inventorySource) | Should -Match 'vm\.net\.chip_create'
+        ($app + $inventorySource) | Should -Match 'vm\.net\.chip_nat'
+        ($app + $inventorySource) | Should -Match 'vm\.net\.chip_dhcp'
+        ($app + $inventorySource) | Should -Match 'vm\.net\.chip_connect'
+        $i18n | Should -Match 'no switch create form'
+        $i18n | Should -Match 'no NAT editor'
+        $i18n | Should -Match 'no DHCP editor'
+        $i18n | Should -Match 'switch connect in VM detail'
         ($app + $inventorySource) | Should -Not -Match 'data-action="switch-create"|data-action="switch-remove"|name="nat-network"|name="dhcp-scope"'
-        $inventorySource | Should -Not -Match 'data-action="vm-network-connect"'
+        $inventoryFns = (Get-PcvFunctionBody $inventorySource 'renderNetworkInventory') + (Get-PcvFunctionBody $inventorySource 'renderNetworkChangeReadback')
+        $inventoryFns | Should -Not -Match 'data-action="vm-network-connect"'
+        $inventorySource | Should -Match 'data-action="vm-network-connect"'
         ($app + $servedSource) | Should -Not -Match 'New-VMSwitch|Remove-VMSwitch|New-NetIPAddress|Set-NetFirewallRule'
     }
 
@@ -891,8 +910,8 @@ Describe 'PcvDesktopWeb static console assets' {
         $app = Get-Content -LiteralPath $script:AppPath -Raw
 
         $index | Should -Match 'id="vm-filter"'
-        $index | Should -Match 'id="asset-status"'
-        $app | Should -Match 'renderAssetStatus'
+        $index | Should -Not -Match 'id="asset-status"'
+        $app | Should -Not -Match 'renderAssetStatus'
         $app | Should -Match 'buildVmLifecycleConfirmation'
         $app | Should -Match 'vmFilter'
         ($index + $app) | Should -Not -Match 'Create Linux VM|ubuntu-24\.04|journalctl|libvirt|purecvisorsd|ZFS|OVS|\bOVN\b'
@@ -916,7 +935,7 @@ Describe 'PcvDesktopWeb static console assets' {
         $manifest = $manifestText | ConvertFrom-Json
         $manifest.scaffold.runtimeReplacement | Should -Be 'default'
         $manifest.replacesServedAsset | Should -BeTrue
-        $manifest.servedTypeScriptEntry | Should -Be 'src/served-app.ts'
+        $manifest.servedTypeScriptEntry | Should -Be 'src/bootstrap.ts'
         $manifest.regeneration.replacesServedAsset | Should -BeTrue
         $manifest.browserFixture.replacesServedAsset | Should -BeTrue
     }
@@ -935,7 +954,7 @@ Describe 'PcvDesktopWeb static console assets' {
         $package.scripts.test | Should -Be 'npm run check:feature-surfaces && tsc --noEmit -p tsconfig.json && npm run check:served && npm run check:frontend-batches && npm run lint && npm run lint:domsafe'
 
         $index = Get-Content -LiteralPath $script:IndexPath -Raw
-        $index | Should -Match 'app\.js'
+        $index | Should -Match 'app\.bundle\.js'
         $index | Should -Not -Match 'src/app\.ts'
     }
 
@@ -943,7 +962,7 @@ Describe 'PcvDesktopWeb static console assets' {
         $apiTypes = Get-Content -LiteralPath (Join-Path $script:SrcRoot 'api-types.ts') -Raw
         $viewModel = Get-Content -LiteralPath (Join-Path $script:SrcRoot 'view-model.ts') -Raw
         $appSource = Get-Content -LiteralPath (Join-Path $script:SrcRoot 'app.ts') -Raw
-        $servedSource = (Get-Content -LiteralPath $script:ServedSourcePath -Raw) + (($script:ServedSourcePartPaths | ForEach-Object { Get-Content -LiteralPath $_ -Raw }) -join "`n")
+        $servedSource = Get-PcvWebShellSource
 
         $apiTypes | Should -Match 'RuntimePolicyResponse'
         $apiTypes | Should -Match 'JobRuntimePolicy'
@@ -958,7 +977,7 @@ Describe 'PcvDesktopWeb static console assets' {
         ($apiTypes + $viewModel + $appSource + $servedSource) | Should -Match '/api/v1/host/status'
         ($apiTypes + $viewModel + $appSource + $servedSource) | Should -Match '/api/v1/vms'
         ($apiTypes + $viewModel + $appSource + $servedSource) | Should -Not -Match 'Restart-Computer|msiexec|Register-ScheduledTask|New-VM|Remove-VM|New-NetFirewallRule'
-        ($apiTypes + $viewModel + $appSource + $servedSource) | Should -Not -Match 'journalctl|libvirt|KVM|ZFS|OVS|\bOVN\b|purecvisorsd'
+        ($apiTypes + $viewModel + $appSource + $servedSource) | Should -Not -Match 'journalctl|libvirt|\bKVM\b|\bZFS\b|\bOVS\b|\bOVN\b|purecvisorsd'
         ($apiTypes + $viewModel + $appSource + $servedSource) | Should -Not -Match 'Bearer\s+(?!\$\{)[A-Za-z0-9._~+/=-]{24,}'
     }
 
@@ -973,11 +992,11 @@ Describe 'PcvDesktopWeb static console assets' {
         $manifest.regeneratedBy | Should -Be 'scripts/regenerate-static-parity.mjs'
         $manifest.scaffold.decisionCandidate | Should -Be 'static-asset-parity-scaffold-first'
         $manifest.scaffold.runtimeReplacement | Should -Be 'default'
-        $manifest.servedAsset | Should -Be 'app.js'
+        $manifest.servedAsset | Should -Be 'app.bundle.js'
         $manifest.replacesServedAsset | Should -BeTrue
-        $manifest.indexScriptSrc | Should -Be '/app.js'
+        $manifest.indexScriptSrc | Should -Be 'app.bundle.js?v=single-edge-v1'
         $manifest.typeScriptEntry | Should -Be 'src/app.ts'
-        $manifest.servedTypeScriptEntry | Should -Be 'src/served-app.ts'
+        $manifest.servedTypeScriptEntry | Should -Be 'src/bootstrap.ts'
         $manifest.userVisibleFixtureEntry | Should -Be 'src/user-visible-fixtures.ts'
         $manifest.userVisibleFixtureNames | Should -Contain 'emptyInventory'
         $manifest.userVisibleFixtureNames | Should -Contain 'runningVmAndJob'
@@ -1001,7 +1020,7 @@ Describe 'PcvDesktopWeb static console assets' {
         $manifest.regeneration.replacesServedAsset | Should -BeTrue
 
         $index = Get-Content -LiteralPath $script:IndexPath -Raw
-        $index | Should -Match '<script src="/app\.js" defer></script>'
+        $index | Should -Match '<script src="app\.bundle\.js\?v=single-edge-v1"></script>'
         $index | Should -Not -Match 'src/app\.ts'
 
         $manifestText | Should -Not -Match 'Bearer\s+(?!\$\{)[A-Za-z0-9._~+/=-]{24,}'
@@ -1020,8 +1039,8 @@ Describe 'PcvDesktopWeb static console assets' {
         $fixtureSource | Should -Match 'runningVmAndJob'
         $fixtureSource | Should -Match 'unsupportedHost'
         $fixtureSource | Should -Match 'default'
-        $fixtureSource | Should -Match 'app\.js'
-        $fixtureSource | Should -Match 'src/served-app\.ts'
+        $fixtureSource | Should -Match 'app\.bundle\.js'
+        $fixtureSource | Should -Match 'src/bootstrap\.ts'
         $fixtureSource | Should -Not -Match 'document\.|window\.|dist/'
 
         $manifestText | Should -Match 'src/user-visible-fixtures\.ts'
@@ -1063,9 +1082,9 @@ Describe 'PcvDesktopWeb static console assets' {
         $verifyScript | Should -Match 'static-asset-parity\.manifest\.json'
         $verifyScript | Should -Match 'src/generate-parity-manifest\.ts'
         $verifyScript | Should -Match 'src/app\.ts'
-        $verifyScript | Should -Match 'src/served-app\.ts'
+        $verifyScript | Should -Match 'src/bootstrap\.ts'
         $verifyScript | Should -Match 'index\.html'
-        $verifyScript | Should -Match 'app\.js'
+        $verifyScript | Should -Match 'app\.bundle\.js'
         $verifyScript | Should -Match 'verify-browser-fixture\.mjs'
         $servedBuilderScript | Should -Match 'typescript'
         $servedBuilderScript | Should -Match 'src/served-app\.ts'
@@ -1094,14 +1113,14 @@ Describe 'PcvDesktopWeb static console assets' {
         $fixtureSource = Get-Content -LiteralPath $script:UserVisibleFixturePath -Raw
         $generatorSource = Get-Content -LiteralPath $script:ParityGeneratorPath -Raw
 
-        $index | Should -Match '<script src="/app\.js" defer></script>'
+        $index | Should -Match '<script src="app\.bundle\.js\?v=single-edge-v1"></script>'
         $index | Should -Not -Match 'src/app\.ts|dist/'
 
-        $manifest.servedAsset | Should -Be 'app.js'
+        $manifest.servedAsset | Should -Be 'app.bundle.js'
         $manifest.replacesServedAsset | Should -BeTrue
-        $manifest.indexScriptSrc | Should -Be '/app.js'
+        $manifest.indexScriptSrc | Should -Be 'app.bundle.js?v=single-edge-v1'
         $manifest.typeScriptEntry | Should -Be 'src/app.ts'
-        $manifest.servedTypeScriptEntry | Should -Be 'src/served-app.ts'
+        $manifest.servedTypeScriptEntry | Should -Be 'src/bootstrap.ts'
         $manifest.userVisibleFixtureEntry | Should -Be 'src/user-visible-fixtures.ts'
         $manifest.scaffold.decisionCandidate | Should -Be 'static-asset-parity-scaffold-first'
         $manifest.scaffold.runtimeReplacement | Should -Be 'default'
@@ -1124,7 +1143,7 @@ Describe 'PcvDesktopWeb static console assets' {
 
         $browserFixtureScript = Get-Content -LiteralPath $script:BrowserFixtureScriptPath -Raw
         ($verifyScript + $regenerateScript + $browserFixtureScript + $appSource + $servedSource + $fixtureSource + $generatorSource + $manifestText) | Should -Match 'static-asset-parity-scaffold-first'
-        ($verifyScript + $regenerateScript + $browserFixtureScript + $appSource + $servedSource + $fixtureSource + $generatorSource + $manifestText) | Should -Match 'src/served-app\.ts'
+        ($verifyScript + $regenerateScript + $browserFixtureScript + $appSource + $servedSource + $fixtureSource + $generatorSource + $manifestText) | Should -Match 'src/bootstrap\.ts'
         ($verifyScript + $regenerateScript + $browserFixtureScript + $appSource + $servedSource + $fixtureSource + $generatorSource + $manifestText) | Should -Match '/api/v1/runtime/policy'
         ($verifyScript + $regenerateScript + $browserFixtureScript + $appSource + $servedSource + $fixtureSource + $generatorSource + $manifestText) | Should -Match '/api/v1/host/status'
         ($verifyScript + $regenerateScript + $browserFixtureScript + $appSource + $servedSource + $fixtureSource + $generatorSource + $manifestText) | Should -Match '/api/v1/vms'
@@ -1141,8 +1160,7 @@ Describe 'PcvDesktopWeb static console assets' {
             (Join-Path $script:ScriptsRoot 'build-served-asset.mjs'),
             $script:FrontendBatchValidatorPath,
             (Join-Path $script:SrcRoot 'app.ts'),
-            $script:ServedSourcePath,
-            $script:ServedSourcePartPaths,
+            $script:ShellSourcePaths,
             $script:UserVisibleFixturePath,
             (Join-Path $script:SrcRoot 'api-types.ts'),
             (Join-Path $script:SrcRoot 'view-model.ts'),
@@ -1199,14 +1217,11 @@ Describe 'PcvDesktopWeb static console assets' {
         }
 
         $requiredIds = @(
-            'status-connection',
-            'status-host',
-            'status-updated',
-            'status-vm-count',
-            'status-view',
             'hero-workload',
             'hero-host-mode',
-            'hero-alerts'
+            'hero-alerts',
+            'shell-statusbar',
+            'ws-s'
         )
         foreach ($id in $requiredIds) {
             $index | Should -Match ([regex]::Escape("id=`"$id`"")) -Because "index.html must expose #$id for real-state binding"

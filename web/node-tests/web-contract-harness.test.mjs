@@ -39,7 +39,7 @@ function fixtureRepository() {
     "web/scripts/verify-static-parity.mjs",
     "web/scripts/verify-browser-fixture.mjs",
     "web/tsconfig.json",
-    "web/app.js"
+    "web/app.bundle.js"
   ]) {
     const target = path.join(root, ...relativePath.split("/"));
     fs.mkdirSync(path.dirname(target), { recursive: true });
@@ -611,12 +611,13 @@ test("readServedSource concatenates the exact declared source-part order", () =>
   });
 });
 
-test("readServedSource includes the actual repository terminal served app source", () => {
+test("readShellSource ends with the new shell bootstrap and does not require the legacy console", () => {
   const context = createWebContractContext({ repoRoot: actualRepoRoot });
-  const combined = context.readServedSource();
-  const servedApp = context.readText("web/src/served-app.ts");
-  assert.notEqual(servedApp.length, 0);
-  assert.equal(combined.slice(-servedApp.length), servedApp);
+  const combined = context.readShellSource();
+  const bootstrap = context.readText("web/src/bootstrap.ts");
+  assert.notEqual(bootstrap.length, 0);
+  assert.equal(combined.slice(-bootstrap.length), bootstrap);
+  assert.match(combined, /function matchesVmStateChip/);
 });
 
 test("readServedSource ignores commented and quoted declaration decoys", () => {
@@ -856,7 +857,7 @@ test("owner execution uses direct Node arguments and caches by owner id", async 
         ["scripts/regenerate-static-parity.mjs", "--check"],
         ["scripts/verify-static-parity.mjs"],
         ["scripts/verify-browser-fixture.mjs"],
-        ["--check", "app.js"]
+        ["--check", "app.bundle.js"]
       ]
     );
     const expectedWebRoot = path.join(fs.realpathSync(root), "web");
@@ -982,7 +983,7 @@ test("owner targets must be real contained files before runner invocation", asyn
   }
 
   await withFixtureRepository(async (containedRoot) => {
-    fs.rmSync(path.join(containedRoot, "web", "app.js"));
+    fs.rmSync(path.join(containedRoot, "web", "app.bundle.js"));
     const calls = [];
     const context = createWebContractContext({
       repoRoot: containedRoot,
