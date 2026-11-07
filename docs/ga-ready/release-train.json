@@ -126,6 +126,14 @@
       "summary": "Web Console Task 9b: legacy console files deleted (old addresses 404), MSI web payload, product module paths and spec pins on the new shell",
       "lane2_probe": null,
       "risk_tier": "M"
+    },
+    {
+      "pr": 107,
+      "merge_commit": "449a62ce",
+      "area": "web",
+      "summary": "ui-redesign Task 10: browser UI quality gates (axe-core dev-only), supanova accent button text contrast, opaque modal background, search control accessible name",
+      "lane2_probe": null,
+      "risk_tier": "M"
     }
   ],
   "trains": [
