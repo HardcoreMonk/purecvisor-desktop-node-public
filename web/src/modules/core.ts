@@ -1,7 +1,6 @@
 // @ts-nocheck
-// Desktop Node module (ADR-0018, pcv-single-edge-frontend-structure-v1 §4): state, routes, errors, summary, table, rbac and the loaders of the legacy console (web/src/served types, state, routes, errors, summary, table, rbac, load).
-// The legacy parts are kept verbatim inside one window.PCV module; their top-level declarations are exported to
-// window so the parts keep the shared-scope behaviour of the legacy bundle until Task 16 retires web/src/served.
+// Desktop Node module (ADR-0018, pcv-single-edge-frontend-structure-v1 §4): state, routes, errors, summary, table, rbac, originally ported from the legacy console.
+// Top-level declarations stay on window.PCV so the module keeps the shared-scope behaviour of the classic-script bundle.
 window.PCV = window.PCV || {};
 (function (PCV) {
 // --- legacy types.ts ---

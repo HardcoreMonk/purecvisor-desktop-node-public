@@ -2,11 +2,9 @@
   "schema_version": 1,
   "contract": "pcv-web-payload-manifest-v1",
   "design": "docs/superpowers/specs/2026-10-10-purecvisor-desktop-node-single-edge-frontend-structure-design.md",
-  "note": "Web root files shipped in the product payload (ADR-0018). core = files owned by explicit Product.wxs components and required by the product module update check. files = the rest, relative to web/ with forward slashes; packaging/windows-desktop-node/tools/Update-PcvWebPayloadWix.ps1 generates installer/WebPayload.wxs from them and the installer build copies core + files. Later tasks of campaign single-edge-frontend-structure-20261010 append entries.",
+  "note": "Web root files shipped in the product payload (ADR-0018). core = the hand-authored Product.wxs web component (index.html, which also removes the web folder on uninstall). files = the rest, relative to web/ with forward slashes, including app.bundle.js and style.css which the product module update check also requires. packaging/windows-desktop-node/tools/Update-PcvWebPayloadWix.ps1 generates installer/WebPayload.wxs from files and the installer build copies core + files. 옛 콘솔 파일은 Task 9b(2026-11-07)에서 퇴역, 404.",
   "core": [
-    "app.js",
-    "index.html",
-    "styles.css"
+    "index.html"
   ],
   "files": [
     "app.bundle.js",
@@ -23,7 +21,6 @@
     "vendor/pretendard/woff2/Pretendard-Medium.woff2",
     "vendor/pretendard/woff2/Pretendard-Regular.woff2",
     "vendor/pretendard/woff2/Pretendard-SemiBold.woff2",
-    "index.legacy.html",
     "icon-192.png",
     "icon-512.png",
     "i18n.js",

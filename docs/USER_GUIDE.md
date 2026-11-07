@@ -70,7 +70,7 @@ Web Console은 `http://127.0.0.1/`에서 Single Edge 구조의 셸(로그인 페
 | loopback(`127.0.0.1`) | `POST /api/v1/auth/loopback-session`으로 짧은 JWT를 자동으로 받는다. 계정이 구성되면 이 경로는 `409 PCV_LOOPBACK_SESSION_DISABLED`로 닫히고 로그인 페이지에서 username/password로 로그인한다. |
 | LAN/비-loopback | 계정 JWT 또는 운영자가 별도로 제공한 bearer token이 필요하다. |
 
-상단 바의 환경설정(`Ctrl+P`)에서 테마, 언어, Local API 주소, 선택적 브라우저 token을 바꾸고, `token 지우기`로 브라우저에 입력된 token 값을 지운다. 사이드바 `도움말`(Help)은 Local API route, 권한, CLI, Web Console 화면을 묶은 참조 카탈로그이고, `http://127.0.0.1/docs.html`은 이 가이드를 발췌한 문서 포털이다. 키보드 단축키 목록은 `?`로 연다. 옛 연결 폼 기반 콘솔은 `http://127.0.0.1/index.legacy.html`에 남아 있다(옛 계약 검증용, 별도 campaign에서 제거 예정).
+상단 바의 환경설정(`Ctrl+P`)에서 테마, 언어, Local API 주소, 선택적 브라우저 token을 바꾸고, `token 지우기`로 브라우저에 입력된 token 값을 지운다. 사이드바 `도움말`(Help)은 Local API route, 권한, CLI, Web Console 화면을 묶은 참조 카탈로그이고, `http://127.0.0.1/docs.html`은 이 가이드를 발췌한 문서 포털이다. 키보드 단축키 목록은 `?`로 연다. 옛 연결 폼 기반 콘솔은 Task 9b(2026-11-07)에서 퇴역, 404.
 
 Token 값은 command line, issue, 문서, diagnostic bundle에 기록하지 않는다. 설치된 service와 CLI 기본 실행은 protected token file을 사용하고, Web Console에는 운영자가 별도로 제공한 token만 입력한다.
 
@@ -119,14 +119,16 @@ Web Console은 선택된 VM의 console capability를 표시한다. 현재 Window
 
 noVNC bridge는 Windows Desktop Node listener의 opt-in bridge이며 기본 disabled다. Linux noVNC/WebSocket backend, KVM/libvirt console, browser-started host mutation은 이 제품 범위에 포함하지 않는다.
 
-연결 상태는 다음처럼 해석한다.
+새 셸은 `Connected` / `Auth required` / `Error` / `Idle` 연결 배지를 그리지 않는다. 화면에 남는 문구는 다음이다. `Connected`와 `Auth required`는 모니터링 카드와 인증 게이트에만 남는다.
 
-| 상태 | 의미 | 조치 |
-|------|------|------|
-| `Connected` | API와 인증이 정상이다. | 그대로 사용한다. |
-| `Auth required` | 세션이나 token이 없거나 거부됐다. | loopback이면 페이지를 새로 고친다. 계정이 구성됐으면 로그인한다. 환경설정(`Ctrl+P`)의 브라우저 token을 확인한다. |
-| `Error` | service/API/host 작업 중 오류가 발생했다. | alert의 `PCV_*` error code와 service 상태를 확인한다. |
-| `Idle` | 아직 연결 요청 전이다. | 페이지를 새로 고치거나 환경설정의 Local API 주소를 확인한다. 옛 콘솔(`/index.legacy.html`)에서는 API와 token을 입력하고 `Save` 또는 `Refresh`를 누른다. |
+| 위치 | 보이는 문구 | 의미와 조치 |
+|------|-------------|-------------|
+| 로그인 카드 | `관리자 인증`, `보안 로그인`. `로컬 운영 계정으로 접속하세요. loopback 접속은 세션이 자동으로 열립니다.` 노드 상태 초기값은 `노드 응답 대기`다. | 계정이 있으면 로그인한다. loopback이고 계정이 없으면 세션이 자동으로 열린다. |
+| 대시보드 hero chip | `활성 워크로드`, `호스트 상태`, `최근 경고`. 갱신 전 값은 `—`다. 호스트 상태는 요약 값이고, host status가 없으면 `—`, 있으면 `Needs attention` 또는 `Ready`다. | 대시보드가 호스트·VM·경고를 읽은 뒤에 숫자와 준비 상태가 채워진다. |
+| 인증 게이트 | `#alert-region`의 `Auth required`. 기본 코드 `PCV_AUTH_REQUIRED`, 기본 메시지 `Authorization bearer token is required.` 안내 `Use the header api-token field or the account login form. Service tokens stay out of HTML.` troubleshooting이 아니면 `Username` / `Password` / `Login`. | access token과 브라우저 token이 둘 다 없고 연결 상태가 auth일 때 나온다. 로그인하거나 환경설정(`Ctrl+P`)의 브라우저 token을 확인한다. |
+| 오류 배너 | `#alert-region`에 code, message, detail. 배지 단어 `Error`는 쓰지 않는다. | alert의 `PCV_*` code와 service 상태를 확인한다. |
+| Monitoring Service/API | `Connected` 또는 `Not connected`. | 연결이 `connected`이면 `Connected`, 그 외는 `Not connected`다. |
+| 이벤트 푸터 | `Live` 또는 `Offline`. | WebSocket이 열려 있으면 `Live`, 아니면 `Offline`이다. |
 
 현재 Web Console에서 직접 제공하는 범위:
 

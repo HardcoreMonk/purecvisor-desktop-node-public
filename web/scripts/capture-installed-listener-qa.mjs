@@ -324,7 +324,7 @@ async function main() {
     await navigateView(client, "vms");
     await sleep(500);
     await typeInto(client, "#vm-filter", "pcv");
-    await typeInto(client, "#vm-state-filter", "running");
+    await click(client, '[data-vm-chip="running"]');
     await typeInto(client, "#vm-sort", "updated");
     const vmSelected = await click(client, '#vm-table [data-action="select-vm"]');
     await sleep(1000);

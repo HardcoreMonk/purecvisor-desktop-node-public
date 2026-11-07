@@ -181,8 +181,8 @@ requireIncludes(shellSource, "renderIncidentCommand", "shell source");
 requireIncludes(shellSource, "/api/v1/host/status", "shell source");
 requireIncludes(shellSource, "/api/v1/vms", "shell source");
 requireIncludes(servedBuilderScript, "typescript", "scripts/build-served-asset.mjs");
-requireIncludes(servedBuilderScript, "src/served-app.ts", "scripts/build-served-asset.mjs");
-requireIncludes(servedBuilderScript, "app.js", "scripts/build-served-asset.mjs");
+requireIncludes(servedBuilderScript, "src/modules.json", "scripts/build-served-asset.mjs");
+requireIncludes(servedBuilderScript, "app.bundle.js", "scripts/build-served-asset.mjs");
 requireIncludes(servedBuilderScript, "--write", "scripts/build-served-asset.mjs");
 requireIncludes(servedBuilderScript, "--check", "scripts/build-served-asset.mjs");
 

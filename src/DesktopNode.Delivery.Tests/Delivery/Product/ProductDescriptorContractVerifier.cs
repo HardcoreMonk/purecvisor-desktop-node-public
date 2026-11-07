@@ -16,9 +16,9 @@ internal sealed class ProductDescriptorContractVerifier
         "packaging/windows-desktop-node/PcvDesktopNodeProduct.psm1";
 
     private const string ExpectedSpecSha256 =
-        "04abecd51ece223175bc0324d949b61f976fb31b5cf33327103f6b1beeee19da";
+        "dbd32939983fc97b08aa6f63805d897dd58e7ad08d9c8d76cd86318c3c717587";
     private const string ExpectedModuleSha256 =
-        "8c0bf982097881f56e60354f53961e54ea4d7a49e566a1e1eee861cd309403c3";
+        "a2ec149aa9634ec8276f799996390424fddebed67bfaf88dae05a933f63d4103";
 
     private static readonly string[] ExpectedKeys =
     [

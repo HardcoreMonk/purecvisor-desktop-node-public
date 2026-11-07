@@ -212,8 +212,8 @@ PR #156 post-merge public-boundary main push는 `docs/ga-ready/evidence/public-b
   evidence는 internal admin-smoke 범위이고 Runtime/API current-card contract는 `runtime-api-current-evidence-rollup-v1`이다.
   Public trusted signing 또는 외부 stable publication evidence가 아니다.
 - Web Console은 ADR-0018 Single Edge 프론트엔드 구조다. `/`는 `web/index.html` 셸이고 생성물 `web/app.bundle.js`의 source는
-  `web/src/modules/**`, 순서표는 `web/src/modules.json`이다. 옛 콘솔 `web/index.legacy.html` + `web/app.js`는
-  legacy-retirement campaign 전까지 옛 계약 기준선으로 남는다. Linux Single Edge runtime·route·화면은 가져오지 않는다.
+  `web/src/modules/**`, 순서표는 `web/src/modules.json`이다. 옛 콘솔은 Task 9b(2026-11-07)에서 퇴역, 404. Host는 옛 URL을
+  리다이렉트하지 않고 없는 파일은 404 JSON을 반환한다. Linux Single Edge runtime·route·화면은 가져오지 않는다.
 
 ## 문서 진입점
 

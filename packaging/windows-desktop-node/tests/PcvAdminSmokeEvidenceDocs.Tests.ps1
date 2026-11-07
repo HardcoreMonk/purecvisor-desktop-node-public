@@ -1710,8 +1710,8 @@ Describe 'Admin smoke evidence documentation' {
         $matrix = Get-RepoText -RelativePath 'docs/ga-ready/INTERNAL_PRIVATE_NETWORK_DISTRIBUTION_MATRIX.md'
         $descriptor = Get-RepoText -RelativePath 'docs/ga-ready/MANUAL_ADMIN_NEXT_CAMPAIGN_DESCRIPTOR.md'
         $classification = Get-RepoText -RelativePath 'docs/ga-ready/AUTOMATED_BATCH_JOB_CLASSIFICATION.md'
-        $webServed = Get-RepoText -RelativePath 'web/src/served-app.ts'
-        $webApp = Get-RepoText -RelativePath 'web/app.js'
+        $webServed = Get-RepoText -RelativePath 'web/src/modules/monitor.ts'
+        $webApp = Get-RepoText -RelativePath 'web/app.bundle.js'
 
         foreach ($content in @($successor, $operatorSurface, $post04221, $boundaryGuard, $matrix, $descriptor, $classification)) {
             $content | Should -Match '25938745434'
@@ -2107,7 +2107,7 @@ Describe 'Admin smoke evidence documentation' {
         $installerReadme = Get-RepoText -RelativePath 'packaging/windows-desktop-node/installer/README.md'
         $apiReader = Get-RepoSourceText -RelativePath 'src/DesktopNode.Api/BatchEvidenceSummaryReader.cs'
         $apiBuilder = Get-RepoSourceText -RelativePath 'src/DesktopNode.Api/DesktopNodeApiOpsSummaryBuilder.cs'
-        $webServed = Get-RepoText -RelativePath 'web/src/served-app.ts'
+        $webServed = Get-RepoText -RelativePath 'web/src/modules/monitor.ts'
         $webFixtures = Get-RepoText -RelativePath 'web/src/user-visible-fixtures.ts'
         $webStaticTests = Get-RepoText -RelativePath 'web/tests/PcvDesktopWeb.Static.Tests.ps1'
 
@@ -2269,8 +2269,8 @@ Describe 'Admin smoke evidence documentation' {
         $apiBuilder = Get-RepoSourceText -RelativePath 'src/DesktopNode.Api/DesktopNodeApiOpsSummaryBuilder.cs'
         $descriptorScript = Get-RepoText -RelativePath 'packaging/windows-desktop-node/tools/New-PcvManualAdminCampaignDescriptor.ps1'
         $batchSupervisor = Get-RepoText -RelativePath 'packaging/windows-desktop-node/tools/PcvBatchSupervisor.psm1'
-        $webServed = Get-RepoText -RelativePath 'web/src/served-app.ts'
-        $webStatic = Get-RepoText -RelativePath 'web/app.js'
+        $webServed = Get-RepoText -RelativePath 'web/src/modules/monitor.ts'
+        $webStatic = Get-RepoText -RelativePath 'web/app.bundle.js'
 
         foreach ($content in @($ledger, $followup, $evidenceIndex, $controlPlaneIndex, $matrix, $descriptor, $classification, $developerIndex)) {
             $content | Should -Match 'current-evidence-ledger-2026-05-17-04226|CURRENT_EVIDENCE_LEDGER'

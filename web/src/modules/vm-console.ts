@@ -1,7 +1,6 @@
 // @ts-nocheck
 // Desktop Node module (ADR-0018, pcv-single-edge-frontend-structure-v1 §4): browser console frame, keyboard, checkpoint schedule, export/import and guest controls (legacy render-console, vm-detail-extensions).
-// The legacy parts are kept verbatim inside one window.PCV module; their top-level declarations are exported to
-// window so the parts keep the shared-scope behaviour of the legacy bundle until Task 16 retires web/src/served.
+// Top-level declarations stay on window.PCV so the module keeps the shared-scope behaviour of the classic-script bundle.
 window.PCV = window.PCV || {};
 (function (PCV) {
 // --- legacy render-console.ts ---
@@ -196,8 +195,8 @@ function renderTroubleshooting() {
 }
 
 // --- legacy vm-detail-extensions.ts ---
-// VM detail 의 lifecycle action 표와 확장 form action 이다. served-app.ts 의 submit 분기가 처리하지 않은
-// data-action 은 handleVmDetailExtensionSubmit 으로 온다.
+// VM detail 의 lifecycle action 표와 확장 form action 이다. web/src/bootstrap.ts 의
+// els.vmDetailPanel submit listener 가 처리하지 않은 data-action 은 handleVmDetailExtensionSubmit 으로 온다.
 const VM_LIFECYCLE_ACTIONS = {
   'vm-start': 'start',
   'vm-shutdown': 'shutdown',

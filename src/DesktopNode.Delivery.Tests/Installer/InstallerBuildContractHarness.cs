@@ -841,7 +841,7 @@ internal static partial class InstallerBuildSourcePolicy
             .Select(element => (string?)element.Attribute("Id"))
             .Where(value => value is not null)
             .ToHashSet(StringComparer.Ordinal);
-        if (!fileIds.Contains("DesktopNodeCli") || !fileIds.Contains("DesktopNodeWebApp"))
+        if (!fileIds.Contains("DesktopNodeCli") || !fileIds.Contains("DesktopNodeWebIndex"))
         {
             throw Invalid("product-wxs-active-payloads");
         }

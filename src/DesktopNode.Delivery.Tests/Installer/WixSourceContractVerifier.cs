@@ -237,14 +237,11 @@ internal sealed class WixSourceContractVerifier
             var file = RequireDictionaryValue(ProductFiles, id, "product-file");
             RequireAttribute(file, "Source", source, $"product-file-source:{id}");
         }
-        if (!ProductFiles.ContainsKey("DesktopNodeWebApp"))
-        {
-            throw Invalid("product-file:DesktopNodeWebApp");
-        }
         foreach (var forbidden in new[]
         {
             "DesktopNodeApiFolder", "DesktopNodeHyperVFolder", "DesktopNodeServiceFolder",
             "DesktopNodeTui", "pcvtui.exe",
+            "DesktopNodeWebApp", "web\\app.js", "web\\styles.css",
         })
         {
             if (productSource.Contains(forbidden, StringComparison.OrdinalIgnoreCase))

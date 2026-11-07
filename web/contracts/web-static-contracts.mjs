@@ -508,7 +508,7 @@ function verifyDesignBoundary(context) {
     [/asset explorer/i, "asset-explorer"],
     [/status bar/i, "status-bar"],
     [/Linux runtime screens are excluded/i, "linux-exclusion"],
-    [/web\/src\/served-app\.ts/i, "served-source"],
+    [/web\/src\/bootstrap\.ts/i, "served-source"],
     [/npm run verify:parity --prefix web/i, "parity-command"]
   ]) {
     context.assertMatch(design, pattern, `design-boundary:${label}`);
@@ -682,7 +682,7 @@ function verifyFrontendBatches(context) {
     "Invoke-Pester -Path web/tests/PcvDesktopWeb.Static.Tests.ps1 -Output Detailed",
     "npm test --prefix web",
     "npm run verify:parity --prefix web",
-    "node --check web/app.js",
+    "node --check web/app.bundle.js",
     "git diff --check"
   ]) {
     context.assertIncludes(plan.final_verification_commands, command, `frontend-batches:final-command:${command}`);
@@ -1906,7 +1906,7 @@ async function verifyVerifierWiring(context) {
   for (const [name, value, label] of [["build:served", "node scripts/build-served-asset.mjs --write", "build-served"], ["check:served", "node scripts/build-served-asset.mjs --check", "check-served"], ["generate:parity", "node scripts/regenerate-static-parity.mjs --write", "generate-parity"], ["browser:fixture", "node scripts/verify-browser-fixture.mjs", "browser-fixture"], ["check:frontend-batches", "node scripts/validate-frontend-completion-batches.mjs", "frontend-batches"]]) context.assertEqual(packageJson.scripts?.[name], value, `verifier-wiring:${label}-script`);
   for (const [pattern, label] of [[/check:served/i, "check-served"], [/scripts\/regenerate-static-parity\.mjs --check/i, "regenerate"], [/scripts\/verify-static-parity\.mjs/i, "verify"], [/browser:fixture/i, "browser-fixture"]]) context.assertMatch(packageJson.scripts?.["verify:parity"], pattern, `verifier-wiring:verify-parity-${label}`);
   const verify = context.readText("web/scripts/verify-static-parity.mjs"); const regenerate = context.readText("web/scripts/regenerate-static-parity.mjs"); const builder = context.readText("web/scripts/build-served-asset.mjs"); const browser = context.readText("web/scripts/verify-browser-fixture.mjs"); const batches = context.readText("web/scripts/validate-frontend-completion-batches.mjs");
-  for (const [source, pattern, label] of [[verify, /static-asset-parity\.manifest\.json/i, "verify-manifest"], [verify, /src\/generate-parity-manifest\.ts/i, "verify-generator"], [verify, /src\/app\.ts/i, "verify-app"], [verify, /src\/bootstrap\.ts/i, "verify-served"], [verify, /index\.html/i, "verify-index"], [verify, /app\.bundle\.js/i, "verify-output"], [verify, /verify-browser-fixture\.mjs/i, "verify-browser"], [builder, /typescript/i, "builder-typescript"], [builder, /src\/served-app\.ts/i, "builder-served"], [builder, /app\.js/i, "builder-output"], [regenerate, /typescript/i, "regenerate-typescript"], [regenerate, /phase25WebConsoleScaffold/i, "regenerate-scaffold"], [regenerate, /localApiRoutes/i, "regenerate-routes"], [regenerate, /browser:fixture/i, "regenerate-browser"], [regenerate, /--write/i, "regenerate-write"], [regenerate, /--check/i, "regenerate-check"], [browser, /DOMContentLoaded/i, "browser-dom"], [browser, /pcv-browser-fixture/i, "browser-fixture"], [browser, /job-browser-fixture/i, "browser-job"], [batches, /frontend-completion-auto-batches\.json/i, "batches-plan"], [batches, /work_item_count/i, "batches-count"]]) context.assertMatch(source, pattern, `verifier-wiring:${label}`);
+  for (const [source, pattern, label] of [[verify, /static-asset-parity\.manifest\.json/i, "verify-manifest"], [verify, /src\/generate-parity-manifest\.ts/i, "verify-generator"], [verify, /src\/app\.ts/i, "verify-app"], [verify, /src\/bootstrap\.ts/i, "verify-served"], [verify, /index\.html/i, "verify-index"], [verify, /app\.bundle\.js/i, "verify-output"], [verify, /verify-browser-fixture\.mjs/i, "verify-browser"], [builder, /typescript/i, "builder-typescript"], [builder, /src\/modules\.json/i, "builder-served"], [builder, /app\.bundle\.js/i, "builder-output"], [regenerate, /typescript/i, "regenerate-typescript"], [regenerate, /phase25WebConsoleScaffold/i, "regenerate-scaffold"], [regenerate, /localApiRoutes/i, "regenerate-routes"], [regenerate, /browser:fixture/i, "regenerate-browser"], [regenerate, /--write/i, "regenerate-write"], [regenerate, /--check/i, "regenerate-check"], [browser, /DOMContentLoaded/i, "browser-dom"], [browser, /pcv-browser-fixture/i, "browser-fixture"], [browser, /job-browser-fixture/i, "browser-job"], [batches, /frontend-completion-auto-batches\.json/i, "batches-plan"], [batches, /work_item_count/i, "batches-count"]]) context.assertMatch(source, pattern, `verifier-wiring:${label}`);
 }
 
 async function verifyGeneratedParityAlignment(context) {

@@ -64,15 +64,9 @@
     </ComponentGroup>
 
     <ComponentGroup Id="DesktopNodeRuntimeComponents">
-      <Component Id="DesktopNodeWebAppComponent" Directory="DesktopNodeWebFolder" Guid="{029604ED-0D34-405E-B8B9-BC4805A70C3D}">
-        <File Id="DesktopNodeWebApp" Source="$(var.PayloadRoot)\web\app.js" KeyPath="yes" />
-      </Component>
       <Component Id="DesktopNodeWebIndexComponent" Directory="DesktopNodeWebFolder" Guid="{EDB654D2-A877-490A-8469-3B60A7FFFB0C}">
         <File Id="DesktopNodeWebIndex" Source="$(var.PayloadRoot)\web\index.html" KeyPath="yes" />
         <RemoveFolder Id="RemoveWebFolder" On="uninstall" />
-      </Component>
-      <Component Id="DesktopNodeWebStylesComponent" Directory="DesktopNodeWebFolder" Guid="{7036935D-46A7-453E-95D7-7904F0C1E845}">
-        <File Id="DesktopNodeWebStyles" Source="$(var.PayloadRoot)\web\styles.css" KeyPath="yes" />
       </Component>
     </ComponentGroup>
   </Fragment>

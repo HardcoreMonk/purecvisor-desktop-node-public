@@ -22,14 +22,6 @@ function listSources() {
       if (file.endsWith(".ts")) files.push(`src/modules/${file}`);
     }
   }
-  // Legacy structure, removed in campaign single-edge-frontend-structure-20261010 Task 16.
-  const servedDir = join(webRoot, "src/served");
-  if (existsSync(servedDir)) {
-    for (const file of readdirSync(servedDir).sort()) {
-      if (file.endsWith(".ts")) files.push(`src/served/${file}`);
-    }
-  }
-  if (existsSync(join(webRoot, "src/served-app.ts"))) files.push("src/served-app.ts");
   return files;
 }
 

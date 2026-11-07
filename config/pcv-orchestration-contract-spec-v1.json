@@ -7,7 +7,7 @@
   "source_files": [
     {
       "path": "packaging/windows-desktop-node/tools/PcvBatchSupervisor.psm1",
-      "sha256": "fc51937c156b706bcec6d066e77c10b2c1954df131682af3f7f4f6d33f1c5800"
+      "sha256": "54e7296e822af251716bca7b34055e9e0633523b4c3852da0868726ab0bd46f1"
     },
     {
       "path": "packaging/windows-desktop-node/tools/Invoke-PcvBatchSupervisor.ps1",

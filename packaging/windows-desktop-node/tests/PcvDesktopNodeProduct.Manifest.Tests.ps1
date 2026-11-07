@@ -172,9 +172,9 @@ Describe 'PcvDesktopNodeProduct manifest and asset copy contract' {
         Set-Content -LiteralPath (Join-Path $payloadRoot 'pcvcli.exe') -Value 'fake-cli' -Encoding UTF8 -NoNewline
         Set-Content -LiteralPath (Join-Path $payloadRoot 'Invoke-PcvDesktopNodeProduct.ps1') -Value 'fake-entrypoint' -Encoding UTF8 -NoNewline
         Set-Content -LiteralPath (Join-Path $payloadRoot 'PcvDesktopNodeProduct.psm1') -Value 'fake-module' -Encoding UTF8 -NoNewline
-        Set-Content -LiteralPath (Join-Path $payloadRoot 'web\app.js') -Value 'console.log("pcv");' -Encoding UTF8 -NoNewline
+        Set-Content -LiteralPath (Join-Path $payloadRoot 'web\app.bundle.js') -Value 'console.log("pcv");' -Encoding UTF8 -NoNewline
         Set-Content -LiteralPath (Join-Path $payloadRoot 'web\index.html') -Value '<div id="app"></div>' -Encoding UTF8 -NoNewline
-        Set-Content -LiteralPath (Join-Path $payloadRoot 'web\styles.css') -Value 'body{}' -Encoding UTF8 -NoNewline
+        Set-Content -LiteralPath (Join-Path $payloadRoot 'web\style.css') -Value 'body{}' -Encoding UTF8 -NoNewline
 
         $result = Copy-PcvDesktopNodeProductAssets `
             -SourceRoot $payloadRoot `
@@ -200,9 +200,9 @@ Describe 'PcvDesktopNodeProduct manifest and asset copy contract' {
         Set-Content -LiteralPath (Join-Path $payloadRoot 'DesktopNode.Host.exe') -Value 'fake-host' -Encoding UTF8 -NoNewline
         Set-Content -LiteralPath (Join-Path $payloadRoot 'Invoke-PcvDesktopNodeProduct.ps1') -Value 'fake-entrypoint' -Encoding UTF8 -NoNewline
         Set-Content -LiteralPath (Join-Path $payloadRoot 'PcvDesktopNodeProduct.psm1') -Value 'fake-module' -Encoding UTF8 -NoNewline
-        Set-Content -LiteralPath (Join-Path $payloadRoot 'web\app.js') -Value 'console.log("pcv");' -Encoding UTF8 -NoNewline
+        Set-Content -LiteralPath (Join-Path $payloadRoot 'web\app.bundle.js') -Value 'console.log("pcv");' -Encoding UTF8 -NoNewline
         Set-Content -LiteralPath (Join-Path $payloadRoot 'web\index.html') -Value '<div id="app"></div>' -Encoding UTF8 -NoNewline
-        Set-Content -LiteralPath (Join-Path $payloadRoot 'web\styles.css') -Value 'body{}' -Encoding UTF8 -NoNewline
+        Set-Content -LiteralPath (Join-Path $payloadRoot 'web\style.css') -Value 'body{}' -Encoding UTF8 -NoNewline
 
         {
             Copy-PcvDesktopNodeProductAssets `
