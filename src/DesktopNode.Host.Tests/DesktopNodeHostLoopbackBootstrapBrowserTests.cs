@@ -186,7 +186,7 @@ public sealed class DesktopNodeHostLoopbackBootstrapBrowserTests
         {
             var candidate = Path.Combine(directory.FullName, "web");
             if (File.Exists(Path.Combine(candidate, "index.html")) &&
-                File.Exists(Path.Combine(candidate, "app.js")))
+                File.Exists(Path.Combine(candidate, "app.bundle.js")))
             {
                 return candidate;
             }

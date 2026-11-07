@@ -1,11 +1,11 @@
 {
   "contract": "pcv-desktop-node-product-invoke-contract-spec-v1",
   "legacy_path": "packaging/windows-desktop-node/tests/PcvDesktopNodeProduct.Invoke.Tests.ps1",
-  "legacy_sha256": "0fff10664f5e65b72eb1cc86b668717b4caaeac15b4612e0d94c524ffc777955",
+  "legacy_sha256": "aa71599646af7e7a2290c408d1d94a5f8defcb3fce6b54558921970ee20e7b76",
   "entrypoint_path": "packaging/windows-desktop-node/Invoke-PcvDesktopNodeProduct.ps1",
   "entrypoint_sha256": "086d491283f170558899cbce5e640c17e774186ed83b86d39a791ce4a7f4c1d5",
   "module_path": "packaging/windows-desktop-node/PcvDesktopNodeProduct.psm1",
-  "module_sha256": "8c0bf982097881f56e60354f53961e54ea4d7a49e566a1e1eee861cd309403c3",
+  "module_sha256": "a2ec149aa9634ec8276f799996390424fddebed67bfaf88dae05a933f63d4103",
   "legacy_contract_count": 61,
   "legacy_should_site_count": 418,
   "required_literal_count": 844,

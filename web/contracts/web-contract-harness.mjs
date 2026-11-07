@@ -449,117 +449,6 @@ function validateContractId(contractId) {
   return contractId;
 }
 
-function maskInactiveJavaScript(source) {
-  const masked = source.split("");
-  const mask = (index) => {
-    masked[index] = " ";
-  };
-
-  let index = 0;
-  while (index < source.length) {
-    const character = source[index];
-    const next = source[index + 1];
-    if (character === "/" && next === "/") {
-      mask(index);
-      mask(index + 1);
-      index += 2;
-      while (index < source.length && source[index] !== "\r" && source[index] !== "\n") {
-        mask(index);
-        index += 1;
-      }
-      continue;
-    }
-    if (character === "/" && next === "*") {
-      mask(index);
-      mask(index + 1);
-      index += 2;
-      while (index < source.length) {
-        const closesComment = source[index] === "*" && source[index + 1] === "/";
-        mask(index);
-        index += 1;
-        if (closesComment) {
-          mask(index);
-          index += 1;
-          break;
-        }
-      }
-      continue;
-    }
-    if (character === '"' || character === "'" || character === "`") {
-      const delimiter = character;
-      mask(index);
-      index += 1;
-      while (index < source.length) {
-        const stringCharacter = source[index];
-        mask(index);
-        index += 1;
-        if (stringCharacter === "\\" && index < source.length) {
-          mask(index);
-          index += 1;
-        } else if (stringCharacter === delimiter) {
-          break;
-        }
-      }
-      continue;
-    }
-    index += 1;
-  }
-  return masked.join("");
-}
-
-function parseServedSourceParts(source) {
-  const maskedSource = maskInactiveJavaScript(source);
-  const declarations = [...maskedSource.matchAll(
-    /\bconst\s+servedSourceParts\s*=\s*\[([\s\S]*?)\]\s*;/g
-  )];
-  if (declarations.length === 0) {
-    throw configError("served_source_parts=empty");
-  }
-  if (declarations.length > 1) {
-    throw configError("served_source_parts=invalid");
-  }
-
-  const declaration = declarations[0];
-  const bodyStart = declaration.index + declaration[0].indexOf("[") + 1;
-  const body = source.slice(bodyStart, bodyStart + declaration[1].length);
-  const literal = /(["'])([^"']*)\1/g;
-  const parts = [];
-  let previousEnd = 0;
-  for (const match of body.matchAll(literal)) {
-    const separator = body.slice(previousEnd, match.index);
-    const validSeparator = parts.length === 0 ? /^\s*$/.test(separator) : /^\s*,\s*$/.test(separator);
-    const validSourcePart = /^src\/served\/[A-Za-z0-9._-]+\.ts$/.test(match[2])
-      || match[2] === "src/served-app.ts";
-    if (!validSeparator || match[1] !== '"' || !validSourcePart) {
-      throw configError("served_source_parts=invalid");
-    }
-    parts.push(match[2]);
-    previousEnd = match.index + match[0].length;
-  }
-  if (parts.length === 0) {
-    if (/^\s*$/.test(body)) {
-      throw configError("served_source_parts=empty");
-    }
-    throw configError("served_source_parts=invalid");
-  }
-  if (!/^\s*,?\s*$/.test(body.slice(previousEnd))) {
-    throw configError("served_source_parts=invalid");
-  }
-
-  const seen = new Set();
-  for (const part of parts) {
-    if (seen.has(part)) {
-      throw configError(`served_source_parts=duplicate:${part}`);
-    }
-    seen.add(part);
-  }
-  const servedAppIndex = parts.indexOf("src/served-app.ts");
-  if (parts.length < 2 || servedAppIndex !== parts.length - 1) {
-    throw configError("served_source_parts=invalid");
-  }
-  return parts;
-}
-
 export function createWebContractContext({
   repoRoot,
   textOverrides = new Map(),
@@ -694,12 +583,6 @@ export function createWebContractContext({
       return relativePaths.map((relativePath) => readText(relativePath)).join("\n");
     }
 
-    function readServedSource() {
-      const buildSource = readText("web/scripts/build-served-asset.mjs");
-      const parts = parseServedSourceParts(buildSource);
-      return readCombined(parts.map((part) => `web/${part}`));
-    }
-
     function readShellSource() {
       const order = readJson("web/src/modules.json");
       const modules = Array.isArray(order?.modules) ? order.modules : [];
@@ -813,7 +696,6 @@ export function createWebContractContext({
       readText,
       readJson,
       readCombined,
-      readServedSource,
       readShellSource,
       assertExists,
       assertMatch,

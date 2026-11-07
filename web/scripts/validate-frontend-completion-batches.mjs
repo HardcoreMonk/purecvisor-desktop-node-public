@@ -110,7 +110,7 @@ for (const requiredCommand of [
   "Invoke-Pester -Path web/tests/PcvDesktopWeb.Static.Tests.ps1 -Output Detailed",
   "npm test --prefix web",
   "npm run verify:parity --prefix web",
-  "node --check web/app.js",
+  "node --check web/app.bundle.js",
   "git diff --check"
 ]) {
   assert(finalCommands.includes(requiredCommand), `final verification missing: ${requiredCommand}`);

@@ -18,9 +18,9 @@ internal sealed class PcvAdminSmokeEvidenceDocsVerifier
         "packaging/windows-desktop-node/tests/PcvAdminSmokeEvidenceDocs.Tests.ps1";
 
     private const string ExpectedSpecSha256 =
-        "8156454e45733c91f08ed8071b2bad1effac8ffb6edc36375e10af8e54512010";
+        "0e069c630200f16593d036c498e87883acb055408d01b498b5ed743f855feba8";
     private const string ExpectedLegacySha256 =
-        "91c580d11875c79a28ff86c7daceba275a231d0cb31483500d25181d325b63c9";
+        "bfee74a518e9c7577f9d1149961f8d18c17abd1b0c3a72a08bb2192da201afa7";
     private const string CurrentEvidencePath = "docs/ga-ready/current-evidence.json";
     private const string GeneratedBlockPattern =
         "(?s)<!-- BEGIN GENERATED CURRENT EVIDENCE -->.*?<!-- END GENERATED CURRENT EVIDENCE -->";

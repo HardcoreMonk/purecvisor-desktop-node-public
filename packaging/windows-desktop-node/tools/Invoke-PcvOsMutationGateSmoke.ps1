@@ -344,7 +344,7 @@ function Invoke-LanListenerSmoke {
     try {
         [void]$process.Start()
         $headers = @{ Authorization = "Bearer $token" }
-        foreach ($probePath in @('/api/v1/runtime/policy', '/', '/index.html', '/app.js')) {
+        foreach ($probePath in @('/api/v1/runtime/policy', '/', '/index.html', '/app.bundle.js')) {
             $uri = $LanPrefix.TrimEnd('/') + $probePath
             $deadline = (Get-Date).AddSeconds(30)
             $status = $null
@@ -438,7 +438,7 @@ function New-CommandPlan {
             [pscustomobject][ordered]@{ path = '/api/v1/runtime/policy'; auth = 'bearer-required' },
             [pscustomobject][ordered]@{ path = '/'; auth = 'bearer-required' },
             [pscustomobject][ordered]@{ path = '/index.html'; auth = 'bearer-required' },
-            [pscustomobject][ordered]@{ path = '/app.js'; auth = 'bearer-required' }
+            [pscustomobject][ordered]@{ path = '/app.bundle.js'; auth = 'bearer-required' }
         )
     }
 }

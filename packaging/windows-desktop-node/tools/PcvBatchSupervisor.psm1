@@ -262,7 +262,7 @@ function New-PcvBatchSupervisorProfileSteps {
                 (New-PcvBatchSupervisorStep -Id 'web-pester' -WorkingDirectory $RepoRoot -FileName 'pwsh' -Arguments @('-NoProfile', '-Command', "Invoke-Pester -Path 'web/tests' -Output Detailed") -TimeoutSeconds 600),
                 (New-PcvBatchSupervisorStep -Id 'web-npm-test' -WorkingDirectory $RepoRoot -FileName $npmCommand -Arguments @('test', '--prefix', 'web') -TimeoutSeconds 600),
                 (New-PcvBatchSupervisorStep -Id 'web-verify-parity' -WorkingDirectory $RepoRoot -FileName $npmCommand -Arguments @('run', 'verify:parity', '--prefix', 'web') -TimeoutSeconds 600),
-                (New-PcvBatchSupervisorStep -Id 'web-node-check' -WorkingDirectory $RepoRoot -FileName 'node' -Arguments @('--check', 'web/app.js') -TimeoutSeconds 120)
+                (New-PcvBatchSupervisorStep -Id 'web-node-check' -WorkingDirectory $RepoRoot -FileName 'node' -Arguments @('--check', 'web/app.bundle.js') -TimeoutSeconds 120)
             )
         }
         'ServiceMsiHyperVAdminSmoke' {

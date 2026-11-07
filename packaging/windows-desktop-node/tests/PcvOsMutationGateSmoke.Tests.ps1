@@ -75,7 +75,7 @@ Describe 'PcvOsMutationGateSmoke plan-only contract' {
             '/api/v1/runtime/policy',
             '/',
             '/index.html',
-            '/app.js'
+            '/app.bundle.js'
         )
         @($summary.command_plan.lan_probes | Where-Object { $_.auth -ne 'bearer-required' }).Count | Should -Be 0
     }

@@ -463,7 +463,7 @@ function init() {
 
 window.bindEvents = bindEvents;
 window.init = init;
-// Single Edge app.js service worker registration at the web root (updateViaCache none, SKIP_WAITING handshake, reload on
+// Single Edge service worker registration at the web root (updateViaCache none, SKIP_WAITING handshake, reload on
 // controller change). Loopback http is a secure context; on plain-http LAN the browser rejects the registration and the
 // console keeps working without the cache (pcv-single-edge-frontend-structure-v1 §3, Task 15).
 function pcvRegisterServiceWorker() {

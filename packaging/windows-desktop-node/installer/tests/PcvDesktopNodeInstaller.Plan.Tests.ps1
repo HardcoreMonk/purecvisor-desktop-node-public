@@ -81,7 +81,10 @@ Describe 'Desktop Node installer build plan' {
         $productWxs | Should -Not -Match 'DesktopNodeTui'
         $productWxs | Should -Not -Match 'pcvtui\.exe'
         $productWxs | Should -Match '<File Id="DesktopNodeCli"'
-        $productWxs | Should -Match '<File Id="DesktopNodeWebApp"'
+        $productWxs | Should -Match '<File Id="DesktopNodeWebIndex"'
+        $productWxs | Should -Not -Match 'DesktopNodeWebApp'
+        $productWxs | Should -Not -Match 'web\\app\.js'
+        $productWxs | Should -Not -Match 'web\\styles\.css'
     }
 
     It 'returns structured JSON when release signing input is missing' {

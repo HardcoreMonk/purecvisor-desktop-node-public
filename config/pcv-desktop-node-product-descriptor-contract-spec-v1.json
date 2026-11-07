@@ -1,7 +1,7 @@
 {
   "contract": "pcv-desktop-node-product-descriptor-contract-spec-v1",
   "module_path": "packaging/windows-desktop-node/PcvDesktopNodeProduct.psm1",
-  "module_sha256": "8c0bf982097881f56e60354f53961e54ea4d7a49e566a1e1eee861cd309403c3",
+  "module_sha256": "a2ec149aa9634ec8276f799996390424fddebed67bfaf88dae05a933f63d4103",
   "legacy_contract_count": 58,
   "legacy_should_site_count": 521,
   "required_literal_count": 1195,
@@ -16,7 +16,7 @@
     {
       "key": "manifest",
       "path": "packaging/windows-desktop-node/tests/PcvDesktopNodeProduct.Manifest.Tests.ps1",
-      "sha256": "c16ee4f88a0d8d161190f99590626ef456a40758bfdcf8a497df4425cd3cf406",
+      "sha256": "bbe93b9660c7a199cbeacd36527a46a64d7b188658b36a87150de2b041335892",
       "contract_count": 16,
       "should_site_count": 113
     },
@@ -767,9 +767,9 @@
         "Test-Path",
         "UTF8",
         "web",
-        "web\\app.js",
+        "web\\app.bundle.js",
         "web\\index.html",
-        "web\\styles.css"
+        "web\\style.css"
       ]
     },
     {
@@ -791,9 +791,9 @@
         "Test-Path",
         "UTF8",
         "web",
-        "web\\app.js",
+        "web\\app.bundle.js",
         "web\\index.html",
-        "web\\styles.css"
+        "web\\style.css"
       ]
     },
     {

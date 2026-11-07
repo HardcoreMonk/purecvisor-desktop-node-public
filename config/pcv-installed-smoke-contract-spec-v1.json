@@ -10,7 +10,7 @@
     },
     {
       "path": "packaging/windows-desktop-node/README.md",
-      "sha256": "30da444b7009ee79d125e30665a5f6d321b9d3a878ec53637baf70218bd8c5a3"
+      "sha256": "142cff3563469453ecc1bc9155a69d20b8a03d98fba187c80a36bd7da07a5667"
     },
     {
       "path": "packaging/windows-desktop-node/tools/Invoke-PcvInstalledAccountLoginSmoke.ps1",
@@ -30,7 +30,7 @@
     },
     {
       "path": "packaging/windows-desktop-node/tools/Invoke-PcvOsMutationGateSmoke.ps1",
-      "sha256": "3b809cb6e325691c6d33ca07b639b257d7426ee526fa2a5f08f684f73fa4577f"
+      "sha256": "101bfb46e7ffb7fea8b6b08ffb5fe21b2fbb057f0ff00747ea41b8e21ba54ae4"
     },
     {
       "path": "packaging/windows-desktop-node/tests/fixtures/service-plan-p0-checkpoint-restore-reconciliation.json",
@@ -100,7 +100,7 @@
     {
       "key": "os-mutation-gate-smoke",
       "path": "packaging/windows-desktop-node/tests/PcvOsMutationGateSmoke.Tests.ps1",
-      "sha256": "f2003fd4f62cc20bc921fc4bd66d876e598f77686cfcb4907a89b0f3d3399fb9",
+      "sha256": "7a8112ce49d28fb4e127137fd69cfa5c5710d77ba41d8128493332658f44c56c",
       "contract_count": 6,
       "should_site_count": 17,
       "source_paths": [
@@ -591,10 +591,10 @@
       "name": "plans bearer-required LAN probes for runtime policy and static web assets",
       "required_literals": [
         "/api/v1/runtime/policy",
-        "/app.js",
+        "/app.bundle.js",
         "/index.html",
         "api/v1/runtime/policy",
-        "app.js",
+        "app.bundle.js",
         "ArtifactRoot",
         "auth",
         "bearer-required",

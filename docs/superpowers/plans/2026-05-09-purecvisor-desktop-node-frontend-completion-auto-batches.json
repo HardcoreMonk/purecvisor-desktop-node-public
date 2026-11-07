@@ -21,7 +21,7 @@
     "Invoke-Pester -Path web/tests/PcvDesktopWeb.Static.Tests.ps1 -Output Detailed",
     "npm test --prefix web",
     "npm run verify:parity --prefix web",
-    "node --check web/app.js",
+    "node --check web/app.bundle.js",
     "git diff --check"
   ],
   "batches": [
@@ -43,7 +43,7 @@
       "verification_commands": [
         "Invoke-Pester -Path web/tests/PcvDesktopWeb.Static.Tests.ps1 -Output Detailed",
         "npm run check:served --prefix web",
-        "node --check web/app.js"
+        "node --check web/app.bundle.js"
       ],
       "work_items": [
         {
@@ -304,7 +304,7 @@
         "Invoke-Pester -Path web/tests/PcvDesktopWeb.Static.Tests.ps1 -Output Detailed",
         "npm test --prefix web",
         "npm run verify:parity --prefix web",
-        "node --check web/app.js",
+        "node --check web/app.bundle.js",
         "git diff --check"
       ],
       "work_items": [

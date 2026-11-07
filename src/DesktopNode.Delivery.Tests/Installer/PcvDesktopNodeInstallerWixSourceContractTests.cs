@@ -111,16 +111,19 @@ public sealed class PcvDesktopNodeInstallerWixSourceContractTests
     {
         foreach (var id in new[]
         {
-            "DesktopNodeServiceHost", "DesktopNodeCli", "DesktopNodeWebApp",
+            "DesktopNodeServiceHost", "DesktopNodeCli",
             "DesktopNodeProductEntryPoint", "DesktopNodeProductModule", "DesktopNodeWebIndex",
         })
         {
             Assert.Contains(id, verifier.ProductFiles.Keys);
         }
+        Assert.DoesNotContain("DesktopNodeWebApp", verifier.ProductFiles.Keys);
         var sources = verifier.ProductFiles.Values.Select(file => (string?)file.Attribute("Source")).ToArray();
         Assert.Contains("$(var.PayloadRoot)\\DesktopNode.Host.exe", sources);
         Assert.Contains("$(var.PayloadRoot)\\pcvcli.exe", sources);
         Assert.Contains("$(var.PayloadRoot)\\web\\index.html", sources);
+        Assert.DoesNotContain(sources, source => source?.Contains("\\web\\app.js", StringComparison.OrdinalIgnoreCase) == true);
+        Assert.DoesNotContain(sources, source => source?.Contains("\\web\\styles.css", StringComparison.OrdinalIgnoreCase) == true);
         Assert.DoesNotContain(sources, source => source?.Contains("\\api\\", StringComparison.OrdinalIgnoreCase) == true);
         Assert.DoesNotContain(sources, source => source?.Contains("\\hyperv\\", StringComparison.OrdinalIgnoreCase) == true);
         Assert.DoesNotContain(sources, source => source?.Contains("\\service\\", StringComparison.OrdinalIgnoreCase) == true);

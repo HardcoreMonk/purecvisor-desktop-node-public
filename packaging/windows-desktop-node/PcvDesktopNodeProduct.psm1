@@ -470,9 +470,9 @@ function Test-PcvDesktopNodeUpdatePayload {
 
     $requiredRelativePaths = @(
         @(Get-PcvDesktopNodeRequiredRuntimePayloadRelativePaths)
-        'web\app.js',
+        'web\app.bundle.js',
         'web\index.html',
-        'web\styles.css'
+        'web\style.css'
     )
     $missing = @()
     $files = @()

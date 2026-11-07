@@ -55,14 +55,16 @@ Web Console은 `http://127.0.0.1/`에서 열리고 `/pcv-config.js`가 기본 Lo
 
 환경설정 대화상자(`Ctrl+P`)에서 테마, 언어, Local API 주소, 선택적 브라우저 bearer token을 바꾼다. Token 값은 화면, 기록, 문서, diagnostic bundle에 남기지 않는다.
 
-연결 상태는 다음처럼 해석한다.
+새 셸은 `Connected` / `Auth required` / `Error` / `Idle` 연결 배지를 그리지 않는다. 화면에 남는 문구는 다음이다. `Connected`와 `Auth required`는 모니터링 카드와 인증 게이트에만 남는다.
 
-| 상태 | 의미 | 조치 |
-|------|------|------|
-| `Connected` | API와 인증이 정상이다. | 그대로 사용한다. |
-| `Auth required` | 세션이 없거나 token이 거부됐다. | 다시 로그인하거나 token 입력값을 확인한다. |
-| `Error` | service/API/host 작업 중 오류가 발생했다. | alert의 `PCV_*` error code와 service 상태를 확인한다. |
-| `Idle` | 아직 연결 요청 전이다. | 새로고침 또는 로그인한다. |
+| 위치 | 보이는 문구 | 의미와 조치 |
+|------|-------------|-------------|
+| 로그인 카드 | `관리자 인증`, `보안 로그인`. `로컬 운영 계정으로 접속하세요. loopback 접속은 세션이 자동으로 열립니다.` 노드 상태 초기값은 `노드 응답 대기`다. | 계정이 있으면 로그인한다. loopback이고 계정이 없으면 세션이 자동으로 열린다. |
+| 대시보드 hero chip | `활성 워크로드`, `호스트 상태`, `최근 경고`. 갱신 전 값은 `—`다. 호스트 상태는 요약 값이고, host status가 없으면 `—`, 있으면 `Needs attention` 또는 `Ready`다. | 대시보드가 호스트·VM·경고를 읽은 뒤에 숫자와 준비 상태가 채워진다. |
+| 인증 게이트 | `#alert-region`의 `Auth required`. 기본 코드 `PCV_AUTH_REQUIRED`, 기본 메시지 `Authorization bearer token is required.` 안내 `Use the header api-token field or the account login form. Service tokens stay out of HTML.` troubleshooting이 아니면 `Username` / `Password` / `Login`. | access token과 브라우저 token이 둘 다 없고 연결 상태가 auth일 때 나온다. 로그인하거나 환경설정(`Ctrl+P`)의 브라우저 token을 확인한다. |
+| 오류 배너 | `#alert-region`에 code, message, detail. 배지 단어 `Error`는 쓰지 않는다. | alert의 `PCV_*` code와 service 상태를 확인한다. |
+| Monitoring Service/API | `Connected` 또는 `Not connected`. | 연결이 `connected`이면 `Connected`, 그 외는 `Not connected`다. |
+| 이벤트 푸터 | `Live` 또는 `Offline`. | WebSocket이 열려 있으면 `Live`, 아니면 `Offline`이다. |
 
 ### 2.2 화면 구조
 
