@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** 2026-11-08 사용자 지시 "새 화면을 먼저 반영해"와 승인 `1,2,3,4`로 release train `0.42.97-admin-smoke`를 S4 판정보다 먼저 출발한다. `release-train.json` queue 14행(PR #94~#107: `configure-installed` LAN 옵션, Web Console 재설계 전체, 비밀번호 재설정 API)을 package부터 Lane 3까지 돌려 operational current로 승격한다. 그동안 S4 시연용 설치본 상태(계정, LAN 설정)를 보관했다가 되살리고, 새 화면의 설치본에서 S4 시연을 이어 간다. `ui-redesign-20261105`의 남은 Task 11~14(S4 시연, 끝 상태, 판정, C5 확인)는 이 campaign의 Task 14~17로 이관한다.
+**Goal:** 2026-11-08 사용자 지시 "새 화면을 먼저 반영해"와 승인 `1,2,3,4`로 release train `0.42.97-admin-smoke`를 S4 판정보다 먼저 출발한다. `release-train.json` queue 13행(PR #94~#107, #96은 queue 행 없음: `configure-installed` LAN 옵션, Web Console 재설계 전체, 비밀번호 재설정 API)을 package부터 Lane 3까지 돌려 operational current로 승격한다. 그동안 S4 시연용 설치본 상태(계정, LAN 설정)를 보관했다가 되살리고, 새 화면의 설치본에서 S4 시연을 이어 간다. `ui-redesign-20261105`의 남은 Task 11~14(S4 시연, 끝 상태, 판정, C5 확인)는 이 campaign의 Task 14~17로 이관한다.
 
 **Architecture:** `docs/DEVELOPMENT_PROCEDURE.md` §10 train과 직전 train(`docs/superpowers/plans/2026-10-11-purecvisor-desktop-node-train-04296.md`, 마무리 `docs/superpowers/plans/2026-10-11-purecvisor-desktop-node-train-04296-finish.md`)의 task 구조를 따른다. 직전 train처럼 두 PR로 나눈다: train branch `lane1/train-04297-20261108`(PR A: 출발, package, pair, fullgate, current-card, probe 기록, Lane 3 없음)를 merge한 뒤 `main`에서 Lane 3 PR B를 쓴다. payload commit은 이 opening의 `origin/main` `9036c62`(PR #107 merge)다. 설치본은 `0.42.96-admin-smoke`이고 S4용으로 LAN 노출(`--allow-lan`, 방화벽 관리 규칙 2개)과 계정 3개가 있다. 계정이 있으면 loopback 세션이 `409 PCV_LOOPBACK_SESSION_DISABLED`라 train 도구(설치본 smoke, current-card, probe)가 돌지 않는다. 그래서 계정 파일을 보관하고 loopback으로 돌린 뒤 train 끝에 되살린다. 2026-11-05 재클론으로 gitignore된 `artifacts/`가 없어 pair baseline package(`0.42.96`)와 smoke ISO를 먼저 복구한다.
 
@@ -14,7 +14,7 @@
 
 | 항목 | 범위 |
 | --- | --- |
-| 1 | `release train 0.42.97을 지금 출발한다. 이 UI campaign은 Task 11~14를 남긴 채 멈추고 train campaign을 연다. 적재는 queue 14행(PR #94~#107: UI 재설계 전부, 비밀번호 재설정, configure-installed LAN 옵션 변경).` 해석: `ui-redesign-20261105`를 닫고 Task 11~14를 이 campaign Task 14~17로 이관한다. Lane 0/1. push, PR. merge는 PR마다 사용자 merge 승인 |
+| 1 | `release train 0.42.97을 지금 출발한다. 이 UI campaign은 Task 11~14를 남긴 채 멈추고 train campaign을 연다. 적재는 queue 14행(PR #94~#107: UI 재설계 전부, 비밀번호 재설정, configure-installed LAN 옵션 변경).` 해석: 실제 queue 행은 13개다(#96은 설계 문서라 queue 행이 없다). `ui-redesign-20261105`를 닫고 Task 11~14를 이 campaign Task 14~17로 이관한다. Lane 0/1. push, PR. merge는 PR마다 사용자 merge 승인 |
 | 2 | `Lane 2 host mutation: unsigned 개발 MSI 빌드, 업그레이드 시험과 fullgate(msiexec 설치·업그레이드·repair·제거(REMOVE_DATA 포함), service 중지·시작, ADR-0016 pcv-it- 일회용 VM), 설치본 확인 카드와 동작 확인.` 해석: 직전 train `train-departure` 범위와 같다(MSI install·repair·uninstall, REMOVE_DATA, service, pair six buckets, fullgate route parity VM, fullgate os-mutation-gate, probe VM 생성·삭제(`pcv-it-` 접두사, disk는 `artifacts/` 아래), 설치본 브라우저 확인(읽기와 queued job)). baseline package 재빌드 포함 |
 | 3 | `S4 상태 보존: train 전에 accounts.json을 저장소 밖 보호된 위치에 백업하고 치운 뒤 loopback으로 train을 돌린다. 끝나면 계정을 복원하고 새 설치본의 configure-installed로 LAN 설정(--allow-lan, 방화벽 관리 규칙 2개)을 다시 적용한 뒤 0.42.97 새 화면으로 S4 시연을 이어 간다. 보존 VM, template, pcv-it-s4-console은 건드리지 않는다(도구가 요구하면 멈추고 묻는다).` Task 2, Task 9 |
 | 4 | `Lane 3: current-evidence.json을 0.42.97-admin-smoke로 승격한다.` Lane 3 `current-evidence.json` 쓰기. Task 11~13 |
@@ -52,7 +52,9 @@
 
 ## Task 0: 출발
 
-- [ ] payload commit `9036c62`의 main push Development Gates와 Public Boundary가 success임을 run id로 적고, `release-train.json` `queue` 14행을 train `0.42.97-admin-smoke`의 `carriages` `[94, 95, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107]`로 옮겨 `status=running`, `departed_at`, `source_commit`을 적고 `queue`는 빈 목록으로 둔다. `docs/ga-ready/trains/0.42.97-admin-smoke.host-inputs.json`(ISO 경로는 Task 1 결과)을 쓴다. 검증: `PcvReleaseTrainContractTests`, `git diff --check`. host mutation 없음. 로컬 commit.
+- [x] payload commit `9036c62`의 main push Development Gates와 Public Boundary가 success임을 run id로 적고, `release-train.json` `queue` 13행을 train `0.42.97-admin-smoke`의 `carriages` `[94, 95, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107]`로 옮겨 `status=running`, `departed_at`, `source_commit`을 적고 `queue`는 빈 목록으로 둔다. `docs/ga-ready/trains/0.42.97-admin-smoke.host-inputs.json`(ISO 경로는 Task 1 결과)을 쓴다. 검증: `PcvReleaseTrainContractTests`, `git diff --check`. host mutation 없음. 로컬 commit.
+
+실행 기록(2026-11-08): 출발 `2026-11-08T05:26:00+09:00`, payload `9036c6249aad4385d04ec9e77aa7dbf3516fb31c`(PR #107 merge, origin/main), carriages `[94, 95, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107]`(13행), queue 비움, train `status=running`. payload main push Development Gates `42408233600` success, Public Boundary Contract `42408233594` success. `docs/ga-ready/trains/0.42.97-admin-smoke.host-inputs.json`의 ISO는 `artifacts/smoke-media-20261108/pcv-route-parity-smoke-20261108.iso`이고 Task 1이 만든다. 설치본은 `0.42.96`이고 S4용 LAN 노출과 계정 3개가 있다(Task 2가 보관한다). `dotnet test src/DesktopNode.Delivery.Tests -c Release` 781/781(release-train 계약 포함), `git diff --check` 통과. host mutation 없음. operational current는 `0.42.96-admin-smoke` 그대로다.
 
 ## Task 1: 입력 복구 (baseline package와 smoke ISO)
 
