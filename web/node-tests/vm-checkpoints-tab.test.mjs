@@ -664,6 +664,24 @@ test("checkpoint and schedule paths do not call window.confirm", async () => {
   assert.equal(saves.length, 1);
 });
 
+test("BL-0032 preview keeps typed schedule inputs after the form re-renders", async () => {
+  const sandbox = createEnv();
+  install(sandbox, alpha);
+  sandbox.desktopApi.previewCheckpointSchedule = async (_vmId, payload) => ({
+    dry_run: true,
+    interval_minutes: payload.interval_minutes,
+    retention_max: payload.retention_max
+  });
+  sandbox.render = () => { sandbox.renderVmDetail(); };
+  sandbox.renderVmDetail();
+  const form = () => sandbox.els.vmDetailContent.querySelector('form[data-action="checkpoint-schedule"]');
+  form().querySelector('[name="interval_minutes"]').value = "60";
+  form().querySelector('[name="retention_max"]').value = "1";
+  await sandbox.queueCheckpointScheduleControl("id-1", "preview", { interval_minutes: 60, retention_max: 1 });
+  assert.equal(form().querySelector('[name="interval_minutes"]').value, "60");
+  assert.equal(form().querySelector('[name="retention_max"]').value, "1");
+});
+
 test("schedule save reads the VM detail again and the card shows the new schedule", async () => {
   const sandbox = createEnv();
   const row = {

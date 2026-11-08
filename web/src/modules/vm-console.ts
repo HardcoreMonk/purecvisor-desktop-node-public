@@ -293,8 +293,25 @@ async function confirmCheckpointScheduleChange(mode, payload) {
   });
 }
 
+function rememberCheckpointScheduleDraft(vmId, mode, payload) {
+  if (mode === 'clear') {
+    if (state.checkpointScheduleDraft && String(state.checkpointScheduleDraft.vm_id) === String(vmId)) {
+      state.checkpointScheduleDraft = null;
+    }
+    return;
+  }
+  if (!payload || typeof payload !== 'object') return;
+  if (payload.interval_minutes == null && payload.retention_max == null) return;
+  state.checkpointScheduleDraft = {
+    vm_id: vmId,
+    interval_minutes: payload.interval_minutes ?? null,
+    retention_max: payload.retention_max ?? null
+  };
+}
+
 async function queueCheckpointScheduleControl(vmId, mode, payload) {
   requireRbac('operate', t('vm.rbac.schedule', { mode: mode === 'clear' ? t('vm.mode.clear') : mode === 'set' ? t('vm.mode.set') : t('vm.mode.preview') }));
+  rememberCheckpointScheduleDraft(vmId, mode, payload);
   if (mode !== 'preview') {
     const accepted = await confirmCheckpointScheduleChange(mode, payload);
     if (!accepted) return;

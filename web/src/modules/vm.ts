@@ -1168,6 +1168,11 @@ function renderCheckpointScheduleReadback(vm, vmId, actionDisabled = '') {
   const capacityBlocked = enabled && retention != null && Number.isFinite(Number(retention)) && count >= Number(retention);
   const statusLabel = capacityBlocked ? t('vm.checkpoint.schedule.status.blocked') : checkpointScheduleStatusText(status);
   const id = pcvEscapeHtml(vmId);
+  const draft = state.checkpointScheduleDraft && String(state.checkpointScheduleDraft.vm_id) === String(vmId)
+    ? state.checkpointScheduleDraft
+    : null;
+  const intervalValue = draft && draft.interval_minutes != null ? String(draft.interval_minutes) : '';
+  const retentionValue = draft && draft.retention_max != null ? String(draft.retention_max) : '';
   return `<div class="checkpoint-schedule-readback">
       <div class="diagnostics-grid">
         <div class="diagnostics-fact"><span class="muted">${pcvEscapeHtml(t('vm.checkpoint.schedule.enabled'))}</span><strong>${pcvEscapeHtml(enabled ? t('vm.checkpoint.schedule.on') : t('vm.checkpoint.schedule.off'))}</strong></div>
@@ -1178,8 +1183,8 @@ function renderCheckpointScheduleReadback(vm, vmId, actionDisabled = '') {
         <div class="diagnostics-fact"><span class="muted">${pcvEscapeHtml(t('vm.checkpoint.schedule.next'))}</span><strong>${pcvEscapeHtml(formatObjectValue(schedule.next_due_at))}</strong></div>
       </div>
       <form class="vm-resource-form checkpoint-schedule-form" data-action="checkpoint-schedule" data-vm-id="${id}">
-        <input name="interval_minutes" type="number" min="60" max="10080" step="1" placeholder="${pcvEscapeHtml(t('vm.checkpoint.schedule.help_interval'))}" aria-label="${pcvEscapeHtml(t('vm.checkpoint.schedule.interval'))}"${actionDisabled}>
-        <input name="retention_max" type="number" min="1" max="32" step="1" placeholder="${pcvEscapeHtml(t('vm.checkpoint.schedule.help_retention'))}" aria-label="${pcvEscapeHtml(t('vm.checkpoint.schedule.retention'))}"${actionDisabled}>
+        <input name="interval_minutes" type="number" min="60" max="10080" step="1" value="${pcvEscapeHtml(intervalValue)}" placeholder="${pcvEscapeHtml(t('vm.checkpoint.schedule.help_interval'))}" aria-label="${pcvEscapeHtml(t('vm.checkpoint.schedule.interval'))}"${actionDisabled}>
+        <input name="retention_max" type="number" min="1" max="32" step="1" value="${pcvEscapeHtml(retentionValue)}" placeholder="${pcvEscapeHtml(t('vm.checkpoint.schedule.help_retention'))}" aria-label="${pcvEscapeHtml(t('vm.checkpoint.schedule.retention'))}"${actionDisabled}>
         <button type="submit" data-action="checkpoint-schedule-preview"${actionDisabled}>${pcvEscapeHtml(t('vm.checkpoint.schedule.preview'))}</button>
         <button type="submit" data-action="checkpoint-schedule-set"${actionDisabled}>${pcvEscapeHtml(t('vm.checkpoint.schedule.save'))}</button>
         <button type="button" class="danger-button" data-action="checkpoint-schedule-clear" data-vm-id="${id}"${actionDisabled}>${pcvEscapeHtml(t('vm.checkpoint.schedule.clear'))}</button>
