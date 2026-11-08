@@ -11,7 +11,7 @@
   ],
   "mutation_allowed": false,
   "current_write_allowed": false,
-  "next_step": "Task 1 done (audit doc, 61 findings). Run Task 2 from docs/superpowers/plans/2026-11-09-purecvisor-desktop-node-ui-parity-design.md, then the queue in order.",
+  "next_step": "Task 1 done (audit doc, 61 findings); Task 2 done (design pcv-web-content-parity-v1, ADR-0020 proposed). Run Task 3 from docs/superpowers/plans/2026-11-09-purecvisor-desktop-node-ui-parity-design.md, then the queue in order.",
   "plan": "docs/superpowers/plans/2026-11-09-purecvisor-desktop-node-ui-parity-design.md",
   "task_queue": [
     "Task 1",
@@ -20,9 +20,10 @@
     "Task 4"
   ],
   "task_lanes": {},
-  "next_task": "Task 2",
+  "next_task": "Task 3",
   "completed_tasks": [
-    "Task 1"
+    "Task 1",
+    "Task 2"
   ],
   "commit_policy": "local-commit-per-task",
   "push_allowed": true,

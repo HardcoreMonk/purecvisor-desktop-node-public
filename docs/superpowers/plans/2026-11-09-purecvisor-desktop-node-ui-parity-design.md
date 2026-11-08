@@ -38,7 +38,9 @@
 
 ## Task 2: 개편 설계와 ADR
 
-- [ ] Claude. 설계 `docs/superpowers/specs/2026-11-09-purecvisor-desktop-node-web-console-upstream-parity-design.md`와 ADR-0020을 쓰고 `docs/ADR_INDEX.md`에 절을 더한다. 설계는 승인 3의 세 질문에 답한다: VM 목록·상세 골격(선택 전 전체 폭 표, 선택 뒤 260px 목록과 넓은 상세), 본문 화면 재작성 순서와 화면별 부품(`HN.pagehead`, `filterBar`, `createDataTable`, `components.emptyState`·`loadError`), Local API 선행 5건의 처리. 계약·시험 영향과 단계를 적는다. 검증: `git diff --check`, `dotnet test src/DesktopNode.Delivery.Tests -c Release`. 로컬 commit.
+- [x] Claude. 설계 `docs/superpowers/specs/2026-11-09-purecvisor-desktop-node-web-console-upstream-parity-design.md`와 ADR-0020을 쓰고 `docs/ADR_INDEX.md`에 절을 더한다. 설계는 승인 3의 세 질문에 답한다: VM 목록·상세 골격(선택 전 전체 폭 표, 선택 뒤 260px 목록과 넓은 상세), 본문 화면 재작성 순서와 화면별 부품(`HN.pagehead`, `filterBar`, `createDataTable`, `components.emptyState`·`loadError`), Local API 선행 5건의 처리. 계약·시험 영향과 단계를 적는다. 검증: `git diff --check`, `dotnet test src/DesktopNode.Delivery.Tests -c Release`. 로컬 commit.
+
+실행 기록(2026-11-09): 설계(`pcv-web-content-parity-v1`)와 ADR-0020(결정 마커 4개, 상태 제안)을 썼고 `docs/ADR_INDEX.md`에 2026-11-09 절과 제안 후보 표를 더했다. 세 질문의 답: (1) VM은 고르지 않으면 전체 폭 표, 고르면 왼쪽 260px 목록과 넓은 상세, hash `#/vms/<vm-id>/<tab>`, 목록·골격은 새 모듈 `vm-list.ts`로 나눔(`vm.ts` 줄 수 상한). (2) 순서는 동작 결함(U1), VM 골격(U2), VM 행 메뉴·일괄(U3), 렌더 등록표와 네트워크(U4), 작업·이벤트(U5), 대시보드(U6), 진단·증적·계정(U7), 옛 렌더러 퇴역(U8). (3) API 선행 5건은 이 개편에서 떼고 묶음 셋으로 나눔. metrics만 새 ADR, ISO 목록과 계정 관리는 설계 문서. 확인한 사실: 무인증 route는 `auth/*` 넷뿐이라 B-07은 새 route 없이 고침, 네트워크 스위치는 `type` 값을 줌. ADR-0020 채택은 구현 campaign 승인 문장으로 미뤘다. 검증: `git diff --check` 통과, `dotnet test src/DesktopNode.Delivery.Tests -c Release` 785/785, 홈 경로·사설 IP 검색 0건. host mutation 없음.
 
 ## Task 3: 구현 campaign 계획
 
