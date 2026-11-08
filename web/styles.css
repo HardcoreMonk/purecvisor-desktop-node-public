@@ -1,0 +1,4 @@
+/* Retired legacy Web Console placeholder.
+   Kept so the product Update preflight of Desktop Node 0.42.96 and earlier accepts newer update payloads (BL-0029).
+   index.html does not load this file.
+   Removing it is a design decision (BL-0030). */

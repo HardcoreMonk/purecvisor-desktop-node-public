@@ -18,6 +18,9 @@
       <Component Id="DesktopNodeWebPayload_app_bundle_jsComponent" Directory="DesktopNodeWebFolder" Guid="*">
         <File Id="DesktopNodeWebPayload_app_bundle_js" Source="$(var.PayloadRoot)\web\app.bundle.js" KeyPath="yes" />
       </Component>
+      <Component Id="DesktopNodeWebPayload_app_jsComponent" Directory="DesktopNodeWebFolder" Guid="*">
+        <File Id="DesktopNodeWebPayload_app_js" Source="$(var.PayloadRoot)\web\app.js" KeyPath="yes" />
+      </Component>
       <Component Id="DesktopNodeWebPayload_docs_htmlComponent" Directory="DesktopNodeWebFolder" Guid="*">
         <File Id="DesktopNodeWebPayload_docs_html" Source="$(var.PayloadRoot)\web\docs.html" KeyPath="yes" />
       </Component>
@@ -51,6 +54,9 @@
       </Component>
       <Component Id="DesktopNodeWebPayload_style_cssComponent" Directory="DesktopNodeWebFolder" Guid="*">
         <File Id="DesktopNodeWebPayload_style_css" Source="$(var.PayloadRoot)\web\style.css" KeyPath="yes" />
+      </Component>
+      <Component Id="DesktopNodeWebPayload_styles_cssComponent" Directory="DesktopNodeWebFolder" Guid="*">
+        <File Id="DesktopNodeWebPayload_styles_css" Source="$(var.PayloadRoot)\web\styles.css" KeyPath="yes" />
       </Component>
       <Component Id="DesktopNodeWebPayload_sw_jsComponent" Directory="DesktopNodeWebFolder" Guid="*">
         <File Id="DesktopNodeWebPayload_sw_js" Source="$(var.PayloadRoot)\web\sw.js" KeyPath="yes" />

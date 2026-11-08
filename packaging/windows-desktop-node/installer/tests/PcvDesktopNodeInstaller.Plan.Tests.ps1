@@ -85,6 +85,12 @@ Describe 'Desktop Node installer build plan' {
         $productWxs | Should -Not -Match 'DesktopNodeWebApp'
         $productWxs | Should -Not -Match 'web\\app\.js'
         $productWxs | Should -Not -Match 'web\\styles\.css'
+        $webPayloadWxs = Get-Content -Raw -LiteralPath (Join-Path $script:InstallerRoot 'WebPayload.wxs')
+        $webPayloadWxs | Should -Match 'Source="\$\(var\.PayloadRoot\)\\web\\app\.js"' -Because 'BL-0029 WebPayload.wxs must own web\app.js'
+        $webPayloadWxs | Should -Match 'Source="\$\(var\.PayloadRoot\)\\web\\styles\.css"' -Because 'BL-0029 WebPayload.wxs must own web\styles.css'
+        $payloadFiles = @((Get-Content -Raw -LiteralPath (Join-Path $PSScriptRoot '..\..\..\..\web\payload-manifest.json') | ConvertFrom-Json).files)
+        $payloadFiles | Should -Contain 'app.js' -Because 'BL-0029'
+        $payloadFiles | Should -Contain 'styles.css' -Because 'BL-0029'
     }
 
     It 'returns structured JSON when release signing input is missing' {

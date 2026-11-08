@@ -250,6 +250,23 @@ internal sealed class WixSourceContractVerifier
             }
         }
 
+        // BL-0029: Desktop Node 0.42.96 and earlier update preflight still requires these
+        // comment-only files. The generated fragment owns them so uninstall removes them.
+        // Removing the files is BL-0030.
+        foreach (var compatibilitySource in new[]
+        {
+            "$(var.PayloadRoot)\\web\\app.js",
+            "$(var.PayloadRoot)\\web\\styles.css",
+        })
+        {
+            var owned = WebPayloadDocument.Descendants(Namespace + "File")
+                .Any(file => string.Equals((string?)file.Attribute("Source"), compatibilitySource, StringComparison.OrdinalIgnoreCase));
+            if (!owned)
+            {
+                throw Invalid($"bl-0029-compatibility-file:{compatibilitySource}");
+            }
+        }
+
         var environment = RequireElement(ProductDocument, "Environment", "Id", "DesktopNodeMachinePath");
         foreach (var (name, value) in new Dictionary<string, string>(StringComparer.Ordinal)
         {

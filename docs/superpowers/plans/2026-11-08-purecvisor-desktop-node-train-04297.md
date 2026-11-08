@@ -20,6 +20,7 @@
 | 4 | `Lane 3: current-evidence.json을 0.42.97-admin-smoke로 승격한다.` Lane 3 `current-evidence.json` 쓰기. Task 11~13 |
 | 5 | `1`(Task 4 정지 보고의 다음 승인 1번: "기준 VHD를 다시 마련하고 train을 이어 갑니다."). 해석: clean-host bucket의 기준 VHD가 2026-11-05 재클론 때 사라졌다. Microsoft에서 Windows Server 2022 평가판 VHD와 최신 LCU를 받아 `New-PcvCleanHostBaseVhd.ps1`로 복사본을 오프라인 서비싱(VHD mount, DISM으로 SSU 다음 LCU)한 뒤 Task 4부터 잇는다. 평가판 VHD는 사용자 대신 에이전트가 Microsoft 공식 링크로 받는다. 원본은 읽기만 한다. VM·service·방화벽 변경 없음. Task 3a |
 | 6 | `1`(Task 4 FAIL 정지 보고의 다음 승인 1번: "train을 멈추고 호환성을 고친 뒤 다시 출발합니다. 정지 기록을 commit합니다(plan 실행 기록, backlog 행). Lane 1 PR을 엽니다. 이전 버전 Update 기능이 받을 수 있도록 payload에 web/app.js, web/styles.css를 최소 호환 파일로 남깁니다. 이 두 파일은 새 셸이 읽지 않습니다. 필수 목록의 위치를 찾아 그 근거도 PR에 적습니다. merge는 사용자 승인으로 합니다. 그 뒤 package부터 업그레이드 시험을 다시 돌립니다. 그동안 호스트는 제품 Rollback으로 0.42.96에 맞춰 둡니다."). 해석: `docs/DEVELOPMENT_PROCEDURE.md` §10에 따라 train `0.42.97`은 정차다. `release-train.json`에서 train 항목을 빼고 적재 13행을 `queue`로 되돌린다. 출발 승인 1~4는 정차로 끝난다. Task 4a는 정차 기록(Lane 1), Task 4b는 설치본 제품 Rollback(Lane 2, 승인 2의 제품 Update/Rollback 범위), Task 4c는 호환 수정(Lane 1, grok 구현·Claude 리뷰, queue 행 추가), Task 4d는 종료 검증·push·PR이다. merge는 사용자 merge 승인으로만 한다. 다시 출발할 때는 다음 patch version `0.42.98-admin-smoke`를 쓰고 출발 승인을 새로 받는다. 남은 Task 4~17은 그 train campaign으로 옮긴다 |
+| 7 | `앞으로는 권장 사항 자동 승인 처리 한다.`(2026-11-08 사용자 지시). 해석: 정지 보고에서 "(권장)"으로 표시한 선택지는 그 문장 범위대로 승인된 것으로 보고 같은 턴에서 잇는다. 권장안에 green CI 뒤 merge가 있으면 merge도 포함한다. auto mode가 거부하면 멈춘다. 되돌릴 수 없는 사용자 데이터 삭제(S4 계정 백업)와 사용자 몫(S4 사용자 시연, admin `pcv-admin2` 비밀번호)은 계속 묻는다. 이 campaign에서는 두 곳에 적용한다. 하나는 Task 4c 예산 정지의 권장안(새 checkpoint로 Task 4c commit과 Task 4d)이다. 다른 하나는 Task 4d 수정 PR의 green CI 뒤 merge(`merge_policy=after-green-ci`)다 |
 | merge | PR마다 사용자의 명시 merge 승인 문장(`merge_policy=none`). main push run이 red면 그 merge를 되돌리는 revert PR을 열고 멈춘다 |
 | 이관 | `ui-redesign-20261105` Task 11(S4 시연 A), Task 12(S4 끝 상태, Lane 2, 2026-10-12 승인 범위), Task 13(S4 판정), Task 14(C5 확인)를 Task 14~17로 옮긴다. 원래 문장과 승인 범위는 그대로다 |
 
@@ -136,7 +137,7 @@ clean-host가 PASS하지 않아 `current-base.json`은 지정하지 않았다. b
 
 ## Task 4c: 이전 버전 제품 Update 호환 수정
 
-- [ ] Lane 1(사용자 결정 6). 이 branch에서 `lane1/n1-update-compat-20261108`을 만든다. 이 PR은 train PR이 아니라 정차 기록과 수정을 함께 담는다. grok이 구현하고 Claude가 리뷰한다. 바꿀 것:
+- [x] Lane 1(사용자 결정 6). 이 branch에서 `lane1/n1-update-compat-20261108`을 만든다. 이 PR은 train PR이 아니라 정차 기록과 수정을 함께 담는다. grok이 구현하고 Claude가 리뷰한다. 바꿀 것:
   - `web/app.js`, `web/styles.css`를 새 셸이 읽지 않는 최소 호환 파일(설명 주석만)로 되살려 `web/payload-manifest.json` `files`에 넣는다.
   - `Update-PcvWebPayloadWix.ps1 -Apply`로 `installer/WebPayload.wxs`를 다시 만든다. MSI가 두 파일을 소유하므로 제거 뒤 제품 root에 남지 않는다.
   - Task 9b 계약의 `web\app.js`·`web\styles.css` 부재 단언과 관련 spec·pin을 "호환 파일이 있다"로 바꾸고, 이유(`0.42.96` 이하 설치본의 update preflight)를 적는다.
@@ -149,12 +150,39 @@ clean-host가 PASS하지 않아 `current-base.json`은 지정하지 않았다. b
 
   경계: `src/DesktopNode.Host`는 바꾸지 않는다. 새 `Add-Type`/P/Invoke는 없다. 로컬 commit.
 
+실행 기록(2026-11-08): grok이 구현했고 Claude가 1회 리뷰했다. 리뷰에서 Product.wxs가 두 파일을 갖지 않는다는 금지 단언을 남기게 했다.
+
+변경:
+
+- `web/app.js`, `web/styles.css`를 다시 만들었다. 설명 주석만 있고 ASCII다.
+- `web/payload-manifest.json` `files`가 23개에서 25개가 됐고 `note`에 이유를 적었다.
+- `installer/WebPayload.wxs`를 `Update-PcvWebPayloadWix.ps1 -Apply`로 다시 만들었다. `-Check` 결과는 `current`다. component가 2개 늘었고 새 디렉터리는 없다.
+- `WixSourceContractVerifier`는 WebPayload의 두 파일 소유를 검사한다(`bl-0029-compatibility-file`). Product.wxs 금지 목록은 그대로다.
+- Delivery WiX 계약 시험과 installer Pester 두 개(WixSource, Plan)에 양성 단언(WebPayload 소유, manifest `files`)을 더했다.
+- 설치 계획 payload는 29개에서 31개가 된다.
+
+바꾸지 않은 것: `PcvDesktopNodeProduct.psm1`의 현재 필수 목록, `src/DesktopNode.Host`, `web/src`, `web/index.html`, `web/sw.js`. spec pin 대상 파일도 바뀌지 않았다.
+
+검증:
+
+- Delivery `781/781`. web `test:required`는 node `341/341`, browser-ui-gates 단언 121개 실패 0.
+- installer Pester `49/49`, web Pester `50/50`.
+- packaging Pester는 527 통과, 1 실패다. 실패는 BL-0025 `Test-Json`(기존)이다.
+- `git diff --check` 통과.
+- `test:public-source-safety`는 19/20이다. 실패 1건은 기존 BL-0015(Default Switch NAT guest 주소 두 곳)이고 이 변경과 무관하다.
+
+N-1 preflight: `87a7deb` 모듈의 `Test-PcvDesktopNodeUpdatePayload`를 Task 3 payload 복사본에 읽기 전용으로 돌렸다. 두 파일이 없으면 `PCV_PRODUCT_UPDATE_PAYLOAD_FILE_MISSING`(`web\app.js, web\styles.css`)이고, 넣으면 `ok=true`(version `0.42.97-admin-smoke`, file 7)다.
+
+결과: 설치본의 `/app.js`·`/styles.css`는 주석 내용으로 200이 된다. `/index.legacy.html`은 404 그대로다.
+
+checkpoint 9/23은 Lane 1 시간 예산 30분을 넘겨 47분에 멈췄다. 기다림 스크립트의 경로 변환 오류로 grok 보고를 30분 늦게 읽었기 때문이다. 정지 보고의 권장안을 사용자 결정 7(권장안 자동 승인)로 이어 checkpoint 10/23에서 commit했다. host mutation은 없다.
+
 ## Task 4d: 수정 PR
 
 - [ ] Lane 1. clean HEAD 종료 검증(`dotnet build src/DesktopNode.sln -c Release`, `Invoke-PcvPrGate.ps1`, Pester 4종)을 하고 push, PR을 연다.
   - PR 본문에 정차 기록, 필수 목록 위치(`PcvDesktopNodeProduct.psm1` `Test-PcvDesktopNodeUpdatePayload`), 호환 파일 근거를 적는다.
   - queue 행의 `pr`과 `merge_commit`을 채우고 green Required CI를 기다린다.
-  - merge는 사용자 merge 승인으로만 한다.
+  - merge는 사용자 결정 7(권장안 자동 승인)에 따라 green Required CI 뒤 `--match-head-commit`으로 한다. merge 뒤 `main` push run을 기다리고, red면 revert PR을 열고 멈춘다.
   - 이 campaign은 여기서 닫는다. Task 4~17은 다시 출발할 train `0.42.98-admin-smoke` campaign으로 옮긴다.
 
 ## Task 5: fullgate

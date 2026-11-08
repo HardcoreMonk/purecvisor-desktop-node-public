@@ -2,13 +2,15 @@
   "schema_version": 1,
   "contract": "pcv-web-payload-manifest-v1",
   "design": "docs/superpowers/specs/2026-10-10-purecvisor-desktop-node-single-edge-frontend-structure-design.md",
-  "note": "Web root files shipped in the product payload (ADR-0018). core = the hand-authored Product.wxs web component (index.html, which also removes the web folder on uninstall). files = the rest, relative to web/ with forward slashes, including app.bundle.js and style.css which the product module update check also requires. packaging/windows-desktop-node/tools/Update-PcvWebPayloadWix.ps1 generates installer/WebPayload.wxs from files and the installer build copies core + files. 옛 콘솔 파일은 Task 9b(2026-11-07)에서 퇴역, 404.",
+  "note": "Web root files shipped in the product payload (ADR-0018). core = the hand-authored Product.wxs web component (index.html, which also removes the web folder on uninstall). files = the rest, relative to web/ with forward slashes, including app.bundle.js and style.css which the product module update check also requires. packaging/windows-desktop-node/tools/Update-PcvWebPayloadWix.ps1 generates installer/WebPayload.wxs from files and the installer build copies core + files. app.js와 styles.css는 주석만 있는 호환 파일이다. Desktop Node 0.42.96 이하 설치본의 제품 Update preflight가 새 payload를 받아들이도록 files에 남긴다(BL-0029). index.html은 이 두 파일을 읽지 않는다. 빼는 시점은 설계 결정이다(BL-0030). index.legacy.html은 계속 없다.",
   "core": [
     "index.html"
   ],
   "files": [
     "app.bundle.js",
+    "app.js",
     "style.css",
+    "styles.css",
     "samples/design-system-preview.html",
     "samples/supanova-preview.html",
     "vendor/chart.umd.min.js",
