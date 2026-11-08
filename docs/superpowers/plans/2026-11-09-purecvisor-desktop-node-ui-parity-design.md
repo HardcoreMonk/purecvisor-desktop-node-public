@@ -44,7 +44,9 @@
 
 ## Task 3: 구현 campaign 계획
 
-- [ ] Claude. 구현 campaign 계획 `docs/superpowers/plans/2026-11-09-purecvisor-desktop-node-ui-parity-impl.md`를 승인 대기 초안으로 쓴다. 설계 단계마다 task 하나(Lane 1, grok 구현·Claude 리뷰), 파일 범위, 고칠 계약·시험, 검증 명령, PR 단위, release train 연결을 적는다. campaign 파일은 열지 않는다. 검증: `git diff --check`, `dotnet test src/DesktopNode.Delivery.Tests -c Release`. 로컬 commit.
+- [x] Claude. 구현 campaign 계획 `docs/superpowers/plans/2026-11-09-purecvisor-desktop-node-ui-parity-impl.md`를 승인 대기 초안으로 쓴다. 설계 단계마다 task 하나(Lane 1, grok 구현·Claude 리뷰), 파일 범위, 고칠 계약·시험, 검증 명령, PR 단위, release train 연결을 적는다. campaign 파일은 열지 않는다. 검증: `git diff --check`, `dotnet test src/DesktopNode.Delivery.Tests -c Release`. 로컬 commit.
+
+실행 기록(2026-11-09): 구현 계획 초안을 썼다. task 8개(U1~U8)가 설계 10절 단계와 하나씩 맞고, task마다 Lane 1 PR 하나, release-train queue 행, 공통 검증 다섯 명령이다. 제안하는 승인 범위는 ADR-0020 채택, Task 1~8 구현, task마다 green CI 뒤 merge이고, host mutation과 release train 출발은 빠진다. B-11 고침이 쓸 `queueVmLifecycle`·`queueVmDelete`가 `vm.ts:2738` export에 있음을 확인했다. campaign 파일은 열지 않았다. 검증: `git diff --check` 통과, `dotnet test src/DesktopNode.Delivery.Tests -c Release` 785/785. host mutation 없음.
 
 ## Task 4: 닫기와 merge
 
