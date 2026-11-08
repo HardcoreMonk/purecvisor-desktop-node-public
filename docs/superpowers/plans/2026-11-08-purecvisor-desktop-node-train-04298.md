@@ -54,7 +54,9 @@ train `0.42.97` plan의 적재 변경 13행(PR #94~#107)과 다음 한 행이다
 
 ## Task 0: 출발
 
-- [ ] payload commit `8e4ebe2`의 main push Development Gates와 Public Boundary가 success임을 run id로 적는다. `release-train.json` `queue` 14행을 train `0.42.98-admin-smoke`의 `carriages` `[94, 95, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108]`로 옮기고 `status=running`, `departed_at`, `source_commit`을 적은 뒤 `queue`는 빈 목록으로 둔다. `docs/ga-ready/trains/0.42.98-admin-smoke.host-inputs.json`을 쓴다(ISO는 train `0.42.97` Task 1의 smoke ISO). 검증: `PcvReleaseTrainContractTests`, `git diff --check`. host mutation 없음. 로컬 commit.
+- [x] payload commit `8e4ebe2`의 main push Development Gates와 Public Boundary가 success임을 run id로 적는다. `release-train.json` `queue` 14행을 train `0.42.98-admin-smoke`의 `carriages` `[94, 95, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108]`로 옮기고 `status=running`, `departed_at`, `source_commit`을 적은 뒤 `queue`는 빈 목록으로 둔다. `docs/ga-ready/trains/0.42.98-admin-smoke.host-inputs.json`을 쓴다(ISO는 train `0.42.97` Task 1의 smoke ISO). 검증: `PcvReleaseTrainContractTests`, `git diff --check`. host mutation 없음. 로컬 commit.
+
+실행 기록(2026-11-08): 출발 시각은 `2026-11-08T15:50:00+09:00`, payload는 `8e4ebe24b7fc93241fb2f09979d7019f81271f22`(PR #108 merge, origin/main)다. carriages는 `[94, 95, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108]`(14행)이고, queue를 비우고 train `status=running`으로 두었다. payload main push Development Gates `42456130722`와 Public Boundary Contract `42456130718`은 success다. `docs/ga-ready/trains/0.42.98-admin-smoke.host-inputs.json`의 ISO는 train `0.42.97` Task 1의 `artifacts/smoke-media-20261108/pcv-route-parity-smoke-20261108.iso`(`45056` byte, 있음)다. 설치본은 `0.42.96`(train `0.42.97` Task 4b Rollback)이고, loopback이며, 계정은 보관 중이다. 검증: `PcvReleaseTrainContractTests` `6/6`, `dotnet test src/DesktopNode.Delivery.Tests -c Release` `781/781`, `git diff --check` 통과. host mutation은 없다. operational current는 `0.42.96-admin-smoke` 그대로다.
 
 ## Task 1: package
 
