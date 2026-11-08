@@ -247,14 +247,14 @@
               </dl>
             </aside>
           </div>
-          <div class="dashboard-pills" aria-label="Displayed dashboard items">
+          <div class="dashboard-pills" data-i18n-aria="copy.dashboard.items" aria-label="표시 중인 대시보드 항목">
             <span>운영 요약</span>
             <span>빠른 작업</span>
             <span>자원 추이</span>
             <span>최근 경고</span>
             <span>워크로드 표</span>
           </div>
-          <div class="quick-action-grid" aria-label="Quick actions">
+          <div class="quick-action-grid" data-i18n-aria="copy.dashboard.actions" aria-label="빠른 작업">
             <a href="#vms" data-shell-action="open-create-vm"><span class="qa-icon">▣</span><span>새 VM</span></a>
             <a href="#jobs" data-view-link="jobs"><span class="qa-icon">☷</span><span>작업 큐</span></a>
             <a href="#network" data-view-link="network"><span class="qa-icon">◎</span><span>네트워크</span></a>
@@ -264,10 +264,10 @@
           </div>
           <div class="section-header">
             <div>
-              <p class="eyebrow">Dashboard</p>
-              <h2>Ops Cockpit</h2>
+              <p class="eyebrow" data-i18n="copy.dashboard.eyebrow">대시보드</p>
+              <h2 data-i18n="copy.dashboard.title">운영 콕핏</h2>
             </div>
-            <button id="open-create-vm" type="button">Create VM</button>
+            <button id="open-create-vm" type="button" data-i18n="copy.dashboard.create">새 VM</button>
           </div>
           <div id="ops-summary-panel" class="ops-summary-panel"></div>
           <div id="priority-panel" class="priority-panel"></div>
@@ -277,8 +277,8 @@
           <section id="monitoring" class="monitoring-section">
             <div class="section-header">
               <div>
-                <p class="eyebrow">Signals</p>
-                <h2>Monitoring</h2>
+                <p class="eyebrow" data-i18n="copy.monitoring.eyebrow">신호</p>
+                <h2 data-i18n="copy.monitoring.title">모니터링</h2>
               </div>
             </div>
             <div id="monitoring-panel" class="monitoring-panel"></div>
@@ -290,7 +290,7 @@
           <div id="view-vms">
           <div class="section-header vm-list-toolbar">
             <div>
-              <p class="eyebrow">Inventory</p>
+              <p class="eyebrow" data-i18n="copy.vms.eyebrow">인벤토리</p>
               <h2 data-i18n="nav.vms">가상 머신</h2>
             </div>
             <label class="filter-control">
@@ -321,7 +321,7 @@
             </div>
             <label class="filter-control">
               <span data-i18n="vm.list.sort">정렬</span>
-              <select id="vm-sort" aria-label="VM sort">
+              <select id="vm-sort" data-i18n-aria="copy.vms.sort" aria-label="VM 정렬">
                 <option value="name" data-i18n="vm.list.sort.name">이름</option>
                 <option value="state" data-i18n="vm.list.sort.state">상태</option>
                 <option value="updated" data-i18n="vm.list.sort.updated">업데이트</option>
@@ -364,12 +364,12 @@
           <div id="view-network">
           <div class="section-header">
             <div>
-              <p class="eyebrow">Inventory</p>
-              <h2>Network Inventory</h2>
+              <p class="eyebrow" data-i18n="copy.network.eyebrow">인벤토리</p>
+              <h2 data-i18n="copy.network.title">네트워크 인벤토리</h2>
             </div>
             <label class="filter-control">
-              Filter
-              <input id="network-filter" type="search" autocomplete="off" placeholder="Switch, type, adapter">
+              <span data-i18n="copy.filter">필터</span>
+              <input id="network-filter" type="search" autocomplete="off" placeholder="스위치, 종류, 어댑터" data-i18n-placeholder="copy.network.placeholder">
             </label>
           </div>
           <div id="network-inventory-panel" class="network-inventory-panel"></div>
@@ -379,34 +379,34 @@
         <section id="jobs" class="section app-view" data-view="jobs">
           <div class="section-header">
             <div>
-              <p class="eyebrow">Session</p>
-              <h2>Tracked Jobs</h2>
+              <p class="eyebrow" data-i18n="copy.jobs.eyebrow">세션</p>
+              <h2 data-i18n="copy.jobs.title">추적 작업</h2>
             </div>
             <label class="filter-control">
-              Filter
-              <input id="job-filter" type="search" autocomplete="off" placeholder="Job id, operation, error">
+              <span data-i18n="copy.filter">필터</span>
+              <input id="job-filter" type="search" autocomplete="off" placeholder="작업 ID, 동작, 오류" data-i18n-placeholder="copy.jobs.placeholder">
             </label>
             <label class="filter-control">
-              Status
-              <select id="job-status-filter" aria-label="Job status filter">
-                <option value="all">All</option>
-                <option value="queued">Queued</option>
-                <option value="running">Running</option>
-                <option value="failed">Failed</option>
-                <option value="succeeded">Succeeded</option>
-                <option value="canceled">Canceled</option>
+              <span data-i18n="copy.status">상태</span>
+              <select id="job-status-filter" data-i18n-aria="copy.jobs.status_filter" aria-label="작업 상태 필터">
+                <option value="all" data-i18n="copy.jobs.status.all">전체</option>
+                <option value="queued" data-i18n="copy.jobs.status.queued">대기</option>
+                <option value="running" data-i18n="copy.jobs.status.running">실행 중</option>
+                <option value="failed" data-i18n="copy.jobs.status.failed">실패</option>
+                <option value="succeeded" data-i18n="copy.jobs.status.succeeded">성공</option>
+                <option value="canceled" data-i18n="copy.jobs.status.canceled">취소</option>
               </select>
             </label>
             <label class="filter-control">
-              Sort
-              <select id="job-sort" aria-label="Job sort">
-                <option value="updated:desc">Updated</option>
-                <option value="status:asc">Status</option>
-                <option value="operation:asc">Operation</option>
-                <option value="source:asc">Source</option>
+              <span data-i18n="copy.sort">정렬</span>
+              <select id="job-sort" data-i18n-aria="copy.jobs.sort_label" aria-label="작업 정렬">
+                <option value="updated:desc" data-i18n="copy.jobs.sort.updated">업데이트</option>
+                <option value="status:asc" data-i18n="copy.jobs.sort.status">상태</option>
+                <option value="operation:asc" data-i18n="copy.jobs.sort.operation">동작</option>
+                <option value="source:asc" data-i18n="copy.jobs.sort.source">원본</option>
               </select>
             </label>
-            <button id="clear-job-history" type="button">Clear history</button>
+            <button id="clear-job-history" type="button" data-i18n="copy.jobs.clear">기록 지우기</button>
           </div>
           <div id="jobs-panel" class="jobs-panel"></div>
         </section>
@@ -414,8 +414,8 @@
         <section id="activity" class="section app-view" data-view="activity">
           <div class="section-header">
             <div>
-              <p class="eyebrow">Operations</p>
-              <h2>Operator Activity</h2>
+              <p class="eyebrow" data-i18n="copy.activity.eyebrow">운영</p>
+              <h2 data-i18n="copy.activity.title">운영자 활동</h2>
             </div>
           </div>
           <div id="event-center-panel" class="event-center-panel"></div>
@@ -426,8 +426,8 @@
           <div id="view-evidence">
           <div class="section-header">
             <div>
-              <p class="eyebrow">Batch Evidence</p>
-              <h2>Supervisor Evidence</h2>
+              <p class="eyebrow" data-i18n="copy.evidence.eyebrow">배치 증적</p>
+              <h2 data-i18n="copy.evidence.title">감독 증적</h2>
             </div>
           </div>
           <div id="evidence-panel" class="evidence-panel"></div>
@@ -450,17 +450,17 @@
           <div id="view-troubleshooting">
           <div class="section-header">
             <div>
-              <p class="eyebrow">Support</p>
-              <h2>Incident Command</h2>
+              <p class="eyebrow" data-i18n="copy.trouble.eyebrow">지원</p>
+              <h2 data-i18n="copy.trouble.title">장애 대응</h2>
             </div>
           </div>
           <p class="pcv-account-jump"><a href="#/accounts" data-view-link="accounts" data-i18n="account.open">계정 화면으로</a></p>
           <div id="incident-panel" class="incident-panel"></div>
           <div id="account-session-panel" class="account-session-panel">
             <form id="account-login-form" class="account-login-form" autocomplete="off">
-              <label>Username<input id="account-username" name="username" type="text" autocomplete="username"></label>
-              <label>Password<input id="account-password" name="password" type="password" autocomplete="current-password"></label>
-              <button type="submit">Login</button>
+              <label><span data-i18n="username">사용자명</span><input id="account-username" name="username" type="text" autocomplete="username"></label>
+              <label><span data-i18n="password">비밀번호</span><input id="account-password" name="password" type="password" autocomplete="current-password"></label>
+              <button type="submit" data-i18n="login">로그인</button>
             </form>
           </div>
           <div id="account-console-panel" class="account-console-panel"></div>
@@ -476,7 +476,7 @@
 </div>
 </div>
 <div class="mobile-overlay" id="mobile-overlay" onclick="closeMobileSB()"></div>
-<div id="ev-side" class="ev-side" style="display:none" aria-live="polite" aria-label="Event log panel">
+<div id="ev-side" class="ev-side" style="display:none" aria-live="polite" data-i18n-aria="copy.events.panel" aria-label="이벤트 기록">
 <div id="evp" class="ev-content">이벤트 대기 중...</div>
 <div class="ev-footer"><span id="ev-count">0 events</span><span id="ev-status">Idle</span></div>
 </div>

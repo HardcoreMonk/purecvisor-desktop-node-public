@@ -153,7 +153,7 @@ async function _fetchWithRefresh(url, opts) {
       return _fetchWithTimeout(url, opts);
     }
     _redirectToLogin();
-    throw new Error('Session expired');
+    throw new Error(t('copy.login.session_expired'));
   }
   return r;
 }
@@ -186,9 +186,8 @@ function fetchPut(u, b) {
     body: JSON.stringify(b)
   }).then(_json);
 }
-function _loginI18n(key, fallback) {
-  var value = (typeof t === 'function') ? t(key) : key;
-  return value && value !== key ? value : fallback;
+function _loginI18n(key) {
+  return (typeof t === 'function') ? t(key) : key;
 }
 async function _readLoginResponse(r) {
   var body = await r.text();
@@ -199,37 +198,36 @@ async function _readLoginResponse(r) {
     return {
       error: {
         code: r.status || 0,
-        message: _loginI18n('login.bad_response', 'Login server returned an invalid response.')
+        message: _loginI18n('login.bad_response')
       }
     };
   }
 }
 function _loginHttpDetail(status) {
   if (status === 401 || status === 403) {
-    return _loginI18n('login.invalid_credentials', 'Invalid username or password.');
+    return _loginI18n('login.invalid_credentials');
   }
   if (status === 429) {
-    return _loginI18n('login.too_many', 'Too many login attempts. Try again later.');
+    return _loginI18n('login.too_many');
   }
   if (status === 502 || status === 503 || status === 504) {
-    return _loginI18n('login.service_unavailable', 'Login service is temporarily unavailable.');
+    return _loginI18n('login.service_unavailable');
   }
   if (status >= 500) {
-    return _loginI18n('login.server_error', 'Login server could not process the request.');
+    return _loginI18n('login.server_error');
   }
-  return _loginI18n('login.bad_response', 'Login server returned an invalid response.');
+  return _loginI18n('login.bad_response');
 }
 function _loginFailureText(status) {
   var titleKey = (status === 401 || status === 403) ? 'login.failed' : 'login.error';
-  var titleFallback = (status === 401 || status === 403) ? 'Login failed' : 'Connection error';
-  var prefix = _loginI18n(titleKey, titleFallback);
+  var prefix = _loginI18n(titleKey);
   return prefix + ': ' + _loginHttpDetail(status || 0);
 }
 function _loginNetworkFailureText(e) {
-  var prefix = _loginI18n('login.error', 'Connection error');
+  var prefix = _loginI18n('login.error');
   var detail = e && e.name === 'AbortError'
-    ? _loginI18n('login.timeout', 'Login request timed out.')
-    : _loginI18n('login.network', 'Could not connect to the login server.');
+    ? _loginI18n('login.timeout')
+    : _loginI18n('login.network');
   return prefix + ': ' + detail;
 }
 function _showSignedIn(name) {
@@ -247,8 +245,8 @@ function _finishLogin(user, d, opts) {
   var name = _storeSession(d, user);
   _showSignedIn(name);
   if (!opts.silent) {
-    if (typeof window.toast === 'function') window.toast(typeof t === 'function' ? t('logged.in') + ': ' + name : 'Logged in: ' + name);
-    if (typeof window.addEvt === 'function') window.addEvt('AUTH Login successful — user: ' + name + ', session issued');
+    if (typeof window.toast === 'function') window.toast(t('logged.in') + ': ' + name);
+    if (typeof window.addEvt === 'function') window.addEvt(t('copy.auth.login_event', { name: name }));
   }
   if (typeof window.loadAll === 'function') window.loadAll();
   if (PCV.events && typeof PCV.events.start === 'function') PCV.events.start();
@@ -264,8 +262,8 @@ function _setLoginPageBusy(busy) {
   var label = button.querySelector('.login-submit-label');
   if (label) {
     label.textContent = busy
-      ? _loginI18n('login.loading', 'Signing in…')
-      : _loginI18n('login', 'Login');
+      ? _loginI18n('login.loading')
+      : _loginI18n('login');
   }
 }
 async function doLoginPage() {
@@ -273,7 +271,7 @@ async function doLoginPage() {
   const pass = document.getElementById('login-pass')?.value;
   const errEl = document.getElementById('login-err');
   if (errEl) errEl.textContent = '';
-  if (!user || !pass) { if (errEl) errEl.textContent = typeof t === 'function' ? t('login.required') : 'Required'; return; }
+  if (!user || !pass) { if (errEl) errEl.textContent = t('login.required'); return; }
   if (_loginPageInFlight) return;
   _loginPageInFlight = true;
   _setLoginPageBusy(true);
@@ -322,8 +320,8 @@ async function doLogout() {
   _redirectToLogin();
   var wsStatus = document.getElementById('ws-s');
   if (wsStatus && PCV.uxlib) PCV.uxlib.clearEl(wsStatus);
-  if (typeof window.toast === 'function') window.toast(typeof t === 'function' ? t('logged.out') : 'Logged out');
-  if (typeof window.addEvt === 'function') window.addEvt(typeof t === 'function' ? t('logged.out') : 'Logged out');
+  if (typeof window.toast === 'function') window.toast(t('logged.out'));
+  if (typeof window.addEvt === 'function') window.addEvt(t('logged.out'));
 }
 var _sessionCheckInterval = null;
 var _sessionProbeTick = 0;
@@ -334,7 +332,7 @@ async function _probeSession() {
     if (await _isAuthRejection(r)) {
       if (await _recoverSession()) return;
       _redirectToLogin();
-      toast(typeof _L === 'function' ? _L('세션 만료 — 다시 로그인하세요', 'Session expired — please login again') : 'Session expired', false);
+      toast(t('copy.login.session_expired'), false);
     }
   } catch (e) { /* transient network failure; the next probe retries */ }
 }
@@ -352,7 +350,7 @@ function startSessionWatch() {
       if (remaining < 0) {
         clearInterval(_sessionCheckInterval);
         _redirectToLogin();
-        toast(typeof _L === 'function' ? _L('세션 만료 — 다시 로그인하세요', 'Session expired — please login again') : 'Session expired', false);
+        toast(t('copy.login.session_expired'), false);
       } else if (remaining < 300000) {
         var mins = Math.ceil(remaining / 60000);
         var el = document.getElementById('session-warn');
@@ -362,8 +360,8 @@ function startSessionWatch() {
           el.style.cssText = 'position:fixed;bottom:40px;left:50%;transform:translateX(-50%);background:var(--bg2);border:1px solid var(--yellow);border-radius:6px;padding:8px 14px;font-size:12px;z-index:9000';
           document.body.appendChild(el);
         }
-        var lblExpires = typeof _L === 'function' ? _L('세션 만료까지', 'Session expires in') : 'Expires in';
-        var lblMin = typeof _L === 'function' ? _L('분', 'min') : 'min';
+        var lblExpires = _L('세션 만료까지', 'Session expires in');
+        var lblMin = _L('분', 'min');
         PCV.uxlib.clearEl(el);
         el.appendChild(PCV.uxlib.frag(
           PCV.uxlib.el('span', { class: 'color-yellow' }, '⚠'),
@@ -374,7 +372,7 @@ function startSessionWatch() {
             if (ok) {
               var warn = document.getElementById('session-warn');
               if (warn) warn.remove();
-              toast(typeof _L === 'function' ? _L('세션 자동 갱신됨', 'Session auto-renewed') : 'Session renewed');
+              toast(_L('세션 자동 갱신됨', 'Session auto-renewed'));
             }
           }).catch(function(){});
         }
@@ -461,7 +459,7 @@ async function waitForJob(jobId, options) {
   for (var i = 0; i < attempts; i++) {
     if (i) await new Promise(resolve => setTimeout(resolve, interval));
     var response = await fetchGet(EP.JOB(jobId));
-    if (response && response.error) throw new Error(response.error.message || 'Unable to read job result');
+    if (response && response.error) throw new Error(response.error.message || t('copy.job.unreadable'));
     job = unwrapData(response) || job;
     var status = String(job.status || '').toLowerCase();
     if (status === 'failed' || status === 'canceled' || status === 'cancelled')

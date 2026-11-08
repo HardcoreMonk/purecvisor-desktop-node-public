@@ -100,7 +100,7 @@ function buildSidebar() {
     el('div', null,
       el('div', { class: 'shell-brand-name' }, 'PureCVisor'),
       el('div', { class: 'shell-brand-edi' }, 'DESKTOP NODE'))));
-  var wrap = el('nav', { class: 'shell-navwrap', role: 'navigation', 'aria-label': 'Main navigation' });
+  var wrap = el('nav', { class: 'shell-navwrap', role: 'navigation', 'aria-label': t('copy.shell.nav') });
   NAV_SECTIONS().forEach(function (sec) {
     var box = el('div', { class: 'shell-navsec' });
     if (sec.label) box.appendChild(el('div', { class: 'shell-navlbl' }, sec.label));
@@ -220,8 +220,7 @@ function operatorKpiSnapshot() {
   if (typeof getHostReadinessLabel === 'function') {
     var mode = String(getHostReadinessLabel() || '');
     if (mode && mode !== '—' && mode !== '-') {
-      var folded = mode.toLowerCase();
-      var blocked = folded.indexOf('need') >= 0 || folded.indexOf('fail') >= 0 || folded.indexOf('error') >= 0 || folded.indexOf('attention') >= 0;
+      var blocked = typeof hostReadinessBlocked === 'function' ? hostReadinessBlocked() : false;
       snap.host = { ok: !blocked, mode: mode, detail: '' };
     }
   }

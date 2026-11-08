@@ -58,7 +58,7 @@ function getJobCancelScope(job) {
 
 function formatJobCancelLabel(job) {
   return getJobCancelScope(job) === 'running-guest-execution'
-    ? 'Cancel running guest exec'
+    ? t('copy.job.cancel_guest')
     : 'Cancel';
 }
 
@@ -73,22 +73,22 @@ function renderJobReconcileButton(job, canOperate) {
   if (!canReconcileVmMutation(job)) return '';
   const operation = String(job?.operation || '').toLowerCase();
   const label = operation === 'vm.delete'
-    ? 'Reconcile delete'
+    ? t('copy.job.reconcile_delete')
     : operation === 'checkpoint.create'
-      ? 'Reconcile checkpoint'
+      ? t('copy.job.reconcile_checkpoint')
       : operation === 'checkpoint.restore'
-        ? 'Reconcile restore'
+        ? t('copy.job.reconcile_restore')
         : operation === 'vm.create'
-          ? 'Reconcile create'
+          ? t('copy.job.reconcile_create')
           : operation === 'vm.shutdown'
-            ? 'Reconcile shutdown'
+            ? t('copy.job.reconcile_shutdown')
             : operation === 'vm.restart'
-              ? 'Reconcile restart'
+              ? t('copy.job.reconcile_restart')
               : operation === 'vm.qos.storage.set'
-                ? 'Reconcile storage QoS'
+                ? t('copy.job.reconcile_storage')
                 : operation === 'vm.qos.network.set'
-                  ? 'Reconcile network QoS'
-                  : 'Reconcile rename';
+                  ? t('copy.job.reconcile_network')
+                  : t('copy.job.reconcile_rename');
   return `<button data-action="reconcile-job" data-job-id="${pcvEscapeHtml(job.job_id)}"${canOperate ? '' : ' disabled'}>${label}</button>`;
 }
 
@@ -224,9 +224,9 @@ function buildEventCenterItems() {
   const rows = buildActivityRows();
   const activeJobs = rows.filter(({ job }) => ['queued', 'running'].includes(String(job?.status || '').toLowerCase()));
   const failedJobs = rows.filter(({ job }) => String(job?.status || '').toLowerCase() === 'failed');
-  if (activeJobs.length > 0) push('warn', 'Active jobs', `${activeJobs.length} queued/running job(s) are visible.`, 'jobs');
-  if (failedJobs.length > 0) push('error', 'Failed jobs', `${failedJobs.length} failed job(s) need review.`, 'jobs');
-  if (!state.apiToken.trim()) push('info', 'Browser token', 'token-required routes may show Auth required.', 'session');
+  if (activeJobs.length > 0) push('warn', t('copy.mon.active_jobs'), t('copy.mon.active_detail', { count: activeJobs.length }), 'jobs');
+  if (failedJobs.length > 0) push('error', t('copy.mon.failed_jobs'), t('copy.mon.failed_detail', { count: failedJobs.length }), 'jobs');
+  if (!state.apiToken.trim()) push('info', t('copy.mon.browser_token'), 'token-required routes may show Auth required.', 'session');
 
   return items.slice(0, 12);
 }
@@ -262,7 +262,7 @@ function getJobTime(job) {
 
 function formatJobDetail(job) {
   if (job?.error?.code) {
-    return `${job.error.code}: ${job.error.message || 'Job failed'}`;
+    return `${job.error.code}: ${job.error.message || t('copy.job.failed_short')}`;
   }
   if (job?.result?.operation) {
     return `result=${job.result.operation}`;
@@ -370,7 +370,7 @@ function renderActivityPageSummary() {
     : `<button type="button" data-action="load-next-jobs" data-next-offset="${pcvEscapeHtml(nextOffset)}">Load next jobs</button>`;
   return `<div class="activity-warning activity-page-summary">
     <strong>Pagination</strong>
-    ${pcvEscapeHtml(page.returned ?? asArray(page).length)} shown of ${pcvEscapeHtml(page.count ?? asArray(state.serverJobs).length)}
+    ${pcvEscapeHtml(t('copy.list.shown', { shown: page.returned ?? asArray(page).length, total: page.count ?? asArray(state.serverJobs).length }))}
     / limit=${pcvEscapeHtml(page.limit ?? 50)}
     / offset=${pcvEscapeHtml(page.offset ?? 0)}
     / next_offset=${pcvEscapeHtml(nextOffset)}
@@ -502,7 +502,7 @@ function evidenceBooleanLabel(value) {
 function evidenceDashboardDetail(evidence = getBatchEvidence()) {
   const status = normalizeEvidenceStatus(evidence);
   if (!evidence || evidence.configured === false || status === 'not_configured') {
-    return 'Evidence root not configured for this listener.';
+    return t('copy.evidence.root_missing');
   }
   const latest = asObject(evidence.latest);
   const gpu = asObject(latest.gpu_snapshots);
@@ -519,7 +519,7 @@ function evidenceDashboardDetail(evidence = getBatchEvidence()) {
 function currentEvidenceDashboardDetail() {
   const rollup = getCurrentEvidenceRollup();
   if (!rollup) {
-    return 'Current evidence rollup is not reported by this listener.';
+    return t('copy.evidence.rollup_missing');
   }
 
   const publicBoundary = getCurrentEvidencePublicBoundary(rollup);
@@ -558,7 +558,7 @@ function collectEvidenceIssues() {
     const issue = normalizeSummaryIssue(error, 'PCV_BATCH_EVIDENCE');
     issues.push({
       code: issue.code || 'PCV_BATCH_EVIDENCE',
-      message: issue.message || 'Batch evidence issue',
+      message: issue.message || t('copy.evidence.issue'),
       detail: issue.detail || status,
       tone: issue.code === 'PCV_BATCH_EVIDENCE_PARSE_FAILED' ? 'error' : 'warn'
     });

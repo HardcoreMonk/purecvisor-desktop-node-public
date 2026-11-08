@@ -105,7 +105,7 @@ function _renderContentPaint(tab, generation) {
         });
       }
     }
-    else if (_DEBUG) console.warn('Unknown tab:', tab);
+    else if (_DEBUG) console.warn(t('copy.nav.unknown'), tab);
   } catch (renderErr) {
     if ((window._navGeneration || 0) !== gen) { /* stale render, ignore */ }
     else {

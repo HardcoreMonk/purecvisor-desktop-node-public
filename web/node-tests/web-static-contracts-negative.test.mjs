@@ -244,7 +244,7 @@ const defectCases = [
   {
     name: "missing running guest execution cancel label",
     id: "web.static.guest-exec-cancel",
-    overrides: () => removeOnce("web/app.bundle.js", "Cancel running guest exec"),
+    overrides: () => removeOnce("web/app.bundle.js", "copy.job.cancel_guest"),
     expectedCode: assertionFailed,
     expectedLabel: "guest-exec-cancel:label"
   },
@@ -489,7 +489,7 @@ const defectCases = [
   {
     name: "missing VM lifecycle refusal authoritative source owner",
     id: "web.static.vm-lifecycle-actions",
-    overrides: () => removeOnce("web/src/modules/core.ts", "Unmanaged delete refusal remains."),
+    overrides: () => removeOnce("web/src/modules/core.ts", "copy.confirm.manage_unmanaged"),
     expectedCode: assertionFailed,
     expectedLabel: "vm-lifecycle-actions:unmanaged-delete-refusal:source"
   },
@@ -664,7 +664,7 @@ const defectCases = [
   {
     name: "missing guest cancel authoritative source owner",
     id: "web.static.guest-exec-cancel",
-    overrides: () => removeOnce("web/src/modules/ops.ts", "Cancel running guest exec"),
+    overrides: () => removeOnce("web/src/modules/ops.ts", "copy.job.cancel_guest"),
     expectedCode: assertionFailed,
     expectedLabel: "guest-exec-cancel:label-source"
   },

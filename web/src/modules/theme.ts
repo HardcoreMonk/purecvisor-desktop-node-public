@@ -91,14 +91,14 @@ function openThemeEditor() {
       el('span', { style: 'font-size:9px;color:var(--fg2)', id: 'te-val-' + v }, hex));
   });
   showModal([
-    el('h2', null, 'Theme Editor'),
+    el('h2', null, t('copy.theme.editor')),
     el('div', { class: 'theme-editor' },
       el('div', { class: 'theme-editor-grid' }, items)),
     el('div', { class: 'theme-editor-actions' },
-      el('button', { class: 'btn btn-g', onclick: 'saveCustomTheme()' }, 'Save as Custom'),
-      el('button', { class: 'btn', onclick: 'exportTheme()' }, 'Export JSON'),
+      el('button', { class: 'btn btn-g', onclick: 'saveCustomTheme()' }, t('copy.theme.save')),
+      el('button', { class: 'btn', onclick: 'exportTheme()' }, t('copy.theme.export')),
       el('button', { class: 'btn', onclick: 'importTheme()' }, 'Import'),
-      el('button', { class: 'btn btn-r', onclick: 'closeModal()', style: 'margin-left:8px' }, _L ? _L('원래 테마로', 'Reset to Original') : 'Reset to Original'),
+      el('button', { class: 'btn btn-r', onclick: 'closeModal()', style: 'margin-left:8px' }, t('copy.theme.reset')),
       el('button', { class: 'btn btn-r', onclick: 'closeModal()' }, 'Cancel'))
   ], {
     onClose: function () {
@@ -132,7 +132,7 @@ function saveCustomTheme() {
   if (!applied) { toast(t('msg.invalid_theme'), false); return; }
   localStorage.setItem('pcv-custom-theme', JSON.stringify(applied));
   themeEditorSnapshot = null;
-  toast('Custom theme saved');
+  toast(t('copy.theme.saved'));
   closeModal();
 }
 function applyCustomTheme(vars) {
@@ -195,7 +195,7 @@ function exportUiSettings() {
   a.href = URL.createObjectURL(blob);
   a.download = 'purecvisor-settings.json';
   a.click();
-  toast(_L ? _L('설정 내보내기 완료', 'Settings exported') : 'Settings exported');
+  toast(t('copy.settings.exported'));
 }
 function importUiSettings() {
   var input = document.createElement('input');
@@ -224,9 +224,9 @@ function importUiSettings() {
         if (s.autoTheme) localStorage.setItem('pcv-auto-theme', s.autoTheme);
         if (s.favorites) localStorage.setItem('pcv-favorites', s.favorites);
         if (s.customTheme && s.theme !== 'custom') localStorage.setItem('pcv-custom-theme', s.customTheme);
-        toast(_L ? _L('설정 가져오기 완료 — 새로고침 권장', 'Settings imported — refresh recommended') : 'Settings imported');
+        toast(t('copy.settings.imported'));
       } catch (err) {
-        toast(_L ? _L('잘못된 설정 파일', 'Invalid settings file') : 'Invalid', false);
+        toast(t('copy.settings.invalid'), false);
       }
     };
     reader.readAsText(file);

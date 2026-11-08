@@ -157,9 +157,9 @@ function startPolling() {
 
 async function cancelJob(jobId, cancelScope = 'job') {
   if (cancelScope === 'running-guest-execution') {
-    requireRbac('operate', 'running guest execution cancel');
+    requireRbac('operate', t('copy.rbac.guest_exec_cancel'));
   } else {
-    requireRbac('operate', 'job cancel');
+    requireRbac('operate', t('copy.rbac.job_cancel'));
   }
   const job = await desktopApi.cancelJob(jobId);
   pcvTrackJob(job);
@@ -167,7 +167,7 @@ async function cancelJob(jobId, cancelScope = 'job') {
 }
 
 async function retryJob(jobId) {
-  requireRbac('operate', 'job retry');
+  requireRbac('operate', t('copy.rbac.job_retry'));
   const job = await desktopApi.retryJob(jobId);
   pcvTrackJob(job);
   startPolling();
@@ -175,7 +175,7 @@ async function retryJob(jobId) {
 }
 
 async function reconcileJob(jobId) {
-  requireRbac('operate', 'job reconciliation');
+  requireRbac('operate', t('copy.rbac.job_reconcile'));
   const job = await desktopApi.reconcileJob(jobId);
   pcvTrackJob(job);
   render();

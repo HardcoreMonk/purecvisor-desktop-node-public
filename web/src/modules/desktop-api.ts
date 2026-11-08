@@ -22,7 +22,7 @@ async function apiFetch(path: string, options: RequestInit = {}): Promise<any> {
     throw normalizeError({
       status: response.status,
       code: 'PCV_RESPONSE_INVALID',
-      message: 'The API returned a malformed response.',
+      message: t('copy.api.malformed'),
       detail: caught.message
     });
   }
@@ -66,7 +66,7 @@ async function apiRequest(path: string, options: RequestInit = {}): Promise<Resp
     const caught = error as Error;
     throw normalizeError({
       code: caught.name === 'AbortError' ? 'PCV_REQUEST_ABORTED' : 'PCV_NETWORK_ERROR',
-      message: caught.name === 'AbortError' ? 'The Web Console request was superseded.' : 'Network request failed.',
+      message: caught.name === 'AbortError' ? t('copy.api.superseded') : t('copy.api.network'),
       detail: caught.message
     });
   }
@@ -111,7 +111,7 @@ async function apiDownload(path: string, bundleId: string, options: RequestInit 
         status: response.status,
         operation: 'diagnostic.bundle.download',
         code: 'PCV_DIAGNOSTIC_BUNDLE_DOWNLOAD_FAILED',
-        message: 'Diagnostic bundle download failed.',
+        message: t('copy.api.download_failed'),
         detail: `HTTP ${response.status}`,
         retryable: false
       });
