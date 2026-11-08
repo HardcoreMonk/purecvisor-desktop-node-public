@@ -3,18 +3,18 @@
 <!-- BEGIN GENERATED CURRENT EVIDENCE -->
 ## Current operational evidence (generated)
 
-- Version: `0.42.96-admin-smoke`
+- Version: `0.42.98-admin-smoke`
 - Active operator surfaces: Web Console and PCVCLI; `tui_present=false`.
-- Package evidence: `docs/ga-ready/evidence/admin-smoke-package-2026-10-11-04296.md`.
-- Full admin host mutation: `full-admin-host-mutation-gate-20261011-04296` / `docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-10-11-04296-hostmutation.md`.
-- Actual-VM functional evidence: `docs/ga-ready/evidence/functional-correctness-actual-host-validation-2026-10-11-04296-carryforward.md`.
+- Package evidence: `docs/ga-ready/evidence/admin-smoke-package-2026-11-08-04298.md`.
+- Full admin host mutation: `full-admin-host-mutation-gate-20261108-04298` / `docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-11-08-04298-hostmutation.md`.
+- Actual-VM functional evidence: `docs/ga-ready/evidence/functional-correctness-actual-host-validation-2026-11-08-04298-carryforward.md`.
 - Feature qualification: `contract=pcv-feature-promotion-decision-v1`; `promotion_eligible=true`; `blocker_count=0`; `blockers=none`.
-- Installed CLI/Web current-card: `docs/ga-ready/evidence/installed-operator-surface-current-card-2026-10-11-04296.md`; CLI exit 0, Web HTTP 200, service Running/Automatic, TUI absent.
-- Clean MSI SHA-256: `326b867a161ffa5038f4b3cecd8405ca0999cff00875c4a9fb8f5ac92f3cdeed`.
-- Operational MSI SHA-256: `37bfc1ffd045950e3c4bfa1fefd4db6a96a0490288dc647fecc6cb1e1137d299`.
-- Operational payload aggregate SHA-256: `8dc6df5754616748d83b5728cd5f38b0a5788c47e44d1d8f46e31fca4dfe4cd5`.
-- Provenance commit: `9ac8eb3fcf38989dc4dbd66351fc9c7c858e2d63`.
-- Latest closed manual-admin pair: `0.42.95-admin-smoke -> 0.42.96-admin-smoke` / `manual-admin-campaign-20261011-04295-04296-closed`.
+- Installed CLI/Web current-card: `docs/ga-ready/evidence/installed-operator-surface-current-card-2026-11-08-04298.md`; CLI exit 0, Web HTTP 200, service Running/Automatic, TUI absent.
+- Clean MSI SHA-256: `9a26d4cee9c4360cb8a04ce520b57de4d2e99c3e7b64997d8b4567e7c04733b0`.
+- Operational MSI SHA-256: `0a42b89f4ababb0066e4d2a326a8019ae1a2780ee079b11c4809c999d0d93680`.
+- Operational payload aggregate SHA-256: `963f4f746b0fc9d1c80209861bc2a6317ff08cb5028b344acd589685bbb67444`.
+- Provenance commit: `2dfe2ac7e1af85a51b676127f83d264a0b57d840`.
+- Latest closed manual-admin pair: `0.42.96-admin-smoke -> 0.42.98-admin-smoke` / `manual-admin-campaign-20261108-04296-04298-closed`.
 - Claims: `public_trusted_signing=false`; `external_stable_publication=false`.
 <!-- END GENERATED CURRENT EVIDENCE -->
 
