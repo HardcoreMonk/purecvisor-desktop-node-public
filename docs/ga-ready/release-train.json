@@ -11,6 +11,14 @@
       "summary": "in-app guide web/guide-content.md rewritten for the installed ADR-0019 Web Console (sidebar groups, VM detail tabs, wizard, clone modal, confirms, console, checkpoint schedule, password routes)",
       "lane2_probe": null,
       "risk_tier": "S"
+    },
+    {
+      "pr": 115,
+      "merge_commit": "aaa2b664",
+      "area": "api",
+      "summary": "BL-0011: console input rate limiter measures its 1 s window with the hardening clock (same seam as the frame throttle); behaviour unchanged, test made deterministic",
+      "lane2_probe": null,
+      "risk_tier": "S"
     }
   ],
   "trains": [
