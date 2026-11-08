@@ -134,13 +134,24 @@ operational current는 `0.42.96-admin-smoke` 그대로다.
 - 스크립트가 피해 간 동작 셋을 backlog에 적었다: `BL-0032`(예약 미리보기가 입력을 비워 바로 저장하면 `PCV_CHECKPOINT_SCHEDULE_INTERVAL_INVALID`), `BL-0033`(켜진 VM 복원이 원시 `PCV_HYPERV_WMI_METHOD_FAILED`), `BL-0034`(VM 목록 갱신 `PCV_NATIVE_VM_LIST_SUMMARY_PARITY_INCOMPLETE` 때 지운 행이 남음). 셋 다 이 train의 회귀가 아니다. 예약 form은 `bb54287`부터 같은 구조이고 `0.42.96` payload `87a7deb`에도 있다. 적재 payload `87a7deb..8e4ebe2`에 `src/DesktopNode.HyperV` 변경이 없다. 화면 다듬기 거리는 `BL-0031`이다. 그래서 train을 세우지 않는다.
 - 캡처: 1600×1000으로 찍고 500 KB 넘는 여덟 장을 줄였다. 찍기 전 치환은 07~16에서 장마다 1곳이다. Claude가 열어 보고 사용자 홈 경로·LAN IP·호스트명·token이 없는 것을 확인했다.
 - 끝 상태: `Get-VM`은 보존 VM 세 개(`pcv-guest-installed-04253-r1` Off, `pcv-it-s2-source` Off, `pcv-it-s4-console` Running)뿐이고 probe 폴더 둘은 지워졌다. service Running/Automatic, Web 200, PureCVisor 방화벽 규칙 0이다.
-- 예산: Lane 2 checkpoint 45분을 넘겼다(16:12~17:50 KST, 약 98분). grok이 스크립트를 쓰고 고치며 반복 실행한 시간이다. 실행 중에 끊으면 probe VM이 남아서 끝까지 기다렸다. 권장안 자동 승인(사용자 결정 5)으로 기록하고 Task 6을 새 checkpoint로 잇는다.
+- 예산: Lane 2 checkpoint 45분을 넘겼다(16:12~17:37 KST, 약 85분). grok이 스크립트를 쓰고 고치며 반복 실행한 시간이다. 실행 중에 끊으면 probe VM이 남아서 끝까지 기다렸다. 권장안 자동 승인(사용자 결정 5)으로 기록하고 Task 6을 새 checkpoint로 잇는다.
 
 operational current는 `0.42.96-admin-smoke` 그대로다.
 
 ## Task 6: probe 비밀번호 재설정 (queue 104; 이관: `train-04297-20261108` Task 8)
 
-- [ ] Lane 2. 설치본 `0.42.98` loopback에서 계정이 없는 동안 Local API·PCVCLI의 재설정 route가 인증 없이 거절되는지 확인한다. 그다음 Task 7 계정 복원 뒤, 에이전트용 operator 계정 `pcv-s4-operator`로만 본인 재설정 경로를 돈다: 로그인 token을 받고, 본인 재설정 뒤 옛 token이 `401`, 새 비밀번호 로그인이 성공하는지 본다. 에이전트가 그 계정의 현재 비밀번호를 갖고 있지 않으면 이 단계는 하지 않고 Task 12 사용자 시연 항목으로 넘긴다(admin `pcv-admin2` 비밀번호는 사용자 전용이다). 비밀번호와 token은 실행 경계에서 만들고 남기지 않는다. evidence `docs/ga-ready/evidence/lane2-account-password-reset-2026-11-08-04298.md`. 로컬 commit.
+- [x] Lane 2. 설치본 `0.42.98` loopback에서 계정이 없는 동안 Local API·PCVCLI의 재설정 route가 인증 없이 거절되는지 확인한다. 그다음 Task 7 계정 복원 뒤, 에이전트용 operator 계정 `pcv-s4-operator`로만 본인 재설정 경로를 돈다: 로그인 token을 받고, 본인 재설정 뒤 옛 token이 `401`, 새 비밀번호 로그인이 성공하는지 본다. 에이전트가 그 계정의 현재 비밀번호를 갖고 있지 않으면 이 단계는 하지 않고 Task 12 사용자 시연 항목으로 넘긴다(admin `pcv-admin2` 비밀번호는 사용자 전용이다). 비밀번호와 token은 실행 경계에서 만들고 남기지 않는다. evidence `docs/ga-ready/evidence/lane2-account-password-reset-2026-11-08-04298.md`. 로컬 commit.
+
+실행 기록(2026-11-08): 17:38 KST에 계정 0개(`bootstrap_state=no-default-account`), loopback 전용 설치본 `0.42.98-admin-smoke+2dfe2ac`에서 일회용 스크립트로 열두 호출을 돌렸다. 비밀번호는 임의 일회용 값, loopback token은 메모리와 `--token-env`로만 다뤘고 출력은 상태·오류 코드뿐이다.
+
+- API: reset은 인증 없음 `401` `PCV_AUTH_REQUIRED`, 무효 bearer `403` `PCV_AUTH_FORBIDDEN`, loopback 세션 `409` `PCV_ACCOUNT_BOOTSTRAP_NOT_AVAILABLE`. change는 `401`, `403`, loopback 세션 `403` `PCV_ACCOUNT_PASSWORD_CHANGE_FORBIDDEN`.
+- PCVCLI: 무효 token과 loopback 세션은 같은 코드로 exit `1`. argv `--password`는 `PCV_CLI_USAGE`, `--yes` 없음은 `PCV_CLI_CONFIRMATION_REQUIRED`로 exit `2`(API 호출 전).
+- 응답에 token 없음, `account-mutation-audit.jsonl` 실행 전후 없음, 실행 뒤 계정 0개. host mutation과 계정 변경은 없다.
+- 둘째 단계(`pcv-s4-operator` 본인 재설정)는 에이전트가 현재 비밀번호를 갖고 있지 않아 하지 않았다. 계획대로 Task 12 사용자 시연 항목으로 넘긴다. service bearer로 비밀번호를 바꾸는 것은 계획 문장 밖이라 하지 않았다.
+- report-only: loopback 세션 reset의 거절 코드가 bootstrap 이름이다(계정 생성과 같은 `RejectReadyAuth` 경로). 거절은 맞다.
+- evidence: `docs/ga-ready/evidence/lane2-account-password-reset-2026-11-08-04298.md`.
+
+operational current는 `0.42.96-admin-smoke` 그대로다.
 
 ## Task 7: S4 복원과 LAN 재적용 (queue 94, 95; 이관: `train-04297-20261108` Task 9)
 
@@ -173,6 +184,8 @@ operational current는 `0.42.96-admin-smoke` 그대로다.
 ## Task 12: S4 사용자 시연 A (이관: `train-04297-20261108` Task 14, 원래 `ui-redesign-20261105` Task 11)
 
 - [ ] 원래 문장: Task 4 전에 만든 admin 계정으로 자기 PC 브라우저에서 S1~S3을 시연한다. 에이전트는 시연 전후 상태(service 구성, 방화벽 규칙, 계정 목록, VM)를 읽어 기록하고 확인자 칸은 사용자가 채운다. 이 기록만 "다른 PC" 시연이다. 리허설 R은 S4 판정 근거로 쓰지 않는다. 2026-11-08 변경: 시연은 설치본 `0.42.98`의 새 화면으로 이어 간다(S2 복제 이름은 복제 모달 첫 칸). 기록은 `docs/ga-ready/demo/s4-lan-demo-2026-11-05.md`이고 초안은 로컬 branch `lane1/s4-demo-record-20261108` `cf2b2f6`에 있다. 사용자가 시연 결과를 알리면 처리한다.
+
+추가(2026-11-08, Task 6): 비밀번호 재설정과 변경(PR #104)의 성공 경로를 시연에 넣는다. admin이 Web 계정 화면에서 `pcv-s4-operator` 비밀번호를 재설정하고, 그 계정의 옛 세션이 끊기는지(`401`), 새 비밀번호로 로그인되는지, 로그인한 사용자가 상단의 "비밀번호 변경"으로 자기 비밀번호를 바꿀 수 있는지 본다. 비밀번호는 사용자가 정하고 기록하지 않는다.
 
 ## Task 13: S4 끝 상태 (이관: `train-04297-20261108` Task 15, 원래 `ui-redesign-20261105` Task 12)
 
