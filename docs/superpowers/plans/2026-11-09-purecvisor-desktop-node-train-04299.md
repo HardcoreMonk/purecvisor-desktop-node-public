@@ -204,9 +204,20 @@ operational current는 `0.42.98-admin-smoke` 그대로다.
 
 ## Task 7: 계정 복원
 
-- [ ] Lane 2. Task 2 백업의 `accounts.json`을 data root에 되돌리고 SHA-256을 비교한다. fullgate 재설치가 만든 빈 저장소는 대체한다. 파일 ACL은 제품이 빈 저장소에 둔 것과 같게 맞춘다.
+- [x] Lane 2. Task 2 백업의 `accounts.json`을 data root에 되돌리고 SHA-256을 비교한다. fullgate 재설치가 만든 빈 저장소는 대체한다. 파일 ACL은 제품이 빈 저장소에 둔 것과 같게 맞춘다.
   - 확인: 계정 3개(`pcv-admin` disabled, `pcv-admin2` enabled, `pcv-s4-operator` disabled), loopback 세션 `409`, Web 200, service Running/Automatic.
   - 이름과 상태만 기록한다. 로컬 commit.
+
+실행 기록(2026-11-09 04:50 KST 전후):
+- data root에는 fullgate 재설치가 만든 빈 계정 저장소(0개)가 있었다. 그 ACL은 상속 끊음, SYSTEM·Administrators 읽기만, owner SYSTEM이다. 이 파일은 지우지 않고 백업 위치로 옮겼다.
+- Task 2 백업 `accounts.json`을 data root에 복사했다. SHA-256은 백업과 같다.
+- 파일 ACL은 train 전 원본의 표기(DACL은 제품 빈 저장소와 같음, owner Administrators) 그대로 맞췄다.
+- service를 다시 시작했다(승인 2). loopback 세션은 `409` `PCV_LOOPBACK_SESSION_DISABLED`다. 계정 모드로 돌아왔다는 뜻이다.
+- 계정 3개: `pcv-admin` admin disabled, `pcv-s4-operator` operator disabled, `pcv-admin2` admin enabled(train 전과 같음).
+- 확인: service Running/Automatic, Web `200`, PureCVisor 방화벽 규칙 0, `pcv-guest-installed-04253-r1` Off·`pcv-it-s2-source` Off(그대로).
+- 백업 위치에는 백업 `accounts.json`과 옮긴 빈 저장소가 남아 있다. 지울지는 Task 12에서 사용자에게 묻는다.
+
+operational current는 `0.42.98-admin-smoke` 그대로다.
 
 ## Task 8: train PR A
 
