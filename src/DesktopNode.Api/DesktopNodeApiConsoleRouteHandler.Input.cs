@@ -113,7 +113,9 @@ internal sealed partial class DesktopNodeApiConsoleRouteHandler
 
     private bool TryTakeInputSlot(string vm)
     {
-        var now = Environment.TickCount64;
+        // frame throttle 과 같이 hardening options 의 clock(ms since epoch)으로 1초 창을 잰다. 시험은 clock 을 고정해
+        // limiter 를 결정적으로 검증하고, 실제 서비스는 UtcNow 를 쓴다.
+        var now = hardeningOptions.Now().ToUnixTimeMilliseconds();
         var allowed = true;
         inputWindows.AddOrUpdate(
             vm,
