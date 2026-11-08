@@ -225,7 +225,14 @@ PR #109(`lane1/train-04298-20261108`)를 열었고 Required CI 다섯 개(`dotne
 
 ## Task 11: Lane 3 PR B (이관: `train-04297-20261108` Task 13)
 
-- [ ] clean HEAD 종료 검증(Task 8과 같음). push, PR. green CI 뒤 사용자 merge 문장으로 merge한다. merge 뒤 main push run을 기다리고, red면 revert PR을 열고 멈춘다.
+- [x] clean HEAD 종료 검증(Task 8과 같음). push, PR. green CI 뒤 사용자 merge 문장으로 merge한다. merge 뒤 main push run을 기다리고, red면 revert PR을 열고 멈춘다.
+
+실행 기록(2026-11-08): clean HEAD `ed3281e`에서 종료 검증을 했다.
+- PR gate `artifacts/pr-gate/20261108-093222` `ok=true`: build, `dotnet-test-release`(솔루션 전체, clean tree라 PolicyBoundary 통과), module-size-ratchet 3/3
+- Pester: packaging 527 통과·1 실패(기존 BL-0025), installer 49, web 50, manual-admin 137
+- public-source-safety는 기존 BL-0015 두 건 말고 신규 0. `git diff --check origin/main...HEAD` 깨끗함
+
+PR #110(`lane3/train-04298-promotion-20261108`)을 열었고 Required CI 다섯 개가 pass였다. 사용자 문장 "PR #110 merge 승인" 뒤 base가 `origin/main`과 같은 것을 확인하고 `--match-head-commit ed3281e`로 merge했다(merge commit `0d4bcdd`). main push run은 Development Gates `42468280032`, Public Boundary `42468279953`이고 둘 다 success다. operational current는 이제 `0.42.98-admin-smoke`다.
 
 ## Task 12: S4 사용자 시연 A (이관: `train-04297-20261108` Task 14, 원래 `ui-redesign-20261105` Task 11)
 
@@ -243,7 +250,15 @@ PR #109(`lane1/train-04298-20261108`)를 열었고 Required CI 다섯 개(`dotne
 
 ## Task 15: C5 runner 확인 (이관: `train-04297-20261108` Task 17, 원래 `ui-redesign-20261105` Task 14)
 
-- [ ] 원래 문장: `not_before` 2026-10-19. Ubuntu 26 runner의 첫 `main` Development Gates와 Public Boundary run이 green이면 `config/project-completion-criteria.json` 위험 행을 `status=closed`, `closed_by`에 run id로 닫는다. 실패하면 `ubuntu-24.04` pin을 판단해 backlog 행으로 보고한다. push, PR. merge는 사용자 승인 뒤.
+- [x] 원래 문장: `not_before` 2026-10-19. Ubuntu 26 runner의 첫 `main` Development Gates와 Public Boundary run이 green이면 `config/project-completion-criteria.json` 위험 행을 `status=closed`, `closed_by`에 run id로 닫는다. 실패하면 `ubuntu-24.04` pin을 판단해 backlog 행으로 보고한다. push, PR. merge는 사용자 승인 뒤.
+
+실행 기록(2026-11-08): S4 시연(Task 12)을 기다리지 않는 task라 먼저 했다.
+- 확인 방법: `main` push run의 ubuntu job 로그에서 `Set up job`의 `Runner Image`를 읽었다.
+- 2026-10-12 `07ec434`의 run(Development Gates `38233370959`, Public Boundary `38233370988`)까지는 `ubuntu-24.04`였다.
+- 다음 `main` push인 2026-11-05 `cbe5459`의 Development Gates `41955196527`(web job `127008328378`)와 Public Boundary `41955196532`(job `127008327544`)가 처음으로 `ubuntu-26.04`였고, 둘 다 success다.
+- 그 뒤 PR #110 merge `0d4bcdd`의 run도 `ubuntu-26.04`(provisioner `20261028.624`)에서 success다.
+- `config/project-completion-criteria.json`의 `ubuntu-26-runner` 행을 `status=closed`로 두고, `closed_by`에 위 run id를 적었다. `ubuntu-24.04` pin은 필요 없다.
+- branch는 `lane1/train-04298-c5-20261108`(`main` `0d4bcdd`에서)이고, push와 PR까지 한다. merge는 사용자 승인 뒤다.
 
 ## Nonclaims
 
