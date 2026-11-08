@@ -115,13 +115,24 @@ clean-host가 PASS하지 않아 `current-base.json`은 지정하지 않았다. b
 
 ## Task 4b: 설치본 제품 Rollback
 
-- [ ] Lane 2(사용자 결정 6, 승인 2의 제품 Update/Rollback 범위). 설치본 wrapper로 `-Action Rollback`을 plan(`-WhatIf` 또는 plan 출력) 뒤 실행해 `0.42.96-admin-smoke`로 되돌린다. 확인:
+- [x] Lane 2(사용자 결정 6, 승인 2의 제품 Update/Rollback 범위). 설치본 wrapper로 `-Action Rollback`을 plan(`-WhatIf` 또는 plan 출력) 뒤 실행해 `0.42.96-admin-smoke`로 되돌린다. 확인:
   - manifest `0.42.96`, ARP `0.42.96` 1개.
   - service Running/Automatic, loopback listener, Web 200, PureCVisor 방화벽 규칙 0.
   - 계정 파일은 보관 위치에 그대로 있다.
   - 보존 VM·template·`pcv-it-s4-console`은 그대로다.
 
   기록은 이 plan에 남긴다. 로컬 commit.
+
+실행 기록(2026-11-08): pair lifecycle bucket과 같은 저장소 wrapper `packaging/windows-desktop-node/Invoke-PcvDesktopNodeProduct.ps1`을 썼다. 먼저 `-Action Rollback -WhatIf`로 plan을 확인했다(previous root manifest `0.42.96-admin-smoke`). 그다음 14:48 KST에 `-Action Rollback`을 돌렸고 `1`초 걸려 `ok=true`였다.
+
+끝 상태:
+
+- manifest `0.42.96-admin-smoke`, `DesktopNode.Host.exe` ProductVersion `0.42.96-admin-smoke+9ac8eb3…`(원래 설치본), ARP `{E85C21A8-…}` `0.42.96` 1개.
+- service Running/Automatic, listener `127.0.0.1:7777`·`127.0.0.1:80`, Web 200, `POST /api/v1/auth/loopback-session` 200, PureCVisor 방화벽 규칙 0.
+- web root에 `0.42.96`의 `app.js`·`styles.css`가 다시 있다.
+- `pcv-guest-installed-04253-r1` Off, `pcv-it-s2-source` Off, `pcv-it-s4-console` Running(그대로).
+
+계정 백업은 보관 위치에 그대로 있다. data root의 `accounts.json`은 백업과 다른 파일이다. Task 2가 원본을 지운 직후(05:35 KST) service가 빈 계정 저장소(계정 0개, 174 bytes)를 다시 만든 것이고, loopback 세션은 그래서 200이다. Task 9 복원은 이 빈 파일을 백업으로 바꾼다. 이 Rollback 말고 host mutation은 없다.
 
 ## Task 4c: 이전 버전 제품 Update 호환 수정
 
