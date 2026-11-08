@@ -1,5 +1,13 @@
 # Desktop Node ADR 인덱스
 
+## 2026-11-09 현재 기준
+
+ADR-0020을 제안한다. 원본 purecvisor 프론트엔드 전체(`fd754e2`) 대비 감사(`docs/web-console-upstream-parity-audit-2026-11-09.md`,
+발견 61건)에서 셸은 원본과 같지만 본문 화면이 2026-08 배치로 남은 것이 드러났다. ADR-0018·0019는 유지하고, 본문 화면을 이미 옮겨 온
+원본 부품으로 그리기, VM 목록·상세 골격(선택 뒤 왼쪽 260px 목록), 화면별 렌더 등록표, Local API 선행 항목 분리(metrics는 따로 ADR)를
+정한다. 설계는 `docs/superpowers/specs/2026-11-09-purecvisor-desktop-node-web-console-upstream-parity-design.md`이고, 채택은 구현
+campaign 승인 문장으로 한다.
+
 ## 2026-11-08 현재 기준
 
 ADR-0019 구현(campaign `ui-redesign-20261105`, PR #97~#103, #105~#107)과 계정 비밀번호 재설정·변경(PR #104)이 설치본에 들어갔다.
@@ -291,7 +299,11 @@ ADR-0004 supporting evidence:
 
 ## 제안 중인 ADR 후보
 
-현재 제안 중인 ADR 후보는 없다. `ADR-0017`은 2026-10-08 제안 뒤 같은 날 채택돼 위 적용 결정 표가 소유한다.
+| ADR | 상태 | 후보 결정 | 관련 문서 |
+|-----|------|-----------|-----------|
+| `docs/adr/0020-web-console-content-upstream-parity.md` | 제안(2026-11-09) | Web Console 본문 원본 정합. 본문 화면을 원본 `fd754e2`에서 옮겨 온 부품으로 그리고, VM 화면은 목록·상세 골격(선택 뒤 260px 목록), 화면별 렌더 등록표, Local API 선행 5건은 분리(metrics는 따로 ADR). 채택은 구현 campaign 승인 문장으로 | `docs/web-console-upstream-parity-audit-2026-11-09.md`, `docs/superpowers/specs/2026-11-09-purecvisor-desktop-node-web-console-upstream-parity-design.md` |
+
+그 밖에 제안 중인 ADR 후보는 없다. `ADR-0017`은 2026-10-08 제안 뒤 같은 날 채택돼 위 적용 결정 표가 소유한다.
 `ADR-0015`는 2026-08-23 채택돼 위 적용 결정 표가 소유한다.
 2026-08-03 번호 감사에서 `ADR-0013`은 이미 적용 중인
 `docs/adr/0013-job-store-single-writer-transaction-lease.md`가 소유하는 것을 재확인했다. Wave 6
