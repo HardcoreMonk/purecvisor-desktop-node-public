@@ -178,11 +178,29 @@ operational current는 `0.42.96-admin-smoke` 그대로다.
 
 ## Task 8: train PR A (이관: `train-04297-20261108` Task 10)
 
-- [ ] clean HEAD 종료 검증을 한다: `dotnet build src/DesktopNode.sln -c Release`, `Invoke-PcvPrGate.ps1` 또는 Required CI shard 4개 로컬, Pester 4종, `npm run test:public-source-safety --prefix web` 신규 0, `train-path-check --payload 8e4ebe2 --head HEAD` exit `0`. 그다음 push, PR. green CI 뒤 사용자 merge 문장으로 merge한다(`--match-head-commit`). merge 뒤 main push run을 기다리고, red면 revert PR을 열고 멈춘다.
+- [x] clean HEAD 종료 검증을 한다: `dotnet build src/DesktopNode.sln -c Release`, `Invoke-PcvPrGate.ps1` 또는 Required CI shard 4개 로컬, Pester 4종, `npm run test:public-source-safety --prefix web` 신규 0, `train-path-check --payload 8e4ebe2 --head HEAD` exit `0`. 그다음 push, PR. green CI 뒤 사용자 merge 문장으로 merge한다(`--match-head-commit`). merge 뒤 main push run을 기다리고, red면 revert PR을 열고 멈춘다.
+
+실행 기록(2026-11-08): clean HEAD `641bf4b`에서 종료 검증을 했다.
+- `train-path-check --payload 8e4ebe2 --head HEAD` `ok=true`: 바뀐 경로 37개, `product_paths`·`allowed_pin_paths` 없음
+- `dotnet build src/DesktopNode.sln -c Release` 오류 0
+- PR gate `artifacts/pr-gate/20261108-084449` `ok=true`: build, `dotnet-test-release`, module-size-ratchet 3/3
+- Pester: packaging 527 통과·1 실패(기존 BL-0025 `Test-Json`), installer 49, web 50, manual-admin 137
+- `Update-PcvCurrentEvidenceDocs.ps1 -Check` current. public-source-safety는 기존 BL-0015 두 건 말고 신규 0
+
+PR #109(`lane1/train-04298-20261108`)를 열었고 Required CI 다섯 개(`dotnet`, `web`, `delivery`, `installer-policy`, `public-boundary-ci-required`)가 pass였다. 사용자 문장 "PR #109 merge 승인" 뒤 base가 `origin/main`과 같은 것을 확인하고 `--match-head-commit 641bf4b`로 merge했다(merge commit `4e8562f`). main push run은 Public Boundary `42467121432`, Development Gates `42467121444`이고 둘 다 success다.
 
 ## Task 9: Lane 3 데이터와 lane3-spec (이관: `train-04297-20261108` Task 11)
 
-- [ ] Lane 3. `main`에서 branch를 만든다. consume manifest, functional carry-forward·pair consume·`main-push`(PR A merge의 main push run 인용) facts를 쓴다. 그 뒤 `train-evidence --write`, current-card `promoted-current`(`--write --allow-update`), `--check`. `current-evidence.json`과 `lane3-spec --write`를 쓴다. `index_sections.previous_version`은 직전 승격 `0.42.96-admin-smoke`다(§10, 정차 train `0.42.97`을 건너뜀). 로컬 commit.
+- [x] Lane 3. `main`에서 branch를 만든다. consume manifest, functional carry-forward·pair consume·`main-push`(PR A merge의 main push run 인용) facts를 쓴다. 그 뒤 `train-evidence --write`, current-card `promoted-current`(`--write --allow-update`), `--check`. `current-evidence.json`과 `lane3-spec --write`를 쓴다. `index_sections.previous_version`은 직전 승격 `0.42.96-admin-smoke`다(§10, 정차 train `0.42.97`을 건너뜀). 로컬 commit.
+
+실행 기록(2026-11-08): `main` `4e8562f`에서 branch `lane3/train-04298-promotion-20261108`를 만들었다.
+- consume manifest: `artifacts/manual-admin-campaign-20261108-04296-04298/consume-manifest.json`을 새로 썼다. closed descriptor가 읽은 summary 7개의 SHA-256과 byte 수를 담고, 파일은 복사하지 않았다.
+- facts: functional carry-forward(04296 다음, payload 변경 14 commit), pair consume, 두 PR용 `main-push`를 더했다. `main-push`는 PR #109 merge `4e8562f`, Public Boundary `42467121432` job `128689088875`, Development Gates `42467121444`이고, 첫 부모 `8e4ebe2`와 비교해 `src`·`config`·`web/src`·`.github` 변경이 없다. current-card는 `promoted-current`로 바꿨다.
+- `train-evidence --write --allow-update <current-card>` 결과 새 문서 3개, current-card updated. `--check`는 열두 문서 모두 current다.
+- `current-evidence.json` current는 `0.42.98-admin-smoke`다. provenance `2dfe2ac`, clean MSI `9a26d4ce…`, operational MSI `0a42b89f…`, payload `963f4f74…`, manual_admin은 `0.42.96 -> 0.42.98`(`manual-admin-campaign-20261108-04296-04298-closed`)이다.
+- `lane3-spec --write`로 `packaging/windows-desktop-node/tests/fixtures/lane3-promotion-docs-spec-04298.json`을 만들었다. `index_sections.previous_version=0.42.96-admin-smoke`다.
+
+`release-train.json` 승격은 Task 10이 한다.
 
 ## Task 10: 승격 문서와 release-train 승격 (이관: `train-04297-20261108` Task 12)
 
