@@ -134,6 +134,14 @@
       "summary": "ui-redesign Task 10: browser UI quality gates (axe-core dev-only), supanova accent button text contrast, opaque modal background, search control accessible name",
       "lane2_probe": null,
       "risk_tier": "M"
+    },
+    {
+      "pr": 108,
+      "merge_commit": "d8bf7be9",
+      "area": "web",
+      "summary": "BL-0029: keep comment-only web/app.js and web/styles.css in the payload (WebPayload.wxs owns them) so the product Update preflight of 0.42.96 and earlier accepts newer update payloads; the pair clean-host bucket checks it",
+      "lane2_probe": null,
+      "risk_tier": "M"
     }
   ],
   "trains": [
