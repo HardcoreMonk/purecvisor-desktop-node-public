@@ -236,17 +236,53 @@ PR #110(`lane3/train-04298-promotion-20261108`)을 열었고 Required CI 다섯 
 
 ## Task 12: S4 사용자 시연 A (이관: `train-04297-20261108` Task 14, 원래 `ui-redesign-20261105` Task 11)
 
-- [ ] 원래 문장: Task 4 전에 만든 admin 계정으로 자기 PC 브라우저에서 S1~S3을 시연한다. 에이전트는 시연 전후 상태(service 구성, 방화벽 규칙, 계정 목록, VM)를 읽어 기록하고 확인자 칸은 사용자가 채운다. 이 기록만 "다른 PC" 시연이다. 리허설 R은 S4 판정 근거로 쓰지 않는다. 2026-11-08 변경: 시연은 설치본 `0.42.98`의 새 화면으로 이어 간다(S2 복제 이름은 복제 모달 첫 칸). 기록은 `docs/ga-ready/demo/s4-lan-demo-2026-11-05.md`이고 초안은 로컬 branch `lane1/s4-demo-record-20261108` `cf2b2f6`에 있다. 사용자가 시연 결과를 알리면 처리한다.
+- [x] 원래 문장: Task 4 전에 만든 admin 계정으로 자기 PC 브라우저에서 S1~S3을 시연한다. 에이전트는 시연 전후 상태(service 구성, 방화벽 규칙, 계정 목록, VM)를 읽어 기록하고 확인자 칸은 사용자가 채운다. 이 기록만 "다른 PC" 시연이다. 리허설 R은 S4 판정 근거로 쓰지 않는다. 2026-11-08 변경: 시연은 설치본 `0.42.98`의 새 화면으로 이어 간다(S2 복제 이름은 복제 모달 첫 칸). 기록은 `docs/ga-ready/demo/s4-lan-demo-2026-11-05.md`이고 초안은 로컬 branch `lane1/s4-demo-record-20261108` `cf2b2f6`에 있다. 사용자가 시연 결과를 알리면 처리한다.
 
 추가(2026-11-08, Task 6): 비밀번호 재설정과 변경(PR #104)의 성공 경로를 시연에 넣는다. admin이 Web 계정 화면에서 `pcv-s4-operator` 비밀번호를 재설정하고, 그 계정의 옛 세션이 끊기는지(`401`), 새 비밀번호로 로그인되는지, 로그인한 사용자가 상단의 "비밀번호 변경"으로 자기 비밀번호를 바꿀 수 있는지 본다. 비밀번호는 사용자가 정하고 기록하지 않는다.
 
+실행 기록(2026-11-08): 기록은 branch `lane1/s4-demo-20261108`(`main` `ee79a30`에서, 11-05 초안 `cf2b2f6`을 cherry-pick)의 `docs/ga-ready/demo/s4-lan-demo-2026-11-05.md`다.
+- 18:58 사용자 요청으로 `pcv-admin2` 비밀번호를 다시 발급했다(사용자 전용 파일로만 전달).
+- 20:28과 21:01에 사용자가 "S4 시연 완료, 모두 통과"라고 알렸다. 다른 호스트에서 LAN 주소로 온 연결은 있었지만, 18:58 뒤 사용자 세션의 job(S2 복제, S3 checkpoint)과 계정 변경 감사 기록은 없었다. 이 차이를 알렸고, 사용자가 "스크립트로 근거 보강"을 골랐다.
+- 사용자 문장 "pcv-it-s4-console 삭제 승인" 뒤 11-05 S1 VM을 끄고 지웠다. 자동 모드가 번호 답 "1"만으로는 삭제를 두 번 거부했다.
+- 시나리오 1차(`pcv-s4-operator`, 실행 경계 비밀번호)는 S1·S2 pass, S3 fail이었다. 자동 예약 대기 중 access token 15분 만료(`PCV_JWT_EXPIRED`)로 실패했고 정리도 실패했다. 스크립트 결함이라 `BL-0035`로 적었다.
+- 1차 run이 켠 예약이 22:10:01에 예약 checkpoint를 만들었다(job `job-1d63499311d041e29aabcf712d92580b` succeeded). 이것으로 예약 실행을 확인했다.
+- 사용자 문장 "pcv-it-s4-* 시나리오 VM 삭제와 재실행 승인" 뒤 예약을 끄고 남은 VM 3개를 지웠다.
+- 시나리오 2차(`--skip-auto`, 22:10:26~22:12:29)는 `result=pass-without-auto`, exit 0이었다.
+  - S1 pass. S2 pass(복제 3,040 ms). S3 pass-without-auto.
+  - preflight에서 loopback 세션은 403 `PCV_LOOPBACK_SESSION_NOT_LOOPBACK`으로 거절됐다.
+  - 남은 VM은 0개다.
+- 확인자 칸은 사용자 보고("모두 통과", 캡처 없음)로 채웠다. 사용자 세션의 S2·S3 job이 호스트에 없다는 점도 기록에 그대로 적었다.
+- Lane 2 예산: 20:28~22:13, 약 105분이다. 그중 약 60분은 제품 최소 예약 간격 때문에 기다린 시간이다. 권장안 자동 승인과 사용자 문장으로 이어 갔다.
+- 그 사이 PR #111(Task 15)은 사용자 문장 "PR #111 merge 승인" 뒤 merge했다(`ee79a30`, main run `42474109182`·`42474109186` success).
+
 ## Task 13: S4 끝 상태 (이관: `train-04297-20261108` Task 15, 원래 `ui-redesign-20261105` Task 12)
 
-- [ ] Lane 2. 원래 문장: 끝 상태는 loopback 복귀(같은 `main` 빌드본 `configure-installed`를 prefix 옵션과 `--allow-lan` 없이 실행, Task 4 전 service 명령줄과 같아야 한다), 방화벽 규칙 0, 에이전트 operator 계정 disable, `pcv-it-s4-*` VM 정리다. 기록한다. 계정 파일 삭제는 이 task가 하지 않는다. 2026-11-08 메모: 설치본 `0.42.98`의 `configure-installed`가 PR #94·#95를 담는다.
+- [x] Lane 2. 원래 문장: 끝 상태는 loopback 복귀(같은 `main` 빌드본 `configure-installed`를 prefix 옵션과 `--allow-lan` 없이 실행, Task 4 전 service 명령줄과 같아야 한다), 방화벽 규칙 0, 에이전트 operator 계정 disable, `pcv-it-s4-*` VM 정리다. 기록한다. 계정 파일 삭제는 이 task가 하지 않는다. 2026-11-08 메모: 설치본 `0.42.98`의 `configure-installed`가 PR #94·#95를 담는다.
+
+실행 기록(2026-11-08 22:15): 일회용 스크립트로 했다. 출력의 LAN 주소는 가렸다.
+- 에이전트 operator `pcv-s4-operator`를 disable했다(exit 0).
+- 설치본 `DesktopNode.Host.exe service-action configure-installed`를 경로 인자 넷으로만 실행했다(prefix 옵션과 `--allow-lan` 없음, exit 0). service가 다시 켜졌다.
+- `service-action firewall-remove`를 API 규칙과 Web 규칙(`--firewall-local-port 80 --firewall-rule-name "PureCVisor Desktop Node Web LAN"`)으로 두 번 실행했다. 둘 다 exit 0이다.
+- 확인:
+  - 명령줄은 LAN 쪽과 비교해 prefix 둘이 `127.0.0.1`로 바뀌고 `--allow-lan`만 빠졌다.
+  - listener는 `127.0.0.1:7777`·`:80`이다. PureCVisor 방화벽 규칙은 0개다.
+  - loopback 세션은 409 `PCV_LOOPBACK_SESSION_DISABLED`다(계정 있음). Web 200, service Running/Automatic이다.
+  - 계정은 `pcv-admin` disabled, `pcv-admin2` enabled, `pcv-s4-operator` disabled다. `pcv-it-s4-*` VM은 0개다. 보존 VM 둘은 Off 그대로다.
+- 계정 파일은 지우지 않았다.
+- 기록은 `docs/ga-ready/demo/s4-lan-demo-2026-11-05.md` 시연 뒤 상태 절이다.
 
 ## Task 14: criteria S4 판정 (이관: `train-04297-20261108` Task 16, 원래 `ui-redesign-20261105` Task 13)
 
-- [ ] Lane 1. 원래 문장: 시연 기록이 설계 1절의 판정을 모두 담으면 `config/project-completion-criteria.json` S4를 `passed`로 두고 시연 기록 링크를 적는다. push, PR, 사용자 merge 승인 뒤 merge. 판정 전에는 S4 통과를 주장하지 않는다. 보관한 계정 백업을 지울지 사용자에게 묻는다.
+- [x] Lane 1. 원래 문장: 시연 기록이 설계 1절의 판정을 모두 담으면 `config/project-completion-criteria.json` S4를 `passed`로 두고 시연 기록 링크를 적는다. push, PR, 사용자 merge 승인 뒤 merge. 판정 전에는 S4 통과를 주장하지 않는다. 보관한 계정 백업을 지울지 사용자에게 묻는다.
+
+실행 기록(2026-11-08): 시연 기록 `docs/ga-ready/demo/s4-lan-demo-2026-11-05.md` 판정 절에 설계 1절의 세 항목과 시나리오 스크립트 1회 통과를 대조해 적었다.
+- 1번 항목: 사용자 보고, 다른 호스트 연결, 2차 preflight로 충족했다.
+- 2번 항목: 사용자 보고와 시나리오 2차 run, 22:10 예약 checkpoint로 충족했다. 사용자 브라우저 세션의 S2·S3 job은 호스트에 없다는 점도 적었다.
+- 3번 항목: 방화벽 Private·LocalSubnet과 loopback 끝 상태로 충족했다.
+- 시나리오 스크립트: 2차 run `pass-without-auto`로 충족했다.
+- 판정에 맞춰 `config/project-completion-criteria.json` S4를 `passed`로 바꾸고 `demo_record`에 이 기록을 적었다. `docs/DEVELOPER_INDEX.md` 시나리오 줄과 `docs/ADR_INDEX.md` ADR-0017 행도 고쳤다.
+- 이 branch(`lane1/s4-demo-20261108`)를 push하고 PR을 연다. merge는 사용자 문장 뒤다.
+- 저장소 밖에 보관한 S4 계정 백업은 지우지 않았다. 지울지는 최종 보고에서 사용자에게 묻는다.
 
 ## Task 15: C5 runner 확인 (이관: `train-04297-20261108` Task 17, 원래 `ui-redesign-20261105` Task 14)
 

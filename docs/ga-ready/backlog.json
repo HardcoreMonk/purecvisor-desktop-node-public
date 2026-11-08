@@ -410,6 +410,18 @@
       "needs_design": false,
       "status": "open",
       "closed_by": null
+    },
+    {
+      "id": "BL-0035",
+      "found_on": "2026-11-08",
+      "source": "docs/superpowers/plans/2026-11-08-purecvisor-desktop-node-train-04298.md Task 12 (S4 LAN 시나리오 1차 run)",
+      "summary": "web/scripts/run-s4-lan-scenario.mjs는 로그인 access token(수명 15분)을 갱신하지 않는다. --skip-auto 없이 돌리면 S3가 첫 예약 checkpoint(최소 간격 60분)를 기다리는 동안 15분째에 PCV_JWT_EXPIRED로 실패하고, 같은 token을 쓰는 정리 단계도 401로 실패해 시나리오 VM과 켜진 예약이 남는다. 그래서 자동 예약까지 보는 전체 모드는 지금 통과할 수 없다(2026-11-08 1차 run, artifacts/s4-lan-20261108/summary.json). refresh token으로 갱신하거나 정리를 별도 로그인으로 할지 정해야 한다.",
+      "classification": "undecided",
+      "basis": null,
+      "out_of_scope_ref": null,
+      "needs_design": false,
+      "status": "open",
+      "closed_by": null
     }
   ]
 }
