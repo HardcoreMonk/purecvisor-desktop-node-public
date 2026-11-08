@@ -19,6 +19,7 @@
 | 3 | `S4 상태 보존: train 전에 accounts.json을 저장소 밖 보호된 위치에 백업하고 치운 뒤 loopback으로 train을 돌린다. 끝나면 계정을 복원하고 새 설치본의 configure-installed로 LAN 설정(--allow-lan, 방화벽 관리 규칙 2개)을 다시 적용한 뒤 0.42.97 새 화면으로 S4 시연을 이어 간다. 보존 VM, template, pcv-it-s4-console은 건드리지 않는다(도구가 요구하면 멈추고 묻는다).` Task 2, Task 9 |
 | 4 | `Lane 3: current-evidence.json을 0.42.97-admin-smoke로 승격한다.` Lane 3 `current-evidence.json` 쓰기. Task 11~13 |
 | 5 | `1`(Task 4 정지 보고의 다음 승인 1번: "기준 VHD를 다시 마련하고 train을 이어 갑니다."). 해석: clean-host bucket의 기준 VHD가 2026-11-05 재클론 때 사라졌다. Microsoft에서 Windows Server 2022 평가판 VHD와 최신 LCU를 받아 `New-PcvCleanHostBaseVhd.ps1`로 복사본을 오프라인 서비싱(VHD mount, DISM으로 SSU 다음 LCU)한 뒤 Task 4부터 잇는다. 평가판 VHD는 사용자 대신 에이전트가 Microsoft 공식 링크로 받는다. 원본은 읽기만 한다. VM·service·방화벽 변경 없음. Task 3a |
+| 6 | `1`(Task 4 FAIL 정지 보고의 다음 승인 1번: "train을 멈추고 호환성을 고친 뒤 다시 출발합니다. 정지 기록을 commit합니다(plan 실행 기록, backlog 행). Lane 1 PR을 엽니다. 이전 버전 Update 기능이 받을 수 있도록 payload에 web/app.js, web/styles.css를 최소 호환 파일로 남깁니다. 이 두 파일은 새 셸이 읽지 않습니다. 필수 목록의 위치를 찾아 그 근거도 PR에 적습니다. merge는 사용자 승인으로 합니다. 그 뒤 package부터 업그레이드 시험을 다시 돌립니다. 그동안 호스트는 제품 Rollback으로 0.42.96에 맞춰 둡니다."). 해석: `docs/DEVELOPMENT_PROCEDURE.md` §10에 따라 train `0.42.97`은 정차다. `release-train.json`에서 train 항목을 빼고 적재 13행을 `queue`로 되돌린다. 출발 승인 1~4는 정차로 끝난다. Task 4a는 정차 기록(Lane 1), Task 4b는 설치본 제품 Rollback(Lane 2, 승인 2의 제품 Update/Rollback 범위), Task 4c는 호환 수정(Lane 1, grok 구현·Claude 리뷰, queue 행 추가), Task 4d는 종료 검증·push·PR이다. merge는 사용자 merge 승인으로만 한다. 다시 출발할 때는 다음 patch version `0.42.98-admin-smoke`를 쓰고 출발 승인을 새로 받는다. 남은 Task 4~17은 그 train campaign으로 옮긴다 |
 | merge | PR마다 사용자의 명시 merge 승인 문장(`merge_policy=none`). main push run이 red면 그 merge를 되돌리는 revert PR을 열고 멈춘다 |
 | 이관 | `ui-redesign-20261105` Task 11(S4 시연 A), Task 12(S4 끝 상태, Lane 2, 2026-10-12 승인 범위), Task 13(S4 판정), Task 14(C5 확인)를 Task 14~17로 옮긴다. 원래 문장과 승인 범위는 그대로다 |
 
@@ -84,6 +85,66 @@
 ## Task 4: pair
 
 - [ ] Lane 2. orchestrator `-PlanOnly` 뒤 `-Execute`(campaign `manual-admin-campaign-20261108-04296-04297`, baseline Task 1 package, target Task 3 package). 여섯 bucket PASS, closed descriptor, `observation_error` 없음, 끝 상태 설치본 `0.42.97`·ARP 1개·service Running/Automatic·Web 200·보존 VM·template·`pcv-it-s4-console` 그대로. `train-facts`로 pair 문서. 로컬 commit.
+
+실행 기록(2026-11-08, FAIL·정차): Task 3a base로 orchestrator `-PlanOnly`가 `ok=true`였다(host mutation 없음). `-Execute`는 root `artifacts/manual-admin-campaign-20261108-04296-04297`에서 07:55부터 07:58 KST까지 `168`초 돌았다. bucket 결과:
+
+- PASS: `manual-admin-rebaseline-readiness`, `lifecycle-product-update-rollback`.
+- FAIL: `clean-host-windows-update`.
+- 돌지 않음: `burn-bootstrapper-lifecycle`, `msix-package-lifecycle-smoke`, `installed-runtime-ops-summary`.
+- closed descriptor는 없다.
+
+clean guest는 base `20348.5761`이고 Windows Update는 0건이었다. baseline `0.42.96` MSI 설치는 exit 0이었고 service Running(loopback), Web 200이었다. 그 설치본의 `Invoke-PcvDesktopNodeProduct.ps1 -Action Update`(target update ZIP SHA-256 `fdb2dce5…`, catalog 일치)는 payload preflight에서 거절됐다. 오류는 `PCV_PRODUCT_UPDATE_PAYLOAD_FILE_MISSING`(`web\app.js, web\styles.css`)이다.
+
+- 원인: `0.42.96` payload(`87a7deb`)의 `packaging/windows-desktop-node/PcvDesktopNodeProduct.psm1` `Test-PcvDesktopNodeUpdatePayload`는 update payload에 `web\app.js`, `web\index.html`, `web\styles.css`를 요구한다. PR #106(옛 콘솔 퇴역 9b, `3d2fd89`)이 옛 콘솔 파일을 payload에서 지우고 필수 목록을 `web\app.bundle.js`, `web\index.html`, `web\style.css`로 바꿨다.
+- 이 호스트의 lifecycle bucket이 PASS한 이유: 저장소의 새 wrapper로 돌기 때문이다. 이전 버전 wrapper 호환은 clean-host bucket만 본다.
+- 제품 결함이라 환경 원인 재실행 대상이 아니다. 실패 VM은 runner가 지웠다.
+
+끝 상태:
+
+- 설치본 manifest `0.42.97-admin-smoke`(lifecycle bucket의 마지막 Update), MSI ARP `0.42.96` 1개.
+- service Running/Automatic(loopback), Web 200, PureCVisor 방화벽 규칙 0.
+- `pcv-guest-installed-04253-r1` Off, `pcv-it-s2-source` Off, `pcv-it-s4-console` Running(그대로).
+
+clean-host가 PASS하지 않아 `current-base.json`은 지정하지 않았다. backlog는 BL-0029와 BL-0030이다. 사용자 결정 6으로 정차한다. operational current는 `0.42.96-admin-smoke` 그대로다.
+
+## Task 4a: 정차 기록
+
+- [x] Lane 1(사용자 결정 6). Task 4 실행 기록과 backlog BL-0029·BL-0030을 쓴다. `release-train.json`에서 train `0.42.97-admin-smoke`를 빼고 적재 13행을 `queue`로 되돌린다(payload `9036c62`의 내용 그대로). campaign에 Task 4a~4d를 넣는다. 검증: `dotnet test src/DesktopNode.Delivery.Tests -c Release`, `git diff --check`. host mutation 없음. 로컬 commit.
+
+실행 기록(2026-11-08): `release-train.json`을 payload `9036c62`의 내용으로 되돌렸다. 그 결과 queue는 13행이고 train `0.42.97-admin-smoke` 항목은 없다. Task 0~3의 package 문서(`docs/ga-ready/evidence/admin-smoke-package-2026-11-08-04297.md`)와 `docs/ga-ready/trains/0.42.97-admin-smoke.*`는 정차 train 기록으로 남긴다(train `0.42.94`·`0.42.95` 정차 때와 같다). backlog에는 두 행을 더했다. BL-0029는 이전 버전 제품 Update 거절이고, BL-0030은 pair lifecycle bucket이 이전 버전 wrapper를 보지 않는 시험 공백과 호환 파일 종료 시점이다. campaign은 `checkpoint_limit` 23, `next_task` Task 4b다. 검증은 `dotnet test src/DesktopNode.Delivery.Tests -c Release` `781/781`, `git diff --check` 통과다. host mutation은 없다.
+
+## Task 4b: 설치본 제품 Rollback
+
+- [ ] Lane 2(사용자 결정 6, 승인 2의 제품 Update/Rollback 범위). 설치본 wrapper로 `-Action Rollback`을 plan(`-WhatIf` 또는 plan 출력) 뒤 실행해 `0.42.96-admin-smoke`로 되돌린다. 확인:
+  - manifest `0.42.96`, ARP `0.42.96` 1개.
+  - service Running/Automatic, loopback listener, Web 200, PureCVisor 방화벽 규칙 0.
+  - 계정 파일은 보관 위치에 그대로 있다.
+  - 보존 VM·template·`pcv-it-s4-console`은 그대로다.
+
+  기록은 이 plan에 남긴다. 로컬 commit.
+
+## Task 4c: 이전 버전 제품 Update 호환 수정
+
+- [ ] Lane 1(사용자 결정 6). 이 branch에서 `lane1/n1-update-compat-20261108`을 만든다. 이 PR은 train PR이 아니라 정차 기록과 수정을 함께 담는다. grok이 구현하고 Claude가 리뷰한다. 바꿀 것:
+  - `web/app.js`, `web/styles.css`를 새 셸이 읽지 않는 최소 호환 파일(설명 주석만)로 되살려 `web/payload-manifest.json` `files`에 넣는다.
+  - `Update-PcvWebPayloadWix.ps1 -Apply`로 `installer/WebPayload.wxs`를 다시 만든다. MSI가 두 파일을 소유하므로 제거 뒤 제품 root에 남지 않는다.
+  - Task 9b 계약의 `web\app.js`·`web\styles.css` 부재 단언과 관련 spec·pin을 "호환 파일이 있다"로 바꾸고, 이유(`0.42.96` 이하 설치본의 update preflight)를 적는다.
+  - `release-train.json` `queue`에 이 수정 행을 더한다.
+
+  검증:
+  - `87a7deb`의 `Test-PcvDesktopNodeUpdatePayload`를 새 build의 update payload에 읽기 전용으로 돌려 `ok=true`인지 본다.
+  - `dotnet test src/DesktopNode.Delivery.Tests -c Release`, `npm run test:required --prefix web`.
+  - Pester 세 종(packaging, installer, web), `git diff --check`.
+
+  경계: `src/DesktopNode.Host`는 바꾸지 않는다. 새 `Add-Type`/P/Invoke는 없다. 로컬 commit.
+
+## Task 4d: 수정 PR
+
+- [ ] Lane 1. clean HEAD 종료 검증(`dotnet build src/DesktopNode.sln -c Release`, `Invoke-PcvPrGate.ps1`, Pester 4종)을 하고 push, PR을 연다.
+  - PR 본문에 정차 기록, 필수 목록 위치(`PcvDesktopNodeProduct.psm1` `Test-PcvDesktopNodeUpdatePayload`), 호환 파일 근거를 적는다.
+  - queue 행의 `pr`과 `merge_commit`을 채우고 green Required CI를 기다린다.
+  - merge는 사용자 merge 승인으로만 한다.
+  - 이 campaign은 여기서 닫는다. Task 4~17은 다시 출발할 train `0.42.98-admin-smoke` campaign으로 옮긴다.
 
 ## Task 5: fullgate
 

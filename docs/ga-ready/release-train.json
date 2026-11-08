@@ -3,7 +3,139 @@
   "contract": "pcv-release-train-v1",
   "design": "docs/superpowers/specs/2026-10-04-purecvisor-desktop-node-release-train-design.md",
   "operational_current": "0.42.96-admin-smoke",
-  "queue": [],
+  "queue": [
+    {
+      "pr": 94,
+      "merge_commit": "271ab040",
+      "area": "host",
+      "summary": "configure-installed와 repair-installed가 --prefix와 --web-prefix를 받고, loopback이 아니면 --allow-lan을 service 명령줄에 넣는다",
+      "lane2_probe": {
+        "family": "host.service.configure-lan",
+        "design": "docs/superpowers/specs/2026-10-11-purecvisor-desktop-node-s4-lan-account-design.md"
+      },
+      "risk_tier": "M"
+    },
+    {
+      "pr": 95,
+      "merge_commit": "08c50e08",
+      "area": "host",
+      "summary": "configure-installed는 실행 중이고 명령줄이 바뀌면 Stop한 뒤 Configure와 Start로 새 listener를 연다",
+      "lane2_probe": {
+        "family": "host.service.configure-lan",
+        "design": "docs/superpowers/specs/2026-10-11-purecvisor-desktop-node-s4-lan-account-design.md"
+      },
+      "risk_tier": "M"
+    },
+    {
+      "pr": 97,
+      "merge_commit": "13fc25dd",
+      "area": "web",
+      "summary": "Web Console 공통 컴포넌트(PCV.components: 확인 모달, 입력 검사, 알림, job 진행 줄, 탭, 빈 상태)를 번들에 더한다. 화면 연결은 뒤 PR이다",
+      "lane2_probe": null,
+      "risk_tier": "S"
+    },
+    {
+      "pr": 98,
+      "merge_commit": "ab9b6704",
+      "area": "web",
+      "summary": "VM 상세를 헤더·더 보기 메뉴와 6개 탭으로 나누고, 복제를 이름이 첫 칸인 모달(검사, 미리보기 뒤 시작, 진행 표시)로, 삭제·강제 끄기 등 확인을 앱 안 모달로 바꾼다",
+      "lane2_probe": {
+        "family": "web.console.vm-detail",
+        "design": "docs/superpowers/specs/2026-11-05-purecvisor-desktop-node-ui-redesign-design.md"
+      },
+      "risk_tier": "M"
+    },
+    {
+      "pr": 99,
+      "merge_commit": "8b0ae171",
+      "area": "web",
+      "summary": "VM 콘솔 탭: 기본 1024x768, 창에 맞춤과 실제 크기, 전체 화면, Ctrl+Alt+Del, 키보드 입력 상태 칩, 탭이 숨으면 frame 폴링을 쉰다",
+      "lane2_probe": {
+        "family": "web.console.frame-view",
+        "design": "docs/superpowers/specs/2026-11-05-purecvisor-desktop-node-ui-redesign-design.md"
+      },
+      "risk_tier": "M"
+    },
+    {
+      "pr": 100,
+      "merge_commit": "16da5810",
+      "area": "web",
+      "summary": "VM 체크포인트 탭: 목록과 만들기 모달, 복원·삭제 확인 모달, 예약 카드, job 완료 뒤 상세와 목록을 다시 읽어 바로 반영(BL-0020)",
+      "lane2_probe": {
+        "family": "web.console.checkpoints",
+        "design": "docs/superpowers/specs/2026-11-05-purecvisor-desktop-node-ui-redesign-design.md"
+      },
+      "risk_tier": "M"
+    },
+    {
+      "pr": 101,
+      "merge_commit": "f0db33e4",
+      "area": "web",
+      "summary": "새 VM 4단계 마법사: 단계별 검사, 예시 값 초기값 제거, 읽기 전용 세대와 Default Switch 안내, 만들기 뒤 job 진행과 새 VM 열기",
+      "lane2_probe": {
+        "family": "web.console.vm-create",
+        "design": "docs/superpowers/specs/2026-11-05-purecvisor-desktop-node-ui-redesign-design.md"
+      },
+      "risk_tier": "M"
+    },
+    {
+      "pr": 102,
+      "merge_commit": "eb0bdcf7",
+      "area": "web",
+      "summary": "사이드바 묶음과 템플릿·계정 화면, VM 목록 상태 칩·템플릿 배지·행 주 조작, 계정 만들기·끄기 모달(진단에서 이동)",
+      "lane2_probe": {
+        "family": "web.console.shell-views",
+        "design": "docs/superpowers/specs/2026-11-05-purecvisor-desktop-node-ui-redesign-design.md"
+      },
+      "risk_tier": "M"
+    },
+    {
+      "pr": 103,
+      "merge_commit": "289d98ea",
+      "area": "web",
+      "summary": "새 셸 window.confirm 0: 남은 8곳을 조작별 앱 안 확인으로, VM·콘솔·계정 화면 영어 문구를 i18n 키로(ko/en 344키)",
+      "lane2_probe": {
+        "family": "web.console.confirm-copy",
+        "design": "docs/superpowers/specs/2026-11-05-purecvisor-desktop-node-ui-redesign-design.md"
+      },
+      "risk_tier": "S"
+    },
+    {
+      "pr": 104,
+      "merge_commit": "213bfe36",
+      "area": "api",
+      "summary": "계정 비밀번호 재설정(admin·서비스 bearer)과 본인 변경 route, credential_version cv claim으로 재설정·변경·비활성화 뒤 기존 token 즉시 무효화, PCVCLI와 Web 진입점",
+      "lane2_probe": {
+        "family": "api.account.password",
+        "design": "docs/superpowers/specs/2026-11-05-purecvisor-desktop-node-ui-redesign-design.md"
+      },
+      "risk_tier": "L"
+    },
+    {
+      "pr": 105,
+      "merge_commit": "8403d47d",
+      "area": "web",
+      "summary": "Web Console Task 9a: contracts and tests on the new shell, Failed VM chip, dead legacy render code removed (legacy files unchanged)",
+      "lane2_probe": null,
+      "risk_tier": "M"
+    },
+    {
+      "pr": 106,
+      "merge_commit": "3d2fd89e",
+      "area": "web",
+      "summary": "Web Console Task 9b: legacy console files deleted (old addresses 404), MSI web payload, product module paths and spec pins on the new shell",
+      "lane2_probe": null,
+      "risk_tier": "M"
+    },
+    {
+      "pr": 107,
+      "merge_commit": "449a62ce",
+      "area": "web",
+      "summary": "ui-redesign Task 10: browser UI quality gates (axe-core dev-only), supanova accent button text contrast, opaque modal background, search control accessible name",
+      "lane2_probe": null,
+      "risk_tier": "M"
+    }
+  ],
   "trains": [
     {
       "version": "0.42.89-admin-smoke",
@@ -62,27 +194,6 @@
         86
       ],
       "status": "promoted"
-    },
-    {
-      "version": "0.42.97-admin-smoke",
-      "departed_at": "2026-11-08T05:26:00+09:00",
-      "source_commit": "9036c6249aad4385d04ec9e77aa7dbf3516fb31c",
-      "carriages": [
-        94,
-        95,
-        97,
-        98,
-        99,
-        100,
-        101,
-        102,
-        103,
-        104,
-        105,
-        106,
-        107
-      ],
-      "status": "running"
     }
   ]
 }
