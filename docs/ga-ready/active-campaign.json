@@ -27,7 +27,10 @@
     "Task 5": "2"
   },
   "next_task": "Task 1",
-  "completed_tasks": [],
+  "completed_tasks": [
+    "Task 4",
+    "Task 5"
+  ],
   "commit_policy": "local-commit-per-task",
   "push_allowed": true,
   "merge_policy": "none",

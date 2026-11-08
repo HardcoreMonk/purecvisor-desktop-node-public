@@ -49,11 +49,26 @@
 
 ## Task 4: BL-0034 재현 (Lane 2)
 
-- [ ] Lane 2. 설치본 `0.42.98` loopback에서 `pcv-it-probe-*` VM을 만들고 지우는 동안 VM 목록(`GET /api/v1/vms`)과 Web 목록을 반복해서 읽는다. `PCV_NATIVE_VM_LIST_SUMMARY_PARITY_INCOMPLETE`가 나는지, 지운 행이 화면에 남는지 기록한다. 재현되면 원인 범위(API 일시 상태인지 화면 갱신인지)를 정해 수정 task를 더한다. 재현되지 않으면 관측 횟수를 근거로 사용자에게 닫기를 묻는다. 끝 상태 `pcv-it-probe-*` 0개.
+- [x] Lane 2. 설치본 `0.42.98` loopback에서 `pcv-it-probe-*` VM을 만들고 지우는 동안 VM 목록(`GET /api/v1/vms`)과 Web 목록을 반복해서 읽는다. `PCV_NATIVE_VM_LIST_SUMMARY_PARITY_INCOMPLETE`가 나는지, 지운 행이 화면에 남는지 기록한다. 재현되면 원인 범위(API 일시 상태인지 화면 갱신인지)를 정해 수정 task를 더한다. 재현되지 않으면 관측 횟수를 근거로 사용자에게 닫기를 묻는다. 끝 상태 `pcv-it-probe-*` 0개.
+
+실행 기록(2026-11-09 00:05~00:06 KST): 설치본 `0.42.98` loopback에서 PCVCLI(service bearer)로 `pcv-it-probe-list-1109`를 세 번 만들고 지웠다. 각 job이 도는 동안과 끝난 직후 `vm list`를 이어서 읽었다(job당 9회).
+- 생성 3회: 목록 실패 0회.
+- 삭제 3회: 매번 정확히 1회 `PCV_NATIVE_VM_LIST_SUMMARY_PARITY_INCOMPLETE`. 삭제 시작 뒤 1,818 / 1,852 / 1,822 ms 시점이고, 그다음 읽기는 정상이다.
+- 원인: `DesktopNodeHyperVNativeAdapter.Reads.cs` `TryInvokeVmList`가 지워지는 중인 VM 한 행의 요약 필드가 잠깐 비면 목록 전체를 실패로 돌려준다. 화면은 그 사이 옛 행을 붙잡고 있는다.
+- 수정은 B2에 항목 7로 더했다: 요약이 불완전하면 짧게 한 번 다시 읽고, 화면은 삭제 job이 성공한 VM 행을 바로 지운다.
+- 끝 상태: probe VM 0개. 빈 `artifacts/pcv-it-probe-list-1109` 폴더는 지웠다. 보존 VM 둘은 Off 그대로다.
 
 ## Task 5: BL-0028 보존 VM 부모 VHD 재연결 (Lane 2)
 
-- [ ] Lane 2. `pcv-guest-installed-04253-r1` disk의 부모 경로와, 다시 받은 `artifacts/image-cache` 평가판 VHD의 정체를 비교한다. `Get-VHD` 부모 식별자를 보고, 가능하면 해시도 비교한다. 같으면 VM이 꺼진 상태에서 `Set-VHD -ParentPath`로 다시 연결하고 `Get-VHD`로 확인한다. 시작은 하지 않는다(보존 VM). 다르면 바꾸지 않고 멈춰 묻는다. clean-host smoke 도구의 `DefaultSourceBaseVhdPath`가 archive 경로를 가리키는 문제는 별도 Lane 1 수정으로 B1에 묶거나 보고한다.
+- [x] Lane 2. `pcv-guest-installed-04253-r1` disk의 부모 경로와, 다시 받은 `artifacts/image-cache` 평가판 VHD의 정체를 비교한다. `Get-VHD` 부모 식별자를 보고, 가능하면 해시도 비교한다. 같으면 VM이 꺼진 상태에서 `Set-VHD -ParentPath`로 다시 연결하고 `Get-VHD`로 확인한다. 시작은 하지 않는다(보존 VM). 다르면 바꾸지 않고 멈춰 묻는다. clean-host smoke 도구의 `DefaultSourceBaseVhdPath`가 archive 경로를 가리키는 문제는 별도 Lane 1 수정으로 B1에 묶거나 보고한다.
+
+실행 기록(2026-11-09): VM은 Off, Generation 1이다.
+- disk `pcv-guest-installed-04253-r1.vhd`는 VHD differencing이다. 부모는 read-only archive 저장소 `artifacts/image-cache/windows-server-2022-eval-vhd/20348.169…vhd`였고 그 파일은 없다.
+- 같은 이름의 평가판 VHD(Dynamic VHD, 9.51 GB, 2026-11-08 Task 3a에서 다시 받음)가 public 저장소 `artifacts/image-cache`에 있다.
+- 원본 파일이 없어 해시는 직접 비교할 수 없다. 그래서 `Set-VHD -ParentPath`가 `-IgnoreIdMismatch` 없이 자식에 기록된 부모 식별자를 검사하는 것을 동일성 확인으로 썼다.
+- `Set-VHD -ParentPath <public artifacts 경로>`는 거절 없이 통과했다. `Test-VHD` 체인은 `True`이고, VM은 시작하지 않아 Off 그대로다.
+- 이제 이 VM의 부모는 public 저장소 `artifacts/image-cache`의 그 파일이다(gitignore). 이 파일을 고치거나 지우면 VM이 다시 깨진다.
+- clean-host smoke 도구의 archive 기본 경로 3개(`BaselineMsiPath`, `UpdatePackagePath`, `DefaultSourceBaseVhdPath`)는 B1 항목으로 넘겼다. 그래서 BL-0028은 B1 merge 때 닫는다.
 
 ## Task 6: 마무리
 
