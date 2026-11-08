@@ -43,7 +43,9 @@
 
 ## Task 2: B1 도구·시험 PR
 
-- [ ] Lane 1. 하위 에이전트 결과(branch `lane1/tooling-fixes-20261109`)를 리뷰한다. 행 7개(BL-0011, 0015, 0018, 0022, 0025, 0030, 0035)를 같은 PR에서 닫는다. 종료 검증: PR gate, Pester, public-source-safety 전부 green. push, PR, 사용자 merge 문장 뒤 merge.
+- [x] Lane 1. 하위 에이전트 결과(branch `lane1/tooling-fixes-20261109`)를 리뷰한다. 행 7개(BL-0011, 0015, 0018, 0022, 0025, 0030, 0035)를 같은 PR에서 닫는다. 종료 검증: PR gate, Pester, public-source-safety 전부 green. push, PR, 사용자 merge 문장 뒤 merge.
+
+실행 기록(2026-11-09): PR #115로 냈다. 행은 BL-0028을 더해 8개(BL-0011, 0015, 0018, 0022, 0025, 0028, 0030, 0035)를 닫았다. BL-0011이 product payload라 queue 행(`0575b859`, risk S)을 더했다. #114 merge 뒤 rebase해 행 닫기 commit `d79717f`를 얹었고, Delivery 785건 통과, Required CI 다섯 개 pass 뒤 merge했다(merge `0363083`).
 
 ## Task 3: B2 Web·API PR
 

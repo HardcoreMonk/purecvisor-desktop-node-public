@@ -285,11 +285,11 @@
       "source": "docs/superpowers/plans/2026-11-05-purecvisor-desktop-node-ui-redesign.md Task 7b (grok 조사, 대문자로 시작하는 2~12단어 영문 리터럴 계수)",
       "summary": "새 셸에서 vm.ts·vm-console.ts·accounts.ts 밖의 모듈에 i18n 키 없이 화면에 나가는 영어 고정 문구가 158개 남아 있다(monitor.ts 49, core.ts 29, ops.ts 17, api.ts 17, theme.ts 12, nav.ts 11, prefs.ts 10, shell.ts 6, desktop-api.ts 4, events.ts 3). core.ts의 RBAC 문장 틀(The current account role cannot use ...)과 목록 개수 문구(shown of, filter=), core.ts의 옛 확인 문장 조립 함수, web/index.html의 대시보드·작업·네트워크·로그인 제목(Ops Cockpit, Create VM, Network Inventory, Tracked Jobs, Login)도 영어다. ADR-0019 규칙 5(새 문구는 i18n 키, ko 기본)에 맞추려면 이 문구를 키로 옮겨야 한다.",
       "classification": "counts",
-      "basis": "2026-11-09 사용자 결정 \"A 3건 닫기, C는 권장안대로, B 구현 시작\"(B): 고친다. campaign backlog-burn-20261109 B2(Web·API PR).",
+      "basis": "2026-11-09 사용자 결정 \"A 3건 닫기, C는 권장안대로, B 구현 시작\"(B): 고친다. campaign backlog-burn-20261109 B2(Web·API PR). 닫을 때 남은 것: 지정 목록 밖 카드 본문 문구(진단 사실, Download latest, Retry, 칩, token 카드 rotation handoff·no service token mutation·browser token empty, operator handoff 배지, Operator Activity·Recent Activity, 빈 job 필터 문장)는 영어로 남는다. 다음 화면 문구 작업에서 다룬다.",
       "out_of_scope_ref": null,
       "needs_design": false,
-      "status": "open",
-      "closed_by": null
+      "status": "closed",
+      "closed_by": "PR #116 (commits 893ac82, 5f6c1f0)"
     },
     {
       "id": "BL-0025",
@@ -312,8 +312,8 @@
       "basis": "2026-11-09 사용자 결정 \"A 3건 닫기, C는 권장안대로, B 구현 시작\"(C 권장안): 테마 선택에서 라이트 테마를 뺀다. 지금 화면 모습은 그대로 둔다. B2에서 고친다.",
       "out_of_scope_ref": null,
       "needs_design": false,
-      "status": "open",
-      "closed_by": null
+      "status": "closed",
+      "closed_by": "PR #116 (commit 33cb9b4)"
     },
     {
       "id": "BL-0027",
@@ -324,8 +324,8 @@
       "basis": "2026-11-09 사용자 결정 \"A 3건 닫기, C는 권장안대로, B 구현 시작\"(B): 고친다. campaign backlog-burn-20261109 B2(Web·API PR).",
       "out_of_scope_ref": null,
       "needs_design": false,
-      "status": "open",
-      "closed_by": null
+      "status": "closed",
+      "closed_by": "PR #116 (commit c58baf4)"
     },
     {
       "id": "BL-0028",
@@ -372,8 +372,8 @@
       "basis": "2026-11-09 사용자 결정 \"A 3건 닫기, C는 권장안대로, B 구현 시작\"(B): 고친다. campaign backlog-burn-20261109 B2(Web·API PR).",
       "out_of_scope_ref": null,
       "needs_design": false,
-      "status": "open",
-      "closed_by": null
+      "status": "closed",
+      "closed_by": "PR #116 (commit 58073e8)"
     },
     {
       "id": "BL-0032",
@@ -384,8 +384,8 @@
       "basis": "2026-11-09 사용자 결정 \"A 3건 닫기, C는 권장안대로, B 구현 시작\"(B): 고친다. campaign backlog-burn-20261109 B2(Web·API PR).",
       "out_of_scope_ref": null,
       "needs_design": false,
-      "status": "open",
-      "closed_by": null
+      "status": "closed",
+      "closed_by": "PR #116 (commit 06d5edb)"
     },
     {
       "id": "BL-0033",
@@ -396,8 +396,8 @@
       "basis": "2026-11-09 사용자 결정 \"A 3건 닫기, C는 권장안대로, B 구현 시작\"(C 권장안): 켜진 VM의 복원은 API가 job을 만들기 전에 전용 거절 코드로 거절하고, 화면은 VM을 끈 뒤 복원하라고 안내한다. B2에서 고친다.",
       "out_of_scope_ref": null,
       "needs_design": false,
-      "status": "open",
-      "closed_by": null
+      "status": "closed",
+      "closed_by": "PR #116 (commit 087d788)"
     },
     {
       "id": "BL-0034",
@@ -408,8 +408,8 @@
       "basis": "2026-11-09 사용자 결정 \"A 3건 닫기, C는 권장안대로, B 구현 시작\"(B): 먼저 재현한다(campaign backlog-burn-20261109 Task 4, Lane 2). 원인에 따라 고치거나, 재현되지 않으면 관측을 근거로 닫기를 묻는다. 2026-11-09 재현(Task 4): 삭제 3회마다 시작 뒤 약 1.8초에 목록 전체가 1회 PCV_NATIVE_VM_LIST_SUMMARY_PARITY_INCOMPLETE로 실패했다(생성은 0회). 원인은 TryInvokeVmList가 지워지는 중인 VM 한 행의 요약 공백으로 목록 전체를 실패시키는 것이다. B2에서 한 번 다시 읽기와 화면의 삭제 행 제거로 고친다.",
       "out_of_scope_ref": null,
       "needs_design": false,
-      "status": "open",
-      "closed_by": null
+      "status": "closed",
+      "closed_by": "PR #116 (commit 7c73df8)"
     },
     {
       "id": "BL-0035",
