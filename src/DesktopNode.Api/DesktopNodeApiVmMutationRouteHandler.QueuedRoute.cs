@@ -1,12 +1,65 @@
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using DesktopNode.Contracts;
+using DesktopNode.HyperV;
 using DesktopNode.Runtime;
 
 namespace DesktopNode.Api;
 
 internal sealed partial class DesktopNodeApiVmMutationRouteHandler
 {
+    private DesktopNodeApiResponse? TryRefuseCheckpointRestorePower(string vmName, CancellationToken cancellationToken)
+    {
+        DesktopNodeHyperVOperationResult inventory;
+        try
+        {
+            inventory = operationInvoker.Invoke(
+                "vm.list",
+                DesktopNodeApiResponseFactory.EmptyObject(),
+                cancellationToken);
+        }
+        catch (Exception)
+        {
+            return null;
+        }
+
+        if (!inventory.Ok || inventory.Data is null)
+        {
+            return null;
+        }
+
+        var vm = DesktopNodeApiJsonReader.FindVm(inventory.Data, vmName);
+        if (vm is null)
+        {
+            return null;
+        }
+
+        var state = DesktopNodeApiJsonReader.GetStringProperty(vm.Value, "state");
+        if (CheckpointRestorePowerAllows(state))
+        {
+            return null;
+        }
+
+        var shown = string.IsNullOrWhiteSpace(state) ? "unknown" : state;
+        return DesktopNodeApiResponseFactory.Failure(
+            409,
+            "checkpoint.restore",
+            "PCV_CHECKPOINT_RESTORE_VM_RUNNING",
+            $"VM '{vmName}' is '{shown}'. Checkpoint restore needs the VM off or saved.",
+            "Power off the VM, then restore the checkpoint.",
+            false);
+    }
+
+    private static bool CheckpointRestorePowerAllows(string? state)
+    {
+        if (VmPowerStates.IsOff(state))
+        {
+            return true;
+        }
+
+        return string.Equals(state?.Trim(), "saved", StringComparison.OrdinalIgnoreCase);
+    }
+
     public DesktopNodeApiResponse HandleQueuedMutationRoute(
         DesktopNodeApiRequest request,
         DesktopNodeApiRouteMatch routeMatch,
@@ -64,6 +117,12 @@ internal sealed partial class DesktopNodeApiVmMutationRouteHandler
                     if (!checkpointId.Ok)
                     {
                         return checkpointId.Response!;
+                    }
+
+                    var powerRefusal = TryRefuseCheckpointRestorePower(routeId.Value!, cancellationToken);
+                    if (powerRefusal is not null)
+                    {
+                        return powerRefusal;
                     }
 
                     return DesktopNodeApiResponseFactory.JobCreated(CreateJob(

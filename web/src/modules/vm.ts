@@ -1247,7 +1247,7 @@ function renderCheckpointList(vmId) {
       <td>${pcvEscapeHtml(getCheckpointName(checkpoint))}</td>
       <td>${pcvEscapeHtml(formatObjectValue(created))}</td>
       <td class="pcv-checkpoint-actions">
-        <button type="button" data-action="checkpoint-restore" data-vm-id="${id}" data-checkpoint-id="${cp}"${checkpointDisabled}>${pcvEscapeHtml(t('vm.checkpoint.restore'))}</button>
+        <button type="button" data-action="checkpoint-restore" data-vm-id="${id}" data-checkpoint-id="${cp}" title="${checkpointRestoreBlocked(state.selectedVm) ? pcvEscapeHtml(t('vm.checkpoint.restore.poweroff')) : ''}"${checkpointDisabled}>${pcvEscapeHtml(t('vm.checkpoint.restore'))}</button>
         <button type="button" class="danger-button" data-action="checkpoint-delete" data-vm-id="${id}" data-checkpoint-id="${cp}"${checkpointDisabled}>${pcvEscapeHtml(t('vm.checkpoint.delete'))}</button>
       </td>
     </tr>`;
@@ -2118,20 +2118,28 @@ async function queueCheckpointCreate(vmId, checkpointName) {
   }
 }
 
+function checkpointRestoreBlocked(vm) {
+  const power = String((typeof getVmState === 'function' ? getVmState(vm) : '') || '').trim().toLowerCase();
+  return power !== '' && power !== 'off' && power !== 'stopped' && power !== 'saved';
+}
+
 async function queueCheckpointRestore(vmId, checkpointId) {
   requireRbac('operate', t('vm.rbac.checkpoint_restore'));
   const vm = state.selectedVm || (typeof findCachedVm === 'function' ? findCachedVm(vmId) : null);
+  const blocked = checkpointRestoreBlocked(vm);
   const running = typeof isRunningVmState === 'function' && isRunningVmState(typeof getVmState === 'function' ? getVmState(vm) : '');
   const name = checkpointLabel(checkpointId);
   if (!PCV.components || typeof PCV.components.confirmDialog !== 'function') return;
   const accepted = await PCV.components.confirmDialog({
     title: t('vm.checkpoint.restore.title'),
-    message: running ? t('vm.checkpoint.restore.running', { name }) : t('vm.checkpoint.restore.message', { name }),
+    message: blocked
+      ? (running ? t('vm.checkpoint.restore.running', { name }) : t('vm.checkpoint.restore.poweroff'))
+      : t('vm.checkpoint.restore.message', { name }),
     confirmLabel: t('vm.checkpoint.restore'),
     cancelLabel: t('ui.confirm.cancel'),
     danger: true
   });
-  if (!accepted) return;
+  if (!accepted || blocked) return;
   state.checkpointPending = true;
   setCheckpointActionPending(vmId, checkpointId, 'restore');
   state.error = null;

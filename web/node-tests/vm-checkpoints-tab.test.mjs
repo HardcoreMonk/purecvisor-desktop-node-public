@@ -581,6 +581,43 @@ test("create modal blocks empty, invalid, and duplicate names, then posts the ac
   assert.equal(client.slice(at, at + 400).includes("JSON.stringify({ name })"), true);
 });
 
+test("BL-0033 restore on a running VM does not send and says to power off first", async () => {
+  const sandbox = createEnv();
+  install(sandbox, { id: "id-1", name: "alpha", state: "Running" }, {
+    checkpoints: [{ name: "manual-1", created_at: "2026-11-05T08:00:00Z" }]
+  });
+  sandbox.renderVmDetail();
+  const button = sandbox.els.vmDetailContent.querySelector('[data-action="checkpoint-restore"]');
+  assert.equal(button.getAttribute("title"), "VM을 끈 뒤 복원하세요.");
+  const seen = [];
+  sandbox.PCV.components.confirmDialog = async (opts) => {
+    seen.push(opts);
+    return true;
+  };
+  const restores = [];
+  sandbox.desktopApi.restoreCheckpoint = async (vmId, checkpointId) => {
+    restores.push({ vmId, checkpointId });
+    return { job_id: "job-restore", status: "queued" };
+  };
+  sandbox.desktopApi.getJob = async (id) => ({ job_id: id, status: "succeeded" });
+  await sandbox.queueCheckpointRestore("id-1", "manual-1");
+  assert.match(seen[0].message, /VM을 끈 뒤 복원하세요/);
+  assert.equal(restores.length, 0);
+  sandbox.state.selectedVm = { id: "id-1", name: "alpha", state: "Off" };
+  sandbox.renderVmDetail();
+  const offButton = sandbox.els.vmDetailContent.querySelector('[data-action="checkpoint-restore"]');
+  assert.equal(offButton.getAttribute("title") || "", "");
+  await sandbox.queueCheckpointRestore("id-1", "manual-1");
+  assert.equal(restores.length, 1);
+  sandbox.state.selectedVm = { id: "id-1", name: "alpha", state: "saved" };
+  await sandbox.queueCheckpointRestore("id-1", "manual-1");
+  assert.equal(restores.length, 2);
+  sandbox.state.selectedVm = { id: "id-1", name: "alpha", state: "paused" };
+  await sandbox.queueCheckpointRestore("id-1", "manual-1");
+  assert.equal(restores.length, 2);
+  assert.match(seen[seen.length - 1].message, /VM을 끈 뒤 복원하세요/);
+});
+
 test("restore and delete use a danger confirm without a typed name", async () => {
   const sandbox = createEnv();
   install(sandbox, { id: "id-1", name: "alpha", state: "Running" }, {
@@ -607,11 +644,12 @@ test("restore and delete use a danger confirm without a typed name", async () =>
   assert.equal(Object.prototype.hasOwnProperty.call(seen[0], "typedName"), false);
   assert.match(seen[0].message, /현재 상태/);
   assert.match(seen[0].message, /실행 중/);
-  assert.equal(restores.length, 1);
+  assert.match(seen[0].message, /VM을 끈 뒤 복원하세요/);
+  assert.equal(restores.length, 0);
   sandbox.state.selectedVm = { id: "id-1", name: "alpha", state: "Off" };
   sandbox.PCV.components.confirmDialog = async () => false;
   await sandbox.queueCheckpointRestore("id-1", "manual-1");
-  assert.equal(restores.length, 1);
+  assert.equal(restores.length, 0);
   sandbox.PCV.components.confirmDialog = async (opts) => {
     seen.push(opts);
     return true;
