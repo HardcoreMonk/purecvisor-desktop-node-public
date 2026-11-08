@@ -915,7 +915,64 @@ function fillCheckpointList(root, vmId) {
   }
 }
 
+function detailContains(root, node) {
+  let current = node;
+  while (current) {
+    if (current === root) return true;
+    current = current.parentNode;
+  }
+  return false;
+}
+
+function detailFocusMarker(root) {
+  const active = typeof document !== 'undefined' ? document.activeElement : null;
+  if (!root || !active || active === root || !detailContains(root, active)) return null;
+  if (typeof active.getAttribute !== 'function') return null;
+  const action = active.getAttribute('data-action') || '';
+  const id = active.id || '';
+  if (!action && !id) return null;
+  return {
+    action,
+    id,
+    vmId: active.getAttribute('data-vm-id') || '',
+    checkpointId: active.getAttribute('data-checkpoint-id') || ''
+  };
+}
+
+function revealDetailMenu(node) {
+  let current = node;
+  while (current) {
+    if (current.id === 'pcv-vm-more-menu' && current.hidden) {
+      current.hidden = false;
+      const parent = current.parentNode;
+      const toggle = parent && typeof parent.querySelector === 'function'
+        ? parent.querySelector('[data-action="vm-more-toggle"]')
+        : null;
+      if (toggle) toggle.setAttribute('aria-expanded', 'true');
+      return;
+    }
+    current = current.parentNode;
+  }
+}
+
+function restoreDetailFocus(root, marker) {
+  if (!root || !marker || !marker.action) return;
+  const nodes = root.querySelectorAll('[data-action]');
+  for (let index = 0; index < nodes.length; index += 1) {
+    const candidate = nodes[index];
+    if ((candidate.getAttribute('data-action') || '') !== marker.action) continue;
+    if (marker.id && (candidate.id || '') !== marker.id) continue;
+    if ((candidate.getAttribute('data-vm-id') || '') !== marker.vmId) continue;
+    if ((candidate.getAttribute('data-checkpoint-id') || '') !== marker.checkpointId) continue;
+    if (candidate.disabled) continue;
+    revealDetailMenu(candidate);
+    if (typeof candidate.focus === 'function') candidate.focus();
+    return;
+  }
+}
+
 function renderVmDetail() {
+  const focusMarker = els && els.vmDetailContent ? detailFocusMarker(els.vmDetailContent) : null;
   const vm = state.selectedVm;
   if (!vm) {
     els.vmDetailTitle.textContent = t('vm.detail.none_title');
@@ -1104,6 +1161,7 @@ function renderVmDetail() {
     </div>
     <div data-pcv-tab-source="jobs"></div>`;
   mountVmDetailTabs(els.vmDetailContent, vmId);
+  restoreDetailFocus(els.vmDetailContent, focusMarker);
 }
 
 function renderExportImportReadback(vm, vmId, actionDisabled = '') {

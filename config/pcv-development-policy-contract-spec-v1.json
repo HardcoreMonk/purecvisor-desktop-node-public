@@ -66,7 +66,7 @@
     },
     {
       "path": "packaging/windows-desktop-node/tests/fixtures/module-size-ratchet.json",
-      "sha256": "06ae48916162541117f6eebb6576869a39678ed1ccbe9ecc52dcc17ce01ecbf3"
+      "sha256": "2e3872ff5ad066adcf26a47c249bca316b9b34000de4cd26ad9f07533252df4a"
     },
     {
       "path": "packaging/windows-desktop-node/tools/PcvStrictCollection.psm1",

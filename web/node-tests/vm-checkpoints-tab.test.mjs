@@ -209,11 +209,15 @@ class Fragment extends Node {
   }
 }
 
-function walk(node, visit) {
+function walk(node, visit, seen) {
+  if (!seen) seen = new Set();
+  if (!node || seen.has(node)) return;
+  seen.add(node);
+  if (seen.size > 20000) throw new Error("walk cap");
   for (const child of node.childNodes || []) {
     if (child.nodeType === 1) {
       visit(child);
-      walk(child, visit);
+      walk(child, visit, seen);
     }
   }
 }
@@ -616,6 +620,46 @@ test("BL-0033 restore on a running VM does not send and says to power off first"
   await sandbox.queueCheckpointRestore("id-1", "manual-1");
   assert.equal(restores.length, 2);
   assert.match(seen[seen.length - 1].message, /VM을 끈 뒤 복원하세요/);
+});
+
+test("BL-0027 detail re-render restores focus to the same data-action and id", () => {
+  const sandbox = createEnv();
+  install(sandbox, { id: "id-1", name: "alpha", state: "Off" }, {
+    checkpoints: [
+      { name: "manual-1", created_at: "2026-11-05T08:00:00Z" },
+      { name: "manual-2", created_at: "2026-11-05T09:00:00Z" }
+    ]
+  });
+  sandbox.window.__pcvVmDetailTab = "checkpoints";
+  sandbox.renderVmDetail();
+  const byAction = (action) => sandbox.els.vmDetailContent.querySelectorAll(`[data-action="${action}"]`);
+  const opener = byAction("checkpoint-restore")[1];
+  assert.equal(opener.getAttribute("data-checkpoint-id"), "manual-2");
+  opener.focus();
+  sandbox.renderVmDetail();
+  const restored = byAction("checkpoint-restore")[1];
+  assert.equal(restored === opener, false);
+  assert.equal(restored.getAttribute("data-action"), "checkpoint-restore");
+  assert.equal(restored.getAttribute("data-vm-id"), "id-1");
+  assert.equal(restored.getAttribute("data-checkpoint-id"), "manual-2");
+  assert.equal(sandbox.document.activeElement === restored, true);
+  assert.equal(sandbox.document.activeElement === byAction("checkpoint-restore")[0], false);
+
+  const menu = () => sandbox.document.getElementById("pcv-vm-more-menu");
+  menu().hidden = false;
+  const deleteOpener = byAction("vm-delete")[0];
+  deleteOpener.focus();
+  sandbox.renderVmDetail();
+  const deleteButton = byAction("vm-delete")[0];
+  assert.equal(deleteButton === deleteOpener, false);
+  assert.equal(deleteButton.getAttribute("data-action"), "vm-delete");
+  assert.equal(deleteButton.getAttribute("data-vm-id"), "id-1");
+  assert.equal(menu().hidden, false);
+  assert.equal(sandbox.document.activeElement === deleteButton, true);
+
+  sandbox.document.body.focus();
+  sandbox.renderVmDetail();
+  assert.equal(sandbox.document.activeElement === sandbox.document.body, true);
 });
 
 test("restore and delete use a danger confirm without a typed name", async () => {
