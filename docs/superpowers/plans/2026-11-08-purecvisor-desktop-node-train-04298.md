@@ -116,7 +116,7 @@ operational current는 `0.42.96-admin-smoke` 그대로다.
 
 ## Task 5: probe Web Console 재설계 (queue 97~103, 105~108; 이관: `train-04297-20261108` Task 7)
 
-- [ ] Lane 2. 설치본 `0.42.98`의 `http://127.0.0.1/`를 loopback 세션으로 브라우저(CDP)에서 연다. 다음을 본다.
+- [x] Lane 2. 설치본 `0.42.98`의 `http://127.0.0.1/`를 loopback 세션으로 브라우저(CDP)에서 연다. 다음을 본다.
   - 사이드바 화면 전환, 템플릿·계정 화면, VM 목록 상태 칩
   - 옛 주소: `/index.legacy.html` 404. `/app.js`·`/styles.css`는 PR #108의 호환 파일이라 주석만 담고 200이다.
   - 새 VM 마법사: `pcv-it-probe-wizard-1108`(Generation 2, smoke ISO, disk `artifacts/` 아래)을 만들고 켠다.
@@ -126,6 +126,17 @@ operational current는 `0.42.96-admin-smoke` 그대로다.
   - 삭제 이름 확인 모달로 두 VM을 지운다.
 
   캡처는 `docs/ga-ready/demo/web-console-redesign-20261108/`(PNG, 사용자 홈 경로·LAN IP·호스트명·token 없음), 기록은 `docs/ga-ready/demo/web-console-redesign-demo-2026-11-08.md`(확인자 칸 비움)다. 끝 상태 `pcv-it-probe-*` 0개. 로컬 commit.
+
+실행 기록(2026-11-08): grok이 세션 작업 폴더에 일회용 Node CDP 스크립트 `probe-web-console-04298.mjs`를 쓰고 설치본에 반복 실행했다(시스템 Edge, 새 npm 의존성 없음, 저장소에 넣지 않음). 마지막 실행은 17:26:57부터 17:33:07 KST까지 `ok=true`, 종료 코드 0이다. Claude가 결과 JSON, 캡처 16장, 스크립트의 금지 동작을 검토했다.
+
+- 여덟 단계가 PASS다. 셸 10 화면과 상태 칩, 옛 주소 `/index.legacy.html` 404와 호환 파일 `/app.js`(246 byte)·`/styles.css`(249 byte) 200 주석만, 마법사 4단계로 `pcv-it-probe-wizard-1108` 생성(Gen2, 1 vCPU, 512 MB, 8 GB, smoke ISO, `artifacts/` 아래) 뒤 시작, 콘솔 탭 맞춤·전체 화면·입력 칩, 체크포인트 생성·복원 확인·예약 미리보기·저장 즉시 반영·끄기, 복제 모달 첫 칸 이름과 `pcv-it-probe-clone-1108` 복제, 이름 확인 모달로 두 VM 삭제, API에 `pcv-it-probe-*` 0개다.
+- 실행 중에 `running`/`queued`로 기록된 job 다섯 개(`vm.create`, `vm.poweroff` 두 건, `checkpoint.delete`, `vm.delete`)는 끝난 뒤 `GET /api/v1/jobs/<id>`로 다시 읽었고 모두 `succeeded`다.
+- 스크립트가 피해 간 동작 셋을 backlog에 적었다: `BL-0032`(예약 미리보기가 입력을 비워 바로 저장하면 `PCV_CHECKPOINT_SCHEDULE_INTERVAL_INVALID`), `BL-0033`(켜진 VM 복원이 원시 `PCV_HYPERV_WMI_METHOD_FAILED`), `BL-0034`(VM 목록 갱신 `PCV_NATIVE_VM_LIST_SUMMARY_PARITY_INCOMPLETE` 때 지운 행이 남음). 셋 다 이 train의 회귀가 아니다. 예약 form은 `bb54287`부터 같은 구조이고 `0.42.96` payload `87a7deb`에도 있다. 적재 payload `87a7deb..8e4ebe2`에 `src/DesktopNode.HyperV` 변경이 없다. 화면 다듬기 거리는 `BL-0031`이다. 그래서 train을 세우지 않는다.
+- 캡처: 1600×1000으로 찍고 500 KB 넘는 여덟 장을 줄였다. 찍기 전 치환은 07~16에서 장마다 1곳이다. Claude가 열어 보고 사용자 홈 경로·LAN IP·호스트명·token이 없는 것을 확인했다.
+- 끝 상태: `Get-VM`은 보존 VM 세 개(`pcv-guest-installed-04253-r1` Off, `pcv-it-s2-source` Off, `pcv-it-s4-console` Running)뿐이고 probe 폴더 둘은 지워졌다. service Running/Automatic, Web 200, PureCVisor 방화벽 규칙 0이다.
+- 예산: Lane 2 checkpoint 45분을 넘겼다(16:12~17:50 KST, 약 98분). grok이 스크립트를 쓰고 고치며 반복 실행한 시간이다. 실행 중에 끊으면 probe VM이 남아서 끝까지 기다렸다. 권장안 자동 승인(사용자 결정 5)으로 기록하고 Task 6을 새 checkpoint로 잇는다.
+
+operational current는 `0.42.96-admin-smoke` 그대로다.
 
 ## Task 6: probe 비밀번호 재설정 (queue 104; 이관: `train-04297-20261108` Task 8)
 
