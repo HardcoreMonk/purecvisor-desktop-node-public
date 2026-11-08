@@ -187,6 +187,18 @@ window.PCV = window.PCV || {};
     var i = Math.min(units.length - 1, Math.floor(Math.log(Math.abs(n)) / Math.log(k)));
     return (n / Math.pow(k, i)).toFixed(d) + ' ' + units[i];
   }
+  function formatLocalMinute(value) {
+    if (value === null || value === undefined || value === '') return { text: '-', title: '' };
+    var raw = String(value);
+    var parsed = Date.parse(raw);
+    if (!isFinite(parsed)) return { text: raw, title: raw };
+    var date = new Date(parsed);
+    var pad = function (n) { return String(n).padStart(2, '0'); };
+    return {
+      text: date.getFullYear() + '-' + pad(date.getMonth() + 1) + '-' + pad(date.getDate()) + ' ' + pad(date.getHours()) + ':' + pad(date.getMinutes()),
+      title: raw
+    };
+  }
   function formatRelativeTime(input) {
     if (input === null || input === undefined || input === '') return '-';
     var t = (input instanceof Date) ? input.getTime()
@@ -206,6 +218,7 @@ window.PCV = window.PCV || {};
   }
   window.formatNumber = formatNumber;
   window.formatBytes = formatBytes;
+  window.formatLocalMinute = formatLocalMinute;
   window.formatRelativeTime = formatRelativeTime;
   var _lastFailedAction = null;
   function toastRetry(msg, action) {
@@ -462,6 +475,7 @@ window.PCV = window.PCV || {};
     clearAllFormDirty: clearAllFormDirty,
     formatNumber: formatNumber,
     formatBytes: formatBytes,
+    formatLocalMinute: formatLocalMinute,
     formatRelativeTime: formatRelativeTime,
     toastRetry: toastRetry,
     registerShortcut: registerShortcut,

@@ -530,7 +530,9 @@ test("checkpoint list shows name, created time, restore, and delete", () => {
   const headers = panel.querySelectorAll("th").map((cell) => cell.textContent);
   assert.deepEqual(headers, ["이름", "만든 시각", "조작"]);
   assert.equal(panel.textContent.includes("manual-1"), true);
-  assert.equal(panel.textContent.includes("2026-11-05T08:00:00Z"), true);
+  const createdCell = panel.querySelector(".pcv-checkpoint-created");
+  assert.equal(createdCell.getAttribute("title"), "2026-11-05T08:00:00Z");
+  assert.equal(createdCell.textContent, localMinute("2026-11-05T08:00:00Z"));
   assert.equal(panel.querySelector('[data-action="checkpoint-restore"]').textContent, "복원…");
   assert.equal(panel.querySelector('[data-action="checkpoint-delete"]').textContent, "삭제…");
   assert.equal(headers.includes("종류"), false);
@@ -816,7 +818,9 @@ test("a finished create job refreshes the checkpoint list", async () => {
   await flush();
   const panel = sandbox.els.vmDetailContent.querySelector(".checkpoint-panel");
   assert.equal(panel.textContent.includes("checkpoint-new"), true);
-  assert.equal(panel.textContent.includes("2026-11-05T01:02:03Z"), true);
+  const createdCell = panel.querySelector(".pcv-checkpoint-created");
+  assert.equal(createdCell.getAttribute("title"), "2026-11-05T01:02:03Z");
+  assert.equal(createdCell.textContent, localMinute("2026-11-05T01:02:03Z"));
 });
 
 test("a late checkpoint job does not overwrite another selected VM", async () => {
@@ -893,4 +897,79 @@ test("an empty checkpoint list and a failed read use different copy", async () =
   await flush();
   assert.equal(listOf().querySelector(".pcv-load-error"), null);
   assert.equal(listOf().querySelector(".pcv-empty-action").textContent, "첫 checkpoint 만들기");
+});
+
+function localMinute(iso) {
+  const date = new Date(iso);
+  const pad = (n) => String(n).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
+test("BL-0031 checkpoint times show local minutes and keep the raw ISO in the title", () => {
+  const sandbox = createEnv();
+  const created = "2026-11-05T08:00:00.1234567Z";
+  const last = "2026-11-05T01:02:03.0000000Z";
+  const next = "2026-11-05T02:02:03.0000000Z";
+  install(sandbox, {
+    id: "id-1",
+    name: "alpha",
+    state: "Off",
+    checkpoint_schedule: {
+      enabled: true,
+      interval_minutes: 60,
+      retention_max: 3,
+      last_enqueued_at: last,
+      next_due_at: next,
+      status: "waiting"
+    }
+  }, { checkpoints: [{ name: "manual-1", created_at: created }] });
+  sandbox.window.__pcvVmDetailTab = "checkpoints";
+  sandbox.renderVmDetail();
+  const createdCell = sandbox.els.vmDetailContent.querySelector(".pcv-checkpoint-created");
+  assert.equal(createdCell.textContent, localMinute(created));
+  assert.equal(createdCell.getAttribute("title"), created);
+  assert.equal(createdCell.textContent.includes("1234567"), false);
+  const card = sandbox.els.vmDetailContent.querySelector(".checkpoint-schedule-readback");
+  const lastNode = [...card.querySelectorAll("strong")].find((node) => node.getAttribute("title") === last);
+  const nextNode = [...card.querySelectorAll("strong")].find((node) => node.getAttribute("title") === next);
+  assert.equal(lastNode.textContent, localMinute(last));
+  assert.equal(nextNode.textContent, localMinute(next));
+});
+
+test("BL-0031 schedule preview is a short Korean summary", () => {
+  const sandbox = createEnv();
+  install(sandbox, alpha);
+  sandbox.state.checkpointSchedulePreview = {
+    vm_id: "id-1",
+    updated_at: "2026-11-05T08:00:00Z",
+    result: {
+      action: "preview",
+      dry_run: true,
+      host_mutation_performed: false,
+      interval_minutes: 60,
+      retention_max: 3,
+      schema: "checkpoint-schedule-v1",
+      vm_name: "alpha"
+    }
+  };
+  sandbox.renderVmDetail();
+  const preview = sandbox.els.vmDetailContent.querySelector(".checkpoint-schedule-readback").querySelector("p");
+  const text = preview.textContent;
+  assert.equal(text.includes("{"), false);
+  assert.equal(text.includes("dry_run"), false);
+  assert.equal(text.includes("host_mutation_performed"), false);
+  assert.equal(text.includes("schema"), false);
+  assert.equal(text.includes("60"), true);
+  assert.equal(text.includes("3"), true);
+  assert.equal(text.includes("분"), true);
+});
+
+test("BL-0031 narrow checkpoint rows and the detail scroll keep their columns", () => {
+  const css = fs.readFileSync(fileURLToPath(new URL("../style.css", import.meta.url)), "utf8");
+  assert.match(css, /\.pcv-checkpoint-actions button\s*\{[^}]*white-space:\s*nowrap/);
+  assert.match(css, /\.vm-workspace > \.table-wrap\s*\{[^}]*max-height:\s*calc\(100vh - 9rem\)/);
+  assert.match(css, /\.vm-detail-panel\s*\{[^}]*max-height:\s*calc\(100vh - 9rem\)[^}]*overflow:\s*auto/);
+  assert.match(css, /\.pcv-clone-modal\s*\{[^}]*display:\s*grid[^}]*gap:\s*12px/);
+  assert.match(css, /\.pcv-clone-form label\s*\{[^}]*display:\s*grid/);
+  assert.match(css, /\.pcv-clone-modal input\s*\{[^}]*width:\s*100%/);
 });

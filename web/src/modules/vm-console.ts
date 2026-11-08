@@ -345,14 +345,27 @@ async function queueCheckpointScheduleControl(vmId, mode, payload) {
   }
 }
 
+function checkpointSchedulePreviewSummary(result) {
+  const record = result && typeof result === 'object' ? result : null;
+  const minutes = record ? record.interval_minutes : null;
+  const retention = record ? record.retention_max : null;
+  if (minutes == null && retention == null) {
+    return typeof formatObjectValue === 'function' ? formatObjectValue(result) : '';
+  }
+  return t('vm.checkpoint.schedule.preview_summary', {
+    minutes: minutes == null ? '-' : String(minutes),
+    retention: retention == null ? '-' : String(retention)
+  });
+}
+
 function renderCheckpointSchedulePreview(vmId) {
   const preview = state.checkpointSchedulePreview;
   if (!preview || preview.vm_id !== vmId) {
     return `<p class="muted">${pcvEscapeHtml(t('vm.checkpoint.schedule.preview_empty'))}</p>`;
   }
   const updated = preview.updated_at ? new Date(preview.updated_at).toLocaleString() : '-';
-  const body = typeof formatObjectValue === 'function' ? formatObjectValue(preview.result) : '';
-  return `<p class="muted">${pcvEscapeHtml(t('vm.checkpoint.schedule.preview_ready', { time: updated, body }))}</p>`;
+  const body = checkpointSchedulePreviewSummary(preview.result);
+  return `<p class="muted checkpoint-schedule-preview">${pcvEscapeHtml(t('vm.checkpoint.schedule.preview_ready', { time: updated, body }))}</p>`;
 }
 
 function readExportImportPayload(kind, data) {

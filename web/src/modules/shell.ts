@@ -191,6 +191,48 @@ function buildSegments(s) {
        : seg('idle', dash, L('증적', 'Evidence'), '', 'evidence')
   ];
 }
+function finiteCount(value, fallback) {
+  var n = Number(value);
+  return isFinite(n) ? n : fallback;
+}
+function operatorKpiSnapshot() {
+  var loaded = typeof state !== 'undefined' && state && state.lastRefreshedAt != null;
+  var refreshed = typeof hasRefreshedOperation === 'function' ? hasRefreshedOperation : function () { return false; };
+  var snap = {};
+  if (loaded && refreshed('vm.list') && typeof getSummaryVmCounts === 'function') {
+    var vmCounts = getSummaryVmCounts();
+    snap.vms = { run: finiteCount(vmCounts.running, 0), total: finiteCount(vmCounts.total, 0) };
+  }
+  if (loaded && typeof getSummaryJobCounts === 'function') {
+    var jobCounts = getSummaryJobCounts();
+    snap.jobs = { active: finiteCount(jobCounts.active, 0), failed: finiteCount(jobCounts.failed, 0) };
+  }
+  if (loaded && typeof getPriorityItems === 'function') {
+    var items = getPriorityItems() || [];
+    var crit = 0;
+    var warn = 0;
+    for (var index = 0; index < items.length; index += 1) {
+      if (items[index] && items[index].tone === 'error') crit += 1;
+      else warn += 1;
+    }
+    snap.alerts = { crit: crit, warn: warn, unack: items.length };
+  }
+  if (typeof getHostReadinessLabel === 'function') {
+    var mode = String(getHostReadinessLabel() || '');
+    if (mode && mode !== '—' && mode !== '-') {
+      var folded = mode.toLowerCase();
+      var blocked = folded.indexOf('need') >= 0 || folded.indexOf('fail') >= 0 || folded.indexOf('error') >= 0 || folded.indexOf('attention') >= 0;
+      snap.host = { ok: !blocked, mode: mode, detail: '' };
+    }
+  }
+  if (loaded && refreshed('ops.summary') && state.opsSummary && typeof collectEvidenceIssues === 'function') {
+    snap.evidence = { issues: collectEvidenceIssues().length };
+  }
+  return snap;
+}
+function syncFromOperatorState() {
+  update(operatorKpiSnapshot());
+}
 function buildStatusbar() {
   var root = document.getElementById('shell-statusbar');
   if (!root) return;
@@ -265,5 +307,5 @@ function setActive(tabId) {
     crumb.appendChild(el('b', null, c.item));
   }
 }
-PCV.shell = { mount: mount, update: update, setActive: setActive, NAV_SECTIONS: NAV_SECTIONS, buildSegments: buildSegments, syncAccountNav: syncAccountNav };
+PCV.shell = { mount: mount, update: update, setActive: setActive, NAV_SECTIONS: NAV_SECTIONS, buildSegments: buildSegments, syncAccountNav: syncAccountNav, syncFromOperatorState: syncFromOperatorState };
 })(window.PCV);

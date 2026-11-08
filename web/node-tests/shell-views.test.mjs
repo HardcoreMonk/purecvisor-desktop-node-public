@@ -643,6 +643,30 @@ test("sidebar groups keep the design order and the account item follows account.
   assert.equal(item().hidden, false);
 });
 
+test("BL-0031 the top KPI strip uses loaded VM host job alert and evidence counts", () => {
+  resetSession(env);
+  env.state.lastRefreshedAt = 1;
+  env.state.partialFailures = [];
+  env.state.vms = [
+    { id: "a", name: "a", state: "Running" },
+    { id: "b", name: "b", state: "Off" }
+  ];
+  env.state.host = { supported: true };
+  env.state.opsSummary = { batch_evidence: { status: "available", configured: true, latest: {} } };
+  env.state.trackedJobs = [];
+  env.state.serverJobs = [];
+  env.render();
+  const big = [...env.document.querySelectorAll("#shell-statusbar .seg-big")].map((node) => node.textContent);
+  assert.equal(big.includes("—"), false, big.join("|"));
+  assert.equal(big[0], "1");
+  assert.match(env.document.getElementById("shell-statusbar").textContent, /\/ 2/);
+  env.state.lastRefreshedAt = null;
+  env.state.vms = [];
+  env.state.host = null;
+  env.state.opsSummary = null;
+  if (env.PCV.shell.syncFromOperatorState) env.PCV.shell.syncFromOperatorState();
+});
+
 test("one render paints the account list only on the accounts view", () => {
   resetSession(env);
   env.state.accountDirectory = [{ username: "ada", role: "operator", enabled: true }];

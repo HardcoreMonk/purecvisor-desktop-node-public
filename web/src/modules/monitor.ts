@@ -925,6 +925,7 @@ function render() {
   try { renderAccountSession(); } catch (e) { if (window._DEBUG) console.warn('render:renderAccountSession', e); }
   try { if (typeof paintAccountsView === 'function') paintAccountsView(); } catch (e) { if (window._DEBUG) console.warn('render:paintAccountsView', e); }
   try { if (window.PCV && PCV.shell && typeof PCV.shell.syncAccountNav === 'function') PCV.shell.syncAccountNav(); } catch (e) { if (window._DEBUG) console.warn('render:syncAccountNav', e); }
+  try { if (window.PCV && PCV.shell && typeof PCV.shell.syncFromOperatorState === 'function') PCV.shell.syncFromOperatorState(); } catch (e) { if (window._DEBUG) console.warn('render:shellKpi', e); }
   try { renderConsolePanel(); } catch (e) { if (window._DEBUG) console.warn('render:renderConsolePanel', e); }
   try { renderTokenRotation(); } catch (e) { if (window._DEBUG) console.warn('render:renderTokenRotation', e); }
   try { renderDiagnosticsBundle(); } catch (e) { if (window._DEBUG) console.warn('render:renderDiagnosticsBundle', e); }
