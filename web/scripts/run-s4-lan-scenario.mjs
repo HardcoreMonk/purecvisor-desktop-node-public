@@ -7,6 +7,7 @@ import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { inflateSync } from "node:zlib";
+import { createAccountSession } from "./s4-account-session.mjs";
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const valueNames = new Set(["web", "user", "iso", "vm-root", "out", "phases", "clone-bound-ms", "interval", "retention"]);
@@ -240,7 +241,6 @@ if (existsSync(join(config.outDir, "summary.json"))) argumentError("summary alre
 const secrets = new Set([password]);
 const createdVms = [];
 const cleanupErrors = [];
-let token = "";
 let apiBase = "";
 let scheduleArmed = false;
 let sourceLocked = false;
@@ -316,10 +316,10 @@ async function webGet(path) {
   return { status: response.status, contentType: response.headers.get("content-type") || "", text };
 }
 
-async function api(method, path, body) {
+async function requestApi(method, path, body, bearer = "") {
   const headers = {};
   if (body !== undefined) headers["content-type"] = "application/json";
-  if (token) headers.authorization = `Bearer ${token}`;
+  if (bearer) headers.authorization = `Bearer ${bearer}`;
   let response;
   try {
     response = await fetch(`${apiBase}${path}`, {
@@ -341,6 +341,26 @@ async function api(method, path, body) {
   }
   collectSecrets(payload);
   return { status: response.status, payload };
+}
+
+// BL-0035: the 15-minute access token is refreshed before it expires; refresh failure falls back to a re-login with
+// the in-memory password. Tokens reach scrub() through onSecret and are never written.
+const session = createAccountSession({
+  request: (method, path, body) => requestApi(method, path, body),
+  username: config.user,
+  password,
+  onSecret: (value) => secrets.add(value)
+});
+
+// Authenticated call. A 401 (for example PCV_JWT_EXPIRED) renews the session once and repeats the call, since the
+// host rejected it before running it.
+async function api(method, path, body) {
+  if (!session.token) return requestApi(method, path, body);
+  await session.ensureFresh();
+  const first = await requestApi(method, path, body, session.token);
+  if (first.status !== 401) return first;
+  if (!(await session.reauthenticate())) return first;
+  return requestApi(method, path, body, session.token);
 }
 
 async function waitJob(result, label) {
@@ -446,14 +466,11 @@ async function preflight() {
   summary.preflight["loopback-session-refused"] = { ok: refused, status: loopback.status, code: loopbackCode };
   if (!refused) throw Object.assign(new Error("preflight.loopback-session-refused"), { step: "loopback-session-refused", code: loopbackCode });
 
-  const login = await api("POST", "/api/v1/auth/login", { username: config.user, password });
-  const access = typeof login.payload?.data?.access_token === "string" ? login.payload.data.access_token : "";
+  const login = await session.login();
   const role = typeof login.payload?.data?.session?.role === "string" ? login.payload.data.session.role : "";
-  if (access) secrets.add(access);
-  const loginOk = login.status === 200 && access.length > 0;
+  const loginOk = login.ok;
   summary.preflight.login = { ok: loginOk, status: login.status, code: login.payload?.error?.code || "", role: loginOk ? role : null };
   if (!loginOk) throw Object.assign(new Error("preflight.login"), { step: "login", code: login.payload?.error?.code || "" });
-  token = access;
   summary.role = role;
 
   const check = await api("GET", "/api/v1/vms");
@@ -584,7 +601,9 @@ async function runS3() {
 }
 
 async function cleanup() {
-  if (!token) return;
+  if (!session.token) return;
+  // A long S3 wait can outlive the access token: refresh it, or log in again from memory, before cleanup starts.
+  await session.ensureFresh();
   if (scheduleArmed) {
     try {
       await waitJob(await api("POST", `/api/v1/vms/${encodeURIComponent(vmNames.checkpoint)}/checkpoints/schedule/clear`), "schedule-clear");
@@ -656,6 +675,7 @@ async function cleanup() {
 
 function finish(exitCode) {
   summary.vms_created = [...createdVms];
+  summary.auth = session.counts;
   summary.cleanup_error = cleanupErrors.length ? cleanupErrors.join("; ") : null;
   summary.finished_at = new Date().toISOString();
   const okResult = summary.result === "pass" || summary.result === "pass-without-auto";

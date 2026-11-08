@@ -427,6 +427,157 @@ test("T11 a failed create job still deletes a leftover VM and records it when de
   }
 });
 
+// BL-0035: the access token lives 15 minutes, while S3 waits up to about 62 minutes for the first scheduled
+// checkpoint. The session refreshes before expiry and re-logs in from memory when refresh fails.
+function fakeAuthRequest(responses) {
+  const calls = [];
+  const request = async (method, path, body) => {
+    calls.push({ method, path, body });
+    const next = responses[path]?.shift();
+    if (!next) throw new Error(`unexpected ${method} ${path}`);
+    return next;
+  };
+  return { calls, request };
+}
+
+function tokenPair(access, refresh, expiresIn = 900) {
+  return { status: 200, payload: { ok: true, data: { access_token: access, refresh_token: refresh, expires_in: expiresIn } } };
+}
+
+test("T13 the account session refreshes one minute before a 15-minute access token expires", async () => {
+  const { createAccountSession, refreshDelayMs } = await import("../scripts/s4-account-session.mjs");
+  assert.equal(refreshDelayMs(900), 840000);
+  assert.equal(refreshDelayMs(10), 8000);
+  let now = 1_000_000;
+  const seen = [];
+  const fake = fakeAuthRequest({
+    "/api/v1/auth/login": [tokenPair("access-1", "refresh-1")],
+    "/api/v1/auth/refresh": [tokenPair("access-2", "refresh-2")]
+  });
+  const session = createAccountSession({
+    request: fake.request,
+    username: "s4-operator",
+    password: probePassword,
+    now: () => now,
+    onSecret: (value) => seen.push(value)
+  });
+
+  assert.equal((await session.login()).ok, true);
+  assert.equal(session.token, "access-1");
+  now += 839999;
+  assert.equal(await session.ensureFresh(), "current");
+  assert.equal(fake.calls.length, 1);
+  now += 1;
+  assert.equal(await session.ensureFresh(), "refresh");
+  assert.equal(session.token, "access-2");
+  assert.deepEqual(fake.calls[1], { method: "POST", path: "/api/v1/auth/refresh", body: { refresh_token: "refresh-1" } });
+  assert.deepEqual(session.counts, { refreshes: 1, relogins: 0, failures: 0 });
+  now += 839999;
+  assert.equal(await session.ensureFresh(), "current");
+  assert.deepEqual(seen, ["access-1", "refresh-1", "access-2", "refresh-2"]);
+});
+
+test("T14 a failed refresh re-logs in with the in-memory password, and a failed re-login is reported", async () => {
+  const { createAccountSession } = await import("../scripts/s4-account-session.mjs");
+  let now = 0;
+  const fake = fakeAuthRequest({
+    "/api/v1/auth/login": [
+      tokenPair("access-1", "refresh-1"),
+      tokenPair("access-3", "refresh-3"),
+      { status: 401, payload: { ok: false, error: { code: "PCV_AUTH_INVALID" } } }
+    ],
+    "/api/v1/auth/refresh": [
+      { status: 401, payload: { ok: false, error: { code: "PCV_JWT_EXPIRED" } } },
+      { status: 401, payload: { ok: false, error: { code: "PCV_JWT_REVOKED" } } }
+    ]
+  });
+  const session = createAccountSession({ request: fake.request, username: "s4-operator", password: probePassword, now: () => now });
+
+  await session.login();
+  now += 900000;
+  assert.equal(await session.ensureFresh(), "login");
+  assert.equal(session.token, "access-3");
+  assert.deepEqual(fake.calls.map(({ path }) => path), ["/api/v1/auth/login", "/api/v1/auth/refresh", "/api/v1/auth/login"]);
+  assert.deepEqual(fake.calls[2].body, { username: "s4-operator", password: probePassword });
+  assert.equal(await session.reauthenticate(), "");
+  assert.deepEqual(session.counts, { refreshes: 0, relogins: 1, failures: 1 });
+});
+
+test("T15 a 401 during the run re-logs in after a failed refresh and cleanup uses the new token", async () => {
+  const calls = [];
+  let logins = 0;
+  const host = await listen((request, response, body) => {
+    const url = (request.url || "").split("?")[0];
+    const bearer = String(request.headers.authorization || "");
+    calls.push(`${request.method} ${url} ${bearer.replace(/^Bearer /, "")}`);
+    if (url === "/") {
+      response.writeHead(200, { "content-type": "text/html; charset=utf-8" });
+      response.end("<!doctype html><title>pcv</title>");
+      return;
+    }
+    if (url.startsWith("/pcv-config.js")) {
+      response.writeHead(200, { "content-type": "application/javascript" });
+      response.end(`window.PCV_DESKTOP_NODE_CONFIG = Object.freeze({"apiBaseUrl":"${host.base}"});\n`);
+      return;
+    }
+    if (url.startsWith("/api/v1/auth/loopback-session")) {
+      writeJson(response, 409, { ok: false, error: { code: "PCV_LOOPBACK_SESSION_DISABLED" }, data: { access_token: loopbackToken } });
+      return;
+    }
+    if (url === "/api/v1/auth/login") {
+      logins += 1;
+      const suffix = logins === 1 ? "" : "-relogin";
+      writeJson(response, 200, {
+        ok: true,
+        data: { access_token: `${accessToken}${suffix}`, refresh_token: `${refreshToken}${suffix}`, expires_in: 900, session: { role: "operator" } }
+      });
+      return;
+    }
+    if (url === "/api/v1/auth/refresh") {
+      assert.equal(JSON.parse(body).refresh_token, refreshToken);
+      writeJson(response, 401, { ok: false, error: { code: "PCV_JWT_REVOKED" } });
+      return;
+    }
+    if (url === "/api/v1/vms") {
+      if (bearer !== `Bearer ${accessToken}-relogin`) {
+        writeJson(response, 401, { ok: false, error: { code: "PCV_JWT_EXPIRED" } });
+        return;
+      }
+      writeJson(response, 200, { ok: true, data: [] });
+      return;
+    }
+    writeJson(response, 404, { ok: false, error: { code: "PCV_TEST_UNEXPECTED" } });
+  });
+  const out = mkdtempSync(join(tmpdir(), "pcv-s4-lan-"));
+  try {
+    const result = await runLive([
+      "--execute",
+      "--phases=none",
+      `--web=${host.base}`,
+      "--user=s4-operator",
+      `--out=${out}`
+    ], { ...process.env, PCV_S4_PASSWORD: probePassword });
+    const summaryText = readFileSync(join(out, "summary.json"), "utf8");
+    const summary = JSON.parse(summaryText);
+    assert.equal(result.status, 0, result.stderr);
+    assert.equal(summary.result, "pass");
+    assert.equal(summary.preflight["auth-check"].ok, true);
+    assert.deepEqual(summary.auth, { refreshes: 0, relogins: 1, failures: 0 });
+    assert.equal(logins, 2);
+    const vmCalls = calls.filter((line) => line.startsWith("GET /api/v1/vms "));
+    assert.equal(vmCalls.length, 3, "auth-check, its retry, and the cleanup readback");
+    assert.equal(vmCalls[2].endsWith(`${accessToken}-relogin`), true);
+    for (const secret of [`${accessToken}-relogin`, `${refreshToken}-relogin`]) {
+      assert.equal(summaryText.includes(secret), false);
+      assert.equal(result.stdout.includes(secret), false);
+    }
+    assertNoSecrets(result, summaryText);
+  } finally {
+    rmSync(out, { recursive: true, force: true });
+    await closeServer(host.server);
+  }
+});
+
 test("T12 --execute --phases=none --skip-auto stays pass", async () => {
   const host = await listen((request, response) => {
     const url = request.url || "";
