@@ -87,6 +87,8 @@
 
 - [ ] Lane 2. orchestrator `-PlanOnly` 뒤 `-Execute`(campaign `manual-admin-campaign-20261108-04296-04297`, baseline Task 1 package, target Task 3 package). 여섯 bucket PASS, closed descriptor, `observation_error` 없음, 끝 상태 설치본 `0.42.97`·ARP 1개·service Running/Automatic·Web 200·보존 VM·template·`pcv-it-s4-console` 그대로. `train-facts`로 pair 문서. 로컬 commit.
 
+이관(2026-11-08): `train-04298-20261108` Task 2(train `0.42.98-admin-smoke`)로 옮겼다.
+
 실행 기록(2026-11-08, FAIL·정차): Task 3a base로 orchestrator `-PlanOnly`가 `ok=true`였다(host mutation 없음). `-Execute`는 root `artifacts/manual-admin-campaign-20261108-04296-04297`에서 07:55부터 07:58 KST까지 `168`초 돌았다. bucket 결과:
 
 - PASS: `manual-admin-rebaseline-readiness`, `lifecycle-product-update-rollback`.
@@ -179,63 +181,91 @@ checkpoint 9/23은 Lane 1 시간 예산 30분을 넘겨 47분에 멈췄다. 기�
 
 ## Task 4d: 수정 PR
 
-- [ ] Lane 1. clean HEAD 종료 검증(`dotnet build src/DesktopNode.sln -c Release`, `Invoke-PcvPrGate.ps1`, Pester 4종)을 하고 push, PR을 연다.
+- [x] Lane 1. clean HEAD 종료 검증(`dotnet build src/DesktopNode.sln -c Release`, `Invoke-PcvPrGate.ps1`, Pester 4종)을 하고 push, PR을 연다.
   - PR 본문에 정차 기록, 필수 목록 위치(`PcvDesktopNodeProduct.psm1` `Test-PcvDesktopNodeUpdatePayload`), 호환 파일 근거를 적는다.
   - queue 행의 `pr`과 `merge_commit`을 채우고 green Required CI를 기다린다.
   - merge는 사용자 결정 7(권장안 자동 승인)에 따라 green Required CI 뒤 `--match-head-commit`으로 한다. merge 뒤 `main` push run을 기다리고, red면 revert PR을 열고 멈춘다.
   - 이 campaign은 여기서 닫는다. Task 4~17은 다시 출발할 train `0.42.98-admin-smoke` campaign으로 옮긴다.
 
+실행 기록(2026-11-08): queue에 PR #108 행(`merge_commit` `d8bf7be9`, area `web`, `lane2_probe` 없음, risk `M`)을 더해 `c510a25`로 commit했다. clean HEAD에서 `Invoke-PcvPrGate.ps1`이 `ok=true`였다. build, Release `dotnet test` 9개 assembly (Service 11, Cli 186, Contracts 200, Runtime 129, HyperV 285, Delivery 781, Host 246, Api 535, Verification 677), module size ratchet 3/3이 통과했다. `git diff --check origin/main...HEAD`도 통과했다. push한 뒤 PR #108(head `c510a25`)을 열었다. Required check `delivery`·`dotnet`·`installer-policy`·`web`(run `42455768162`)과 `public-boundary-ci-required`(run `42455768117`)가 모두 pass였다. 권장안 자동 승인(사용자 결정 7)만으로 시도한 merge는 auto mode가 `[Merge Without Review]`로 거부했다. 사용자의 `"PR #108 merge 승인"` 뒤 base 최신 확인과 `--match-head-commit`으로 merge했다(merge commit `8e4ebe2`). merge 뒤 main push Development Gates `42456130722`와 Public Boundary Contract `42456130718`이 success였다. 이 campaign은 닫고 Task 4~17을 `train-04298-20261108` Task 2~15로 옮긴다(plan `docs/superpowers/plans/2026-11-08-purecvisor-desktop-node-train-04298.md`). host mutation은 없다.
+
 ## Task 5: fullgate
 
 - [ ] Lane 2. `pcvverify train-host-inputs --kind fullgate-manifest --write`로 manifest를 만들고(LAN prefix는 환경 변수로만 넘김) supervisor `-DryRun -AllowHostMutation` 뒤 `full-admin-host-mutation-gate-20261108-04297`을 돌린다. 사후 검사(설치본 Host/CLI ProductVersion == gate build commit, 같은 version ARP 1개, PureCVisor firewall 규칙 0, service Running/Automatic, Web 200, 보존 VM·template·`pcv-it-s4-console` 그대로). `train-facts`로 fullgate 문서. 로컬 commit.
+
+이관(2026-11-08): `train-04298-20261108` Task 3(train `0.42.98-admin-smoke`)로 옮겼다.
 
 ## Task 6: installed current-card
 
 - [ ] Lane 2. `train-host-inputs --kind current-card`로 capture 스크립트를 만들어 root 밖에서 실행한다. `status=pass`, `promotion_ledger_status=not-promoted`, 남은 시험 VM 0(`pcv-it-s2-source`는 S2 template, `pcv-it-s4-console`은 S4 시연 VM으로 기록. 도구가 받지 않으면 멈추고 묻는다), secret 없음. `train-facts`로 current-card 문서. 로컬 commit.
 
+이관(2026-11-08): `train-04298-20261108` Task 4(train `0.42.98-admin-smoke`)로 옮겼다.
+
 ## Task 7: probe Web Console 재설계 (queue 97~103, 105~107)
 
 - [ ] Lane 2. 설치본 `0.42.97`의 `http://127.0.0.1/`를 loopback 세션으로 브라우저(CDP)에서 연다. 사이드바 화면 전환, 템플릿·계정 화면, VM 목록 상태 칩, 옛 주소(`/index.legacy.html`, `/app.js`, `/styles.css`) 404를 본다. 새 VM 마법사로 `pcv-it-probe-wizard-1108`(Generation 2, smoke ISO, disk `artifacts/` 아래)을 만들고 켠 뒤 콘솔 탭(맞춤, 전체 화면 버튼, 입력 상태 칩), 체크포인트 탭(생성, 복원 확인 모달, 예약 미리보기·저장 뒤 즉시 반영, 예약 지우기), 더 보기 메뉴의 복제 모달(이름 첫 칸, 이름 `pcv-it-probe-clone-1108`), 삭제 이름 확인 모달로 두 VM을 지운다. 캡처 `docs/ga-ready/demo/web-console-redesign-20261108/`(PNG, 사용자 홈 경로·LAN IP·호스트명·token 없음), 기록 `docs/ga-ready/demo/web-console-redesign-demo-2026-11-08.md`(확인자 칸 비움). 끝 상태 `pcv-it-probe-*` 0개. 로컬 commit.
+
+이관(2026-11-08): `train-04298-20261108` Task 5(train `0.42.98-admin-smoke`)로 옮겼다.
 
 ## Task 8: probe 비밀번호 재설정 (queue 104)
 
 - [ ] Lane 2. 설치본 `0.42.97` loopback에서 계정이 없는 동안 Local API·PCVCLI의 재설정 route가 인증 없이 거절되는지 확인한다. 그다음 Task 9 계정 복원 뒤, 에이전트용 operator 계정 `pcv-s4-operator`로만 본인 재설정 경로를 돈다: 로그인 token을 받고, 본인 재설정 뒤 옛 token이 `401`, 새 비밀번호 로그인이 성공하는지 본다. 에이전트가 그 계정의 현재 비밀번호를 갖고 있지 않으면 이 단계는 하지 않고 Task 14 사용자 시연 항목으로 넘긴다(admin `pcv-admin2` 비밀번호는 사용자 전용이다). 비밀번호와 token은 실행 경계에서 만들고 남기지 않는다. evidence `docs/ga-ready/evidence/lane2-account-password-reset-2026-11-08-04297.md`. 로컬 commit.
 
+이관(2026-11-08): `train-04298-20261108` Task 6(train `0.42.98-admin-smoke`)로 옮겼다.
+
 ## Task 9: S4 복원과 LAN 재적용 (queue 94, 95)
 
 - [ ] Lane 2. Task 2 백업의 `accounts.json`을 되돌리고 해시를 비교한다. 설치본 `0.42.97`의 `configure-installed`를 백업한 LAN prefix와 `--allow-lan`으로 실행한다(PR #94: prefix 옵션과 `--allow-lan`이 service 명령줄에 들어감, PR #95: 실행 중 service가 Stop → Configure → Start로 새 listener를 연다). 확인: 명령줄, listener 7777·80 LAN 주소, 방화벽 관리 규칙 2개(Private, Inbound), loopback 세션 `409`, 계정 3개(`pcv-admin` disabled, `pcv-admin2`·`pcv-s4-operator` enabled), Web 200(LAN 주소). evidence `docs/ga-ready/evidence/lane2-service-configure-lan-2026-11-08-04297.md`(LAN 주소는 `<host-lan-ip>`). 로컬 commit.
+
+이관(2026-11-08): `train-04298-20261108` Task 7(train `0.42.98-admin-smoke`)로 옮겼다.
 
 ## Task 10: train PR A
 
 - [ ] clean HEAD 종료 검증(`dotnet build src/DesktopNode.sln -c Release`, `Invoke-PcvPrGate.ps1` 또는 Required CI shard 4개 로컬, Pester 4종, `npm run test:public-source-safety --prefix web` 신규 0), `train-path-check --payload 9036c62 --head HEAD` exit `0`, push, PR. green CI 뒤 사용자 merge 승인으로 merge(`--match-head-commit`). merge 뒤 main push run을 기다리고 red면 revert PR을 열고 멈춘다.
 
+이관(2026-11-08): `train-04298-20261108` Task 8(train `0.42.98-admin-smoke`)로 옮겼다.
+
 ## Task 11: Lane 3 데이터와 lane3-spec
 
 - [ ] Lane 3. `main`에서 branch를 만든다. consume manifest, functional carry-forward·pair consume·`main-push`(PR A merge의 main push run 인용) facts를 쓴 뒤 `train-evidence --write`, current-card `promoted-current`(`--write --allow-update`), `--check`. `current-evidence.json`과 `lane3-spec --write`. 로컬 commit.
+
+이관(2026-11-08): `train-04298-20261108` Task 9(train `0.42.98-admin-smoke`)로 옮겼다.
 
 ## Task 12: 승격 문서와 release-train 승격
 
 - [ ] Lane 3. `Invoke-PcvLane3PromotionDocs.ps1` dry-run, `-Apply`, `-Check`와 Lane 3 숨은 단계(descriptor chain, ledger 행, index 절, D2 시험, spec pin, current evidence 시험 version 줄). `release-train.json` train `0.42.97-admin-smoke` `status=promoted`, `operational_current=0.42.97-admin-smoke`. `Update-PcvCurrentEvidenceDocs.ps1 -Apply`/`-Check`, `Update-PcvContractSpecPins.ps1 -Apply`, `dotnet test src/DesktopNode.Delivery.Tests -c Release`. 로컬 commit.
 
+이관(2026-11-08): `train-04298-20261108` Task 10(train `0.42.98-admin-smoke`)로 옮겼다.
+
 ## Task 13: Lane 3 PR B
 
 - [ ] clean HEAD 종료 검증(Task 10과 같음). push, PR. green CI 뒤 사용자 merge 승인으로 merge. merge 뒤 main push run을 기다리고 red면 revert PR을 열고 멈춘다.
+
+이관(2026-11-08): `train-04298-20261108` Task 11(train `0.42.98-admin-smoke`)로 옮겼다.
 
 ## Task 14: S4 사용자 시연 A (이관: `ui-redesign-20261105` Task 11)
 
 - [ ] 원래 문장: Task 4 전에 만든 admin 계정으로 자기 PC 브라우저에서 S1~S3을 시연한다. 에이전트는 시연 전후 상태(service 구성, 방화벽 규칙, 계정 목록, VM)를 읽어 기록하고 확인자 칸은 사용자가 채운다. 이 기록만 "다른 PC" 시연이다. 리허설 R은 S4 판정 근거로 쓰지 않는다. 2026-11-08 변경: 시연은 설치본 `0.42.97`의 새 화면으로 이어 간다(S2 복제 이름은 복제 모달 첫 칸). 기록은 `docs/ga-ready/demo/s4-lan-demo-2026-11-05.md`이고 초안은 로컬 branch `lane1/s4-demo-record-20261108` `cf2b2f6`에 있다. 사용자가 시연 결과를 알리면 처리한다.
 
+이관(2026-11-08): `train-04298-20261108` Task 12(train `0.42.98-admin-smoke`)로 옮겼다.
+
 ## Task 15: S4 끝 상태 (이관: `ui-redesign-20261105` Task 12)
 
 - [ ] Lane 2. 원래 문장: 끝 상태는 loopback 복귀(같은 `main` 빌드본 `configure-installed`를 prefix 옵션과 `--allow-lan` 없이 실행, Task 4 전 service 명령줄과 같아야 한다), 방화벽 규칙 0, 에이전트 operator 계정 disable, `pcv-it-s4-*` VM 정리다. 기록한다. 계정 파일 삭제는 이 task가 하지 않는다. 2026-11-08 메모: 설치본 `0.42.97`의 `configure-installed`가 PR #94·#95를 담는다.
+
+이관(2026-11-08): `train-04298-20261108` Task 13(train `0.42.98-admin-smoke`)로 옮겼다.
 
 ## Task 16: criteria S4 판정 (이관: `ui-redesign-20261105` Task 13)
 
 - [ ] Lane 1. 원래 문장: 시연 기록이 설계 1절의 판정을 모두 담으면 `config/project-completion-criteria.json` S4를 `passed`로 두고 시연 기록 링크를 적는다. push, PR, 사용자 merge 승인 뒤 merge. 판정 전에는 S4 통과를 주장하지 않는다. Task 2 백업을 지울지 사용자에게 묻는다.
 
+이관(2026-11-08): `train-04298-20261108` Task 14(train `0.42.98-admin-smoke`)로 옮겼다.
+
 ## Task 17: C5 runner 확인 (이관: `ui-redesign-20261105` Task 14)
 
 - [ ] 원래 문장: `not_before` 2026-10-19. Ubuntu 26 runner의 첫 `main` Development Gates와 Public Boundary run이 green이면 `config/project-completion-criteria.json` 위험 행을 `status=closed`, `closed_by`에 run id로 닫는다. 실패하면 `ubuntu-24.04` pin을 판단해 backlog 행으로 보고한다. push, PR. merge는 사용자 승인 뒤.
+
+이관(2026-11-08): `train-04298-20261108` Task 15(train `0.42.98-admin-smoke`)로 옮겼다.
 
 ## Nonclaims
 
