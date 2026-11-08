@@ -3,7 +3,16 @@
   "contract": "pcv-release-train-v1",
   "design": "docs/superpowers/specs/2026-10-04-purecvisor-desktop-node-release-train-design.md",
   "operational_current": "0.42.98-admin-smoke",
-  "queue": [],
+  "queue": [
+    {
+      "pr": 113,
+      "merge_commit": "154d16cc",
+      "area": "web",
+      "summary": "in-app guide web/guide-content.md rewritten for the installed ADR-0019 Web Console (sidebar groups, VM detail tabs, wizard, clone modal, confirms, console, checkpoint schedule, password routes)",
+      "lane2_probe": null,
+      "risk_tier": "S"
+    }
+  ],
   "trains": [
     {
       "version": "0.42.89-admin-smoke",
