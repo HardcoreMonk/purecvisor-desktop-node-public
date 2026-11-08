@@ -41,8 +41,9 @@
   시연 `docs/ga-ready/demo/web-console-redesign-demo-2026-11-08.md`, 비밀번호 재설정 거절, S4 계정 복원과 LAN 재적용) PASS 뒤 두
   PR(evidence PR #109, Lane 3 PR)로 operational current를 `0.42.98-admin-smoke`로 올렸다. 기록은
   `docs/superpowers/plans/2026-11-08-purecvisor-desktop-node-train-04298.md`.
-- 시나리오: `config/project-completion-criteria.json`에서 S1~S3 `passed`, S4 `open`이다. S4 설계는
-  `docs/superpowers/specs/2026-10-11-purecvisor-desktop-node-s4-lan-account-design.md`(결정 대기)다.
+- 시나리오: `config/project-completion-criteria.json`에서 S1~S4가 `passed`다. S4(LAN의 다른 PC에서 계정으로 S1~S3)는 2026-11-08
+  설치본 `0.42.98`에서 판정했다(`docs/ga-ready/demo/s4-lan-demo-2026-11-05.md`, 설계
+  `docs/superpowers/specs/2026-10-11-purecvisor-desktop-node-s4-lan-account-design.md`).
 
 ## 2026-10-09 프로젝트 완료 정의 v3 (ADR-0017)
 

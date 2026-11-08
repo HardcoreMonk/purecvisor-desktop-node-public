@@ -273,7 +273,16 @@ PR #110(`lane3/train-04298-promotion-20261108`)을 열었고 Required CI 다섯 
 
 ## Task 14: criteria S4 판정 (이관: `train-04297-20261108` Task 16, 원래 `ui-redesign-20261105` Task 13)
 
-- [ ] Lane 1. 원래 문장: 시연 기록이 설계 1절의 판정을 모두 담으면 `config/project-completion-criteria.json` S4를 `passed`로 두고 시연 기록 링크를 적는다. push, PR, 사용자 merge 승인 뒤 merge. 판정 전에는 S4 통과를 주장하지 않는다. 보관한 계정 백업을 지울지 사용자에게 묻는다.
+- [x] Lane 1. 원래 문장: 시연 기록이 설계 1절의 판정을 모두 담으면 `config/project-completion-criteria.json` S4를 `passed`로 두고 시연 기록 링크를 적는다. push, PR, 사용자 merge 승인 뒤 merge. 판정 전에는 S4 통과를 주장하지 않는다. 보관한 계정 백업을 지울지 사용자에게 묻는다.
+
+실행 기록(2026-11-08): 시연 기록 `docs/ga-ready/demo/s4-lan-demo-2026-11-05.md` 판정 절에 설계 1절의 세 항목과 시나리오 스크립트 1회 통과를 대조해 적었다.
+- 1번 항목: 사용자 보고, 다른 호스트 연결, 2차 preflight로 충족했다.
+- 2번 항목: 사용자 보고와 시나리오 2차 run, 22:10 예약 checkpoint로 충족했다. 사용자 브라우저 세션의 S2·S3 job은 호스트에 없다는 점도 적었다.
+- 3번 항목: 방화벽 Private·LocalSubnet과 loopback 끝 상태로 충족했다.
+- 시나리오 스크립트: 2차 run `pass-without-auto`로 충족했다.
+- 판정에 맞춰 `config/project-completion-criteria.json` S4를 `passed`로 바꾸고 `demo_record`에 이 기록을 적었다. `docs/DEVELOPER_INDEX.md` 시나리오 줄과 `docs/ADR_INDEX.md` ADR-0017 행도 고쳤다.
+- 이 branch(`lane1/s4-demo-20261108`)를 push하고 PR을 연다. merge는 사용자 문장 뒤다.
+- 저장소 밖에 보관한 S4 계정 백업은 지우지 않았다. 지울지는 최종 보고에서 사용자에게 묻는다.
 
 ## Task 15: C5 runner 확인 (이관: `train-04297-20261108` Task 17, 원래 `ui-redesign-20261105` Task 14)
 

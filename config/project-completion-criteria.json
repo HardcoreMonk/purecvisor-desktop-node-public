@@ -34,8 +34,8 @@
     {
       "id": "S4",
       "title": "LAN의 다른 PC에서 계정으로 로그인해 S1~S3을 쓴다",
-      "status": "open",
-      "demo_record": null
+      "status": "passed",
+      "demo_record": "docs/ga-ready/demo/s4-lan-demo-2026-11-05.md"
     }
   ],
   "service_plan_items": [
