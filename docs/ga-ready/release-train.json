@@ -19,6 +19,14 @@
       "summary": "BL-0011: console input rate limiter measures its 1 s window with the hardening clock (same seam as the frame throttle); behaviour unchanged, test made deterministic",
       "lane2_probe": null,
       "risk_tier": "S"
+    },
+    {
+      "pr": 116,
+      "merge_commit": "5f6c1f0c",
+      "area": "web",
+      "summary": "backlog B2: checkpoint schedule inputs kept across preview (BL-0032), checkpoint restore refused with PCV_CHECKPOINT_RESTORE_VM_RUNNING on a running VM (BL-0033), focus restore (BL-0027), checkpoint/clone/KPI polish (BL-0031), light theme dropped (BL-0026), shell copy to i18n (BL-0024), native VM list re-read on a transient summary gap and deleted rows dropped (BL-0034)",
+      "lane2_probe": null,
+      "risk_tier": "M"
     }
   ],
   "trains": [
