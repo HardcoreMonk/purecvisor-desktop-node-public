@@ -50,7 +50,9 @@
 
 ## Task 4: 닫기와 merge
 
-- [ ] campaign을 닫는다(`status=closed`, `next_task=null`, `next_step` 결과 요약, `next_approval_required`에 구현 campaign 열기 문장). `docs/DOCUMENTATION_INDEX.md` 현재 기준 줄을 고친다. clean HEAD에서 `git diff --check origin/main...HEAD`, `dotnet test src/DesktopNode.Delivery.Tests -c Release`, PR gate를 돌린다. push, PR, Required CI 다섯 check green 뒤 merge, merge commit의 `main` push run green 확인.
+- [x] campaign을 닫는다(`status=closed`, `next_task=null`, `next_step` 결과 요약, `next_approval_required`에 구현 campaign 열기 문장). `docs/DOCUMENTATION_INDEX.md` 현재 기준 줄을 고친다. clean HEAD에서 `git diff --check origin/main...HEAD`, `dotnet test src/DesktopNode.Delivery.Tests -c Release`, PR gate를 돌린다. push, PR, Required CI 다섯 check green 뒤 merge, merge commit의 `main` push run green 확인.
+
+실행 기록(2026-11-09): campaign을 닫고 `next_approval_required`에 "UI 개편 구현 campaign 열기와 ADR-0020 채택 승인" 문장 하나를 두었다. `docs/DOCUMENTATION_INDEX.md`의 campaign 줄을 닫힘으로 고치고 ADR-0020 줄을 더했다. 이 commit 전 검증: `git diff --check` 통과, `dotnet test src/DesktopNode.Delivery.Tests -c Release` 통과. PR gate, push, PR, merge는 이 commit의 clean HEAD에서 한다. host mutation 없음, `current-evidence.json` 그대로.
 
 ## Nonclaims
 
