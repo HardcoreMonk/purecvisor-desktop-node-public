@@ -5,8 +5,8 @@
 ADR-0019 구현(campaign `ui-redesign-20261105`, PR #97~#103, #105~#107)과 계정 비밀번호 재설정·변경(PR #104)이 설치본에 들어갔다.
 release train `0.42.97`은 pair clean-host bucket에서 정차했다(BL-0029: `0.42.96` 설치본의 제품 Update preflight가 옛 `web\app.js`,
 `web\styles.css`를 요구). PR #108이 두 파일을 주석만 든 호환 파일로 되살린 뒤 train `0.42.98`이 evidence PR #109와 Lane 3 PR #110으로
-operational current를 `0.42.98-admin-smoke`로 올렸다. 옛 콘솔은 퇴역했고 두 호환 파일만 남는다(제거 시점은 BL-0030). S1~S3은 통과했고
-S4는 열려 있다(campaign `train-04298-20261108` Task 12~14).
+operational current를 `0.42.98-admin-smoke`로 올렸다. 옛 콘솔은 퇴역했고 두 호환 파일만 남는다(제거 시점은 BL-0030). S4는 같은 날 설치본 `0.42.98`에서
+판정해(PR #112) S1~S4가 모두 통과했고, clean `main` `2845ec4`의 완료 판정은 `complete=true`(7/7)다(`docs/project-status-audit-2026-11-08.md`).
 
 ## 2026-11-05 현재 기준
 

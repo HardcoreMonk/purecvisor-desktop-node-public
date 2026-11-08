@@ -97,7 +97,12 @@ Lane 2 작업이 설치 service를 재구성한다. 이 절에서는 제품 코�
 - 2절 1번과 같은 `DesktopNode.Host.exe`(설치본, 오래된 설치본이면 `<main-build>`)로 `configure-installed`를 `--prefix`, `--web-prefix`, `--allow-lan` 없이 실행해 service prefix를 loopback으로
   되돌린다. Web `http://127.0.0.1/`, API `http://127.0.0.1:7777/`이고 `--allow-lan`은 빠진다. service 명령줄이 1절 기록과 같은지 확인한다.
   서비스가 실행 중이고 명령줄이 바뀌면 `configure-installed`가 서비스를 멈춘 뒤 다시 시작해 새 listener를 연다.
-- 방화벽 관리 규칙 두 개를 제거한다. PureCVisor 규칙은 0이다.
+- 방화벽 관리 규칙 두 개를 제거한다. PureCVisor 규칙은 0이다. `firewall-remove`는 `firewall-enable`과 같은 경로 인자 넷을 받고
+  `--allow-lan`은 필요 없다. Web 규칙은 `--firewall-local-port 80`과 규칙 이름을 같이 줘야 지워진다(2026-11-08 설치본 `0.42.98` 실측).
+
+  `<product-root>\DesktopNode.Host.exe service-action firewall-remove --product-root <product-root> --data-root <data-root> --service-exe <product-root>\DesktopNode.Host.exe --batch-evidence-root <batch-evidence-root>`
+
+  `<product-root>\DesktopNode.Host.exe service-action firewall-remove --product-root <product-root> --data-root <data-root> --service-exe <product-root>\DesktopNode.Host.exe --batch-evidence-root <batch-evidence-root> --firewall-local-port 80 --firewall-rule-name "PureCVisor Desktop Node Web LAN"`
 - 복귀 뒤에 리허설 operator를 끈다. 기본 주소 `http://127.0.0.1:7777`과 service bearer를 쓴다. admin 계정 파일을 지우지는 않는다.
 
   `pcvcli --protected-token-file <token-file> account disable <operator> --yes`
