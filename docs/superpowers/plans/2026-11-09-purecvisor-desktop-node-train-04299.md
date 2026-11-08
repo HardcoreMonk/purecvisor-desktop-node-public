@@ -170,10 +170,19 @@ operational current는 `0.42.98-admin-smoke` 그대로다.
 
 ## Task 5: installed current-card
 
-- [ ] Lane 2. `train-host-inputs --kind current-card`로 capture 스크립트를 만들어 root 밖에서 실행한다.
+- [x] Lane 2. `train-host-inputs --kind current-card`로 capture 스크립트를 만들어 root 밖에서 실행한다.
   - 통과 조건: `status=pass`, `promotion_ledger_status=not-promoted`, 남은 시험 VM 0, secret 없음.
   - `pcv-it-s2-source`는 S2 template으로 기록한다. 도구가 받지 않으면 멈추고 묻는다.
   - `train-facts`로 current-card 문서를 쓴다. 로컬 commit.
+
+실행 기록(2026-11-09): `train-host-inputs --kind current-card --write`가 렌더된 fullgate facts에서 capture 스크립트(SHA-256 `aa0f343d2af7f5b4b7a37108d646503b37d43d6dc26f6124c542922829b1d412`)를 만들었다. 저장소 root(card root 밖)에서 `2026-11-08T19:45:15Z`에 `5`초 실행했다.
+- 결과: `status=pass`, `promotion_ledger_status=not-promoted`, `canonical_current_changed=false`, secret 없음, host mutation 없음.
+- 설치본: `0.42.99-admin-smoke+a95987b`, CLI 3/3(JSON 3/3), Web 2, web config token 없음, service Running/Auto. payload와 설치본 CLI·Host가 일치한다.
+- 남은 시험 VM: 0이다. non-spike VM은 보존 VM `pcv-guest-installed-04253-r1`과 S2 template `pcv-it-s2-source`다.
+- 스크립트를 root에 `capture-current-card.ps1`로 복사했다(summary SHA-256 `0620149871e072955e4be6bcdd517b09e8f012d7c9dd52cf1086f0d019b9805f`).
+- 문서: `train-facts` current-card `generated=31`, `narrative=1`. `--check`는 아홉 문서 모두 `current`이고, Verification 시험(golden, facts, host-inputs)은 `30/30`이다.
+
+operational current는 `0.42.98-admin-smoke` 그대로다.
 
 ## Task 6: probe B2 수정 (queue 116)
 

@@ -214,6 +214,44 @@
         "run_context": "gate는 branch `lane1/train-04299-20261109`의 HEAD `a95987b`에서 빌드했다(product source는 payload `f7426d1`과 같고, 그 뒤 commit은 문서뿐이다). manifest는 `pcvverify train-host-inputs --kind fullgate-manifest`로 `docs/ga-ready/trains/0.42.99-admin-smoke.host-inputs.json`에서 만들었다. LAN prefix는 기본 게이트웨이가 있는 호스트 사설 IPv4로 실행 경계에서 만들어 환경 변수로만 넘겼다. 설치본은 pair 뒤의 `0.42.99`(ARP 1개)였고, 계정은 Task 2에서 data root 밖에 보관했다.",
         "vm_summary": "`pcv-guest-installed-04253-r1` Off, `pcv-it-s2-source` Off(S2 template)는 그대로"
       }
+    },
+    {
+      "template": "current-card",
+      "path": "docs/ga-ready/evidence/installed-operator-surface-current-card-2026-11-09-04299.md",
+      "values": {
+        "evidence_id": "installed-operator-surface-current-card-2026-11-09-04299",
+        "canonical_current_evidence": "0.42.98-admin-smoke",
+        "version": "0.42.99-admin-smoke",
+        "date": "2026-11-09",
+        "display_version": "0.42.99",
+        "installed_manifest_version": "0.42.99-admin-smoke",
+        "installed_product_version": "0.42.99-admin-smoke+a95987b094f9865c1f344043afba48b810ecc8f5",
+        "fullgate_batch": "full-admin-host-mutation-gate-20261109-04299",
+        "clean_package_msi_sha256": "7946f464245edf9f7ab84685add805fa7656274a8511525fade9a2c0c6842af0",
+        "operational_fullgate_msi_sha256": "7c78f89eb53016870d8bf9841e5f7d67a6740b113f880285aa52a59c33dca650",
+        "clean_package_payload_aggregate_sha256": "e03dcb32faa37db01b8c4900151e0b51b7859fcbb3bb31e1f3f6e69099ea9c57",
+        "operational_fullgate_payload_aggregate_sha256": "7c91f091746a3467f34ef0ba8af5a2ebf1667ce40ef54eddafcbfb85f3ed7831",
+        "provenance_commit": "a95987b094f9865c1f344043afba48b810ecc8f5",
+        "cli_exit_zero_count": "3",
+        "web_http_200_count": "2",
+        "service_state": "Running/Auto",
+        "arp_entry_count": "1",
+        "remaining_test_vm_count": "0",
+        "promotion_ledger_status": "not-promoted",
+        "artifact_root": "artifacts/installed-operator-surface-current-card-20261109-04299",
+        "artifact_summary": "artifacts/installed-operator-surface-current-card-20261109-04299/summary.json",
+        "summary_sha256": "0620149871e072955e4be6bcdd517b09e8f012d7c9dd52cf1086f0d019b9805f",
+        "capture_script": "artifacts/installed-operator-surface-current-card-20261109-04299/capture-current-card.ps1",
+        "capture_script_sha256": "aa0f343d2af7f5b4b7a37108d646503b37d43d6dc26f6124c542922829b1d412",
+        "arp_display_version": "0.42.99",
+        "latest_manual_admin_package_pair": "0.42.98-admin-smoke -> 0.42.99-admin-smoke",
+        "latest_manual_admin_descriptor": "manual-admin-campaign-20261109-04298-04299-closed",
+        "installed_status": "installed_non_promoted_candidate",
+        "canonical_current_changed": "false",
+        "capture_note": "캡처 시각은 `2026-11-08T19:45:20.7934676Z`다. 설치본은 fullgate `full-admin-host-mutation-gate-20261109-04299`가 마지막에 다시 설치한 operational MSI다. 설치본 Host/CLI SHA-256(`a98ad16b…`/`c7531573…`)은 fullgate operational payload와 같고 clean package payload와는 다르다. 남은 테스트 VM은 `0`개다. secret 형태 문자열은 관측되지 않았다.",
+        "promotion_note": "결과는 `installed_non_promoted_candidate`다. Lane 3 승격은 하지 않았고 operational current는 `0.42.98-admin-smoke`다.",
+        "script_note": "capture 스크립트는 `pcvverify train-host-inputs --kind current-card`가 렌더된 fullgate facts에서 만들었다. 저장소 root(card root 밖)에서 실행했고, 읽기만 한다."
+      }
     }
   ]
 }
