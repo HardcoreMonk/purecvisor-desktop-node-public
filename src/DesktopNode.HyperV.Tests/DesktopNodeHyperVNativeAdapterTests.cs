@@ -140,6 +140,71 @@ public sealed class DesktopNodeHyperVNativeAdapterTests
     }
 
     [Fact]
+    public void NativeVmListAdapterRereadsOnceWhenSummaryParityRecovers()
+    {
+        using var parameters = JsonDocument.Parse("{}");
+        var provider = new SequencedHyperVVmProvider(
+            [IncompleteSummaryVm("probe")],
+            [CompleteVm("probe")]);
+        var adapter = new DesktopNodeHyperVNativeAdapter(new RecordingHyperVSwitchProvider([]), provider);
+        var delays = new List<TimeSpan>();
+        UseImmediateVmListDelay(adapter, delays);
+
+        var handled = adapter.TryInvoke("vm.list", parameters.RootElement, CancellationToken.None, out var result);
+
+        Assert.True(handled);
+        Assert.True(result.Ok);
+        Assert.Equal("vm.list", result.Operation);
+        Assert.Null(result.Error);
+        Assert.Equal("probe", result.Data!.Value[0].GetProperty("name").GetString());
+        Assert.Equal(2, provider.CallCount);
+        var delay = Assert.Single(delays);
+        Assert.Equal(TimeSpan.FromMilliseconds(400), delay);
+    }
+
+    [Fact]
+    public void NativeVmListAdapterStillFailsWhenSummaryParityStaysIncomplete()
+    {
+        using var parameters = JsonDocument.Parse("{}");
+        var provider = new SequencedHyperVVmProvider(
+            [IncompleteSummaryVm("probe")],
+            [IncompleteSummaryVm("probe")]);
+        var adapter = new DesktopNodeHyperVNativeAdapter(new RecordingHyperVSwitchProvider([]), provider);
+        var delays = new List<TimeSpan>();
+        UseImmediateVmListDelay(adapter, delays);
+
+        var handled = adapter.TryInvoke("vm.list", parameters.RootElement, CancellationToken.None, out var result);
+
+        Assert.True(handled);
+        Assert.False(result.Ok);
+        Assert.Equal("vm.list", result.Operation);
+        Assert.Equal("PCV_NATIVE_VM_LIST_SUMMARY_PARITY_INCOMPLETE", result.Error!.Code);
+        Assert.False(result.Error.Retryable);
+        Assert.Equal(2, provider.CallCount);
+        var delay = Assert.Single(delays);
+        Assert.Equal(TimeSpan.FromMilliseconds(400), delay);
+    }
+
+    [Fact]
+    public void NativeVmListAdapterReadsOnceWhenSummaryParityIsAlreadyComplete()
+    {
+        using var parameters = JsonDocument.Parse("{}");
+        var provider = new SequencedHyperVVmProvider([CompleteVm("probe")]);
+        var adapter = new DesktopNodeHyperVNativeAdapter(new RecordingHyperVSwitchProvider([]), provider);
+        var delays = new List<TimeSpan>();
+        UseImmediateVmListDelay(adapter, delays);
+
+        var handled = adapter.TryInvoke("vm.list", parameters.RootElement, CancellationToken.None, out var result);
+
+        Assert.True(handled);
+        Assert.True(result.Ok);
+        Assert.Equal("vm.list", result.Operation);
+        Assert.Null(result.Error);
+        Assert.Equal(1, provider.CallCount);
+        Assert.Empty(delays);
+    }
+
+    [Fact]
     public void NativeVmListAdapterReturnsEmptyInventoryWhenProviderReturnsNoRows()
     {
         using var parameters = JsonDocument.Parse("{}");
@@ -1431,6 +1496,34 @@ public sealed class DesktopNodeHyperVNativeAdapterTests
         }
     }
 
+    private sealed class SequencedHyperVVmProvider(params IReadOnlyList<DesktopNodeHyperVVmInfo>[] reads) : IDesktopNodeHyperVVmProvider
+    {
+        private int index;
+
+        public int CallCount { get; private set; }
+
+        public IReadOnlyList<DesktopNodeHyperVVmInfo> GetVms(CancellationToken cancellationToken)
+        {
+            CallCount++;
+            var chosen = reads[Math.Min(index, reads.Length - 1)];
+            if (index < reads.Length - 1)
+            {
+                index++;
+            }
+
+            return chosen;
+        }
+    }
+
+    private static void UseImmediateVmListDelay(DesktopNodeHyperVNativeAdapter adapter, List<TimeSpan> delays)
+    {
+        adapter.UseVmListSummaryParityDelayForTests((span, token) =>
+        {
+            delays.Add(span);
+            return token.IsCancellationRequested;
+        });
+    }
+
     private sealed class ThrowingHyperVVmProvider(string message) : IDesktopNodeHyperVVmProvider
     {
         public IReadOnlyList<DesktopNodeHyperVVmInfo> GetVms(CancellationToken cancellationToken)
@@ -1771,6 +1864,11 @@ public sealed class DesktopNodeHyperVNativeAdapterTests
                     ["audit"] = new SortedDictionary<string, object?> { ["args_redacted"] = true }
                 });
         }
+    }
+
+    private static DesktopNodeHyperVVmInfo IncompleteSummaryVm(string name)
+    {
+        return CompleteVm(name) with { Cpu = new DesktopNodeHyperVVmCpuInfo(null) };
     }
 
     private static DesktopNodeHyperVVmInfo CompleteVm(string name)

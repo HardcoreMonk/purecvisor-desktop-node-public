@@ -64,23 +64,14 @@ public sealed partial class DesktopNodeHyperVNativeAdapter
             var vms = vmProvider.GetVms(cancellationToken);
             if (!HasCompleteVmIdentityState(vms))
             {
-                result = DesktopNodeHyperVOperationResult.Failure(
-                    operation,
-                    "PCV_NATIVE_VM_LIST_IDENTITY_STATE_INCOMPLETE",
-                    "Native Hyper-V VM inventory identity/state is incomplete.",
-                    "The native adapter could not preserve VM id, name, and state for every row.",
-                    false);
+                result = VmListIdentityIncomplete(operation);
                 return true;
             }
 
-            if (!HasCompleteVmSummaryParity(vms))
+            if (!HasCompleteVmSummaryParity(vms) &&
+                !TryRereadVmListAfterSummaryParityGap(operation, cancellationToken, out vms, out var parityFailure))
             {
-                result = DesktopNodeHyperVOperationResult.Failure(
-                    operation,
-                    "PCV_NATIVE_VM_LIST_SUMMARY_PARITY_INCOMPLETE",
-                    "Native Hyper-V VM inventory summary parity is incomplete.",
-                    "The native adapter could not preserve VM platform, CPU, startup memory, generation, checkpoint, or console summary fields for every row.",
-                    false);
+                result = parityFailure ?? VmListSummaryParityIncomplete(operation);
                 return true;
             }
 
