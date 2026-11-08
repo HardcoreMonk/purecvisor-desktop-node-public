@@ -283,13 +283,26 @@ PR #118(`lane1/train-04299-20261109`)을 열었다. Required CI 다섯 개(`dotn
 
 ## Task 11: Lane 3 PR B
 
-- [ ] clean HEAD 종료 검증(Task 8과 같음) 뒤 push와 PR을 한다. Required CI 다섯 개 green 뒤 merge한다. merge 뒤 main push run을 기다리고, red면 revert PR을 열고 멈춘다.
+- [x] clean HEAD 종료 검증(Task 8과 같음) 뒤 push와 PR을 한다. Required CI 다섯 개 green 뒤 merge한다. merge 뒤 main push run을 기다리고, red면 revert PR을 열고 멈춘다.
+
+실행 기록(2026-11-09): clean HEAD `ff7a857`에서 종료 검증을 했다.
+- PR gate `artifacts/pr-gate/20261108-200741` `ok=True`: build, `dotnet-test-release`(솔루션 전체, clean tree라 PolicyBoundary 통과), module-size-ratchet
+- Pester 실패 0: packaging 528, installer 49, web 50, manual-admin 140
+- `test:public-source-safety` exit 0, `Update-PcvCurrentEvidenceDocs.ps1 -Check` current, `git diff --check origin/main...HEAD` clean
+
+PR #119(`lane3/train-04299-promotion-20261109`)를 열었고 Required CI 다섯 개가 pass였다. base가 `origin/main`과 같은 것을 확인하고, 상시 merge 승인으로 `--match-head-commit ff7a857` merge했다(merge commit `67d3bbe`). main push run은 Public Boundary `42519197448`, Development Gates `42519197472`이고 둘 다 success다. operational current는 이제 `0.42.99-admin-smoke`다.
 
 ## Task 12: 판정과 마무리
 
-- [ ] clean `main`에서 `pcvverify completion`을 돌린다. `complete=true`이고 hygiene C2가 queue 0·train promoted로 충족되는지 본다.
+- [x] clean `main`에서 `pcvverify completion`을 돌린다. `complete=true`이고 hygiene C2가 queue 0·train promoted로 충족되는지 본다.
   - 계정 백업 삭제를 사용자에게 물을 문장을 남긴다.
   - campaign을 닫는다. push와 PR 뒤 Required CI green이면 merge한다.
+
+실행 기록(2026-11-09): clean `main` `67d3bbe`에서 `pcvverify completion`(`artifacts/completion/20261109-r2/`)을 돌렸다.
+- 결과: `complete=true met=7/7 gaps=0`, exit `0`이다.
+- hygiene: C2 `met=true`(current `0.42.99-admin-smoke` = operational current, train promoted, queue 0, 미완료 train 0), C3 4/4, C4 15/15, C7 `open_counts=0, undecided=0`.
+- 판정을 인용한 감사 문서 `docs/project-status-audit-2026-11-09.md`를 썼다(§6.2).
+- campaign을 닫았다. 다음 승인으로 train 계정 백업 삭제를 사용자에게 묻는다.
 
 ## Nonclaims
 
