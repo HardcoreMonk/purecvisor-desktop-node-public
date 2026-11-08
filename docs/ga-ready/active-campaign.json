@@ -1,49 +1,53 @@
 {
   "schema_version": 1,
   "contract": "pcv-active-campaign-v1",
-  "status": "closed",
-  "id": "backlog-burn-20261109",
-  "intent": "Classify and resolve the 18 undecided backlog rows (C7 hygiene) per the user's decision: close BL-0012/0013/0029, decide C rows as recommended, fix B rows in two parallel Lane 1 PRs, reproduce BL-0034 and reconnect the BL-0028 parent VHD in Lane 2",
+  "status": "open",
+  "id": "train-04299-20261109",
+  "intent": "Depart release train 0.42.99-admin-smoke with queue PR #113, #115, #116, keep the installed accounts across fullgate REMOVE_DATA, probe the B2 fixes on the installed build, and promote it to operational current",
   "working_authority": "source_head",
   "allowed_lanes": [
     "0",
     "1",
-    "2"
+    "2",
+    "3"
   ],
   "mutation_allowed": true,
-  "current_write_allowed": false,
-  "next_step": "Closed 2026-11-09. All 18 undecided backlog rows were classified and closed: A (BL-0012, 0013, 0029) by decision PR #114 (merge b665628), B1 8 rows by PR #115 (merge 0363083), B2 7 rows by PR #116 (merge 3eb2a52). Lane 2 reproduced BL-0034 (native VM list summary parity gap during delete) and reconnected the BL-0028 preserved VM parent VHD. Clean main 3eb2a52: pcvverify completion complete=true met=7/7, hygiene C7 open_counts=0 undecided=0. The queue (PR #113, #115, #116) waits for release train 0.42.99-admin-smoke.",
-  "plan": "docs/superpowers/plans/2026-11-09-purecvisor-desktop-node-backlog-burn.md",
+  "current_write_allowed": true,
+  "next_step": "Run Task 0 from docs/superpowers/plans/2026-11-09-purecvisor-desktop-node-train-04299.md, then the queue in order. Train branch lane1/train-04299-20261109 is PR A; Lane 3 is PR B from main after the PR A merge. Merges follow the standing after-green-ci approval.",
+  "plan": "docs/superpowers/plans/2026-11-09-purecvisor-desktop-node-train-04299.md",
   "task_queue": [
+    "Task 0",
     "Task 1",
     "Task 2",
     "Task 3",
     "Task 4",
     "Task 5",
-    "Task 6"
+    "Task 6",
+    "Task 7",
+    "Task 8",
+    "Task 9",
+    "Task 10",
+    "Task 11",
+    "Task 12"
   ],
   "task_lanes": {
+    "Task 2": "2",
+    "Task 3": "2",
     "Task 4": "2",
-    "Task 5": "2"
+    "Task 5": "2",
+    "Task 6": "2",
+    "Task 7": "2",
+    "Task 9": "3",
+    "Task 10": "3"
   },
-  "next_task": null,
-  "completed_tasks": [
-    "Task 1",
-    "Task 2",
-    "Task 3",
-    "Task 4",
-    "Task 5",
-    "Task 6"
-  ],
+  "next_task": "Task 0",
+  "completed_tasks": [],
   "commit_policy": "local-commit-per-task",
   "push_allowed": true,
-  "merge_policy": "none",
-  "checkpoint_limit": 12,
-  "approval_locator": "User-Approval: 2026-09-27 campaign runner commit policy local-commit-per-task; User-Approval: 2026-11-09 \"A 3건 닫기, C는 권장안대로, B 구현 시작\" (answer 1 to the 2026-11-08 backlog plan): A close BL-0012, BL-0013, BL-0029; C decide BL-0026 (drop light theme), BL-0030 (N-1 preflight fixture and Delivery test, keep compat files until no 0.42.96-or-older installs), BL-0033 (API refusal code and UI guidance), BL-0028 (reconnect the preserved VM parent VHD with Set-VHD -ParentPath only when the re-downloaded VHD matches; otherwise stop and ask); B implement B1 tooling/tests and B2 Web/API in parallel worktrees and reproduce BL-0034 in Lane 2; ADR-0016 standing approval (2026-10-07): pcv-it- prefixed VM create/configure/delete; push and PRs allowed; merge: each PR needs the user's own merge sentence",
-  "next_approval_required": [
-    "Merge the close PR (lane1/backlog-burn-close-20261109) after green Required CI.",
-    "Depart release train 0.42.99-admin-smoke for queue PR #113, #115, #116: Lane 2 unsigned dev MSI build, pair upgrade tests and fullgate (msiexec install/upgrade/repair/uninstall incl REMOVE_DATA, service stop/start, ADR-0016 pcv-it- VMs), installed current-card and probes; Lane 3 promote current-evidence.json; merge per PR needs the user's own sentence."
-  ],
+  "merge_policy": "after-green-ci",
+  "checkpoint_limit": 13,
+  "approval_locator": "User-Approval: 2026-09-27 campaign runner commit policy local-commit-per-task; User-Approval: 2026-11-09 \"release train 0.42.99-admin-smoke 출발\" (answer to the backlog-burn close report next approval 1): depart release train 0.42.99-admin-smoke for queue PR #113, #115, #116; Lane 2 unsigned dev MSI build, pair upgrade tests and fullgate (msiexec install/upgrade/repair/uninstall incl REMOVE_DATA, service stop/start, ADR-0016 pcv-it- VMs), installed current-card and probes; Lane 3 promote current-evidence.json to 0.42.99-admin-smoke; User-Approval: 2026-11-09 standing merge approval (\"앞으로 Required CI가 green이면 PR merge도 자동 승인\"): merge after the five Required checks pass, revert PR if the main push run is red; User-Approval: 2026-11-08 standing auto-approval of the recommended option (\"앞으로는 권장 사항 자동 승인 처리 한다.\"): back up accounts.json outside the repo and product data before the train and restore it after (backup deletion is asked); ADR-0016 standing approval (2026-10-07): pcv-it- prefixed VM create/configure/delete",
+  "next_approval_required": [],
   "stop_on": [
     "same-cause-fail-3",
     "budget",
@@ -55,5 +59,5 @@
     "dirty-tree-at-start"
   ],
   "out_of_scope_is_not_next_step": true,
-  "closed_predecessor": "train-04298-20261108"
+  "closed_predecessor": "backlog-burn-20261109"
 }
