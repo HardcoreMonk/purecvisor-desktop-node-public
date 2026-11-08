@@ -88,6 +88,62 @@ test("rejects observed private endpoints and unmarked synthetic literals", async
   ]);
 });
 
+// BL-0015: Hyper-V Default Switch NAT guest 주소는 CLAUDE.md 가 허용한다. 허용은 (경로, 주소) 정확 일치 항목뿐이다.
+const defaultSwitchGuestAddress = [172, 29, 16, 136].join(".");
+const defaultSwitchDemoPath = "docs/ga-ready/demo/s1-browser-console-demo-2026-10-08.md";
+const defaultSwitchPlanPath = "docs/superpowers/plans/2026-10-08-purecvisor-desktop-node-s1-installed.md";
+
+test("accepts a documented Default Switch NAT guest address only at its allowlisted path", async () => {
+  const result = await scanFixture({
+    [defaultSwitchDemoPath]: `- 네트워크: eth0 DHCPv4 \`${defaultSwitchGuestAddress}/20\`.\n`,
+    [defaultSwitchPlanPath]: `네트워크 eth0 DHCPv4 \`${defaultSwitchGuestAddress}/20\`, 프록시 없음\n`,
+    "docs/ga-ready/demo/other-demo.md": `- 네트워크: eth0 DHCPv4 \`${defaultSwitchGuestAddress}/20\`.\n`
+  });
+
+  assert.deepEqual(result.findings, [{
+    ruleId: "network.observed-private-endpoint",
+    path: "docs/ga-ready/demo/other-demo.md",
+    line: 1
+  }]);
+});
+
+test("still rejects LAN and other private addresses next to an allowlisted Default Switch address", async () => {
+  const lanAddress = [192, 168, 1, 20].join(".");
+  const otherDefaultSwitchRangeAddress = [172, 29, 16, 137].join(".");
+  const lan = await scanFixture({
+    [defaultSwitchDemoPath]: `guest ${defaultSwitchGuestAddress}\nhost ${lanAddress}\n`
+  });
+  const sameLine = await scanFixture({
+    [defaultSwitchDemoPath]: `guest ${defaultSwitchGuestAddress} gateway ${lanAddress}\n`
+  });
+  const neighbour = await scanFixture({
+    [defaultSwitchPlanPath]: `guest ${defaultSwitchGuestAddress}\nother ${otherDefaultSwitchRangeAddress}\n`
+  });
+
+  assert.deepEqual(lan.findings, [{ ruleId: "network.observed-private-endpoint", path: defaultSwitchDemoPath, line: 2 }]);
+  assert.deepEqual(sameLine.findings, [{ ruleId: "network.observed-private-endpoint", path: defaultSwitchDemoPath, line: 1 }]);
+  assert.deepEqual(neighbour.findings, [{ ruleId: "network.observed-private-endpoint", path: defaultSwitchPlanPath, line: 2 }]);
+});
+
+test("keeps every Default Switch NAT allow entry exact, reasoned, and inside the 172 /12 private block", async () => {
+  const verifier = await import(verifierUrl.href);
+  const entries = verifier.DEFAULT_SWITCH_NAT_ALLOWLIST;
+
+  assert.equal(Array.isArray(entries), true);
+  assert.equal(Object.isFrozen(entries), true);
+  assert.equal(entries.length, 2);
+  for (const entry of entries) {
+    assert.equal(Object.isFrozen(entry), true);
+    assert.match(entry.path, /^docs\/[A-Za-z0-9._/-]+\.md$/);
+    const octets = entry.address.split(".").map(Number);
+    assert.equal(octets.length, 4);
+    assert.equal(octets[0], 172);
+    assert.equal(octets[1] >= 16 && octets[1] <= 31, true, "Default Switch NAT is carved from the 172 /12 private block");
+    assert.equal(octets.every((octet) => Number.isInteger(octet) && octet >= 0 && octet <= 255), true);
+    assert.match(entry.reason, /Default Switch/);
+  }
+});
+
 test("rejects credential URLs, private keys, personal email, and private hostnames", async () => {
   const credentialUrl = ["https://", "operator", ":", "credential", "@service.example"].join("");
   const keyBlock = ["-----BEGIN ", "PRIVATE KEY-----", "\ninvalid\n", "-----END ", "PRIVATE KEY-----"].join("");
