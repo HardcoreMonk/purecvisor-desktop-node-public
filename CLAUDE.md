@@ -56,7 +56,7 @@ historical predecessor 문단은 그 아래쪽에 누적돼 있다(약 90 KB). `
 | `src/DesktopNode.HostOps` | host ops catalog와 planner(observe/dry-run만, Mutate는 항상 거절). 실제 제어는 Host에 있다 |
 | `src/DesktopNode.Verification` | `pcvverify`: 검증 shard 실행기, 완료 판정, train 도구. 제품 런타임이 아니다 |
 | `src/DesktopNode.Cli` | PCVCLI (`docs/CLI_COMMAND_USAGE.md`) |
-| `web/src/modules/*.ts` + `web/src/modules.json` → `web/app.bundle.js` | Web Console(ADR-0018 Single Edge 셸 `web/index.html`). `app.bundle.js`는 **생성물** — `web/src`를 수정 후 `npm run build:served --prefix web`. 같은 명령이 `web/sw.js` CACHE_NAME도 갱신한다. 옛 콘솔(`web/index.legacy.html`, 옛 `web/app.js` UI, `web/src/served/**`)은 Task 9b(2026-11-07)에서 지웠다. 남은 `web/app.js`, `web/styles.css`는 N-1 제품 Update 호환용 주석 파일이다(PR #108, BL-0029). `WebPayload.wxs`가 소유하고 `index.html`은 읽지 않으며, 제거 시점은 BL-0030이 추적한다. MSI web payload 목록은 `web/payload-manifest.json` |
+| `web/src/modules/*.ts` + `web/src/modules.json` → `web/app.bundle.js` | Web Console(ADR-0018 Single Edge 셸 `web/index.html`). `app.bundle.js`는 **생성물** — `web/src`를 수정 후 `npm run build:served --prefix web`. 같은 명령이 `web/sw.js` CACHE_NAME도 갱신한다. 옛 콘솔(`web/index.legacy.html`, 옛 `web/app.js` UI, `web/src/served/**`)은 Task 9b(2026-11-07)에서 지웠다. 남은 `web/app.js`, `web/styles.css`는 N-1 제품 Update 호환용 주석 파일이다(PR #108, BL-0029). `WebPayload.wxs`가 소유하고 `index.html`은 읽지 않으며, 제거 시점은 fixture `update-preflight-compatibility.json`과 `UpdatePreflightCompatibilityContractTests`가 지킨다(BL-0030). MSI web payload 목록은 `web/payload-manifest.json` |
 | `packaging/windows-desktop-node/` | 제품 wrapper, installer(MSI), 관리자 smoke 도구, Pester 테스트, 문서 생성기 |
 | `.claude/skills/` | `pcv-campaign`, `pcv-campaign-open`, `pcv-ship`, `pcv-goal` |
 

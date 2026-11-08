@@ -14,7 +14,7 @@
     },
     {
       "pr": 115,
-      "merge_commit": "aaa2b664",
+      "merge_commit": "0575b859",
       "area": "api",
       "summary": "BL-0011: console input rate limiter measures its 1 s window with the hardening clock (same seam as the frame throttle); behaviour unchanged, test made deterministic",
       "lane2_probe": null,

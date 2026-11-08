@@ -37,7 +37,9 @@
 
 ## Task 1: 결정 기록
 
-- [ ] Lane 1. `docs/ga-ready/backlog.json` 18행에 분류와 `basis`를 적는다. A 3행(BL-0012, 0013, 0029)은 `status=closed`와 `closed_by`를 적는다. C 4행(BL-0026, 0028, 0030, 0033)은 결정이 났으니 `needs_design=false`로 둔다. campaign을 열고 plan을 더한다. 검증: `dotnet test src/DesktopNode.Delivery.Tests -c Release`, `pcvverify completion`(로컬, C7 undecided 0 확인). push, PR, 사용자 merge 문장 뒤 merge.
+- [x] Lane 1. `docs/ga-ready/backlog.json` 18행에 분류와 `basis`를 적는다. A 3행(BL-0012, 0013, 0029)은 `status=closed`와 `closed_by`를 적는다. C 4행(BL-0026, 0028, 0030, 0033)은 결정이 났으니 `needs_design=false`로 둔다. campaign을 열고 plan을 더한다. 검증: `dotnet test src/DesktopNode.Delivery.Tests -c Release`, `pcvverify completion`(로컬, C7 undecided 0 확인). push, PR, 사용자 merge 문장 뒤 merge.
+
+실행 기록(2026-11-09): 18행 분류와 A 3행 닫기, Task 4·5 기록을 PR #114로 냈다. Required CI 다섯 개 pass 뒤 사용자 문장 `"PR #114, #115, #116 순서대로 merge 승인"`으로 merge했다(merge `b665628`).
 
 ## Task 2: B1 도구·시험 PR
 
