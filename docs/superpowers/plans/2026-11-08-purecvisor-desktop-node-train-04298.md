@@ -257,7 +257,19 @@ PR #110(`lane3/train-04298-promotion-20261108`)을 열었고 Required CI 다섯 
 
 ## Task 13: S4 끝 상태 (이관: `train-04297-20261108` Task 15, 원래 `ui-redesign-20261105` Task 12)
 
-- [ ] Lane 2. 원래 문장: 끝 상태는 loopback 복귀(같은 `main` 빌드본 `configure-installed`를 prefix 옵션과 `--allow-lan` 없이 실행, Task 4 전 service 명령줄과 같아야 한다), 방화벽 규칙 0, 에이전트 operator 계정 disable, `pcv-it-s4-*` VM 정리다. 기록한다. 계정 파일 삭제는 이 task가 하지 않는다. 2026-11-08 메모: 설치본 `0.42.98`의 `configure-installed`가 PR #94·#95를 담는다.
+- [x] Lane 2. 원래 문장: 끝 상태는 loopback 복귀(같은 `main` 빌드본 `configure-installed`를 prefix 옵션과 `--allow-lan` 없이 실행, Task 4 전 service 명령줄과 같아야 한다), 방화벽 규칙 0, 에이전트 operator 계정 disable, `pcv-it-s4-*` VM 정리다. 기록한다. 계정 파일 삭제는 이 task가 하지 않는다. 2026-11-08 메모: 설치본 `0.42.98`의 `configure-installed`가 PR #94·#95를 담는다.
+
+실행 기록(2026-11-08 22:15): 일회용 스크립트로 했다. 출력의 LAN 주소는 가렸다.
+- 에이전트 operator `pcv-s4-operator`를 disable했다(exit 0).
+- 설치본 `DesktopNode.Host.exe service-action configure-installed`를 경로 인자 넷으로만 실행했다(prefix 옵션과 `--allow-lan` 없음, exit 0). service가 다시 켜졌다.
+- `service-action firewall-remove`를 API 규칙과 Web 규칙(`--firewall-local-port 80 --firewall-rule-name "PureCVisor Desktop Node Web LAN"`)으로 두 번 실행했다. 둘 다 exit 0이다.
+- 확인:
+  - 명령줄은 LAN 쪽과 비교해 prefix 둘이 `127.0.0.1`로 바뀌고 `--allow-lan`만 빠졌다.
+  - listener는 `127.0.0.1:7777`·`:80`이다. PureCVisor 방화벽 규칙은 0개다.
+  - loopback 세션은 409 `PCV_LOOPBACK_SESSION_DISABLED`다(계정 있음). Web 200, service Running/Automatic이다.
+  - 계정은 `pcv-admin` disabled, `pcv-admin2` enabled, `pcv-s4-operator` disabled다. `pcv-it-s4-*` VM은 0개다. 보존 VM 둘은 Off 그대로다.
+- 계정 파일은 지우지 않았다.
+- 기록은 `docs/ga-ready/demo/s4-lan-demo-2026-11-05.md` 시연 뒤 상태 절이다.
 
 ## Task 14: criteria S4 판정 (이관: `train-04297-20261108` Task 16, 원래 `ui-redesign-20261105` Task 13)
 
