@@ -60,7 +60,18 @@ train `0.42.97` plan의 적재 변경 13행(PR #94~#107)과 다음 한 행이다
 
 ## Task 1: package
 
-- [ ] clean HEAD에서 `build.ps1 -Version 0.42.98-admin-smoke -MsiProductVersion 0.42.98 -SigningMode AllowUnsignedDev -SigningTrustModel LocalTest -OutputRoot artifacts/admin-smoke-package-20261108-04298`, `New-PcvAdminSmokeUpdatePackage.ps1 -BuildSeconds <build 초>`. payload에 `web/app.js`·`web/styles.css` 호환 파일이 있는지 확인한다(31개). `train-facts`로 package 문서(`docs/ga-ready/trains/0.42.98-admin-smoke.train-facts-input.json`, narrative는 적재 변경 행). 검증: `train-evidence --check`, `TrainEvidenceGoldenTests`·`TrainFactsBuilderTests`. host mutation 없음(빌드만). 로컬 commit.
+- [x] clean HEAD에서 `build.ps1 -Version 0.42.98-admin-smoke -MsiProductVersion 0.42.98 -SigningMode AllowUnsignedDev -SigningTrustModel LocalTest -OutputRoot artifacts/admin-smoke-package-20261108-04298`, `New-PcvAdminSmokeUpdatePackage.ps1 -BuildSeconds <build 초>`. payload에 `web/app.js`·`web/styles.css` 호환 파일이 있는지 확인한다(31개). `train-facts`로 package 문서(`docs/ga-ready/trains/0.42.98-admin-smoke.train-facts-input.json`, narrative는 적재 변경 행). 검증: `train-evidence --check`, `TrainEvidenceGoldenTests`·`TrainFactsBuilderTests`. host mutation 없음(빌드만). 로컬 commit.
+
+실행 기록(2026-11-08): clean HEAD `54cb61e`에서 빌드했다. product source는 payload `8e4ebe2`와 같고, 그 뒤 commit은 문서뿐이다.
+
+- 빌드: `packaging/windows-desktop-node/installer/build.ps1` `47`초, `build_utc` `2026-11-08T06:52:27Z`, provenance `54cb61ef3128df7d57191aefd0f9a684b8de2f8f`, WiX `5.0.2+aa65968c`, unsigned(`AllowUnsignedDev`/`LocalTest`).
+- MSI: SHA-256 `9a26d4cee9c4360cb8a04ce520b57de4d2e99c3e7b64997d8b4567e7c04733b0`.
+- payload: `31`개, aggregate `b8caacbba9855907c656ccd761a01052783d5a79f1518d8290e3672688eeee5c`. PR #108의 `web/app.js`·`web/styles.css` 호환 파일이 들어 있다(`0.42.97`의 29개 + 2).
+- update ZIP: SHA-256 `c18bc3de426cc031cff4acc939038bd045513e4e401c8b61dbd3adb371777494`(entry 31). catalog SHA-256 `bc634c57c8d57c6d4736f4ba15eaf9ca4482be0fb8746277671da899f7e816ef`.
+- `train-facts`: package 문서 `docs/ga-ready/evidence/admin-smoke-package-2026-11-08-04298.md`(`generated=20`, `narrative=3`). `train-evidence --write` 뒤 `--check` 결과는 `current`다.
+- 시험: `TrainEvidenceGoldenTests`·`TrainFactsBuilderTests` `24/24`.
+
+host mutation은 없다. operational current는 `0.42.96-admin-smoke` 그대로다.
 
 ## Task 2: pair (이관: `train-04297-20261108` Task 4)
 

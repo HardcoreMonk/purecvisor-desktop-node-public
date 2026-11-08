@@ -1,0 +1,61 @@
+# Admin smoke package `0.42.98-admin-smoke` (2026-11-08)
+
+evidence_id: `admin-smoke-package-2026-11-08-04298`
+result: `PASS`
+evidence_scope: `internal-admin-smoke-only`
+version: `0.42.98-admin-smoke`
+source_commit: `54cb61ef3128df7d57191aefd0f9a684b8de2f8f`
+release_train: `0.42.98-admin-smoke`
+train_carriages: `PR #94` (변경 `271ab040`, host), `PR #95` (변경 `08c50e08`, host), `PR #97` (변경 `13fc25dd`, web), `PR #98` (변경 `ab9b6704`, web), `PR #99` (변경 `8b0ae171`, web), `PR #100` (변경 `16da5810`, web), `PR #101` (변경 `f0db33e4`, web), `PR #102` (변경 `eb0bdcf7`, web), `PR #103` (변경 `289d98ea`, web), `PR #104` (변경 `213bfe36`, api), `PR #105` (변경 `8403d47d`, web), `PR #106` (변경 `3d2fd89e`, web), `PR #107` (변경 `449a62ce`, web), `PR #108` (변경 `d8bf7be9`, web); payload: PR #108 merge
+artifact_root: `artifacts/admin-smoke-package-20261108-04298`
+signing_mode: `AllowUnsignedDev`
+signing_trust_model: `LocalTest`
+clean_package_msi_sha256: `9a26d4cee9c4360cb8a04ce520b57de4d2e99c3e7b64997d8b4567e7c04733b0`
+clean_package_payload_aggregate_sha256: `b8caacbba9855907c656ccd761a01052783d5a79f1518d8290e3672688eeee5c`
+product_wrapper_sha256: `a2ec149aa9634ec8276f799996390424fddebed67bfaf88dae05a933f63d4103`
+service_host_sha256: `02775f337c77d8976e26be0b9ce0bf02aec4fc6f1091987ea478f292b16e276d`
+cli_sha256: `231a553c76d438cb40d7c3dc10fc60af2629b85e4e295d1237a3e01034010954`
+update_zip_sha256: `c18bc3de426cc031cff4acc939038bd045513e4e401c8b61dbd3adb371777494`
+payload_file_count: `31`
+wix_version: `5.0.2+aa65968c`
+build_utc: `2026-11-08T06:52:27.3058965Z`
+host_mutation_performed: `false`
+package_installed: `false`
+canonical_current_evidence: `0.42.96-admin-smoke`
+canonical_current_changed: `false`
+public_trusted_signing: `not-claimed`
+external_stable_publication: `not-claimed`
+
+## 배경
+
+release train `0.42.98`의 package다. train `0.42.97`(campaign `train-04297-20261108`)이 pair clean-host bucket에서 정차했다(BL-0029: `0.42.96` 설치본의 제품 Update preflight가 옛 콘솔 파일 `web\app.js`, `web\styles.css`를 요구). 수정 PR #108 merge 뒤 같은 날 다음 patch version으로 다시 출발한 campaign `train-04298-20261108`의 train이다. 적재는 queue 94·95(`configure-installed`의 LAN 옵션과 실행 중 service 재시작), 97~103·105~107(Web Console 재설계, 옛 콘솔 퇴역, 브라우저 품질 게이트), 104(계정 비밀번호 재설정 API), 108(이전 버전 제품 Update 호환 파일)이다. PR #108이 주석만 든 `web/app.js`, `web/styles.css`를 되살려 payload 파일은 31개다. build 47초. pair baseline은 `0.42.96` payload source `87a7deb`에서 다시 빌드한 package다(재클론으로 원래 artifact가 없음).
+
+빌드 중 설치, 서비스 교체, Hyper-V 변경은 하지 않았다.
+
+```powershell
+packaging/windows-desktop-node/installer/build.ps1 -Version 0.42.98-admin-smoke -MsiProductVersion 0.42.98 `
+  -SigningMode AllowUnsignedDev -SigningTrustModel LocalTest -OutputRoot artifacts/admin-smoke-package-20261108-04298
+```
+
+update ZIP은 `New-PcvAdminSmokeUpdatePackage.ps1`가 payload 31개 파일을 root에 두고 deflate와 `/` 구분자로 만들었다(항목 구성은 0.42.96 ZIP과 다르다).
+
+## 빌드 결과
+
+| 항목 | 결과 |
+| --- | --- |
+| self-contained `DesktopNode.Host.exe` publish | `PASS`, ProductVersion `0.42.98-admin-smoke+54cb61ef3128df7d57191aefd0f9a684b8de2f8f` |
+| self-contained `pcvcli.exe` publish | `PASS`, ProductVersion가 Host와 같다 |
+| MSI build (WiX 5.0.2) | `PASS` (exit `0`, `47`초) |
+| provenance commit | `54cb61ef3128df7d57191aefd0f9a684b8de2f8f` (HEAD와 같음) |
+| product-manifest version | `0.42.98-admin-smoke` |
+| MSI Upgrade 행 | `VersionMax=0.42.98` 포함(Attributes `513`), `RemoveExistingProducts` `1401` |
+| TUI payload | 없음 |
+
+## 아직 하지 않은 검증
+
+pair, fullgate, current-card, `host.service.configure-lan`(S4 계정 복원 뒤 LAN 재적용, PR #94·#95), `web.console.vm-detail`·`web.console.frame-view`·`web.console.checkpoints`·`web.console.vm-create`·`web.console.shell-views`·`web.console.confirm-copy`(설치본 새 셸 브라우저 확인), `api.account.password`(계정 비밀번호 재설정), 이전 버전 제품 Update 호환(PR #108, pair clean-host bucket) Lane 2 probe, current-evidence 쓰기는 `not-run`이다.
+
+## Nonclaims
+
+- operational current는 `0.42.96-admin-smoke`다. 이 패키지는 `package_candidate`다.
+- public trusted signing과 external stable publication을 주장하지 않는다.

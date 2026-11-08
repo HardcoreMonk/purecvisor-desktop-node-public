@@ -63,9 +63,10 @@
     "Task 14": "train-04297-20261108 Task 16 (ui-redesign-20261105 Task 13)",
     "Task 15": "train-04297-20261108 Task 17 (ui-redesign-20261105 Task 14)"
   },
-  "next_task": "Task 1",
+  "next_task": "Task 2",
   "completed_tasks": [
-    "Task 0"
+    "Task 0",
+    "Task 1"
   ],
   "commit_policy": "local-commit-per-task",
   "push_allowed": true,
