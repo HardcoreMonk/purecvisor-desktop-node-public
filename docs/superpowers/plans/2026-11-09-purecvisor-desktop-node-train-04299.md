@@ -36,6 +36,7 @@
 | 3 | `Lane 3 current-evidence.json 승격`이다. `0.42.99-admin-smoke`로 쓴다. Task 9~11 |
 | 4 | merge는 2026-11-09 상시 승인 `"앞으로 Required CI가 green이면 PR merge도 자동 승인"`을 따른다(`merge_policy=after-green-ci`). merge 뒤 main push run이 red면 그 merge를 되돌리는 revert PR을 열고 멈춘다(§10) |
 | 5 | 계정 보관과 복원은 권장안 자동 승인(`"앞으로는 권장 사항 자동 승인 처리 한다."`, 2026-11-08)으로 연다. fullgate `REMOVE_DATA`가 admin 계정 `pcv-admin2`를 지우지 않게 하는 보존 조치다. 범위는 train 전 `accounts.json` 백업(저장소와 제품 data 폴더 밖 보호 위치)과 data root에서 치우기, train 뒤 복원과 해시 비교다. 백업 삭제는 사용자에게 묻는다 |
+| 6 | 마무리 뒤 백업 삭제는 사용자 승인 `"train 계정 백업 삭제 승인"`(2026-11-09, 마무리 보고의 다음 승인)으로 했다. data root에 되돌린 계정 파일은 남긴다. 그 기록은 `"백업 삭제 기록 PR 승인"`(2026-11-09)으로 문서 PR 하나에 남기고 Required CI green 뒤 merge한다 |
 | probe | queue 행의 `lane2_probe`는 모두 `null`이다. 승인 2의 probe 범위 안에서 B2 수정 둘을 설치본으로 확인한다. BL-0034는 삭제 중 VM 목록, BL-0033은 켜진 VM 복원 거절이다(Task 6) |
 | ADR-0016 | standing approval(2026-10-07)은 `pcv-it-` 접두사 VM 생성·구성·삭제로 한정한다. disk는 `artifacts/` 아래에 둔다 |
 
@@ -215,7 +216,7 @@ operational current는 `0.42.98-admin-smoke` 그대로다.
 - service를 다시 시작했다(승인 2). loopback 세션은 `409` `PCV_LOOPBACK_SESSION_DISABLED`다. 계정 모드로 돌아왔다는 뜻이다.
 - 계정 3개: `pcv-admin` admin disabled, `pcv-s4-operator` operator disabled, `pcv-admin2` admin enabled(train 전과 같음).
 - 확인: service Running/Automatic, Web `200`, PureCVisor 방화벽 규칙 0, `pcv-guest-installed-04253-r1` Off·`pcv-it-s2-source` Off(그대로).
-- 백업 위치에는 백업 `accounts.json`과 옮긴 빈 저장소가 남아 있다. 지울지는 Task 12에서 사용자에게 묻는다.
+- 백업 위치에는 백업 `accounts.json`과 옮긴 빈 저장소가 남아 있다. 지울지는 Task 12에서 사용자에게 묻는다(마무리 뒤 지웠다. Task 12 기록).
 
 operational current는 `0.42.98-admin-smoke` 그대로다.
 
@@ -303,6 +304,14 @@ PR #119(`lane3/train-04299-promotion-20261109`)를 열었고 Required CI 다섯 
 - hygiene: C2 `met=true`(current `0.42.99-admin-smoke` = operational current, train promoted, queue 0, 미완료 train 0), C3 4/4, C4 15/15, C7 `open_counts=0, undecided=0`.
 - 판정을 인용한 감사 문서 `docs/project-status-audit-2026-11-09.md`를 썼다(§6.2).
 - campaign을 닫았다. 다음 승인으로 train 계정 백업 삭제를 사용자에게 묻는다.
+
+마무리 뒤 기록(2026-11-09, 사용자 결정 6):
+- 지우기 전에 data root 계정 파일과 백업 `accounts.json`의 SHA-256이 같은 것(1,153 bytes)을 확인했다.
+- 보호 위치의 백업 `accounts.json`, 옮긴 빈 저장소, ACL 기록 파일을 지웠다. 비게 된 백업 폴더도 지웠다.
+  - 빈 저장소는 제품이 둔 읽기 전용 ACL이라 `Remove-Item`이 거부됐다. ACL은 바꾸지 않고 폴더의 삭제 권한만으로 지웠다.
+- 확인: data root 계정 파일 SHA-256과 ACL이 지우기 전과 같다. service Running/Automatic, Web `200`, loopback 세션 `409`
+  `PCV_LOOPBACK_SESSION_DISABLED`(계정 모드).
+- campaign `next_approval_required`를 비웠다.
 
 ## Nonclaims
 

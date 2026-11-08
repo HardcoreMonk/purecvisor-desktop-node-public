@@ -72,13 +72,13 @@
   - 보존 VM `pcv-guest-installed-04253-r1` Off. 부모 VHD는 public 저장소 `artifacts/image-cache` 파일로 다시 연결했다(BL-0028).
   - S2 template `pcv-it-s2-source` Off.
   - 그 밖의 `pcv-it-` VM은 0개다.
-- train 계정 백업(백업 `accounts.json`과 fullgate가 만든 빈 저장소)은 저장소 밖 보호 위치에 남아 있다. 지울지는 사용자 결정이다.
+- train 계정 백업(백업 `accounts.json`, fullgate가 만든 빈 저장소, ACL 기록)은 사용자 승인 `"train 계정 백업 삭제 승인"`(2026-11-09)으로
+  저장소 밖 보호 위치에서 지웠다. data root에 되돌린 계정 파일은 그대로다(해시와 ACL이 지우기 전과 같다).
 
 ## 5. 남은 일
 
 | 항목 | 다음 행동 |
 | --- | --- |
-| train 계정 백업 | 사용자가 삭제를 승인하면 지운다 |
 | report-only | Hyper-V 통합 시험 기본 ISO 경로가 없다(`PCV_HYPERV_INTEGRATION_ISO`로 지정). `web/src/modules/vm.ts`가 2,739줄이다(ratchet 상한). BL-0024 목록 밖 카드 문구가 영어로 남았다 |
 | 다음 release train | queue에 product payload 변경이 생기면 출발 조건(DEVELOPMENT_PROCEDURE §10)대로 |
 | completion autopilot | 정책 `status=paused`(ADR-0017) 그대로다. 재개 여부는 사용자 결정이다 |
