@@ -130,6 +130,23 @@ public sealed class PcvCleanHostBaseVhdContractTests
             "New-VHD -Path $diffVhdPath -ParentPath $baseVhdFull -Differencing");
     }
 
+    [Fact]
+    public void CleanHostRunnerDefaultsResolveUnderThisRepositoryArtifacts()
+    {
+        // BL-0028: the private archive repository is read-only since 2026-10-09, and this public repository must not
+        // carry machine paths. The default inputs resolve from $PSScriptRoot (tools -> repository root) into artifacts\.
+        var runner = RepositoryContractContext.Find().ReadUtf8Text(Runner);
+
+        RequireTokens(
+            runner,
+            "[string]$BaselineMsiPath = (Join-Path $PSScriptRoot '..\\..\\..\\artifacts\\internal-enterprise-requiresigned-rc-msi-20260507-0387\\PureCVisorDesktopNode-0.38.7-rc.1-windows-x64.msi'),",
+            "[string]$UpdatePackagePath = (Join-Path $PSScriptRoot '..\\..\\..\\artifacts\\msi-update-package-20260509-0391\\PureCVisorDesktopNode-0.39.1-admin-smoke-update.zip'),",
+            "$script:DefaultSourceBaseVhdPath = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\\..\\..\\artifacts\\image-cache\\windows-server-2022-eval-vhd\\20348.169.amd64fre.fe_release_svc_refresh.210806-2348_server_serverdatacentereval_en-us.vhd'))");
+        // Guest-side C:\ paths stay; no host artifacts path may be rooted at a drive letter.
+        Assert.DoesNotMatch(@"'[A-Za-z]:\\[^']*\\artifacts\\", runner);
+        Assert.DoesNotContain("codex-zone", runner, StringComparison.OrdinalIgnoreCase);
+    }
+
     private const string Runner =
         "packaging/windows-desktop-node/tools/Invoke-PcvInternalCleanHostInstallUpdateRollbackSmoke.ps1";
 

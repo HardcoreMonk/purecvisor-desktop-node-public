@@ -63,7 +63,7 @@
     },
     {
       "path": "packaging/windows-desktop-node/tools/Invoke-PcvInternalCleanHostInstallUpdateRollbackSmoke.ps1",
-      "sha256": "0066c0d1c0c2b43c6f963da0d0fd767e9c421f9fba49630b9677c80f4dfc0f76"
+      "sha256": "3e96fe87a620b949319a6109cac5659a40530daacd26a7c6175df78b705c9562"
     },
     {
       "path": "packaging/windows-desktop-node/tools/Invoke-PcvInternalHttpsTlsLifecycleSmoke.ps1",
