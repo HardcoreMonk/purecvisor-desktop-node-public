@@ -2,8 +2,8 @@
   "schema_version": 1,
   "contract": "pcv-active-campaign-v1",
   "status": "open",
-  "id": "train-04297-20261108",
-  "intent": "Release train 0.42.97-admin-smoke departed ahead of the S4 judgment on the 2026-11-08 user instruction to put the new Web Console screens on the installed product first: queue PR #94-#107 (configure-installed LAN options, the whole Web Console redesign, password reset API) from package to Lane 3, with the S4 demo state (accounts, LAN exposure) parked and restored around the train, then the carried S4 demo, end state, judgment and C5 check.",
+  "id": "train-04298-20261108",
+  "intent": "Release train 0.42.98-admin-smoke re-departs after train 0.42.97 halted at the pair clean-host bucket (BL-0029) and fix PR #108 merged: queue PR #94-#108 (configure-installed LAN options, the whole Web Console redesign, password reset API, N-1 product Update compatibility files) from package to Lane 3, with the S4 demo state still parked and restored at the end, then the carried S4 demo, end state, judgment and C5 check.",
   "working_authority": "source_head",
   "allowed_lanes": [
     "0",
@@ -13,18 +13,13 @@
   ],
   "mutation_allowed": true,
   "current_write_allowed": true,
-  "next_step": "Train 0.42.97-admin-smoke halted at Task 4 (pair clean-host bucket, BL-0029; DEVELOPMENT_PROCEDURE section 10). Run Task 4b (installed product Rollback to 0.42.96), Task 4c (N-1 product Update compatibility fix on lane1/n1-update-compat-20261108, grok implements, Claude reviews) and Task 4d (exit checks, push, PR; merge only after the user's merge approval), then close this campaign and carry Tasks 4-17 to the re-departure train 0.42.98-admin-smoke campaign, which needs a new departure approval.",
-  "plan": "docs/superpowers/plans/2026-11-08-purecvisor-desktop-node-train-04297.md",
+  "next_step": "Run Task 0 from docs/superpowers/plans/2026-11-08-purecvisor-desktop-node-train-04298.md, then the queue in order. Train branch lane1/train-04298-20261108 is PR A (Lane 3 is a separate PR B from main). Each PR merges only after the user's own merge sentence.",
+  "plan": "docs/superpowers/plans/2026-11-08-purecvisor-desktop-node-train-04298.md",
   "task_queue": [
     "Task 0",
     "Task 1",
     "Task 2",
     "Task 3",
-    "Task 3a",
-    "Task 4a",
-    "Task 4b",
-    "Task 4c",
-    "Task 4d",
     "Task 4",
     "Task 5",
     "Task 6",
@@ -36,51 +31,57 @@
     "Task 12",
     "Task 13",
     "Task 14",
-    "Task 15",
-    "Task 16",
-    "Task 17"
+    "Task 15"
   ],
   "task_lanes": {
     "Task 2": "2",
-    "Task 3a": "2",
-    "Task 4b": "2",
+    "Task 3": "2",
     "Task 4": "2",
     "Task 5": "2",
     "Task 6": "2",
     "Task 7": "2",
-    "Task 8": "2",
-    "Task 9": "2",
-    "Task 11": "3",
-    "Task 12": "3",
-    "Task 15": "2"
+    "Task 9": "3",
+    "Task 10": "3",
+    "Task 13": "2"
   },
   "task_not_before": {
-    "Task 17": "2026-10-19"
+    "Task 15": "2026-10-19"
   },
   "carried_from": {
-    "Task 14": "ui-redesign-20261105 Task 11 (s4-lan-account-20261011 Task 5)",
-    "Task 15": "ui-redesign-20261105 Task 12 (s4-lan-account-20261011 Task 6)",
-    "Task 16": "ui-redesign-20261105 Task 13 (s4-lan-account-20261011 Task 7)",
-    "Task 17": "ui-redesign-20261105 Task 14 (s4-lan-account-20261011 Task 2)"
+    "Task 2": "train-04297-20261108 Task 4",
+    "Task 3": "train-04297-20261108 Task 5",
+    "Task 4": "train-04297-20261108 Task 6",
+    "Task 5": "train-04297-20261108 Task 7",
+    "Task 6": "train-04297-20261108 Task 8",
+    "Task 7": "train-04297-20261108 Task 9",
+    "Task 8": "train-04297-20261108 Task 10",
+    "Task 9": "train-04297-20261108 Task 11",
+    "Task 10": "train-04297-20261108 Task 12",
+    "Task 11": "train-04297-20261108 Task 13",
+    "Task 12": "train-04297-20261108 Task 14 (ui-redesign-20261105 Task 11)",
+    "Task 13": "train-04297-20261108 Task 15 (ui-redesign-20261105 Task 12)",
+    "Task 14": "train-04297-20261108 Task 16 (ui-redesign-20261105 Task 13)",
+    "Task 15": "train-04297-20261108 Task 17 (ui-redesign-20261105 Task 14)"
   },
-  "next_task": "Task 4d",
+  "next_task": "Task 8",
   "completed_tasks": [
     "Task 0",
     "Task 1",
-    "Task 3",
     "Task 2",
-    "Task 3a",
-    "Task 4a",
-    "Task 4b",
-    "Task 4c"
+    "Task 3",
+    "Task 4",
+    "Task 5",
+    "Task 6",
+    "Task 7"
   ],
   "commit_policy": "local-commit-per-task",
   "push_allowed": true,
-  "merge_policy": "after-green-ci",
-  "checkpoint_limit": 23,
-  "approval_locator": "User-Approval: 2026-09-27 campaign runner commit policy local-commit-per-task; User-Approval: 2026-11-08 user instruction \"새 화면을 먼저 반영해\" and answer \"1,2,3,4\" (1 depart release train 0.42.97 now, close ui-redesign-20261105 and carry its Tasks 11-14, queue PR #94-#107; 2 Lane 2 host mutation: unsigned dev MSI build including the 0.42.96 baseline rebuild, pair upgrade tests and fullgate with msiexec install/upgrade/repair/uninstall including REMOVE_DATA, service stop/start, ADR-0016 pcv-it- VMs, installed current-card and probes; 3 S4 state preservation: back up accounts.json and the service command line outside the repo and product data, remove accounts and return to loopback for the train, restore accounts after and re-apply LAN with the new configure-installed (--allow-lan, two managed firewall rules), resume the S4 demo on 0.42.97, preserved VM, template and pcv-it-s4-console untouched (stop and ask if tooling requires); 4 Lane 3 promote current-evidence.json to 0.42.97-admin-smoke); carried S4 approvals: 2026-10-09 audit item 3 pre-approval (installed --allow-lan and firewall changes), 2026-10-12 \"1\" (Lane 2 is --allow-lan, firewall, account create/disable, ADR-0016 pcv-it-s4-* VM create/delete), 2026-10-12 \"1,2\" (Task 6 reconfigures the installed service with the Host.exe built from merged main; release train once after S4); User-Approval: 2026-11-05 S4 account reissue on user request (create admin pcv-admin2, disable pcv-admin after login check); ADR-0016 standing approval (2026-10-07): pcv-it- prefixed VM create/configure/delete; merge: each PR needs an explicit user merge approval sentence (merge_policy none); User-Approval: 2026-11-08 answer \"1\" to the Task 4 stop (missing clean-host base VHD): re-acquire the Windows Server 2022 evaluation VHD and the latest LCU from Microsoft, service a copy offline with New-PcvCleanHostBaseVhd.ps1 (VHD mount, DISM SSU then LCU), then continue the pair from Task 4; User-Approval: 2026-11-08 answer \"1\" to the Task 4 FAIL stop (0.42.96 product Update rejects the 0.42.97 update ZIP, PCV_PRODUCT_UPDATE_PAYLOAD_FILE_MISSING web\\app.js, web\\styles.css): halt the train and commit the stop record (plan record, backlog rows); open a Lane 1 PR that keeps web/app.js and web/styles.css as minimal compatibility files the new shell does not read so the earlier product Update accepts the payload, with the required-list location and basis in the PR; merge only after the user's merge approval; then rerun from the package (re-departure as the next patch version per DEVELOPMENT_PROCEDURE section 10); meanwhile roll the installed product back to 0.42.96 with the product Rollback; User-Approval: 2026-11-08 standing auto-approval of the recommended option (\"앞으로는 권장 사항 자동 승인 처리 한다\"): a stop report option marked recommended is approved within its own wording, including merge after green Required CI when it says so; irreversible user-data deletion and user-only steps still ask; applied to the Task 4c budget stop (continue in a new checkpoint) and the Task 4d fix PR merge",
+  "merge_policy": "none",
+  "checkpoint_limit": 16,
+  "approval_locator": "User-Approval: 2026-09-27 campaign runner commit policy local-commit-per-task; User-Approval: 2026-11-08 \"PR #108 merge 승인\" (answer to the train 0.42.97 stop report, recommended option 1) and the standing auto-approval of the recommended option (\"앞으로는 권장 사항 자동 승인 처리 한다\", train-04297 user decision 7): after the PR #108 merge and a green main push run, depart release train 0.42.98-admin-smoke with queue PR #94-#108 (14 rows), apply the 2026-11-08 approvals 2-4 at the new version (2 Lane 2 host mutation: unsigned dev MSI build, pair upgrade tests and fullgate with msiexec install/upgrade/repair/uninstall including REMOVE_DATA, service stop/start, ADR-0016 pcv-it- VMs, installed current-card and probes, current-base.json after a clean-host PASS; 3 S4 state preservation: accounts stay parked and the service on loopback for the train, restore accounts after and re-apply LAN with configure-installed (--allow-lan, two managed firewall rules), resume the S4 demo on the new screens, preserved VM, template and pcv-it-s4-console untouched; 4 Lane 3 promote current-evidence.json to 0.42.98-admin-smoke), carry train-04297-20261108 Tasks 4-17 as Tasks 2-15; merge: each PR needs the user's own merge sentence (the auto mode classifier denied a merge on the auto-approval alone); carried approvals (train-04297-20261108 approval_locator): User-Approval: 2026-09-27 campaign runner commit policy local-commit-per-task; User-Approval: 2026-11-08 user instruction \"새 화면을 먼저 반영해\" and answer \"1,2,3,4\" (1 depart release train 0.42.97 now, close ui-redesign-20261105 and carry its Tasks 11-14, queue PR #94-#107; 2 Lane 2 host mutation: unsigned dev MSI build including the 0.42.96 baseline rebuild, pair upgrade tests and fullgate with msiexec install/upgrade/repair/uninstall including REMOVE_DATA, service stop/start, ADR-0016 pcv-it- VMs, installed current-card and probes; 3 S4 state preservation: back up accounts.json and the service command line outside the repo and product data, remove accounts and return to loopback for the train, restore accounts after and re-apply LAN with the new configure-installed (--allow-lan, two managed firewall rules), resume the S4 demo on 0.42.97, preserved VM, template and pcv-it-s4-console untouched (stop and ask if tooling requires); 4 Lane 3 promote current-evidence.json to 0.42.97-admin-smoke); carried S4 approvals: 2026-10-09 audit item 3 pre-approval (installed --allow-lan and firewall changes), 2026-10-12 \"1\" (Lane 2 is --allow-lan, firewall, account create/disable, ADR-0016 pcv-it-s4-* VM create/delete), 2026-10-12 \"1,2\" (Task 6 reconfigures the installed service with the Host.exe built from merged main; release train once after S4); User-Approval: 2026-11-05 S4 account reissue on user request (create admin pcv-admin2, disable pcv-admin after login check); ADR-0016 standing approval (2026-10-07): pcv-it- prefixed VM create/configure/delete; merge: each PR needs an explicit user merge approval sentence (merge_policy none); User-Approval: 2026-11-08 answer \"1\" to the Task 4 stop (missing clean-host base VHD): re-acquire the Windows Server 2022 evaluation VHD and the latest LCU from Microsoft, service a copy offline with New-PcvCleanHostBaseVhd.ps1 (VHD mount, DISM SSU then LCU), then continue the pair from Task 4; User-Approval: 2026-11-08 answer \"1\" to the Task 4 FAIL stop (0.42.96 product Update rejects the 0.42.97 update ZIP, PCV_PRODUCT_UPDATE_PAYLOAD_FILE_MISSING web\\app.js, web\\styles.css): halt the train and commit the stop record (plan record, backlog rows); open a Lane 1 PR that keeps web/app.js and web/styles.css as minimal compatibility files the new shell does not read so the earlier product Update accepts the payload, with the required-list location and basis in the PR; merge only after the user's merge approval; then rerun from the package (re-departure as the next patch version per DEVELOPMENT_PROCEDURE section 10); meanwhile roll the installed product back to 0.42.96 with the product Rollback; User-Approval: 2026-11-08 standing auto-approval of the recommended option (\"앞으로는 권장 사항 자동 승인 처리 한다\"): a stop report option marked recommended is approved within its own wording, including merge after green Required CI when it says so; irreversible user-data deletion and user-only steps still ask; applied to the Task 4c budget stop (continue in a new checkpoint) and the Task 4d fix PR merge; applied to the train-04298 Task 5 Lane 2 budget overrun (about 85 of 45 minutes while the probe ran; recorded, Task 6 continues in a new checkpoint)",
   "next_approval_required": [
-    "After the fix PR merge and a green main push run, depart release train 0.42.98-admin-smoke: queue PR #94-#107 plus the fix row, package build, pair, fullgate, current-card, probes, S4 restore and LAN re-apply, Lane 3 current-evidence write (approval 2-4 scope of 2026-11-08 at the new version), carry Tasks 4-17."
+    "Merge the train PR A (lane1/train-04298-20261108) after green Required CI.",
+    "Merge the Lane 3 PR B (0.42.98-admin-smoke promotion) after green Required CI."
   ],
   "stop_on": [
     "same-cause-fail-3",
@@ -93,5 +94,5 @@
     "dirty-tree-at-start"
   ],
   "out_of_scope_is_not_next_step": true,
-  "closed_predecessor": "ui-redesign-20261105"
+  "closed_predecessor": "train-04297-20261108"
 }
