@@ -422,6 +422,13 @@ campaign은 이미 받은 승인을 되묻지 않을 뿐, 없는 승인을 만�
 
       dotnet run --project src/DesktopNode.Verification -c Release -- lane3-spec --input docs/ga-ready/trains/<version>.lane3-spec-input.json --write
 
+- Lane 3 승격은 N-1 제품 Update 호환 fixture `packaging/windows-desktop-node/tests/fixtures/update-preflight-compatibility.json`도
+  고친다(BL-0030). `operational-current` 행을 새 version, 그 payload commit, 그 commit의 `Test-PcvDesktopNodeUpdatePayload`가
+  요구하는 파일로 바꾸고, 직전 행은 그 version 설치가 남아 있는 동안 `retained-older-install`로 남긴다.
+  `UpdatePreflightCompatibilityContractTests`가 PR 때 `web/payload-manifest.json`과 MSI payload가 행마다의 파일을 모두
+  담는지 보고, `operational-current`가 `current-evidence.json` version과 다르면 실패한다. git 이력은 읽지 않는다(CI clone은
+  shallow다). `web/app.js`와 `web/styles.css` 호환 파일은 0.42.96 이하 설치가 더는 없을 때 그 행과 함께 뺀다.
+
 - train task 1(package)은 build 뒤 `packaging/windows-desktop-node/tools/New-PcvAdminSmokeUpdatePackage.ps1`로 update ZIP,
   admin-smoke update catalog, `package-facts.json`을 만든다. 손으로 ZIP을 만들지 않는다.
 - train task 2(pair)는 `packaging/windows-desktop-node/tools/Invoke-PcvManualAdminPackagePairCampaign.ps1`을

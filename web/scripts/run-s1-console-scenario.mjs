@@ -4,20 +4,24 @@
 // --execute needs a separate host-mutation approval; the loopback session token stays in memory and is never printed.
 import { createHash } from "node:crypto";
 import { mkdirSync, writeFileSync } from "node:fs";
-import { join, resolve } from "node:path";
+import { dirname, join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { inflateSync } from "node:zlib";
+import { displayRepoPath, formatRunDay, readScenarioArgs } from "./scenario-args.mjs";
 
-function getArg(name, fallback = "") {
-  const prefix = `--${name}=`;
-  const match = process.argv.find((value) => value.startsWith(prefix));
-  return match ? match.slice(prefix.length) : fallback;
-}
+// --name value and --name=value both work; an unknown argument stops with a usage error (BL-0022).
+const args = readScenarioArgs(process.argv.slice(2), "run-s1-console-scenario.mjs", {
+  values: ["api", "iso", "vm", "out", "keys"],
+  booleans: ["execute", "plan-only"]
+});
+const getArg = (name, fallback = "") => args.values[name] ?? fallback;
+const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
 
-const execute = process.argv.includes("--execute");
+const execute = args.flags.has("execute");
 const api = getArg("api", "http://127.0.0.1:7777");
 const iso = getArg("iso");
 const vm = getArg("vm", `pcv-it-s1-${new Date().toISOString().replace(/[-:TZ.]/g, "").slice(0, 14)}`);
-const outDir = resolve(getArg("out", join("..", "artifacts", "s1-console-scenario", vm)));
+const outDir = resolve(getArg("out", join(repoRoot, "artifacts", `s1-console-scenario-${formatRunDay()}`, vm)));
 const keys = getArg("keys", "13").split(",").map((value) => Number(value)).filter((value) => value >= 1 && value <= 254);
 
 const steps = [
@@ -32,7 +36,7 @@ const steps = [
 ];
 
 if (!execute) {
-  process.stdout.write(`S1 console scenario plan-only (no request sent)\nout=${outDir}\n`);
+  process.stdout.write(`S1 console scenario plan-only (no request sent)\nout=${displayRepoPath(repoRoot, outDir)}\n`);
   steps.forEach(([name, detail], index) => process.stdout.write(`${index + 1}. ${name}: ${detail}\n`));
   process.exit(iso ? 0 : 2);
 }

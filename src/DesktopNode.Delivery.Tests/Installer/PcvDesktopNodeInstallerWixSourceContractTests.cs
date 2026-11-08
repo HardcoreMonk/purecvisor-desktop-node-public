@@ -137,7 +137,7 @@ public sealed class PcvDesktopNodeInstallerWixSourceContractTests
             manifestFiles.Contains("styles.css") &&
             ownedSources.Contains(@"$(var.PayloadRoot)\web\app.js") &&
             ownedSources.Contains(@"$(var.PayloadRoot)\web\styles.css"),
-            "BL-0029: web/app.js and web/styles.css stay in web/payload-manifest.json files and are owned by WebPayload.wxs so the product Update preflight of Desktop Node 0.42.96 and earlier accepts newer payloads. index.html does not load them. Removing them is BL-0030.");
+            "BL-0029: web/app.js and web/styles.css stay in web/payload-manifest.json files and are owned by WebPayload.wxs so the product Update preflight of Desktop Node 0.42.96 and earlier accepts newer payloads. index.html does not load them. They go only with the 0.42.96 row of packaging/windows-desktop-node/tests/fixtures/update-preflight-compatibility.json, once no 0.42.96-or-older installs remain (BL-0030).");
         Assert.DoesNotContain(sources, source => source?.Contains("\\api\\", StringComparison.OrdinalIgnoreCase) == true);
         Assert.DoesNotContain(sources, source => source?.Contains("\\hyperv\\", StringComparison.OrdinalIgnoreCase) == true);
         Assert.DoesNotContain(sources, source => source?.Contains("\\service\\", StringComparison.OrdinalIgnoreCase) == true);

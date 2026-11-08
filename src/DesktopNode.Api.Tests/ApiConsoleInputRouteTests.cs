@@ -82,22 +82,34 @@ public sealed class ApiConsoleInputRouteTests : IDisposable
     [Fact]
     public void InputIsLimitedToFiftyPerSecondPerVm()
     {
+        // BL-0011: 입력 limiter 도 frame throttle 처럼 hardening options 의 clock 으로 잰다. 고정 clock 이므로
+        // 51건을 보내는 동안 느린 runner 에서 1초 창을 넘어도 결과가 같다.
+        var now = new DateTimeOffset(2026, 11, 9, 12, 0, 0, TimeSpan.Zero);
         var calls = new List<JsonElement>();
-        var processor = CreateProcessor(calls);
+        var processor = CreateProcessor(calls, () => now);
+        const string body = """{"kind":"key","action":"press","key_code":16}""";
 
         var statuses = Enumerable.Range(0, 51)
-            .Select(_ => Send(processor, "/api/v1/vms/lab-vm/console/input", """{"kind":"key","action":"press","key_code":16}""").StatusCode)
+            .Select(_ => Send(processor, "/api/v1/vms/lab-vm/console/input", body).StatusCode)
             .ToList();
+        now = now.AddMilliseconds(999);
+        var stillLimited = Send(processor, "/api/v1/vms/lab-vm/console/input", body);
+        now = now.AddMilliseconds(1);
+        var nextWindow = Send(processor, "/api/v1/vms/lab-vm/console/input", body);
 
         Assert.Equal(50, statuses.Count(status => status == 200));
         Assert.Equal(429, statuses[^1]);
-        Assert.Equal(50, calls.Count);
+        Assert.Equal(429, stillLimited.StatusCode);
+        Assert.Contains("PCV_CONSOLE_RATE_LIMITED", stillLimited.Body, StringComparison.Ordinal);
+        Assert.Equal(200, nextWindow.StatusCode);
+        Assert.Equal(51, calls.Count);
     }
 
-    private DesktopNodeApiRequestProcessor CreateProcessor(List<JsonElement> calls) =>
+    private DesktopNodeApiRequestProcessor CreateProcessor(List<JsonElement> calls, Func<DateTimeOffset>? clock = null) =>
         DesktopNodeApiRequestProcessor.CreateDefault(
             nativeAdapter: new InputNativeAdapter(calls),
-            consoleOptions: new DesktopNodeConsoleOptions(NoVncTargetFilePath: Path.Combine(root, "novnc-target.json")));
+            consoleOptions: new DesktopNodeConsoleOptions(NoVncTargetFilePath: Path.Combine(root, "novnc-target.json")),
+            hardeningOptions: clock is null ? null : new DesktopNodeApiHardeningOptions(Clock: clock));
 
     private static DesktopNodeApiResponse Send(DesktopNodeApiRequestProcessor processor, string path, string body) =>
         processor.Handle(new DesktopNodeApiRequest("POST", path, body, ServiceBearerAccepted: true, RemoteIsLoopback: true));

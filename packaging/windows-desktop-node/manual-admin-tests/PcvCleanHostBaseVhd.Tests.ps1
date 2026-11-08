@@ -259,6 +259,33 @@ Describe 'PcvCleanHostBaseVhd contract' {
                 }
             }
 
+            It 'resolves its default inputs under this repository artifacts folder' {
+                # BL-0028: defaults come from $PSScriptRoot, not from the read-only private archive or a machine path.
+                $runnerAst = [System.Management.Automation.Language.Parser]::ParseFile($runnerPath, [ref]$null, [ref]$null)
+                $toolsRoot = Split-Path -Parent $runnerPath
+                $artifactsRoot = [System.IO.Path]::GetFullPath((Join-Path $script:RepoRoot 'artifacts')) + [System.IO.Path]::DirectorySeparatorChar
+                $defaults = @{}
+                foreach ($name in @('BaselineMsiPath', 'UpdatePackagePath')) {
+                    $parameter = $runnerAst.ParamBlock.Parameters | Where-Object { $_.Name.VariablePath.UserPath -eq $name }
+                    $text = $parameter.DefaultValue.Extent.Text
+                    $text | Should -Match '^\(Join-Path \$PSScriptRoot '
+                    $defaults[$name] = [System.IO.Path]::GetFullPath((& ([scriptblock]::Create($text.Replace('$PSScriptRoot', '$toolsRoot')))))
+                }
+                $vhdAssignment = $runnerAst.Find({
+                        param($node)
+                        $node -is [System.Management.Automation.Language.AssignmentStatementAst] -and $node.Left.Extent.Text -eq '$script:DefaultSourceBaseVhdPath'
+                    }, $true)
+                $defaults['DefaultSourceBaseVhdPath'] = & ([scriptblock]::Create($vhdAssignment.Right.Extent.Text.Replace('$PSScriptRoot', '$toolsRoot')))
+
+                $defaults['BaselineMsiPath'] | Should -Be ($artifactsRoot + 'internal-enterprise-requiresigned-rc-msi-20260507-0387\PureCVisorDesktopNode-0.38.7-rc.1-windows-x64.msi')
+                $defaults['UpdatePackagePath'] | Should -Be ($artifactsRoot + 'msi-update-package-20260509-0391\PureCVisorDesktopNode-0.39.1-admin-smoke-update.zip')
+                $defaults['DefaultSourceBaseVhdPath'] | Should -Be ($artifactsRoot + 'image-cache\windows-server-2022-eval-vhd\20348.169.amd64fre.fe_release_svc_refresh.210806-2348_server_serverdatacentereval_en-us.vhd')
+                # Guest-side C:\ paths stay; no host artifacts path may be rooted at a drive letter.
+                $runnerText = Get-Content -Raw -LiteralPath $runnerPath
+                $runnerText | Should -Not -Match "'[A-Za-z]:\\[^']*\\artifacts\\"
+                $runnerText | Should -Not -Match 'codex-zone'
+            }
+
             It 'uses the base named by current-base.json and reads its sidecar' {
                 $selected = Resolve-PcvCleanHostBaseVhd -ExplicitPath '' -DefaultSourcePath $script:Inputs.SourceVhdPath
 

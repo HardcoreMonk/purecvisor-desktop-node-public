@@ -32,17 +32,58 @@ function Invoke-PcvProcess([string]$Id, [string]$File, [string[]]$Arguments) {
     $script:summary.exits[$Id] = [int]$process.ExitCode
     if ($process.ExitCode -ne 0) { throw "$Id exit $($process.ExitCode)" }
 }
+# Service deletion can lag the uninstall exit, so remove-absence rechecks a few times before it records what remains.
+$script:RemoveAbsenceAttempts = 5
+$script:RemoveAbsenceDelaySeconds = 2
+$script:RemainingPathLimit = 20
+
+function Get-PcvRemainingProductParts {
+    $remaining = @()
+    if ($null -ne (Get-Service -Name $ServiceName -ErrorAction SilentlyContinue)) { $remaining += 'service' }
+    if (Test-Path -LiteralPath $InstalledManifestPath -PathType Leaf) { $remaining += 'manifest' }
+    if (Test-Path -LiteralPath $script:productRoot -PathType Container) { $remaining += 'product-root' }
+    $remaining
+}
+function Get-PcvProductAbsence([string]$Phase) {
+    $remaining = @()
+    for ($attempt = 1; $attempt -le $script:RemoveAbsenceAttempts; $attempt++) {
+        $remaining = @(Get-PcvRemainingProductParts)
+        if ($remaining.Count -eq 0) { return [ordered]@{ Phase = $Phase; Absent = $true; Attempts = $attempt } }
+        if ($attempt -lt $script:RemoveAbsenceAttempts) { Start-Sleep -Seconds $script:RemoveAbsenceDelaySeconds }
+    }
+
+    $rootPaths = @()
+    if ($remaining -contains 'product-root') {
+        $rootPaths = @(Get-ChildItem -LiteralPath $script:productRoot -Recurse -Force -ErrorAction SilentlyContinue |
+            ForEach-Object { [IO.Path]::GetRelativePath($script:productRoot, $_.FullName) } | Sort-Object)
+    }
+    $state = [ordered]@{
+        Phase = $Phase
+        Absent = $false
+        Attempts = $script:RemoveAbsenceAttempts
+        Remaining = $remaining
+        ServiceName = $ServiceName
+        ManifestPath = $InstalledManifestPath
+        ProductRoot = $script:productRoot
+        ProductRootRemainingCount = $rootPaths.Count
+        ProductRootRemainingPaths = @($rootPaths | Select-Object -First $script:RemainingPathLimit)
+    }
+    if (Get-Variable -Name summary -Scope Script -ErrorAction SilentlyContinue) { $script:summary.states[$Phase] = $state }
+    $detail = "remaining=$($remaining -join ',')|attempts=$($script:RemoveAbsenceAttempts)"
+    if ($remaining -contains 'manifest') { $detail += "|manifest=$InstalledManifestPath" }
+    if ($remaining -contains 'product-root') {
+        $detail += "|product_root=$($script:productRoot)|product_root_entries=$($rootPaths.Count)|product_root_paths=$((@($rootPaths | Select-Object -First 5)) -join ';')"
+    }
+    throw "PCV_BURN_LIFECYCLE_REMOVE_INCOMPLETE|$Phase product remains|$detail"
+}
 function Get-PcvProductState([string]$Phase, [bool]$MustExist) {
+    if (-not $MustExist) { return Get-PcvProductAbsence $Phase }
+
     $manifest = if (Test-Path -LiteralPath $InstalledManifestPath -PathType Leaf) {
         Get-Content -Raw -LiteralPath $InstalledManifestPath | ConvertFrom-Json
     } else { $null }
     $service = Get-Service -Name $ServiceName -ErrorAction SilentlyContinue
     $productRootExists = Test-Path -LiteralPath $script:productRoot -PathType Container
-
-    if (-not $MustExist) {
-        if ($null -ne $service -or $null -ne $manifest -or $productRootExists) { throw "$Phase product remains" }
-        return [ordered]@{ Phase = $Phase; Absent = $true }
-    }
 
     if ($null -eq $manifest -or $null -eq $service -or -not $productRootExists) {
         throw "PCV_BURN_LIFECYCLE_PRESTATE_INVALID|$Phase|required product state missing"

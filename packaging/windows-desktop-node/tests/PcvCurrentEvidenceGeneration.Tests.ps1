@@ -48,10 +48,14 @@ Describe 'current evidence canonical record' {
 
         $contradictory = $script:Record | ConvertTo-Json -Depth 64 | ConvertFrom-Json -Depth 64
         $contradictory.feature_qualification.promotion_eligible = $false
-        ($contradictory | ConvertTo-Json -Depth 64) |
-            Test-Json -SchemaFile $script:SchemaPath -ErrorVariable schemaErrors -ErrorAction SilentlyContinue |
-            Should -BeFalse
-        @($schemaErrors).Count | Should -BeGreaterThan 0
+        $contradictoryValid = ($contradictory | ConvertTo-Json -Depth 64) |
+            Test-Json -SchemaFile $script:SchemaPath -ErrorVariable schemaErrors -ErrorAction SilentlyContinue
+        $contradictoryValid | Should -BeFalse
+        # BL-0025: PowerShell 7.6 returns False without an error record; earlier 7.x also writes one per violation.
+        # The False result is the contract, and any error record that does appear must be a schema violation.
+        foreach ($schemaError in @($schemaErrors)) {
+            $schemaError.FullyQualifiedErrorId | Should -Match 'InvalidJson'
+        }
     }
 
     It 'keeps schema and runtime validation in parity for invalid qualification values' {

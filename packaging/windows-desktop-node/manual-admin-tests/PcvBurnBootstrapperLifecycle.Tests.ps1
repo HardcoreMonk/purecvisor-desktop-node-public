@@ -91,4 +91,74 @@ Describe 'PcvBurnBootstrapperLifecycle PlanOnly contract' {
         $summary.host_mutation_performed | Should -BeTrue
         Remove-Variable -Name pcvBurnRemoved -Scope Global -ErrorAction SilentlyContinue
     }
+
+    # BL-0018: remove-absence names what remains instead of a bare "product remains".
+    It 'records which of service manifest and product root remain after remove' {
+        $f = New-BurnFixture (Join-Path $TestDrive 'remove-leftover')
+        Mock Start-Sleep { }
+        Mock Start-Process {
+            if (@($ArgumentList) -contains '/uninstall') {
+                Remove-Item -LiteralPath $f.InstalledManifestPath -Force
+                New-Item -ItemType Directory -Force -Path (Join-Path $f.ExpectedProductRoot 'bin') | Out-Null
+                Set-Content -LiteralPath (Join-Path $f.ExpectedProductRoot 'bin\leftover.dll') -Value 'locked'
+            }
+            if ($FilePath -eq 'msiexec.exe') {
+                @{ version = $f.TargetVersion; paths = @{ product_root = $f.ExpectedProductRoot } } | ConvertTo-Json | Set-Content $f.InstalledManifestPath
+            }
+            [pscustomobject]@{ ExitCode = 0 }
+        }
+        Mock Get-Service { [pscustomobject]@{ Status = 'Running' } }
+        Mock Get-CimInstance { [pscustomobject]@{ State = 'Running'; StartMode = 'Auto' } }
+
+        { & $script:BurnEntry @f -Execute } | Should -Throw '*PCV_BURN_LIFECYCLE_REMOVE_INCOMPLETE*remaining=service,product-root*leftover.dll*'
+
+        $summary = Get-Content -Raw (Join-Path $f.ArtifactRoot 'summary.json') | ConvertFrom-Json
+        $absence = $summary.states.'remove-absence'
+        $absence.Absent | Should -BeFalse
+        @($absence.Remaining) | Should -Be @('service', 'product-root')
+        $absence.Attempts | Should -Be 5
+        $absence.ProductRoot | Should -Be $f.ExpectedProductRoot
+        @($absence.ProductRootRemainingPaths) | Should -Contain (Join-Path 'bin' 'leftover.dll')
+        $absence.ProductRootRemainingCount | Should -Be 2
+        $summary.error | Should -Match 'remaining=service,product-root'
+        $summary.restoration_status | Should -Be 'PASS'
+        Should -Invoke Start-Sleep -Times 4 -Exactly
+    }
+
+    It 'rechecks briefly when service deletion lags the uninstall exit' {
+        $f = New-BurnFixture (Join-Path $TestDrive 'remove-lag')
+        $global:pcvBurnRemoved = $false
+        $global:pcvBurnServiceLag = 0
+        Mock Start-Sleep { }
+        Mock Start-Process {
+            if (@($ArgumentList) -contains '/uninstall') {
+                $global:pcvBurnRemoved = $true
+                $global:pcvBurnServiceLag = 2
+                Remove-Item -LiteralPath $f.InstalledManifestPath -Force
+                Remove-Item -LiteralPath $f.ExpectedProductRoot -Recurse -Force
+            }
+            if ($FilePath -eq 'msiexec.exe') {
+                $global:pcvBurnRemoved = $false
+                New-Item -ItemType Directory -Force -Path $f.ExpectedProductRoot | Out-Null
+                @{ version = $f.TargetVersion; paths = @{ product_root = $f.ExpectedProductRoot } } | ConvertTo-Json | Set-Content $f.InstalledManifestPath
+            }
+            [pscustomobject]@{ ExitCode = 0 }
+        }
+        Mock Get-Service {
+            if ($global:pcvBurnRemoved) {
+                if ($global:pcvBurnServiceLag -gt 0) { $global:pcvBurnServiceLag--; return [pscustomobject]@{ Status = 'Stopped' } }
+                return $null
+            }
+            [pscustomobject]@{ Status = 'Running' }
+        }
+        Mock Get-CimInstance { [pscustomobject]@{ State = 'Running'; StartMode = 'Auto' } }
+
+        { & $script:BurnEntry @f -Execute } | Should -Not -Throw
+
+        $summary = Get-Content -Raw (Join-Path $f.ArtifactRoot 'summary.json') | ConvertFrom-Json
+        $summary.states.'remove-absence'.Absent | Should -BeTrue
+        $summary.states.'remove-absence'.Attempts | Should -Be 3
+        Should -Invoke Start-Sleep -Times 2 -Exactly
+        Remove-Variable -Name pcvBurnRemoved, pcvBurnServiceLag -Scope Global -ErrorAction SilentlyContinue
+    }
 }

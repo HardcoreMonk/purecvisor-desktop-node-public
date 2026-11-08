@@ -43,6 +43,28 @@ const BOUNDARY_DOCUMENTS = Object.freeze({
   }
 });
 
+// CLAUDE.md §3 은 Hyper-V Default Switch NAT 주소까지 허용한다. Default Switch 는 호스트마다 바뀌는 /20 을
+// 172 사설 /12 대역에서 고르므로 대역 전체를 허용하면 같은 대역의 LAN 주소도 통과한다. 그래서 문서에 남은 guest 주소를
+// (경로, 주소) 정확 일치로만 허용하고 각 항목에 이유를 적는다. 같은 파일의 다른 사설 주소는 계속 거절한다.
+// 주소는 이 파일 자체가 synthetic marker 없이 통과하도록 옥텟으로 만든다.
+export const DEFAULT_SWITCH_NAT_ALLOWLIST = Object.freeze([
+  Object.freeze({
+    path: "docs/ga-ready/demo/s1-browser-console-demo-2026-10-08.md",
+    address: [172, 29, 16, 136].join("."),
+    reason: "S1 demo guest eth0 DHCPv4 lease on the Hyper-V Default Switch NAT (pcv-it-s1-ubuntu, 2026-10-09)"
+  }),
+  Object.freeze({
+    path: "docs/superpowers/plans/2026-10-08-purecvisor-desktop-node-s1-installed.md",
+    address: [172, 29, 16, 136].join("."),
+    reason: "S1 installed plan Task 6 record of the same Hyper-V Default Switch NAT guest lease"
+  })
+]);
+
+function isAllowlistedDefaultSwitchAddress(relativePath, address) {
+  const normalized = normalizeTrackedPath(relativePath);
+  return DEFAULT_SWITCH_NAT_ALLOWLIST.some((entry) => entry.path === normalized && entry.address === address);
+}
+
 function escapeRegExp(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
@@ -82,12 +104,13 @@ function firstMatchLine(content, expression) {
   return match ? lineNumberAt(content, match.index) : null;
 }
 
-function privateIpv4Line(content) {
+function privateIpv4Line(content, relativePath) {
   const expression = /\b(?:10(?:\.\d{1,3}){3}|192\.168(?:\.\d{1,3}){2}|172\.(?:1[6-9]|2\d|3[01])(?:\.\d{1,3}){2})\b/g;
   const lines = content.split(/\r?\n/);
   for (let index = 0; index < lines.length; index += 1) {
-    expression.lastIndex = 0;
-    if (expression.test(lines[index])) return index + 1;
+    for (const match of lines[index].matchAll(expression)) {
+      if (!isAllowlistedDefaultSwitchAddress(relativePath, match[0])) return index + 1;
+    }
   }
   return null;
 }
@@ -165,7 +188,7 @@ function scanText(findings, seen, relativePath, content, forbiddenIdentities) {
     if (index >= 0) addFinding(findings, seen, "identity.forbidden-token", relativePath, lineNumberAt(content, index));
   }
 
-  const privateLine = privateIpv4Line(content);
+  const privateLine = privateIpv4Line(content, relativePath);
   if (privateLine !== null) {
     if (!isSyntheticFixturePath(relativePath)) {
       addFinding(findings, seen, "network.observed-private-endpoint", relativePath, privateLine);

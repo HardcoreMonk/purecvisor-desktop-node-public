@@ -2,8 +2,9 @@
 param(
     [string]$ArtifactRoot = (Join-Path 'artifacts' ("internal-clean-host-install-update-rollback-smoke-" + (Get-Date -Format 'yyyyMMdd-HHmmss'))),
     [string]$BaseVhdPath = '',
-    [string]$BaselineMsiPath = 'D:\data\projects\codex-zone\purecvisor-desktop-node\artifacts\internal-enterprise-requiresigned-rc-msi-20260507-0387\PureCVisorDesktopNode-0.38.7-rc.1-windows-x64.msi',
-    [string]$UpdatePackagePath = 'D:\data\projects\codex-zone\purecvisor-desktop-node\artifacts\msi-update-package-20260509-0391\PureCVisorDesktopNode-0.39.1-admin-smoke-update.zip',
+    # Default inputs live under this repository's artifacts\ (tools -> repository root); explicit paths still win.
+    [string]$BaselineMsiPath = (Join-Path $PSScriptRoot '..\..\..\artifacts\internal-enterprise-requiresigned-rc-msi-20260507-0387\PureCVisorDesktopNode-0.38.7-rc.1-windows-x64.msi'),
+    [string]$UpdatePackagePath = (Join-Path $PSScriptRoot '..\..\..\artifacts\msi-update-package-20260509-0391\PureCVisorDesktopNode-0.39.1-admin-smoke-update.zip'),
     [string]$InternalRootCertificatePath = '',
     [string]$VmName = ("pcv-cleanhost-" + (Get-Date -Format 'yyyyMMdd-HHmmss')),
     [string]$VmRoot = '',
@@ -64,7 +65,7 @@ function Resolve-PcvFilePath {
 
 # An explicit -BaseVhdPath wins. Otherwise current-base.json next to the evaluation VHD names the dated base
 # that New-PcvCleanHostBaseVhd.ps1 serviced offline; without it the evaluation VHD itself is the base.
-$script:DefaultSourceBaseVhdPath = 'D:\data\projects\codex-zone\purecvisor-desktop-node\artifacts\image-cache\windows-server-2022-eval-vhd\20348.169.amd64fre.fe_release_svc_refresh.210806-2348_server_serverdatacentereval_en-us.vhd'
+$script:DefaultSourceBaseVhdPath = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..\..\artifacts\image-cache\windows-server-2022-eval-vhd\20348.169.amd64fre.fe_release_svc_refresh.210806-2348_server_serverdatacentereval_en-us.vhd'))
 
 function Resolve-PcvCleanHostBaseVhd {
     param(

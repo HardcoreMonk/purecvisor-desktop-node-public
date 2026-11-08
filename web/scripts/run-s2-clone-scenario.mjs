@@ -5,21 +5,23 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { displayRepoPath, formatRunDay, readScenarioArgs } from "./scenario-args.mjs";
 
-function getArg(name, fallback = "") {
-  const prefix = `--${name}=`;
-  const match = process.argv.find((value) => value.startsWith(prefix));
-  return match ? match.slice(prefix.length) : fallback;
-}
+// --name value and --name=value both work; an unknown argument stops with a usage error (BL-0022).
+const args = readScenarioArgs(process.argv.slice(2), "run-s2-clone-scenario.mjs", {
+  values: ["api", "source", "target", "vm-root", "iso", "out"],
+  booleans: ["execute", "plan-only"]
+});
+const getArg = (name, fallback = "") => args.values[name] ?? fallback;
 
-const execute = process.argv.includes("--execute");
+const execute = args.flags.has("execute");
 const api = getArg("api", "http://127.0.0.1:7777");
 const source = getArg("source", "pcv-it-s2-source");
 const target = getArg("target", "pcv-it-s2-clone");
 const vmRoot = getArg("vm-root", "D:\\PureCVisor\\VMs");
 const iso = getArg("iso", "D:\\Downloads\\ubuntu-26.04.1-live-server-amd64.iso");
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
-const outDir = resolve(getArg("out", join(repoRoot, "artifacts", "s2-template-clone-20261009")));
+const outDir = resolve(getArg("out", join(repoRoot, "artifacts", `s2-template-clone-${formatRunDay()}`)));
 const boundMs = 60000;
 
 const steps = [
@@ -32,7 +34,7 @@ const steps = [
 ];
 
 if (!execute) {
-  process.stdout.write("S2 clone scenario plan-only (no request sent)\n");
+  process.stdout.write(`S2 clone scenario plan-only (no request sent)\nout=${displayRepoPath(repoRoot, outDir)}\n`);
   steps.forEach(([name, detail], index) => process.stdout.write(`${index + 1}. ${name}: ${detail}\n`));
   process.exit(0);
 }
