@@ -316,6 +316,21 @@ function vmCheckpointCount(vm) {
   return Number.isFinite(count) ? count : 0;
 }
 
+function localMinuteMarkup(value) {
+  const formatted = typeof formatLocalMinute === 'function'
+    ? formatLocalMinute(value)
+    : { text: formatObjectValue(value), title: '' };
+  const title = formatted.title ? ` title="${pcvEscapeHtml(formatted.title)}"` : '';
+  return { title, text: pcvEscapeHtml(formatted.text) };
+}
+
+function vmDeleteMessage(vm) {
+  const base = t('vm.delete.message', { name: getVmName(vm) });
+  const count = vmCheckpointCount(vm);
+  if (!(count > 0)) return base;
+  return `${base} ${t('vm.delete.checkpoints', { checkpoints: String(count) })}`;
+}
+
 function renderVmPowerButtons(vmId, kind, actionDisabled, lockedMutationDisabled) {
   const id = pcvEscapeHtml(vmId);
   if (kind === 'running') {
@@ -569,10 +584,11 @@ function cloneFixText(code) {
 function showClonePreview(panel, preview) {
   clearNode(panel);
   const bytes = preview && preview.planned_copy_bytes;
+  const shown = bytes === null || bytes === undefined || bytes === ''
+    ? '-'
+    : (typeof formatBytes === 'function' ? formatBytes(bytes) : String(bytes));
   const line = document.createElement('p');
-  line.textContent = t('vm.clone.preview_ok', {
-    bytes: bytes === null || bytes === undefined || bytes === '' ? '-' : String(bytes)
-  });
+  line.textContent = t('vm.clone.preview_ok', { bytes: shown });
   panel.appendChild(line);
 }
 
@@ -915,7 +931,64 @@ function fillCheckpointList(root, vmId) {
   }
 }
 
+function detailContains(root, node) {
+  let current = node;
+  while (current) {
+    if (current === root) return true;
+    current = current.parentNode;
+  }
+  return false;
+}
+
+function detailFocusMarker(root) {
+  const active = typeof document !== 'undefined' ? document.activeElement : null;
+  if (!root || !active || active === root || !detailContains(root, active)) return null;
+  if (typeof active.getAttribute !== 'function') return null;
+  const action = active.getAttribute('data-action') || '';
+  const id = active.id || '';
+  if (!action && !id) return null;
+  return {
+    action,
+    id,
+    vmId: active.getAttribute('data-vm-id') || '',
+    checkpointId: active.getAttribute('data-checkpoint-id') || ''
+  };
+}
+
+function revealDetailMenu(node) {
+  let current = node;
+  while (current) {
+    if (current.id === 'pcv-vm-more-menu' && current.hidden) {
+      current.hidden = false;
+      const parent = current.parentNode;
+      const toggle = parent && typeof parent.querySelector === 'function'
+        ? parent.querySelector('[data-action="vm-more-toggle"]')
+        : null;
+      if (toggle) toggle.setAttribute('aria-expanded', 'true');
+      return;
+    }
+    current = current.parentNode;
+  }
+}
+
+function restoreDetailFocus(root, marker) {
+  if (!root || !marker || !marker.action) return;
+  const nodes = root.querySelectorAll('[data-action]');
+  for (let index = 0; index < nodes.length; index += 1) {
+    const candidate = nodes[index];
+    if ((candidate.getAttribute('data-action') || '') !== marker.action) continue;
+    if (marker.id && (candidate.id || '') !== marker.id) continue;
+    if ((candidate.getAttribute('data-vm-id') || '') !== marker.vmId) continue;
+    if ((candidate.getAttribute('data-checkpoint-id') || '') !== marker.checkpointId) continue;
+    if (candidate.disabled) continue;
+    revealDetailMenu(candidate);
+    if (typeof candidate.focus === 'function') candidate.focus();
+    return;
+  }
+}
+
 function renderVmDetail() {
+  const focusMarker = els && els.vmDetailContent ? detailFocusMarker(els.vmDetailContent) : null;
   const vm = state.selectedVm;
   if (!vm) {
     els.vmDetailTitle.textContent = t('vm.detail.none_title');
@@ -1104,6 +1177,7 @@ function renderVmDetail() {
     </div>
     <div data-pcv-tab-source="jobs"></div>`;
   mountVmDetailTabs(els.vmDetailContent, vmId);
+  restoreDetailFocus(els.vmDetailContent, focusMarker);
 }
 
 function renderExportImportReadback(vm, vmId, actionDisabled = '') {
@@ -1168,18 +1242,25 @@ function renderCheckpointScheduleReadback(vm, vmId, actionDisabled = '') {
   const capacityBlocked = enabled && retention != null && Number.isFinite(Number(retention)) && count >= Number(retention);
   const statusLabel = capacityBlocked ? t('vm.checkpoint.schedule.status.blocked') : checkpointScheduleStatusText(status);
   const id = pcvEscapeHtml(vmId);
+  const draft = state.checkpointScheduleDraft && String(state.checkpointScheduleDraft.vm_id) === String(vmId)
+    ? state.checkpointScheduleDraft
+    : null;
+  const intervalValue = draft && draft.interval_minutes != null ? String(draft.interval_minutes) : '';
+  const retentionValue = draft && draft.retention_max != null ? String(draft.retention_max) : '';
+  const lastRun = localMinuteMarkup(schedule.last_enqueued_at);
+  const nextRun = localMinuteMarkup(schedule.next_due_at);
   return `<div class="checkpoint-schedule-readback">
       <div class="diagnostics-grid">
         <div class="diagnostics-fact"><span class="muted">${pcvEscapeHtml(t('vm.checkpoint.schedule.enabled'))}</span><strong>${pcvEscapeHtml(enabled ? t('vm.checkpoint.schedule.on') : t('vm.checkpoint.schedule.off'))}</strong></div>
         <div class="diagnostics-fact"><span class="muted">${pcvEscapeHtml(t('vm.checkpoint.schedule.status'))}</span><strong>${pcvEscapeHtml(statusLabel)}</strong></div>
         <div class="diagnostics-fact"><span class="muted">${pcvEscapeHtml(t('vm.checkpoint.schedule.interval'))}</span><strong>${pcvEscapeHtml(formatObjectValue(schedule.interval_minutes))}</strong></div>
         <div class="diagnostics-fact"><span class="muted">${pcvEscapeHtml(t('vm.checkpoint.schedule.retention'))}</span><strong>${pcvEscapeHtml(formatObjectValue(retention))}</strong></div>
-        <div class="diagnostics-fact"><span class="muted">${pcvEscapeHtml(t('vm.checkpoint.schedule.last'))}</span><strong>${pcvEscapeHtml(formatObjectValue(schedule.last_enqueued_at))}</strong></div>
-        <div class="diagnostics-fact"><span class="muted">${pcvEscapeHtml(t('vm.checkpoint.schedule.next'))}</span><strong>${pcvEscapeHtml(formatObjectValue(schedule.next_due_at))}</strong></div>
+        <div class="diagnostics-fact"><span class="muted">${pcvEscapeHtml(t('vm.checkpoint.schedule.last'))}</span><strong${lastRun.title}>${lastRun.text}</strong></div>
+        <div class="diagnostics-fact"><span class="muted">${pcvEscapeHtml(t('vm.checkpoint.schedule.next'))}</span><strong${nextRun.title}>${nextRun.text}</strong></div>
       </div>
       <form class="vm-resource-form checkpoint-schedule-form" data-action="checkpoint-schedule" data-vm-id="${id}">
-        <input name="interval_minutes" type="number" min="60" max="10080" step="1" placeholder="${pcvEscapeHtml(t('vm.checkpoint.schedule.help_interval'))}" aria-label="${pcvEscapeHtml(t('vm.checkpoint.schedule.interval'))}"${actionDisabled}>
-        <input name="retention_max" type="number" min="1" max="32" step="1" placeholder="${pcvEscapeHtml(t('vm.checkpoint.schedule.help_retention'))}" aria-label="${pcvEscapeHtml(t('vm.checkpoint.schedule.retention'))}"${actionDisabled}>
+        <input name="interval_minutes" type="number" min="60" max="10080" step="1" value="${pcvEscapeHtml(intervalValue)}" placeholder="${pcvEscapeHtml(t('vm.checkpoint.schedule.help_interval'))}" aria-label="${pcvEscapeHtml(t('vm.checkpoint.schedule.interval'))}"${actionDisabled}>
+        <input name="retention_max" type="number" min="1" max="32" step="1" value="${pcvEscapeHtml(retentionValue)}" placeholder="${pcvEscapeHtml(t('vm.checkpoint.schedule.help_retention'))}" aria-label="${pcvEscapeHtml(t('vm.checkpoint.schedule.retention'))}"${actionDisabled}>
         <button type="submit" data-action="checkpoint-schedule-preview"${actionDisabled}>${pcvEscapeHtml(t('vm.checkpoint.schedule.preview'))}</button>
         <button type="submit" data-action="checkpoint-schedule-set"${actionDisabled}>${pcvEscapeHtml(t('vm.checkpoint.schedule.save'))}</button>
         <button type="button" class="danger-button" data-action="checkpoint-schedule-clear" data-vm-id="${id}"${actionDisabled}>${pcvEscapeHtml(t('vm.checkpoint.schedule.clear'))}</button>
@@ -1237,12 +1318,12 @@ function renderCheckpointList(vmId) {
     const checkpointDisabled = isCheckpointActionPending(vmId, checkpointId) || !canOperate || templateLocked ? ' disabled' : '';
     const id = pcvEscapeHtml(vmId);
     const cp = pcvEscapeHtml(checkpointId);
-    const created = checkpoint?.created_at || checkpoint?.creation_time || checkpoint?.created;
+    const created = localMinuteMarkup(checkpoint?.created_at || checkpoint?.creation_time || checkpoint?.created);
     return `<tr>
       <td>${pcvEscapeHtml(getCheckpointName(checkpoint))}</td>
-      <td>${pcvEscapeHtml(formatObjectValue(created))}</td>
+      <td class="pcv-checkpoint-created"${created.title}>${created.text}</td>
       <td class="pcv-checkpoint-actions">
-        <button type="button" data-action="checkpoint-restore" data-vm-id="${id}" data-checkpoint-id="${cp}"${checkpointDisabled}>${pcvEscapeHtml(t('vm.checkpoint.restore'))}</button>
+        <button type="button" data-action="checkpoint-restore" data-vm-id="${id}" data-checkpoint-id="${cp}" title="${checkpointRestoreBlocked(state.selectedVm) ? pcvEscapeHtml(t('vm.checkpoint.restore.poweroff')) : ''}"${checkpointDisabled}>${pcvEscapeHtml(t('vm.checkpoint.restore'))}</button>
         <button type="button" class="danger-button" data-action="checkpoint-delete" data-vm-id="${id}" data-checkpoint-id="${cp}"${checkpointDisabled}>${pcvEscapeHtml(t('vm.checkpoint.delete'))}</button>
       </td>
     </tr>`;
@@ -2058,7 +2139,7 @@ async function queueVmDelete(vmId) {
   const vmName = getVmName(vm);
   const accepted = await PCV.components.confirmDialog({
     title: t('vm.delete.title'),
-    message: t('vm.delete.message', { name: vmName, checkpoints: String(vmCheckpointCount(vm)) }),
+    message: vmDeleteMessage(vm),
     confirmLabel: t('vm.delete.confirm_label'),
     cancelLabel: t('ui.confirm.cancel'),
     danger: true,
@@ -2113,20 +2194,28 @@ async function queueCheckpointCreate(vmId, checkpointName) {
   }
 }
 
+function checkpointRestoreBlocked(vm) {
+  const power = String((typeof getVmState === 'function' ? getVmState(vm) : '') || '').trim().toLowerCase();
+  return power !== '' && power !== 'off' && power !== 'stopped' && power !== 'saved';
+}
+
 async function queueCheckpointRestore(vmId, checkpointId) {
   requireRbac('operate', t('vm.rbac.checkpoint_restore'));
   const vm = state.selectedVm || (typeof findCachedVm === 'function' ? findCachedVm(vmId) : null);
+  const blocked = checkpointRestoreBlocked(vm);
   const running = typeof isRunningVmState === 'function' && isRunningVmState(typeof getVmState === 'function' ? getVmState(vm) : '');
   const name = checkpointLabel(checkpointId);
   if (!PCV.components || typeof PCV.components.confirmDialog !== 'function') return;
   const accepted = await PCV.components.confirmDialog({
     title: t('vm.checkpoint.restore.title'),
-    message: running ? t('vm.checkpoint.restore.running', { name }) : t('vm.checkpoint.restore.message', { name }),
+    message: blocked
+      ? (running ? t('vm.checkpoint.restore.running', { name }) : t('vm.checkpoint.restore.poweroff'))
+      : t('vm.checkpoint.restore.message', { name }),
     confirmLabel: t('vm.checkpoint.restore'),
     cancelLabel: t('ui.confirm.cancel'),
     danger: true
   });
-  if (!accepted) return;
+  if (!accepted || blocked) return;
   state.checkpointPending = true;
   setCheckpointActionPending(vmId, checkpointId, 'restore');
   state.error = null;

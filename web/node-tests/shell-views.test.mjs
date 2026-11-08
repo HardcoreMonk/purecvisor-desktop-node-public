@@ -643,6 +643,30 @@ test("sidebar groups keep the design order and the account item follows account.
   assert.equal(item().hidden, false);
 });
 
+test("BL-0031 the top KPI strip uses loaded VM host job alert and evidence counts", () => {
+  resetSession(env);
+  env.state.lastRefreshedAt = 1;
+  env.state.partialFailures = [];
+  env.state.vms = [
+    { id: "a", name: "a", state: "Running" },
+    { id: "b", name: "b", state: "Off" }
+  ];
+  env.state.host = { supported: true };
+  env.state.opsSummary = { batch_evidence: { status: "available", configured: true, latest: {} } };
+  env.state.trackedJobs = [];
+  env.state.serverJobs = [];
+  env.render();
+  const big = [...env.document.querySelectorAll("#shell-statusbar .seg-big")].map((node) => node.textContent);
+  assert.equal(big.includes("—"), false, big.join("|"));
+  assert.equal(big[0], "1");
+  assert.match(env.document.getElementById("shell-statusbar").textContent, /\/ 2/);
+  env.state.lastRefreshedAt = null;
+  env.state.vms = [];
+  env.state.host = null;
+  env.state.opsSummary = null;
+  if (env.PCV.shell.syncFromOperatorState) env.PCV.shell.syncFromOperatorState();
+});
+
 test("one render paints the account list only on the accounts view", () => {
   resetSession(env);
   env.state.accountDirectory = [{ username: "ada", role: "operator", enabled: true }];
@@ -1072,4 +1096,75 @@ test("service bearer and loopback sessions hide the password change entry", () =
   env.state.apiToken = "";
   env.state.authAccessToken = "";
   env.state.authSession = null;
+});
+
+function bootVmDeleteList(nextJob) {
+  const sandbox = createEnv();
+  const listError = new Error("parity");
+  listError.code = "PCV_NATIVE_VM_LIST_SUMMARY_PARITY_INCOMPLETE";
+  sandbox.listCalls = 0;
+  sandbox.loadOpsSummary = async () => {};
+  sandbox.loadServerJobs = async () => {};
+  sandbox.refreshSelectedVm = async () => {};
+  sandbox.loadVms = async () => {
+    sandbox.listCalls += 1;
+    throw listError;
+  };
+  sandbox.desktopApi = {
+    getJob: async () => nextJob,
+    listVms: async () => { throw listError; }
+  };
+  sandbox.state.vms = [
+    { id: "keep-id", name: "keep" },
+    { id: "gone-id", name: "probe" }
+  ];
+  sandbox.state.selectedVmId = "gone-id";
+  sandbox.state.selectedVm = { id: "gone-id", name: "probe" };
+  sandbox.state.selectedVmCheckpoints = [{ name: "cp" }];
+  sandbox.state.selectedVmReadbacks = { vm_id: "probe" };
+  sandbox.state.selectedVmQosControl = { pending: true };
+  sandbox.state.jobPollDelayMs = 2000;
+  sandbox.state.pollTimer = null;
+  sandbox.state.error = null;
+  return sandbox;
+}
+
+test("BL-0034 drops the deleted VM row and selection when vm.delete succeeds and the next list fails", async () => {
+  const succeeded = { job_id: "job-1", operation: "vm.delete", status: "succeeded", params: { name: "probe" } };
+  const sandbox = bootVmDeleteList(succeeded);
+  sandbox.state.trackedJobs = [{ job_id: "job-1", operation: "vm.delete", status: "queued", params: { name: "probe" } }];
+
+  await sandbox.runPollTick();
+
+  assert.equal(sandbox.listCalls, 1);
+  assert.equal(sandbox.state.vms.map((row) => row.name).join(","), "keep");
+  assert.equal(sandbox.state.selectedVmId, "");
+  assert.equal(sandbox.state.selectedVm, null);
+  assert.equal(sandbox.state.selectedVmCheckpoints.length, 0);
+  assert.equal(sandbox.state.selectedVmReadbacks, null);
+  assert.equal(sandbox.state.selectedVmQosControl, null);
+  assert.equal(sandbox.state.error.code, "PCV_NATIVE_VM_LIST_SUMMARY_PARITY_INCOMPLETE");
+});
+
+test("BL-0034 keeps the VM row when the tracked vm.delete does not succeed", async () => {
+  const failed = { job_id: "job-1", operation: "vm.delete", status: "failed", params: { name: "probe" } };
+  const sandbox = bootVmDeleteList(failed);
+  sandbox.state.trackedJobs = [{ job_id: "job-1", operation: "vm.delete", status: "queued", params: { name: "probe" } }];
+
+  await sandbox.runPollTick();
+
+  assert.equal(sandbox.state.vms.map((row) => row.name).join(","), "keep,probe");
+  assert.equal(sandbox.state.selectedVmId, "gone-id");
+  assert.equal(sandbox.state.selectedVm.name, "probe");
+});
+
+test("BL-0034 keeps the VM row when a different tracked job succeeds", async () => {
+  const started = { job_id: "job-2", operation: "vm.start", status: "succeeded", params: { name: "probe" } };
+  const sandbox = bootVmDeleteList(started);
+  sandbox.state.trackedJobs = [{ job_id: "job-2", operation: "vm.start", status: "queued", params: { name: "probe" } }];
+
+  await sandbox.runPollTick();
+
+  assert.equal(sandbox.state.vms.map((row) => row.name).join(","), "keep,probe");
+  assert.equal(sandbox.state.selectedVmId, "gone-id");
 });

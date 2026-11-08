@@ -95,6 +95,42 @@ function pcvTrackJob(job) {
   else state.trackedJobs.unshift(job);
   state.trackedJobs = state.trackedJobs.slice(0, JOB_HISTORY_LIMIT);
   saveTrackedJobsToStorage();
+  dropSucceededVmDeleteFromClientList(job);
+}
+
+// vm.delete가 succeeded이면 다음 vm.list가 실패해도 그 VM 행과 선택을 바로 뺀다.
+function dropSucceededVmDeleteFromClientList(job) {
+  if (!job || job.operation !== 'vm.delete') return;
+  if (String(job.status || '').toLowerCase() !== 'succeeded') return;
+  const params = job.params && typeof job.params === 'object' ? job.params : {};
+  const target = String(params.name || params.vm_name || '').trim();
+  if (!target) return;
+  const rows = Array.isArray(state.vms) ? state.vms : [];
+  const removed = [];
+  state.vms = rows.filter((vm) => {
+    const id = String(vm && vm.id || '');
+    const name = String(vm && vm.name || '');
+    if (id !== target && name !== target) return true;
+    removed.push(vm);
+    return false;
+  });
+  const selectedId = String(state.selectedVmId || '');
+  const selected = state.selectedVm || null;
+  const selectedName = selected ? String(selected.name || '') : '';
+  const selectedObjectId = selected ? String(selected.id || '') : '';
+  const removedSelected = removed.some((vm) => {
+    const id = String(vm && vm.id || '');
+    const name = String(vm && vm.name || '');
+    return (id && (id === selectedId || id === selectedObjectId)) ||
+      (name && (name === selectedId || name === selectedName));
+  });
+  if (selectedId === target || selectedName === target || selectedObjectId === target || removedSelected) {
+    state.selectedVmId = '';
+    state.selectedVm = null;
+    state.selectedVmCheckpoints = [];
+    state.selectedVmReadbacks = null;
+    state.selectedVmQosControl = null;
+  }
 }
 
 async function pollTrackedJobs(options = {}) {
@@ -157,9 +193,9 @@ function startPolling() {
 
 async function cancelJob(jobId, cancelScope = 'job') {
   if (cancelScope === 'running-guest-execution') {
-    requireRbac('operate', 'running guest execution cancel');
+    requireRbac('operate', t('copy.rbac.guest_exec_cancel'));
   } else {
-    requireRbac('operate', 'job cancel');
+    requireRbac('operate', t('copy.rbac.job_cancel'));
   }
   const job = await desktopApi.cancelJob(jobId);
   pcvTrackJob(job);
@@ -167,7 +203,7 @@ async function cancelJob(jobId, cancelScope = 'job') {
 }
 
 async function retryJob(jobId) {
-  requireRbac('operate', 'job retry');
+  requireRbac('operate', t('copy.rbac.job_retry'));
   const job = await desktopApi.retryJob(jobId);
   pcvTrackJob(job);
   startPolling();
@@ -175,7 +211,7 @@ async function retryJob(jobId) {
 }
 
 async function reconcileJob(jobId) {
-  requireRbac('operate', 'job reconciliation');
+  requireRbac('operate', t('copy.rbac.job_reconcile'));
   const job = await desktopApi.reconcileJob(jobId);
   pcvTrackJob(job);
   render();

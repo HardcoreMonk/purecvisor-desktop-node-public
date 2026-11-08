@@ -22,13 +22,13 @@ function getDiagnosticActionPolicy(error = state.diagnosticBundleError) {
   const retryable = Boolean(error?.retryable || timedOut || status >= 500 || auth);
   const guide = timedOut
     ? 'timeout: retry after the listener is responsive or after the Retry-After hint.'
-    : guideByStatus[status] || (code ? `${code}: review problem-details and retry when safe.` : 'Ready for authenticated create/download.');
+    : guideByStatus[status] || (code ? `${code}: review problem-details and retry when safe.` : t('copy.mon.diag_ready'));
 
   return {
     createDisabled: pending || unsupported,
     downloadDisabled: pending || !bundleId || unsupported,
     retryVisible: Boolean(error && retryable && !unsupported),
-    statusLabel: pending || (unsupported ? 'API unsupported' : auth ? 'Auth required' : error ? 'Problem details' : 'API ready'),
+    statusLabel: pending || (unsupported ? t('copy.mon.api_unsupported') : auth ? t('copy.mon.auth_required') : error ? t('copy.mon.problem') : t('copy.mon.api_ready')),
     guide
   };
 }
@@ -36,7 +36,7 @@ function getDiagnosticActionPolicy(error = state.diagnosticBundleError) {
 function buildPartialRefreshError(failures) {
   return normalizeError({
     code: 'PCV_PARTIAL_REFRESH_DEGRADED',
-    message: 'Some Desktop Node API panels failed while the console stayed online.',
+    message: t('copy.mon.panels_failed'),
     detail: failures.map(formatErrorSummary).join(' | '),
     retryable: failures.some((failure) => failure.retryable)
   });
@@ -71,15 +71,15 @@ function getPriorityItems() {
     seen.add(normalizedKey);
     items.push(item);
   };
-  const hostReadiness = String(getHostReadinessLabel()).toLowerCase();
+  const hostBlocked = typeof hostReadinessBlocked === 'function' && hostReadinessBlocked();
   const vmCounts = getSummaryVmCounts();
   const jobCounts = getSummaryJobCounts();
   if (state.summaryError) {
-    pushUnique({ tone: 'warn', label: 'Ops summary unavailable', detail: formatErrorSummary(state.summaryError) }, state.summaryError.code);
+    pushUnique({ tone: 'warn', label: t('copy.mon.ops_unavailable'), detail: formatErrorSummary(state.summaryError) }, state.summaryError.code);
   }
   for (const error of asArray(state.opsSummary?.errors)) {
     const issue = normalizeSummaryIssue(error);
-    pushUnique({ tone: 'error', label: 'Ops summary degraded', detail: `${issue.code}: ${issue.message}` }, issue.code);
+    pushUnique({ tone: 'error', label: t('copy.mon.ops_degraded'), detail: `${issue.code}: ${issue.message}` }, issue.code);
   }
   for (const signal of asArray(state.opsSummary?.signals)) {
     const key = summarySignalKey(signal);
@@ -89,19 +89,19 @@ function getPriorityItems() {
     if (key === 'summary-errors' && asArray(state.opsSummary?.errors).length > 0) continue;
     const issue = normalizeSummaryIssue(signal, key || 'PCV_OPS_SUMMARY_SIGNAL');
     const priorityTone = tone === 'error' || tone === 'critical' || tone === 'fail' || tone === 'failed' ? 'error' : 'warn';
-    pushUnique({ tone: priorityTone, label: issue.message || 'Ops summary signal', detail: issue.detail || issue.code }, issue.code);
+    pushUnique({ tone: priorityTone, label: issue.message || t('copy.mon.ops_signal'), detail: issue.detail || issue.code }, issue.code);
   }
-  if (hostReadiness.includes('need') || hostReadiness.includes('fail') || hostReadiness.includes('error')) {
-    pushUnique({ tone: 'error', label: 'Host readiness needs attention', detail: 'Check Hyper-V support, admin context, VMMS, and Default Switch state.' }, 'host-readiness');
+  if (hostBlocked) {
+    pushUnique({ tone: 'error', label: t('copy.mon.host_attention'), detail: t('copy.mon.host_check') }, 'host-readiness');
   }
   if (jobCounts.failed > 0) {
-    pushUnique({ tone: 'error', label: 'Failed jobs', detail: `${jobCounts.failed} failed job(s) need review.` }, 'failed-jobs');
+    pushUnique({ tone: 'error', label: t('copy.mon.failed_jobs'), detail: t('copy.mon.failed_detail', { count: jobCounts.failed }) }, 'failed-jobs');
   }
   if (vmCounts.checkpoint_warnings > 0) {
-    pushUnique({ tone: 'warn', label: 'Checkpoint warnings', detail: `${vmCounts.checkpoint_warnings} VM checkpoint warning(s) need review.` }, 'checkpoint-warnings');
+    pushUnique({ tone: 'warn', label: t('copy.mon.checkpoint_warnings'), detail: t('copy.mon.checkpoint_detail', { count: vmCounts.checkpoint_warnings }) }, 'checkpoint-warnings');
   }
   if (String(getRuntimeExposure()).toLowerCase().includes('lan')) {
-    pushUnique({ tone: 'warn', label: 'LAN exposure', detail: 'Confirm explicit LAN approval and token source proof.' }, 'lan-exposure');
+    pushUnique({ tone: 'warn', label: t('copy.mon.lan'), detail: t('copy.mon.lan_confirm') }, 'lan-exposure');
   }
   return items;
 }
@@ -114,10 +114,10 @@ function renderMetrics() {
   // also draw on browser-tracked jobs, which remain real without the server.
   const vmsLoaded = hasRefreshedOperation('vm.list');
   els.metricGrid.innerHTML = [
-    ['Host', getHostReadinessLabel()],
-    ['VMs', vmsLoaded ? vmCounts.total : '—'],
-    ['Running', vmsLoaded ? vmCounts.running : '—'],
-    ['Active Jobs', jobCounts.active]
+    [t('copy.mon.host'), getHostReadinessLabel()],
+    [t('copy.mon.vms'), vmsLoaded ? vmCounts.total : '—'],
+    [t('copy.mon.running'), vmsLoaded ? vmCounts.running : '—'],
+    [t('copy.mon.active_jobs'), jobCounts.active]
   ].map(([label, value]) => `<div class="metric"><span class="muted">${pcvEscapeHtml(label)}</span><strong>${pcvEscapeHtml(value)}</strong></div>`).join('');
 }
 
@@ -147,18 +147,18 @@ function renderOpsCockpit() {
   const evidence = getBatchEvidence();
   const vmsLoaded = hasRefreshedOperation('vm.list');
   const cards = [
-    ['Host readiness', getHostReadinessLabel(), 'Hyper-V support, admin context, and service/API availability.'],
-    ['VMs total/running', vmsLoaded ? `${vmCounts.total} / ${vmCounts.running}` : '—', 'Inventory count from ops summary with local inventory fallback.'],
-    ['Checkpoint warnings', vmsLoaded ? vmCounts.checkpoint_warnings : '—', 'VMs with checkpoint warning signals from ops summary.'],
-    ['Jobs active/failed', `${jobCounts.active} / ${jobCounts.failed}`, 'Current server and browser-visible job activity.'],
-    ['Exposure / token', `${getRuntimeExposure()} / ${getTokenPolicyLabel()}`, 'Loopback-first listener policy and token storage posture.'],
+    [t('copy.mon.host_readiness'), getHostReadinessLabel(), t('copy.mon.host_readiness_detail')],
+    [t('copy.mon.vms_total'), vmsLoaded ? `${vmCounts.total} / ${vmCounts.running}` : '—', t('copy.mon.vms_total_detail')],
+    [t('copy.mon.checkpoint_warnings'), vmsLoaded ? vmCounts.checkpoint_warnings : '—', t('copy.mon.checkpoint_card_detail')],
+    [t('copy.mon.jobs_ratio'), `${jobCounts.active} / ${jobCounts.failed}`, t('copy.mon.jobs_ratio_detail')],
+    [t('copy.mon.exposure'), `${getRuntimeExposure()} / ${getTokenPolicyLabel()}`, t('copy.mon.exposure_detail')],
     {
-      label: 'Latest evidence',
+      label: t('copy.mon.latest_evidence'),
       valueHtml: renderEvidenceStatusBadge(evidence),
       detail: evidenceDashboardDetail(evidence)
     },
     {
-      label: 'Current evidence',
+      label: t('copy.mon.current_evidence'),
       valueHtml: renderCurrentEvidenceStatusBadge(),
       detail: currentEvidenceDashboardDetail()
     }
@@ -170,7 +170,7 @@ function renderOpsCockpit() {
 
   const priorityItems = getPriorityItems();
   if (priorityItems.length === 0) {
-    els.priorityPanel.innerHTML = '<div class="priority-empty">No high-priority warnings.</div>';
+    els.priorityPanel.innerHTML = `<div class="priority-empty">${pcvEscapeHtml(t('copy.mon.priority_empty'))}</div>`;
     return;
   }
   els.priorityPanel.innerHTML = priorityItems.map((item) => `
@@ -217,8 +217,8 @@ function renderHostOpsLifecycleBucketTable() {
   const contractKey = descriptor.lifecycle_bucket_contract_key || descriptor.lifecycleBucketContractKey || 'bucket contract not reported';
   const mutationPerformed = descriptor.host_mutation_performed ?? descriptor.hostMutationPerformed;
   const mutationLabel = mutationPerformed === true
-    ? 'Host mutation: reported by evidence'
-    : 'Host mutation: not performed by diagnostics view';
+    ? t('copy.mon.mutation_reported')
+    : t('copy.mon.mutation_diagnostics');
 
   if (!buckets.length) {
     return `<div class="diagnostics-result hostops-lifecycle-buckets">
@@ -271,11 +271,11 @@ function renderDiagnosticsBundle() {
   const createDisabled = policy.createDisabled || !canCreate ? 'disabled aria-disabled="true"' : '';
   const downloadDisabled = policy.downloadDisabled || !canDownload ? 'disabled aria-disabled="true"' : '';
   const facts = [
-    ['Mode', 'API action'],
+    ['Mode', t('copy.mon.api_action')],
     ['Mutation', 'no host mutation'],
-    ['Output root', DIAGNOSTIC_BUNDLE_ROOT],
+    [t('copy.mon.output_root'), DIAGNOSTIC_BUNDLE_ROOT],
     ['Route', DESKTOP_NODE_API_ROUTES.diagnosticBundles],
-    ['List route', DESKTOP_NODE_API_ROUTES.diagnosticBundlesPage(10, 0)],
+    [t('copy.mon.list_route'), DESKTOP_NODE_API_ROUTES.diagnosticBundlesPage(10, 0)],
     ['CollectDiagnostics', 'server-side compatible archive'],
     ['Redaction', 'token values and Authorization headers redacted']
   ];
@@ -296,8 +296,8 @@ function renderDiagnosticsBundle() {
   els.diagnosticsPanel.innerHTML = `<div class="diagnostics-card">
     <div class="diagnostics-header">
       <div>
-        <span class="muted">Support artifact</span>
-        <strong>Diagnostic Bundle</strong>
+        <span class="muted">${pcvEscapeHtml(t('copy.mon.bundle_kicker'))}</span>
+        <strong>${pcvEscapeHtml(t('copy.mon.bundle_title'))}</strong>
       </div>
       <span class="status-badge ${pending || state.diagnosticBundleError ? 'warn' : 'ok'}">${pcvEscapeHtml(pending || policy.statusLabel)}</span>
     </div>
@@ -305,7 +305,7 @@ function renderDiagnosticsBundle() {
       ${facts.map(([label, value]) => `<div class="diagnostics-fact"><span class="muted">${pcvEscapeHtml(label)}</span><strong>${pcvEscapeHtml(value)}</strong></div>`).join('')}
     </div>
     <div class="diagnostics-actions">
-      <button type="button" data-action="diagnostic-create" ${createDisabled}>Create bundle</button>
+      <button type="button" data-action="diagnostic-create" ${createDisabled}>${pcvEscapeHtml(t('copy.mon.create_bundle'))}</button>
       <button type="button" data-action="diagnostic-download" data-bundle-id="${pcvEscapeHtml(bundleId)}" ${downloadDisabled}>Download latest</button>
       ${policy.retryVisible ? '<button type="button" data-action="diagnostic-retry">Retry action</button>' : ''}
       <span class="muted">Authenticated create/download only; command strings and token values are not rendered.</span>
@@ -332,10 +332,10 @@ function renderTokenRotation() {
   const browserToken = state.apiToken.trim() ? 'browser token present' : 'browser token empty';
   const facts = [
     ['Mode', 'rotation handoff'],
-    ['Service token', 'no service token mutation'],
-    ['Protected token file', TOKEN_PROTECTED_FILE],
-    ['Browser token', browserToken],
-    ['Token-required route status', tokenRequiredRouteStatus()],
+    [t('copy.mon.service_token'), 'no service token mutation'],
+    [t('copy.mon.protected_token'), TOKEN_PROTECTED_FILE],
+    [t('copy.mon.browser_token'), browserToken],
+    [t('copy.mon.token_route'), tokenRequiredRouteStatus()],
     ['Storage', formatPolicyValue(storage)],
     ['Exposure', formatPolicyValue(exposure)]
   ];
@@ -343,8 +343,8 @@ function renderTokenRotation() {
   els.tokenRotationPanel.innerHTML = `<div class="token-rotation-card">
     <div class="diagnostics-header">
       <div>
-        <span class="muted">Auth lifecycle</span>
-        <strong>Token Rotation</strong>
+        <span class="muted">${pcvEscapeHtml(t('copy.mon.token_kicker'))}</span>
+        <strong>${pcvEscapeHtml(t('copy.mon.token_title'))}</strong>
       </div>
       <span class="status-badge warn">operator handoff</span>
     </div>
@@ -352,7 +352,7 @@ function renderTokenRotation() {
       ${facts.map(([label, value]) => `<div class="diagnostics-fact"><span class="muted">${pcvEscapeHtml(label)}</span><strong>${pcvEscapeHtml(value)}</strong></div>`).join('')}
     </div>
     <div class="token-rotation-actions">
-      <button type="button" data-action="clear-browser-token">Clear browser token</button>
+      <button type="button" data-action="clear-browser-token">${pcvEscapeHtml(t('copy.mon.clear_browser_token'))}</button>
       <span class="muted">Token values and Authorization headers are not rendered.</span>
     </div>
     ${state.tokenActionMessage ? `<div class="diagnostics-result"><span class="muted">Last browser action</span><strong>${pcvEscapeHtml(state.tokenActionMessage)}</strong></div>` : ''}
@@ -377,9 +377,9 @@ function renderAccountSession() {
   const injectLoginForm = !(needsAuthGate() && state.activeView !== 'troubleshooting');
   const loginFormHtml = injectLoginForm
     ? `<form id="account-login-form" class="account-login-form" autocomplete="off">
-      <label>Username<input id="account-username" name="username" type="text" autocomplete="username" aria-label="account username"></label>
-      <label>Password<input id="account-password" name="password" type="password" autocomplete="current-password" aria-label="account password"></label>
-      <button type="submit"${state.authPending ? ' disabled' : ''}>Login</button>
+      <label><span data-i18n="username">${pcvEscapeHtml(t('username'))}</span><input id="account-username" name="username" type="text" autocomplete="username" aria-label="${pcvEscapeHtml(t('username'))}"></label>
+      <label><span data-i18n="password">${pcvEscapeHtml(t('password'))}</span><input id="account-password" name="password" type="password" autocomplete="current-password" aria-label="${pcvEscapeHtml(t('password'))}"></label>
+      <button type="submit"${state.authPending ? ' disabled' : ''} data-i18n="login">${pcvEscapeHtml(t('login'))}</button>
     </form>`
     : '';
 
@@ -470,28 +470,28 @@ function buildMonitoringSignals() {
   const oldCheckpointWarnings = countSelectedOldCheckpointWarnings();
 
   return [
-    { key: 'service-api', label: 'Service/API', value: state.connectionState === 'connected' ? 'Connected' : 'Not connected', tone: state.connectionState === 'connected' ? 'ok' : 'warn' },
+    { key: 'service-api', label: 'Service/API', value: state.connectionState === 'connected' ? t('copy.mon.connected') : t('copy.mon.not_connected'), tone: state.connectionState === 'connected' ? 'ok' : 'warn' },
     { key: 'vmms', label: 'VMMS', value: formatPolicyValue(vmmsRunning), tone: vmmsRunning === true ? 'ok' : 'warn' },
-    { key: 'active-jobs', label: 'Active jobs', value: activeJobs, tone: activeJobs > 0 ? 'warn' : 'ok' },
-    { key: 'failed-jobs', label: 'Failed jobs', value: failedJobs, tone: failedJobs > 0 ? 'error' : 'ok' },
-    { key: 'checkpoint-warning', label: 'Checkpoint warnings', value: checkpointWarnings + oldCheckpointWarnings, tone: checkpointWarnings + oldCheckpointWarnings > 0 ? 'warn' : 'ok' },
-    { key: 'token-policy', label: 'Token policy', value: tokenStorage, tone: tokenStorage === 'none' ? 'warn' : 'ok' },
-    { key: 'lan-exposure', label: 'LAN exposure', value: exposure, tone: String(exposure).toLowerCase().includes('lan') ? 'warn' : 'ok' },
-    { key: 'route-timeout', label: 'Route timeout', value: routeTimeout === '-' ? '-' : `${routeTimeout}s`, tone: routeTimeout === '-' ? 'warn' : 'ok' },
-    { key: 'request-limit', label: 'Request limit', value: requestLimit === '-' ? '-' : `${requestLimit}/min`, tone: requestLimit === '-' ? 'warn' : 'ok' },
-    { key: 'burst-limit', label: 'Burst limit', value: burstLimit, tone: burstLimit === '-' ? 'warn' : 'ok' },
+    { key: 'active-jobs', label: t('copy.mon.active_jobs'), value: activeJobs, tone: activeJobs > 0 ? 'warn' : 'ok' },
+    { key: 'failed-jobs', label: t('copy.mon.failed_jobs'), value: failedJobs, tone: failedJobs > 0 ? 'error' : 'ok' },
+    { key: 'checkpoint-warning', label: t('copy.mon.checkpoint_warnings'), value: checkpointWarnings + oldCheckpointWarnings, tone: checkpointWarnings + oldCheckpointWarnings > 0 ? 'warn' : 'ok' },
+    { key: 'token-policy', label: t('copy.mon.token_policy'), value: tokenStorage, tone: tokenStorage === 'none' ? 'warn' : 'ok' },
+    { key: 'lan-exposure', label: t('copy.mon.lan'), value: exposure, tone: String(exposure).toLowerCase().includes('lan') ? 'warn' : 'ok' },
+    { key: 'route-timeout', label: t('copy.mon.route_timeout'), value: routeTimeout === '-' ? '-' : `${routeTimeout}s`, tone: routeTimeout === '-' ? 'warn' : 'ok' },
+    { key: 'request-limit', label: t('copy.mon.request_limit'), value: requestLimit === '-' ? '-' : `${requestLimit}/min`, tone: requestLimit === '-' ? 'warn' : 'ok' },
+    { key: 'burst-limit', label: t('copy.mon.burst_limit'), value: burstLimit, tone: burstLimit === '-' ? 'warn' : 'ok' },
     { key: 'retry-after', label: 'Retry-After', value: retryAfter === '-' ? '-' : `${retryAfter}s`, tone: retryAfter === '-' ? 'warn' : 'ok' }
   ];
 }
 
 function evidenceStatusMessage(status) {
   return {
-    not_configured: 'Batch evidence root is not configured.',
-    missing: 'Configured evidence root has no readable batch summary.',
-    degraded: 'Latest batch supervisor evidence is partial or malformed.',
-    unavailable: 'Batch evidence summary could not be read.',
-    available: 'Latest batch supervisor evidence is loaded.'
-  }[status] || 'Batch evidence summary could not be read.';
+    not_configured: t('copy.mon.evidence_not_configured'),
+    missing: t('copy.mon.evidence_missing'),
+    degraded: t('copy.mon.evidence_degraded'),
+    unavailable: t('copy.mon.evidence_unavailable'),
+    available: t('copy.mon.evidence_loaded')
+  }[status] || t('copy.mon.evidence_unavailable');
 }
 
 function renderEvidenceDashboard() {
@@ -717,16 +717,16 @@ function renderAuthGate() {
     return;
   }
   const code = state.authError?.code || 'PCV_AUTH_REQUIRED';
-  const message = state.authError?.message || 'Authorization bearer token is required.';
+  const message = state.authError?.message || t('copy.mon.auth_bearer');
   const formHtml = state.activeView === 'troubleshooting'
     ? ''
     : `<form id="account-login-form" class="account-login-form" autocomplete="off">
-        <label>Username<input id="account-username" name="username" type="text" autocomplete="username"></label>
-        <label>Password<input id="account-password" name="password" type="password" autocomplete="current-password"></label>
-        <button type="submit">Login</button>
+        <label><span data-i18n="username">${pcvEscapeHtml(t('username'))}</span><input id="account-username" name="username" type="text" autocomplete="username"></label>
+        <label><span data-i18n="password">${pcvEscapeHtml(t('password'))}</span><input id="account-password" name="password" type="password" autocomplete="current-password"></label>
+        <button type="submit" data-i18n="login">${pcvEscapeHtml(t('login'))}</button>
       </form>`;
   const gateHtml = `<div class="diagnostics-result error" data-auth-gate="true">
-    <span class="muted">Auth required</span>
+    <span class="muted">${pcvEscapeHtml(t('copy.mon.auth_required'))}</span>
     <strong>${pcvEscapeHtml(code)}</strong>
     <p>${pcvEscapeHtml(message)} Use the header api-token field or the account login form. Service tokens stay out of HTML.</p>
     ${formHtml}
@@ -738,6 +738,7 @@ function renderAuthGate() {
 
 function applyUiPreferences() {
   if (document.documentElement) {
+    if (state.theme === 'supanova') state.theme = 'supanova-cyan';
     document.documentElement.dataset.theme = state.theme;
     document.documentElement.lang = state.language;
   }
@@ -779,9 +780,9 @@ function buildCommandPaletteItems() {
       };
     });
   const commandItems = [
-    { id: 'command:refresh', label: 'Refresh all', detail: 'Reload current Desktop Node API state.', tone: 'info', command: 'refresh' },
-    { id: 'command:create-vm', label: 'Create VM', detail: 'Open the Windows-native VM create dialog.', tone: 'warn', command: 'open-create-vm' },
-    { id: 'command:clear-browser-state', label: 'Clear browser session', detail: 'Clear browser token, selected VM, diagnostics, and tracked jobs.', tone: 'warn', command: 'clear-browser-state' }
+    { id: 'command:refresh', label: t('copy.mon.refresh'), detail: t('copy.mon.refresh_detail'), tone: 'info', command: 'refresh' },
+    { id: 'command:create-vm', label: t('copy.dashboard.create'), detail: t('copy.mon.create_vm_detail'), tone: 'warn', command: 'open-create-vm' },
+    { id: 'command:clear-browser-state', label: t('copy.mon.clear_session'), detail: t('copy.mon.clear_session_detail'), tone: 'warn', command: 'clear-browser-state' }
   ];
   const vmItems = asArray(state.vms).slice(0, 20).map((vm) => ({
     id: `vm:${getVmId(vm)}`,
@@ -925,6 +926,7 @@ function render() {
   try { renderAccountSession(); } catch (e) { if (window._DEBUG) console.warn('render:renderAccountSession', e); }
   try { if (typeof paintAccountsView === 'function') paintAccountsView(); } catch (e) { if (window._DEBUG) console.warn('render:paintAccountsView', e); }
   try { if (window.PCV && PCV.shell && typeof PCV.shell.syncAccountNav === 'function') PCV.shell.syncAccountNav(); } catch (e) { if (window._DEBUG) console.warn('render:syncAccountNav', e); }
+  try { if (window.PCV && PCV.shell && typeof PCV.shell.syncFromOperatorState === 'function') PCV.shell.syncFromOperatorState(); } catch (e) { if (window._DEBUG) console.warn('render:shellKpi', e); }
   try { renderConsolePanel(); } catch (e) { if (window._DEBUG) console.warn('render:renderConsolePanel', e); }
   try { renderTokenRotation(); } catch (e) { if (window._DEBUG) console.warn('render:renderTokenRotation', e); }
   try { renderDiagnosticsBundle(); } catch (e) { if (window._DEBUG) console.warn('render:renderDiagnosticsBundle', e); }

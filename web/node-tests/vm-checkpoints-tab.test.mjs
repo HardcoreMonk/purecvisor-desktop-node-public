@@ -209,11 +209,15 @@ class Fragment extends Node {
   }
 }
 
-function walk(node, visit) {
+function walk(node, visit, seen) {
+  if (!seen) seen = new Set();
+  if (!node || seen.has(node)) return;
+  seen.add(node);
+  if (seen.size > 20000) throw new Error("walk cap");
   for (const child of node.childNodes || []) {
     if (child.nodeType === 1) {
       visit(child);
-      walk(child, visit);
+      walk(child, visit, seen);
     }
   }
 }
@@ -526,7 +530,9 @@ test("checkpoint list shows name, created time, restore, and delete", () => {
   const headers = panel.querySelectorAll("th").map((cell) => cell.textContent);
   assert.deepEqual(headers, ["이름", "만든 시각", "조작"]);
   assert.equal(panel.textContent.includes("manual-1"), true);
-  assert.equal(panel.textContent.includes("2026-11-05T08:00:00Z"), true);
+  const createdCell = panel.querySelector(".pcv-checkpoint-created");
+  assert.equal(createdCell.getAttribute("title"), "2026-11-05T08:00:00Z");
+  assert.equal(createdCell.textContent, localMinute("2026-11-05T08:00:00Z"));
   assert.equal(panel.querySelector('[data-action="checkpoint-restore"]').textContent, "복원…");
   assert.equal(panel.querySelector('[data-action="checkpoint-delete"]').textContent, "삭제…");
   assert.equal(headers.includes("종류"), false);
@@ -581,6 +587,83 @@ test("create modal blocks empty, invalid, and duplicate names, then posts the ac
   assert.equal(client.slice(at, at + 400).includes("JSON.stringify({ name })"), true);
 });
 
+test("BL-0033 restore on a running VM does not send and says to power off first", async () => {
+  const sandbox = createEnv();
+  install(sandbox, { id: "id-1", name: "alpha", state: "Running" }, {
+    checkpoints: [{ name: "manual-1", created_at: "2026-11-05T08:00:00Z" }]
+  });
+  sandbox.renderVmDetail();
+  const button = sandbox.els.vmDetailContent.querySelector('[data-action="checkpoint-restore"]');
+  assert.equal(button.getAttribute("title"), "VM을 끈 뒤 복원하세요.");
+  const seen = [];
+  sandbox.PCV.components.confirmDialog = async (opts) => {
+    seen.push(opts);
+    return true;
+  };
+  const restores = [];
+  sandbox.desktopApi.restoreCheckpoint = async (vmId, checkpointId) => {
+    restores.push({ vmId, checkpointId });
+    return { job_id: "job-restore", status: "queued" };
+  };
+  sandbox.desktopApi.getJob = async (id) => ({ job_id: id, status: "succeeded" });
+  await sandbox.queueCheckpointRestore("id-1", "manual-1");
+  assert.match(seen[0].message, /VM을 끈 뒤 복원하세요/);
+  assert.equal(restores.length, 0);
+  sandbox.state.selectedVm = { id: "id-1", name: "alpha", state: "Off" };
+  sandbox.renderVmDetail();
+  const offButton = sandbox.els.vmDetailContent.querySelector('[data-action="checkpoint-restore"]');
+  assert.equal(offButton.getAttribute("title") || "", "");
+  await sandbox.queueCheckpointRestore("id-1", "manual-1");
+  assert.equal(restores.length, 1);
+  sandbox.state.selectedVm = { id: "id-1", name: "alpha", state: "saved" };
+  await sandbox.queueCheckpointRestore("id-1", "manual-1");
+  assert.equal(restores.length, 2);
+  sandbox.state.selectedVm = { id: "id-1", name: "alpha", state: "paused" };
+  await sandbox.queueCheckpointRestore("id-1", "manual-1");
+  assert.equal(restores.length, 2);
+  assert.match(seen[seen.length - 1].message, /VM을 끈 뒤 복원하세요/);
+});
+
+test("BL-0027 detail re-render restores focus to the same data-action and id", () => {
+  const sandbox = createEnv();
+  install(sandbox, { id: "id-1", name: "alpha", state: "Off" }, {
+    checkpoints: [
+      { name: "manual-1", created_at: "2026-11-05T08:00:00Z" },
+      { name: "manual-2", created_at: "2026-11-05T09:00:00Z" }
+    ]
+  });
+  sandbox.window.__pcvVmDetailTab = "checkpoints";
+  sandbox.renderVmDetail();
+  const byAction = (action) => sandbox.els.vmDetailContent.querySelectorAll(`[data-action="${action}"]`);
+  const opener = byAction("checkpoint-restore")[1];
+  assert.equal(opener.getAttribute("data-checkpoint-id"), "manual-2");
+  opener.focus();
+  sandbox.renderVmDetail();
+  const restored = byAction("checkpoint-restore")[1];
+  assert.equal(restored === opener, false);
+  assert.equal(restored.getAttribute("data-action"), "checkpoint-restore");
+  assert.equal(restored.getAttribute("data-vm-id"), "id-1");
+  assert.equal(restored.getAttribute("data-checkpoint-id"), "manual-2");
+  assert.equal(sandbox.document.activeElement === restored, true);
+  assert.equal(sandbox.document.activeElement === byAction("checkpoint-restore")[0], false);
+
+  const menu = () => sandbox.document.getElementById("pcv-vm-more-menu");
+  menu().hidden = false;
+  const deleteOpener = byAction("vm-delete")[0];
+  deleteOpener.focus();
+  sandbox.renderVmDetail();
+  const deleteButton = byAction("vm-delete")[0];
+  assert.equal(deleteButton === deleteOpener, false);
+  assert.equal(deleteButton.getAttribute("data-action"), "vm-delete");
+  assert.equal(deleteButton.getAttribute("data-vm-id"), "id-1");
+  assert.equal(menu().hidden, false);
+  assert.equal(sandbox.document.activeElement === deleteButton, true);
+
+  sandbox.document.body.focus();
+  sandbox.renderVmDetail();
+  assert.equal(sandbox.document.activeElement === sandbox.document.body, true);
+});
+
 test("restore and delete use a danger confirm without a typed name", async () => {
   const sandbox = createEnv();
   install(sandbox, { id: "id-1", name: "alpha", state: "Running" }, {
@@ -607,11 +690,12 @@ test("restore and delete use a danger confirm without a typed name", async () =>
   assert.equal(Object.prototype.hasOwnProperty.call(seen[0], "typedName"), false);
   assert.match(seen[0].message, /현재 상태/);
   assert.match(seen[0].message, /실행 중/);
-  assert.equal(restores.length, 1);
+  assert.match(seen[0].message, /VM을 끈 뒤 복원하세요/);
+  assert.equal(restores.length, 0);
   sandbox.state.selectedVm = { id: "id-1", name: "alpha", state: "Off" };
   sandbox.PCV.components.confirmDialog = async () => false;
   await sandbox.queueCheckpointRestore("id-1", "manual-1");
-  assert.equal(restores.length, 1);
+  assert.equal(restores.length, 0);
   sandbox.PCV.components.confirmDialog = async (opts) => {
     seen.push(opts);
     return true;
@@ -662,6 +746,24 @@ test("checkpoint and schedule paths do not call window.confirm", async () => {
   sandbox.PCV.components.confirmDialog = async () => false;
   await sandbox.queueCheckpointScheduleControl("id-1", "clear", {});
   assert.equal(saves.length, 1);
+});
+
+test("BL-0032 preview keeps typed schedule inputs after the form re-renders", async () => {
+  const sandbox = createEnv();
+  install(sandbox, alpha);
+  sandbox.desktopApi.previewCheckpointSchedule = async (_vmId, payload) => ({
+    dry_run: true,
+    interval_minutes: payload.interval_minutes,
+    retention_max: payload.retention_max
+  });
+  sandbox.render = () => { sandbox.renderVmDetail(); };
+  sandbox.renderVmDetail();
+  const form = () => sandbox.els.vmDetailContent.querySelector('form[data-action="checkpoint-schedule"]');
+  form().querySelector('[name="interval_minutes"]').value = "60";
+  form().querySelector('[name="retention_max"]').value = "1";
+  await sandbox.queueCheckpointScheduleControl("id-1", "preview", { interval_minutes: 60, retention_max: 1 });
+  assert.equal(form().querySelector('[name="interval_minutes"]').value, "60");
+  assert.equal(form().querySelector('[name="retention_max"]').value, "1");
 });
 
 test("schedule save reads the VM detail again and the card shows the new schedule", async () => {
@@ -716,7 +818,9 @@ test("a finished create job refreshes the checkpoint list", async () => {
   await flush();
   const panel = sandbox.els.vmDetailContent.querySelector(".checkpoint-panel");
   assert.equal(panel.textContent.includes("checkpoint-new"), true);
-  assert.equal(panel.textContent.includes("2026-11-05T01:02:03Z"), true);
+  const createdCell = panel.querySelector(".pcv-checkpoint-created");
+  assert.equal(createdCell.getAttribute("title"), "2026-11-05T01:02:03Z");
+  assert.equal(createdCell.textContent, localMinute("2026-11-05T01:02:03Z"));
 });
 
 test("a late checkpoint job does not overwrite another selected VM", async () => {
@@ -793,4 +897,79 @@ test("an empty checkpoint list and a failed read use different copy", async () =
   await flush();
   assert.equal(listOf().querySelector(".pcv-load-error"), null);
   assert.equal(listOf().querySelector(".pcv-empty-action").textContent, "첫 checkpoint 만들기");
+});
+
+function localMinute(iso) {
+  const date = new Date(iso);
+  const pad = (n) => String(n).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
+test("BL-0031 checkpoint times show local minutes and keep the raw ISO in the title", () => {
+  const sandbox = createEnv();
+  const created = "2026-11-05T08:00:00.1234567Z";
+  const last = "2026-11-05T01:02:03.0000000Z";
+  const next = "2026-11-05T02:02:03.0000000Z";
+  install(sandbox, {
+    id: "id-1",
+    name: "alpha",
+    state: "Off",
+    checkpoint_schedule: {
+      enabled: true,
+      interval_minutes: 60,
+      retention_max: 3,
+      last_enqueued_at: last,
+      next_due_at: next,
+      status: "waiting"
+    }
+  }, { checkpoints: [{ name: "manual-1", created_at: created }] });
+  sandbox.window.__pcvVmDetailTab = "checkpoints";
+  sandbox.renderVmDetail();
+  const createdCell = sandbox.els.vmDetailContent.querySelector(".pcv-checkpoint-created");
+  assert.equal(createdCell.textContent, localMinute(created));
+  assert.equal(createdCell.getAttribute("title"), created);
+  assert.equal(createdCell.textContent.includes("1234567"), false);
+  const card = sandbox.els.vmDetailContent.querySelector(".checkpoint-schedule-readback");
+  const lastNode = [...card.querySelectorAll("strong")].find((node) => node.getAttribute("title") === last);
+  const nextNode = [...card.querySelectorAll("strong")].find((node) => node.getAttribute("title") === next);
+  assert.equal(lastNode.textContent, localMinute(last));
+  assert.equal(nextNode.textContent, localMinute(next));
+});
+
+test("BL-0031 schedule preview is a short Korean summary", () => {
+  const sandbox = createEnv();
+  install(sandbox, alpha);
+  sandbox.state.checkpointSchedulePreview = {
+    vm_id: "id-1",
+    updated_at: "2026-11-05T08:00:00Z",
+    result: {
+      action: "preview",
+      dry_run: true,
+      host_mutation_performed: false,
+      interval_minutes: 60,
+      retention_max: 3,
+      schema: "checkpoint-schedule-v1",
+      vm_name: "alpha"
+    }
+  };
+  sandbox.renderVmDetail();
+  const preview = sandbox.els.vmDetailContent.querySelector(".checkpoint-schedule-readback").querySelector("p");
+  const text = preview.textContent;
+  assert.equal(text.includes("{"), false);
+  assert.equal(text.includes("dry_run"), false);
+  assert.equal(text.includes("host_mutation_performed"), false);
+  assert.equal(text.includes("schema"), false);
+  assert.equal(text.includes("60"), true);
+  assert.equal(text.includes("3"), true);
+  assert.equal(text.includes("분"), true);
+});
+
+test("BL-0031 narrow checkpoint rows and the detail scroll keep their columns", () => {
+  const css = fs.readFileSync(fileURLToPath(new URL("../style.css", import.meta.url)), "utf8");
+  assert.match(css, /\.pcv-checkpoint-actions button\s*\{[^}]*white-space:\s*nowrap/);
+  assert.match(css, /\.vm-workspace > \.table-wrap\s*\{[^}]*max-height:\s*calc\(100vh - 9rem\)/);
+  assert.match(css, /\.vm-detail-panel\s*\{[^}]*max-height:\s*calc\(100vh - 9rem\)[^}]*overflow:\s*auto/);
+  assert.match(css, /\.pcv-clone-modal\s*\{[^}]*display:\s*grid[^}]*gap:\s*12px/);
+  assert.match(css, /\.pcv-clone-form label\s*\{[^}]*display:\s*grid/);
+  assert.match(css, /\.pcv-clone-modal input\s*\{[^}]*width:\s*100%/);
 });

@@ -257,6 +257,17 @@ function resolveInitialApiBaseUrl(): string {
     : window.location.origin;
 }
 
+function resolveInitialTheme(): string {
+  let theme = '';
+  try {
+    theme = document.documentElement?.getAttribute('data-theme') || '';
+  } catch (error) {
+    theme = '';
+  }
+  if (!theme || theme === 'supanova') return 'supanova-cyan';
+  return theme;
+}
+
 const state: PcvState = {
   apiBaseUrl: resolveInitialApiBaseUrl(),
   apiToken: '',
@@ -322,7 +333,7 @@ const state: PcvState = {
   refreshRequestId: 0,
   refreshController: null,
   jobPollDelayMs: 2000,
-  theme: 'supanova',
+  theme: resolveInitialTheme(),
   language: 'ko'
 };
 
@@ -581,7 +592,7 @@ function requireRouteAction(action: string, allowedActions: string[]): string {
 
   throw normalizeError({
     code: 'PCV_FRONTEND_ROUTE_ACTION_INVALID',
-    message: 'The Web Console route action is not supported.',
+    message: t('copy.route.unsupported'),
     detail: candidate || 'empty'
   });
 }
@@ -615,7 +626,7 @@ function getVmId(vm: any): string {
 }
 
 function getVmName(vm: any): string {
-  return String(vm?.name || vm?.id || 'Unknown VM');
+  return String(vm?.name || vm?.id || t('copy.unknown_vm'));
 }
 
 function getVmState(vm: any): string {
@@ -632,35 +643,33 @@ function isRunningVmState(value: unknown): boolean {
 
 function buildVmManageConfirmation(vmId: string, vm: any): string {
   const vmName = getVmName(vm);
-  const vmState = getVmState(vm) || 'unknown';
+  const vmState = getVmState(vm) || t('copy.state.unknown');
   return [
-    `Manage VM ${vmName}?`,
-    `VM id: ${vmId}`,
-    `Current state: ${vmState}`,
-    'After success this VM will pass PureCVisor managed delete.',
-    'Unmanaged delete refusal remains.',
-    'This queues a Hyper-V Notes managed-marker mutation.',
-    'The result will appear in Tracked Jobs.'
+    t('copy.confirm.manage', { name: vmName }),
+    t('copy.confirm.vm_id', { id: vmId }),
+    t('copy.confirm.state', { state: vmState }),
+    t('copy.confirm.manage_after'),
+    t('copy.confirm.manage_unmanaged'),
+    t('copy.confirm.manage_queue'),
+    t('copy.confirm.jobs')
   ].join('\n');
 }
 
 function buildAccountCreateConfirmation(username: string, role: string, bootstrap: boolean): string {
   return [
-    bootstrap ? `Create the first admin account ${username}?` : `Create account ${username}?`,
-    `Role: ${role}`,
-    bootstrap
-      ? 'After success loopback session is closed. Login with this admin account.'
-      : 'The account is stored in accounts.json. Password is not shown again.',
-    'No default password is generated.'
+    bootstrap ? t('copy.confirm.account_first', { name: username }) : t('copy.confirm.account_create', { name: username }),
+    t('copy.confirm.account_role', { role }),
+    bootstrap ? t('copy.confirm.account_bootstrap') : t('copy.confirm.account_stored'),
+    t('copy.confirm.account_no_default')
   ].join('\n');
 }
 
 function buildAccountDisableConfirmation(username: string): string {
   return [
-    `Disable account ${username}?`,
-    'The last enabled admin cannot be disabled.',
-    'Login for this username will fail after success.',
-    'This does not delete the account record.'
+    t('copy.confirm.account_disable', { name: username }),
+    t('copy.confirm.account_last_admin'),
+    t('copy.confirm.account_login_fails'),
+    t('copy.confirm.account_keeps')
   ].join('\n');
 }
 
@@ -668,12 +677,12 @@ function buildVmGuestFileConfirmation(vmId: string, payload: any, preview: any):
   const sizeBytes = preview?.size_bytes ?? payload?.size_bytes;
   const sizeText = sizeBytes === null || sizeBytes === undefined || sizeBytes === '' ? '-' : String(sizeBytes);
   return [
-    `Copy host file into VM ${vmId}?`,
-    `Host path: ${payload?.host_path || '-'}`,
-    `Guest path: ${payload?.guest_path || '-'}`,
-    `size_bytes: ${sizeText}`,
-    'This queues a host-to-guest copy with a protected credential reference.',
-    'HGFS shared folders are not used. The result will appear in Tracked Jobs.'
+    t('copy.confirm.guest_title', { id: vmId }),
+    t('copy.confirm.guest_host', { path: payload?.host_path || '-' }),
+    t('copy.confirm.guest_guest', { path: payload?.guest_path || '-' }),
+    t('copy.confirm.guest_size', { size: sizeText }),
+    t('copy.confirm.guest_queue'),
+    t('copy.confirm.guest_hgfs')
   ].join('\n');
 }
 
@@ -681,31 +690,32 @@ function buildVmTemplateLockConfirmation(vmId: string, vm: any, locked: boolean)
   const vmName = getVmName(vm);
   const vmState = getVmState(vm) || 'unknown';
   return [
-    locked ? `Lock VM ${vmName} as a template?` : `Unlock template lock on VM ${vmName}?`,
-    `VM id: ${vmId}`,
-    `Current state: ${vmState}`,
-    locked
-      ? 'After success this managed VM allows start and clone only. Unmanaged lock is blocked by PCV_VM_NOT_MANAGED_BY_PURECVISOR.'
-      : 'After success this VM is no longer a start/clone-only template.',
-    'This queues a Hyper-V Notes template-lock mutation.',
-    'The result will appear in Tracked Jobs.'
+    locked ? t('copy.confirm.lock', { name: vmName }) : t('copy.confirm.unlock', { name: vmName }),
+    t('copy.confirm.vm_id', { id: vmId }),
+    t('copy.confirm.state', { state: vmState }),
+    locked ? t('copy.confirm.lock_after') : t('copy.confirm.unlock_after'),
+    t('copy.confirm.lock_queue'),
+    t('copy.confirm.jobs')
   ].join('\n');
 }
 
 function buildVmCloneConfirmation(vmId: string, vm: any, targetName: string, preview: any): string {
   const sourceName = getVmName(vm);
   const plannedCopyBytes = preview?.planned_copy_bytes;
+  const plannedCopyNumber = Number(plannedCopyBytes);
   const plannedCopyBytesText = plannedCopyBytes === null || plannedCopyBytes === undefined || plannedCopyBytes === ''
     ? '-'
-    : String(plannedCopyBytes);
+    : (Number.isFinite(plannedCopyNumber) && typeof formatBytes === 'function'
+      ? formatBytes(plannedCopyNumber)
+      : String(plannedCopyBytes));
   return [
-    `Clone VM ${sourceName} to ${targetName}?`,
-    `Source: ${sourceName}`,
-    `VM id: ${vmId}`,
-    `Target name: ${targetName}`,
-    `planned_copy_bytes: ${plannedCopyBytesText}`,
-    '독립 VHDX를 복사한 새 managed VM을 만든다. 소스 VM은 변경하지 않는다.',
-    'The result will appear in Tracked Jobs.'
+    t('copy.confirm.clone', { source: sourceName, target: targetName }),
+    t('copy.confirm.clone_source', { name: sourceName }),
+    t('copy.confirm.vm_id', { id: vmId }),
+    t('copy.confirm.clone_target', { name: targetName }),
+    t('copy.confirm.clone_copy', { size: plannedCopyBytesText }),
+    t('copy.confirm.clone_note'),
+    t('copy.confirm.jobs')
   ].join('\n');
 }
 
@@ -713,12 +723,12 @@ function buildVmDeleteConfirmation(vmId: string, vm: any): string {
   const vmName = getVmName(vm);
   const vmState = getVmState(vm) || 'unknown';
   return [
-    `Delete VM ${vmName}?`,
-    `VM id: ${vmId}`,
-    `Current state: ${vmState}`,
-    'This queues a destructive Hyper-V host mutation.',
-    'Only PureCVisor-managed VMs can be deleted; unmanaged VMs are blocked by PCV_VM_NOT_MANAGED_BY_PURECVISOR.',
-    'The result will appear in Tracked Jobs.'
+    t('copy.confirm.delete', { name: vmName }),
+    t('copy.confirm.vm_id', { id: vmId }),
+    t('copy.confirm.state', { state: vmState }),
+    t('copy.confirm.delete_mutation'),
+    t('copy.confirm.delete_managed'),
+    t('copy.confirm.jobs')
   ].join('\n');
 }
 
@@ -727,19 +737,19 @@ function buildVmLifecycleConfirmation(vmId: string, action: string): string {
   const vmName = getVmName(vm);
   const vmState = getVmState(vm) || 'unknown';
   const lines = [
-    `${action} VM ${vmName}?`,
-    `VM id: ${vmId}`,
-    `Current state: ${vmState}`,
-    'This queues a Hyper-V host mutation.'
+    t('copy.confirm.lifecycle', { action, name: vmName }),
+    t('copy.confirm.vm_id', { id: vmId }),
+    t('copy.confirm.state', { state: vmState }),
+    t('copy.confirm.lifecycle_mutation')
   ];
   if (action === 'save') {
-    lines.push('Save is Hyper-V Saved, not pause.');
+    lines.push(t('copy.confirm.lifecycle_save'));
   }
   if (action === 'resume-saved') {
-    lines.push('Resume saved is only valid when the current state is saved.');
+    lines.push(t('copy.confirm.lifecycle_resume'));
   }
 
-  lines.push('The result will appear in Tracked Jobs and Operator Activity.');
+  lines.push(t('copy.confirm.jobs_activity'));
   return lines.join('\n');
 }
 
@@ -747,36 +757,36 @@ function buildVmAttachConfirmation(vmId: string, isoPath: string): string {
   const vm = state.selectedVm || findCachedVm(vmId);
   const vmName = getVmName(vm);
   return [
-    `Attach ISO to VM ${vmName}?`,
-    `VM id: ${vmId}`,
-    `ISO: ${isoPath}`,
-    'This queues a Hyper-V DVD media mutation.',
-    'The existing virtual DVD HostResource is replaced. No USB or new DVD device is created.',
-    'The result will appear in Tracked Jobs.'
+    t('copy.confirm.attach', { name: vmName }),
+    t('copy.confirm.vm_id', { id: vmId }),
+    t('copy.confirm.attach_iso', { path: isoPath }),
+    t('copy.confirm.attach_mutation'),
+    t('copy.confirm.attach_replace'),
+    t('copy.confirm.jobs')
   ].join('\n');
 }
 
 function buildCheckpointRestoreConfirmation(vmId: string, checkpointId: string): string {
   const vm = state.selectedVm || findCachedVm(vmId);
   return [
-    `Restore checkpoint ${checkpointId}?`,
-    `VM: ${getVmName(vm)}`,
-    `VM id: ${vmId}`,
-    'This queues a Hyper-V checkpoint restore host mutation.',
-    'Power-off-before-restore preconditions are enforced by the Local API and job result.',
-    'The result will appear in Tracked Jobs and Operator Activity.'
+    t('copy.confirm.restore', { id: checkpointId }),
+    t('copy.confirm.restore_vm', { name: getVmName(vm) }),
+    t('copy.confirm.vm_id', { id: vmId }),
+    t('copy.confirm.restore_mutation'),
+    t('copy.confirm.restore_pre'),
+    t('copy.confirm.jobs_activity')
   ].join('\n');
 }
 
 function buildCheckpointDeleteConfirmation(vmId: string, checkpointId: string): string {
   const vm = state.selectedVm || findCachedVm(vmId);
   return [
-    `Delete checkpoint ${checkpointId}?`,
-    `VM: ${getVmName(vm)}`,
-    `VM id: ${vmId}`,
-    'This queues a destructive Hyper-V checkpoint host mutation.',
-    'Only the selected checkpoint id is targeted.',
-    'The result will appear in Tracked Jobs and Operator Activity.'
+    t('copy.confirm.cp_delete', { id: checkpointId }),
+    t('copy.confirm.restore_vm', { name: getVmName(vm) }),
+    t('copy.confirm.vm_id', { id: vmId }),
+    t('copy.confirm.cp_delete_mutation'),
+    t('copy.confirm.cp_delete_only'),
+    t('copy.confirm.jobs_activity')
   ].join('\n');
 }
 
@@ -827,7 +837,7 @@ function getCheckpointId(checkpoint: any): string {
 }
 
 function getCheckpointName(checkpoint: any): string {
-  return String(checkpoint?.name || checkpoint?.checkpoint_name || checkpoint?.id || 'Unnamed checkpoint');
+  return String(checkpoint?.name || checkpoint?.checkpoint_name || checkpoint?.id || t('copy.unnamed_checkpoint'));
 }
 
 function formatCheckpointMeta(checkpoint: any): string {
@@ -846,7 +856,7 @@ function normalizeError(error: any): PcvNormalizedError {
     status: error?.status ?? 0,
     operation: error?.operation ?? 'web.request',
     code: error?.code ?? 'PCV_NETWORK_ERROR',
-    message: error?.message ?? 'The Desktop Node API request failed.',
+    message: error?.message ?? t('copy.api.failed'),
     detail: formatErrorDetail(error?.detail ?? error),
     retryable: Boolean(error?.retryable)
   };
@@ -883,7 +893,7 @@ function normalizeProblemDetails(payload: any, response: Response): Partial<PcvN
     status: payload.status ?? response.status,
     operation: payload.operation,
     code: payload.code,
-    message: payload.title || payload.message || 'The Desktop Node API request failed.',
+    message: payload.title || payload.message || t('copy.api.failed'),
     detail: [formatErrorDetail(payload.detail), metadata].filter(Boolean).join(' / '),
     retryable: payload.retryable
   };
@@ -966,20 +976,31 @@ function getHostReadinessLabel() {
     : undefined;
   if (summaryReadiness) return formatPolicyValue(summaryReadiness);
   if (!hasRefreshedOperation('host.status') || !state.host) return '—';
-  return formatPolicyValue(state.host.supported === false ? 'Needs attention' : 'Ready');
+  return state.host.supported === false ? t('vm.trouble.host_bad') : t('vm.trouble.host_ok');
+}
+
+function hostReadinessBlocked() {
+  const summaryReadiness = hasRefreshedOperation('ops.summary')
+    ? readSummaryValue(['host', 'readiness'], ['host', 'status'])
+    : undefined;
+  if (summaryReadiness) {
+    const folded = String(summaryReadiness).toLowerCase();
+    return folded.includes('need') || folded.includes('fail') || folded.includes('error') || folded.includes('attention') || folded.includes('확인');
+  }
+  return Boolean(hasRefreshedOperation('host.status') && state.host && state.host.supported === false);
 }
 
 function normalizeSummaryIssue(issue, fallbackCode = 'PCV_OPS_SUMMARY_DEGRADED') {
   if (!issue || typeof issue !== 'object') {
     return {
       code: fallbackCode,
-      message: String(issue || 'Ops summary returned a degraded signal.'),
+      message: String(issue || t('copy.ops.degraded')),
       detail: ''
     };
   }
   return {
     code: issue.code || issue.key || issue.id || fallbackCode,
-    message: issue.message || issue.label || issue.detail || 'Ops summary returned a degraded signal.',
+    message: issue.message || issue.label || issue.detail || t('copy.ops.degraded'),
     detail: issue.detail || issue.description || issue.operation || ''
   };
 }
@@ -1040,8 +1061,9 @@ function sortRowsByKey(rows, sort, selectors = {}) {
 }
 
 function renderTableStateSummary(label, shown, total, query = '', extra = '') {
-  const filterText = query ? ` / filter=${query}` : '';
-  return `<div class="table-state-summary"><strong>${pcvEscapeHtml(label)}</strong> ${pcvEscapeHtml(shown)} shown of ${pcvEscapeHtml(total)}${pcvEscapeHtml(filterText)}${extra ? ` / ${pcvEscapeHtml(extra)}` : ''}</div>`;
+  const summary = t('copy.list.shown', { shown, total });
+  const filterText = query ? ` / ${t('copy.list.filter', { query })}` : '';
+  return `<div class="table-state-summary"><strong>${pcvEscapeHtml(label)}</strong> ${pcvEscapeHtml(summary)}${pcvEscapeHtml(filterText)}${extra ? ` / ${pcvEscapeHtml(extra)}` : ''}</div>`;
 }
 
 function getVmActionKey(vmId) {
@@ -1146,12 +1168,13 @@ function canManageAccounts() {
   return rbacAllows('account.manage');
 }
 
-function requireRbac(permission, actionLabel = 'this action') {
+function requireRbac(permission, actionLabel) {
   if (rbacAllows(permission)) return;
+  const action = actionLabel || t('copy.rbac.this_action');
   throw normalizeError({
     code: 'PCV_RBAC_FORBIDDEN',
-    message: `The current account role cannot use ${actionLabel}.`,
-    detail: `Required permission: ${permission}. Current role: ${getAccountRoleLabel()}.`
+    message: t('copy.rbac.denied', { action }),
+    detail: t('copy.rbac.detail', { permission, role: getAccountRoleLabel() })
   });
 }
 
@@ -1329,8 +1352,8 @@ function reconcileSelectedVm() {
 
   state.error = normalizeError({
     code: 'PCV_SELECTED_VM_STALE',
-    message: 'Selected VM is no longer present in the current inventory.',
-    detail: 'The detail panel and checkpoint list were cleared after refresh so stale lifecycle controls cannot be used.'
+    message: t('copy.vm.stale'),
+    detail: t('copy.vm.stale_detail')
   });
   state.selectedVmId = '';
   state.selectedVm = null;
@@ -1505,6 +1528,7 @@ window.getSummaryJobCounts = getSummaryJobCounts;
 window.getRuntimeExposure = getRuntimeExposure;
 window.getTokenPolicyLabel = getTokenPolicyLabel;
 window.getHostReadinessLabel = getHostReadinessLabel;
+window.hostReadinessBlocked = hostReadinessBlocked;
 window.normalizeSummaryIssue = normalizeSummaryIssue;
 window.summarySignalTone = summarySignalTone;
 window.summarySignalKey = summarySignalKey;

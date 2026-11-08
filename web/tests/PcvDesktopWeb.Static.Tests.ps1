@@ -344,8 +344,11 @@ Describe 'PcvDesktopWeb static console assets' {
         $combined | Should -Match 'getJobCancelScope'
         $combined | Should -Match 'data-job-cancel-scope="\$\{pcvEscapeHtml\(cancelScope\)\}"'
         $combined | Should -Match 'running-guest-execution'
-        $combined | Should -Match 'Cancel running guest exec'
-        $combined | Should -Match 'requireRbac\(''operate'', ''running guest execution cancel''\)'
+        $combined | Should -Match 'copy\.job\.cancel_guest'
+        $combined | Should -Match 'copy\.rbac\.guest_exec_cancel'
+        $i18n = Get-Content -LiteralPath (Join-Path $script:WebRoot 'i18n.js') -Raw
+        $i18n | Should -Match 'Cancel running guest exec'
+        $i18n | Should -Match 'running guest execution cancel'
     }
 
     It 'adds Windows-local command palette, global search, event center, and table helpers from the Single Edge borrowing map' {
@@ -508,7 +511,8 @@ Describe 'PcvDesktopWeb static console assets' {
         $app | Should -Match 'data-action="vm-delete"'
         $app | Should -Match 'PCV_VM_DELETE_RUNNING_BLOCKED'
         $app | Should -Match 'PCV_VM_NOT_MANAGED_BY_PURECVISOR'
-        $app | Should -Match 'Unmanaged delete refusal remains'
+        $app | Should -Match 'copy\.confirm\.manage_unmanaged'
+        $i18n | Should -Match 'Unmanaged delete refusal remains'
         $app | Should -Match 'confirm\('
     }
 
@@ -726,10 +730,13 @@ Describe 'PcvDesktopWeb static console assets' {
         ($app + $servedSource + $fixtures) | Should -Match 'service-action-eventlog-firewall-truststore-credential-manager-data-root-separated'
         ($app + $servedSource + $fixtures) | Should -Match 'credential-manager-system-proof'
         ($app + $servedSource + $fixtures) | Should -Match 'allowlisted-programdata-root'
-        ($app + $servedSource) | Should -Match 'Host mutation: not performed by diagnostics view'
+        ($app + $servedSource) | Should -Match 'copy\.mon\.mutation_diagnostics'
         ($app + $servedSource) | Should -Match 'runtime_api_registry_bridge|runtimeApiRegistryBridge'
         ($app + $servedSource) | Should -Match 'PureCVisor\\\\desktop-node\\\\diagnostics'
-        ($app + $servedSource) | Should -Match 'API action'
+        ($app + $servedSource) | Should -Match 'copy\.mon\.api_action'
+        $diagI18n = Get-Content -LiteralPath (Join-Path $script:WebRoot 'i18n.js') -Raw
+        $diagI18n | Should -Match 'Host mutation: not performed by diagnostics view'
+        $diagI18n | Should -Match 'API action'
         ($app + $servedSource) | Should -Match 'token values'
         ($app + $servedSource) | Should -Match 'Authorization headers'
         ($app + $servedSource) | Should -Match 'no host mutation'
@@ -749,7 +756,9 @@ Describe 'PcvDesktopWeb static console assets' {
         $terms | Should -Match "VM delete 확인: Web Console과 CLI는 destructive VM delete 전에 명시 확인을 요구한다"
         $terms | Should -Match "Checkpoint mutation: Web Console은 checkpoint restore/delete confirmation dialog를 요구한다"
         $webSurface | Should -Match "Diagnostic bundle|diagnostic bundle"
-        $webSurface | Should -Match "Only PureCVisor-managed VMs can be deleted"
+        $webSurface | Should -Match 'copy\.confirm\.delete_managed'
+        $i18nTerms = Get-Content -LiteralPath (Join-Path $script:WebRoot 'i18n.js') -Raw
+        $i18nTerms | Should -Match 'Only PureCVisor-managed VMs can be deleted'
         $webSurface | Should -Match 'function\s+queueVmDelete\s*\([\s\S]*?PCV\.components\.confirmDialog\('
         $webSurface | Should -Match 'function\s+queueCheckpointRestore\s*\([\s\S]*?PCV\.components\.confirmDialog\('
         $webSurface | Should -Match 'function\s+queueCheckpointDelete\s*\([\s\S]*?PCV\.components\.confirmDialog\('
@@ -782,11 +791,14 @@ Describe 'PcvDesktopWeb static console assets' {
         $combined | Should -Match 'retained terminal jobs'
         $combined | Should -Match 'failed job retry'
         $combined | Should -Match 'vm\.delete'
-        $combined | Should -Match 'Reconcile delete'
+        $combined | Should -Match 'copy\.job\.reconcile_delete'
         $combined | Should -Match 'checkpoint\.create'
-        $combined | Should -Match 'Reconcile checkpoint'
+        $combined | Should -Match 'copy\.job\.reconcile_checkpoint'
         $combined | Should -Match 'checkpoint\.restore'
-        $combined | Should -Match 'Reconcile restore'
+        $combined | Should -Match 'copy\.job\.reconcile_restore'
+        $edgeI18n | Should -Match 'Reconcile delete'
+        $edgeI18n | Should -Match 'Reconcile checkpoint'
+        $edgeI18n | Should -Match 'Reconcile restore'
         $combined | Should -Match 'reconcileSelectedVm'
         $combined | Should -Match 'PCV_SELECTED_VM_STALE'
         $combined | Should -Match 'buildCheckpointRestoreConfirmation'
@@ -823,11 +835,14 @@ Describe 'PcvDesktopWeb static console assets' {
 
         $index | Should -Match 'id="token-rotation-panel"'
         ($app + $servedSource) | Should -Match 'renderTokenRotation'
-        ($app + $servedSource) | Should -Match 'Token Rotation'
+        ($app + $servedSource) | Should -Match 'copy\.mon\.token_title'
         ($app + $servedSource) | Should -Match 'api-token\.dpapi\.json'
         ($app + $servedSource) | Should -Match 'rotation handoff'
-        ($app + $servedSource) | Should -Match 'Clear browser token'
+        ($app + $servedSource) | Should -Match 'copy\.mon\.clear_browser_token'
         ($app + $servedSource) | Should -Match 'no service token mutation'
+        $tokenI18n = Get-Content -LiteralPath (Join-Path $script:WebRoot 'i18n.js') -Raw
+        $tokenI18n | Should -Match 'copy\.mon\.token_title'': ''Token Rotation'''
+        $tokenI18n | Should -Match 'copy\.mon\.clear_browser_token'': ''Clear browser token'''
         ($app + $servedSource) | Should -Not -Match 'Restart-Computer|msiexec|New-VM|Remove-VM|New-NetFirewallRule|Register-EventSource|New-EventLog|Register-ScheduledTask'
         ($app + $servedSource) | Should -Not -Match 'Bearer\s+(?!\$\{)[A-Za-z0-9._~+/=-]{24,}'
     }

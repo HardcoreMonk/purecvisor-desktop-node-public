@@ -76,9 +76,10 @@ command palette(`Ctrl+K`), 환경설정(`Ctrl+P`: 테마, 언어, Local API 주�
 
 ## Visual Theme
 
-기본 테마는 흰 캔버스의 `supanova`다(`web/src/modules/theme.ts`, `web/index.html`이 저장값이 없으면 심는다). 선택 테마는
-`supanova`, `supanova-cyan`, `supanova-hicontrast`, `supanova-mockup`이다. 장식보다 판독성, 상태 식별, 정보 밀도, 빠른 비교를
-우선한다.
+선택 테마는 어둡게 그려지는 `supanova-cyan`(기본), `supanova-hicontrast`, `supanova-mockup`이다
+(`web/src/modules/theme.ts`, `web/index.html`). 흰 캔버스 id `supanova`는 선택 목록에서 뺐다. Part 2 `:root`가 그 팔레트를
+덮어 라이트로 보이지 않기 때문이다. 저장된 `supanova`는 기본값 `supanova-cyan`로 옮긴다. Part 2의 어두운 콘솔 색은 유지한다.
+장식보다 판독성, 상태 식별, 정보 밀도, 빠른 비교를 우선한다.
 
 기본 token(`web/style.css` `[data-theme="supanova"]`):
 

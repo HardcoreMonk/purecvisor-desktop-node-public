@@ -293,8 +293,25 @@ async function confirmCheckpointScheduleChange(mode, payload) {
   });
 }
 
+function rememberCheckpointScheduleDraft(vmId, mode, payload) {
+  if (mode === 'clear') {
+    if (state.checkpointScheduleDraft && String(state.checkpointScheduleDraft.vm_id) === String(vmId)) {
+      state.checkpointScheduleDraft = null;
+    }
+    return;
+  }
+  if (!payload || typeof payload !== 'object') return;
+  if (payload.interval_minutes == null && payload.retention_max == null) return;
+  state.checkpointScheduleDraft = {
+    vm_id: vmId,
+    interval_minutes: payload.interval_minutes ?? null,
+    retention_max: payload.retention_max ?? null
+  };
+}
+
 async function queueCheckpointScheduleControl(vmId, mode, payload) {
   requireRbac('operate', t('vm.rbac.schedule', { mode: mode === 'clear' ? t('vm.mode.clear') : mode === 'set' ? t('vm.mode.set') : t('vm.mode.preview') }));
+  rememberCheckpointScheduleDraft(vmId, mode, payload);
   if (mode !== 'preview') {
     const accepted = await confirmCheckpointScheduleChange(mode, payload);
     if (!accepted) return;
@@ -328,14 +345,27 @@ async function queueCheckpointScheduleControl(vmId, mode, payload) {
   }
 }
 
+function checkpointSchedulePreviewSummary(result) {
+  const record = result && typeof result === 'object' ? result : null;
+  const minutes = record ? record.interval_minutes : null;
+  const retention = record ? record.retention_max : null;
+  if (minutes == null && retention == null) {
+    return typeof formatObjectValue === 'function' ? formatObjectValue(result) : '';
+  }
+  return t('vm.checkpoint.schedule.preview_summary', {
+    minutes: minutes == null ? '-' : String(minutes),
+    retention: retention == null ? '-' : String(retention)
+  });
+}
+
 function renderCheckpointSchedulePreview(vmId) {
   const preview = state.checkpointSchedulePreview;
   if (!preview || preview.vm_id !== vmId) {
     return `<p class="muted">${pcvEscapeHtml(t('vm.checkpoint.schedule.preview_empty'))}</p>`;
   }
   const updated = preview.updated_at ? new Date(preview.updated_at).toLocaleString() : '-';
-  const body = typeof formatObjectValue === 'function' ? formatObjectValue(preview.result) : '';
-  return `<p class="muted">${pcvEscapeHtml(t('vm.checkpoint.schedule.preview_ready', { time: updated, body }))}</p>`;
+  const body = checkpointSchedulePreviewSummary(preview.result);
+  return `<p class="muted checkpoint-schedule-preview">${pcvEscapeHtml(t('vm.checkpoint.schedule.preview_ready', { time: updated, body }))}</p>`;
 }
 
 function readExportImportPayload(kind, data) {

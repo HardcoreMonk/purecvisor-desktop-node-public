@@ -853,8 +853,10 @@ function verifyGuestExecCancel(context) {
   const app = context.readText("web/app.bundle.js");
   const renderJobsSource = context.readText("web/src/modules/ops.ts");
   const jobPollingSource = context.readText("web/src/modules/events.ts");
-  context.assertMatch(app, /Cancel running guest exec/i, "guest-exec-cancel:label");
-  context.assertMatch(renderJobsSource, /Cancel running guest exec/i, "guest-exec-cancel:label-source");
+  const i18n = context.readText("web/i18n.js");
+  context.assertMatch(app, /copy\.job\.cancel_guest/, "guest-exec-cancel:label");
+  context.assertMatch(renderJobsSource, /copy\.job\.cancel_guest/, "guest-exec-cancel:label-source");
+  context.assertMatch(i18n, /Cancel running guest exec/, "guest-exec-cancel:label:i18n");
   assertSourceAndGenerated(context, renderJobsSource, app, [
     [/function\s+formatJobCancelLabel\s*\(/i, "format-label"],
     [/function\s+getJobCancelScope\s*\(/i, "cancel-scope"],
@@ -862,8 +864,9 @@ function verifyGuestExecCancel(context) {
     [/running-guest-execution/i, "running-scope"]
   ], "guest-exec-cancel");
   assertSourceAndGenerated(context, jobPollingSource, app, [
-    [/requireRbac\(['"]operate['"],\s*['"]running guest execution cancel['"]\)/i, "rbac"]
+    [/requireRbac\(['"]operate['"],\s*t\(['"]copy\.rbac\.guest_exec_cancel['"]\)\)/, "rbac"]
   ], "guest-exec-cancel");
+  context.assertMatch(i18n, /running guest execution cancel/, "guest-exec-cancel:rbac:i18n");
 }
 
 function verifySearchEventTable(context) {
@@ -1132,9 +1135,11 @@ function verifyVmLifecycleActions(context) {
     [/PCV_VM_DELETE_RUNNING_BLOCKED/i, "running-delete-guard"],
     [/PCV\.components\.confirmDialog\(/i, "destructive-confirmation"]
   ], "vm-lifecycle-actions");
+  assertSourceAndGenerated(context, context.readText("web/src/modules/vm-console.ts"), app, [
+    [/PCV_VM_NOT_MANAGED_BY_PURECVISOR/i, "unmanaged-delete-guard"]
+  ], "vm-lifecycle-actions");
   assertSourceAndGenerated(context, errorsSource, app, [
-    [/PCV_VM_NOT_MANAGED_BY_PURECVISOR/i, "unmanaged-delete-guard"],
-    [/Unmanaged delete refusal remains/i, "unmanaged-delete-refusal"],
+    [/copy\.confirm\.manage_unmanaged/, "unmanaged-delete-refusal"],
     [/function\s+buildVmTemplateLockConfirmation\s*\(/i, "template-lock-confirmation"],
     [/function\s+buildVmCloneConfirmation\s*\(/i, "clone-confirmation"],
     [/planned_copy_bytes/i, "clone-planned-copy-bytes"]
@@ -1155,6 +1160,7 @@ function verifyVmLifecycleActions(context) {
   context.assertMatch(i18n, /Clone VM/i, "vm-lifecycle-actions:clone-label:i18n");
   context.assertMatch(i18n, /no OVF/i, "vm-lifecycle-actions:no-ovf:i18n");
   context.assertMatch(i18n, /no TPM key copy/i, "vm-lifecycle-actions:no-tpm-key-copy:i18n");
+  context.assertMatch(i18n, /Unmanaged delete refusal remains/, "vm-lifecycle-actions:unmanaged-delete-refusal:i18n");
 }
 
 function verifyCheckpointActions(context) {
@@ -1504,15 +1510,18 @@ function verifyDiagnosticBundle(context) {
     [/routeDetailHtml/i, "route-detail-html"],
     [/Host Ops lifecycle buckets/i, "hostops-label"],
     [/diagnostics-hostops-table/i, "hostops-table"],
-    [/Host mutation: not performed by diagnostics view/i, "host-mutation-boundary"],
+    [/copy\.mon\.mutation_diagnostics/, "host-mutation-boundary"],
     [/runtime_api_registry_bridge|runtimeApiRegistryBridge/i, "registry-bridge-key"],
-    [/API action/i, "api-action"],
+    [/copy\.mon\.api_action/, "api-action"],
     [/token values/i, "token-redaction"],
     [/Authorization headers/i, "authorization-redaction"],
     [/no host mutation/i, "no-host-mutation-label"]
   ]) {
     context.assertMatch(combined, pattern, "diagnostic-bundle:" + label);
   }
+  const diagI18n = context.readText("web/i18n.js");
+  context.assertMatch(diagI18n, /Host mutation: not performed by diagnostics view/, "diagnostic-bundle:host-mutation-boundary:i18n");
+  context.assertMatch(diagI18n, /API action/, "diagnostic-bundle:api-action:i18n");
   for (const [pattern, label] of [
     [/service-action-eventlog-firewall-truststore-credential-manager-data-root-separated/i, "hostops-bucket-contract"],
     [/credential-manager-system-proof/i, "credential-manager-proof"],
@@ -1552,13 +1561,18 @@ function verifyOperatorTerms(context) {
   }
   for (const [pattern, label] of [
     [/Diagnostic bundle|diagnostic bundle/i, "diagnostic-bundle-surface"],
-    [/Only PureCVisor-managed VMs can be deleted/i, "managed-vm-delete-copy"],
+    [/copy\.confirm\.delete_managed/, "managed-vm-delete-copy"],
     [/function\s+queueVmDelete\s*\([\s\S]*?PCV\.components\.confirmDialog\(/i, "vm-delete-confirmation"],
     [/function\s+queueCheckpointRestore\s*\([\s\S]*?PCV\.components\.confirmDialog\(/i, "checkpoint-restore-confirmation"],
     [/function\s+queueCheckpointDelete\s*\([\s\S]*?PCV\.components\.confirmDialog\(/i, "checkpoint-delete-confirmation"]
   ]) {
     context.assertMatch(webSurface, pattern, "operator-terms:" + label);
   }
+  context.assertMatch(
+    context.readText("web/i18n.js"),
+    /Only PureCVisor-managed VMs can be deleted/,
+    "operator-terms:managed-vm-delete-copy:i18n"
+  );
   context.assertNotMatch(
     webSurface,
     /(public trusted signing|winget public submission|winget submission|external stable publication|public release).{0,80}(available|ready|pass|claimed|enabled)/is,
@@ -1588,16 +1602,16 @@ function verifyFrontendEdgeCases(context) {
     [/retained terminal jobs/i, "retained-terminal-jobs"],
     [/failed job retry/i, "failed-job-retry"],
     [/vm\.delete/i, "vm-delete"],
-    [/Reconcile delete/i, "reconcile-delete"],
+    [/copy\.job\.reconcile_delete/, "reconcile-delete"],
     [/checkpoint\.create/i, "checkpoint-create"],
-    [/Reconcile checkpoint/i, "reconcile-checkpoint"],
+    [/copy\.job\.reconcile_checkpoint/, "reconcile-checkpoint"],
     [/checkpoint\.restore/i, "checkpoint-restore"],
-    [/Reconcile restore/i, "reconcile-restore"],
-    [/Reconcile create/i, "reconcile-create"],
-    [/Reconcile shutdown/i, "reconcile-shutdown"],
-    [/Reconcile restart/i, "reconcile-restart"],
-    [/Reconcile storage QoS/i, "reconcile-storage-qos"],
-    [/Reconcile network QoS/i, "reconcile-network-qos"],
+    [/copy\.job\.reconcile_restore/, "reconcile-restore"],
+    [/copy\.job\.reconcile_create/, "reconcile-create"],
+    [/copy\.job\.reconcile_shutdown/, "reconcile-shutdown"],
+    [/copy\.job\.reconcile_restart/, "reconcile-restart"],
+    [/copy\.job\.reconcile_storage/, "reconcile-storage-qos"],
+    [/copy\.job\.reconcile_network/, "reconcile-network-qos"],
     [/reconcileSelectedVm/i, "reconcile-selected-vm"],
     [/PCV_SELECTED_VM_STALE/i, "selected-vm-stale"],
     [/buildCheckpointRestoreConfirmation/i, "checkpoint-restore-confirmation"],
@@ -1613,6 +1627,14 @@ function verifyFrontendEdgeCases(context) {
   context.assertMatch(edgeI18n, /All views refresh/i, "frontend-edge-cases:all-views-refresh");
   context.assertMatch(edgeI18n, /pending jobs are rechecked/i, "frontend-edge-cases:pending-jobs-rechecked");
   context.assertMatch(edgeI18n, /Native parity failed/i, "frontend-edge-cases:native-parity-failure");
+  context.assertMatch(edgeI18n, /Reconcile delete/, "frontend-edge-cases:reconcile-delete:i18n");
+  context.assertMatch(edgeI18n, /Reconcile checkpoint/, "frontend-edge-cases:reconcile-checkpoint:i18n");
+  context.assertMatch(edgeI18n, /Reconcile restore/, "frontend-edge-cases:reconcile-restore:i18n");
+  context.assertMatch(edgeI18n, /Reconcile create/, "frontend-edge-cases:reconcile-create:i18n");
+  context.assertMatch(edgeI18n, /Reconcile shutdown/, "frontend-edge-cases:reconcile-shutdown:i18n");
+  context.assertMatch(edgeI18n, /Reconcile restart/, "frontend-edge-cases:reconcile-restart:i18n");
+  context.assertMatch(edgeI18n, /Reconcile storage QoS/, "frontend-edge-cases:reconcile-storage-qos:i18n");
+  context.assertMatch(edgeI18n, /Reconcile network QoS/, "frontend-edge-cases:reconcile-network-qos:i18n");
   context.assertMatch(app, /PCV_SELECTED_VM_STALE/i, "frontend-edge-cases:selected-vm-stale:generated");
   for (const [pattern, label] of [
     [/:focus-visible/i, "focus-visible"],
@@ -1659,14 +1681,17 @@ function verifyTokenRotation(context) {
   context.assertMatch(index, /id="token-rotation-panel"/i, "token-rotation:panel");
   for (const [pattern, label] of [
     [/renderTokenRotation/i, "render"],
-    [/Token Rotation/i, "title"],
+    [/copy\.mon\.token_title/, "title"],
     [/api-token\.dpapi\.json/i, "protected-token-file"],
     [/rotation handoff/i, "handoff"],
-    [/Clear browser token/i, "clear-browser-token"],
+    [/copy\.mon\.clear_browser_token/, "clear-browser-token"],
     [/no service token mutation/i, "no-service-token-mutation"]
   ]) {
     context.assertMatch(combined, pattern, `token-rotation:${label}`);
   }
+  const tokenI18n = context.readText("web/i18n.js");
+  context.assertMatch(tokenI18n, /'copy\.mon\.token_title': 'Token Rotation'/, "token-rotation:title:i18n");
+  context.assertMatch(tokenI18n, /'copy\.mon\.clear_browser_token': 'Clear browser token'/, "token-rotation:clear-browser-token:i18n");
   context.assertNotMatch(
     combined,
     /Restart-Computer|msiexec|New-VM|Remove-VM|New-NetFirewallRule|Register-EventSource|New-EventLog|Register-ScheduledTask/i,

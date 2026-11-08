@@ -4290,7 +4290,7 @@ public sealed partial class ApiRuntimePolicyRequestProcessorTests
             "/api/v1/vms/lab-vm/checkpoints/requested/restore"));
 
         Assert.Equal(202, response.StatusCode);
-        Assert.Equal(["checkpoint.list"], nativeCalls);
+        Assert.Equal(["vm.list", "checkpoint.list"], nativeCalls);
         using var document = JsonDocument.Parse(response.Body);
         var data = document.RootElement.GetProperty("data");
         Assert.Equal("checkpoint.restore", data.GetProperty("operation").GetString());
@@ -4323,7 +4323,7 @@ public sealed partial class ApiRuntimePolicyRequestProcessorTests
             "/api/v1/vms/lab-vm/checkpoints/requested/restore"));
 
         Assert.Equal(202, response.StatusCode);
-        Assert.Equal(["checkpoint.list"], nativeCalls);
+        Assert.Equal(["vm.list", "checkpoint.list"], nativeCalls);
         using var document = JsonDocument.Parse(response.Body);
         var reconciliation = document.RootElement.GetProperty("data").GetProperty("params").GetProperty("reconciliation");
         Assert.Equal("pcv-checkpoint-restore-reconciliation/v1", reconciliation.GetProperty("schema").GetString());
@@ -4348,7 +4348,7 @@ public sealed partial class ApiRuntimePolicyRequestProcessorTests
             "/api/v1/vms/lab-vm/checkpoints/requested/restore"));
 
         Assert.Equal(202, response.StatusCode);
-        Assert.Equal(["checkpoint.list"], nativeCalls);
+        Assert.Equal(["vm.list", "checkpoint.list"], nativeCalls);
         using var document = JsonDocument.Parse(response.Body);
         var reconciliation = document.RootElement.GetProperty("data").GetProperty("params").GetProperty("reconciliation");
         Assert.Equal("unavailable", reconciliation.GetProperty("capture_status").GetString());
@@ -4885,7 +4885,11 @@ public sealed partial class ApiRuntimePolicyRequestProcessorTests
 
         Assert.Equal(202, create.StatusCode);
         Assert.Empty(fallbackCalls);
-        if (expectedOperation is "checkpoint.create" or "checkpoint.restore" or "checkpoint.delete")
+        if (expectedOperation == "checkpoint.restore")
+        {
+            Assert.Equal(["vm.list", "checkpoint.list"], nativeCalls.Select(call => call.Operation).ToArray());
+        }
+        else if (expectedOperation is "checkpoint.create" or "checkpoint.delete")
         {
             Assert.Equal("checkpoint.list", Assert.Single(nativeCalls).Operation);
         }
@@ -4899,7 +4903,7 @@ public sealed partial class ApiRuntimePolicyRequestProcessorTests
         Assert.True(tick.Processed);
         Assert.Empty(fallbackCalls);
         var nativeCall = expectedOperation is "checkpoint.create" or "checkpoint.restore" or "checkpoint.delete"
-            ? nativeCalls[1]
+            ? nativeCalls.Last(call => call.Operation == expectedOperation)
             : Assert.Single(nativeCalls);
         Assert.Equal(expectedOperation, nativeCall.Operation);
         using var parameters = JsonDocument.Parse(nativeCall.ParamsJson);

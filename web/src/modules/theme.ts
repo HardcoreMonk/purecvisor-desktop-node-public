@@ -4,15 +4,16 @@
 window.PCV = window.PCV || {};
 (function(PCV) {
 var THEME_PREVIEWS = [
-  { id: 'supanova',         name: 'SUPANOVA DOCS',  colors: ['#ffffff','#12627a','#18794e','#b42332'] },
   { id: 'supanova-cyan',    name: 'SUPANOVA CYAN',    colors: ['#07090c','#0891b2','#34d399','#f43f5e'] },
   { id: 'supanova-hicontrast', name: 'SUPANOVA HI-CONTRAST', colors: ['#030405','#facc15','#ffffff','#ff4d6d'] },
   { id: 'supanova-mockup',  name: 'SUPANOVA MOCKUP', colors: ['#0a0e14','#00e0ff','#24e08c','#ff4d61'] },
 ];
-var SUPANOVA_THEMES = ['supanova', 'supanova-cyan', 'supanova-hicontrast', 'supanova-mockup'];
+var SUPANOVA_THEMES = ['supanova-cyan', 'supanova-hicontrast', 'supanova-mockup'];
+var DEFAULT_THEME = 'supanova-cyan';
 function sanitizeTheme(t) {
   if (t === 'contrast') t = 'supanova-hicontrast'; // legacy Desktop Node theme name
-  return SUPANOVA_THEMES.indexOf(t) >= 0 ? t : 'supanova';
+  if (t === 'supanova') t = DEFAULT_THEME; // retired light theme; Part 2 paints the console dark
+  return SUPANOVA_THEMES.indexOf(t) >= 0 ? t : DEFAULT_THEME;
 }
 function changeTheme(t) {
   t = sanitizeTheme(t);
@@ -26,7 +27,7 @@ function changeTheme(t) {
 }
 function toggleTheme() {
   const themes = SUPANOVA_THEMES;
-  const cur = document.documentElement.getAttribute('data-theme') || 'supanova';
+  const cur = document.documentElement.getAttribute('data-theme') || DEFAULT_THEME;
   const idx = (themes.indexOf(cur) + 1) % themes.length;
   changeTheme(themes[idx]);
   const s = document.getElementById('theme-select');
@@ -90,15 +91,15 @@ function openThemeEditor() {
       el('span', { style: 'font-size:9px;color:var(--fg2)', id: 'te-val-' + v }, hex));
   });
   showModal([
-    el('h2', null, 'Theme Editor'),
+    el('h2', null, t('copy.theme.editor')),
     el('div', { class: 'theme-editor' },
       el('div', { class: 'theme-editor-grid' }, items)),
     el('div', { class: 'theme-editor-actions' },
-      el('button', { class: 'btn btn-g', onclick: 'saveCustomTheme()' }, 'Save as Custom'),
-      el('button', { class: 'btn', onclick: 'exportTheme()' }, 'Export JSON'),
-      el('button', { class: 'btn', onclick: 'importTheme()' }, 'Import'),
-      el('button', { class: 'btn btn-r', onclick: 'closeModal()', style: 'margin-left:8px' }, _L ? _L('원래 테마로', 'Reset to Original') : 'Reset to Original'),
-      el('button', { class: 'btn btn-r', onclick: 'closeModal()' }, 'Cancel'))
+      el('button', { class: 'btn btn-g', onclick: 'saveCustomTheme()' }, t('copy.theme.save')),
+      el('button', { class: 'btn', onclick: 'exportTheme()' }, t('copy.theme.export')),
+      el('button', { class: 'btn', onclick: 'importTheme()' }, t('copy.theme.import')),
+      el('button', { class: 'btn btn-r', onclick: 'closeModal()', style: 'margin-left:8px' }, t('copy.theme.reset')),
+      el('button', { class: 'btn btn-r', onclick: 'closeModal()' }, t('copy.theme.cancel')))
   ], {
     onClose: function () {
       if (themeEditorSnapshot !== snap) return;
@@ -131,7 +132,7 @@ function saveCustomTheme() {
   if (!applied) { toast(t('msg.invalid_theme'), false); return; }
   localStorage.setItem('pcv-custom-theme', JSON.stringify(applied));
   themeEditorSnapshot = null;
-  toast('Custom theme saved');
+  toast(t('copy.theme.saved'));
   closeModal();
 }
 function applyCustomTheme(vars) {
@@ -194,7 +195,7 @@ function exportUiSettings() {
   a.href = URL.createObjectURL(blob);
   a.download = 'purecvisor-settings.json';
   a.click();
-  toast(_L ? _L('설정 내보내기 완료', 'Settings exported') : 'Settings exported');
+  toast(t('copy.settings.exported'));
 }
 function importUiSettings() {
   var input = document.createElement('input');
@@ -223,9 +224,9 @@ function importUiSettings() {
         if (s.autoTheme) localStorage.setItem('pcv-auto-theme', s.autoTheme);
         if (s.favorites) localStorage.setItem('pcv-favorites', s.favorites);
         if (s.customTheme && s.theme !== 'custom') localStorage.setItem('pcv-custom-theme', s.customTheme);
-        toast(_L ? _L('설정 가져오기 완료 — 새로고침 권장', 'Settings imported — refresh recommended') : 'Settings imported');
+        toast(t('copy.settings.imported'));
       } catch (err) {
-        toast(_L ? _L('잘못된 설정 파일', 'Invalid settings file') : 'Invalid', false);
+        toast(t('copy.settings.invalid'), false);
       }
     };
     reader.readAsText(file);

@@ -5219,7 +5219,17 @@ dialog::backdrop {
 .vm-detail-panel {
   position: sticky;
   top: 14px;
+  max-height: calc(100vh - 9rem);
+  overflow: auto;
   padding: 12px;
+}
+
+.vm-workspace > .table-wrap {
+  position: sticky;
+  top: 14px;
+  align-self: start;
+  max-height: calc(100vh - 9rem);
+  overflow: auto;
 }
 
 .vm-context-card {
@@ -5857,6 +5867,30 @@ textarea[aria-invalid="true"] {
   color: var(--red);
 }
 
+.pcv-clone-modal {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.pcv-clone-form label {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.pcv-clone-storage label {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.pcv-clone-modal input {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
 .pcv-hw-cell,
 .pcv-clone-preview {
   background: var(--bg2);
@@ -5976,7 +6010,27 @@ textarea[aria-invalid="true"] {
 
 .pcv-checkpoint-actions {
   display: flex;
+  flex-wrap: nowrap;
   gap: var(--space-sm);
+}
+
+td.pcv-checkpoint-actions {
+  width: 1%;
+  white-space: nowrap;
+  overflow-wrap: normal;
+}
+
+.pcv-checkpoint-actions button {
+  flex: 0 0 auto;
+  white-space: nowrap;
+  overflow-wrap: normal;
+  word-break: keep-all;
+}
+
+.checkpoint-schedule-readback p,
+.checkpoint-schedule-preview {
+  max-width: 100%;
+  overflow-wrap: anywhere;
 }
 
 .pcv-checkpoint-create-modal,

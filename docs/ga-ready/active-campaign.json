@@ -26,9 +26,10 @@
     "Task 4": "2",
     "Task 5": "2"
   },
-  "next_task": "Task 2",
+  "next_task": "Task 3",
   "completed_tasks": [
     "Task 1",
+    "Task 2",
     "Task 4",
     "Task 5"
   ],

@@ -678,6 +678,38 @@ test("clone modal blocks invalid names and sends preview before clone", async ()
   assert.equal(modal.querySelector(".pcv-clone-job").querySelector("a").textContent, "새 VM 열기");
 });
 
+test("BL-0031 clone preview shows KB MB or GB instead of raw bytes", async () => {
+  const sandbox = createEnv();
+  let releasePreview = null;
+  install(sandbox, alpha, {
+    desktopApi: {
+      previewVmClone: () => new Promise((resolve) => { releasePreview = resolve; })
+    }
+  });
+  sandbox.openVmCloneModal("id-1");
+  const modal = sandbox.document.body.querySelector(".pcv-clone-modal");
+  const preview = [...modal.childNodes].find((node) => node.textContent === "미리보기");
+  preview.click();
+  releasePreview({ planned_copy_bytes: 1048576 });
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  const text = modal.querySelector(".pcv-clone-preview").textContent;
+  assert.match(text, /1\.0 MB/);
+  assert.equal(text.includes("1048576"), false);
+  assert.equal(text.includes("바이트"), false);
+});
+
+test("BL-0031 delete message omits the checkpoint clause when the count is zero", async () => {
+  const sandbox = createEnv();
+  install(sandbox, { id: "id-1", name: "alpha", state: "Off", checkpoints: { count: 0 } });
+  const pending = sandbox.queueVmDelete("id-1");
+  const dialog = sandbox.document.body.querySelector('[role="dialog"]');
+  assert.match(dialog.textContent, /alpha/);
+  assert.equal(dialog.textContent.includes("checkpoint"), false);
+  assert.equal(dialog.textContent.includes("0개"), false);
+  dialog.querySelector('[data-pcv-confirm="cancel"]').click();
+  await pending;
+});
+
 test("changing the clone name disables start until preview succeeds again", async () => {
   const sandbox = createEnv();
   const queued = [];
