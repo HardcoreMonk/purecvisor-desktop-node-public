@@ -124,6 +124,20 @@ public sealed class PcvDesktopNodeInstallerWixSourceContractTests
         Assert.Contains("$(var.PayloadRoot)\\web\\index.html", sources);
         Assert.DoesNotContain(sources, source => source?.Contains("\\web\\app.js", StringComparison.OrdinalIgnoreCase) == true);
         Assert.DoesNotContain(sources, source => source?.Contains("\\web\\styles.css", StringComparison.OrdinalIgnoreCase) == true);
+        using var manifest = System.Text.Json.JsonDocument.Parse(
+            RepositoryContractContext.Find().ReadUtf8Text("web/payload-manifest.json"));
+        var manifestFiles = manifest.RootElement.GetProperty("files").EnumerateArray()
+            .Select(item => item.GetString())
+            .ToHashSet(StringComparer.Ordinal);
+        var ownedSources = verifier.WebPayloadDocument.Descendants(verifier.Namespace + "File")
+            .Select(file => (string?)file.Attribute("Source"))
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        Assert.True(
+            manifestFiles.Contains("app.js") &&
+            manifestFiles.Contains("styles.css") &&
+            ownedSources.Contains(@"$(var.PayloadRoot)\web\app.js") &&
+            ownedSources.Contains(@"$(var.PayloadRoot)\web\styles.css"),
+            "BL-0029: web/app.js and web/styles.css stay in web/payload-manifest.json files and are owned by WebPayload.wxs so the product Update preflight of Desktop Node 0.42.96 and earlier accepts newer payloads. index.html does not load them. Removing them is BL-0030.");
         Assert.DoesNotContain(sources, source => source?.Contains("\\api\\", StringComparison.OrdinalIgnoreCase) == true);
         Assert.DoesNotContain(sources, source => source?.Contains("\\hyperv\\", StringComparison.OrdinalIgnoreCase) == true);
         Assert.DoesNotContain(sources, source => source?.Contains("\\service\\", StringComparison.OrdinalIgnoreCase) == true);

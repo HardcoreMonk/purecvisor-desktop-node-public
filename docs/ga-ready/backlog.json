@@ -326,6 +326,42 @@
       "needs_design": false,
       "status": "open",
       "closed_by": null
+    },
+    {
+      "id": "BL-0028",
+      "found_on": "2026-11-08",
+      "source": "docs/superpowers/plans/2026-11-08-purecvisor-desktop-node-train-04297.md Task 3a (clean-host base VHD 재생성)",
+      "summary": "보존 VM pcv-guest-installed-04253-r1의 disk는 differencing VHD이고, 부모가 read-only archive 저장소의 artifacts/image-cache 아래 20348.169 평가판 VHD였다. 2026-11-05 재클론 뒤 그 부모 파일이 없어 이 VM은 지금 시작할 수 없다. Task 3a는 같은 원본을 public 저장소 artifacts/image-cache에 다시 받았지만 VM의 부모 경로와 다르다. 부모를 옛 경로에 되돌릴지, 다시 연결할지(Set-VHD -ParentPath), VM 보존을 끝낼지는 보존 VM 변경이라 사용자 결정이다. Invoke-PcvInternalCleanHostInstallUpdateRollbackSmoke.ps1의 DefaultSourceBaseVhdPath도 archive 경로를 가리킨다.",
+      "classification": "undecided",
+      "basis": null,
+      "out_of_scope_ref": null,
+      "needs_design": false,
+      "status": "open",
+      "closed_by": null
+    },
+    {
+      "id": "BL-0029",
+      "found_on": "2026-11-08",
+      "source": "docs/superpowers/plans/2026-11-08-purecvisor-desktop-node-train-04297.md Task 4 (pair clean-host bucket)",
+      "summary": "train 0.42.97 pair의 clean-host bucket에서 0.42.96 설치본의 제품 Update(Invoke-PcvDesktopNodeProduct.ps1 -Action Update)가 0.42.97 update ZIP을 PCV_PRODUCT_UPDATE_PAYLOAD_FILE_MISSING(web\\app.js, web\\styles.css)으로 거절했다. 0.42.96 이하 PcvDesktopNodeProduct.psm1의 Test-PcvDesktopNodeUpdatePayload는 update payload에 web\\app.js, web\\index.html, web\\styles.css를 요구하는데 PR #106(옛 콘솔 퇴역 9b)이 payload에서 옛 콘솔 파일을 지웠다. 0.42.96 설치본은 그 뒤 버전으로 제품 Update를 할 수 없다. 사용자 결정 6에 따라 수정은 같은 plan Task 4c(새 셸이 읽지 않는 최소 호환 파일을 payload에 남김)다.",
+      "classification": "undecided",
+      "basis": null,
+      "out_of_scope_ref": null,
+      "needs_design": false,
+      "status": "open",
+      "closed_by": null
+    },
+    {
+      "id": "BL-0030",
+      "found_on": "2026-11-08",
+      "source": "docs/superpowers/plans/2026-11-08-purecvisor-desktop-node-train-04297.md Task 4 (pair lifecycle-product-update-rollback bucket)",
+      "summary": "pair의 lifecycle-product-update-rollback bucket은 저장소의 새 Invoke-PcvDesktopNodeProduct.ps1로 제품 Update를 돌려 BL-0029를 잡지 못했고(PASS), 이전 버전 wrapper 호환은 VM이 필요한 clean-host bucket만 본다. Lane 1 PR 단계에서 이전 승격 버전 모듈의 update preflight를 새 payload에 돌리는 시험이 없다. 그리고 Task 4c의 호환 파일(web/app.js, web/styles.css)을 언제 뺄지(0.42.96 이하 설치본의 직접 제품 Update 지원을 끝내고 MSI 업그레이드를 요구할지)는 정해지지 않았다. 둘 다 설계 결정이다.",
+      "classification": "undecided",
+      "basis": null,
+      "out_of_scope_ref": null,
+      "needs_design": true,
+      "status": "open",
+      "closed_by": null
     }
   ]
 }

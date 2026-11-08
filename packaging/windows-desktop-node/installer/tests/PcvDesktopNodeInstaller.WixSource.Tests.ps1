@@ -143,6 +143,12 @@ Describe 'Desktop Node WiX source contract' {
         $product | Should -Match '<RemoveFolder Id="RemoveWebFolder" On="uninstall" />'
         $product | Should -Match '<RemoveFolder Id="RemoveInstallFolder" On="uninstall" />'
         $fragment = Get-Content -Raw -LiteralPath (Join-Path $script:InstallerRoot 'WebPayload.wxs')
+        # BL-0029: comment-only compatibility files for the 0.42.96 and earlier update preflight.
+        $fragment | Should -Match 'Source="\$\(var\.PayloadRoot\)\\web\\app\.js"' -Because 'BL-0029 WebPayload.wxs must own web\app.js'
+        $fragment | Should -Match 'Source="\$\(var\.PayloadRoot\)\\web\\styles\.css"' -Because 'BL-0029 WebPayload.wxs must own web\styles.css'
+        $payloadFiles = @((Get-Content -Raw -LiteralPath (Join-Path $PSScriptRoot '..\..\..\..\web\payload-manifest.json') | ConvertFrom-Json).files)
+        $payloadFiles | Should -Contain 'app.js' -Because 'BL-0029'
+        $payloadFiles | Should -Contain 'styles.css' -Because 'BL-0029'
         $directoryCount = ([regex]::Matches($fragment, '<Directory Id="')).Count
         $directoryCount | Should -BeGreaterThan 0
         ([regex]::Matches($fragment, '<RemoveFolder Id="DesktopNodeWebDirRemove_[A-Za-z0-9_]+" On="uninstall" />')).Count | Should -Be $directoryCount
