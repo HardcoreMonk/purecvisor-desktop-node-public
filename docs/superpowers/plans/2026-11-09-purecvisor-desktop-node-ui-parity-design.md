@@ -32,7 +32,9 @@
 
 ## Task 1: 감사 문서
 
-- [ ] Claude. `docs/web-console-upstream-parity-audit-2026-11-09.md`를 쓴다. 기준(원본 `fd754e2`, ADR-0018 출처 `ed147de`, Desktop Node `a1cd2e4`, 설치본 `0.42.99`), 방법, 결론(원인은 원본 변경이 아니라 본문 영역 미이식), 원본 화면 대응표, 발견 61건(A·B·C, 원본 위치, Desktop Node 위치, 분류, 체감, 규모), 지금 틀린 동작, 분류 집계, Nonclaims를 담는다. Desktop Node 쪽 줄 번호는 `a1cd2e4`에서 표본으로 다시 확인한다. 검증: `git diff --check`, `dotnet test src/DesktopNode.Delivery.Tests -c Release`. 로컬 commit.
+- [x] Claude. `docs/web-console-upstream-parity-audit-2026-11-09.md`를 쓴다. 기준(원본 `fd754e2`, ADR-0018 출처 `ed147de`, Desktop Node `a1cd2e4`, 설치본 `0.42.99`), 방법, 결론(원인은 원본 변경이 아니라 본문 영역 미이식), 원본 화면 대응표, 발견 61건(A·B·C, 원본 위치, Desktop Node 위치, 분류, 체감, 규모), 지금 틀린 동작, 분류 집계, Nonclaims를 담는다. Desktop Node 쪽 줄 번호는 `a1cd2e4`에서 표본으로 다시 확인한다. 검증: `git diff --check`, `dotnet test src/DesktopNode.Delivery.Tests -c Release`. 로컬 commit.
+
+실행 기록(2026-11-09): 감사 문서를 썼다. 발견 61건(A 23, B 18, C 20)의 분류는 a 33, a-API 5, b 6, c 5, d 10, same 2다. 지금 틀린 동작 9건을 따로 모았다. `a1cd2e4`에서 다시 확인한 것: `web/`이 설치본 payload `f7426d1`과 같음, `.vm-workspace` 격자(`web/style.css:5212-5214`, `c76a831` 2026-08-25부터), `createDataTable`·`emptyStatePro`·`renderLoadError`의 정의 파일 밖 호출 0, `mobile.ts:219,242,328-329`가 부르는 네 함수가 export(`vm.ts:2738`)와 정의 어디에도 없음, `lh-state`를 쓰는 TS 없음. 원본 clone과 캡처 경로는 문서에 적지 않았다(홈 경로·사설 IP 검색 0건). 검증: `git diff --check` 통과, `dotnet test src/DesktopNode.Delivery.Tests -c Release` 785/785. host mutation 없음.
 
 ## Task 2: 개편 설계와 ADR
 
