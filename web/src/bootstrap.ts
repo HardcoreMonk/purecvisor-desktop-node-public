@@ -22,7 +22,7 @@ function bindEvents() {
   });
   els.clearToken?.addEventListener('click', clearBrowserToken);
   els.themeSelect?.addEventListener('change', () => {
-    state.theme = els.themeSelect.value || 'supanova';
+    state.theme = els.themeSelect.value || 'supanova-cyan';
     render();
   });
   els.languageSelect?.addEventListener('change', () => {

@@ -257,6 +257,17 @@ function resolveInitialApiBaseUrl(): string {
     : window.location.origin;
 }
 
+function resolveInitialTheme(): string {
+  let theme = '';
+  try {
+    theme = document.documentElement?.getAttribute('data-theme') || '';
+  } catch (error) {
+    theme = '';
+  }
+  if (!theme || theme === 'supanova') return 'supanova-cyan';
+  return theme;
+}
+
 const state: PcvState = {
   apiBaseUrl: resolveInitialApiBaseUrl(),
   apiToken: '',
@@ -322,7 +333,7 @@ const state: PcvState = {
   refreshRequestId: 0,
   refreshController: null,
   jobPollDelayMs: 2000,
-  theme: 'supanova',
+  theme: resolveInitialTheme(),
   language: 'ko'
 };
 

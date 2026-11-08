@@ -738,6 +738,7 @@ function renderAuthGate() {
 
 function applyUiPreferences() {
   if (document.documentElement) {
+    if (state.theme === 'supanova') state.theme = 'supanova-cyan';
     document.documentElement.dataset.theme = state.theme;
     document.documentElement.lang = state.language;
   }

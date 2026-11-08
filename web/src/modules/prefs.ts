@@ -7,7 +7,7 @@ window.PCV = window.PCV || {};
 (function (PCV) {
   function L(ko, en) { return (typeof _L === 'function') ? _L(ko, en) : ko; }
   function legacyState() { return window.state && typeof window.state === 'object' ? window.state : null; }
-  function currentTheme() { return document.documentElement.getAttribute('data-theme') || 'supanova'; }
+  function currentTheme() { return document.documentElement.getAttribute('data-theme') || 'supanova-cyan'; }
   function applyTheme(value) {
     if (PCV.theme && typeof PCV.theme.change === 'function') PCV.theme.change(value);
     var st = legacyState();

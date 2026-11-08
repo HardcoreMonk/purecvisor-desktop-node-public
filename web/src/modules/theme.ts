@@ -4,15 +4,16 @@
 window.PCV = window.PCV || {};
 (function(PCV) {
 var THEME_PREVIEWS = [
-  { id: 'supanova',         name: 'SUPANOVA DOCS',  colors: ['#ffffff','#12627a','#18794e','#b42332'] },
   { id: 'supanova-cyan',    name: 'SUPANOVA CYAN',    colors: ['#07090c','#0891b2','#34d399','#f43f5e'] },
   { id: 'supanova-hicontrast', name: 'SUPANOVA HI-CONTRAST', colors: ['#030405','#facc15','#ffffff','#ff4d6d'] },
   { id: 'supanova-mockup',  name: 'SUPANOVA MOCKUP', colors: ['#0a0e14','#00e0ff','#24e08c','#ff4d61'] },
 ];
-var SUPANOVA_THEMES = ['supanova', 'supanova-cyan', 'supanova-hicontrast', 'supanova-mockup'];
+var SUPANOVA_THEMES = ['supanova-cyan', 'supanova-hicontrast', 'supanova-mockup'];
+var DEFAULT_THEME = 'supanova-cyan';
 function sanitizeTheme(t) {
   if (t === 'contrast') t = 'supanova-hicontrast'; // legacy Desktop Node theme name
-  return SUPANOVA_THEMES.indexOf(t) >= 0 ? t : 'supanova';
+  if (t === 'supanova') t = DEFAULT_THEME; // retired light theme; Part 2 paints the console dark
+  return SUPANOVA_THEMES.indexOf(t) >= 0 ? t : DEFAULT_THEME;
 }
 function changeTheme(t) {
   t = sanitizeTheme(t);
@@ -26,7 +27,7 @@ function changeTheme(t) {
 }
 function toggleTheme() {
   const themes = SUPANOVA_THEMES;
-  const cur = document.documentElement.getAttribute('data-theme') || 'supanova';
+  const cur = document.documentElement.getAttribute('data-theme') || DEFAULT_THEME;
   const idx = (themes.indexOf(cur) + 1) % themes.length;
   changeTheme(themes[idx]);
   const s = document.getElementById('theme-select');

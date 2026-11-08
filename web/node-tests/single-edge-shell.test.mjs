@@ -19,7 +19,7 @@ test("head declares the Single Edge security and asset wiring for the Desktop No
   assert.match(html, /<link rel="stylesheet" href="style\.css\?v=/);
   assert.match(html, /<link rel="manifest" href="manifest\.json">/);
   assert.match(html, /localStorage\.getItem\('pcv-theme'\)/, "theme bootstrap");
-  assert.match(html, /var allowed = \['supanova', 'supanova-cyan', 'supanova-hicontrast', 'supanova-mockup'\]/);
+  assert.match(html, /var allowed = \['supanova-cyan', 'supanova-hicontrast', 'supanova-mockup'\]/);
   assert.match(html, /<title>PureCVisor Desktop Node/);
 });
 
@@ -46,6 +46,52 @@ test("content area carries every Desktop Node view and dialog", () => {
   const cbStart = html.indexOf('<div class="cb" id="cb"');
   const dashboard = html.indexOf('<section id="dashboard"');
   assert.ok(cbStart > 0 && dashboard > cbStart, "views sit inside the shell content box");
+});
+
+test("BL-0026 the theme selector omits the light theme and a stored light preference becomes the default", () => {
+  const themeSource = fs.readFileSync(fileURLToPath(new URL("../src/modules/theme.ts", import.meta.url)), "utf8");
+  const css = fs.readFileSync(fileURLToPath(new URL("../style.css", import.meta.url)), "utf8");
+  const part2 = css.slice(css.indexOf("Part 2"));
+  assert.match(part2, /--bg:\s*#0a0f1a/, "Part 2 keeps the current dark console");
+  assert.match(css, /\[data-theme="supanova"\]\s*\{[^}]*--bg:\s*#ffffff/, "the light palette stays in CSS and is not what the selector offers");
+
+  const themeWindow = {
+    PCV: {},
+    document: { documentElement: { style: {}, getAttribute() { return null; }, setAttribute() {}, removeAttribute() {} }, getElementById() { return null; } },
+    localStorage: { getItem() { return null; }, setItem() {} },
+    dispatchEvent() {}
+  };
+  const loaded = new Function("window", "document", "localStorage", `${themeSource}\nreturn window;`)(themeWindow, themeWindow.document, themeWindow.localStorage);
+  const ids = loaded.PCV.theme.PREVIEWS.map((theme) => theme.id);
+  assert.deepEqual(ids, ["supanova-cyan", "supanova-hicontrast", "supanova-mockup"]);
+  assert.equal(loaded.sanitizeTheme("supanova"), "supanova-cyan");
+  assert.equal(loaded.sanitizeTheme("contrast"), "supanova-hicontrast");
+  assert.equal(loaded.sanitizeTheme("supanova-mockup"), "supanova-mockup");
+  assert.equal(loaded.sanitizeTheme(""), "supanova-cyan");
+
+  function boot(stored) {
+    const store = new Map();
+    if (stored !== undefined) store.set("pcv-theme", stored);
+    const root = {
+      theme: null,
+      style: { setProperty() {}, removeProperty() {} },
+      setAttribute(name, value) { if (name === "data-theme") this.theme = value; },
+      getAttribute(name) { return name === "data-theme" ? this.theme : null; }
+    };
+    const localStorage = {
+      getItem(key) { return store.has(key) ? store.get(key) : null; },
+      setItem(key, value) { store.set(key, String(value)); }
+    };
+    const script = html.match(/<script>\s*(\(function\(\) \{[\s\S]*?pcv-theme[\s\S]*?\}\)\(\);)\s*<\/script>/)[1];
+    new Function("document", "localStorage", script)({ documentElement: root }, localStorage);
+    return { theme: root.theme, stored: store.get("pcv-theme") };
+  }
+  assert.deepEqual(boot("supanova"), { theme: "supanova-cyan", stored: "supanova-cyan" });
+  assert.deepEqual(boot(undefined), { theme: "supanova-cyan", stored: "supanova-cyan" });
+  assert.equal(boot("supanova-hicontrast").theme, "supanova-hicontrast");
+  assert.equal(boot("contrast").theme, "supanova-hicontrast");
+  const custom = boot("custom");
+  assert.equal(custom.theme, "supanova-cyan");
 });
 
 test("scripts load in the Single Edge order with the Desktop Node config first and nothing Linux-specific", () => {
