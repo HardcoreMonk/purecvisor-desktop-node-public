@@ -71,11 +71,18 @@
 
 ## Task 0: 출발
 
-- [ ] 먼저 payload commit `f7426d1`의 main push Development Gates와 Public Boundary가 success임을 run id로 적는다.
+- [x] 먼저 payload commit `f7426d1`의 main push Development Gates와 Public Boundary가 success임을 run id로 적는다.
   - `release-train.json`의 `queue` 3행을 train `0.42.99-admin-smoke`의 `carriages` `[113, 115, 116]`로 옮긴다.
   - `status=running`, `departed_at`, `source_commit`을 적고, `queue`는 빈 목록으로 둔다.
   - `docs/ga-ready/trains/0.42.99-admin-smoke.host-inputs.json`을 쓴다. ISO는 위 smoke ISO다.
   - 검증: `PcvReleaseTrainContractTests`, `git diff --check`. host mutation 없음. 로컬 commit.
+
+실행 기록(2026-11-09): 출발 시각은 `2026-11-09T04:23:00+09:00`이다.
+- payload: `f7426d1a32706ff3c52291bed4e19bff5140ea32`(PR #117 merge, origin/main)
+- payload main push run: Development Gates `42514135089`와 Public Boundary Contract `42514135093`이 success다.
+- carriages `[113, 115, 116]`(3행)이다. queue를 비우고 train `status=running`으로 두었다.
+- `docs/ga-ready/trains/0.42.99-admin-smoke.host-inputs.json`의 ISO는 `artifacts/smoke-media-20261108/pcv-route-parity-smoke-20261108.iso`(`45056` byte, 있음)다.
+- 검증: `PcvReleaseTrainContractTests` `6/6`, `git diff --check` 통과. host mutation은 없다. operational current는 `0.42.98-admin-smoke` 그대로다.
 
 ## Task 1: package
 
