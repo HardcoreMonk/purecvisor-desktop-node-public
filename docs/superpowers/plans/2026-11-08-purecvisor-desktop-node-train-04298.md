@@ -204,7 +204,24 @@ PR #109(`lane1/train-04298-20261108`)를 열었고 Required CI 다섯 개(`dotne
 
 ## Task 10: 승격 문서와 release-train 승격 (이관: `train-04297-20261108` Task 12)
 
-- [ ] Lane 3. `Invoke-PcvLane3PromotionDocs.ps1` dry-run, `-Apply`, `-Check`와 Lane 3 숨은 단계(descriptor chain, ledger 행, index 절, D2 시험, spec pin, current evidence 시험 version 줄)를 한다. `release-train.json` train `0.42.98-admin-smoke` `status=promoted`, `operational_current=0.42.98-admin-smoke`. 그다음 `Update-PcvCurrentEvidenceDocs.ps1 -Apply`/`-Check`, `Update-PcvContractSpecPins.ps1 -Apply`, `dotnet test src/DesktopNode.Delivery.Tests -c Release`. 로컬 commit.
+- [x] Lane 3. `Invoke-PcvLane3PromotionDocs.ps1` dry-run, `-Apply`, `-Check`와 Lane 3 숨은 단계(descriptor chain, ledger 행, index 절, D2 시험, spec pin, current evidence 시험 version 줄)를 한다. `release-train.json` train `0.42.98-admin-smoke` `status=promoted`, `operational_current=0.42.98-admin-smoke`. 그다음 `Update-PcvCurrentEvidenceDocs.ps1 -Apply`/`-Check`, `Update-PcvContractSpecPins.ps1 -Apply`, `dotnet test src/DesktopNode.Delivery.Tests -c Release`. 로컬 commit.
+
+실행 기록(2026-11-08): promotion 도구와 수기 갱신을 했다.
+- `Invoke-PcvLane3PromotionDocs.ps1 -SpecPath packaging/windows-desktop-node/tests/fixtures/lane3-promotion-docs-spec-04298.json`
+  - dry-run `ok`: current evidence 문서 stale, 나머지는 planned
+  - `-Apply` `ok`: current evidence 문서, descriptor chain, ledger head·rows, index 절, spec pin 갱신
+  - `-Check`: 모든 단계 current
+- 숨은 단계: config spec pin 3개와 Delivery verifier 상수 3개는 도구가 갱신했다. current evidence 시험은 version 정규식이라 손댈 줄이 없다.
+- `release-train.json`: train `0.42.98-admin-smoke` `status=promoted`, `operational_current=0.42.98-admin-smoke`
+- 수기 갱신:
+  - `docs/DOCUMENTATION_INDEX.md` 권위 줄 넷(payload `8e4ebe2`, 운영 `0.42.98-admin-smoke`, 최신 `main` `4e8562f`, 설치본과 S4 LAN 모드)
+  - `docs/FEATURE_IMPLEMENTATION_LEDGER.md` operational 줄 둘
+  - `docs/DEVELOPER_INDEX.md` train `0.42.97`·`0.42.98` 줄
+- 검증:
+  - `Update-PcvContractSpecPins.ps1 -Check` current(spec 9개)
+  - `Update-PcvCurrentEvidenceDocs.ps1 -Check` ok
+  - `dotnet test src/DesktopNode.Delivery.Tests -c Release` 781/781
+  - `DesktopNode.Verification.Tests` 678/679: dirty tree의 PolicyBoundary 1건만 실패, commit 뒤 Task 11에서 다시 본다
 
 ## Task 11: Lane 3 PR B (이관: `train-04297-20261108` Task 13)
 
