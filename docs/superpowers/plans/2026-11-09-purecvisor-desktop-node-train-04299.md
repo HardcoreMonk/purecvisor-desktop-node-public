@@ -120,11 +120,27 @@ operational current는 `0.42.98-admin-smoke` 그대로다.
 
 ## Task 3: pair
 
-- [ ] Lane 2. orchestrator를 `-PlanOnly`로 돌린 뒤 `-Execute`로 돌린다.
+- [x] Lane 2. orchestrator를 `-PlanOnly`로 돌린 뒤 `-Execute`로 돌린다.
   - 입력: campaign `manual-admin-campaign-20261109-04298-04299`, baseline `artifacts/admin-smoke-package-20261108-04298`, target Task 1 package, base VHD `20348.5761-20261108.vhd`.
   - 통과 조건: 여섯 bucket PASS, closed descriptor, `observation_error` 없음.
   - 끝 상태: 설치본 `0.42.99`·ARP 1개·service Running/Automatic·Web 200·보존 VM 둘 그대로.
   - `train-facts`로 pair 문서를 쓴다. 로컬 commit.
+
+실행 기록(2026-11-09): orchestrator `-PlanOnly`는 `ok=true`였다(host mutation 없음). 실행 전 ARP는 `0.42.98` 1개였다.
+- `-Execute`는 root `artifacts/manual-admin-campaign-20261109-04298-04299`에서 04:29:46부터 04:33:59 KST까지 `253`초 돌았다.
+- 여섯 bucket이 모두 PASS다: `manual-admin-rebaseline-readiness`, `lifecycle-product-update-rollback`, `clean-host-windows-update`, `burn-bootstrapper-lifecycle`, `msix-package-lifecycle-smoke`, `installed-runtime-ops-summary`.
+- descriptor: closed descriptor를 냈다(SHA-256 `1bc134120e125a9566a93690a157af5c73091703188d1f978e74e666c63cb3b4`). observation은 15개이고 `observation_error`는 0이다. restoration은 시도하지 않았다(필요 없음).
+- clean-host:
+  - base는 `explicit` UBR `5761`이다. `current-base.json`은 같은 base라 다시 지정하지 않았다.
+  - baseline `0.42.98` MSI(`9a26d4ce…`) 설치 뒤 제품 Update로 `0.42.99`가 됐고, Rollback으로 돌아왔다. 둘 다 exit 0이다.
+  - Web은 200이고 blocker는 `none`이다.
+- 끝 상태:
+  - 설치본 `0.42.99-admin-smoke+4931d6d…`, ARP `{004AC8CC…}` `0.42.99` 1개, service Running/Automatic, Web 200, PureCVisor 방화벽 규칙 0이다.
+  - `pcv-guest-installed-04253-r1` Off·`pcv-it-s2-source` Off(그대로)다.
+  - data root에는 제품이 다시 시작하며 만든 빈 계정 저장소(0개)가 있고 loopback 세션은 200이다.
+- 문서: `train-facts`로 pair 문서 여섯 개(ops-summary, update-rollback, clean-host, burn, msix, pair-descriptor)를 썼다. `train-evidence --check`는 일곱 문서 모두 `current`다. `TrainEvidenceGoldenTests`·`TrainFactsBuilderTests`는 `25/25`다. 새 문서의 주소는 loopback과 MSIX version뿐이다.
+
+operational current는 `0.42.98-admin-smoke` 그대로다.
 
 ## Task 4: fullgate
 
