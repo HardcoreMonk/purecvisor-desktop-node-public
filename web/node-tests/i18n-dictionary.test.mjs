@@ -159,8 +159,62 @@ test("BL-0024 shell copy uses i18n keys and the Korean default", () => {
   const events = fs.readFileSync(webRoot + "src/modules/events.ts", "utf8");
   assert.doesNotMatch(events, /'job cancel'|'job retry'|'job reconciliation'|'running guest execution cancel'/);
 
+  const monitor = fs.readFileSync(webRoot + "src/modules/monitor.ts", "utf8");
+  const ops = fs.readFileSync(webRoot + "src/modules/ops.ts", "utf8");
+  const theme = fs.readFileSync(webRoot + "src/modules/theme.ts", "utf8");
+  for (const [source, key] of [
+    [monitor, "copy.mon.bundle_kicker"],
+    [monitor, "copy.mon.bundle_title"],
+    [monitor, "copy.mon.create_bundle"],
+    [monitor, "copy.mon.token_kicker"],
+    [monitor, "copy.mon.token_title"],
+    [monitor, "copy.mon.clear_browser_token"],
+    [ops, "copy.events.center"],
+    [ops, "copy.events.severity"],
+    [ops, "copy.jobs.pagination"],
+    [ops, "copy.jobs.load_next"],
+    [ops, "copy.job.cancel"],
+    [theme, "copy.theme.import"],
+    [theme, "copy.theme.cancel"]
+  ]) {
+    assert.match(source, new RegExp(`t\\('${key.replaceAll(".", "\\.")}'\\)`), key);
+  }
+  assert.doesNotMatch(monitor, />Support artifact<|>Diagnostic Bundle<|>Create bundle<|>Auth lifecycle<|>Token Rotation<|>Clear browser token</);
+  assert.doesNotMatch(ops, />Event Center<|>Severity lane<|>Pagination<|>Load next jobs</);
+  assert.doesNotMatch(ops, /: 'Cancel'/);
+  assert.doesNotMatch(theme, /'Import'|'Cancel'/);
+  assert.match(html, /data-i18n-aria="copy\.palette\.label"/);
+  assert.match(html, /aria-label="명령 팔레트"/);
+  assert.doesNotMatch(html, /aria-label="Command palette"/);
+  assert.match(html, /data-i18n="copy\.palette\.search"[^>]*>명령 검색</);
+  assert.doesNotMatch(html, />Command search</);
+  assert.match(html, /data-i18n-placeholder="copy\.palette\.placeholder"/);
+  assert.match(html, /placeholder="화면, 자산, 작업, 진단 검색"/);
+  assert.doesNotMatch(html, /placeholder="Search views, assets, jobs, diagnostics"/);
+
   const koBlock = text.slice(koStart, enStart);
   const enBlock = text.slice(enStart, dataEnd);
+  for (const [key, korean, english] of [
+    ["copy.mon.bundle_kicker", "지원 산출물", "Support artifact"],
+    ["copy.mon.bundle_title", "진단 번들", "Diagnostic Bundle"],
+    ["copy.mon.create_bundle", "번들 만들기", "Create bundle"],
+    ["copy.mon.token_kicker", "인증 수명 주기", "Auth lifecycle"],
+    ["copy.mon.token_title", "토큰 교체", "Token Rotation"],
+    ["copy.mon.clear_browser_token", "브라우저 토큰 지우기", "Clear browser token"],
+    ["copy.events.center", "이벤트 센터", "Event Center"],
+    ["copy.events.severity", "심각도", "Severity lane"],
+    ["copy.jobs.pagination", "페이지", "Pagination"],
+    ["copy.jobs.load_next", "다음 작업 불러오기", "Load next jobs"],
+    ["copy.palette.label", "명령 팔레트", "Command palette"],
+    ["copy.palette.search", "명령 검색", "Command search"],
+    ["copy.palette.placeholder", "화면, 자산, 작업, 진단 검색", "Search views, assets, jobs, diagnostics"],
+    ["copy.theme.import", "가져오기", "Import"],
+    ["copy.theme.cancel", "취소", "Cancel"],
+    ["copy.job.cancel", "취소", "Cancel"]
+  ]) {
+    assert.match(koBlock, new RegExp(`'${key.replaceAll(".", "\\.")}': '${korean}'`), `ko ${key}`);
+    assert.match(enBlock, new RegExp(`'${key.replaceAll(".", "\\.")}': '${english}'`), `en ${key}`);
+  }
   for (const key of ["copy.dashboard.title", "copy.rbac.denied", "copy.list.shown", "copy.api.malformed"]) {
     assert.match(koBlock, new RegExp(`'${key}':\\s*'[^']*[가-힣]`), `ko ${key}`);
     assert.match(enBlock, new RegExp(`'${key}':\\s*'`), `en ${key}`);

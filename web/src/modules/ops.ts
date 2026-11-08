@@ -59,7 +59,7 @@ function getJobCancelScope(job) {
 function formatJobCancelLabel(job) {
   return getJobCancelScope(job) === 'running-guest-execution'
     ? t('copy.job.cancel_guest')
-    : 'Cancel';
+    : t('copy.job.cancel');
 }
 
 function canReconcileVmMutation(job) {
@@ -250,7 +250,7 @@ function renderEventCenter() {
 
   els.eventCenterPanel.innerHTML = `
     <div class="event-center-header">
-      <div><p class="eyebrow">Event Center</p><h3>Severity lane</h3></div>
+      <div><p class="eyebrow">${pcvEscapeHtml(t('copy.events.center'))}</p><h3>${pcvEscapeHtml(t('copy.events.severity'))}</h3></div>
       <div class="event-severity-lane">${severityLane}</div>
     </div>
     <div class="event-center-list">${rows}</div>`;
@@ -367,9 +367,9 @@ function renderActivityPageSummary() {
   const nextOffset = page.next_offset === null || page.next_offset === undefined ? 'none' : page.next_offset;
   const nextButton = nextOffset === 'none'
     ? ''
-    : `<button type="button" data-action="load-next-jobs" data-next-offset="${pcvEscapeHtml(nextOffset)}">Load next jobs</button>`;
+    : `<button type="button" data-action="load-next-jobs" data-next-offset="${pcvEscapeHtml(nextOffset)}">${pcvEscapeHtml(t('copy.jobs.load_next'))}</button>`;
   return `<div class="activity-warning activity-page-summary">
-    <strong>Pagination</strong>
+    <strong>${pcvEscapeHtml(t('copy.jobs.pagination'))}</strong>
     ${pcvEscapeHtml(t('copy.list.shown', { shown: page.returned ?? asArray(page).length, total: page.count ?? asArray(state.serverJobs).length }))}
     / limit=${pcvEscapeHtml(page.limit ?? 50)}
     / offset=${pcvEscapeHtml(page.offset ?? 0)}

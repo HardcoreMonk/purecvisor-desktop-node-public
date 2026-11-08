@@ -1681,14 +1681,17 @@ function verifyTokenRotation(context) {
   context.assertMatch(index, /id="token-rotation-panel"/i, "token-rotation:panel");
   for (const [pattern, label] of [
     [/renderTokenRotation/i, "render"],
-    [/Token Rotation/i, "title"],
+    [/copy\.mon\.token_title/, "title"],
     [/api-token\.dpapi\.json/i, "protected-token-file"],
     [/rotation handoff/i, "handoff"],
-    [/Clear browser token/i, "clear-browser-token"],
+    [/copy\.mon\.clear_browser_token/, "clear-browser-token"],
     [/no service token mutation/i, "no-service-token-mutation"]
   ]) {
     context.assertMatch(combined, pattern, `token-rotation:${label}`);
   }
+  const tokenI18n = context.readText("web/i18n.js");
+  context.assertMatch(tokenI18n, /'copy\.mon\.token_title': 'Token Rotation'/, "token-rotation:title:i18n");
+  context.assertMatch(tokenI18n, /'copy\.mon\.clear_browser_token': 'Clear browser token'/, "token-rotation:clear-browser-token:i18n");
   context.assertNotMatch(
     combined,
     /Restart-Computer|msiexec|New-VM|Remove-VM|New-NetFirewallRule|Register-EventSource|New-EventLog|Register-ScheduledTask/i,

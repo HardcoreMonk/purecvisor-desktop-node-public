@@ -296,8 +296,8 @@ function renderDiagnosticsBundle() {
   els.diagnosticsPanel.innerHTML = `<div class="diagnostics-card">
     <div class="diagnostics-header">
       <div>
-        <span class="muted">Support artifact</span>
-        <strong>Diagnostic Bundle</strong>
+        <span class="muted">${pcvEscapeHtml(t('copy.mon.bundle_kicker'))}</span>
+        <strong>${pcvEscapeHtml(t('copy.mon.bundle_title'))}</strong>
       </div>
       <span class="status-badge ${pending || state.diagnosticBundleError ? 'warn' : 'ok'}">${pcvEscapeHtml(pending || policy.statusLabel)}</span>
     </div>
@@ -305,7 +305,7 @@ function renderDiagnosticsBundle() {
       ${facts.map(([label, value]) => `<div class="diagnostics-fact"><span class="muted">${pcvEscapeHtml(label)}</span><strong>${pcvEscapeHtml(value)}</strong></div>`).join('')}
     </div>
     <div class="diagnostics-actions">
-      <button type="button" data-action="diagnostic-create" ${createDisabled}>Create bundle</button>
+      <button type="button" data-action="diagnostic-create" ${createDisabled}>${pcvEscapeHtml(t('copy.mon.create_bundle'))}</button>
       <button type="button" data-action="diagnostic-download" data-bundle-id="${pcvEscapeHtml(bundleId)}" ${downloadDisabled}>Download latest</button>
       ${policy.retryVisible ? '<button type="button" data-action="diagnostic-retry">Retry action</button>' : ''}
       <span class="muted">Authenticated create/download only; command strings and token values are not rendered.</span>
@@ -343,8 +343,8 @@ function renderTokenRotation() {
   els.tokenRotationPanel.innerHTML = `<div class="token-rotation-card">
     <div class="diagnostics-header">
       <div>
-        <span class="muted">Auth lifecycle</span>
-        <strong>Token Rotation</strong>
+        <span class="muted">${pcvEscapeHtml(t('copy.mon.token_kicker'))}</span>
+        <strong>${pcvEscapeHtml(t('copy.mon.token_title'))}</strong>
       </div>
       <span class="status-badge warn">operator handoff</span>
     </div>
@@ -352,7 +352,7 @@ function renderTokenRotation() {
       ${facts.map(([label, value]) => `<div class="diagnostics-fact"><span class="muted">${pcvEscapeHtml(label)}</span><strong>${pcvEscapeHtml(value)}</strong></div>`).join('')}
     </div>
     <div class="token-rotation-actions">
-      <button type="button" data-action="clear-browser-token">Clear browser token</button>
+      <button type="button" data-action="clear-browser-token">${pcvEscapeHtml(t('copy.mon.clear_browser_token'))}</button>
       <span class="muted">Token values and Authorization headers are not rendered.</span>
     </div>
     ${state.tokenActionMessage ? `<div class="diagnostics-result"><span class="muted">Last browser action</span><strong>${pcvEscapeHtml(state.tokenActionMessage)}</strong></div>` : ''}

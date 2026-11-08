@@ -97,9 +97,9 @@ function openThemeEditor() {
     el('div', { class: 'theme-editor-actions' },
       el('button', { class: 'btn btn-g', onclick: 'saveCustomTheme()' }, t('copy.theme.save')),
       el('button', { class: 'btn', onclick: 'exportTheme()' }, t('copy.theme.export')),
-      el('button', { class: 'btn', onclick: 'importTheme()' }, 'Import'),
+      el('button', { class: 'btn', onclick: 'importTheme()' }, t('copy.theme.import')),
       el('button', { class: 'btn btn-r', onclick: 'closeModal()', style: 'margin-left:8px' }, t('copy.theme.reset')),
-      el('button', { class: 'btn btn-r', onclick: 'closeModal()' }, 'Cancel'))
+      el('button', { class: 'btn btn-r', onclick: 'closeModal()' }, t('copy.theme.cancel')))
   ], {
     onClose: function () {
       if (themeEditorSnapshot !== snap) return;
