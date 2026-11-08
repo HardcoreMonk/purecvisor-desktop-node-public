@@ -152,15 +152,17 @@ noVNC bridge는 Windows Desktop Node listener의 opt-in bridge이며 기본 disa
 
 ### 운영 화면 구조
 
-Web Console 사이드바는 맨 위 `운영 대시보드`와 `워크로드`, `인프라`, `관제`, `시스템`, `도움말` 묶음으로 화면을 나눈다. 주소 hash `#/<view>`(예: `http://127.0.0.1/#/vms`)로 화면을 바로 열 수 있다. 괄호 안은 영어 UI 이름과 view id다.
+Web Console 사이드바는 `운영`(대시보드), `워크로드`(가상 머신, 템플릿), `인프라`(네트워크), `관제`(작업, 이벤트, 증적), `시스템`(계정, 진단), `도움말` 묶음으로 화면을 나눈다. 주소 hash `#/<view>`(예: `http://127.0.0.1/#/vms`)로 화면을 바로 열 수 있다. 괄호 안은 영어 UI 이름과 view id다.
 
-- `운영 대시보드`(Dashboard, `dashboard`)는 Ops Cockpit 메인 화면이다. Host readiness, VM/job count, runtime policy, priority warning, 최근 activity를 확인한다.
-- `가상 머신`(Virtual Machines, `vms`)은 VM Workbench다. VM 검색, 선택된 VM 상세, lifecycle/checkpoint action, VM-local activity context를 확인한다.
+- `대시보드`(Dashboard, `dashboard`)는 Ops Cockpit 메인 화면이다. Host readiness, VM/job count, runtime policy, priority warning, 최근 activity를 확인한다.
+- `가상 머신`(Virtual Machines, `vms`)은 VM 목록과 상세다. 상태 칩(`전체`, `실행 중`, `꺼짐`, `템플릿`, `실패`)으로 목록을 좁히고, VM을 고르면 `요약`, `콘솔`, `체크포인트`, `하드웨어`, `게스트`, `작업 기록` 탭이 열린다.
+- `템플릿`(Templates, `templates`)은 템플릿으로 잠긴 VM 목록이다. 잠금은 VM 상세의 `더 보기` → `템플릿으로 잠금…`이다.
 - `네트워크`(Network, `network`)는 read-only Network Inventory 화면이다. Hyper-V switch topology를 확인한다.
 - `작업`(Jobs, `jobs`)은 현재 브라우저 세션의 tracked job history를 확인한다.
-- `이벤트 센터`(Event Center, `activity`)는 server-side job snapshot과 request/correlation id를 확인한다.
+- `이벤트`(Events, `activity`)는 server-side job snapshot과 request/correlation id를 확인한다.
 - `증적`(Evidence, `evidence`)은 Batch Supervisor evidence 요약을 확인한다.
-- `진단과 계정`(Diagnostics and Accounts, `troubleshooting`)은 Incident Command 화면이다. 실패 job, runtime/auth/LAN/VMMS/checkpoint risk, token rotation handoff, diagnostic bundle handoff와 read-only 진단 가이드를 확인한다.
+- `계정`(Accounts, `accounts`)은 계정 목록, 계정 만들기, 끄기, `비밀번호 재설정…` 화면이다. `account.manage` 권한이 있는 계정에만 보인다. 로그인한 계정은 상단 바의 `비밀번호 변경`으로 자기 비밀번호를 바꾼다.
+- `진단`(Diagnostics, `troubleshooting`)은 Incident Command 화면이다. 실패 job, runtime/auth/LAN/VMMS/checkpoint risk, token rotation handoff, diagnostic bundle handoff와 read-only 진단 가이드를 확인한다.
 - `도움말`(Help, `helppage`)은 Local API route, 권한, CLI, 화면을 묶은 참조 카탈로그다.
 
 이 화면 구조는 새 OS mutation을 실행하지 않는다. 실제 VM lifecycle/checkpoint/delete action은 기존 queued job route와 확인 dialog를 그대로 사용한다.
@@ -179,7 +181,7 @@ Get-Service PureCVisorDesktopNode
 
 ## 가상 머신 목록과 상세 보기
 
-`Virtual Machines`는 VM Workbench 화면이다. VM search/filter로 inventory를 좁히고, VM 이름을 클릭하면 선택된 VM detail panel이 열린다. Lifecycle/checkpoint action과 VM-local activity context는 선택된 VM 기준으로 확인한다.
+`가상 머신` 화면은 이름 검색과 상태 칩(`전체`, `실행 중`, `꺼짐`, `템플릿`, `실패`)으로 목록을 좁히고, VM을 고르면 상세가 열린다. 상세는 `요약`, `콘솔`, `체크포인트`, `하드웨어`, `게스트`, `작업 기록` 탭이고, 머리글에 상태에 맞는 전원 버튼과 `더 보기` 메뉴가 있다.
 
 Detail panel에서 확인할 수 있는 주요 값:
 
@@ -202,67 +204,63 @@ Native inventory parity가 불완전하면 API는 PowerShell helper fallback 없
 
 ## 가상 머신 생성
 
-Dashboard의 `Create VM`을 눌러 VM 생성 dialog를 연다.
+`가상 머신` 화면의 `+ 새 VM`, 명령 팔레트의 `새 VM`, 또는 `Ctrl+N`으로 네 단계 마법사를 연다.
 
-필수 입력:
-
-| 필드 | 설명 |
+| 단계 | 입력 |
 |------|------|
-| Name | 만들 VM 이름 |
-| ISO path | host에서 접근 가능한 ISO 경로 |
-| VM root | VM 파일을 둘 루트 디렉터리 |
-| CPU | vCPU 수 |
-| Memory MB | startup memory |
-| Disk GB | 생성할 disk 크기 |
-| Generation | 현재 제품 path는 Hyper-V Generation 2만 지원 |
+| `기본` | 이름, 세대. 서버는 Hyper-V Generation 2만 받는다 |
+| `자원` | vCPU 1–32, 메모리 512–262144 MB, 디스크 8–4096 GB |
+| `설치와 네트워크` | ISO 경로(필수), 스위치, 저장 위치(VM 루트. 비워 두면 서버 기본 위치) |
+| `확인` | 입력 요약을 보고 `만들기`를 누른다 |
 
-`Queue Create Job`을 누르면 VM 생성 job이 queue에 들어간다. 결과는 `Tracked Jobs`에서 확인한다. Generation 1 request는 현재 `PCV_GENERATION_INVALID` structured failure로 반환된다.
+`만들기`를 누르면 VM 생성 job이 queue에 들어가고, 끝나면 `새 VM 열기`로 바로 연다. 각 단계는 요청 전에 값을 검사하고, 실패하면 코드와 고칠 칸을 알려 준다. 선택한 스위치는 만들기 요청에 실리지 않는다. 새 VM은 Default Switch에 연결되며 만든 뒤 `하드웨어` 탭에서 바꿀 수 있다. Generation 1 request는 현재 `PCV_GENERATION_INVALID` structured failure로 반환된다.
 
 ## 가상 머신 전원 작업
 
-VM detail panel에서 전원 작업을 실행한다.
+VM 상세 머리글에서 전원 작업을 실행한다. 머리글은 상태에 맞는 버튼만 보여 준다(꺼짐 `시작`, 실행 중 `종료`·`다시 시작`, 일시 정지 `다시 실행`, 저장됨 `저장 상태 복귀`). 그 밖의 조작은 머리글의 `더 보기` 메뉴(`복제…`, `템플릿으로 잠금…`/`잠금 해제…`, `내보내기…`, `vmconnect로 열기`, `강제 끄기…`, `삭제…`)에 있고, `저장`, `미디어 꺼내기`, `VM 관리` 버튼도 상세에 있다. 확인이 필요한 작업은 브라우저 대화상자가 아니라 앱 안 확인 창으로 묻는다. 아래 표의 확인 dialog는 이 앱 안 확인 창이다.
 
 | 작업 | 설명 |
 |------|------|
-| `Start` | VM 시작 job을 queue한다. |
-| `Shutdown` | guest shutdown integration을 사용한다. Guest가 지원하지 않으면 `PCV_VM_SHUTDOWN_NOT_AVAILABLE`이 반환될 수 있다. |
-| `Power off` | 강제 전원 종료 job을 queue한다. 확인 dialog가 뜬다. |
-| `Restart` | 재시작 job을 queue한다. 확인 dialog가 뜬다. |
-| `Save` | Hyper-V Saved 상태 저장 job을 queue한다. pause가 아니며, 확인 dialog가 VM 표시 이름과 현재 state를 보여 준다. |
-| `Resume saved` | Saved 상태에서 재개 job을 queue한다. 현재 state가 `saved`가 아니면 `PCV_VM_NOT_SAVED`다. |
-| `Manage VM` | existing Hyper-V VM에 managed marker를 붙이는 job을 queue한다. 확인 dialog는 Hyper-V 표시 이름과, 성공 후 이 VM이 managed delete 가드를 통과한다는 점, unmanaged delete 거절은 유지된다는 점을 보여 준다. |
-| `Clone VM` | managed VM의 독립 VHDX를 복사해 새 managed VM을 만드는 job을 queue한다. 대상 이름을 입력하고, 확인 dialog는 소스 표시 이름, 대상 이름, `planned_copy_bytes`를 보여 준다. |
-| `Delete VM` | PureCVisor managed VM delete job을 queue한다. 실행 전 확인 dialog가 뜨며, running VM은 Web Console에서 먼저 `Power off`를 요구한다. |
+| `시작` | VM 시작 job을 queue한다. |
+| `종료` | guest shutdown integration을 사용한다. Guest가 지원하지 않으면 `PCV_VM_SHUTDOWN_NOT_AVAILABLE`이 반환될 수 있다. |
+| `강제 끄기…` | 강제 전원 종료 job을 queue한다. 확인 dialog가 뜬다. |
+| `다시 시작` | 재시작 job을 queue한다. 확인 dialog가 뜬다. |
+| `저장` | Hyper-V Saved 상태 저장 job을 queue한다. pause가 아니며, 확인 dialog가 VM 표시 이름과 현재 state를 보여 준다. |
+| `저장 상태 복귀` | Saved 상태에서 재개 job을 queue한다. 현재 state가 `saved`가 아니면 `PCV_VM_NOT_SAVED`다. |
+| `VM 관리` | existing Hyper-V VM에 managed marker를 붙이는 job을 queue한다. 확인 dialog는 Hyper-V 표시 이름과, 성공 후 이 VM이 managed delete 가드를 통과한다는 점, unmanaged delete 거절은 유지된다는 점을 보여 준다. |
+| `복제…` | managed VM의 독립 VHDX를 복사해 새 managed VM을 만드는 job을 queue한다. 복제 창의 첫 칸은 `새 VM 이름`이고 제안값은 `<원본>-clone`이다. `미리보기`가 복사 예정 바이트(`planned_copy_bytes`)를 보여 주고 `복제 시작`이 job을 queue한다. 끝나면 `새 VM 열기`로 연다. |
+| `템플릿으로 잠금…` / `잠금 해제…` | VM을 템플릿으로 잠그거나 푼다. 잠긴 VM은 변경 작업을 거절하고 `템플릿` 화면에 모인다. |
+| `삭제…` | PureCVisor managed VM delete job을 queue한다. 확인 창에 VM 이름을 그대로 입력해야 실행되며, running VM은 Web Console에서 먼저 꺼야 한다. |
 
-전원 작업은 queued job으로 처리된다. 작업 직후 VM 목록이 바로 바뀌지 않으면 `Tracked Jobs`의 job 상태를 먼저 확인한다. `Save`와 `Resume saved`는 `pcvcli vm save <vm>` / `pcvcli vm resume-saved <vm>`과 같은 route다. `vm resume saved` 두 단어는 pause resume과 충돌하므로 쓰지 않는다.
+전원 작업은 queued job으로 처리된다. 작업 직후 VM 목록이 바로 바뀌지 않으면 `Tracked Jobs`의 job 상태를 먼저 확인한다. `저장`과 `저장 상태 복귀`는 `pcvcli vm save <vm>` / `pcvcli vm resume-saved <vm>`과 같은 route다. `vm resume saved` 두 단어는 pause resume과 충돌하므로 쓰지 않는다.
 
-`Manage VM`과 `pcvcli vm manage <vm> --yes`는 `POST /api/v1/vms/{id}/manage`를 쓴다. 실험실에서 먼저 만든 Hyper-V VM을 제품 delete 대상으로 쓰려면 이 opt-in이 필요하다. 성공 후 그 VM만 managed delete 가드를 통과한다. unmanaged VM delete는 계속 `PCV_VM_NOT_MANAGED_BY_PURECVISOR`로 거절된다.
+Web `VM 관리`와 `pcvcli vm manage <vm> --yes`는 `POST /api/v1/vms/{id}/manage`를 쓴다. 실험실에서 먼저 만든 Hyper-V VM을 제품 delete 대상으로 쓰려면 이 opt-in이 필요하다. 성공 후 그 VM만 managed delete 가드를 통과한다. unmanaged VM delete는 계속 `PCV_VM_NOT_MANAGED_BY_PURECVISOR`로 거절된다.
 
-`Clone VM`과 `pcvcli vm clone <source> --name <target> --yes`는 `POST /api/v1/vms/{id}/clone`을 쓴다. `--dry-run`과 Web preview는 `POST /api/v1/vms/{id}/clone/preview`다. 소스는 managed Generation 2, 전원 `Off`, checkpoint 0, 독립 VHDX여야 한다. confirmation은 소스 표시 이름과 대상 이름을 보여 주고 “독립 VHDX를 복사한 새 managed VM을 만든다. 소스 VM은 변경하지 않는다.”고 안내한다. TPM/shielded VM과 linked/differencing disk는 이 경로로 클론하지 않는다. 결과는 `Tracked Jobs`에서 확인한다.
+Web `복제…`와 `pcvcli vm clone <source> --name <target> --yes`는 `POST /api/v1/vms/{id}/clone`을 쓴다. `--dry-run`과 Web preview는 `POST /api/v1/vms/{id}/clone/preview`다. 소스는 managed Generation 2, 전원 `Off`, checkpoint 0, 독립 VHDX여야 한다. confirmation은 소스 표시 이름과 대상 이름을 보여 주고 “독립 VHDX를 복사한 새 managed VM을 만든다. 소스 VM은 변경하지 않는다.”고 안내한다. TPM/shielded VM과 linked/differencing disk는 이 경로로 클론하지 않는다. 결과는 `Tracked Jobs`에서 확인한다.
 
 VM delete는 destructive host mutation이다. Web Console은 running VM delete를 먼저 차단하고, API는 PureCVisor managed marker가 없는 VM을 `PCV_VM_NOT_MANAGED_BY_PURECVISOR`로 차단한다. Delete job 결과는 `Tracked Jobs`에서 확인한다.
 
 ## 가상 머신 미디어
 
-VM detail의 media 영역에서 기존 Virtual DVD에 ISO를 다시 연결하거나 제거한다. USB passthrough와 DVD 드라이브 추가는 이 제품 범위가 아니다.
+VM 상세 `하드웨어` 탭의 ISO 칸에서 기존 Virtual DVD에 ISO를 다시 연결하거나 제거한다. USB passthrough와 DVD 드라이브 추가는 이 제품 범위가 아니다.
 
 | 작업 | 설명 |
 |------|------|
-| `Attach media` | host에서 접근 가능한 ISO 경로를 넣고 attach job을 queue한다. 확인 dialog는 VM 표시 이름과 ISO 경로를 보여 준다. 이미 ISO가 있으면 기존 DVD `HostResource`를 덮어쓴다. |
-| `Eject media` | 연결된 ISO를 제거하는 job을 queue한다. |
+| `미디어 연결` | host에서 접근 가능한 ISO 경로를 넣고 attach job을 queue한다. 확인 dialog는 VM 표시 이름과 ISO 경로를 보여 준다. 이미 ISO가 있으면 기존 DVD `HostResource`를 덮어쓴다. |
+| `미디어 꺼내기` | 연결된 ISO를 제거하는 job을 queue한다. |
 
 Web와 `pcvcli vm attach <vm> --iso <path>`는 `POST /api/v1/vms/{id}/attach`를 쓴다. `--iso_path`는 같은 body 키 `iso_path` alias다. ISO 파일이 없으면 `PCV_ISO_NOT_FOUND`, DVD가 없으면 `PCV_VM_DVD_DRIVE_NOT_FOUND`, 경로가 비면 `PCV_VM_ATTACH_ISO_REQUIRED`다. 결과는 `Tracked Jobs`에서 확인한다.
 
 ## 체크포인트 작업
 
-VM detail panel의 checkpoint 영역에서 작업한다.
+VM 상세의 `체크포인트` 탭에서 작업한다.
 
 | 작업 | 설명 |
 |------|------|
-| `Refresh checkpoints` | 선택한 VM의 checkpoint 목록을 다시 조회한다. |
-| `Create checkpoint` | 입력한 이름으로 checkpoint 생성 job을 queue한다. |
-| `Restore` | 선택한 checkpoint로 복원 job을 queue한다. 확인 dialog가 뜬다. |
-| `Delete` | 선택한 checkpoint 삭제 job을 queue한다. 확인 dialog가 뜬다. |
+| `목록 다시 읽기` | 선택한 VM의 checkpoint 목록을 다시 조회한다. |
+| `체크포인트 만들기` | 입력한 이름으로 checkpoint 생성 job을 queue한다. |
+| `복원…` | 선택한 checkpoint로 복원 job을 queue한다. 확인 dialog가 뜬다. |
+| `삭제…` | 선택한 checkpoint 삭제 job을 queue한다. 확인 dialog가 뜬다. |
 | `Preview schedule` | 입력한 interval 분과 retention 개수로 예약을 미리 본다(dry run). 저장하지 않는다. |
 | `Save schedule` | 예약 저장 job(`checkpoint.schedule.set`)을 queue한다. 확인 dialog가 뜬다. |
 | `Clear schedule` | 예약 해제 job(`checkpoint.schedule.clear`)을 queue한다. 기존 checkpoint는 지우지 않는다. 확인 dialog가 뜬다. |

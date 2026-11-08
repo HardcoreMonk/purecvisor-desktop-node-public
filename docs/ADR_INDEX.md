@@ -1,5 +1,13 @@
 # Desktop Node ADR 인덱스
 
+## 2026-11-08 현재 기준
+
+ADR-0019 구현(campaign `ui-redesign-20261105`, PR #97~#103, #105~#107)과 계정 비밀번호 재설정·변경(PR #104)이 설치본에 들어갔다.
+release train `0.42.97`은 pair clean-host bucket에서 정차했다(BL-0029: `0.42.96` 설치본의 제품 Update preflight가 옛 `web\app.js`,
+`web\styles.css`를 요구). PR #108이 두 파일을 주석만 든 호환 파일로 되살린 뒤 train `0.42.98`이 evidence PR #109와 Lane 3 PR #110으로
+operational current를 `0.42.98-admin-smoke`로 올렸다. 옛 콘솔은 퇴역했고 두 호환 파일만 남는다(제거 시점은 BL-0030). S1~S3은 통과했고
+S4는 열려 있다(campaign `train-04298-20261108` Task 12~14).
+
 ## 2026-11-05 현재 기준
 
 ADR-0019를 채택해 Web Console 정보 구조와 상호작용 규칙을 정한다. ADR-0018 구조는 유지하고, 사이드바 묶음(템플릿·계정 화면
@@ -240,6 +248,7 @@ run `25984814303`, job `76380096421`, head `26ae50fa7bef11b4919b441e706bde505463
 | `docs/adr/0015-feature-evidence-promotion-policy.md` | 채택 / evaluator 구현 전 | operational current와 기능별 qualification을 분리하고 mandatory stage가 모두 PASS일 때만 candidate promotion eligibility를 허용 | `config/desktop-node-feature-evidence-ledger.schema.json`, `config/desktop-node-feature-evidence-ledger.json`, `docs/ga-ready/evidence/service-plan-p0-actual-vm-2026-08-20-04274.md` |
 | `docs/adr/0017-scenario-delivery-completion.md` | 채택 / S1~S4 통과 | 완료 정의를 시나리오 S1~S4(v3)로 바꾼다. S1 시연은 2026-10-09 PR #76, S2 시연은 같은 날 PR #77, S3 시연은 2026-10-11 설치본 0.42.96, S4는 2026-11-08 설치본 0.42.98. 기능 PR은 Lane 1 + Required CI + 설치본 smoke, train은 시나리오 단계 완료 때만, completion autopilot은 정지 | `docs/ga-ready/demo/s1-browser-console-demo-2026-10-08.md`, `docs/ga-ready/demo/s2-template-clone-demo-2026-10-09.md`, `docs/ga-ready/demo/s3-checkpoint-demo-2026-10-11-04296.md`, `docs/ga-ready/demo/s4-lan-demo-2026-11-05.md`, `docs/superpowers/specs/2026-10-08-purecvisor-desktop-node-hyperv-browser-console-spike.md`, `docs/superpowers/plans/2026-10-08-purecvisor-desktop-node-adr17-s1-console.md` |
 | `docs/adr/0018-single-edge-frontend-structure-adoption.md` | 채택 / 설치본 0.42.96 운영 반영 | Web Console이 Single Edge `ui/` 프론트엔드 구조와 공통 모듈을 차용한다. Linux route·화면 제외, vendor 라이선스 고지, 정적 계약 재기준선. 구현 PR #81. 설치본 반영 train 0.42.94·0.42.95 정차, 0.42.96 승격(2026-10-11) | `docs/superpowers/specs/2026-10-10-purecvisor-desktop-node-single-edge-frontend-structure-design.md`, `docs/superpowers/plans/2026-10-10-purecvisor-desktop-node-single-edge-frontend-structure.md`, `THIRD_PARTY_NOTICES.md` |
+| `docs/adr/0019-web-console-information-architecture-and-interaction-rules.md` | 채택 / 설치본 0.42.98 운영 반영 | Web Console 정보 구조와 상호작용 규칙. 사이드바 묶음(템플릿·계정 화면), VM 상세 6개 탭, 필수 입력 첫 칸·요청 전 검사·앱 안 확인·한국어 우선, 콘솔 맞춤(기본 `1024x768`)과 전체 화면, 옛 콘솔 퇴역, 비밀번호 재설정. 구현 campaign `ui-redesign-20261105`. 0.42.98 승격(2026-11-08) | `docs/superpowers/specs/2026-11-05-purecvisor-desktop-node-ui-redesign-design.md` |
 
 ## 적용 전/대체 ADR 후보
 
