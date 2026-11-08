@@ -6,18 +6,21 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { displayRepoPath, formatRunDay, readScenarioArgs } from "./scenario-args.mjs";
 
-function getArg(name, fallback = "") {
-  const prefix = `--${name}=`;
-  const match = process.argv.find((value) => value.startsWith(prefix));
-  return match ? match.slice(prefix.length) : fallback;
-}
+// --name value and --name=value both work; an unknown argument stops with a usage error (BL-0022).
+const args = readScenarioArgs(process.argv.slice(2), "run-s3-checkpoint-scenario.mjs", {
+  values: ["api", "vm", "checkpoint", "interval", "retention", "vm-root", "iso", "out", "expect-count", "auto-bound-ms"],
+  booleans: ["execute", "plan-only", "cleanup-only", "keep-vm", "skip-auto", "verify-only"]
+});
+const getArg = (name, fallback = "") => args.values[name] ?? fallback;
+const day = formatRunDay();
 
-const execute = process.argv.includes("--execute");
+const execute = args.flags.has("execute");
 // --keep-vm leaves the VM (with its checkpoints) for the browser demo; --cleanup-only skips every step and only
 // clears the schedule and deletes the VM. Both need --execute.
-const cleanupOnly = process.argv.includes("--cleanup-only");
-const keepVm = process.argv.includes("--keep-vm") || process.argv.includes("--skip-auto") || process.argv.includes("--verify-only");
+const cleanupOnly = args.flags.has("cleanup-only");
+const keepVm = args.flags.has("keep-vm") || args.flags.has("skip-auto") || args.flags.has("verify-only");
 const api = getArg("api", "http://127.0.0.1:7777");
 const vm = getArg("vm", "pcv-it-s3-source");
 const checkpoint = getArg("checkpoint", "s3-cp1");
@@ -29,11 +32,11 @@ const checkpoint = getArg("checkpoint", "s3-cp1");
 const intervalMinutes = Number(getArg("interval", "60"));
 const retentionMax = Number(getArg("retention", "2"));
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
-const vmRoot = resolve(getArg("vm-root", join(repoRoot, "artifacts", "s3-checkpoint-20261010", "vms")));
+const vmRoot = resolve(getArg("vm-root", join(repoRoot, "artifacts", `s3-checkpoint-${day}`, "vms")));
 const iso = resolve(getArg("iso", join(repoRoot, "artifacts", "smoke-media-20261003", "pcv-route-parity-smoke-20261003.iso")));
-const outDir = resolve(getArg("out", join(repoRoot, "artifacts", "s3-checkpoint-20261010")));
-const skipAuto = process.argv.includes("--skip-auto");
-const verifyOnly = process.argv.includes("--verify-only");
+const outDir = resolve(getArg("out", join(repoRoot, "artifacts", `s3-checkpoint-${day}`)));
+const skipAuto = args.flags.has("skip-auto");
+const verifyOnly = args.flags.has("verify-only");
 const expectCount = Number(getArg("expect-count", "2"));
 const autoBoundMs = Number(getArg("auto-bound-ms", String(intervalMinutes * 60000 + 120000)));
 
@@ -50,7 +53,7 @@ const steps = [
 ];
 
 if (!execute) {
-  process.stdout.write("S3 checkpoint scenario plan-only (no request sent)\n");
+  process.stdout.write(`S3 checkpoint scenario plan-only (no request sent)\nout=${displayRepoPath(repoRoot, outDir)}\n`);
   steps.forEach(([name, detail], index) => process.stdout.write(`${index + 1}. ${name}: ${detail}\n`));
   process.exit(0);
 }
