@@ -49,7 +49,9 @@
 
 ## Task 3: B2 Web·API PR
 
-- [ ] Lane 1. grok 결과(branch `lane1/web-console-fixes-20261108`)를 리뷰한다. 행 6개(BL-0024, 0026, 0027, 0031, 0032, 0033)를 같은 PR에서 닫고 release-train queue 행을 더한다. 종료 검증: PR gate, `npm run test:required`, `verify:parity`, Pester. push, PR, 사용자 merge 문장 뒤 merge.
+- [x] Lane 1. grok 결과(branch `lane1/web-console-fixes-20261108`)를 리뷰한다. 행 6개(BL-0024, 0026, 0027, 0031, 0032, 0033)를 같은 PR에서 닫고 release-train queue 행을 더한다. 종료 검증: PR gate, `npm run test:required`, `verify:parity`, Pester. push, PR, 사용자 merge 문장 뒤 merge.
+
+실행 기록(2026-11-09): PR #116으로 냈다. Task 4에서 재현한 BL-0034를 항목 7로 더해 행 7개(BL-0024, 0026, 0027, 0031, 0032, 0033, 0034)를 닫았고, queue 행(`5f6c1f0c`, risk M)을 더했다. BL-0034가 `src/DesktopNode.HyperV`를 바꿔 PR gate를 `-Integration`(ADR-0016 `pcv-it-` VM)까지 돌렸다. 기본 ISO 경로가 없어 `PCV_HYPERV_INTEGRATION_ISO`로 지정했다. #115 merge 뒤 rebase하면서 queue 충돌은 #115·#116 두 행을 모두 남겨 풀었다. 합친 상태에서 web `test:required`(browser gate assertions 121, failed 0), Api 544건, Delivery 785건이 통과했다. Required CI 다섯 개 pass 뒤 merge했다(merge `3eb2a52`).
 
 ## Task 4: BL-0034 재현 (Lane 2)
 
@@ -76,7 +78,13 @@
 
 ## Task 6: 마무리
 
-- [ ] Lane 1. merge된 PR과 닫힌 행을 기록한다. clean `main`에서 `pcvverify completion`을 돌려 C7을 확인한다. campaign을 닫는다. push, PR, 사용자 merge 문장 뒤 merge.
+- [x] Lane 1. merge된 PR과 닫힌 행을 기록한다. clean `main`에서 `pcvverify completion`을 돌려 C7을 확인한다. campaign을 닫는다. push, PR, 사용자 merge 문장 뒤 merge.
+
+실행 기록(2026-11-09): PR #114(`b665628`), #115(`0363083`), #116(`3eb2a52`)을 사용자 문장 `"PR #114, #115, #116 순서대로 merge 승인"`으로 차례로 merge했다. merge마다 `main` push run 둘(Development Gates, Public Boundary Contract)이 green이었다. backlog 18행은 모두 닫혔다(A 3행, B1 8행, B2 7행).
+- clean `main` `3eb2a52`의 `pcvverify completion`(`artifacts/completion/20261109/`) 결과는 `complete=true met=7/7 gaps=0`이다.
+- hygiene C7은 `met=true open_counts=0, undecided=0`, C4는 15/15, C3는 4/4이다.
+- C2는 `met=false`다. queue 3행(PR #113, #115, #116)이 train `0.42.99-admin-smoke` 출발을 기다린다. 출발은 이 campaign 밖이고 따로 승인받는다.
+- report-only: (1) Hyper-V 통합 시험 기본 ISO `artifacts/smoke-media-20261003/...`가 없어 `PCV_HYPERV_INTEGRATION_ISO`를 지정해야 한다. (2) `web/src/modules/vm.ts`가 2,739줄이다(ratchet 상한, fixture에 근거). (3) BL-0024 목록 밖 카드 본문 문구가 영어로 남는다(행 basis에 적음).
 
 ## Nonclaims
 
