@@ -155,7 +155,7 @@ operational current는 `0.42.96-admin-smoke` 그대로다.
 
 ## Task 7: S4 복원과 LAN 재적용 (queue 94, 95; 이관: `train-04297-20261108` Task 9)
 
-- [ ] Lane 2. train `0.42.97` Task 2 백업의 `accounts.json`을 되돌리고 해시를 비교한다(data root의 빈 계정 저장소를 대체). 설치본 `0.42.98`의 `configure-installed`를 백업한 LAN prefix와 `--allow-lan`으로 실행한다(PR #94: prefix 옵션과 `--allow-lan`이 service 명령줄에 들어감, PR #95: 실행 중 service가 Stop → Configure → Start로 새 listener를 연다). 확인할 것:
+- [x] Lane 2. train `0.42.97` Task 2 백업의 `accounts.json`을 되돌리고 해시를 비교한다(data root의 빈 계정 저장소를 대체). 설치본 `0.42.98`의 `configure-installed`를 백업한 LAN prefix와 `--allow-lan`으로 실행한다(PR #94: prefix 옵션과 `--allow-lan`이 service 명령줄에 들어감, PR #95: 실행 중 service가 Stop → Configure → Start로 새 listener를 연다). 확인할 것:
   - 명령줄
   - listener 7777·80 LAN 주소
   - 방화벽 관리 규칙 2개(Private, Inbound)
@@ -164,6 +164,17 @@ operational current는 `0.42.96-admin-smoke` 그대로다.
   - Web 200(LAN 주소)
 
   evidence `docs/ga-ready/evidence/lane2-service-configure-lan-2026-11-08-04298.md`(LAN 주소는 `<host-lan-ip>`). 로컬 commit.
+
+실행 기록(2026-11-08): 17:41~17:43 KST에 일회용 스크립트(출력의 사설 IPv4와 사용자 경로를 가림)로 했다.
+
+- 계정: data root에는 fullgate 재설치가 만든 빈 계정 저장소(0개)가 있어서 백업 폴더로 옮기고 백업 `accounts.json`을 넣었다. SHA-256이 백업과 같다. 파일 ACL은 제품이 빈 저장소에 둔 것(상속 끊음, SYSTEM·Administrators 읽기만)과 같게 맞췄다.
+- 설치본 `DesktopNode.Host.exe service-action configure-installed`를 MSI custom action 경로 인자, 지금의 `--batch-evidence-root`, 백업 명령줄의 `--prefix`·`--web-prefix`(LAN), `--allow-lan`으로 실행해 exit `0`이었다. 실행 중 service가 멈췄다가 새 명령줄로 켜졌다(PR #95).
+- `service-action firewall-enable` API 규칙과 Web 규칙(`--firewall-local-port 80`, `--firewall-rule-name "PureCVisor Desktop Node Web LAN"`) 둘 다 exit `0`. 앞선 두 시도는 거절만 됐다(경로 인자 없음 `PCV_HOST_PRODUCT_ROOT_REQUIRED`, `--allow-lan` 없음 `PCV_HOST_FIREWALL_LAN_APPROVAL_REQUIRED`). 규칙도 LAN 노출 명시 승인을 요구한다.
+- 확인: service Running/Automatic. 명령줄은 LAN prefix 둘과 `--allow-lan`이고, 백업한 S4 명령줄과 `--batch-evidence-root`만 다르다(MSI 재설치 값). listener는 `<host-lan-ip>:7777`·`:80`(HTTP.sys)뿐이고 `127.0.0.1`은 듣지 않는다. 방화벽 규칙 2개(TCP 7777·80, Inbound, Allow, Private, LocalSubnet). 계정 3개(`pcv-admin` disabled, `pcv-admin2`·`pcv-s4-operator` enabled). Web `http://<host-lan-ip>/` 200. 보존 VM 셋 그대로.
+- loopback 세션은 LAN 주소로 `403` `PCV_LOOPBACK_SESSION_NOT_LOOPBACK`이었다. 계획의 `409`는 loopback 주소로 들어온 요청의 코드이고, 지금은 loopback listener가 없어 요청이 LAN 주소로 들어온다. LAN 모드에서 loopback 세션이 없다는 성질은 같다.
+- evidence: `docs/ga-ready/evidence/lane2-service-configure-lan-2026-11-08-04298.md`.
+
+operational current는 `0.42.96-admin-smoke` 그대로다.
 
 ## Task 8: train PR A (이관: `train-04297-20261108` Task 10)
 
