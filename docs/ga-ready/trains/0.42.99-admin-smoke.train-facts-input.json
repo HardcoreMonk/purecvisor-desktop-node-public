@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "contract": "pcv-train-facts-input-v1",
+  "version": "0.42.99-admin-smoke",
+  "baseline_version": "0.42.98-admin-smoke",
+  "canonical_current_evidence": "0.42.98-admin-smoke",
+  "date": "2026-11-09",
+  "documents": {
+    "package": "docs/ga-ready/evidence/admin-smoke-package-2026-11-09-04299.md"
+  },
+  "sources": {
+    "package_root": "artifacts/admin-smoke-package-20261109-04299",
+    "baseline_package_root": "artifacts/admin-smoke-package-20261108-04298",
+    "campaign_root": "artifacts/manual-admin-campaign-20261109-04298-04299",
+    "target_update_catalog": "artifacts/admin-smoke-package-20261109-04299/PureCVisorDesktopNode-0.42.99-admin-smoke-update-catalog.json",
+    "signer_thumbprint": "8C5F3B5030D3A54B1150C2C30CFD9868800DF0C6",
+    "fullgate_batch_id": "full-admin-host-mutation-gate-20261109-04299",
+    "iso_path": "artifacts/smoke-media-20261108/pcv-route-parity-smoke-20261108.iso",
+    "current_card_root": "artifacts/installed-operator-surface-current-card-20261109-04299",
+    "fullgate_final_firewall_rule_count": "0"
+  },
+  "narrative": {
+    "package": {
+      "background": "release train `0.42.99`의 package다. 완료 판정(2026-11-08) 뒤 campaign `backlog-burn-20261109`가 backlog `undecided` 18건을 모두 닫으면서 queue에 쌓은 제품 변경 세 행을 싣는다(campaign `train-04299-20261109`). 적재는 113(in-app 안내서), 115(console 입력 제한기 clock seam, BL-0011), 116(Web Console 수정 일곱 건과 native VM 목록 일시 공백 재읽기, BL-0024·0026·0027·0031·0032·0033·0034)이다. payload 파일은 `0.42.98`과 같은 31개다(`web/app.js`·`web/styles.css` 호환 파일 포함, BL-0030 fixture). build 51초. pair baseline은 train `0.42.98` Task 1 package다.",
+      "train_carriages": "`PR #113` (변경 `154d16cc`, web), `PR #115` (변경 `0575b859`, api), `PR #116` (변경 `5f6c1f0c`, web); payload: PR #117 merge",
+      "lane2_probes": "`hyperv.vm-list.delete-window`(삭제 중 VM 목록, BL-0034), `api.checkpoint.restore-power`(켜진 VM 복원 거절, BL-0033)"
+    }
+  }
+}
