@@ -3,18 +3,18 @@
 <!-- BEGIN GENERATED CURRENT EVIDENCE -->
 ## Current operational evidence (generated)
 
-- Version: `0.42.98-admin-smoke`
+- Version: `0.42.99-admin-smoke`
 - Active operator surfaces: Web Console and PCVCLI; `tui_present=false`.
-- Package evidence: `docs/ga-ready/evidence/admin-smoke-package-2026-11-08-04298.md`.
-- Full admin host mutation: `full-admin-host-mutation-gate-20261108-04298` / `docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-11-08-04298-hostmutation.md`.
-- Actual-VM functional evidence: `docs/ga-ready/evidence/functional-correctness-actual-host-validation-2026-11-08-04298-carryforward.md`.
+- Package evidence: `docs/ga-ready/evidence/admin-smoke-package-2026-11-09-04299.md`.
+- Full admin host mutation: `full-admin-host-mutation-gate-20261109-04299` / `docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-11-09-04299-hostmutation.md`.
+- Actual-VM functional evidence: `docs/ga-ready/evidence/functional-correctness-actual-host-validation-2026-11-09-04299-carryforward.md`.
 - Feature qualification: `contract=pcv-feature-promotion-decision-v1`; `promotion_eligible=true`; `blocker_count=0`; `blockers=none`.
-- Installed CLI/Web current-card: `docs/ga-ready/evidence/installed-operator-surface-current-card-2026-11-08-04298.md`; CLI exit 0, Web HTTP 200, service Running/Automatic, TUI absent.
-- Clean MSI SHA-256: `9a26d4cee9c4360cb8a04ce520b57de4d2e99c3e7b64997d8b4567e7c04733b0`.
-- Operational MSI SHA-256: `0a42b89f4ababb0066e4d2a326a8019ae1a2780ee079b11c4809c999d0d93680`.
-- Operational payload aggregate SHA-256: `963f4f746b0fc9d1c80209861bc2a6317ff08cb5028b344acd589685bbb67444`.
-- Provenance commit: `2dfe2ac7e1af85a51b676127f83d264a0b57d840`.
-- Latest closed manual-admin pair: `0.42.96-admin-smoke -> 0.42.98-admin-smoke` / `manual-admin-campaign-20261108-04296-04298-closed`.
+- Installed CLI/Web current-card: `docs/ga-ready/evidence/installed-operator-surface-current-card-2026-11-09-04299.md`; CLI exit 0, Web HTTP 200, service Running/Automatic, TUI absent.
+- Clean MSI SHA-256: `7946f464245edf9f7ab84685add805fa7656274a8511525fade9a2c0c6842af0`.
+- Operational MSI SHA-256: `7c78f89eb53016870d8bf9841e5f7d67a6740b113f880285aa52a59c33dca650`.
+- Operational payload aggregate SHA-256: `7c91f091746a3467f34ef0ba8af5a2ebf1667ce40ef54eddafcbfb85f3ed7831`.
+- Provenance commit: `a95987b094f9865c1f344043afba48b810ecc8f5`.
+- Latest closed manual-admin pair: `0.42.98-admin-smoke -> 0.42.99-admin-smoke` / `manual-admin-campaign-20261109-04298-04299-closed`.
 - Claims: `public_trusted_signing=false`; `external_stable_publication=false`.
 <!-- END GENERATED CURRENT EVIDENCE -->
 
@@ -41,6 +41,10 @@
   시연 `docs/ga-ready/demo/web-console-redesign-demo-2026-11-08.md`, 비밀번호 재설정 거절, S4 계정 복원과 LAN 재적용) PASS 뒤 두
   PR(evidence PR #109, Lane 3 PR)로 operational current를 `0.42.98-admin-smoke`로 올렸다. 기록은
   `docs/superpowers/plans/2026-11-08-purecvisor-desktop-node-train-04298.md`.
+- train `0.42.99-admin-smoke`(적재 PR #113·#115·#116, backlog 정리 B1·B2와 in-app 안내서)가 package, pair, fullgate,
+  current-card, Lane 2 probe(삭제 중 VM 목록 실패 0회 BL-0034, 켜진 VM 복원 거절 BL-0033) PASS 뒤 두 PR(evidence PR #118,
+  Lane 3 PR)로 operational current를 `0.42.99-admin-smoke`로 올렸다. 계정은 fullgate `REMOVE_DATA` 동안 data root 밖에 보관했다가
+  되돌렸다. 기록은 `docs/superpowers/plans/2026-11-09-purecvisor-desktop-node-train-04299.md`.
 - 시나리오: `config/project-completion-criteria.json`에서 S1~S4가 `passed`다. S4(LAN의 다른 PC에서 계정으로 S1~S3)는 2026-11-08
   설치본 `0.42.98`에서 판정했다(`docs/ga-ready/demo/s4-lan-demo-2026-11-05.md`, 설계
   `docs/superpowers/specs/2026-10-11-purecvisor-desktop-node-s4-lan-account-design.md`).

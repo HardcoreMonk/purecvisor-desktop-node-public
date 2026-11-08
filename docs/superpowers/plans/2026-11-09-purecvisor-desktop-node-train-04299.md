@@ -259,10 +259,27 @@ PR #118(`lane1/train-04299-20261109`)을 열었다. Required CI 다섯 개(`dotn
 
 ## Task 10: 승격 문서와 release-train 승격
 
-- [ ] Lane 3. `Invoke-PcvLane3PromotionDocs.ps1`을 dry-run, `-Apply`, `-Check` 순서로 돌린다. Lane 3 숨은 단계도 한다: descriptor chain, ledger 행, index 절, D2 시험, spec pin, current evidence 시험 version 줄.
+- [x] Lane 3. `Invoke-PcvLane3PromotionDocs.ps1`을 dry-run, `-Apply`, `-Check` 순서로 돌린다. Lane 3 숨은 단계도 한다: descriptor chain, ledger 행, index 절, D2 시험, spec pin, current evidence 시험 version 줄.
   - `release-train.json`: train `0.42.99-admin-smoke` `status=promoted`, `operational_current=0.42.99-admin-smoke`.
   - 그다음 `Update-PcvCurrentEvidenceDocs.ps1 -Apply`/`-Check`, `Update-PcvContractSpecPins.ps1 -Apply`, `dotnet test src/DesktopNode.Delivery.Tests -c Release`를 돈다.
   - 수기 갱신: `DOCUMENTATION_INDEX` 권위 줄, `FEATURE_IMPLEMENTATION_LEDGER` operational 줄, `DEVELOPER_INDEX` train 줄. 로컬 commit.
+
+실행 기록(2026-11-09): promotion 도구와 수기 갱신을 했다.
+- `Invoke-PcvLane3PromotionDocs.ps1 -SpecPath packaging/windows-desktop-node/tests/fixtures/lane3-promotion-docs-spec-04299.json`
+  - dry-run `ok`: current evidence 문서 stale, 나머지는 planned
+  - `-Apply` `ok`: current evidence 문서, descriptor chain, ledger head·rows, index 절, spec pin 갱신
+  - `-Check`: 모든 단계 current
+- 숨은 단계: config spec pin 3개와 Delivery verifier 상수 3개는 도구가 갱신했다. current evidence 시험은 version을 `current-evidence.json`에서 읽어 손댈 줄이 없다.
+- `release-train.json`: train `0.42.99-admin-smoke` `status=promoted`, `operational_current=0.42.99-admin-smoke`
+- 수기 갱신:
+  - `docs/DOCUMENTATION_INDEX.md` 권위 줄 넷(payload `f7426d1`, 운영 `0.42.99-admin-smoke`, 최신 `main` `0be27ea`, 설치본과 계정)
+  - `docs/FEATURE_IMPLEMENTATION_LEDGER.md` operational 줄 둘
+  - `docs/DEVELOPER_INDEX.md` train `0.42.99` 줄
+- 검증:
+  - `Update-PcvCurrentEvidenceDocs.ps1 -Check` ok(이 도구에는 `-Apply`가 없고, 쓰기는 승격 도구가 했다)
+  - `Update-PcvContractSpecPins.ps1 -Apply`/`-Check` current(spec 9개, 변경 0)
+  - `dotnet test src/DesktopNode.Delivery.Tests -c Release` 785/785
+  - `DesktopNode.Verification.Tests` 680/681: dirty tree의 PolicyBoundary 1건만 실패했다. commit 뒤 Task 11에서 다시 본다
 
 ## Task 11: Lane 3 PR B
 
