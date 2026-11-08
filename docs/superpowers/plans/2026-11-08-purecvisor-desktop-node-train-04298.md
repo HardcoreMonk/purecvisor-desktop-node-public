@@ -89,7 +89,16 @@ operational current는 `0.42.96-admin-smoke` 그대로다.
 
 ## Task 3: fullgate (이관: `train-04297-20261108` Task 5)
 
-- [ ] Lane 2. `pcvverify train-host-inputs --kind fullgate-manifest --write`로 manifest를 만들고(LAN prefix는 환경 변수로만 넘김) supervisor `-DryRun -AllowHostMutation` 뒤 `full-admin-host-mutation-gate-20261108-04298`을 돌린다. 사후 검사: 설치본 Host/CLI ProductVersion == gate build commit, 같은 version ARP 1개, PureCVisor firewall 규칙 0, service Running/Automatic, Web 200, 보존 VM·template·`pcv-it-s4-console` 그대로. `train-facts`로 fullgate 문서. 로컬 commit.
+- [x] Lane 2. `pcvverify train-host-inputs --kind fullgate-manifest --write`로 manifest를 만들고(LAN prefix는 환경 변수로만 넘김) supervisor `-DryRun -AllowHostMutation` 뒤 `full-admin-host-mutation-gate-20261108-04298`을 돌린다. 사후 검사: 설치본 Host/CLI ProductVersion == gate build commit, 같은 version ARP 1개, PureCVisor firewall 규칙 0, service Running/Automatic, Web 200, 보존 VM·template·`pcv-it-s4-console` 그대로. `train-facts`로 fullgate 문서. 로컬 commit.
+
+실행 기록(2026-11-08): `train-host-inputs --kind fullgate-manifest --write`로 manifest를 만들었다(SHA-256 `8be4bd2eae5d35d0a7e63dfd4926f022c391ca11bbda66528f70a98d4a26b119`). LAN prefix는 직전 manifest artifact가 재클론으로 없어서, S4 상태 보관 때 저장소 밖에 백업한 service 명령줄의 `--prefix`에서 읽어 환경 변수 `PCV_TRAIN_LAN_PREFIX`로만 넘겼다. supervisor `-DryRun -AllowHostMutation`은 두 단계 planned에 `ok=true`였다. 실행 전 ARP는 1개였다.
+
+- 실행: 16:03:13부터 16:09:24 KST까지 `ok=true`, `status=completed`였다. stdout은 `artifacts/batch-manifests/full-admin-host-mutation-gate-20261108-04298.result.json`, stderr는 0 byte다.
+- step: `service-msi-hyperv-admin-smoke` exit 0(시도 1, 358.8초), `os-mutation-gate` exit 0(시도 1, 11.1초). executed 2, skipped 0.
+- 사후 검사: 설치본 Host/CLI `0.42.98-admin-smoke+2dfe2ac` == gate build HEAD `2dfe2ac`(Task 2 commit, product source는 payload `8e4ebe2`와 같음). ARP `{5673340D-…}` `0.42.98` 1개, PureCVisor 방화벽 규칙 `0`, listener `127.0.0.1:7777`·`127.0.0.1:80`, service Running/Automatic, Web `200`. `pcv-guest-installed-04253-r1` Off, `pcv-it-s2-source` Off, `pcv-it-s4-console` Running(그대로).
+- 문서: `train-facts`로 fullgate 문서 `docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-11-08-04298-hostmutation.md`(`generated=35`, `narrative=2`)를 썼다. `train-evidence --check`는 여덟 문서 모두 `current`이고, 시험은 `24/24`다. 문서에는 LAN 주소가 없다(`[redacted-private-endpoint]`).
+
+operational current는 `0.42.96-admin-smoke` 그대로다.
 
 ## Task 4: installed current-card (이관: `train-04297-20261108` Task 6)
 

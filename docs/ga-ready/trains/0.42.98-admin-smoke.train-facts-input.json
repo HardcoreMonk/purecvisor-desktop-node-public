@@ -12,7 +12,8 @@
     "clean-host": "docs/ga-ready/evidence/internal-clean-host-install-update-rollback-smoke-2026-11-08-04296-04298.md",
     "burn": "docs/ga-ready/evidence/burn-bootstrapper-lifecycle-smoke-2026-11-08-04298.md",
     "msix": "docs/ga-ready/evidence/msix-package-lifecycle-smoke-2026-11-08-04296-04298.md",
-    "pair-descriptor": "docs/ga-ready/evidence/manual-admin-campaign-descriptor-2026-11-08-04296-04298.md"
+    "pair-descriptor": "docs/ga-ready/evidence/manual-admin-campaign-descriptor-2026-11-08-04296-04298.md",
+    "fullgate": "docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-11-08-04298-hostmutation.md"
   },
   "sources": {
     "package_root": "artifacts/admin-smoke-package-20261108-04298",
@@ -30,6 +31,10 @@
       "background": "release train `0.42.98`의 package다. train `0.42.97`(campaign `train-04297-20261108`)이 pair clean-host bucket에서 정차했다(BL-0029: `0.42.96` 설치본의 제품 Update preflight가 옛 콘솔 파일 `web\\app.js`, `web\\styles.css`를 요구). 수정 PR #108 merge 뒤 같은 날 다음 patch version으로 다시 출발한 campaign `train-04298-20261108`의 train이다. 적재는 queue 94·95(`configure-installed`의 LAN 옵션과 실행 중 service 재시작), 97~103·105~107(Web Console 재설계, 옛 콘솔 퇴역, 브라우저 품질 게이트), 104(계정 비밀번호 재설정 API), 108(이전 버전 제품 Update 호환 파일)이다. PR #108이 주석만 든 `web/app.js`, `web/styles.css`를 되살려 payload 파일은 31개다. build 47초. pair baseline은 `0.42.96` payload source `87a7deb`에서 다시 빌드한 package다(재클론으로 원래 artifact가 없음).",
       "train_carriages": "`PR #94` (변경 `271ab040`, host), `PR #95` (변경 `08c50e08`, host), `PR #97` (변경 `13fc25dd`, web), `PR #98` (변경 `ab9b6704`, web), `PR #99` (변경 `8b0ae171`, web), `PR #100` (변경 `16da5810`, web), `PR #101` (변경 `f0db33e4`, web), `PR #102` (변경 `eb0bdcf7`, web), `PR #103` (변경 `289d98ea`, web), `PR #104` (변경 `213bfe36`, api), `PR #105` (변경 `8403d47d`, web), `PR #106` (변경 `3d2fd89e`, web), `PR #107` (변경 `449a62ce`, web), `PR #108` (변경 `d8bf7be9`, web); payload: PR #108 merge",
       "lane2_probes": "`host.service.configure-lan`(S4 계정 복원 뒤 LAN 재적용, PR #94·#95), `web.console.vm-detail`·`web.console.frame-view`·`web.console.checkpoints`·`web.console.vm-create`·`web.console.shell-views`·`web.console.confirm-copy`(설치본 새 셸 브라우저 확인), `api.account.password`(계정 비밀번호 재설정), 이전 버전 제품 Update 호환(PR #108, pair clean-host bucket)"
+    },
+    "fullgate": {
+      "run_context": "gate는 branch `lane1/train-04298-20261108`의 HEAD `2dfe2ac`에서 빌드했다(product source는 payload `8e4ebe2`와 같고, 그 뒤 commit은 문서뿐이다). manifest는 `pcvverify train-host-inputs --kind fullgate-manifest`로 `docs/ga-ready/trains/0.42.98-admin-smoke.host-inputs.json`에서 만들었다. LAN prefix는 S4 상태 보관 때 저장소 밖에 백업한 service 명령줄에서 읽어 환경 변수로만 넘겼다(재클론으로 직전 manifest artifact가 없음). 설치본은 pair 뒤의 `0.42.98`(ARP 1개)이었다.",
+      "vm_summary": "`pcv-guest-installed-04253-r1` Off, `pcv-it-s2-source` Off(S2 template), `pcv-it-s4-console` Running(S4 시연 VM)은 그대로"
     }
   }
 }
