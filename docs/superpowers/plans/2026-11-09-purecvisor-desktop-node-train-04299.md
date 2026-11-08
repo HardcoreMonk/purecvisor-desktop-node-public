@@ -186,11 +186,21 @@ operational current는 `0.42.98-admin-smoke` 그대로다.
 
 ## Task 6: probe B2 수정 (queue 116)
 
-- [ ] Lane 2. 설치본 `0.42.99` loopback에서 PCVCLI(service bearer)로 확인한다. 쓰는 VM은 ADR-0016 `pcv-it-probe-list-1109b`(Generation 2, smoke ISO, disk `artifacts/` 아래)이다.
+- [x] Lane 2. 설치본 `0.42.99` loopback에서 PCVCLI(service bearer)로 확인한다. 쓰는 VM은 ADR-0016 `pcv-it-probe-list-1109b`(Generation 2, smoke ISO, disk `artifacts/` 아래)이다.
   - BL-0034: 만들고 지우기를 세 번 돌린다. 각 job 동안과 끝난 직후 `vm list`를 이어 읽는다. Task 4(2026-11-09) 재현과 같은 방법이다. 기대는 목록 실패 0회다.
   - BL-0033: VM을 켠 상태에서 checkpoint를 만들고 복원을 요청한다. `409` `PCV_CHECKPOINT_RESTORE_VM_RUNNING`이 job 없이 오는지 본다. 끈 뒤 복원은 `202`로 job이 성공하는지 본다.
   - 끝 상태: `pcv-it-probe-*` 0개, 폴더 정리.
   - evidence: `docs/ga-ready/evidence/lane2-backlog-b2-probe-2026-11-09-04299.md`. 로컬 commit.
+
+실행 기록(2026-11-09 04:46:49~04:48:03 KST): 일회용 스크립트로 설치본 `0.42.99-admin-smoke+a95987b`를 확인했다.
+- BL-0034: 생성 3회와 삭제 4회(마지막은 checkpoint가 있는 VM) 동안 `vm list`를 59회 읽었고, 59회 모두 성공했다.
+  - `PCV_NATIVE_VM_LIST_SUMMARY_PARITY_INCOMPLETE`는 0회다. 재현 때는 삭제마다 1회였다.
+- BL-0033: 켜진 VM의 복원 요청은 job 없이 `PCV_CHECKPOINT_RESTORE_VM_RUNNING`으로 거절됐다. 끈 뒤 복원은 job이 succeeded였다.
+  - poweroff 직후 같은 프로세스의 `Get-VM`이 `Running`을 읽은 것은 cmdlet 캐시다. API는 꺼진 상태로 보고 복원을 받았다.
+- 끝 상태: `pcv-it-probe-*` 0개다. 빈 VM root 폴더는 지웠다. 보존 VM 둘은 Off 그대로다.
+- evidence: `docs/ga-ready/evidence/lane2-backlog-b2-probe-2026-11-09-04299.md`.
+
+operational current는 `0.42.98-admin-smoke` 그대로다.
 
 ## Task 7: 계정 복원
 
