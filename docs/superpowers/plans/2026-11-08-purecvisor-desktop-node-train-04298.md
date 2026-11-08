@@ -75,7 +75,17 @@ host mutation은 없다. operational current는 `0.42.96-admin-smoke` 그대로�
 
 ## Task 2: pair (이관: `train-04297-20261108` Task 4)
 
-- [ ] Lane 2. orchestrator `-PlanOnly` 뒤 `-Execute`(campaign `manual-admin-campaign-20261108-04296-04298`, baseline `artifacts/admin-smoke-package-20261108-04296r`, target Task 1 package, base VHD `20348.5761-20261108.vhd`). 여섯 bucket PASS, closed descriptor, `observation_error` 없음. 끝 상태: 설치본 `0.42.98`·ARP 1개·service Running/Automatic·Web 200·보존 VM·template·`pcv-it-s4-console` 그대로. clean-host bucket이 PASS하면 `New-PcvCleanHostBaseVhd.ps1 -SetCurrentBasePath <base> -Execute`(Windows PowerShell 5.1)로 `current-base.json`을 지정한다. `train-facts`로 pair 문서. 로컬 commit.
+- [x] Lane 2. orchestrator `-PlanOnly` 뒤 `-Execute`(campaign `manual-admin-campaign-20261108-04296-04298`, baseline `artifacts/admin-smoke-package-20261108-04296r`, target Task 1 package, base VHD `20348.5761-20261108.vhd`). 여섯 bucket PASS, closed descriptor, `observation_error` 없음. 끝 상태: 설치본 `0.42.98`·ARP 1개·service Running/Automatic·Web 200·보존 VM·template·`pcv-it-s4-console` 그대로. clean-host bucket이 PASS하면 `New-PcvCleanHostBaseVhd.ps1 -SetCurrentBasePath <base> -Execute`(Windows PowerShell 5.1)로 `current-base.json`을 지정한다. `train-facts`로 pair 문서. 로컬 commit.
+
+실행 기록(2026-11-08): orchestrator `-PlanOnly`는 `ok=true`였다(host mutation 없음). `-Execute`는 root `artifacts/manual-admin-campaign-20261108-04296-04298`에서 15:54부터 15:58 KST까지 `268`초 돌았다. 여섯 bucket이 모두 PASS다: `manual-admin-rebaseline-readiness`, `lifecycle-product-update-rollback`, `clean-host-windows-update`, `burn-bootstrapper-lifecycle`, `msix-package-lifecycle-smoke`, `installed-runtime-ops-summary`.
+
+- descriptor: closed descriptor를 냈다(SHA-256 `a90c8b36ee302ecbafd75c6443b753746160e3b035287b9777de0790a985dd57`). observation은 15개이고 `observation_error`는 0이다.
+- clean-host: base는 `explicit` UBR `5761`(KB5126655)이고, Windows Update는 재부팅 없이 끝났다. baseline `0.42.96` MSI 설치는 exit 0이었다. 그 설치본의 제품 Update로 `0.42.98`이 됐고(exit 0, BL-0029 수정 확인), Rollback으로 `0.42.96`에 돌아왔다(exit 0). Web은 200이고 blocker는 `none`이다. 시험 VM은 지웠다.
+- `current-base.json`: Windows PowerShell 5.1에서 `New-PcvCleanHostBaseVhd.ps1 -SetCurrentBasePath` plan 뒤 `-Execute`로 지정했다(`20348.5761-20261108.vhd`, SHA-256 `c110fc1d…`, `previous_base_file` 없음, `updated_utc` `2026-11-08T07:00:17Z`).
+- 끝 상태: 설치본 `0.42.98-admin-smoke`(Host `0.42.98-admin-smoke+54cb61e…`), ARP `{625D101D-…}` `0.42.98` 1개, service Running/Automatic, Web 200, PureCVisor 방화벽 규칙 0, `pcv-guest-installed-04253-r1` Off·`pcv-it-s2-source` Off·`pcv-it-s4-console` Running(그대로).
+- 문서: `train-facts`로 pair 문서 여섯 개(ops-summary, update-rollback, clean-host, burn, msix, pair-descriptor)를 썼고, `train-evidence --check`는 일곱 문서 모두 `current`다. `TrainEvidenceGoldenTests`·`TrainFactsBuilderTests`는 `24/24`다. 새 문서의 주소는 loopback과 MSIX version뿐이다.
+
+operational current는 `0.42.96-admin-smoke` 그대로다.
 
 ## Task 3: fullgate (이관: `train-04297-20261108` Task 5)
 
