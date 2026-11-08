@@ -167,8 +167,8 @@
       "summary": "GitHub ubuntu-latest가 Ubuntu 26으로 이동한다. 이동 뒤 첫 main Development Gates와 Public Boundary run이 green인지 확인한다. 실패하면 ubuntu-24.04 pin을 판단한다",
       "deadline": "2026-10-19",
       "source": "docs/project-status-audit-2026-10-06.md",
-      "status": "open",
-      "closed_by": null
+      "status": "closed",
+      "closed_by": "main push run Development Gates 41955196527 and Public Boundary Contract 41955196532 on cbe5459 (2026-11-05), the first main runs on the ubuntu-26.04 image, both success"
     }
   ],
   "permanent_out_of_scope": [
