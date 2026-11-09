@@ -347,7 +347,7 @@ Describe 'PcvDesktopWeb static console assets' {
 
         $combined | Should -Match 'formatJobCancelLabel'
         $combined | Should -Match 'getJobCancelScope'
-        $combined | Should -Match 'data-job-cancel-scope="\$\{pcvEscapeHtml\(cancelScope\)\}"'
+        $combined | Should -Match "'data-job-cancel-scope': scope"
         $combined | Should -Match 'running-guest-execution'
         $combined | Should -Match 'copy\.job\.cancel_guest'
         $combined | Should -Match 'copy\.rbac\.guest_exec_cancel'
@@ -382,7 +382,11 @@ Describe 'PcvDesktopWeb static console assets' {
         $app | Should -Match "id:\s*'cmd-input'"
         $app | Should -Match "role:\s*'combobox'"
         $combined | Should -Match 'buildEventCenterItems'
-        $combined | Should -Match 'renderEventCenter'
+        $eventsSource = Get-Content -LiteralPath (Join-Path $script:SrcRoot 'modules/view-events.ts') -Raw
+        $eventsSource | Should -Match 'function\s+renderEventsView\s*\('
+        $eventsSource | Should -Match "typeof buildEventCenterItems === 'function' \? buildEventCenterItems\(\)"
+        $eventsSource | Should -Match "class:\s*'event-severity-lane'"
+        $app | Should -Match 'function\s+renderEventsView\s*\('
         $combined | Should -Match 'filterRowsByQuery'
         $combined | Should -Match 'sortRowsByKey'
         $combined | Should -Match 'renderTableStateSummary'
@@ -809,10 +813,10 @@ Describe 'PcvDesktopWeb static console assets' {
         $edgeI18n | Should -Match 'The browser token was cleared'
         $edgeI18n | Should -Match 'All views refresh'
         $edgeI18n | Should -Match 'pending jobs are rechecked'
-        $combined | Should -Match 'renderJobEdgeSummary'
-        $combined | Should -Match 'No jobs on this page'
-        $combined | Should -Match 'retained terminal jobs'
-        $combined | Should -Match 'failed job retry'
+        $combined | Should -Match 'function\s+edgeSummary\s*\('
+        $combined | Should -Match 'jobs-empty-page'
+        $combined | Should -Match 'copy\.jobs\.edge\.retained'
+        $combined | Should -Match 'copy\.jobs\.edge\.failed'
         $combined | Should -Match 'vm\.delete'
         $combined | Should -Match 'copy\.job\.reconcile_delete'
         $combined | Should -Match 'checkpoint\.create'

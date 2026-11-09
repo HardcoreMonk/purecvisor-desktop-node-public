@@ -682,6 +682,7 @@ test("BL-0031 the top KPI strip uses loaded VM host job alert and evidence count
 test("one render paints the account list only on the accounts view", () => {
   resetSession(env);
   env.state.accountDirectory = [{ username: "ada", role: "operator", enabled: true }];
+  env.navigateTo("accounts");
   env.render();
   const session = env.document.getElementById("account-session-panel");
   const accounts = env.document.getElementById("accounts-panel");
@@ -1091,6 +1092,7 @@ test("disable uses a danger confirmDialog and shows PCV_ACCOUNT_LAST_ADMIN", asy
       throw { code: "PCV_ACCOUNT_LAST_ADMIN", status: 409, message: "The last enabled admin cannot be disabled.", detail: "Create another admin before disabling this account." };
     }
   });
+  env.navigateTo("accounts");
   env.render();
   env.document.querySelector('[data-action="account-disable"]').click();
   await flush();
@@ -1118,6 +1120,7 @@ test("password reset is an admin row action and password change follows the sign
     { username: "ada", role: "admin", enabled: true },
     { username: "op", role: "operator", enabled: false }
   ];
+  env.navigateTo("accounts");
   env.render();
   const change = () => env.document.querySelector('[data-action="account-change-password"]');
   const panelChange = () => env.document.querySelector("#accounts-panel").querySelector('[data-action="account-change-password"]');
@@ -1152,6 +1155,7 @@ test("password reset modal shows the target, sends confirm_username, and clears 
   env.state.runtimePolicy = { auth: { rbac: true, mode: "account" } };
   env.state.authSession = { username: "root", role: "admin", permissions: ["account.manage"] };
   env.state.accountDirectory = [{ username: "ada", role: "operator", enabled: true }];
+  env.navigateTo("accounts");
   const calls = [];
   stubDesktopApi(env, {
     resetAccountPassword: async (username, body) => {
@@ -1190,6 +1194,7 @@ test("resetting the signed-in account clears the session and asks for login", as
   stubDesktopApi(env, {
     resetAccountPassword: async () => ({ username: "ada", enabled: true })
   });
+  env.navigateTo("accounts");
   env.render();
   env.document.querySelector('[data-action="account-reset-password"]').click();
   const form = env.document.getElementById("account-reset-form");
@@ -2315,20 +2320,12 @@ test("registered jobs render draws chips, kind select, table columns, and does n
     await flush();
     assert.deepEqual(seen, [50]);
 
-    const marker = env.document.createElement("p");
-    marker.textContent = "legacy-marker";
-    mount.appendChild(marker);
-    env.renderJobs();
-    assert.equal(mount.querySelector("p").textContent, "legacy-marker");
+    env.render();
+    assert.equal(mount.innerHTML.includes("No jobs on this page"), false);
     assert.equal(mount.querySelector(".job-row"), null);
-    env.PCV.views.unregister("jobs");
-    env.state.serverJobs = [];
-    env.state.trackedJobs = [];
-    env.state.jobFilter = "";
-    env.state.jobStatusFilter = "all";
-    env.renderJobs();
-    assert.match(mount.innerHTML, /No jobs on this page/);
-    assert.equal(mount.textContent.includes("legacy-marker"), false);
+    assert.ok(mount.querySelector(".job-edge-summary"));
+    assert.ok(mount.querySelector('[data-action="load-next-jobs"]'));
+    assert.equal(typeof env.renderJobs, "undefined");
   } finally {
     env.loadNextJobPage = previousNext;
     env.state.serverJobs = saved.serverJobs;
@@ -2452,15 +2449,10 @@ test("registered activity render draws severity cards, chips, table columns, and
     assert.equal(mount.querySelector(".events-empty"), mount.querySelector(".pcv-empty"));
     assert.equal(mount.querySelector(".pcv-load-error"), null);
 
-    const marker = env.document.createElement("p");
-    marker.textContent = "legacy-marker";
-    mount.appendChild(marker);
-    env.renderEventCenter();
-    assert.match(mount.textContent, /legacy-marker/);
-    env.PCV.views.unregister("activity");
-    env.renderEventCenter();
-    assert.equal(mount.textContent.includes("legacy-marker"), false);
-    assert.match(mount.innerHTML, /event-severity-lane/);
+    env.render();
+    assert.ok(mount.querySelector(".event-severity-lane"));
+    assert.equal(mount.querySelector(".event-center-header"), null);
+    assert.equal(typeof env.renderEventCenter, "undefined");
   } finally {
     env.buildEventCenterItems = saved.build;
     env.state.apiToken = saved.apiToken;
@@ -3078,12 +3070,12 @@ test("evidence operator cards and accounts directory use the registry", () => {
     assert.equal(accountsPanel.querySelector('[data-action="account-disable"][data-username="op"]').disabled, true);
     assert.equal(accountsPanel.querySelector('[data-action="account-disable"][data-username="ada"]').disabled, false);
     assert.equal(accountsPanel.querySelector("form"), null);
-    const accountMarker = env.document.createElement("p");
-    accountMarker.textContent = "legacy-account-marker";
-    accountsPanel.appendChild(accountMarker);
-    env.paintAccountsView();
-    assert.equal([...accountsPanel.children].some((node) => node.textContent === "legacy-account-marker"), true);
-    assert.equal(env.document.getElementById("dt-accounts-table") !== null, true);
+    env.render();
+    assert.equal(accountsPanel.querySelector(".account-directory-table"), null);
+    const paintedAccounts = env.document.getElementById("dt-accounts-table");
+    assert.ok(paintedAccounts);
+    assert.match(paintedAccounts.textContent, /ada/);
+    assert.equal(typeof env.paintAccountsView, "undefined");
   } finally {
     env.state.opsSummary = saved.opsSummary;
     env.state.accountDirectory = saved.accountDirectory;

@@ -864,8 +864,11 @@ function verifyGuestExecCancel(context) {
   assertSourceAndGenerated(context, renderJobsSource, app, [
     [/function\s+formatJobCancelLabel\s*\(/i, "format-label"],
     [/function\s+getJobCancelScope\s*\(/i, "cancel-scope"],
-    [/data-job-cancel-scope="\$\{pcvEscapeHtml\(cancelScope\)\}"/i, "scope-attribute"],
     [/running-guest-execution/i, "running-scope"]
+  ], "guest-exec-cancel");
+  const viewJobsSource = context.readText("web/src/modules/view-jobs.ts");
+  assertSourceAndGenerated(context, viewJobsSource, app, [
+    [/'data-job-cancel-scope':\s*scope/i, "scope-attribute"]
   ], "guest-exec-cancel");
   assertSourceAndGenerated(context, jobPollingSource, app, [
     [/requireRbac\(['"]operate['"],\s*t\(['"]copy\.rbac\.guest_exec_cancel['"]\)\)/, "rbac"]
@@ -878,7 +881,7 @@ function verifySearchEventTable(context) {
   const styles = context.readText("web/style.css");
   const app = context.readText("web/app.bundle.js");
   const servedSource = context.readShellSource();
-  const activitySource = context.readText("web/src/modules/ops.ts");
+  const eventsSource = context.readText("web/src/modules/view-events.ts");
   const tableSource = context.readText("web/src/modules/core.ts");
   const shellNav = context.readText("web/src/modules/shell.ts");
   const navSource = context.readText("web/src/modules/nav.ts");
@@ -899,9 +902,9 @@ function verifySearchEventTable(context) {
     [/id:\s*'cmd-input'/i, "cmd-input"],
     [/role:\s*'combobox'/i, "cmd-combobox"]
   ], "search-event-table");
-  assertSourceAndGenerated(context, activitySource, app, [
-    [/function\s+buildEventCenterItems\s*\(/i, "build-event-center"],
-    [/function\s+renderEventCenter\s*\(/i, "render-event-center"]
+  assertSourceAndGenerated(context, eventsSource, app, [
+    [/typeof buildEventCenterItems === 'function' \? buildEventCenterItems\(\)/, "build-event-center"],
+    [/function\s+renderEventsView\s*\(/i, "render-event-center"]
   ], "search-event-table");
   assertSourceAndGenerated(context, tableSource, app, [
     [/filterRowsByQuery/i, "filter-rows"],
@@ -913,7 +916,7 @@ function verifySearchEventTable(context) {
   context.assertNotMatch(bootstrapSource, /openCommandPalette\(state\.globalSearch\)/i, "search-event-table:command-palette-open:source-old");
   context.assertMatch(app, /toggleGlobalSearch\(\)/i, "search-event-table:command-palette-open:generated");
   context.assertNotMatch(app, /openCommandPalette\(state\.globalSearch\)/i, "search-event-table:command-palette-open:generated-old");
-  context.assertMatch(activitySource, /event-severity-lane/i, "search-event-table:severity-lane:source");
+  context.assertMatch(eventsSource, /class:\s*'event-severity-lane'/i, "search-event-table:severity-lane:source");
   context.assertMatch(styles, /event-severity-lane/i, "search-event-table:severity-lane:styles");
   context.assertMatch(app, /event-severity-lane/i, "search-event-table:severity-lane:generated");
   for (const [source, label] of [[index, "index"], [styles, "styles"], [servedSource, "source"], [app, "generated"]]) {
@@ -1238,7 +1241,7 @@ function verifyJobOrchestration(context) {
   const pollingSource = context.readText("web/src/modules/events.ts");
   const routesSource = context.readText("web/src/modules/core.ts");
   const clientSource = context.readText("web/src/modules/desktop-api.ts");
-  const jobsSource = context.readText("web/src/modules/ops.ts");
+  const jobsSource = context.readText("web/src/modules/view-jobs.ts");
   const activitySource = context.readText("web/src/modules/ops.ts");
   const servedAppSource = context.readText("web/src/bootstrap.ts");
   assertSourceAndGenerated(context, stateSource, app, [
@@ -1274,9 +1277,9 @@ function verifyJobOrchestration(context) {
     [/reconcileJob:\s*\(jobId/i, "reconcile-client"]
   ], "job-orchestration");
   assertSourceAndGenerated(context, jobsSource, app, [
-    [/data-action="cancel-job"/i, "cancel-control"],
-    [/data-action="retry-job"/i, "retry-control"],
-    [/data-action="reconcile-job"/i, "reconcile-control"]
+    [/'data-action':\s*'cancel-job'/i, "cancel-control"],
+    [/'data-action':\s*'retry-job'/i, "retry-control"],
+    [/'data-action':\s*'reconcile-job'/i, "reconcile-control"]
   ], "job-orchestration");
   assertSourceAndGenerated(context, activitySource, app, [
     [/next_offset/i, "render-next-offset"],
@@ -1609,10 +1612,10 @@ function verifyFrontendEdgeCases(context) {
     [/timeout/i, "timeout"],
     [/tokenRequiredRouteStatus/i, "token-required-status"],
     [/account\.token\.cleared/i, "token-cleared-key"],
-    [/renderJobEdgeSummary/i, "job-edge-summary"],
-    [/No jobs on this page/i, "empty-job-page"],
-    [/retained terminal jobs/i, "retained-terminal-jobs"],
-    [/failed job retry/i, "failed-job-retry"],
+    [/function\s+edgeSummary\s*\(/i, "job-edge-summary"],
+    [/jobs-empty-page/i, "empty-job-page"],
+    [/copy\.jobs\.edge\.retained/i, "retained-terminal-jobs"],
+    [/copy\.jobs\.edge\.failed/i, "failed-job-retry"],
     [/vm\.delete/i, "vm-delete"],
     [/copy\.job\.reconcile_delete/, "reconcile-delete"],
     [/checkpoint\.create/i, "checkpoint-create"],

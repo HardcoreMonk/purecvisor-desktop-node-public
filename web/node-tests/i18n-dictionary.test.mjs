@@ -161,6 +161,7 @@ test("BL-0024 shell copy uses i18n keys and the Korean default", () => {
 
   const monitor = fs.readFileSync(webRoot + "src/modules/monitor.ts", "utf8");
   const ops = fs.readFileSync(webRoot + "src/modules/ops.ts", "utf8");
+  const viewEvents = fs.readFileSync(webRoot + "src/modules/view-events.ts", "utf8");
   const theme = fs.readFileSync(webRoot + "src/modules/theme.ts", "utf8");
   for (const [source, key] of [
     [monitor, "copy.mon.bundle_kicker"],
@@ -169,8 +170,8 @@ test("BL-0024 shell copy uses i18n keys and the Korean default", () => {
     [monitor, "copy.mon.token_kicker"],
     [monitor, "copy.mon.token_title"],
     [monitor, "copy.mon.clear_browser_token"],
-    [ops, "copy.events.center"],
-    [ops, "copy.events.severity"],
+    [viewEvents, "copy.events.col.severity"],
+    [viewEvents, "copy.events.filter"],
     [ops, "copy.jobs.pagination"],
     [ops, "copy.jobs.load_next"],
     [ops, "copy.job.cancel"],

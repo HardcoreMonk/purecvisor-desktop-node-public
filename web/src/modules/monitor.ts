@@ -292,16 +292,6 @@ function renderDiagnosticsBundle() {
   const downloadHtml = download.bundle_id
     ? `<div class="diagnostics-result"><span class="muted">Last download</span><strong>${pcvEscapeHtml(download.file_name || download.bundle_id)}</strong><p>${pcvEscapeHtml(download.content_type || 'application/vnd.purecvisor.diagnostic-bundle+json')} / ${pcvEscapeHtml(download.size_bytes ?? 0)} bytes</p></div>`
     : '';
-  const showLegacyTrouble = !(typeof pcvLegacyViewSkipped === 'function' && pcvLegacyViewSkipped('troubleshooting'));
-  const legacyTroubleHtml = `${renderRuntimeApiRegistryBridge()}
-    ${renderHostOpsLifecycleBucketTable()}
-    <div class="boundary-chip-row">
-      <span>token file content excluded</span>
-      <span>protected token blobs omitted</span>
-      <span>public signing not claimed</span>
-      <span>external publication not claimed</span>
-    </div>`;
-
   els.diagnosticsPanel.innerHTML = `<div class="diagnostics-card">
     <div class="diagnostics-header">
       <div>
@@ -320,11 +310,10 @@ function renderDiagnosticsBundle() {
       <span class="muted">Authenticated create/download only; command strings and token values are not rendered.</span>
     </div>
     ${statusHtml}
-    ${showLegacyTrouble ? legacyTroubleHtml : ''}
     ${renderDiagnosticBundleList()}
     ${downloadHtml}
   </div>`;
-  if (!showLegacyTrouble && window.PCV && PCV.viewTroubleshooting && typeof PCV.viewTroubleshooting.paintAdvanced === 'function') {
+  if (window.PCV && PCV.viewTroubleshooting && typeof PCV.viewTroubleshooting.paintAdvanced === 'function') {
     PCV.viewTroubleshooting.paintAdvanced();
   }
 }
@@ -371,49 +360,9 @@ function renderTokenRotation() {
 
 function renderAccountSession() {
   if (!els.accountSessionPanel) return;
-  const legacySession = !(typeof pcvLegacyViewSkipped === 'function' && pcvLegacyViewSkipped('troubleshooting'));
-  if (!legacySession && typeof els.accountSessionPanel.querySelector === 'function' && els.accountSessionPanel.querySelector('#relogin-overlay')) return;
-  const session = state.authSession || {};
-  const role = getAccountRoleLabel();
-  const permissions = getAccountPermissions();
-  const signedIn = Boolean(state.authAccessToken && session.username);
-  const status = state.authPending ? 'pending' : signedIn ? role : 'not signed in';
-  const errorHtml = state.authError
-    ? `<div class="diagnostics-result error"><span class="muted">Account auth</span><strong>${pcvEscapeHtml(state.authError.code)}</strong><p>${pcvEscapeHtml(state.authError.message)} ${pcvEscapeHtml(state.authError.detail)}</p></div>`
-    : '';
-  const reloginHtml = signedIn
-    ? ''
-    : `<button type="button" data-action="open-login-overlay">${pcvEscapeHtml(t('copy.login.again'))}</button>`;
-
-  const legacySessionHtml = `<div class="token-rotation-card account-session-card">
-    <div class="diagnostics-header">
-      <div>
-        <span class="muted">Account</span>
-        <strong>RBAC Session</strong>
-      </div>
-      <span class="status-badge ${signedIn ? 'ok' : 'warn'}">${pcvEscapeHtml(status)}</span>
-    </div>
-    ${reloginHtml}
-    <div class="diagnostics-grid">
-      <div class="diagnostics-fact"><span class="muted">User</span><strong>${pcvEscapeHtml(session.username || '-')}</strong></div>
-      <div class="diagnostics-fact"><span class="muted">Role</span><strong>${pcvEscapeHtml(role)}</strong></div>
-      <div class="diagnostics-fact"><span class="muted">JWT access</span><strong>${pcvEscapeHtml(state.authAccessToken ? 'present' : 'empty')}</strong></div>
-      <div class="diagnostics-fact"><span class="muted">Refresh</span><strong>${pcvEscapeHtml(state.authRefreshToken ? 'present' : 'empty')}</strong></div>
-    </div>
-    <div class="token-rotation-actions">
-      <button type="button" data-action="account-refresh"${state.authRefreshToken ? '' : ' disabled aria-disabled="true"'}>Refresh JWT</button>
-      <button type="button" data-action="account-logout"${signedIn ? '' : ' disabled aria-disabled="true"'}>Logout account</button>
-      <span class="muted">JWT and password values are kept out of the DOM after submit.</span>
-    </div>
-    <div class="boundary-chip-row">
-      <span>permissions: ${pcvEscapeHtml(permissions.length ? permissions.join(', ') : 'none')}</span>
-      <span>service bearer fallback preserved</span>
-      <span>RBAC gates destructive actions</span>
-    </div>
-    ${errorHtml}
-  </div>`;
+  if (typeof els.accountSessionPanel.querySelector === 'function' && els.accountSessionPanel.querySelector('#relogin-overlay')) return;
   const pinnedSessionHtml = `<button id="relogin-overlay" type="button" data-action="open-login-overlay">${pcvEscapeHtml(t('copy.login.again'))}</button>`;
-  els.accountSessionPanel.innerHTML = legacySession ? legacySessionHtml : pinnedSessionHtml;
+  els.accountSessionPanel.innerHTML = pinnedSessionHtml;
 }
 
 function renderAccountDirectory() {
@@ -776,15 +725,12 @@ function render() {
   try { renderVmWorkbenchContext(); } catch (e) { if (window._DEBUG) console.warn('render:renderVmWorkbenchContext', e); }
   try { renderVmDetail(); } catch (e) { if (window._DEBUG) console.warn('render:renderVmDetail', e); }
   try { paintVmConsoleFrame(); } catch (e) { if (window._DEBUG) console.warn('render:paintVmConsoleFrame', e); }
-  try { renderJobs(); } catch (e) { if (window._DEBUG) console.warn('render:renderJobs', e); }
   try { renderDashboardActivity(); } catch (e) { if (window._DEBUG) console.warn('render:renderDashboardActivity', e); }
   try { renderActivity(); } catch (e) { if (window._DEBUG) console.warn('render:renderActivity', e); }
-  try { renderEventCenter(); } catch (e) { if (window._DEBUG) console.warn('render:renderEventCenter', e); }
   try { renderEvidenceDashboard(); } catch (e) { if (window._DEBUG) console.warn('render:renderEvidenceDashboard', e); }
   try { renderMonitoring(); } catch (e) { if (window._DEBUG) console.warn('render:renderMonitoring', e); }
   try { renderIncidentCommand(); } catch (e) { if (window._DEBUG) console.warn('render:renderIncidentCommand', e); }
   try { renderAccountSession(); } catch (e) { if (window._DEBUG) console.warn('render:renderAccountSession', e); }
-  try { if (typeof paintAccountsView === 'function') paintAccountsView(); } catch (e) { if (window._DEBUG) console.warn('render:paintAccountsView', e); }
   try { if (window.PCV && PCV.shell && typeof PCV.shell.syncAccountNav === 'function') PCV.shell.syncAccountNav(); } catch (e) { if (window._DEBUG) console.warn('render:syncAccountNav', e); }
   try { if (window.PCV && PCV.shell && typeof PCV.shell.syncFromOperatorState === 'function') PCV.shell.syncFromOperatorState(); } catch (e) { if (window._DEBUG) console.warn('render:shellKpi', e); }
   try { renderConsolePanel(); } catch (e) { if (window._DEBUG) console.warn('render:renderConsolePanel', e); }

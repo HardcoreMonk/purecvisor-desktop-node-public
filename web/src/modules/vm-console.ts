@@ -168,16 +168,6 @@ function renderBetaFollowup() {
 
 function renderTroubleshooting() {
   if (!els.troubleshootingPanel) return;
-  const host = state.host || {};
-  const policy = state.runtimePolicy || {};
-  const cards = [
-    [t('vm.trouble.host'), host.supported === false ? t('vm.trouble.host_bad') : t('vm.trouble.host_ok'), t('vm.trouble.host_detail')],
-    [t('vm.trouble.vmms'), formatPolicyValue(readNested(host, ['hyperv', 'vmms_running'])), t('vm.trouble.vmms_detail')],
-    [t('vm.trouble.listener'), formatPolicyValue(readNested(policy, ['network', 'current_exposure']) || readNested(policy, ['network', 'bind'])), t('vm.trouble.listener_detail')],
-    [t('vm.trouble.token'), formatPolicyValue(readNested(policy, ['auth', 'token_storage']) || readNested(policy, ['token', 'storage'])), t('vm.trouble.token_detail')],
-    [t('vm.trouble.jobs'), formatPolicyValue(readNested(policy, ['job_runtime', 'state_store', 'persistence'])), t('vm.trouble.jobs_detail')],
-    [t('vm.trouble.boundary'), t('vm.trouble.boundary_value'), t('vm.trouble.boundary_detail')]
-  ];
   const errors = [
     ['PCV_AUTH_REQUIRED', t('vm.trouble.err_auth')],
     ['PCV_JOB_STORE_SCHEMA_UNSUPPORTED', t('vm.trouble.err_schema')],
@@ -189,11 +179,7 @@ function renderTroubleshooting() {
   const codeHtml = `<div class="code-list">
       ${errors.map(([code, detail]) => `<div class="kv"><span>${pcvEscapeHtml(code)}</span><strong>${pcvEscapeHtml(detail)}</strong></div>`).join('')}
     </div>`;
-  const gridHtml = `<div class="troubleshooting-grid">
-      ${cards.map(([title, value, detail]) => `<div class="troubleshooting-card"><span class="muted">${pcvEscapeHtml(title)}</span><strong>${pcvEscapeHtml(value)}</strong><p>${pcvEscapeHtml(detail)}</p></div>`).join('')}
-    </div>`;
-  const skipped = typeof pcvLegacyViewSkipped === 'function' && pcvLegacyViewSkipped('troubleshooting');
-  els.troubleshootingPanel.innerHTML = skipped ? `${evidenceHtml}${codeHtml}` : `${evidenceHtml}${gridHtml}${codeHtml}`;
+  els.troubleshootingPanel.innerHTML = `${evidenceHtml}${codeHtml}`;
 }
 
 // --- legacy vm-detail-extensions.ts ---

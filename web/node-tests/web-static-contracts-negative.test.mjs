@@ -623,7 +623,7 @@ const defectCases = [
   {
     name: "missing job orchestration rendered controls authoritative source owner",
     id: "web.static.job-orchestration",
-    overrides: () => removeOnce("web/src/modules/ops.ts", "data-action=\"cancel-job\""),
+    overrides: () => removeOnce("web/src/modules/view-jobs.ts", "'data-action': 'cancel-job'"),
     expectedCode: assertionFailed,
     expectedLabel: "job-orchestration:cancel-control:source"
   },

@@ -4,22 +4,6 @@
 window.PCV = window.PCV || {};
 (function (PCV) {
 // --- legacy render-jobs.ts ---
-function renderJobEdgeSummary() {
-  const page = state.serverJobPage || {};
-  const rows = buildActivityRows();
-  const active = rows.filter(({ job }) => ['queued', 'running'].includes(String(job?.status || '').toLowerCase())).length;
-  const failed = rows.filter(({ job }) => String(job?.status || '').toLowerCase() === 'failed').length;
-  const retained = page.retention?.max_terminal_jobs ?? 'unknown';
-  const nextOffset = page.next_offset === null || page.next_offset === undefined ? 'none' : page.next_offset;
-  return `<div class="activity-warning job-edge-summary">
-    <strong>Job edge cases</strong>
-    active running jobs=${pcvEscapeHtml(active)}
-    / failed job retry=${pcvEscapeHtml(failed)}
-    / retained terminal jobs=${pcvEscapeHtml(retained)}
-    / next_offset=${pcvEscapeHtml(nextOffset)}
-  </div>`;
-}
-
 function getFilteredJobRows() {
   const allRows = buildActivityRows();
   const statusFilter = String(state.jobStatusFilter || 'all').toLowerCase();
@@ -67,62 +51,6 @@ function canReconcileVmMutation(job) {
   return String(job?.status || '').toLowerCase() === 'failed' &&
     ['vm.rename', 'vm.delete', 'checkpoint.create', 'checkpoint.restore', 'vm.create', 'vm.shutdown', 'vm.restart', 'vm.qos.storage.set', 'vm.qos.network.set'].includes(operation) &&
     String(job?.error?.code || '').toUpperCase() === 'PCV_JOB_INTERRUPTED';
-}
-
-function renderJobReconcileButton(job, canOperate) {
-  if (!canReconcileVmMutation(job)) return '';
-  const operation = String(job?.operation || '').toLowerCase();
-  const label = operation === 'vm.delete'
-    ? t('copy.job.reconcile_delete')
-    : operation === 'checkpoint.create'
-      ? t('copy.job.reconcile_checkpoint')
-      : operation === 'checkpoint.restore'
-        ? t('copy.job.reconcile_restore')
-        : operation === 'vm.create'
-          ? t('copy.job.reconcile_create')
-          : operation === 'vm.shutdown'
-            ? t('copy.job.reconcile_shutdown')
-            : operation === 'vm.restart'
-              ? t('copy.job.reconcile_restart')
-              : operation === 'vm.qos.storage.set'
-                ? t('copy.job.reconcile_storage')
-                : operation === 'vm.qos.network.set'
-                  ? t('copy.job.reconcile_network')
-                  : t('copy.job.reconcile_rename');
-  return `<button data-action="reconcile-job" data-job-id="${pcvEscapeHtml(job.job_id)}"${canOperate ? '' : ' disabled'}>${label}</button>`;
-}
-
-function renderJobCancelButton(job, canOperate) {
-  const status = String(job?.status || 'unknown').toLowerCase();
-  if (!['queued', 'running'].includes(status)) return '';
-  const cancelScope = getJobCancelScope(job);
-  const buttonClass = cancelScope === 'running-guest-execution' ? ' class="danger-button job-cancel-button"' : '';
-  return `<button${buttonClass} data-action="cancel-job" data-job-id="${pcvEscapeHtml(job.job_id)}" data-job-cancel-scope="${pcvEscapeHtml(cancelScope)}"${canOperate ? '' : ' disabled'}>${pcvEscapeHtml(formatJobCancelLabel(job))}</button>`;
-}
-
-function renderJobs() {
-  if (typeof pcvLegacyViewSkipped === 'function' && pcvLegacyViewSkipped('jobs')) return;
-  const { allRows, rows } = getFilteredJobRows();
-  const canOperate = rbacAllows('operate');
-  const summary = renderJobEdgeSummary();
-  const tableSummary = renderTableStateSummary('Jobs', rows.length, allRows.length, state.jobFilter, `status=${state.jobStatusFilter || 'all'}`);
-  if (rows.length === 0) {
-    const filtered = Boolean(state.jobFilter.trim() || state.jobStatusFilter !== 'all');
-    const emptyMessage = filtered
-      ? 'No jobs match the current filter. Jobs created from this browser session or returned by GET /api/v1/jobs will appear here.'
-      : 'No jobs on this page. Jobs created from this browser session or returned by GET /api/v1/jobs will appear here.';
-    els.jobsPanel.innerHTML = `${summary}${tableSummary}<p class="muted">${pcvEscapeHtml(emptyMessage)}</p>`;
-    return;
-  }
-  els.jobsPanel.innerHTML = summary + tableSummary + rows.map(({ source, job }) => {
-    const status = String(job.status || 'unknown').toLowerCase();
-    const actions = [
-      renderJobCancelButton(job, canOperate),
-      status === 'failed' ? `<button data-action="retry-job" data-job-id="${pcvEscapeHtml(job.job_id)}"${canOperate ? '' : ' disabled'}>Retry</button>` : '',
-      renderJobReconcileButton(job, canOperate)
-    ].join('');
-    return `<div class="job-row"><div><strong>${pcvEscapeHtml(job.job_id)}</strong><div class="muted">${pcvEscapeHtml(job.operation || 'vm.create')}</div></div><div>${stateBadge(job.status)}</div><div><span class="badge">${pcvEscapeHtml(source)}</span>${actions}</div></div>`;
-  }).join('');
 }
 
 // --- legacy render-activity.ts ---
@@ -230,32 +158,6 @@ function buildEventCenterItems() {
   if (!state.apiToken.trim()) push('info', t('copy.mon.browser_token'), t('copy.events.token_detail'), 'session');
 
   return items.slice(0, 12);
-}
-
-function renderEventCenter() {
-  if (typeof pcvLegacyViewSkipped === 'function' && pcvLegacyViewSkipped('activity')) return;
-  if (!els.eventCenterPanel) return;
-  const items = buildEventCenterItems();
-  const counts = items.reduce((acc, item) => {
-    acc[item.tone] = (acc[item.tone] || 0) + 1;
-    return acc;
-  }, {});
-  const severityLane = ['error', 'warn', 'info', 'ok']
-    .map((tone) => `<span class="event-pill event-${tone}">${pcvEscapeHtml(tone)} ${pcvEscapeHtml(counts[tone] || 0)}</span>`)
-    .join('');
-  const rows = items.length
-    ? items.map((item) => `<div class="event-row event-${pcvEscapeHtml(item.tone)}">
-        <span class="status-badge ${pcvEscapeHtml(item.tone)}">${pcvEscapeHtml(item.source)}</span>
-        <div><strong>${pcvEscapeHtml(item.label)}</strong><p>${pcvEscapeHtml(item.detail)}</p></div>
-      </div>`).join('')
-    : `<p class="muted">${pcvEscapeHtml(t('copy.events.empty'))}</p>`;
-
-  els.eventCenterPanel.innerHTML = `
-    <div class="event-center-header">
-      <div><p class="eyebrow">${pcvEscapeHtml(t('copy.events.center'))}</p><h3>${pcvEscapeHtml(t('copy.events.severity'))}</h3></div>
-      <div class="event-severity-lane">${severityLane}</div>
-    </div>
-    <div class="event-center-list">${rows}</div>`;
 }
 
 function getJobTime(job) {
@@ -547,20 +449,15 @@ function collectEvidenceIssues() {
 }
 
 // exports
-window.renderJobEdgeSummary = renderJobEdgeSummary;
 window.getFilteredJobRows = getFilteredJobRows;
 window.getJobCancelScope = getJobCancelScope;
 window.formatJobCancelLabel = formatJobCancelLabel;
 window.canReconcileVmMutation = canReconcileVmMutation;
-window.renderJobReconcileButton = renderJobReconcileButton;
-window.renderJobCancelButton = renderJobCancelButton;
-window.renderJobs = renderJobs;
 window.normalizeJob = normalizeJob;
 window.renderFailedJobTriageRows = renderFailedJobTriageRows;
 window.renderIncidentCommand = renderIncidentCommand;
 window.normalizeEventTone = normalizeEventTone;
 window.buildEventCenterItems = buildEventCenterItems;
-window.renderEventCenter = renderEventCenter;
 window.getJobTime = getJobTime;
 window.formatJobDetail = formatJobDetail;
 window.formatCorrelationValue = formatCorrelationValue;
@@ -592,5 +489,5 @@ window.evidenceDashboardDetail = evidenceDashboardDetail;
 window.currentEvidenceDashboardDetail = currentEvidenceDashboardDetail;
 window.evidenceIssueTone = evidenceIssueTone;
 window.collectEvidenceIssues = collectEvidenceIssues;
-PCV.ops = Object.assign(PCV.ops || {}, { renderJobEdgeSummary, getFilteredJobRows, getJobCancelScope, formatJobCancelLabel, canReconcileVmMutation, renderJobReconcileButton, renderJobCancelButton, renderJobs, normalizeJob, renderFailedJobTriageRows, renderIncidentCommand, normalizeEventTone, buildEventCenterItems, renderEventCenter, getJobTime, formatJobDetail, formatCorrelationValue, getActivityRowsForDashboard, buildActivityRows, renderDashboardActivity, renderActivity, renderActivityPageSummary, stateBadge, asObject, getBatchEvidence, getCurrentEvidenceRollup, getCurrentEvidenceFullAdmin, getCurrentEvidencePublicBoundary, getCurrentEvidencePackagePair, getCurrentEvidenceNextPackagePair, getCurrentEvidenceHostOps, getRuntimeApiRegistryBridge, normalizeEvidenceStatus, evidenceTone, evidenceStatusLabel, currentEvidenceTone, currentEvidenceStatusLabel, renderEvidenceStatusBadge, renderCurrentEvidenceStatusBadge, evidenceValue, evidenceBooleanLabel, evidenceDashboardDetail, currentEvidenceDashboardDetail, evidenceIssueTone, collectEvidenceIssues });
+PCV.ops = Object.assign(PCV.ops || {}, { getFilteredJobRows, getJobCancelScope, formatJobCancelLabel, canReconcileVmMutation, normalizeJob, renderFailedJobTriageRows, renderIncidentCommand, normalizeEventTone, buildEventCenterItems, getJobTime, formatJobDetail, formatCorrelationValue, getActivityRowsForDashboard, buildActivityRows, renderDashboardActivity, renderActivity, renderActivityPageSummary, stateBadge, asObject, getBatchEvidence, getCurrentEvidenceRollup, getCurrentEvidenceFullAdmin, getCurrentEvidencePublicBoundary, getCurrentEvidencePackagePair, getCurrentEvidenceNextPackagePair, getCurrentEvidenceHostOps, getRuntimeApiRegistryBridge, normalizeEvidenceStatus, evidenceTone, evidenceStatusLabel, currentEvidenceTone, currentEvidenceStatusLabel, renderEvidenceStatusBadge, renderCurrentEvidenceStatusBadge, evidenceValue, evidenceBooleanLabel, evidenceDashboardDetail, currentEvidenceDashboardDetail, evidenceIssueTone, collectEvidenceIssues });
 })(window.PCV);
