@@ -100,41 +100,17 @@
       <section class="login-pitch">
         <h1 class="login-hero ko-tight">Windows 호스트 운영을,<br><span class="login-hero-accent">한 콘솔에.</span></h1>
         <p class="login-lede ko">웹 콘솔 · Local API 로 Hyper-V VM · checkpoint · 브라우저 콘솔 · 작업 기록을 같은 표면에서 다룹니다.</p>
-        <div class="login-node" aria-live="polite" aria-label="노드 상태">
-          <div class="login-node-head">
-            <span class="login-node-kicker">
-              <svg class="pcv-icon" aria-hidden="true"><use href="#pcv-i-pulse"></use></svg>
-              노드 상태
-            </span>
-            <span class="login-node-state">
-              <span id="lh-dot" class="login-dot login-dot-idle" aria-hidden="true"></span>
-              <span id="lh-state">노드 응답 대기</span>
-            </span>
-          </div>
+        <div class="login-node" aria-live="polite" aria-label="콘솔 정보">
           <dl class="login-node-grid">
-            <div>
-              <dt>NODE</dt>
-              <dd id="lh-node">—</dd>
+            <div id="lh-version-row" hidden>
+              <dt data-i18n="copy.login.version">버전</dt>
+              <dd id="lh-version"></dd>
             </div>
-            <div>
-              <dt>VERSION</dt>
-              <dd id="lh-version">—</dd>
-            </div>
-            <div>
-              <dt>UPTIME</dt>
-              <dd id="lh-uptime">—</dd>
+            <div id="lh-host-row">
+              <dt data-i18n="copy.login.host">주소</dt>
+              <dd id="lh-host"></dd>
             </div>
           </dl>
-          <div class="login-node-checks" aria-label="노드 점검 요약">
-            <span class="login-node-check">
-              <span id="lh-hyperv-dot" class="login-dot login-dot-idle" aria-hidden="true"></span>
-              <b>HYPER-V</b><span id="lh-hyperv">—</span>
-            </span>
-            <span class="login-node-check">
-              <span id="lh-disk-dot" class="login-dot login-dot-idle" aria-hidden="true"></span>
-              <b>DISK</b><span id="lh-disk">—</span>
-            </span>
-          </div>
         </div>
         <ul class="login-caps ko" aria-label="핵심 역량">
           <li><svg class="pcv-icon" aria-hidden="true"><use href="#pcv-i-monitor"></use></svg>VM</li>
@@ -153,17 +129,17 @@
           <form class="login-form" onsubmit="event.preventDefault();doLoginPage();return false;" autocomplete="on">
             <div id="login-cred-fields" class="login-stack">
               <div class="login-field">
-                <label class="login-label" for="login-user">계정 이름</label>
+                <label class="login-label" for="login-user" data-i18n="copy.login.user">계정 이름</label>
                 <div class="login-input-wrap">
                   <svg class="pcv-icon login-input-icon" aria-hidden="true"><use href="#pcv-i-user"></use></svg>
-                  <input id="login-user" class="login-input" placeholder="계정 이름" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" aria-label="계정 이름">
+                  <input id="login-user" name="username" class="login-input" placeholder="계정 이름" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" aria-label="계정 이름">
                 </div>
               </div>
               <div class="login-field">
-                <label class="login-label" for="login-pass">비밀번호</label>
+                <label class="login-label" for="login-pass" data-i18n="copy.login.password">비밀번호</label>
                 <div class="login-input-wrap">
                   <svg class="pcv-icon login-input-icon" aria-hidden="true"><use href="#pcv-i-lock"></use></svg>
-                  <input id="login-pass" type="password" class="login-input" placeholder="••••••••" autocomplete="current-password" autocapitalize="none" autocorrect="off" spellcheck="false" aria-label="비밀번호">
+                  <input id="login-pass" name="password" type="password" class="login-input" placeholder="••••••••" autocomplete="current-password" autocapitalize="none" autocorrect="off" spellcheck="false" aria-label="비밀번호">
                   <button type="button" class="login-pass-toggle" aria-label="비밀번호 표시 전환" onclick="(function(b){var i=document.getElementById('login-pass');var hidden=i.type==='password';i.type=hidden?'text':'password';b.setAttribute('aria-pressed',hidden?'true':'false');})(this)">
                     <svg class="pcv-icon" aria-hidden="true"><use href="#pcv-i-eye"></use></svg>
                   </button>
@@ -379,8 +355,8 @@
         <section id="jobs" class="section app-view" data-view="jobs">
           <div class="section-header">
             <div>
-              <p class="eyebrow" data-i18n="copy.jobs.eyebrow">세션</p>
-              <h2 data-i18n="copy.jobs.title">추적 작업</h2>
+              <p class="eyebrow" data-i18n="copy.jobs.eyebrow">관제</p>
+              <h2 data-i18n="copy.jobs.title">작업</h2>
             </div>
             <label class="filter-control">
               <span data-i18n="copy.filter">필터</span>
@@ -427,7 +403,7 @@
           <div class="section-header">
             <div>
               <p class="eyebrow" data-i18n="copy.evidence.eyebrow">배치 증적</p>
-              <h2 data-i18n="copy.evidence.title">감독 증적</h2>
+              <h2 data-i18n="copy.evidence.title">증적</h2>
             </div>
           </div>
           <div id="evidence-panel" class="evidence-panel"></div>
@@ -451,17 +427,13 @@
           <div class="section-header">
             <div>
               <p class="eyebrow" data-i18n="copy.trouble.eyebrow">지원</p>
-              <h2 data-i18n="copy.trouble.title">장애 대응</h2>
+              <h2 data-i18n="copy.trouble.title">진단</h2>
             </div>
           </div>
           <p class="pcv-account-jump"><a href="#/accounts" data-view-link="accounts" data-i18n="account.open">계정 화면으로</a></p>
           <div id="incident-panel" class="incident-panel"></div>
           <div id="account-session-panel" class="account-session-panel">
-            <form id="account-login-form" class="account-login-form" autocomplete="off">
-              <label><span data-i18n="username">사용자명</span><input id="account-username" name="username" type="text" autocomplete="username"></label>
-              <label><span data-i18n="password">비밀번호</span><input id="account-password" name="password" type="password" autocomplete="current-password"></label>
-              <button type="submit" data-i18n="login">로그인</button>
-            </form>
+            <button id="relogin-overlay" type="button" data-action="open-login-overlay" data-i18n="copy.login.again">다시 로그인</button>
           </div>
           <div id="account-console-panel" class="account-console-panel"></div>
           <div id="token-rotation-panel" class="token-rotation-panel"></div>

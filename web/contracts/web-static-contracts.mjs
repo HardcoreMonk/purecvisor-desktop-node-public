@@ -790,11 +790,15 @@ function verifyQosGuestReadback(context) {
   assertSourceAndGenerated(context, renderSource, app, [
     [/renderVmQosGuestReadback/i, "render-combined"],
     [/data-action="vm-qos-guest-refresh"/i, "refresh-action"],
-    [/linux_blkio_compatible/i, "blkio-compatible"],
-    [/linux_bandwidth_compatible/i, "bandwidth-compatible"],
-    [/qemu_guest_agent/i, "qemu-agent"],
-    [/guest_heartbeat_verified/i, "heartbeat"]
+    [/pcvReadbackFieldPart/i, "readback-field-part"]
   ], "qos-guest-readback");
+  const readbackI18n = context.readText("web/i18n.js");
+  context.assertMatch(readbackI18n, /linux_blkio_compatible/i, "qos-guest-readback:blkio-compatible");
+  context.assertMatch(readbackI18n, /linux_bandwidth_compatible/i, "qos-guest-readback:bandwidth-compatible");
+  context.assertMatch(readbackI18n, /qemu_guest_agent/i, "qos-guest-readback:qemu-agent");
+  context.assertMatch(readbackI18n, /vm\.readback\.field\.guest_heartbeat_verified/i, "qos-guest-readback:heartbeat");
+  context.assertNotMatch(renderSource, /linux_blkio_compatible/i, "qos-guest-readback:no-linux-blkio-render");
+  context.assertNotMatch(app, /linux_blkio_compatible/i, "qos-guest-readback:no-linux-blkio-generated");
   assertSourceAndGenerated(context, loadSource, app, [
     [/function\s+loadVmQosGuestReadbacks\s*\(/i, "load"]
   ], "qos-guest-readback");
@@ -907,8 +911,10 @@ function verifySearchEventTable(context) {
     [/function\s+renderTableStateSummary\s*\(/i, "table-summary"]
   ], "search-event-table");
   const bootstrapSource = context.readText("web/src/bootstrap.ts");
-  context.assertMatch(bootstrapSource, /openCommandPalette\(state\.globalSearch\)/i, "search-event-table:command-palette-open:source");
-  context.assertMatch(app, /openCommandPalette\(state\.globalSearch\)/i, "search-event-table:command-palette-open:generated");
+  context.assertMatch(bootstrapSource, /toggleGlobalSearch\(\)/i, "search-event-table:command-palette-open:source");
+  context.assertNotMatch(bootstrapSource, /openCommandPalette\(state\.globalSearch\)/i, "search-event-table:command-palette-open:source-old");
+  context.assertMatch(app, /toggleGlobalSearch\(\)/i, "search-event-table:command-palette-open:generated");
+  context.assertNotMatch(app, /openCommandPalette\(state\.globalSearch\)/i, "search-event-table:command-palette-open:generated-old");
   context.assertMatch(activitySource, /event-severity-lane/i, "search-event-table:severity-lane:source");
   context.assertMatch(styles, /event-severity-lane/i, "search-event-table:severity-lane:styles");
   context.assertMatch(app, /event-severity-lane/i, "search-event-table:severity-lane:generated");
@@ -953,7 +959,7 @@ function verifyAccountRbacConsole(context) {
   const consoleSource = context.readText("web/src/modules/vm-console.ts");
   const servedSource = context.readShellSource();
   for (const [pattern, label] of [
-    [/id="account-login-form"/i, "login-form"],
+    [/id="relogin-overlay"/i, "login-form"],
     [/id="account-console-panel"/i, "console-panel"],
     [/name="username"/i, "username"],
     [/name="password"/i, "password"]
@@ -1654,7 +1660,7 @@ function verifyFrontendEdgeCases(context) {
     [/installed-listener-qa/i, "installed-qa-marker"],
     [/PCV_BROWSER_QA_ACCOUNT_USERNAME/i, "qa-username"],
     [/PCV_BROWSER_QA_ACCOUNT_PASSWORD/i, "qa-password"],
-    [/account-login-form/i, "login-form"],
+    [/login-user/i, "login-form"],
     [/diagnostic_create_clicked/i, "diagnostic-create-clicked"],
     [/value_observed:\s*false/i, "secret-value-not-observed"],
     [/--disable-background-networking/i, "disable-background-networking"],

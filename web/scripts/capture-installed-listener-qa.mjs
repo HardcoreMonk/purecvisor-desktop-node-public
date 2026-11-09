@@ -294,11 +294,9 @@ async function main() {
     await waitForExpression(client, "document.readyState === 'complete' && !!document.querySelector('#connection-form')", 20000);
 
     if (accountUsername && accountPassword) {
-      await navigateView(client, "troubleshooting");
-      await sleep(500);
-      await typeInto(client, "#account-username", accountUsername);
-      await typeInto(client, "#account-password", accountPassword);
-      await evaluate(client, "document.querySelector('#account-login-form')?.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }))");
+      await typeInto(client, "#login-user", accountUsername);
+      await typeInto(client, "#login-pass", accountPassword);
+      await evaluate(client, "typeof doLoginPage === 'function' ? doLoginPage() : null");
       await waitForExpression(client, "Boolean(window.sessionStorage.getItem('pcvDesktopAccountSession.v1'))", 20000);
       await sleep(1500);
       await navigateView(client, "dashboard");

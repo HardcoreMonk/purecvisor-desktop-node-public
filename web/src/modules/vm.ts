@@ -1350,12 +1350,7 @@ function readbackBucket(payload, bucketName) {
 
 function readbackFieldSummary(payload, bucketName, fields) {
   const bucket = readbackBucket(payload, bucketName);
-  const parts = fields
-    .map((field) => {
-      const value = bucket[field];
-      return value === undefined || value === null || value === '' ? '' : `${field}=${formatObjectValue(value)}`;
-    })
-    .filter(Boolean);
+  const parts = fields.map((field) => pcvReadbackFieldPart(bucket, field)).filter(Boolean);
   return parts.length > 0 ? parts.join(' / ') : t('vm.readback.payload');
 }
 
@@ -1396,9 +1391,9 @@ function renderVmQosGuestReadback(vmId) {
       <button data-action="vm-qos-guest-refresh" data-vm-id="${pcvEscapeHtml(vmId)}"${readbacks?.loading ? ' disabled' : ''}>${pcvEscapeHtml(loadingLabel)}</button>
     </div>
     <div class="qos-readback-grid">
-      ${renderReadbackCard(readbacks, 'blkio', t('vm.readback.blkio'), 'storage_qos', ['linux_blkio_compatible', 'mutation_supported'])}
-      ${renderReadbackCard(readbacks, 'bandwidth', t('vm.readback.bandwidth'), 'network_qos', ['linux_bandwidth_compatible', 'mutation_supported'])}
-      ${renderReadbackCard(readbacks, 'guest_agent', t('vm.readback.guest_agent'), 'guest_agent', ['status', 'qemu_guest_agent', 'guest_exec_supported'])}
+      ${renderReadbackCard(readbacks, 'blkio', t('vm.readback.blkio'), 'storage_qos', ['mutation_supported'])}
+      ${renderReadbackCard(readbacks, 'bandwidth', t('vm.readback.bandwidth'), 'network_qos', ['mutation_supported'])}
+      ${renderReadbackCard(readbacks, 'guest_agent', t('vm.readback.guest_agent'), 'guest_agent', ['status', 'guest_exec_supported'])}
       ${renderReadbackCard(readbacks, 'guest_ping', t('vm.readback.guest_ping'), 'guest_ping', ['reachable', 'guest_heartbeat_verified'])}
       ${renderReadbackCard(readbacks, 'memory_stats', t('vm.readback.memory'), 'memory', ['startup_mb', 'assigned_mb', 'dynamic'])}
       ${renderReadbackCard(readbacks, 'cpu_stats', t('vm.readback.cpu'), 'cpu', ['count'])}

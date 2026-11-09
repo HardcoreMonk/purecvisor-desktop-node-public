@@ -26,10 +26,12 @@ window.PCV = window.PCV || {};
         ['POST /auth/refresh', -1, '-', '-', 'refresh token으로 JWT 회전', 'Rotate JWT with the refresh token'],
         ['POST /auth/logout', -1, '-', 'topbar', 'browser session clear와 refresh/session revoke handoff', 'Clear the browser session and revoke the refresh token'],
         ['GET /auth/session', 0, '-', 'topbar', '현재 account session 확인', 'Current account session'],
+        ['POST /auth/password', 0, 'account change-password', 'topbar', '현재 계정 비밀번호 변경', 'Change the signed-in account password'],
         ['GET /auth/rbac', 0, '-', 'troubleshooting', 'role/permission matrix 확인', 'Role/permission matrix'],
-        ['GET /accounts', 2, 'account list', 'topbar', '계정 목록', 'List accounts'],
-        ['POST /accounts', 2, 'account create', 'topbar', '계정 생성 (password는 env/prompt로만)', 'Create an account (password via env/prompt only)'],
-        ['POST /accounts/{username}/disable', 2, 'account disable', 'topbar', '계정 비활성화', 'Disable an account']
+        ['GET /accounts', 2, 'account list', 'accounts', '계정 목록', 'List accounts'],
+        ['POST /accounts', 2, 'account create', 'accounts', '계정 생성 (password는 env/prompt로만)', 'Create an account (password via env/prompt only)'],
+        ['POST /accounts/{username}/disable', 2, 'account disable', 'accounts', '계정 비활성화', 'Disable an account'],
+        ['POST /accounts/{username}/password', 2, 'account reset-password', 'accounts', '계정 비밀번호 재설정', 'Reset an account password']
       ] },
       { id: 'vm', ko: '가상 머신', en: 'Virtual Machines', rows: [
         ['GET /vms', 0, 'vm list', 'vms', 'VM 목록', 'List VMs'],
@@ -130,7 +132,7 @@ window.PCV = window.PCV || {};
       HN.card('📖 ' + L('문서', 'Documentation'), [
         HN.row(L('운영 가이드', 'Operator guide'), el('a', { href: 'docs.html', target: '_blank', rel: 'noopener' }, 'docs.html')),
         HN.row(L('키보드 단축키', 'Keyboard shortcuts'), el('kbd', null, '?')),
-        HN.row(L('환경설정', 'Preferences'), el('kbd', null, 'Ctrl+P'))]));
+        HN.row(L('이 화면 검색', 'Search this screen'), el('kbd', null, '/'))]));
     var jump = el('div', { class: 'help-jump' }, NS.map(function (ns) {
       var chip = el('button', { type: 'button', class: 'help-chip' }, ns.id + ' ' + ns.rows.length);
       chip.addEventListener('click', function () { helpJump(ns.id); });
@@ -209,13 +211,9 @@ window.PCV = window.PCV || {};
     kbdHelpOpen = true; window.kbdHelpOpen = kbdHelpOpen;
     var shortcuts = [
       ['Ctrl+K', L('커맨드 팔레트', 'Command Palette')],
-      ['Ctrl+N', L('새 VM', 'New VM'), 'operator'],
-      ['Ctrl+P', L('환경설정', 'Preferences')],
-      ['F11', L('전체 화면', 'Fullscreen')],
-      ['Escape', L('대화상자 닫기', 'Close Dialog')],
+      ['/', L('이 화면 검색', 'Search this screen')],
       ['?', L('이 도움말', 'This Help')],
-      ['Ctrl+Shift+F', L('통합 검색 (Ctrl+K와 동일)', 'Unified Search (same as Ctrl+K)')],
-      ['Ctrl+B', L('사이드바 전환', 'Toggle Sidebar')]
+      ['Escape', L('대화상자 닫기', 'Close Dialog')]
     ];
     var el = PCV.uxlib.el;
     var box = el('div', { class: 'kbd-box' },
@@ -246,6 +244,23 @@ window.PCV = window.PCV || {};
     kbdHelpOpen = false; window.kbdHelpOpen = false;
   }
   window.closeKbdHelp = closeKbdHelp;
+
+  function focusCurrentScreenSearch() {
+    var view = '';
+    if (typeof state !== 'undefined' && state && state.activeView) view = String(state.activeView);
+    else if (PCV.nav && typeof PCV.nav.activeView === 'function') view = String(PCV.nav.activeView() || '');
+    var ids = { vms: 'vm-filter', network: 'network-filter', jobs: 'job-filter', help: 'help-search', helppage: 'help-search' };
+    var input = ids[view] ? document.getElementById(ids[view]) : null;
+    if (!input) {
+      var active = document.querySelector('.app-view.active input[type="search"]');
+      if (active) input = active;
+    }
+    if (input && typeof input.focus === 'function') input.focus();
+  }
+  if (typeof registerShortcut === 'function') {
+    registerShortcut('/', focusCurrentScreenSearch, 'screen search');
+    registerShortcut('?', function () { toggleKbdHelp(); }, 'help');
+  }
 
   PCV.help = {
     render: renderHelp,

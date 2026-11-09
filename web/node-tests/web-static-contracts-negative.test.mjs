@@ -272,7 +272,7 @@ const defectCases = [
   {
     name: "missing account login form",
     id: "web.static.account-rbac-console",
-    overrides: () => removeOnce("web/index.html", "id=\"account-login-form\""),
+    overrides: () => removeOnce("web/index.html", "id=\"relogin-overlay\""),
     expectedCode: assertionFailed,
     expectedLabel: "account-rbac-console:login-form"
   },

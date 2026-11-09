@@ -24,7 +24,7 @@ test("head declares the Single Edge security and asset wiring for the Desktop No
 });
 
 test("login page and app shell keep the Single Edge ids the ported modules bind to", () => {
-  for (const id of ["splash", "splash-bar", "toasts", "ctx", "login-page", "login-user", "login-pass", "login-err", "lh-state", "lh-node", "lh-version", "lh-uptime", "lh-hyperv", "lh-disk", "app", "shell-sidebar", "shell-topbar-static", "shell-topbar", "version-badge", "ws-s", "notif-toolbar-badge", "la", "us", "us-name", "mobile-menu-btn", "shell-statusbar", "cb", "mobile-overlay", "ev-side", "evp", "ev-count", "ev-status"]) {
+  for (const id of ["splash", "splash-bar", "toasts", "ctx", "login-page", "login-user", "login-pass", "login-err", "lh-version", "lh-host", "app", "shell-sidebar", "shell-topbar-static", "shell-topbar", "version-badge", "ws-s", "notif-toolbar-badge", "la", "us", "us-name", "mobile-menu-btn", "shell-statusbar", "cb", "mobile-overlay", "ev-side", "evp", "ev-count", "ev-status"]) {
     assert.match(html, new RegExp(`id="${id}"`), `missing id ${id}`);
   }
   assert.match(html, /<div class="app" id="app" aria-hidden="true" inert>/);
@@ -40,7 +40,7 @@ test("content area carries every Desktop Node view and dialog", () => {
   for (const view of ["dashboard", "vms", "network", "jobs", "activity", "evidence", "troubleshooting"]) {
     assert.match(html, new RegExp(`<section id="${view}" class="section app-view" data-view="${view}">`), `view ${view}`);
   }
-  for (const id of ["alert-region", "vm-detail-panel", "vm-table", "jobs-panel", "event-center-panel", "activity-panel", "evidence-panel", "account-login-form", "account-username", "account-password", "account-console-panel", "token-rotation-panel", "diagnostics-panel", "command-palette", "command-palette-input", "create-vm-dialog", "create-vm-form"]) {
+  for (const id of ["alert-region", "vm-detail-panel", "vm-table", "jobs-panel", "event-center-panel", "activity-panel", "evidence-panel", "relogin-overlay", "account-console-panel", "token-rotation-panel", "diagnostics-panel", "command-palette", "command-palette-input", "create-vm-dialog", "create-vm-form"]) {
     assert.match(html, new RegExp(`id="${id}"`), `missing id ${id}`);
   }
   const cbStart = html.indexOf('<div class="cb" id="cb"');

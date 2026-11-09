@@ -30,11 +30,11 @@ function bindEvents() {
     render();
   });
   els.globalSearchInput?.addEventListener('input', () => handleCommandSearch(els.globalSearchInput.value));
-  els.openCommandPalette?.addEventListener('click', () => openCommandPalette(state.globalSearch));
+  els.openCommandPalette?.addEventListener('click', () => {
+    if (typeof toggleGlobalSearch === 'function') toggleGlobalSearch();
+  });
   els.commandPaletteInput?.addEventListener('input', () => {
     state.commandQuery = els.commandPaletteInput.value;
-    state.commandPaletteOpen = true;
-    render();
   });
   els.commandPaletteResults?.addEventListener('click', async (event) => {
     const button = event.target.closest('button[data-command-id]');
@@ -47,10 +47,6 @@ function bindEvents() {
     }
   });
   els.accountSessionPanel?.addEventListener('submit', async (event) => {
-    if (event.target.closest('form#account-login-form')) {
-      await loginAccountFromForm(event);
-      return;
-    }
     if (event.target.closest('form#account-create-form')) {
       await createAccountFromForm(event);
     }
@@ -59,7 +55,9 @@ function bindEvents() {
     const button = event.target.closest('button[data-action]');
     if (!button) return;
     try {
-      if (button.dataset.action === 'account-refresh') {
+      if (button.dataset.action === 'open-login-overlay') {
+        if (typeof pcvSetLoginVisible === 'function') pcvSetLoginVisible(true);
+      } else if (button.dataset.action === 'account-refresh') {
         await refreshAccountSession();
       } else if (button.dataset.action === 'account-logout') {
         await logoutAccount();
@@ -125,23 +123,23 @@ function bindEvents() {
   document.addEventListener('keydown', (event) => {
     if ((event.ctrlKey || event.metaKey) && String(event.key || '').toLowerCase() === 'k') {
       event.preventDefault();
-      openCommandPalette(state.globalSearch);
+      if (typeof toggleGlobalSearch === 'function') toggleGlobalSearch();
       return;
     }
-    if (event.key === 'Escape' && state.commandPaletteOpen) {
-      event.preventDefault();
-      closeCommandPalette();
+    if (event.key === 'Escape') {
+      if (state.commandPaletteOpen && typeof closeCommandPalette === 'function') closeCommandPalette();
+      else if (typeof closeCmdPalette === 'function') closeCmdPalette();
+      if (typeof closeKbdHelp === 'function') closeKbdHelp();
+      if (typeof closeMobileSB === 'function') closeMobileSB();
+      const more = document.getElementById('pcv-vm-more-menu');
+      if (more) more.hidden = true;
+      const moreToggle = document.querySelector('[data-action="vm-more-toggle"]');
+      if (moreToggle) moreToggle.setAttribute('aria-expanded', 'false');
+      const ctx = document.getElementById('ctx');
+      if (ctx && PCV.uxlib && typeof PCV.uxlib.clearEl === 'function') PCV.uxlib.clearEl(ctx);
+      const menu = document.getElementById('pcv-ctx-menu');
+      if (menu && menu.parentNode) menu.parentNode.removeChild(menu);
       return;
-    }
-    if (event.key === 'Enter' && state.commandPaletteOpen && document.activeElement === els.commandPaletteInput) {
-      event.preventDefault();
-      const first = getCommandPaletteMatches()[0];
-      if (first) {
-        runCommandPaletteItem(first.id).catch((error) => {
-          state.error = normalizeError(error);
-          render();
-        });
-      }
     }
   });
   document.addEventListener('click', (event) => {
