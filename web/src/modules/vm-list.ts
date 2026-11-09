@@ -86,6 +86,260 @@ function vmListPrimaryButton(vm) {
   return '';
 }
 
+function vmMoreMenuModel(vm) {
+  const vmId = getVmId(vm);
+  const pending = isVmActionPending(vmId);
+  const canOperate = rbacAllows('operate');
+  const canViewConsole = rbacAllows('console.view');
+  const templateLocked = isTemplateLockedVm(vm);
+  const actionDisabled = pending || !canOperate;
+  const lockedMutationDisabled = pending || !canOperate || templateLocked;
+  return {
+    vmId,
+    items: [
+      { action: 'vm-clone-open', disabled: actionDisabled, label: t('vm.menu.clone'), danger: false },
+      { action: templateLocked ? 'vm-template-unlock' : 'vm-template-lock', disabled: actionDisabled, label: t(templateLocked ? 'vm.menu.unlock' : 'vm.menu.lock'), danger: false },
+      { action: 'vm-export-focus', disabled: actionDisabled, label: t('vm.menu.export'), danger: false },
+      { action: 'vm-console', disabled: !canViewConsole, label: t('vm.menu.vmconnect'), danger: false },
+      { action: 'vm-poweroff', disabled: lockedMutationDisabled, label: t('vm.menu.poweroff'), danger: true },
+      { action: 'vm-delete', disabled: lockedMutationDisabled, label: t('vm.menu.delete'), danger: true }
+    ]
+  };
+}
+
+function vmMoreMenuItemsHtml(vm) {
+  const model = vmMoreMenuModel(vm);
+  const id = pcvEscapeHtml(model.vmId);
+  const flag = {};
+  const label = {};
+  model.items.forEach((item) => {
+    flag[item.action] = item.disabled ? ' disabled' : '';
+    label[item.action] = item.label;
+  });
+  const templateItem = flag['vm-template-unlock'] !== undefined
+    ? `<button type="button" role="menuitem" data-action="vm-template-unlock" data-vm-id="${id}"${flag['vm-template-unlock']}>${pcvEscapeHtml(label['vm-template-unlock'])}</button>`
+    : `<button type="button" role="menuitem" data-action="vm-template-lock" data-vm-id="${id}"${flag['vm-template-lock']}>${pcvEscapeHtml(label['vm-template-lock'])}</button>`;
+  return [
+    `<button type="button" role="menuitem" data-action="vm-clone-open" data-vm-id="${id}"${flag['vm-clone-open']}>${pcvEscapeHtml(label['vm-clone-open'])}</button>`,
+    templateItem,
+    `<button type="button" role="menuitem" data-action="vm-export-focus" data-vm-id="${id}"${flag['vm-export-focus']}>${pcvEscapeHtml(label['vm-export-focus'])}</button>`,
+    `<button type="button" role="menuitem" data-action="vm-console" data-vm-id="${id}"${flag['vm-console']}>${pcvEscapeHtml(label['vm-console'])}</button>`,
+    `<button type="button" role="menuitem" class="pcv-menu-danger" data-action="vm-poweroff" data-vm-id="${id}"${flag['vm-poweroff']}>${pcvEscapeHtml(label['vm-poweroff'])}</button>`,
+    `<button type="button" role="menuitem" class="pcv-menu-danger" data-action="vm-delete" data-vm-id="${id}"${flag['vm-delete']}>${pcvEscapeHtml(label['vm-delete'])}</button>`
+  ].join('');
+}
+
+function vmListRowMenuButton(vm) {
+  const vmId = pcvEscapeHtml(getVmId(vm));
+  const label = pcvEscapeHtml(t('vm.list.row_menu', { name: getVmName(vm) }));
+  return `<button type="button" class="btn pcv-row-menu" data-action="vm-row-menu" data-vm-id="${vmId}" aria-haspopup="menu" aria-expanded="false" aria-controls="pcv-vm-row-menu" aria-label="${label}">⋯</button>`;
+}
+
+let vmRowMenuOpener = null;
+let vmRowMenuToggle = null;
+
+function vmListEventElement(target) {
+  let node = target;
+  if (node && node.nodeType === 3) node = node.parentNode;
+  return node && node.nodeType === 1 ? node : null;
+}
+
+function vmListRowFromTarget(target) {
+  const node = vmListEventElement(target);
+  if (!node || typeof node.closest !== 'function') return null;
+  const row = node.closest('tr[data-vm-id]');
+  if (!row || typeof row.closest !== 'function' || !row.closest('#vm-table')) return null;
+  return row;
+}
+
+function vmRowMenuEnabledItems(menu) {
+  return Array.prototype.filter.call(menu.querySelectorAll('[role="menuitem"]'), (item) => !item.disabled);
+}
+
+function closeVmRowMenu() {
+  const menu = document.getElementById('pcv-vm-row-menu');
+  if (menu) menu.hidden = true;
+  if (vmRowMenuToggle && typeof vmRowMenuToggle.setAttribute === 'function') vmRowMenuToggle.setAttribute('aria-expanded', 'false');
+  vmRowMenuToggle = null;
+  vmRowMenuOpener = null;
+}
+
+function placeVmRowMenu(menu, opener, point) {
+  let left = 0;
+  let top = 0;
+  if (point && Number.isFinite(point.x) && Number.isFinite(point.y)) {
+    left = point.x;
+    top = point.y;
+  } else if (opener && typeof opener.getBoundingClientRect === 'function') {
+    const rect = opener.getBoundingClientRect();
+    left = rect.left || 0;
+    top = rect.bottom || 0;
+  }
+  menu.style.position = 'fixed';
+  menu.style.left = left + 'px';
+  menu.style.top = top + 'px';
+  menu.style.zIndex = '80';
+}
+
+function ensureVmRowMenu() {
+  let menu = document.getElementById('pcv-vm-row-menu');
+  if (menu) return menu;
+  menu = document.createElement('div');
+  menu.id = 'pcv-vm-row-menu';
+  menu.className = 'pcv-vm-menu';
+  menu.setAttribute('role', 'menu');
+  menu.hidden = true;
+  menu.addEventListener('keydown', onVmRowMenuKey);
+  menu.addEventListener('click', onVmRowMenuClick);
+  if (document.body) document.body.appendChild(menu);
+  return menu;
+}
+
+function fillVmRowMenu(menu, vm) {
+  while (menu.firstChild) menu.removeChild(menu.firstChild);
+  const model = vmMoreMenuModel(vm);
+  model.items.forEach((item) => {
+    const button = document.createElement('button');
+    button.setAttribute('type', 'button');
+    button.setAttribute('role', 'menuitem');
+    button.setAttribute('data-action', item.action);
+    button.setAttribute('data-vm-id', model.vmId);
+    if (item.danger) button.className = 'pcv-menu-danger';
+    button.disabled = !!item.disabled;
+    button.textContent = item.label;
+    menu.appendChild(button);
+  });
+}
+
+function openVmRowMenu(vm, opener, point) {
+  if (!vm) return;
+  const menu = ensureVmRowMenu();
+  fillVmRowMenu(menu, vm);
+  const row = opener && typeof opener.closest === 'function' ? opener.closest('tr[data-vm-id]') : null;
+  const toggle = opener && opener.getAttribute && opener.getAttribute('data-action') === 'vm-row-menu'
+    ? opener
+    : (row && typeof row.querySelector === 'function' ? row.querySelector('[data-action="vm-row-menu"]') : null);
+  if (vmRowMenuToggle && vmRowMenuToggle !== toggle && typeof vmRowMenuToggle.setAttribute === 'function') {
+    vmRowMenuToggle.setAttribute('aria-expanded', 'false');
+  }
+  vmRowMenuToggle = toggle;
+  vmRowMenuOpener = opener || toggle;
+  if (toggle) toggle.setAttribute('aria-expanded', 'true');
+  menu.hidden = false;
+  placeVmRowMenu(menu, opener || toggle, point);
+  const items = vmRowMenuEnabledItems(menu);
+  if (items[0] && typeof items[0].focus === 'function') items[0].focus();
+}
+
+function onVmRowMenuButtonClick(event) {
+  const node = vmListEventElement(event && event.target);
+  const button = node && typeof node.closest === 'function' ? node.closest('[data-action="vm-row-menu"]') : null;
+  if (!button) return;
+  if (typeof event.preventDefault === 'function') event.preventDefault();
+  if (typeof event.stopPropagation === 'function') event.stopPropagation();
+  const menu = document.getElementById('pcv-vm-row-menu');
+  if (menu && !menu.hidden && vmRowMenuToggle === button) {
+    closeVmRowMenu();
+    if (typeof button.focus === 'function') button.focus();
+    return;
+  }
+  const vmId = button.getAttribute('data-vm-id') || '';
+  const vm = asArray(state.vms).find((item) => getVmId(item) === vmId);
+  openVmRowMenu(vm, button, null);
+}
+
+function onVmRowMenuKey(event) {
+  const menu = document.getElementById('pcv-vm-row-menu');
+  if (!menu || menu.hidden || !event) return;
+  if (event.key === 'Tab') {
+    closeVmRowMenu();
+    return;
+  }
+  const items = vmRowMenuEnabledItems(menu);
+  if (event.key === 'Escape') {
+    if (typeof event.preventDefault === 'function') event.preventDefault();
+    const opener = vmRowMenuOpener;
+    closeVmRowMenu();
+    if (opener && typeof opener.focus === 'function') opener.focus();
+    return;
+  }
+  if (!items.length) return;
+  const current = items.indexOf(event.target);
+  let next = -1;
+  if (event.key === 'ArrowDown') next = current < 0 ? 0 : (current + 1) % items.length;
+  else if (event.key === 'ArrowUp') next = current < 0 ? items.length - 1 : (current - 1 + items.length) % items.length;
+  else if (event.key === 'Home') next = 0;
+  else if (event.key === 'End') next = items.length - 1;
+  else return;
+  if (typeof event.preventDefault === 'function') event.preventDefault();
+  if (items[next] && typeof items[next].focus === 'function') items[next].focus();
+}
+
+function onVmRowMenuClick(event) {
+  const node = vmListEventElement(event && event.target);
+  const item = node && typeof node.closest === 'function' ? node.closest('[role="menuitem"]') : null;
+  if (!item || item.disabled) return;
+  if (typeof event.preventDefault === 'function') event.preventDefault();
+  if (typeof event.stopPropagation === 'function') event.stopPropagation();
+  const action = item.getAttribute('data-action') || '';
+  const vmId = item.getAttribute('data-vm-id') || '';
+  closeVmRowMenu();
+  state.selectedVmId = vmId;
+  state.selectedVm = findCachedVm(vmId);
+  state.selectedVmCheckpoints = [];
+  state.selectedVmReadbacks = emptyVmReadbackState(vmId);
+  state.selectedVmQosControl = null;
+  state.connectionState = 'connected';
+  if (typeof render === 'function') render();
+  else renderVms();
+  const panel = document.getElementById('vm-detail-panel');
+  if (!panel || typeof panel.querySelectorAll !== 'function') return;
+  const nodes = panel.querySelectorAll('button[data-action]');
+  for (let index = 0; index < nodes.length; index += 1) {
+    const candidate = nodes[index];
+    if ((candidate.getAttribute('data-action') || '') !== action) continue;
+    if ((candidate.getAttribute('data-vm-id') || '') !== vmId) continue;
+    if (typeof candidate.click === 'function') candidate.click();
+    return;
+  }
+}
+
+function onVmRowContextMenu(event) {
+  const row = vmListRowFromTarget(event && event.target);
+  if (!row || !event) return;
+  if (typeof event.preventDefault === 'function') event.preventDefault();
+  const vm = asArray(state.vms).find((item) => getVmId(item) === (row.getAttribute('data-vm-id') || ''));
+  const prior = document.activeElement && row.contains(document.activeElement) ? document.activeElement : row.querySelector('[data-action="vm-row-menu"]');
+  openVmRowMenu(vm, prior, { x: Number(event.clientX), y: Number(event.clientY) });
+}
+
+function onVmRowMenuContextKey(event) {
+  if (!event) return;
+  const openKey = event.key === 'ContextMenu' || (event.key === 'F10' && event.shiftKey);
+  if (!openKey) return;
+  const row = vmListRowFromTarget(event.target);
+  if (!row) return;
+  if (typeof event.preventDefault === 'function') event.preventDefault();
+  const vm = asArray(state.vms).find((item) => getVmId(item) === (row.getAttribute('data-vm-id') || ''));
+  openVmRowMenu(vm, event.target, null);
+}
+
+function onVmRowMenuOutsideClick(event) {
+  const menu = document.getElementById('pcv-vm-row-menu');
+  if (!menu || menu.hidden) return;
+  const node = vmListEventElement(event && event.target);
+  if (node && menu.contains(node)) return;
+  closeVmRowMenu();
+}
+
+function bindVmRowMenuButtons() {
+  if (!els.vmTable || typeof els.vmTable.querySelectorAll !== 'function') return;
+  const buttons = els.vmTable.querySelectorAll('[data-action="vm-row-menu"]');
+  Array.prototype.forEach.call(buttons, (button) => {
+    button.addEventListener('click', onVmRowMenuButtonClick);
+  });
+}
+
 function paintVmChips(named) {
   const chips = document.querySelectorAll('#vm-state-chips [data-vm-chip]');
   if (!chips || !chips.length) return;
@@ -421,17 +675,46 @@ function vmListOnHashChange() {
   else renderVms();
 }
 
+// A periodic render rebuilds the rows. Keep an open row menu open on the rebuilt toggle, like the
+// detail more menu does, and close it only when its VM is no longer listed.
+function keepVmRowMenuAfterRender(vms) {
+  const menu = document.getElementById('pcv-vm-row-menu');
+  if (!menu || menu.hidden) return;
+  const first = menu.querySelector('[role="menuitem"]');
+  const vmId = first ? first.getAttribute('data-vm-id') || '' : '';
+  const vm = asArray(vms).find((item) => getVmId(item) === vmId);
+  const toggle = vm && els.vmTable && typeof els.vmTable.querySelectorAll === 'function'
+    ? Array.prototype.find.call(els.vmTable.querySelectorAll('[data-action="vm-row-menu"]'), (button) => button.getAttribute('data-vm-id') === vmId)
+    : null;
+  if (!vm || !toggle) {
+    closeVmRowMenu();
+    return;
+  }
+  const active = document.activeElement;
+  const focusAction = active && menu.contains(active) ? active.getAttribute('data-action') || '' : '';
+  fillVmRowMenu(menu, vm);
+  if (!vmRowMenuOpener || vmRowMenuOpener === vmRowMenuToggle || vmRowMenuOpener.isConnected === false) vmRowMenuOpener = toggle;
+  vmRowMenuToggle = toggle;
+  toggle.setAttribute('aria-expanded', 'true');
+  if (!focusAction) return;
+  const again = menu.querySelector(`[data-action="${focusAction}"]`);
+  const target = again && !again.disabled ? again : vmRowMenuEnabledItems(menu)[0];
+  if (target && typeof target.focus === 'function') target.focus();
+}
+
 function renderVms() {
   syncVmListDetailMode();
   const named = asArray(state.vms).filter(matchesVmQuery);
   paintVmChips(named);
   renderTemplates();
   if (!els.vmTable) {
+    closeVmRowMenu();
     syncVmListHash();
     return;
   }
   const failure = vmListFailure();
   if (failure) {
+    closeVmRowMenu();
     renderVmListFailure(failure);
     syncVmListHash();
     return;
@@ -439,6 +722,7 @@ function renderVms() {
   const vms = named.filter((vm) => matchesVmStateChip(vm, state.vmStateFilter)).sort(compareVms);
   if (vms.length === 0) {
     const filtered = String(state.vmFilter || '').trim() || String(state.vmStateFilter || 'all') !== 'all';
+    closeVmRowMenu();
     renderVmListEmpty(filtered);
     syncVmListHash();
     return;
@@ -458,7 +742,7 @@ function renderVms() {
       <td>${pcvEscapeHtml(vmCpuText(vm))}</td>
       <td>${pcvEscapeHtml(vmMemoryText(vm))}</td>
       <td>${templateBadge}</td>
-      <td>${vmListPrimaryButton(vm)}</td>
+      <td>${vmListPrimaryButton(vm)}${vmListRowMenuButton(vm)}</td>
     </tr>`;
   }).join('');
   els.vmTable.innerHTML = `
@@ -466,6 +750,8 @@ function renderVms() {
       <thead><tr><th>${pcvEscapeHtml(t('vm.list.col.name'))}</th><th>${pcvEscapeHtml(t('vm.list.col.state'))}</th><th>${pcvEscapeHtml(t('vm.list.col.generation'))}</th><th>${pcvEscapeHtml(t('vm.list.col.cpu'))}</th><th>${pcvEscapeHtml(t('vm.list.col.memory'))}</th><th>${pcvEscapeHtml(t('vm.list.col.display'))}</th><th>${pcvEscapeHtml(t('vm.list.col.action'))}</th></tr></thead>
       <tbody>${rows}</tbody>
     </table>`;
+  bindVmRowMenuButtons();
+  keepVmRowMenuAfterRender(vms);
   syncVmListHash();
 }
 
@@ -491,6 +777,9 @@ function vmListEscapeClearsSelection(event) {
 }
 
 if (typeof document !== 'undefined' && document && typeof document.addEventListener === 'function') {
+  document.addEventListener('keydown', onVmRowMenuContextKey);
+  document.addEventListener('contextmenu', onVmRowContextMenu);
+  document.addEventListener('click', onVmRowMenuOutsideClick);
   document.addEventListener('keydown', vmListEscapeClearsSelection);
   document.addEventListener('keydown', vmListOnDetailTabKey);
   document.addEventListener('click', vmListOnDetailTabClick);
@@ -534,6 +823,8 @@ if (typeof window !== 'undefined') {
   };
 }
 
+window.vmMoreMenuItemsHtml = vmMoreMenuItemsHtml;
+window.closeVmRowMenu = closeVmRowMenu;
 window.matchesVmFilter = matchesVmFilter;
 window.getVmUpdatedValue = getVmUpdatedValue;
 window.compareVms = compareVms;

@@ -86,7 +86,9 @@ task 크기(2026-11-09 사용자 승인 `U1 checkpoint 2 승인`): Task 2부터�
 
 ## Task 3a: U3 행 메뉴
 
-- [ ] 행 `⋯` 메뉴와 우클릭(ContextMenu 키, Shift+F10 포함)이 ADR-0019 더 보기 메뉴와 같은 항목을 연다. 상태에 맞지 않는 항목은 끈다. 행 주 조작 하나는 그대로다. node 시험: 메뉴 키보드(열기, 화살표, Esc). 공통 검증. 로컬 commit.
+- [x] 행 `⋯` 메뉴와 우클릭(ContextMenu 키, Shift+F10 포함)이 ADR-0019 더 보기 메뉴와 같은 항목을 연다. 상태에 맞지 않는 항목은 끈다. 행 주 조작 하나는 그대로다. node 시험: 메뉴 키보드(열기, 화살표, Esc). 공통 검증. 로컬 commit.
+
+실행 기록(2026-11-09): checkpoint 1(16:47~17:12)에서 grok이 행 `⋯` 버튼, 우클릭, ContextMenu 키·Shift+F10, 상세 더 보기와 같은 항목과 끄는 규칙 helper(`vmMoreMenuModel`, `vmMoreMenuItemsHtml`)를 넣었다. 하지만 context 압축이 두 번 일어나 마지막 검증 전에 멈췄다(diff 보존). 권장안 자동 승인으로 checkpoint 2(17:12~17:15)에서 Claude가 검증과 리뷰를 했다. 주기적 `render()`에도 열린 행 메뉴를 새 버튼에 붙여 유지하는 `keepVmRowMenuAfterRender`를 더했다(상세 더 보기와 같은 동작, VM이 목록에서 빠지면 닫힘). 첫 `test:required` 실패 5건은 checkpoint 3(17:15~17:31)에서 grok이 고쳤다. 상세 복제 버튼이 IIFE 지역 `openVmCloneModal`을 직접 불러 행 메뉴와 시험 stub이 닿지 않던 것을 `window.openVmCloneModal`로 바꿨다. 그 대화상자가 남아 실패하던 logout 시험이 풀렸고, 로그아웃(`_closeOperatorSurfaces`)이 행 메뉴도 닫는다. 메뉴 항목 계약 검사 위치를 `vm-list.ts`로 옮겼다(정규식 그대로). `vm.ts` 2,508→2,499줄, `vm-list.ts` 542→833줄, domsafe 34, axe 기준선 2,118→2,126(+8, `⋯` 버튼 nonBmp, `--prune` 없음). 검증: `npm run test:required` exit 0(web-contracts 377 pass, browser gate assertions 121 failed 0 violations 0), web Pester 50/50, ratchet Pester 3/3, Delivery 785/785, `git diff --check` clean.
 
 ## Task 3b: U3 정렬과 j/k
 

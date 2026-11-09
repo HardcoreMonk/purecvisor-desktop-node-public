@@ -5921,6 +5921,11 @@ textarea[aria-invalid="true"] {
   display: none;
 }
 
+#pcv-vm-row-menu {
+  position: fixed;
+  z-index: 80;
+}
+
 .pcv-menu-danger {
   color: var(--red);
 }

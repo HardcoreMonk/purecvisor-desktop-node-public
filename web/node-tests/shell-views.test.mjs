@@ -481,8 +481,11 @@ function createEnv() {
   body.appendChild(topbar);
   body.appendChild(statusbar);
   body.appendChild(cb);
-  body.appendChild(detailTitle);
-  body.appendChild(detailContent);
+  const detailPanel = document.createElement("aside");
+  detailPanel.id = "vm-detail-panel";
+  detailPanel.appendChild(detailTitle);
+  detailPanel.appendChild(detailContent);
+  body.appendChild(detailPanel);
   document.getElementById("vms").appendChild(chips);
   document.getElementById("vms").appendChild(workspace);
   document.getElementById("templates").appendChild(templateTable);
@@ -560,6 +563,7 @@ function createEnv() {
   }
   sandbox.els.vmTable = vmTable;
   sandbox.els.templateTable = templateTable;
+  sandbox.els.vmDetailPanel = detailPanel;
   sandbox.els.vmDetailTitle = detailTitle;
   sandbox.els.vmDetailContent = detailContent;
   sandbox.els.closeVmDetail = closeVmDetail;
@@ -1288,6 +1292,161 @@ test("service bearer and loopback sessions hide the password change entry", () =
   env.state.apiToken = "";
   env.state.authAccessToken = "";
   env.state.authSession = null;
+});
+
+function vmRowMenuFixture() {
+  resetSession(env);
+  env.state.selectedVmId = "";
+  env.state.selectedVm = null;
+  env.state.connectionState = "idle";
+  env.state.vms = [
+    { id: "off-1", name: "off-1", state: "Off", generation: 2, cpu: { count: 1 }, memory: { startup_mb: 1024 } },
+    { id: "lock-1", name: "lock-1", state: "Running", template_lock: true, generation: 2, cpu: { count: 2 }, memory: { startup_mb: 2048 } }
+  ];
+  env.renderVms();
+}
+
+function vmRowMenuButton(id) {
+  return env.document.querySelector(`#vm-table tr[data-vm-id="${id}"] [data-action="vm-row-menu"]`);
+}
+
+function vmRowMenu() {
+  return env.document.getElementById("pcv-vm-row-menu");
+}
+
+function vmRowMenuItems() {
+  return [...vmRowMenu().querySelectorAll('[role="menuitem"]')];
+}
+
+function keyOn(node, key, extra) {
+  const event = new env.Event("keydown");
+  event.key = key;
+  if (extra) Object.assign(event, extra);
+  node.dispatchEvent(event);
+  return event;
+}
+
+test("the VM row menu opens from the ellipsis without selecting the row", () => {
+  vmRowMenuFixture();
+  const button = vmRowMenuButton("off-1");
+  assert.equal(button.getAttribute("aria-haspopup"), "menu");
+  assert.equal(button.getAttribute("aria-expanded"), "false");
+  assert.match(button.getAttribute("aria-label"), /off-1/);
+  assert.match(button.textContent, /⋯/);
+  button.click();
+  const menu = vmRowMenu();
+  assert.equal(env.state.selectedVmId, "");
+  assert.equal(env.state.selectedVm, null);
+  assert.equal(menu.hidden, false);
+  assert.equal(menu.getAttribute("role"), "menu");
+  assert.equal(button.getAttribute("aria-expanded"), "true");
+  const items = vmRowMenuItems().filter((item) => !item.disabled);
+  assert.equal(env.document.activeElement, items[0]);
+  assert.equal(items[0].getAttribute("data-action"), "vm-clone-open");
+  // A periodic render rebuilds the rows but keeps the open menu on the rebuilt toggle and item.
+  env.render();
+  assert.equal(vmRowMenu().hidden, false);
+  assert.equal(vmRowMenuButton("off-1").getAttribute("aria-expanded"), "true");
+  assert.equal(env.document.activeElement.getAttribute("data-action"), "vm-clone-open");
+  assert.equal(env.state.selectedVmId, "");
+  // The menu closes once its VM is no longer listed.
+  env.state.vms = env.state.vms.filter((vm) => vm.id !== "off-1");
+  env.render();
+  assert.equal(vmRowMenu().hidden, true);
+});
+
+test("the VM row menu opens from contextmenu and Shift+F10 and moves with arrows", () => {
+  vmRowMenuFixture();
+  const row = env.document.querySelector('#vm-table tr[data-vm-id="off-1"]');
+  const context = new env.Event("contextmenu");
+  context.clientX = 15;
+  context.clientY = 25;
+  row.dispatchEvent(context);
+  assert.equal(context.defaultPrevented, true);
+  assert.equal(env.state.selectedVmId, "");
+  const menu = vmRowMenu();
+  assert.equal(menu.hidden, false);
+  assert.equal(menu.style.left, "15px");
+  assert.equal(menu.style.top, "25px");
+  env.renderVms();
+  const primary = env.document.querySelector('#vm-table tr[data-vm-id="off-1"] .pcv-row-action');
+  primary.focus();
+  const f10 = keyOn(primary, "F10", { shiftKey: true });
+  assert.equal(f10.defaultPrevented, true);
+  assert.equal(vmRowMenu().hidden, false);
+  assert.equal(env.state.selectedVmId, "");
+  const items = vmRowMenuItems().filter((item) => !item.disabled);
+  assert.equal(env.document.activeElement, items[0]);
+  const down = keyOn(items[0], "ArrowDown");
+  assert.equal(down.defaultPrevented, true);
+  assert.equal(env.document.activeElement, items[1]);
+  const end = keyOn(env.document.activeElement, "End");
+  assert.equal(end.defaultPrevented, true);
+  assert.equal(env.document.activeElement, items[items.length - 1]);
+  const home = keyOn(env.document.activeElement, "Home");
+  assert.equal(home.defaultPrevented, true);
+  assert.equal(env.document.activeElement, items[0]);
+  const up = keyOn(items[0], "ArrowUp");
+  assert.equal(up.defaultPrevented, true);
+  assert.equal(env.document.activeElement, items[items.length - 1]);
+  env.renderVms();
+  const again = env.document.querySelector('#vm-table tr[data-vm-id="off-1"] .pcv-row-action');
+  again.focus();
+  keyOn(again, "ContextMenu");
+  assert.equal(vmRowMenu().hidden, false);
+  const tab = keyOn(env.document.activeElement, "Tab");
+  assert.equal(vmRowMenu().hidden, true);
+  assert.equal(tab.defaultPrevented, undefined);
+});
+
+test("Escape closes the VM row menu, restores focus, and keeps the selection", () => {
+  vmRowMenuFixture();
+  env.state.selectedVmId = "off-1";
+  env.state.selectedVm = env.state.vms[0];
+  env.renderVms();
+  const button = vmRowMenuButton("off-1");
+  button.focus();
+  button.click();
+  assert.equal(vmRowMenu().hidden, false);
+  const escape = keyOn(env.document.activeElement, "Escape");
+  assert.equal(escape.defaultPrevented, true);
+  assert.equal(vmRowMenu().hidden, true);
+  assert.equal(env.document.activeElement, button);
+  assert.equal(env.state.selectedVmId, "off-1");
+  assert.equal(button.getAttribute("aria-expanded"), "false");
+});
+
+test("a template-locked VM disables force poweroff and delete in the row menu", () => {
+  vmRowMenuFixture();
+  vmRowMenuButton("lock-1").click();
+  const item = (action) => vmRowMenuItems().find((node) => node.getAttribute("data-action") === action);
+  assert.equal(item("vm-poweroff").disabled, true);
+  assert.equal(item("vm-delete").disabled, true);
+  assert.equal(item("vm-clone-open").disabled, false);
+  assert.equal(item("vm-template-unlock").disabled, false);
+  assert.equal(item("vm-template-lock"), undefined);
+  const before = env.state.selectedVmId;
+  item("vm-poweroff").click();
+  assert.equal(env.state.selectedVmId, before);
+  assert.equal(vmRowMenu().hidden, false);
+});
+
+test("an enabled VM row menu item selects that VM and clicks the same detail action", () => {
+  vmRowMenuFixture();
+  const calls = [];
+  const original = env.openVmCloneModal;
+  env.openVmCloneModal = (id) => { calls.push(id); };
+  try {
+    vmRowMenuButton("off-1").click();
+    const item = vmRowMenuItems().find((node) => node.getAttribute("data-action") === "vm-clone-open");
+    item.click();
+    assert.equal(env.state.selectedVmId, "off-1");
+    assert.equal(env.state.selectedVm.id, "off-1");
+    assert.equal(env.state.connectionState, "connected");
+    assert.deepEqual(calls, ["off-1"]);
+  } finally {
+    env.openVmCloneModal = original;
+  }
 });
 
 function bootVmDeleteList(nextJob) {
