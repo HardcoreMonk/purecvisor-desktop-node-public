@@ -4565,6 +4565,22 @@ th {
   margin-bottom: 16px;
 }
 
+.trouble-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.trouble-grid > section {
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--border-panel);
+  border-radius: var(--r);
+  background: var(--bg-panel);
+  color: var(--fg);
+}
+
 .dashboard-grid > section,
 .dashboard-grid > aside {
   min-width: 0;
@@ -5657,6 +5673,10 @@ dialog::backdrop {
 
 @media (max-width: 900px) {
   .dashboard-grid {
+      grid-template-columns: 1fr;
+    }
+
+  .trouble-grid {
       grid-template-columns: 1fr;
     }
 

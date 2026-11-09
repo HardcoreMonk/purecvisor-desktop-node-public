@@ -1916,7 +1916,9 @@ test("registered views render only the active screen and leave legacy screens al
     assert.equal(env.PCV.views.isRegistered("network"), true);
     assert.equal(typeof env.PCV.views.get("network").render, "function");
     assert.equal(env.pcvLegacyViewSkipped("network"), true);
-    assert.equal(env.pcvLegacyViewSkipped("evidence"), false);
+    assert.equal(env.pcvLegacyViewSkipped("templates"), false);
+    assert.equal(env.pcvLegacyViewSkipped("evidence"), true);
+    assert.equal(env.pcvLegacyViewSkipped("accounts"), true);
 
     env.navigateTo("network");
     assert.equal(which, "second");
@@ -1941,7 +1943,9 @@ test("registered views render only the active screen and leave legacy screens al
     assert.equal(dashboard.hidden, false);
     assert.equal(network.hidden, true);
     assert.equal(dashboard.querySelector("#u4-dash-keep"), keptDash);
-    assert.equal(env.PCV.views.isRegistered("evidence"), false);
+    assert.equal(env.PCV.views.isRegistered("templates"), false);
+    assert.equal(env.PCV.views.isRegistered("evidence"), true);
+    assert.equal(env.PCV.views.isRegistered("accounts"), true);
 
     env.PCV.views.unregister("jobs");
     network.hidden = false;
@@ -2779,4 +2783,309 @@ test("logout closes open modals", async () => {
   assert.equal(openCount(), 2);
   await env.doLogout();
   assert.equal(openCount(), 0);
+});
+
+test("troubleshooting cards show Hyper-V states, session logout, bundle action, and closed advanced section", () => {
+  const section = env.document.querySelector('.app-view[data-view="troubleshooting"]');
+  const index = fs.readFileSync(webRoot + "index.html", "utf8");
+  const mount = env.document.createElement("div");
+  mount.id = "troubleshooting-cards";
+  mount.className = "trouble-grid";
+  mount.setAttribute("data-view-mount", "");
+  const advanced = env.document.createElement("details");
+  advanced.id = "troubleshooting-advanced";
+  const body = env.document.createElement("div");
+  body.id = "troubleshooting-advanced-body";
+  advanced.appendChild(body);
+  section.appendChild(mount);
+  section.appendChild(advanced);
+  const product = env.PCV.viewTroubleshooting.render;
+  env.PCV.views.register("troubleshooting", { render: product });
+  const saved = {
+    host: env.state.host,
+    opsSummary: env.state.opsSummary,
+    lastRefreshedAt: env.state.lastRefreshedAt,
+    partialFailures: env.state.partialFailures,
+    authSession: env.state.authSession,
+    authAccessToken: env.state.authAccessToken,
+    runtimePolicy: env.state.runtimePolicy,
+    connectionState: env.state.connectionState
+  };
+  function card(name) {
+    return [...mount.children].find((node) => node.getAttribute("data-trouble-card") === name);
+  }
+  try {
+    assert.match(index, /id="troubleshooting-cards"[^>]*data-view-mount/);
+    assert.match(index, /<div data-view-mount/);
+    assert.match(index, /id="troubleshooting-advanced"/);
+    assert.doesNotMatch(index, /id="troubleshooting-advanced"[^>]*\sopen/);
+    assert.match(index, /data-i18n="copy\.trouble\.title"[^>]*>진단</);
+    assert.match(index, /data-i18n="copy\.trouble\.desc"[^>]*>Hyper-V 준비, 서비스와 수신기, 현재 세션, 진단 번들을 한 화면에서 확인합니다.</);
+    assert.match(index, /data-i18n="copy\.trouble\.advanced"[^>]*>고급</);
+    assert.match(index, /id="incident-panel"/);
+    assert.match(index, /id="relogin-overlay"/);
+    assert.match(index, /id="diagnostics-panel"/);
+    assert.match(index, /id="token-rotation-panel"/);
+    const networkAt = index.indexOf("<div data-view-mount");
+    const troubleAt = index.indexOf('id="troubleshooting-cards"');
+    assert.equal(networkAt >= 0 && troubleAt > networkAt, true);
+
+    env.state.lastRefreshedAt = Date.now();
+    env.state.partialFailures = [];
+    env.state.connectionState = "connected";
+    env.state.runtimePolicy = { network: { current_exposure: "loopback" } };
+    env.state.host = { supported: true, service: "vmms-up", listener: "127.0.0.1:7777" };
+    env.state.opsSummary = {
+      installed_runtime: {
+        diagnostics: {
+          runtime_api_registry_bridge: {
+            contract_key: "bridge-contract-test",
+            handler_registry_source: "DesktopNodeApiRuntimeRoutes",
+            documentation_anchor: "anchor-test",
+            route_keys: ["GET /api/v1/ops/summary -> OpsSummary"]
+          }
+        }
+      },
+      current_evidence: {
+        host_ops: {
+          lifecycle_descriptor: {
+            contract_key: "host-ops-lifecycle-descriptor-bridge-v1",
+            lifecycle_bucket_contract_key: "service-action-eventlog-firewall-truststore-credential-manager-data-root-separated",
+            host_mutation_performed: false,
+            buckets: [{
+              bucket_key: "credential-manager",
+              owner: "DesktopNodeCredentialManagerOps",
+              mutation_boundary: "credential-manager-system-proof",
+              operations: ["allowlisted-programdata-root"]
+            }]
+          }
+        }
+      }
+    };
+    env.state.authAccessToken = "jwt-present";
+    env.state.authSession = { username: "ada", role: "admin", permissions: ["*"] };
+    env.navigateTo("troubleshooting");
+
+    assert.equal(mount.children.length, 4);
+    assert.equal(card("hyperv").getAttribute("data-hv-state"), "ready");
+    assert.equal(card("hyperv").querySelector("[data-hv-value]").textContent, "준비");
+    assert.equal(card("hyperv").querySelector("[data-hv-action]").textContent, "");
+    assert.equal(card("service").querySelector("[data-trouble-service]").textContent, "vmms-up");
+    assert.equal(card("service").querySelector("[data-trouble-listener]").textContent, "127.0.0.1:7777");
+    assert.equal(card("session").querySelector("[data-trouble-user]").textContent, "ada");
+    assert.equal(card("session").querySelector("[data-trouble-role]").textContent, "admin");
+    assert.equal(card("session").querySelector('[data-action="account-logout"]').textContent, "로그아웃");
+    assert.equal(card("bundle").querySelector('[data-action="diagnostic-create"]').textContent, "번들 만들기");
+    assert.equal(card("bundle").querySelector('[data-action="diagnostic-download"]').textContent, "최신 번들 받기");
+    assert.equal(mount.querySelector("form"), null);
+    assert.equal(mount.querySelector("input"), null);
+    assert.equal(mount.querySelector('[data-action="open-login-overlay"]'), null);
+    assert.equal(advanced.getAttribute("open"), null);
+    assert.equal(advanced.open, false);
+    assert.match(body.textContent, /런타임 API 등록 연결/);
+    assert.match(body.textContent, /bridge-contract-test/);
+    assert.match(body.textContent, /DesktopNodeApiRuntimeRoutes/);
+    assert.match(body.textContent, /GET \/api\/v1\/ops\/summary -> OpsSummary/);
+    assert.match(body.textContent, /경로 상세는 메타데이터만/);
+    assert.match(body.querySelector("[data-trouble-buckets]").textContent, /credential-manager/);
+    assert.match(body.textContent, /DesktopNodeCredentialManagerOps/);
+    assert.match(body.textContent, /credential-manager-system-proof/);
+    assert.match(body.textContent, /allowlisted-programdata-root/);
+    assert.match(body.textContent, /호스트 변경: 진단 화면이 수행하지 않음/);
+    assert.match(body.querySelector('[data-trouble-chip="token"]').textContent, /토큰 파일 내용 제외/);
+    assert.match(body.querySelector('[data-trouble-chip="blobs"]').textContent, /보호된 토큰 블롭 생략/);
+    assert.match(body.querySelector('[data-trouble-chip="signing"]').textContent, /공개 서명을 주장하지 않음/);
+    assert.match(body.querySelector('[data-trouble-chip="publication"]').textContent, /외부 배포를 주장하지 않음/);
+
+    env.state.host = { supported: false, service: "vmms-down", listener: "closed" };
+    env.render();
+    assert.equal(card("hyperv").getAttribute("data-hv-state"), "not-ready");
+    assert.match(card("hyperv").querySelector("[data-hv-action]").textContent, /Default Switch/);
+    assert.equal(card("service").querySelector("[data-trouble-service]").textContent, "vmms-down");
+
+    env.state.opsSummary = { host: { readiness: "needs attention" } };
+    env.state.host = { supported: true, service: "vmms-up", listener: "open" };
+    env.render();
+    assert.equal(card("hyperv").getAttribute("data-hv-state"), "not-ready");
+    assert.match(card("hyperv").querySelector("[data-hv-value]").textContent, /needs attention/);
+
+    env.state.lastRefreshedAt = null;
+    env.state.host = null;
+    env.state.opsSummary = null;
+    env.render();
+    assert.equal(card("hyperv").getAttribute("data-hv-state"), "unknown");
+    assert.equal(card("hyperv").querySelector("[data-hv-value]").textContent, "-");
+    assert.match(card("hyperv").querySelector("[data-hv-action]").textContent, /읽는 중/);
+
+    const marker = env.document.createElement("p");
+    marker.textContent = "legacy-marker";
+    mount.appendChild(marker);
+    env.renderTroubleshooting();
+    env.renderAccountSession();
+    assert.equal([...mount.children].some((node) => node.textContent === "legacy-marker"), true);
+    assert.equal(mount.querySelector(".troubleshooting-grid"), null);
+    assert.equal(section.querySelector(".troubleshooting-grid"), null);
+    const session = env.document.getElementById("account-session-panel");
+    assert.doesNotMatch(session.innerHTML, /Logout account/);
+    assert.doesNotMatch(session.innerHTML, /RBAC Session/);
+    assert.match(session.innerHTML, /data-action="open-login-overlay"/);
+  } finally {
+    env.state.host = saved.host;
+    env.state.opsSummary = saved.opsSummary;
+    env.state.lastRefreshedAt = saved.lastRefreshedAt;
+    env.state.partialFailures = saved.partialFailures;
+    env.state.authSession = saved.authSession;
+    env.state.authAccessToken = saved.authAccessToken;
+    env.state.runtimePolicy = saved.runtimePolicy;
+    env.state.connectionState = saved.connectionState;
+    mount.remove();
+    advanced.remove();
+    env.navigateTo("dashboard");
+    env.PCV.views.register("troubleshooting", { render: product });
+  }
+});
+
+test("evidence operator cards and accounts directory use the registry", () => {
+  const evidence = env.document.querySelector('.app-view[data-view="evidence"]');
+  const index = fs.readFileSync(webRoot + "index.html", "utf8");
+  const cards = env.document.createElement("div");
+  cards.id = "evidence-cards";
+  cards.className = "trouble-grid";
+  cards.setAttribute("data-view-mount", "");
+  const details = env.document.createElement("details");
+  details.id = "evidence-release";
+  const body = env.document.createElement("div");
+  body.id = "evidence-release-body";
+  details.appendChild(body);
+  evidence.appendChild(cards);
+  evidence.appendChild(details);
+  const accountsPanel = env.document.getElementById("accounts-panel");
+  accountsPanel.setAttribute("data-view-mount", "");
+  const evidenceRender = env.PCV.viewEvidence.render;
+  const accountsRender = env.PCV.viewAccounts.render;
+  env.PCV.views.register("evidence", { render: evidenceRender });
+  env.PCV.views.register("accounts", { render: accountsRender });
+  const saved = {
+    opsSummary: env.state.opsSummary,
+    accountDirectory: env.state.accountDirectory,
+    accountDirectoryError: env.state.accountDirectoryError,
+    authSession: env.state.authSession,
+    authAccessToken: env.state.authAccessToken
+  };
+  function card(name) {
+    return [...cards.children].find((node) => node.getAttribute("data-evidence-card") === name);
+  }
+  try {
+    assert.match(index, /id="evidence-cards"[^>]*data-view-mount/);
+    assert.match(index, /<div data-view-mount/);
+    assert.match(index, /id="evidence-release"/);
+    assert.doesNotMatch(index, /id="evidence-release"[^>]*\sopen/);
+    assert.match(index, /id="evidence-panel"/);
+    assert.match(index, /data-i18n="copy\.evidence\.title"[^>]*>증적</);
+    assert.match(index, /data-i18n="copy\.evidence\.desc"[^>]*>설치 버전, 운영 현재값, 마지막 검증 시각을 확인합니다.</);
+    assert.match(index, /data-i18n="copy\.evidence\.release"[^>]*>release 엔지니어링</);
+    assert.match(index, /id="accounts-panel"[^>]*data-view-mount/);
+    assert.match(index, /data-i18n="account\.title"[^>]*>계정</);
+    assert.match(index, /data-i18n="account\.desc"[^>]*>역할별로 계정을 보고 관리합니다.</);
+    const networkAt = index.indexOf("<div data-view-mount");
+    const evidenceAt = index.indexOf('id="evidence-cards"');
+    const accountsAt = index.indexOf('id="accounts-panel"');
+    assert.equal(networkAt >= 0 && evidenceAt > networkAt && accountsAt > networkAt, true);
+
+    env.state.opsSummary = {
+      batch_evidence: {
+        status: "available",
+        configured: true,
+        latest: {
+          generated_at: "2026-11-09T10:00:00Z",
+          release: {
+            version: "0.42.96-admin-smoke",
+            signing_mode: "AllowUnsignedDev",
+            public_trusted_signing: "excluded",
+            external_stable_publication: "not-claimed"
+          },
+          gpu_snapshots: { count: 3, peak_adapter_mib: 128 },
+          host_final_state: { service_state: "Running", firewall_rule_count: 0 }
+        }
+      },
+      current_evidence: {
+        full_admin_host_mutation: { latest: { version: "0.42.96-admin-smoke", batch_id: "full-admin-host-mutation-gate" } },
+        public_boundary: { latest_main_push: { head_sha: "abc123head", run_id: "26636072420" } }
+      }
+    };
+    env.navigateTo("evidence");
+    assert.equal(cards.children.length, 3);
+    assert.equal(card("installed").querySelector("[data-evidence-value]").textContent, "0.42.96-admin-smoke");
+    assert.equal(card("current").querySelector("[data-evidence-value]").textContent, "0.42.96-admin-smoke");
+    assert.equal(card("verified").querySelector("[data-evidence-value]").textContent, "2026-11-09T10:00:00Z");
+    assert.equal(card("installed").querySelector("span").textContent, "설치 버전");
+    assert.equal(card("current").querySelector("span").textContent, "운영 현재값");
+    assert.equal(card("verified").querySelector("span").textContent, "마지막 검증 시각");
+    assert.equal(details.getAttribute("open"), null);
+    assert.equal(details.open, false);
+    assert.match(body.textContent, /GPU snapshots/);
+    assert.equal(body.querySelector("[data-evidence-gpu-count]").textContent, "3");
+    assert.equal(body.querySelector("[data-evidence-gpu-peak]").textContent, "128");
+    assert.match(body.textContent, /Public boundary head/);
+    assert.equal(body.querySelector("[data-evidence-head]").textContent, "abc123head");
+    assert.match(body.textContent, /AllowUnsignedDev/);
+    assert.match(body.textContent, /Running/);
+
+    env.state.opsSummary = { batch_evidence: { status: "available", configured: true, latest: {} } };
+    env.render();
+    assert.equal(card("installed").querySelector("[data-evidence-value]").textContent, "-");
+    assert.equal(card("current").querySelector("[data-evidence-value]").textContent, "-");
+    assert.equal(card("verified").querySelector("[data-evidence-value]").textContent, "-");
+    assert.equal(details.open, false);
+    const evidenceMarker = env.document.createElement("p");
+    evidenceMarker.textContent = "legacy-evidence-marker";
+    cards.appendChild(evidenceMarker);
+    env.renderEvidenceDashboard();
+    assert.equal([...cards.children].some((node) => node.textContent === "legacy-evidence-marker"), true);
+    assert.equal(cards.querySelector("[data-evidence-card]").getAttribute("data-evidence-card"), "installed");
+
+    env.state.accountDirectory = [
+      { username: "ada", role: "admin", enabled: true },
+      { username: "op", role: "operator", enabled: false }
+    ];
+    env.state.authAccessToken = "jwt-present";
+    env.state.authSession = { username: "ada", role: "admin", permissions: ["*"] };
+    env.navigateTo("accounts");
+    assert.match(accountsPanel.querySelector('[data-account-role-chip="all"]').textContent, /전체/);
+    assert.match(accountsPanel.querySelector('[data-account-role-chip="all"]').textContent, /2/);
+    assert.match(accountsPanel.querySelector('[data-account-role-chip="admin"]').textContent, /1/);
+    assert.match(accountsPanel.querySelector('[data-account-role-chip="operator"]').textContent, /1/);
+    const table = env.document.getElementById("dt-accounts-table");
+    assert.ok(table);
+    assert.match(table.textContent, /사용자 이름/);
+    assert.match(table.textContent, /역할/);
+    assert.match(table.textContent, /사용 여부/);
+    assert.equal(table.querySelector('[data-account-role-pill="admin"]').textContent, "admin");
+    assert.equal(table.querySelector('[data-account-role-pill="operator"]').textContent, "operator");
+    assert.equal(accountsPanel.querySelector('[data-action="account-create-open"]').textContent, "계정 만들기");
+    assert.equal(accountsPanel.querySelectorAll('[data-action="account-disable"]').length, 2);
+    assert.equal(accountsPanel.querySelectorAll('[data-action="account-reset-password"]').length, 2);
+    assert.equal(accountsPanel.querySelector('[data-action="account-disable"][data-username="op"]').disabled, true);
+    assert.equal(accountsPanel.querySelector('[data-action="account-disable"][data-username="ada"]').disabled, false);
+    assert.equal(accountsPanel.querySelector("form"), null);
+    const accountMarker = env.document.createElement("p");
+    accountMarker.textContent = "legacy-account-marker";
+    accountsPanel.appendChild(accountMarker);
+    env.paintAccountsView();
+    assert.equal([...accountsPanel.children].some((node) => node.textContent === "legacy-account-marker"), true);
+    assert.equal(env.document.getElementById("dt-accounts-table") !== null, true);
+  } finally {
+    env.state.opsSummary = saved.opsSummary;
+    env.state.accountDirectory = saved.accountDirectory;
+    env.state.accountDirectoryError = saved.accountDirectoryError;
+    env.state.authSession = saved.authSession;
+    env.state.authAccessToken = saved.authAccessToken;
+    cards.remove();
+    details.remove();
+    accountsPanel.removeAttribute("data-view-mount");
+    env.navigateTo("dashboard");
+    env.render();
+    env.PCV.views.register("evidence", { render: evidenceRender });
+    env.PCV.views.register("accounts", { render: accountsRender });
+  }
 });

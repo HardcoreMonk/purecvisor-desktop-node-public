@@ -32,7 +32,10 @@
     "view-network",
     "view-jobs",
     "view-events",
-    "view-dashboard"
+    "view-dashboard",
+    "view-troubleshooting",
+    "view-evidence",
+    "view-accounts"
   ],
   "bootstrap": "src/bootstrap.ts"
 }

@@ -167,6 +167,7 @@ function renderBetaFollowup() {
 }
 
 function renderTroubleshooting() {
+  if (!els.troubleshootingPanel) return;
   const host = state.host || {};
   const policy = state.runtimePolicy || {};
   const cards = [
@@ -184,14 +185,15 @@ function renderTroubleshooting() {
     ['PCV_VM_SHUTDOWN_NOT_AVAILABLE', t('vm.trouble.err_shutdown')]
   ];
 
-  els.troubleshootingPanel.innerHTML = `
-    ${renderTroubleshootingEvidence()}
-    <div class="troubleshooting-grid">
-      ${cards.map(([title, value, detail]) => `<div class="troubleshooting-card"><span class="muted">${pcvEscapeHtml(title)}</span><strong>${pcvEscapeHtml(value)}</strong><p>${pcvEscapeHtml(detail)}</p></div>`).join('')}
-    </div>
-    <div class="code-list">
+  const evidenceHtml = renderTroubleshootingEvidence();
+  const codeHtml = `<div class="code-list">
       ${errors.map(([code, detail]) => `<div class="kv"><span>${pcvEscapeHtml(code)}</span><strong>${pcvEscapeHtml(detail)}</strong></div>`).join('')}
     </div>`;
+  const gridHtml = `<div class="troubleshooting-grid">
+      ${cards.map(([title, value, detail]) => `<div class="troubleshooting-card"><span class="muted">${pcvEscapeHtml(title)}</span><strong>${pcvEscapeHtml(value)}</strong><p>${pcvEscapeHtml(detail)}</p></div>`).join('')}
+    </div>`;
+  const skipped = typeof pcvLegacyViewSkipped === 'function' && pcvLegacyViewSkipped('troubleshooting');
+  els.troubleshootingPanel.innerHTML = skipped ? `${evidenceHtml}${codeHtml}` : `${evidenceHtml}${gridHtml}${codeHtml}`;
 }
 
 // --- legacy vm-detail-extensions.ts ---
