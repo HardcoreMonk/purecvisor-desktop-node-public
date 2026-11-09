@@ -4558,6 +4558,50 @@ th {
   min-height: 1em;
 }
 
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.dashboard-grid > section,
+.dashboard-grid > aside {
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--border-panel);
+  border-radius: var(--r);
+  background: var(--bg-panel);
+}
+
+.dashboard-panel-title {
+  margin: 0 0 10px;
+  color: var(--fg);
+  font-size: 14px;
+}
+
+.dashboard-alert-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dashboard-alert-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  color: var(--fg);
+}
+
+.dashboard-alert-meta {
+  color: var(--fg2);
+  font-size: 12px;
+}
+
 .status-bar {
   grid-column: 1 / -1;
   grid-row: 5;
@@ -5612,6 +5656,10 @@ dialog::backdrop {
 }
 
 @media (max-width: 900px) {
+  .dashboard-grid {
+      grid-template-columns: 1fr;
+    }
+
   .shell {
       grid-template-columns: 1fr;
       grid-template-rows: auto auto auto auto auto 1fr auto;

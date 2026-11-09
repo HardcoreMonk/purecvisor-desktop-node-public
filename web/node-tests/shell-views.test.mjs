@@ -2592,6 +2592,181 @@ test("registered dashboard render draws six KPI cards, links, Hyper-V states, an
   }
 });
 
+test("dashboard workload table and alert feed keep running-first order, 24h failures, and distinct empty copy", () => {
+  const dashboard = env.document.querySelector('.app-view[data-view="dashboard"]');
+  const index = fs.readFileSync(webRoot + "index.html", "utf8");
+  function plant(id, tag) {
+    const node = env.document.createElement(tag);
+    node.id = id;
+    const body = env.document.createElement("div");
+    body.id = id + "-body";
+    node.appendChild(body);
+    dashboard.appendChild(node);
+    return node;
+  }
+  const workload = plant("dashboard-workload", "section");
+  const alerts = plant("dashboard-alerts", "aside");
+  const opener = env.document.createElement("button");
+  opener.id = "open-create-vm";
+  opener.type = "button";
+  let opened = 0;
+  opener.addEventListener("click", () => { opened += 1; });
+  dashboard.appendChild(opener);
+  const product = env.PCV.viewDashboard.render;
+  env.PCV.views.register("dashboard", { render: product });
+  const saved = {
+    vms: env.state.vms,
+    serverJobs: env.state.serverJobs,
+    trackedJobs: env.state.trackedJobs,
+    lastRefreshedAt: env.state.lastRefreshedAt,
+    partialFailures: env.state.partialFailures,
+    opsSummary: env.state.opsSummary,
+    summaryError: env.state.summaryError
+  };
+  const now = Date.now();
+  const iso = (ageMs) => new Date(now - ageMs).toISOString();
+  function links() {
+    return [...workload.querySelectorAll("[data-workload-vm]")];
+  }
+  function alertItems() {
+    return [...alerts.querySelectorAll("[data-alert-kind]")];
+  }
+  try {
+    assert.match(index, /class="dashboard-grid"/);
+    assert.match(index, /id="dashboard-kpi"[\s\S]{0,4000}class="dashboard-grid"[\s\S]{0,2000}id="ops-summary-panel"/);
+    assert.match(index, /id="dashboard-workload"[^>]*aria-labelledby="dashboard-workload-title"/);
+    assert.match(index, /id="dashboard-alerts"[^>]*aria-labelledby="dashboard-alerts-title"/);
+    assert.match(index, /data-i18n="copy\.dashboard\.workload\.title"[^>]*>워크로드</);
+    assert.match(index, /data-i18n="copy\.dashboard\.alerts\.title"[^>]*>경고</);
+    assert.match(index, /id="ops-summary-panel"/);
+    assert.doesNotMatch(index, /id="dashboard-workload"[^>]*data-view-mount/);
+    assert.doesNotMatch(index, /id="dashboard-alerts"[^>]*data-view-mount/);
+
+    env.state.lastRefreshedAt = now;
+    env.state.partialFailures = [];
+    env.state.summaryError = null;
+    env.state.opsSummary = { errors: [], signals: [] };
+    env.state.trackedJobs = [];
+    env.state.serverJobs = [];
+    env.state.vms = [
+      { name: "b-run", state: "Running", vcpu: 4, memory_mb: 2048 },
+      { name: "a-run", state: "Running", cpu: { count: 8 }, memory: { startup_mb: 4096 }, template_lock: true },
+      { name: "c", state: "Off", vcpu: 1, memory_mb: 512 },
+      { name: "d", state: "Off", vcpu: 1, memory_mb: 512 },
+      { name: "e", state: "Off", vcpu: 1, memory_mb: 512 },
+      { name: "f", state: "Paused", vcpu: 1, memory_mb: 512 },
+      { name: "g", state: "Off", vcpu: 1, memory_mb: 512 },
+      { name: "h", state: "Off", vcpu: 1, memory_mb: 512 },
+      { name: "i", state: "Off", vcpu: 1, memory_mb: 512 },
+      { name: "a b", state: "Off", vcpu: 2, memory_mb: 1024 }
+    ];
+    env.navigateTo("dashboard");
+    const names = links().map((node) => node.getAttribute("data-workload-vm"));
+    assert.deepEqual(names, ["a-run", "b-run", "a b", "c", "d", "e", "f", "g"]);
+    assert.equal(links().find((node) => node.getAttribute("data-workload-vm") === "a b").getAttribute("href"), "#/vms/a%20b/summary");
+    assert.equal(links()[0].getAttribute("href"), "#/vms/a-run/summary");
+    assert.equal(links()[0].tagName, "A");
+    assert.equal(workload.querySelector("#dt-dashboard-workload-table").tagName, "TABLE");
+    const templateCell = links()[0].closest("tr").textContent;
+    assert.match(templateCell, /예/);
+    assert.match(templateCell, /8/);
+    assert.match(templateCell, /4096/);
+    assert.equal(names.includes("i"), false);
+    assert.equal(names.includes("h"), false);
+
+    env.state.vms = [];
+    env.render();
+    const create = workload.querySelector("[data-workload-create]");
+    assert.equal(workload.querySelector("[data-workload-state]").getAttribute("data-workload-state"), "empty");
+    assert.match(workload.textContent, /표시할 VM이 없습니다/);
+    assert.equal(create.textContent, "+ 새 VM");
+    assert.equal(create.hasAttribute("data-shell-action"), false);
+    assert.equal(links().length, 0);
+    create.click();
+    assert.equal(opened, 1);
+
+    env.state.lastRefreshedAt = null;
+    env.state.vms = [{ name: "hidden-vm", state: "Running", vcpu: 99, memory_mb: 99 }];
+    env.render();
+    assert.equal(workload.querySelector("[data-workload-state]").getAttribute("data-workload-state"), "loading");
+    assert.match(workload.textContent, /읽는 중/);
+    assert.equal(workload.textContent.includes("hidden-vm"), false);
+    assert.equal(workload.textContent.includes("99"), false);
+    assert.equal(workload.querySelector("[data-workload-create]"), null);
+
+    env.state.lastRefreshedAt = now;
+    env.state.partialFailures = [];
+    env.state.summaryError = null;
+    env.state.vms = [{ name: "quiet", state: "Off" }];
+    env.state.serverJobs = [
+      { job_id: "fail-new", status: "failed", operation: "vm.start", vm_id: "quiet", created_at: iso(60 * 60 * 1000), error: { code: "PCV_X", message: "시작 실패" } },
+      { job_id: "fail-old", status: "failed", operation: "vm.stop", created_at: iso(48 * 60 * 60 * 1000), error: { code: "OLD", message: "오래됨" } },
+      { job_id: "fail-blank", status: "failed", operation: "vm.delete", created_at: "", error: { message: "시각 없음" } },
+      { job_id: "fail-future", status: "failed", operation: "vm.create", created_at: new Date(now + 60 * 60 * 1000).toISOString(), error: { message: "미래" } },
+      { job_id: "ok-job", status: "succeeded", operation: "vm.start", created_at: iso(1000) }
+    ];
+    env.state.opsSummary = {
+      errors: [
+        { code: "PCV_OLD", message: "오래된 오류", detail: "로그를 확인", created_at: iso(3 * 60 * 60 * 1000) }
+      ],
+      signals: [
+        { severity: "ok", message: "정상 신호", created_at: iso(1000) },
+        { severity: "critical", message: "스위치 단절", recommended_action: "스위치를 다시 연결", created_at: iso(30 * 60 * 1000) }
+      ]
+    };
+    env.render();
+    const kinds = alertItems().map((node) => node.getAttribute("data-alert-kind"));
+    assert.deepEqual(kinds, ["incident", "job", "incident"]);
+    assert.equal(alertItems()[0].querySelector('[data-alert-field="title"]').textContent, "스위치 단절");
+    assert.equal(alertItems()[0].querySelector("[data-alert-severity]").getAttribute("data-alert-severity"), "error");
+    assert.match(alertItems()[0].textContent, /스위치를 다시 연결/);
+    assert.equal(alertItems()[1].querySelector("[data-alert-job]").getAttribute("href"), "#/jobs");
+    assert.equal(alertItems()[1].querySelector('[data-alert-field="kind"]').textContent, "vm.start");
+    assert.equal(alertItems()[1].querySelector('[data-alert-field="target"]').textContent, "quiet");
+    assert.match(alertItems()[1].textContent, /시작 실패/);
+    assert.equal(alertItems()[2].querySelector('[data-alert-field="title"]').textContent, "오래된 오류");
+    assert.match(alertItems()[2].textContent, /로그를 확인/);
+    const feed = alerts.textContent;
+    assert.equal(feed.includes("오래됨"), false);
+    assert.equal(feed.includes("시각 없음"), false);
+    assert.equal(feed.includes("미래"), false);
+    assert.equal(feed.includes("정상 신호"), false);
+    assert.equal(feed.includes("경고 없음"), false);
+
+    env.state.serverJobs = [];
+    env.state.trackedJobs = [];
+    env.state.opsSummary = { errors: [], signals: [] };
+    env.state.summaryError = null;
+    env.render();
+    assert.equal(alerts.querySelector("[data-alerts-state]").getAttribute("data-alerts-state"), "empty");
+    assert.match(alerts.textContent, /경고 없음/);
+    assert.equal(alerts.textContent.includes("운영 요약을 읽지 못했습니다"), false);
+
+    env.state.summaryError = { code: "PCV_OPS", message: "unread", operation: "ops.summary" };
+    env.state.opsSummary = {
+      signals: [{ severity: "critical", message: "숨겨야 함", recommended_action: "하지 말 것", created_at: iso(1000) }]
+    };
+    env.render();
+    assert.equal(alerts.querySelector("[data-alerts-state]").getAttribute("data-alerts-state"), "unavailable");
+    assert.match(alerts.textContent, /운영 요약을 읽지 못했습니다/);
+    assert.equal(alerts.textContent.includes("경고 없음"), false);
+    assert.equal(alerts.textContent.includes("숨겨야 함"), false);
+  } finally {
+    env.state.vms = saved.vms;
+    env.state.serverJobs = saved.serverJobs;
+    env.state.trackedJobs = saved.trackedJobs;
+    env.state.lastRefreshedAt = saved.lastRefreshedAt;
+    env.state.partialFailures = saved.partialFailures;
+    env.state.opsSummary = saved.opsSummary;
+    env.state.summaryError = saved.summaryError;
+    workload.remove();
+    alerts.remove();
+    opener.remove();
+    env.navigateTo("dashboard");
+    env.PCV.views.register("dashboard", { render: product });
+  }
+});
+
 test("logout closes open modals", async () => {
   if (!env.document.getElementById("toasts")) {
     const toasts = env.document.createElement("div");
