@@ -888,7 +888,7 @@ test("VM hash opens a VM and tab, tab changes replace, and an unknown id returns
   assert.equal(calls.filter((call) => call.mode === "push").length, 1);
   assert.equal(env.location.hash, "#/vms/a%20b/summary");
   const namedRow = [...env.document.querySelectorAll("#vm-table tr[data-vm-id]")].find((row) => row.getAttribute("data-vm-id") === "a b");
-  assert.equal(namedRow.querySelector("td").getAttribute("title"), "a b");
+  assert.equal(namedRow.querySelector("td[title]").getAttribute("title"), "a b");
   const panel = env.document.createElement("div");
   panel.id = "vm-detail-panel";
   const tab = env.document.createElement("button");
@@ -1561,6 +1561,114 @@ test("j and k move the VM row selection and focus, and ignore a search field and
   await flush();
   assert.equal(calls.length, before);
   assert.equal(env.state.selectedVmId, "none");
+});
+
+test("VM checkboxes select visible rows, keep detail closed, and bulk start or shut down", async () => {
+  env.state.vms = [
+    { id: "off-1", name: "off-1", state: "Off" },
+    { id: "off-2", name: "off-2", state: "Off" },
+    { id: "run-1", name: "run-1", state: "Running" },
+    { id: "lock-1", name: "lock-1", state: "Off", template_lock: true }
+  ];
+  env.state.vmChecked = [];
+  env.state.vmFilter = "";
+  env.state.vmStateFilter = "all";
+  env.state.vmSort = "name";
+  env.state.vmSortDir = "asc";
+  env.state.selectedVmId = "";
+  env.state.selectedVm = null;
+  env.state.authAccessToken = "";
+  env.state.authSession = null;
+  env.state.pendingVmActions = {};
+  env.state.trackedJobs = [];
+  const previousLoad = env.loadVmDetail;
+  const previousPoll = env.startPolling;
+  const previousApi = env.desktopApi;
+  const previousTrack = env.PCV.components.trackJob;
+  const detailCalls = [];
+  const actionCalls = [];
+  const trackedJobs = [];
+  env.loadVmDetail = async (id) => { detailCalls.push(id); };
+  env.startPolling = () => {};
+  env.PCV.components.trackJob = (jobId, onUpdate) => {
+    trackedJobs.push(jobId);
+    if (typeof onUpdate === "function") onUpdate({ job_id: jobId, status: "running" });
+    return () => {};
+  };
+  stubDesktopApi(env, {
+    queueVmAction: async (id, action) => {
+      actionCalls.push([id, action]);
+      return { job_id: "job-" + action + "-" + id, status: "queued" };
+    },
+    getJob: async (id) => ({ job_id: id, status: "succeeded" })
+  });
+  env.renderVms();
+
+  assert.equal(env.document.querySelector("[data-vm-bulk]"), null);
+  assert.ok(env.document.querySelector('#vm-table button[data-vm-sort="name"]'));
+  const rowBox = env.document.querySelector('input[data-vm-check="row"][data-vm-id="off-1"]');
+  assert.equal(rowBox.getAttribute("aria-label"), "off-1 선택");
+  rowBox.checked = true;
+  rowBox.click();
+  await flush();
+  assert.deepEqual(detailCalls, []);
+  assert.equal(env.state.selectedVmId, "");
+  assert.deepEqual(env.state.vmChecked, ["off-1"]);
+  assert.match(env.document.querySelector("[data-vm-bulk]").textContent, /선택 1개/);
+  const allBox = env.document.querySelector('input[data-vm-check="all"]');
+  assert.equal(allBox.getAttribute("aria-label"), "보이는 VM 모두 선택");
+  assert.equal(allBox.indeterminate, true);
+  assert.equal(allBox.checked, false);
+
+  allBox.click();
+  await flush();
+  assert.deepEqual(detailCalls, []);
+  assert.deepEqual([...env.state.vmChecked].sort(), ["lock-1", "off-1", "off-2", "run-1"]);
+  const allAfter = env.document.querySelector('input[data-vm-check="all"]');
+  assert.equal(allAfter.indeterminate, false);
+  assert.equal(allAfter.checked, true);
+  assert.match(env.document.querySelector("[data-vm-bulk]").textContent, /선택 4개/);
+  assert.match(env.document.querySelector("[data-vm-bulk]").textContent, /건너뜀 1/);
+
+  env.document.querySelector('[data-vm-bulk-action="start"]').click();
+  await flush();
+  assert.deepEqual(actionCalls, [["off-1", "start"], ["off-2", "start"]]);
+  assert.equal(env.document.querySelectorAll("[data-vm-bulk-line]").length, 2);
+
+  env.document.querySelector('[data-vm-bulk-action="shutdown"]').click();
+  await flush();
+  const message = env.document.querySelector(".pcv-confirm .pcv-confirm-message");
+  assert.ok(message);
+  assert.match(message.textContent, /run-1/);
+  env.document.querySelector('.pcv-confirm [data-pcv-confirm="accept"]').click();
+  await flush();
+  assert.deepEqual(actionCalls, [["off-1", "start"], ["off-2", "start"], ["run-1", "shutdown"]]);
+  assert.equal(env.document.querySelectorAll("[data-vm-bulk-line]").length, actionCalls.length);
+  assert.equal(trackedJobs.length, actionCalls.length);
+
+  env.state.authAccessToken = "jwt";
+  env.state.authSession = { role: "viewer", permissions: ["read"] };
+  env.renderVms();
+  assert.equal(env.document.querySelector('[data-vm-bulk-action="start"]').disabled, true);
+  assert.equal(env.document.querySelector('[data-vm-bulk-action="shutdown"]').disabled, true);
+  assert.equal(env.document.querySelector('[data-vm-bulk-action="clear"]').disabled, false);
+  env.document.querySelector('[data-vm-bulk-action="clear"]').click();
+  await flush();
+  assert.equal(env.state.vmChecked.length, 0);
+  assert.equal(env.document.querySelector("[data-vm-bulk]"), null);
+
+  env.loadVmDetail = previousLoad;
+  env.startPolling = previousPoll;
+  env.desktopApi = previousApi;
+  env.PCV.components.trackJob = previousTrack;
+  env.state.authAccessToken = "";
+  env.state.authSession = null;
+  env.state.pendingVmActions = {};
+  env.state.trackedJobs = [];
+  if (env.state.pollTimer) {
+    clearTimeout(env.state.pollTimer);
+    env.state.pollTimer = null;
+  }
 });
 
 function bootVmDeleteList(nextJob) {

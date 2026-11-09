@@ -98,7 +98,9 @@ task 크기(2026-11-09 사용자 승인 `U1 checkpoint 2 승인`): Task 2부터�
 
 ## Task 3c: U3 선택과 일괄 시작·종료
 
-- [ ] 표 첫 열 체크박스와 선택 막대(선택 n개, 시작, 종료, 선택 해제). VM마다 job 하나와 자리 진행 줄. node 시험: job 수. 공통 검증. 로컬 commit.
+- [x] 표 첫 열 체크박스와 선택 막대(선택 n개, 시작, 종료, 선택 해제). VM마다 job 하나와 자리 진행 줄. node 시험: job 수. 공통 검증. 로컬 commit.
+
+실행 기록(2026-11-09): checkpoint 5(17:50~18:13). grok이 다음을 넣었다. 표 첫 열에 행 체크박스(`{이름} 선택`)와 머리의 보이는 VM 모두 선택(일부면 `indeterminate`)을 두었다. 체크해도 상세는 열리지 않는다. `state.vmChecked`를 두고, 목록에 없는 id는 다시 그릴 때 지운다. 하나 이상 고르면 선택 막대(선택 n개, 시작, 종료, 선택 해제, 건너뜀 n)가 나온다. 시작은 꺼진 VM만, 종료는 확인 창 한 번 뒤 실행 중 VM만 대상이고, 템플릿 잠금·대기 중 VM은 건너뛴다. VM마다 `queueVmAction`을 한 번 부르고 `setVmActionPending`, `pcvTrackJob`, `startPolling`, `clearVmActionPending`을 단일 동작과 같이 쓴다. 막대 아래 VM마다 진행 줄을 두고 `trackJob`으로 갱신한다. 260px 상세 목록에서 숨기는 열을 1(체크박스), 4, 5, 6, 8로 옮겼다(1열에 남은 ellipsis 선택자는 숨은 열이라 효과가 없다). i18n 키 7개(ko·en)를 더했다. `vm-list.ts` 972→1,163줄, `core.ts` 1,584줄, `vm.ts`·`bootstrap.ts`는 바꾸지 않았다. domsafe 34, axe 기준선 2,196→2,256(+60, 열 이동으로 바뀐 선택자, `--prune` 없음). grok은 18:10에 마지막 `build:served` 전에 멈췄고, Claude가 다시 만들어 검증했다. 검증: `npm run test:required`에서 node 380 pass, browser gate 기준선 기록 뒤 `ok=true`(assertions 121 failed 0 violations 0), web Pester 50/50, ratchet Pester 3/3, Delivery 785/785, `git diff --check` clean.
 
 ## Task 3d: U3 일괄 삭제, PR
 

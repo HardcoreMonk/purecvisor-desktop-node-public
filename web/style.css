@@ -5228,14 +5228,16 @@ dialog::backdrop {
   display: block;
 }
 
-.vm-workspace.is-detail .pcv-vm-table th:nth-child(3),
-.vm-workspace.is-detail .pcv-vm-table td:nth-child(3),
+.vm-workspace.is-detail .pcv-vm-table th:nth-child(1),
+.vm-workspace.is-detail .pcv-vm-table td:nth-child(1),
 .vm-workspace.is-detail .pcv-vm-table th:nth-child(4),
 .vm-workspace.is-detail .pcv-vm-table td:nth-child(4),
 .vm-workspace.is-detail .pcv-vm-table th:nth-child(5),
 .vm-workspace.is-detail .pcv-vm-table td:nth-child(5),
-.vm-workspace.is-detail .pcv-vm-table th:nth-child(7),
-.vm-workspace.is-detail .pcv-vm-table td:nth-child(7) {
+.vm-workspace.is-detail .pcv-vm-table th:nth-child(6),
+.vm-workspace.is-detail .pcv-vm-table td:nth-child(6),
+.vm-workspace.is-detail .pcv-vm-table th:nth-child(8),
+.vm-workspace.is-detail .pcv-vm-table td:nth-child(8) {
   display: none;
 }
 
@@ -5248,11 +5250,34 @@ dialog::backdrop {
   width: 100%;
 }
 
+.vm-workspace.is-detail .pcv-vm-table th:nth-child(2),
+.vm-workspace.is-detail .pcv-vm-table td:nth-child(2),
 .vm-workspace.is-detail .pcv-vm-table th:nth-child(1),
 .vm-workspace.is-detail .pcv-vm-table td:nth-child(1) {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.pcv-vm-bulk {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  background: var(--bg2);
+  color: var(--fg);
+}
+
+.pcv-vm-bulk-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px;
+  color: var(--fg2);
 }
 
 .vm-workspace.is-detail .pcv-vm-table .badge {
