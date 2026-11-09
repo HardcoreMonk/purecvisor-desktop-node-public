@@ -245,11 +245,28 @@ operational current는 `0.42.99-admin-smoke` 그대로다.
 
 ## Task 9: 승격 문서와 release-train 승격
 
-- [ ] Lane 3. `Invoke-PcvLane3PromotionDocs.ps1`을 dry-run, `-Apply`, `-Check` 순서로 돌린다. Lane 3 숨은 단계도 한다: descriptor chain, ledger 행, index 절, D2 시험, spec pin.
+- [x] Lane 3. `Invoke-PcvLane3PromotionDocs.ps1`을 dry-run, `-Apply`, `-Check` 순서로 돌린다. Lane 3 숨은 단계도 한다: descriptor chain, ledger 행, index 절, D2 시험, spec pin.
   - `release-train.json`: train `0.43.0-admin-smoke` `status=promoted`, `operational_current=0.43.0-admin-smoke`.
   - 그다음 `Update-PcvCurrentEvidenceDocs.ps1 -Check`, `Update-PcvContractSpecPins.ps1 -Apply`/`-Check`, `dotnet test src/DesktopNode.Delivery.Tests -c Release`를 돈다.
   - `train-path-check --payload 6355e6ba --head HEAD`가 `allowed_pin_paths`만 남기는지 본다.
   - 수기 갱신: `DOCUMENTATION_INDEX` 권위 줄(공개 소스 HEAD는 payload commit), `FEATURE_IMPLEMENTATION_LEDGER` operational 줄, `DEVELOPER_INDEX` train 줄. 로컬 commit.
+
+실행 기록(2026-11-10): promotion 도구와 수기 갱신을 했다.
+- `Invoke-PcvLane3PromotionDocs.ps1 -SpecPath packaging/windows-desktop-node/tests/fixtures/lane3-promotion-docs-spec-04300.json`
+  - dry-run `ok`: current evidence 문서 stale, 나머지는 planned
+  - `-Apply` `ok`: current evidence 문서, descriptor chain(꼬리표 `04300`), ledger head·rows, index 절, spec pin 갱신
+  - `-Check`: 모든 단계 current
+- 숨은 단계: config spec pin 3개와 Delivery verifier 상수 3개는 도구가 갱신했다. current evidence 시험은 version을 `current-evidence.json`에서 읽어 손댈 줄이 없다.
+- `release-train.json`: train `0.43.0-admin-smoke` `status=promoted`, `operational_current=0.43.0-admin-smoke`
+- 수기 갱신:
+  - `docs/DOCUMENTATION_INDEX.md` 권위 줄 넷(공개 소스 HEAD는 payload `6355e6ba`, 운영 `0.43.0-admin-smoke`, 최신 `main`, 설치본과 계정)
+  - `docs/FEATURE_IMPLEMENTATION_LEDGER.md` operational 줄 둘
+  - `docs/DEVELOPER_INDEX.md` train `0.43.0` 단락
+- 검증:
+  - `Update-PcvCurrentEvidenceDocs.ps1 -Check` ok(target 8개 current)
+  - `Update-PcvContractSpecPins.ps1 -Apply`/`-Check` current(spec 9개, 변경 0)
+  - `dotnet test src/DesktopNode.Delivery.Tests -c Release` 785/785
+  - `train-path-check --payload 6355e6ba --head HEAD`(이 commit 뒤): PATHCHECK_PLACEHOLDER
 
 ## Task 10: train PR
 
