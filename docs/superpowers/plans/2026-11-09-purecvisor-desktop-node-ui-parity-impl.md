@@ -56,33 +56,77 @@ git diff --check
 
 task 크기(2026-11-09 사용자 승인 `U1 checkpoint 2 승인`): Task 2부터는 한 task가 Lane 1 checkpoint 하나(30분, grok 작업 시간 포함)에 들어가도록 grok 지시 하나(항목 3~4개, 20분 안쪽, 멈춤 시각 포함)로 자른다. Task 2를 시작할 때 Task 2~8을 `Task Na`, `Task Nb`로 나누는 plan·campaign 변경을 먼저 commit한다.
 
-## Task 2: U2 VM 목록·상세 골격
+## 단계와 task 나누기 (2026-11-09)
 
-- [ ] 설계 4.1절. 목록·골격을 새 모듈 `web/src/modules/vm-list.ts`(`modules.json`에서 `vm` 앞)로 나누고, 고르지 않으면 전체 폭 표, 고르면 왼쪽 260px 목록과 넓은 상세로 바꾼다(`web/index.html:291-347`, `web/style.css:5212-5225`). 선택 카드를 지우고 이름은 상세 헤더 h2 하나다. `HN.pagehead`(제목, 설명, `+ 새 VM`). hash `#/vms/<vm-id>/<tab>`(`core.ts:351-354`)와 뒤로 가기, 없는 VM 처리. 빈 상태 CTA와 읽기 실패(`components.emptyState`·`loadError`). 콘솔 탭 맞춤 배율이 넓어진 폭을 쓰는지 확인. 600px 이하는 목록과 상세를 하나씩. 설계 7절의 VM 골격 계약·시험 8곳을 같은 PR에서 고친다. 공통 검증, 가짜 API 캡처(1440, 768, 390)를 원본 캡처와 비교, release-train queue 행. push, PR, green CI 뒤 merge.
+사용자 승인 `U1 checkpoint 2 승인`에 따라 Task 2부터는 task 하나가 Lane 1 checkpoint 하나(30분, grok 작업 시간 포함)에 들어가게 나눴다. task마다 grok 지시 하나(20분 안쪽, 멈춤 시각 포함)와 Claude 리뷰·검증이다. 같은 단계의 task는 한 branch(`lane1/ui-parity-u<단계>-<yyyymmdd>`)에 로컬 commit으로 쌓고, 단계의 마지막 task가 release-train queue 행, push, PR, green CI 뒤 merge를 한다. 그래서 PR과 queue 행은 단계마다 하나다.
 
-## Task 3: U3 VM 행 메뉴, 정렬, 일괄 조작
+## Task 2a: U2 `vm-list.ts` 분리
 
-- [ ] 설계 4.1절. 행 `⋯` 메뉴와 우클릭(ContextMenu 키, Shift+F10)을 ADR-0019 더 보기 메뉴와 같은 항목으로, 상태에 맞지 않는 항목은 끈다. 열 머리 정렬과 방향 반전, j/k 이동. 체크박스와 선택 막대(시작, 종료, 삭제, 선택 해제), 일괄 삭제 확인 모달(대상 이름 목록, 개수 입력 전 버튼 꺼짐), VM마다 job 하나와 자리 진행 줄. node 시험: 메뉴 키보드, 개수 입력 gate, job 수. 공통 검증, release-train queue 행. push, PR, green CI 뒤 merge.
+- [ ] 동작을 바꾸지 않고 VM 목록 쪽 함수(목록 렌더, 필터, 상태 칩, 정렬, 템플릿 목록 등)를 새 모듈 `web/src/modules/vm-list.ts`(`modules.json`에서 `vm` 앞)로 옮긴다. `PCV.vm` export 이름과 동작은 그대로다. `vm.ts` 줄 수 상한을 실제 줄 수로 낮추고 새 모듈을 ratchet 규칙대로 등록하며, policy spec pin을 `Update-PcvContractSpecPins.ps1 -Apply`로 갱신한다. 공통 검증. 로컬 commit.
 
-## Task 4: U4 화면 렌더 등록표와 네트워크
+## Task 2b: U2 목록·상세 골격
 
-- [ ] 설계 4.2절. `nav.ts`에 `PCV.views.register(name, { render(mount, ctx) })`를 두고 옛 `renderActiveView()`가 등록된 화면을 건너뛰게 한다. 첫 화면으로 네트워크를 옮긴다: `HN.pagehead`, `filterBar` 종류 chip(스위치 `type` 값별)과 개수, `createDataTable`(이름, 종류, 연결 VM 수, 어댑터, 상태 pill), 768px 이하 카드, 빈 상태와 읽기 실패, 하드코딩 패널 색을 token으로. 첫 단계에서 `HN.*` 반환 형식을 확인해 domsafe ceiling을 올리지 않는 경로를 정하고 실행 기록에 적는다. node 시험: 등록된 화면 건너뜀, 빈 상태와 읽기 실패 문구 구분. 공통 검증, release-train queue 행. push, PR, green CI 뒤 merge.
+- [ ] 설계 4.1절의 두 상태. 고르지 않으면 전체 폭 표, 고르면 왼쪽 260px 목록과 넓은 상세(`web/index.html:291-347`, `web/style.css:5212-5225`). 선택 카드를 지우고 이름은 상세 헤더 h2 하나다. `HN.pagehead`(제목, 설명, `+ 새 VM`). 콘솔 탭 맞춤 배율이 넓어진 폭을 쓰는지 확인한다. 설계 7절의 VM 골격 계약·시험 8곳을 고친다. 공통 검증, 가짜 API 캡처(1440, 768, 390)를 원본 캡처와 비교. 로컬 commit.
 
-## Task 5: U5 작업과 이벤트
+## Task 2c: U2 바로 가는 링크, 빈 상태, 좁은 화면, PR
 
-- [ ] 설계 4.2절. 작업: 상태 chip과 종류 select, `createDataTable`(접수 시각, 종류, 대상, 상태 pill, 걸린 시간, 오류 요약), 정렬·검색·CSV, 다음 페이지 버튼(C-11). 이벤트: 심각도별 개수 카드와 표, 작업 목록을 다시 그리는 활동 패널(`ops.ts:328-361`)을 지우고 작업 화면 링크로. `ops.ts`의 영어 고정 문구를 i18n 키로(C-03). 공통 검증, release-train queue 행. push, PR, green CI 뒤 merge.
+- [ ] hash `#/vms/<vm-id>/<tab>`(`core.ts:351-354`)와 뒤로 가기, 없는 VM 처리. 빈 상태 CTA와 읽기 실패(`components.emptyState`·`loadError`). 600px 이하는 목록과 상세를 하나씩. node 시험. 공통 검증, release-train queue 행. push, PR(U2 묶음), green CI 뒤 merge.
 
-## Task 6: U6 대시보드
+## Task 3a: U3 행 메뉴
 
-- [ ] 설계 4.2절. `web/index.html:228-286`의 hero, 고정 메모, 빠른 작업 6칸, "운영 콕핏" 머리를 지우고 pagehead, KPI 카드(VM 실행 중·꺼짐·템플릿, 진행 중 job, 최근 24시간 실패 job, Hyper-V 준비 상태), 워크로드 표(행을 누르면 VM 상세), 경고 피드(실패 job과 ops 요약 incident)로 다시 그린다. 사용률 게이지와 기간 선택은 넣지 않는다. 공통 검증, release-train queue 행. push, PR, green CI 뒤 merge.
+- [ ] 행 `⋯` 메뉴와 우클릭(ContextMenu 키, Shift+F10 포함)이 ADR-0019 더 보기 메뉴와 같은 항목을 연다. 상태에 맞지 않는 항목은 끈다. 행 주 조작 하나는 그대로다. node 시험: 메뉴 키보드(열기, 화살표, Esc). 공통 검증. 로컬 commit.
 
-## Task 7: U7 진단, 증적, 계정
+## Task 3b: U3 정렬과 j/k
 
-- [ ] 설계 4.2절. 진단: 두 열 카드(Hyper-V 준비 상태와 권장 조치, service·listener, 현재 세션, 진단 번들), registry bridge·Host Ops bucket 표·경계 칩은 접힌 "고급" 절로(C-16). 증적: 운영자 값 카드, release 엔지니어링 값은 접힌 절로(C-18). 계정: `createDataTable`과 역할 pill, 생성 모달 유지(C-13). `monitor.ts`의 영어 고정 문구를 i18n 키로. 공통 검증, release-train queue 행. push, PR, green CI 뒤 merge.
+- [ ] 열 머리를 누르면 그 열로 정렬하고 다시 누르면 방향을 바꾼다. 목록에 포커스가 있으면 j/k로 행을 옮긴다. node 시험. 공통 검증. 로컬 commit.
 
-## Task 8: U8 옛 렌더러 퇴역, 품질 게이트, 닫기
+## Task 3c: U3 선택과 일괄 시작·종료
 
-- [ ] 모든 화면이 등록표로 옮겨졌는지 확인하고 옛 `render()`(`monitor.ts:904-938`), `renderActiveView()`, `index.html` 정적 섹션, 옛 `#command-palette`, 쓰이지 않는 스와이프 코드(`nav.ts:659-693`), 남은 하드코딩 색을 지운다. `web/DESIGN.md` 기본 테마 설명(`:79-81`, `:84-100`)을 BL-0026대로 하나로 고친다. axe 위반 0 기준선, browser fixture, 화면 캡처 기준선(`config/browser-ui-gates-baseline.json`)을 맞춘다. 감사 61건의 처리 결과(고침, 넣지 않음, API 설계로 넘김)를 plan 실행 기록에 표로 남긴다. campaign을 닫고 `next_approval_required`에 release train 출발 문장을 둔다. 공통 검증과 clean HEAD 종료 검증. push, PR, green CI 뒤 merge, `main` push run green 확인.
+- [ ] 표 첫 열 체크박스와 선택 막대(선택 n개, 시작, 종료, 선택 해제). VM마다 job 하나와 자리 진행 줄. node 시험: job 수. 공통 검증. 로컬 commit.
+
+## Task 3d: U3 일괄 삭제, PR
+
+- [ ] 일괄 삭제 확인 모달(대상 이름 목록, 고른 개수를 입력해야 버튼이 켜짐)과 선택 막대 삭제 버튼. 모바일 일괄 삭제를 이 모달로 되살린다. node 시험: 개수 gate, VM마다 job 하나. 공통 검증, release-train queue 행. push, PR(U3 묶음), green CI 뒤 merge.
+
+## Task 4a: U4 화면 렌더 등록표
+
+- [ ] 설계 4.2절. `nav.ts`에 `PCV.views.register(name, { render(mount, ctx) })`를 두고 옛 `renderActiveView()`가 등록된 화면을 건너뛰게 한다. 주기 새로 고침은 활성 화면의 `render`만 부른다. `HN.*` 반환 형식을 확인해 domsafe ceiling을 올리지 않는 경로를 정하고 실행 기록에 적는다. 화면은 아직 옮기지 않는다. node 시험: 등록된 화면 건너뜀. 공통 검증. 로컬 commit.
+
+## Task 4b: U4 네트워크, PR
+
+- [ ] 네트워크를 등록표로 옮긴다: `HN.pagehead`, `filterBar` 종류 chip(스위치 `type` 값별)과 개수, `createDataTable`(이름, 종류, 연결 VM 수, 어댑터, 상태 pill), 768px 이하 카드, 빈 상태와 읽기 실패(문구 구분 node 시험), 하드코딩 패널 색을 token으로. 공통 검증, release-train queue 행. push, PR(U4 묶음), green CI 뒤 merge.
+
+## Task 5a: U5 작업
+
+- [ ] 작업 화면을 등록표로 옮긴다: 상태 chip과 종류 select, `createDataTable`(접수 시각, 종류, 대상, 상태 pill, 걸린 시간, 오류 요약), 정렬·검색·CSV, 다음 페이지 버튼(C-11), 영어 고정 문구를 i18n 키로. 공통 검증. 로컬 commit.
+
+## Task 5b: U5 이벤트, PR
+
+- [ ] 이벤트 화면을 등록표로 옮긴다: 심각도별 개수 카드와 표. 작업 목록을 다시 그리는 활동 패널(`ops.ts:328-361`)을 지우고 작업 화면 링크로 바꾼다(C-10). `ops.ts`의 남은 영어 고정 문구를 i18n 키로(C-03). 공통 검증, release-train queue 행. push, PR(U5 묶음), green CI 뒤 merge.
+
+## Task 6a: U6 대시보드 머리와 KPI
+
+- [ ] `web/index.html:228-286`의 hero, 고정 메모, 빠른 작업 6칸, "운영 콕핏" 머리를 지운다. 대시보드를 등록표로 옮겨 pagehead(주 버튼 `+ 새 VM`)와 KPI 카드(VM 실행 중·꺼짐·템플릿, 진행 중 job, 최근 24시간 실패 job, Hyper-V 준비 상태)를 그린다. 공통 검증. 로컬 commit.
+
+## Task 6b: U6 워크로드 표와 경고 피드, PR
+
+- [ ] 워크로드 표(상위 VM, 행을 누르면 VM 상세)와 경고 피드(실패 job과 ops 요약 incident)를 더한다. 사용률 게이지와 기간 선택은 넣지 않는다. 공통 검증, release-train queue 행. push, PR(U6 묶음), green CI 뒤 merge.
+
+## Task 7a: U7 진단
+
+- [ ] 진단을 등록표로 옮겨 두 열 카드(Hyper-V 준비 상태와 권장 조치, service·listener, 현재 세션, 진단 번들)로 그린다. registry bridge, Host Ops bucket 표, 경계 칩은 접힌 "고급" 절로(C-16). `monitor.ts`의 진단 쪽 영어 고정 문구를 i18n 키로. 공통 검증. 로컬 commit.
+
+## Task 7b: U7 증적과 계정, PR
+
+- [ ] 증적: 운영자 값 카드, release 엔지니어링 값은 접힌 절로(C-18). 계정: `createDataTable`과 역할 pill, 생성 모달 유지(C-13). 공통 검증, release-train queue 행. push, PR(U7 묶음), green CI 뒤 merge.
+
+## Task 8a: U8 옛 렌더러 퇴역
+
+- [ ] 모든 화면이 등록표로 옮겨졌는지 확인하고 옛 `render()`(`monitor.ts:904-938`), `renderActiveView()`, `index.html` 정적 섹션, 옛 `#command-palette`, 쓰이지 않는 스와이프 코드(`nav.ts:659-693`)를 지운다. 공통 검증. 로컬 commit.
+
+## Task 8b: U8 품질 게이트와 닫기, PR
+
+- [ ] 남은 하드코딩 색을 지우고 `web/DESIGN.md` 기본 테마 설명(`:79-81`, `:84-100`)을 BL-0026대로 하나로 고친다. axe 위반 0 기준선(필요하면 `--prune`), browser fixture, 화면 캡처 기준선을 맞춘다. 감사 61건의 처리 결과(고침, 넣지 않음, API 설계로 넘김)를 plan 실행 기록에 표로 남긴다. campaign을 닫고 `next_approval_required`에 release train 출발 문장을 둔다. 공통 검증과 clean HEAD 종료 검증(`dotnet test src/DesktopNode.sln -c Release`, PR gate). release-train queue 행. push, PR(U8 묶음), green CI 뒤 merge, `main` push run green 확인.
 
 ## Nonclaims
 
