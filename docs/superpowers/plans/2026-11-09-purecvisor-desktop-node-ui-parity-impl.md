@@ -170,7 +170,9 @@ task 크기(2026-11-09 사용자 승인 `U1 checkpoint 2 승인`): Task 2부터�
 
 ## Task 7a: U7 진단
 
-- [ ] 진단을 등록표로 옮겨 두 열 카드(Hyper-V 준비 상태와 권장 조치, service·listener, 현재 세션, 진단 번들)로 그린다. registry bridge, Host Ops bucket 표, 경계 칩은 접힌 "고급" 절로(C-16). `monitor.ts`의 진단 쪽 영어 고정 문구를 i18n 키로. 공통 검증. 로컬 commit.
+- [x] 진단을 등록표로 옮겨 두 열 카드(Hyper-V 준비 상태와 권장 조치, service·listener, 현재 세션, 진단 번들)로 그린다. registry bridge, Host Ops bucket 표, 경계 칩은 접힌 "고급" 절로(C-16). `monitor.ts`의 진단 쪽 영어 고정 문구를 i18n 키로. 공통 검증. 로컬 commit.
+
+실행 기록(2026-11-09): checkpoint 20(21:36~22:03). grok이 새 모듈 `web/src/modules/view-troubleshooting.ts`(223줄, `register('troubleshooting')`)를 만들었다. mount는 `#troubleshooting-cards.trouble-grid[data-view-mount]` 하나로, 네트워크 mount 뒤에 둔다. 두 열 카드 넷(Hyper-V 준비 상태와 권장 조치, service·listener, 현재 세션의 사용자·역할·로그아웃(로그인 폼 없음), 진단 번들)을 `PCV.uxlib.el`로 그린다. registry bridge, Host Ops lifecycle bucket 표, 경계 칩은 닫힌 `<details id="troubleshooting-advanced">`로 옮겼다(C-16). 붙잡힌 패널(`incident-panel`, `relogin-overlay`, `account-console-panel`, `token-rotation-panel`, `diagnostics-panel`, `beta-followup-panel`, `troubleshooting-panel`)은 접힌 절 밖에 남겼다. 옛 `renderAccountSession`, `renderDiagnosticsBundle`(`monitor.ts`), `renderTroubleshooting`(`vm-console.ts`)은 등록된 동안 카드와 고급 절을 다시 그리지 않는다. 번들 버튼·사실, 배치 증적, 오류 코드 목록은 fixture가 그 패널 문자열로 붙잡고 있어 원래 패널에 남겼다. 고급 절과 카드 문구는 i18n 키(ko·en)로 바꿨다. 진단 패널에 남은 영어 리터럴(`Download latest`, `Retry action`, Mode/Redaction/Latest bundle 등)은 계약·fixture가 붙잡아 U8 정리로 넘긴다. grok은 21:58에 build 전에 멈췄고, Claude가 build·검증·기준선 기록을 했다. domsafe 31(변화 없음), axe 기준선 2,554→2,586(+32, 진단 화면, `--prune` 없음). 검증: `npm run test:required`(node 388 pass, 기준선 기록 뒤 gate 두 번 `ok=true`, assertions 121 failed 0 violations 0), web Pester와 ratchet Pester 53/53, Delivery 785/785, `git diff --check` clean.
 
 ## Task 7b: U7 증적과 계정, PR
 

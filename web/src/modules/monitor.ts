@@ -292,6 +292,15 @@ function renderDiagnosticsBundle() {
   const downloadHtml = download.bundle_id
     ? `<div class="diagnostics-result"><span class="muted">Last download</span><strong>${pcvEscapeHtml(download.file_name || download.bundle_id)}</strong><p>${pcvEscapeHtml(download.content_type || 'application/vnd.purecvisor.diagnostic-bundle+json')} / ${pcvEscapeHtml(download.size_bytes ?? 0)} bytes</p></div>`
     : '';
+  const showLegacyTrouble = !(typeof pcvLegacyViewSkipped === 'function' && pcvLegacyViewSkipped('troubleshooting'));
+  const legacyTroubleHtml = `${renderRuntimeApiRegistryBridge()}
+    ${renderHostOpsLifecycleBucketTable()}
+    <div class="boundary-chip-row">
+      <span>token file content excluded</span>
+      <span>protected token blobs omitted</span>
+      <span>public signing not claimed</span>
+      <span>external publication not claimed</span>
+    </div>`;
 
   els.diagnosticsPanel.innerHTML = `<div class="diagnostics-card">
     <div class="diagnostics-header">
@@ -311,17 +320,13 @@ function renderDiagnosticsBundle() {
       <span class="muted">Authenticated create/download only; command strings and token values are not rendered.</span>
     </div>
     ${statusHtml}
-    ${renderRuntimeApiRegistryBridge()}
-    ${renderHostOpsLifecycleBucketTable()}
+    ${showLegacyTrouble ? legacyTroubleHtml : ''}
     ${renderDiagnosticBundleList()}
     ${downloadHtml}
-    <div class="boundary-chip-row">
-      <span>token file content excluded</span>
-      <span>protected token blobs omitted</span>
-      <span>public signing not claimed</span>
-      <span>external publication not claimed</span>
-    </div>
   </div>`;
+  if (!showLegacyTrouble && window.PCV && PCV.viewTroubleshooting && typeof PCV.viewTroubleshooting.paintAdvanced === 'function') {
+    PCV.viewTroubleshooting.paintAdvanced();
+  }
 }
 
 function renderTokenRotation() {
@@ -366,6 +371,8 @@ function renderTokenRotation() {
 
 function renderAccountSession() {
   if (!els.accountSessionPanel) return;
+  const legacySession = !(typeof pcvLegacyViewSkipped === 'function' && pcvLegacyViewSkipped('troubleshooting'));
+  if (!legacySession && typeof els.accountSessionPanel.querySelector === 'function' && els.accountSessionPanel.querySelector('#relogin-overlay')) return;
   const session = state.authSession || {};
   const role = getAccountRoleLabel();
   const permissions = getAccountPermissions();
@@ -378,7 +385,7 @@ function renderAccountSession() {
     ? ''
     : `<button type="button" data-action="open-login-overlay">${pcvEscapeHtml(t('copy.login.again'))}</button>`;
 
-  els.accountSessionPanel.innerHTML = `<div class="token-rotation-card account-session-card">
+  const legacySessionHtml = `<div class="token-rotation-card account-session-card">
     <div class="diagnostics-header">
       <div>
         <span class="muted">Account</span>
@@ -405,6 +412,8 @@ function renderAccountSession() {
     </div>
     ${errorHtml}
   </div>`;
+  const pinnedSessionHtml = `<button id="relogin-overlay" type="button" data-action="open-login-overlay">${pcvEscapeHtml(t('copy.login.again'))}</button>`;
+  els.accountSessionPanel.innerHTML = legacySession ? legacySessionHtml : pinnedSessionHtml;
 }
 
 function renderAccountDirectory() {

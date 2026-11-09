@@ -2780,3 +2780,163 @@ test("logout closes open modals", async () => {
   await env.doLogout();
   assert.equal(openCount(), 0);
 });
+
+test("troubleshooting cards show Hyper-V states, session logout, bundle action, and closed advanced section", () => {
+  const section = env.document.querySelector('.app-view[data-view="troubleshooting"]');
+  const index = fs.readFileSync(webRoot + "index.html", "utf8");
+  const mount = env.document.createElement("div");
+  mount.id = "troubleshooting-cards";
+  mount.className = "trouble-grid";
+  mount.setAttribute("data-view-mount", "");
+  const advanced = env.document.createElement("details");
+  advanced.id = "troubleshooting-advanced";
+  const body = env.document.createElement("div");
+  body.id = "troubleshooting-advanced-body";
+  advanced.appendChild(body);
+  section.appendChild(mount);
+  section.appendChild(advanced);
+  const product = env.PCV.viewTroubleshooting.render;
+  env.PCV.views.register("troubleshooting", { render: product });
+  const saved = {
+    host: env.state.host,
+    opsSummary: env.state.opsSummary,
+    lastRefreshedAt: env.state.lastRefreshedAt,
+    partialFailures: env.state.partialFailures,
+    authSession: env.state.authSession,
+    authAccessToken: env.state.authAccessToken,
+    runtimePolicy: env.state.runtimePolicy,
+    connectionState: env.state.connectionState
+  };
+  function card(name) {
+    return [...mount.children].find((node) => node.getAttribute("data-trouble-card") === name);
+  }
+  try {
+    assert.match(index, /id="troubleshooting-cards"[^>]*data-view-mount/);
+    assert.match(index, /<div data-view-mount/);
+    assert.match(index, /id="troubleshooting-advanced"/);
+    assert.doesNotMatch(index, /id="troubleshooting-advanced"[^>]*\sopen/);
+    assert.match(index, /data-i18n="copy\.trouble\.title"[^>]*>진단</);
+    assert.match(index, /data-i18n="copy\.trouble\.desc"[^>]*>Hyper-V 준비, 서비스와 수신기, 현재 세션, 진단 번들을 한 화면에서 확인합니다.</);
+    assert.match(index, /data-i18n="copy\.trouble\.advanced"[^>]*>고급</);
+    assert.match(index, /id="incident-panel"/);
+    assert.match(index, /id="relogin-overlay"/);
+    assert.match(index, /id="diagnostics-panel"/);
+    assert.match(index, /id="token-rotation-panel"/);
+    const networkAt = index.indexOf("<div data-view-mount");
+    const troubleAt = index.indexOf('id="troubleshooting-cards"');
+    assert.equal(networkAt >= 0 && troubleAt > networkAt, true);
+
+    env.state.lastRefreshedAt = Date.now();
+    env.state.partialFailures = [];
+    env.state.connectionState = "connected";
+    env.state.runtimePolicy = { network: { current_exposure: "loopback" } };
+    env.state.host = { supported: true, service: "vmms-up", listener: "127.0.0.1:7777" };
+    env.state.opsSummary = {
+      installed_runtime: {
+        diagnostics: {
+          runtime_api_registry_bridge: {
+            contract_key: "bridge-contract-test",
+            handler_registry_source: "DesktopNodeApiRuntimeRoutes",
+            documentation_anchor: "anchor-test",
+            route_keys: ["GET /api/v1/ops/summary -> OpsSummary"]
+          }
+        }
+      },
+      current_evidence: {
+        host_ops: {
+          lifecycle_descriptor: {
+            contract_key: "host-ops-lifecycle-descriptor-bridge-v1",
+            lifecycle_bucket_contract_key: "service-action-eventlog-firewall-truststore-credential-manager-data-root-separated",
+            host_mutation_performed: false,
+            buckets: [{
+              bucket_key: "credential-manager",
+              owner: "DesktopNodeCredentialManagerOps",
+              mutation_boundary: "credential-manager-system-proof",
+              operations: ["allowlisted-programdata-root"]
+            }]
+          }
+        }
+      }
+    };
+    env.state.authAccessToken = "jwt-present";
+    env.state.authSession = { username: "ada", role: "admin", permissions: ["*"] };
+    env.navigateTo("troubleshooting");
+
+    assert.equal(mount.children.length, 4);
+    assert.equal(card("hyperv").getAttribute("data-hv-state"), "ready");
+    assert.equal(card("hyperv").querySelector("[data-hv-value]").textContent, "준비");
+    assert.equal(card("hyperv").querySelector("[data-hv-action]").textContent, "");
+    assert.equal(card("service").querySelector("[data-trouble-service]").textContent, "vmms-up");
+    assert.equal(card("service").querySelector("[data-trouble-listener]").textContent, "127.0.0.1:7777");
+    assert.equal(card("session").querySelector("[data-trouble-user]").textContent, "ada");
+    assert.equal(card("session").querySelector("[data-trouble-role]").textContent, "admin");
+    assert.equal(card("session").querySelector('[data-action="account-logout"]').textContent, "로그아웃");
+    assert.equal(card("bundle").querySelector('[data-action="diagnostic-create"]').textContent, "번들 만들기");
+    assert.equal(card("bundle").querySelector('[data-action="diagnostic-download"]').textContent, "최신 번들 받기");
+    assert.equal(mount.querySelector("form"), null);
+    assert.equal(mount.querySelector("input"), null);
+    assert.equal(mount.querySelector('[data-action="open-login-overlay"]'), null);
+    assert.equal(advanced.getAttribute("open"), null);
+    assert.equal(advanced.open, false);
+    assert.match(body.textContent, /런타임 API 등록 연결/);
+    assert.match(body.textContent, /bridge-contract-test/);
+    assert.match(body.textContent, /DesktopNodeApiRuntimeRoutes/);
+    assert.match(body.textContent, /GET \/api\/v1\/ops\/summary -> OpsSummary/);
+    assert.match(body.textContent, /경로 상세는 메타데이터만/);
+    assert.match(body.querySelector("[data-trouble-buckets]").textContent, /credential-manager/);
+    assert.match(body.textContent, /DesktopNodeCredentialManagerOps/);
+    assert.match(body.textContent, /credential-manager-system-proof/);
+    assert.match(body.textContent, /allowlisted-programdata-root/);
+    assert.match(body.textContent, /호스트 변경: 진단 화면이 수행하지 않음/);
+    assert.match(body.querySelector('[data-trouble-chip="token"]').textContent, /토큰 파일 내용 제외/);
+    assert.match(body.querySelector('[data-trouble-chip="blobs"]').textContent, /보호된 토큰 블롭 생략/);
+    assert.match(body.querySelector('[data-trouble-chip="signing"]').textContent, /공개 서명을 주장하지 않음/);
+    assert.match(body.querySelector('[data-trouble-chip="publication"]').textContent, /외부 배포를 주장하지 않음/);
+
+    env.state.host = { supported: false, service: "vmms-down", listener: "closed" };
+    env.render();
+    assert.equal(card("hyperv").getAttribute("data-hv-state"), "not-ready");
+    assert.match(card("hyperv").querySelector("[data-hv-action]").textContent, /Default Switch/);
+    assert.equal(card("service").querySelector("[data-trouble-service]").textContent, "vmms-down");
+
+    env.state.opsSummary = { host: { readiness: "needs attention" } };
+    env.state.host = { supported: true, service: "vmms-up", listener: "open" };
+    env.render();
+    assert.equal(card("hyperv").getAttribute("data-hv-state"), "not-ready");
+    assert.match(card("hyperv").querySelector("[data-hv-value]").textContent, /needs attention/);
+
+    env.state.lastRefreshedAt = null;
+    env.state.host = null;
+    env.state.opsSummary = null;
+    env.render();
+    assert.equal(card("hyperv").getAttribute("data-hv-state"), "unknown");
+    assert.equal(card("hyperv").querySelector("[data-hv-value]").textContent, "-");
+    assert.match(card("hyperv").querySelector("[data-hv-action]").textContent, /읽는 중/);
+
+    const marker = env.document.createElement("p");
+    marker.textContent = "legacy-marker";
+    mount.appendChild(marker);
+    env.renderTroubleshooting();
+    env.renderAccountSession();
+    assert.equal([...mount.children].some((node) => node.textContent === "legacy-marker"), true);
+    assert.equal(mount.querySelector(".troubleshooting-grid"), null);
+    assert.equal(section.querySelector(".troubleshooting-grid"), null);
+    const session = env.document.getElementById("account-session-panel");
+    assert.doesNotMatch(session.innerHTML, /Logout account/);
+    assert.doesNotMatch(session.innerHTML, /RBAC Session/);
+    assert.match(session.innerHTML, /data-action="open-login-overlay"/);
+  } finally {
+    env.state.host = saved.host;
+    env.state.opsSummary = saved.opsSummary;
+    env.state.lastRefreshedAt = saved.lastRefreshedAt;
+    env.state.partialFailures = saved.partialFailures;
+    env.state.authSession = saved.authSession;
+    env.state.authAccessToken = saved.authAccessToken;
+    env.state.runtimePolicy = saved.runtimePolicy;
+    env.state.connectionState = saved.connectionState;
+    mount.remove();
+    advanced.remove();
+    env.navigateTo("dashboard");
+    env.PCV.views.register("troubleshooting", { render: product });
+  }
+});
