@@ -2,11 +2,11 @@
 
 ## 2026-11-09 현재 기준
 
-ADR-0020을 제안한다. 원본 purecvisor 프론트엔드 전체(`fd754e2`) 대비 감사(`docs/web-console-upstream-parity-audit-2026-11-09.md`,
+ADR-0020을 채택한다(제안·채택 같은 날, 사용자 승인 `UI 개편 구현 campaign 열기와 ADR-0020 채택 승인`). 원본 purecvisor 프론트엔드 전체(`fd754e2`) 대비 감사(`docs/web-console-upstream-parity-audit-2026-11-09.md`,
 발견 61건)에서 셸은 원본과 같지만 본문 화면이 2026-08 배치로 남은 것이 드러났다. ADR-0018·0019는 유지하고, 본문 화면을 이미 옮겨 온
 원본 부품으로 그리기, VM 목록·상세 골격(선택 뒤 왼쪽 260px 목록), 화면별 렌더 등록표, Local API 선행 항목 분리(metrics는 따로 ADR)를
-정한다. 설계는 `docs/superpowers/specs/2026-11-09-purecvisor-desktop-node-web-console-upstream-parity-design.md`이고, 채택은 구현
-campaign 승인 문장으로 한다.
+정한다. 설계는 `docs/superpowers/specs/2026-11-09-purecvisor-desktop-node-web-console-upstream-parity-design.md`이고, 구현은
+campaign `ui-parity-20261109`(U1~U8)다.
 
 ## 2026-11-08 현재 기준
 
@@ -257,6 +257,7 @@ run `25984814303`, job `76380096421`, head `26ae50fa7bef11b4919b441e706bde505463
 | `docs/adr/0017-scenario-delivery-completion.md` | 채택 / S1~S4 통과 | 완료 정의를 시나리오 S1~S4(v3)로 바꾼다. S1 시연은 2026-10-09 PR #76, S2 시연은 같은 날 PR #77, S3 시연은 2026-10-11 설치본 0.42.96, S4는 2026-11-08 설치본 0.42.98. 기능 PR은 Lane 1 + Required CI + 설치본 smoke, train은 시나리오 단계 완료 때만, completion autopilot은 정지 | `docs/ga-ready/demo/s1-browser-console-demo-2026-10-08.md`, `docs/ga-ready/demo/s2-template-clone-demo-2026-10-09.md`, `docs/ga-ready/demo/s3-checkpoint-demo-2026-10-11-04296.md`, `docs/ga-ready/demo/s4-lan-demo-2026-11-05.md`, `docs/superpowers/specs/2026-10-08-purecvisor-desktop-node-hyperv-browser-console-spike.md`, `docs/superpowers/plans/2026-10-08-purecvisor-desktop-node-adr17-s1-console.md` |
 | `docs/adr/0018-single-edge-frontend-structure-adoption.md` | 채택 / 설치본 0.42.96 운영 반영 | Web Console이 Single Edge `ui/` 프론트엔드 구조와 공통 모듈을 차용한다. Linux route·화면 제외, vendor 라이선스 고지, 정적 계약 재기준선. 구현 PR #81. 설치본 반영 train 0.42.94·0.42.95 정차, 0.42.96 승격(2026-10-11) | `docs/superpowers/specs/2026-10-10-purecvisor-desktop-node-single-edge-frontend-structure-design.md`, `docs/superpowers/plans/2026-10-10-purecvisor-desktop-node-single-edge-frontend-structure.md`, `THIRD_PARTY_NOTICES.md` |
 | `docs/adr/0019-web-console-information-architecture-and-interaction-rules.md` | 채택 / 설치본 0.42.98 운영 반영 | Web Console 정보 구조와 상호작용 규칙. 사이드바 묶음(템플릿·계정 화면), VM 상세 6개 탭, 필수 입력 첫 칸·요청 전 검사·앱 안 확인·한국어 우선, 콘솔 맞춤(기본 `1024x768`)과 전체 화면, 옛 콘솔 퇴역, 비밀번호 재설정. 구현 campaign `ui-redesign-20261105`. 0.42.98 승격(2026-11-08) | `docs/superpowers/specs/2026-11-05-purecvisor-desktop-node-ui-redesign-design.md` |
+| `docs/adr/0020-web-console-content-upstream-parity.md` | 채택(2026-11-09) / 구현 중 | Web Console 본문 원본 정합. 본문 화면을 원본 `fd754e2`에서 옮겨 온 부품으로 그리고, VM 화면은 목록·상세 골격(선택 뒤 260px 목록), 화면별 렌더 등록표, Local API 선행 5건은 분리(metrics는 따로 ADR). 구현 campaign `ui-parity-20261109` | `docs/web-console-upstream-parity-audit-2026-11-09.md`, `docs/superpowers/specs/2026-11-09-purecvisor-desktop-node-web-console-upstream-parity-design.md` |
 
 ## 적용 전/대체 ADR 후보
 
@@ -299,11 +300,7 @@ ADR-0004 supporting evidence:
 
 ## 제안 중인 ADR 후보
 
-| ADR | 상태 | 후보 결정 | 관련 문서 |
-|-----|------|-----------|-----------|
-| `docs/adr/0020-web-console-content-upstream-parity.md` | 제안(2026-11-09) | Web Console 본문 원본 정합. 본문 화면을 원본 `fd754e2`에서 옮겨 온 부품으로 그리고, VM 화면은 목록·상세 골격(선택 뒤 260px 목록), 화면별 렌더 등록표, Local API 선행 5건은 분리(metrics는 따로 ADR). 채택은 구현 campaign 승인 문장으로 | `docs/web-console-upstream-parity-audit-2026-11-09.md`, `docs/superpowers/specs/2026-11-09-purecvisor-desktop-node-web-console-upstream-parity-design.md` |
-
-그 밖에 제안 중인 ADR 후보는 없다. `ADR-0017`은 2026-10-08 제안 뒤 같은 날 채택돼 위 적용 결정 표가 소유한다.
+현재 제안 중인 ADR 후보는 없다. `ADR-0020`은 2026-11-09 제안 뒤 같은 날 채택돼 위 적용 결정 표가 소유한다. `ADR-0017`은 2026-10-08 제안 뒤 같은 날 채택돼 위 적용 결정 표가 소유한다.
 `ADR-0015`는 2026-08-23 채택돼 위 적용 결정 표가 소유한다.
 2026-08-03 번호 감사에서 `ADR-0013`은 이미 적용 중인
 `docs/adr/0013-job-store-single-writer-transaction-lease.md`가 소유하는 것을 재확인했다. Wave 6

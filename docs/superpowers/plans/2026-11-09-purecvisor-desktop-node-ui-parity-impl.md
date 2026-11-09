@@ -2,23 +2,21 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-> **상태: 승인 대기 초안(2026-11-09).** 이 계획은 campaign `ui-parity-design-20261109` Task 3이 썼다. 아직 campaign 파일을 열지 않았다. 사용자가 구현 campaign 열기를 승인하면 `pcv-campaign-open`이 이 문서의 `사용자 결정` 표를 승인 원문으로 채우고 campaign을 연다.
+> 이 계획은 campaign `ui-parity-design-20261109` Task 3이 초안으로 썼고, 2026-11-09 사용자 승인으로 campaign `ui-parity-20261109`가 열었다.
 
-**Goal:** ADR-0020(제안)과 설계 `pcv-web-content-parity-v1`대로 Web Console 본문 화면을 원본 `fd754e2`의 골격과 부품으로 다시 그린다. 지금 틀린 동작 9건을 먼저 고치고, VM 화면을 목록·상세 골격으로 바꾼 뒤, 데이터 화면을 화면별 렌더 등록표로 옮기고, 마지막에 옛 렌더러를 지운다.
+**Goal:** ADR-0020과 설계 `pcv-web-content-parity-v1`대로 Web Console 본문 화면을 원본 `fd754e2`의 골격과 부품으로 다시 그린다. 지금 틀린 동작 9건을 먼저 고치고, VM 화면을 목록·상세 골격으로 바꾼 뒤, 데이터 화면을 화면별 렌더 등록표로 옮기고, 마지막에 옛 렌더러를 지운다.
 
 **Architecture:** 근거는 감사 `docs/web-console-upstream-parity-audit-2026-11-09.md`(발견 61건)와 설계 `docs/superpowers/specs/2026-11-09-purecvisor-desktop-node-web-console-upstream-parity-design.md`다. ADR-0018 구조와 ADR-0019 정보 구조·상호작용 규칙은 유지한다. 단계 U1~U8이 task 하나씩이고 task마다 Lane 1 PR 하나다. branch는 `lane1/ui-parity-<단계>-<yyyymmdd>`이고, merge된 뒤의 새 branch는 `origin/main`에서 만든다. Web 파일은 MSI payload라 PR마다 `docs/ga-ready/release-train.json` `queue` 행을 더한다.
 
 **Tech Stack:** TypeScript Web Console(`web/src/modules/*.ts`, `web/src/modules.json`, `npm run build:served --prefix web`), node 시험(`web/node-tests`), 정적 계약(`web/contracts`), Playwright·axe(`npm run browser:ui-gates`), web Pester(`web/tests`), Delivery 계약 시험
 
-## 사용자 결정 (승인 대기)
+## 사용자 결정 (2026-11-09)
 
-승인 원문: (구현 campaign을 열 때 채운다)
-
-제안하는 승인 범위:
+승인 원문: `UI 개편 구현 campaign 열기와 ADR-0020 채택 승인` (campaign `ui-parity-design-20261109` `next_approval_required` 1에 대한 답)
 
 | 항목 | 범위 |
 | --- | --- |
-| 1 | ADR-0020을 채택한다(opening commit에서 상태를 채택으로 바꾸고 `docs/ADR_INDEX.md` 적용 표로 옮긴다) |
+| 1 | ADR-0020을 채택한다. opening commit에서 상태를 채택으로 바꾸고 `docs/ADR_INDEX.md` 적용 표로 옮겼다 |
 | 2 | Task 1~8(U1~U8)을 Lane 1로 구현한다. grok 구현, Claude 리뷰 |
 | 3 | task마다 push, PR, Required CI 다섯 check green 뒤 merge(2026-11-09 상시 merge 승인) |
 | 4 | host mutation 없음. release train 출발과 설치본 시연은 이 campaign 밖이고 따로 승인한다 |
