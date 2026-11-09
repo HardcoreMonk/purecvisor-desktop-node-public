@@ -27,6 +27,14 @@
       "summary": "ui-parity U3 (ADR-0020): VM row menu (ellipsis, right-click, ContextMenu key, Shift+F10) with the detail more-menu items, header sort with aria-sort and j/k row selection, checkbox selection bar with bulk start/shut down, bulk delete confirm with typed target count, mobile bulk delete restored",
       "lane2_probe": null,
       "risk_tier": "M"
+    },
+    {
+      "pr": 126,
+      "merge_commit": "a0178508",
+      "area": "web",
+      "summary": "ui-parity U4 (ADR-0020): view render registry (PCV.views.register, active-view refresh, isCurrent guard, per-mount loadError), network view moved to view-network.ts with type chips, data table with connected VM counts, distinct empty and load-error states and read-only boundary facts; vm.ts ratchet 2389",
+      "lane2_probe": null,
+      "risk_tier": "M"
     }
   ],
   "trains": [
