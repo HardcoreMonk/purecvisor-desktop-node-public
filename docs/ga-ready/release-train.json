@@ -11,6 +11,14 @@
       "summary": "ui-parity U1 (ADR-0020): mobile power/delete fixed, login box without a new route, TLS scheme pill, one command palette, registered shortcuts, logout closes modals, one login form, help catalog password routes, screen titles, VM readback labels",
       "lane2_probe": null,
       "risk_tier": "M"
+    },
+    {
+      "pr": 124,
+      "merge_commit": "7b189a98",
+      "area": "web",
+      "summary": "ui-parity U2 (ADR-0020): VM list moved to vm-list.ts, list-detail layout (full-width table, 260px list after selection, detail-only under 900px), name shown once, static pagehead, Esc and close return to the list, #/vms/<vm-id>/<tab> deep link with back navigation, empty-state CTA and load-error retry, gate --viewport option",
+      "lane2_probe": null,
+      "risk_tier": "M"
     }
   ],
   "trains": [
