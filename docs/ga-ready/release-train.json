@@ -3,7 +3,16 @@
   "contract": "pcv-release-train-v1",
   "design": "docs/superpowers/specs/2026-10-04-purecvisor-desktop-node-release-train-design.md",
   "operational_current": "0.42.99-admin-smoke",
-  "queue": [],
+  "queue": [
+    {
+      "pr": 123,
+      "merge_commit": "866d18ef",
+      "area": "web",
+      "summary": "ui-parity U1 (ADR-0020): mobile power/delete fixed, login box without a new route, TLS scheme pill, one command palette, registered shortcuts, logout closes modals, one login form, help catalog password routes, screen titles, VM readback labels",
+      "lane2_probe": null,
+      "risk_tier": "M"
+    }
+  ],
   "trains": [
     {
       "version": "0.42.89-admin-smoke",

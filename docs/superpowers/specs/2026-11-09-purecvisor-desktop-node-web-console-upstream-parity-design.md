@@ -1,10 +1,10 @@
 # Web Console 본문 원본 정합 설계
 
 - 계약 id: `pcv-web-content-parity-v1`
-- 상태: 제안(2026-11-09). 결정은 ADR-0020(제안)이고, 채택은 구현 campaign 승인 문장으로 한다.
+- 상태: 채택(2026-11-09). 결정은 ADR-0020이고, 사용자 승인 `UI 개편 구현 campaign 열기와 ADR-0020 채택 승인`으로 채택했다.
 - 근거: `docs/web-console-upstream-parity-audit-2026-11-09.md`(원본 `fd754e2` 대 Desktop Node `a1cd2e4`, 발견 61건)
 - 선행 결정: ADR-0018(`single-edge-ui-v1`), ADR-0019(`sidebar-groups-vm-detail-tabs-v1`, `required-first-validate-inline-progress-inapp-confirm-v1`)
-- 구현 계획(초안): `docs/superpowers/plans/2026-11-09-purecvisor-desktop-node-ui-parity-impl.md`
+- 구현 계획: `docs/superpowers/plans/2026-11-09-purecvisor-desktop-node-ui-parity-impl.md`(campaign `ui-parity-20261109`)
 
 ## 1. 배경
 

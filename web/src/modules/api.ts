@@ -109,7 +109,25 @@ async function _recoverSession() {
   sessionStorage.removeItem('pcv_refresh_token');
   return _createLoopbackSession();
 }
+function _closeOperatorSurfaces() {
+  try {
+    if (PCV.modalCore && typeof PCV.modalCore.close === 'function') PCV.modalCore.close(true);
+  } catch (e) { /* logout still clears the session */ }
+  try { if (typeof window.closeCmdPalette === 'function') window.closeCmdPalette(); } catch (e) {}
+  try { if (typeof window.closeKbdHelp === 'function') window.closeKbdHelp(); } catch (e) {}
+  try { if (typeof window.closeMobileSB === 'function') window.closeMobileSB(); } catch (e) {}
+  try { if (typeof window.closeCommandPalette === 'function') window.closeCommandPalette(); } catch (e) {}
+  var more = document.getElementById('pcv-vm-more-menu');
+  if (more) more.hidden = true;
+  var toggle = document.querySelector('[data-action="vm-more-toggle"]');
+  if (toggle) toggle.setAttribute('aria-expanded', 'false');
+  var ctx = document.getElementById('ctx');
+  if (ctx && PCV.uxlib && typeof PCV.uxlib.clearEl === 'function') PCV.uxlib.clearEl(ctx);
+  var menu = document.getElementById('pcv-ctx-menu');
+  if (menu && menu.parentNode) menu.parentNode.removeChild(menu);
+}
 function _redirectToLogin() {
+  _closeOperatorSurfaces();
   window.authToken = '';
   window.currentUser = null;
   sessionStorage.removeItem('pcv_token');

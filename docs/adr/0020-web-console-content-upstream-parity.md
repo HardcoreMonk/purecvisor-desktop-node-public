@@ -1,7 +1,7 @@
 # ADR-0020: Web Console 본문 원본 정합
 
-상태: 제안
-일자: 2026-11-09 (제안. 채택은 구현 campaign 승인 문장으로 한다)
+상태: 채택
+일자: 2026-11-09 (제안·채택 같은 날, 채택은 사용자 승인 `UI 개편 구현 campaign 열기와 ADR-0020 채택 승인`)
 
 ## 결정 마커
 
@@ -41,7 +41,7 @@ DESKTOP_NODE_WEB_API_FIRST_ITEMS: separate-designs-metrics-adr
 
 ## 결과
 
-- 구현은 단계 U1~U8(설계 문서 10절)이고 단계마다 Lane 1 PR 하나다. 계획 초안은
+- 구현은 campaign `ui-parity-20261109`의 단계 U1~U8(설계 문서 10절)이고 단계마다 Lane 1 PR 하나다. 계획은
   `docs/superpowers/plans/2026-11-09-purecvisor-desktop-node-ui-parity-impl.md`다.
 - Web 파일은 MSI payload라 단계 PR마다 release train queue 행이 생긴다. 설치본 화면은 release train 뒤에 바뀌고, 출발은 사용자 승인이다.
 - `web/src/modules/vm.ts`는 줄 수 상한이라 목록·골격을 새 모듈 `vm-list.ts`로 나눈다.

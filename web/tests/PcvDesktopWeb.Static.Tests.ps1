@@ -295,10 +295,15 @@ Describe 'PcvDesktopWeb static console assets' {
         $combined | Should -Match 'renderVmQosGuestReadback'
         $combined | Should -Match 'loadVmQosGuestReadbacks'
         $combined | Should -Match 'data-action="vm-qos-guest-refresh"'
-        $combined | Should -Match 'linux_blkio_compatible'
-        $combined | Should -Match 'linux_bandwidth_compatible'
-        $combined | Should -Match 'qemu_guest_agent'
-        $combined | Should -Match 'guest_heartbeat_verified'
+        $combined | Should -Match 'pcvReadbackFieldPart'
+        $vmReadback = Get-Content -LiteralPath (Join-Path $script:SrcRoot 'modules/vm.ts') -Raw
+        $readbackI18n = Get-Content -LiteralPath (Join-Path $script:WebRoot 'i18n.js') -Raw
+        $vmReadback | Should -Not -Match 'linux_blkio_compatible'
+        $app | Should -Not -Match 'linux_blkio_compatible'
+        $readbackI18n | Should -Match 'linux_blkio_compatible'
+        $readbackI18n | Should -Match 'linux_bandwidth_compatible'
+        $readbackI18n | Should -Match 'qemu_guest_agent'
+        $readbackI18n | Should -Match 'vm\.readback\.field\.guest_heartbeat_verified'
         ($combined -replace "'vm blkio-set'", "'vm qos-storage'") | Should -Not -Match 'blkio-set'
     }
 
@@ -377,7 +382,11 @@ Describe 'PcvDesktopWeb static console assets' {
         $combined | Should -Match 'filterRowsByQuery'
         $combined | Should -Match 'sortRowsByKey'
         $combined | Should -Match 'renderTableStateSummary'
-        $combined | Should -Match 'openCommandPalette\(state\.globalSearch\)'
+        $bootstrap = Get-Content -LiteralPath (Join-Path $script:SrcRoot 'bootstrap.ts') -Raw
+        $bootstrap | Should -Match 'toggleGlobalSearch\(\)'
+        $bootstrap | Should -Not -Match 'openCommandPalette\(state\.globalSearch\)'
+        $combined | Should -Match 'toggleGlobalSearch\(\)'
+        $combined | Should -Not -Match 'openCommandPalette\(state\.globalSearch\)'
         $combined | Should -Match 'event-severity-lane'
         $combined | Should -Not -Match '/auth/token|/ws/events|/containers|(?<!/qos)/storage|/ovn|/networks'
         $combined | Should -Not -Match 'journalctl|libvirt|\bKVM\b|\bZFS\b|\bOVS\b|\bOVN\b|purecvisorsd|Create Linux VM|ubuntu-24\.04'
@@ -414,7 +423,7 @@ Describe 'PcvDesktopWeb static console assets' {
         $servedSource = Get-PcvWebShellSource
         $combined = $app + $servedSource
 
-        $index | Should -Match 'id="account-login-form"'
+        $index | Should -Match 'id="relogin-overlay"'
         $index | Should -Match 'id="account-console-panel"'
         $index | Should -Match 'name="username"'
         $index | Should -Match 'name="password"'
@@ -816,7 +825,7 @@ Describe 'PcvDesktopWeb static console assets' {
         $installedQaScript | Should -Match 'installed-listener-qa'
         $installedQaScript | Should -Match 'PCV_BROWSER_QA_ACCOUNT_USERNAME'
         $installedQaScript | Should -Match 'PCV_BROWSER_QA_ACCOUNT_PASSWORD'
-        $installedQaScript | Should -Match 'account-login-form'
+        $installedQaScript | Should -Match 'login-user'
         $installedQaScript | Should -Match 'diagnostic_create_clicked'
         $installedQaScript | Should -Match 'value_observed:\s*false'
         $installedQaScript | Should -Match '--disable-background-networking'

@@ -374,14 +374,9 @@ function renderAccountSession() {
   const errorHtml = state.authError
     ? `<div class="diagnostics-result error"><span class="muted">Account auth</span><strong>${pcvEscapeHtml(state.authError.code)}</strong><p>${pcvEscapeHtml(state.authError.message)} ${pcvEscapeHtml(state.authError.detail)}</p></div>`
     : '';
-  const injectLoginForm = !(needsAuthGate() && state.activeView !== 'troubleshooting');
-  const loginFormHtml = injectLoginForm
-    ? `<form id="account-login-form" class="account-login-form" autocomplete="off">
-      <label><span data-i18n="username">${pcvEscapeHtml(t('username'))}</span><input id="account-username" name="username" type="text" autocomplete="username" aria-label="${pcvEscapeHtml(t('username'))}"></label>
-      <label><span data-i18n="password">${pcvEscapeHtml(t('password'))}</span><input id="account-password" name="password" type="password" autocomplete="current-password" aria-label="${pcvEscapeHtml(t('password'))}"></label>
-      <button type="submit"${state.authPending ? ' disabled' : ''} data-i18n="login">${pcvEscapeHtml(t('login'))}</button>
-    </form>`
-    : '';
+  const reloginHtml = signedIn
+    ? ''
+    : `<button type="button" data-action="open-login-overlay">${pcvEscapeHtml(t('copy.login.again'))}</button>`;
 
   els.accountSessionPanel.innerHTML = `<div class="token-rotation-card account-session-card">
     <div class="diagnostics-header">
@@ -391,7 +386,7 @@ function renderAccountSession() {
       </div>
       <span class="status-badge ${signedIn ? 'ok' : 'warn'}">${pcvEscapeHtml(status)}</span>
     </div>
-    ${loginFormHtml}
+    ${reloginHtml}
     <div class="diagnostics-grid">
       <div class="diagnostics-fact"><span class="muted">User</span><strong>${pcvEscapeHtml(session.username || '-')}</strong></div>
       <div class="diagnostics-fact"><span class="muted">Role</span><strong>${pcvEscapeHtml(role)}</strong></div>
@@ -701,14 +696,14 @@ function needsAuthGate() {
 }
 
 function bindAlertRegionAuthGate() {
-  if (!els.alertRegion || els.alertRegion.dataset.authGateSubmitBound === 'true') return;
+  if (!els.alertRegion || els.alertRegion.dataset.authGateClickBound === 'true') return;
   if (typeof els.alertRegion.addEventListener !== 'function') return;
-  els.alertRegion.addEventListener('submit', async (event) => {
-    const form = event.target?.closest?.('form#account-login-form');
-    if (!form) return;
-    await loginAccountFromForm(event);
+  els.alertRegion.addEventListener('click', (event) => {
+    const button = event.target?.closest?.('button[data-action="open-login-overlay"]');
+    if (!button) return;
+    if (typeof pcvSetLoginVisible === 'function') pcvSetLoginVisible(true);
   });
-  els.alertRegion.dataset.authGateSubmitBound = 'true';
+  els.alertRegion.dataset.authGateClickBound = 'true';
 }
 
 function renderAuthGate() {
@@ -718,18 +713,14 @@ function renderAuthGate() {
   }
   const code = state.authError?.code || 'PCV_AUTH_REQUIRED';
   const message = state.authError?.message || t('copy.mon.auth_bearer');
-  const formHtml = state.activeView === 'troubleshooting'
+  const reloginHtml = state.activeView === 'troubleshooting'
     ? ''
-    : `<form id="account-login-form" class="account-login-form" autocomplete="off">
-        <label><span data-i18n="username">${pcvEscapeHtml(t('username'))}</span><input id="account-username" name="username" type="text" autocomplete="username"></label>
-        <label><span data-i18n="password">${pcvEscapeHtml(t('password'))}</span><input id="account-password" name="password" type="password" autocomplete="current-password"></label>
-        <button type="submit" data-i18n="login">${pcvEscapeHtml(t('login'))}</button>
-      </form>`;
+    : `<button type="button" data-action="open-login-overlay">${pcvEscapeHtml(t('copy.login.again'))}</button>`;
   const gateHtml = `<div class="diagnostics-result error" data-auth-gate="true">
     <span class="muted">${pcvEscapeHtml(t('copy.mon.auth_required'))}</span>
     <strong>${pcvEscapeHtml(code)}</strong>
-    <p>${pcvEscapeHtml(message)} Use the header api-token field or the account login form. Service tokens stay out of HTML.</p>
-    ${formHtml}
+    <p>${pcvEscapeHtml(message)}</p>
+    ${reloginHtml}
   </div>`;
   const existing = els.alertRegion.innerHTML;
   els.alertRegion.innerHTML = existing ? `${gateHtml}${existing}` : gateHtml;
@@ -820,49 +811,26 @@ function getCommandPaletteMatches() {
 }
 
 function renderCommandPalette() {
-  if (!els.commandPalette || !els.commandPaletteResults) return;
-  const open = state.commandPaletteOpen || Boolean(state.globalSearch.trim());
-  els.commandPalette.hidden = !open;
-  if (els.commandPaletteInput && els.commandPaletteInput.value !== state.commandQuery) {
-    els.commandPaletteInput.value = state.commandQuery;
-  }
-  if (els.globalSearchInput && els.globalSearchInput.value !== state.globalSearch) {
-    els.globalSearchInput.value = state.globalSearch;
-  }
-  if (!open) {
-    els.commandPaletteResults.innerHTML = '';
-    return;
-  }
-  const items = getCommandPaletteMatches();
-  els.commandPaletteResults.innerHTML = items.length
-    ? items.map((item) => `<button type="button" data-command-id="${pcvEscapeHtml(item.id)}">
-        <span class="status-badge ${pcvEscapeHtml(normalizeEventTone(item.tone))}">${pcvEscapeHtml(item.id.split(':')[0])}</span>
-        <strong>${pcvEscapeHtml(item.label)}</strong>
-        <span>${pcvEscapeHtml(item.detail)}</span>
-      </button>`).join('')
-    : '<p class="muted">No Windows Desktop Node command matches the current search.</p>';
+  if (els.commandPalette) els.commandPalette.hidden = true;
+  if (els.commandPaletteResults) els.commandPaletteResults.innerHTML = '';
 }
 
-function openCommandPalette(query = '') {
-  state.commandPaletteOpen = true;
-  state.commandQuery = query || state.commandQuery || state.globalSearch;
-  render();
-  if (els.commandPaletteInput && typeof els.commandPaletteInput.focus === 'function') {
-    els.commandPaletteInput.focus();
-  }
+function openCommandPalette() {
+  if (typeof openCmdPalette === 'function') openCmdPalette();
 }
 
 function closeCommandPalette() {
   state.commandPaletteOpen = false;
   state.commandQuery = '';
   state.globalSearch = '';
-  render();
+  if (typeof closeCmdPalette === 'function') closeCmdPalette();
+  renderCommandPalette();
 }
 
 function handleCommandSearch(query) {
   state.globalSearch = query;
   state.commandQuery = query;
-  state.commandPaletteOpen = Boolean(String(query || '').trim());
+  state.commandPaletteOpen = false;
   render();
 }
 

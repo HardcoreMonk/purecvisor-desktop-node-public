@@ -95,7 +95,6 @@ window.PCV = window.PCV || {};
     refreshBadges();
   }
   function unmount() {
-    if (_deleteSelection) _deleteSelection.clear();
     document.body.classList.remove('mshell');
     var scr = document.getElementById(SCREEN_ID);
     if (scr) scr.remove();
@@ -206,48 +205,31 @@ window.PCV = window.PCV || {};
       bar,
       el('div', { class: 'mscreen-section-title' }, _t('알림 이력', 'Alert history')), list);
   }
-  var _deleteSelection = new Map();
+  function _vmId(v) {
+    return String((v && (v.id || v.name)) || '');
+  }
   function buildPower(d) {
     var el = PCV.uxlib.el;
     d = d || { vms: [] };
     var vms = d.vms || [];
-    _deleteSelection.forEach(function (subject, name) {
-      if (!vms.some(function (v) { return v.name === name; })) _deleteSelection.delete(name);
-    });
-    var bulkDelete = el('button', { class: 'btn btn-r m-vm-bulk-delete', type: 'button',
-      style: 'min-height:40px', 'data-role': 'OPERATOR,ADMIN',
-      onClick: function () { if (PCV.vm && typeof PCV.vm.bulkDelete === 'function') PCV.vm.bulkDelete(Array.from(_deleteSelection.values())); } });
-    function updateDeleteCount() {
-      bulkDelete.disabled = !_deleteSelection.size;
-      bulkDelete.textContent = _t('일괄 삭제', 'Bulk delete') + ' (' + _deleteSelection.size + ')';
-    }
-    updateDeleteCount();
     function pbtn(label, cls, fn) { return el('button', { class: 'btn ' + cls, type: 'button', 'data-role': 'OPERATOR,ADMIN', onClick: fn }, label); }
     var vmCards = vms.map(function (v) {
       var st = vmStatus(v.state);
       var actions;
       if (v.state === 'running') {
         actions = el('div', { class: 'm-actions' },
-          pbtn(_t('종료', 'Shut down'), 'btn-r', function () { _vmPowerAction(v.name, 'shutdown'); }),
-          pbtn(_t('일시정지', 'Pause'), '', function () { _vmPowerAction(v.name, 'pause'); }));
+          pbtn(_t('종료', 'Shut down'), 'btn-r', function () { _vmPowerAction(v, 'shutdown'); }),
+          pbtn(_t('일시정지', 'Pause'), '', function () { _vmPowerAction(v, 'pause'); }));
       } else if (v.state === 'paused') {
         actions = el('div', { class: 'm-actions' },
-          pbtn(_t('재개', 'Resume'), 'btn-g', function () { _vmPowerAction(v.name, 'resume'); }),
-          pbtn(_t('종료', 'Shut down'), 'btn-r', function () { _vmPowerAction(v.name, 'shutdown'); }));
+          pbtn(_t('재개', 'Resume'), 'btn-g', function () { _vmPowerAction(v, 'resume'); }),
+          pbtn(_t('종료', 'Shut down'), 'btn-r', function () { _vmPowerAction(v, 'shutdown'); }));
       } else {
         actions = el('div', { class: 'm-actions' },
-          pbtn(_t('시작', 'Start'), 'btn-g', function () { _vmPowerAction(v.name, 'start'); }));
+          pbtn(_t('시작', 'Start'), 'btn-g', function () { _vmPowerAction(v, 'start'); }));
       }
-      var subject = { name: v.name, id: v.id || v.name };
-      actions.appendChild(pbtn(_t('VM 삭제', 'Delete VM'), 'btn-r m-vm-delete', function () { if (PCV.vm && typeof PCV.vm.vmDel === 'function') PCV.vm.vmDel(subject); }));
+      actions.appendChild(pbtn(_t('VM 삭제', 'Delete VM'), 'btn-r m-vm-delete', function () { _vmDeleteAction(v); }));
       var row = el('div', { class: 'm-vm m-listcard' },
-        el('label', { class: 'm-vm-select', 'data-role': 'OPERATOR,ADMIN' },
-          el('input', { type: 'checkbox', checked: _deleteSelection.has(v.name) ? '' : null,
-            'aria-label': _t('선택: ', 'Select ') + v.name,
-            onChange: function (e) {
-              if (e.target.checked) _deleteSelection.set(v.name, subject); else _deleteSelection.delete(v.name);
-              updateDeleteCount();
-            } })),
         HN.statusDot(st, st === 'ok' ? { glow: true } : null),
         el('span', { class: 'm-name' }, v.name),
         HN.statusPill(st, v.state || '?'),
@@ -260,9 +242,7 @@ window.PCV = window.PCV || {};
     var vmSection = vmCards.length ? el.apply(null, ['div', { class: 'mscreen-body' }].concat(vmCards)) : el('div', { class: 'm-hint' }, _t('VM 없음', 'No VMs'));
     return el('div', { class: 'mscreen-body' },
       _pageHead(_t('전원 관리', 'Power controls'), 'VM ' + vms.length),
-      el('div', { class: 'mscreen-section-title' }, 'VM'),
-      el('div', { 'data-role': 'OPERATOR,ADMIN' }, bulkDelete,
-        el('p', { class: 'm-hint' }, _t('체크박스로 삭제할 VM을 선택하세요.', 'Select VMs to delete using the checkboxes.'))), vmSection);
+      el('div', { class: 'mscreen-section-title' }, 'VM'), vmSection);
   }
   function _ready() {
     return !!(window.authToken && PCV.api && typeof PCV.api.fetchGet === 'function' && typeof EP !== 'undefined' && EP.VM_LIST);
@@ -315,18 +295,39 @@ window.PCV = window.PCV || {};
     if (!fs || !fs.subscribe) return;
     _alertsSub = fs.subscribe(function () { if (_state.activeTab === 'alerts') _renderAlerts(); });
   }
-  async function _vmPowerAction(name, action) {
-    var vms = _vms();
-    var idx = -1;
-    for (var i = 0; i < vms.length; i++) { if (vms[i].name === name) { idx = i; break; } }
-    if (idx < 0) { toast(_t('VM 목록 동기화 필요', 'VM list out of sync'), false); return; }
-    var target = { name: vms[idx].name, id: vms[idx].id || vms[idx].name };
+  function _vmActionError(error, fallback) {
+    var message = (error && (error.message || error.code)) || '';
+    toast(String(message || fallback), false);
+  }
+  async function _vmPowerAction(v, action) {
+    var vmId = _vmId(v);
+    if (!vmId) { toast(_t('VM 목록 동기화 필요', 'VM list out of sync'), false); return; }
     if (action === 'shutdown') {
-      var ok = await customConfirm(_t('VM 종료', 'Shut down VM'), name + ' — ' + _t('종료하시겠습니까?', 'Shut down this VM?'));
+      var ok = await customConfirm(_t('VM 종료', 'Shut down VM'), (v.name || vmId) + ' — ' + _t('종료하시겠습니까?', 'Shut down this VM?'));
       if (!ok) return;
     }
-    if (PCV.vm && typeof PCV.vm.lifecycle === 'function') { PCV.vm.lifecycle(target, action); return; }
-    if (typeof window.vmPower === 'function') window.vmPower(action, target);
+    try {
+      if (PCV.vm && typeof PCV.vm.queueVmLifecycle === 'function') {
+        await PCV.vm.queueVmLifecycle(vmId, action);
+        return;
+      }
+      toast(_t('전원 동작을 실행할 수 없습니다.', 'Power action is unavailable.'), false);
+    } catch (error) {
+      _vmActionError(error, _t('전원 동작을 실행할 수 없습니다.', 'Power action is unavailable.'));
+    }
+  }
+  async function _vmDeleteAction(v) {
+    var vmId = _vmId(v);
+    if (!vmId) { toast(_t('VM 목록 동기화 필요', 'VM list out of sync'), false); return; }
+    try {
+      if (PCV.vm && typeof PCV.vm.queueVmDelete === 'function') {
+        await PCV.vm.queueVmDelete(vmId);
+        return;
+      }
+      toast(_t('삭제할 수 없습니다.', 'Cannot delete.'), false);
+    } catch (error) {
+      _vmActionError(error, _t('삭제할 수 없습니다.', 'Cannot delete.'));
+    }
   }
   var SCREENS = { home: showHome, alerts: showAlerts, power: showPower };
   var _mq = window.matchMedia(MQ);

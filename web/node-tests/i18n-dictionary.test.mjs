@@ -132,18 +132,18 @@ test("BL-0024 shell copy uses i18n keys and the Korean default", () => {
     ["copy.dashboard.title", "운영 콕핏", "<h2>Ops Cockpit</h2>"],
     ["copy.dashboard.create", "새 VM", ">Create VM</button>"],
     ["copy.network.title", "네트워크 인벤토리", "<h2>Network Inventory</h2>"],
-    ["copy.jobs.title", "추적 작업", "<h2>Tracked Jobs</h2>"],
+    ["copy.jobs.title", "작업", "<h2>Jobs</h2>"],
     ["copy.activity.title", "운영자 활동", "<h2>Operator Activity</h2>"],
-    ["copy.evidence.title", "감독 증적", "<h2>Supervisor Evidence</h2>"],
-    ["copy.trouble.title", "장애 대응", "<h2>Incident Command</h2>"],
+    ["copy.evidence.title", "증적", "<h2>Evidence</h2>"],
+    ["copy.trouble.title", "진단", "<h2>Diagnostics</h2>"],
     ["copy.monitoring.title", "모니터링", "<h2>Monitoring</h2>"]
   ]) {
     assert.match(html, new RegExp(`data-i18n="${key}"[^>]*>${korean}<`), key);
     assert.equal(html.includes(englishHeading), false, englishHeading);
   }
   assert.match(html, /data-i18n="login"[^>]*>로그인</);
-  assert.match(html, /data-i18n="username"/);
-  assert.match(html, /data-i18n="password"/);
+  assert.match(html, /data-i18n="copy\.login\.user"[^>]*>계정 이름</);
+  assert.match(html, /data-i18n="copy\.login\.password"[^>]*>비밀번호</);
 
   const core = fs.readFileSync(webRoot + "src/modules/core.ts", "utf8");
   assert.match(core, /t\('copy\.rbac\.denied'/);
@@ -210,7 +210,9 @@ test("BL-0024 shell copy uses i18n keys and the Korean default", () => {
     ["copy.palette.placeholder", "화면, 자산, 작업, 진단 검색", "Search views, assets, jobs, diagnostics"],
     ["copy.theme.import", "가져오기", "Import"],
     ["copy.theme.cancel", "취소", "Cancel"],
-    ["copy.job.cancel", "취소", "Cancel"]
+    ["copy.job.cancel", "취소", "Cancel"],
+    ["copy.login.user", "계정 이름", "Account name"],
+    ["copy.login.password", "비밀번호", "Password"]
   ]) {
     assert.match(koBlock, new RegExp(`'${key.replaceAll(".", "\\.")}': '${korean}'`), `ko ${key}`);
     assert.match(enBlock, new RegExp(`'${key.replaceAll(".", "\\.")}': '${english}'`), `en ${key}`);

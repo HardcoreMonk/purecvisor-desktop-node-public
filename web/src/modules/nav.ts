@@ -704,15 +704,31 @@ document.addEventListener('keydown', function(e) {
   e.preventDefault();
   el.click();
 });
+function paintLoginSurface() {
+  var protocol = (typeof location !== 'undefined' && location && location.protocol) || 'http:';
+  var tls = document.getElementById('login-tls');
+  if (tls) tls.textContent = protocol === 'https:' ? t('copy.login.tls_https') : t('copy.login.tls_http');
+  var host = document.getElementById('lh-host');
+  if (host) host.textContent = (typeof location !== 'undefined' && location && location.host) || '';
+  var ver = document.getElementById('lh-version');
+  var verRow = document.getElementById('lh-version-row');
+  var badge = document.getElementById('version-badge');
+  var text = (badge && badge.textContent || '').replace(/^[✓↑]\s*/, '').trim();
+  if (!text && window._pcvConsoleVersion) text = String(window._pcvConsoleVersion);
+  if (text) window._pcvConsoleVersion = text;
+  if (ver) ver.textContent = text;
+  if (verRow) verRow.hidden = !text;
+}
+window.paintLoginSurface = paintLoginSurface;
 function _renderVersionBadge(d) {
   var badge = document.getElementById('version-badge');
-  if (!badge) return;
+  if (!badge) { paintLoginSurface(); return; }
   var el = PCV.uxlib.el, clearEl = PCV.uxlib.clearEl;
   clearEl(badge);
   badge.classList.remove('is-update');
   badge.removeAttribute('hidden');
   badge.onclick = null; badge.title = ''; badge.style.cursor = '';
-  if (!d || !d.current) { badge.setAttribute('hidden', ''); return; }
+  if (!d || !d.current) { badge.setAttribute('hidden', ''); paintLoginSurface(); return; }
   var ok = d.state === 'ok';
   if (ok && d.update_available) {
     badge.classList.add('is-update');
@@ -728,9 +744,12 @@ function _renderVersionBadge(d) {
   } else {
     badge.appendChild(el('span', null, 'v' + d.current));
   }
+  if (d.current) window._pcvConsoleVersion = 'v' + d.current;
+  paintLoginSurface();
 }
 function updateVersionBadge() {
   // Desktop Node has no online update check (ADR-0006); the badge shows the installed version from the runtime policy.
+  paintLoginSurface();
   if (!(PCV.api && typeof PCV.api.fetchGet === 'function' && typeof EP !== 'undefined' && EP.RUNTIME_POLICY)) return;
   PCV.api.fetchGet(EP.RUNTIME_POLICY()).then(function (r) {
     var d = r && r.payload ? r.payload : r;
@@ -739,6 +758,7 @@ function updateVersionBadge() {
     _renderVersionBadge(current ? { state: 'ok', current: current, update_available: false } : null);
   }).catch(function () {
     var b = document.getElementById('version-badge'); if (b) b.setAttribute('hidden', '');
+    paintLoginSurface();
   });
 }
 window.updateVersionBadge = updateVersionBadge;
@@ -776,4 +796,5 @@ PCV.nav = {
   hideHoverCard: hideHoverCard,
   highlightText: highlightText
 };
+paintLoginSurface();
 })(window.PCV);

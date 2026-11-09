@@ -2,23 +2,21 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-> **상태: 승인 대기 초안(2026-11-09).** 이 계획은 campaign `ui-parity-design-20261109` Task 3이 썼다. 아직 campaign 파일을 열지 않았다. 사용자가 구현 campaign 열기를 승인하면 `pcv-campaign-open`이 이 문서의 `사용자 결정` 표를 승인 원문으로 채우고 campaign을 연다.
+> 이 계획은 campaign `ui-parity-design-20261109` Task 3이 초안으로 썼고, 2026-11-09 사용자 승인으로 campaign `ui-parity-20261109`가 열었다.
 
-**Goal:** ADR-0020(제안)과 설계 `pcv-web-content-parity-v1`대로 Web Console 본문 화면을 원본 `fd754e2`의 골격과 부품으로 다시 그린다. 지금 틀린 동작 9건을 먼저 고치고, VM 화면을 목록·상세 골격으로 바꾼 뒤, 데이터 화면을 화면별 렌더 등록표로 옮기고, 마지막에 옛 렌더러를 지운다.
+**Goal:** ADR-0020과 설계 `pcv-web-content-parity-v1`대로 Web Console 본문 화면을 원본 `fd754e2`의 골격과 부품으로 다시 그린다. 지금 틀린 동작 9건을 먼저 고치고, VM 화면을 목록·상세 골격으로 바꾼 뒤, 데이터 화면을 화면별 렌더 등록표로 옮기고, 마지막에 옛 렌더러를 지운다.
 
 **Architecture:** 근거는 감사 `docs/web-console-upstream-parity-audit-2026-11-09.md`(발견 61건)와 설계 `docs/superpowers/specs/2026-11-09-purecvisor-desktop-node-web-console-upstream-parity-design.md`다. ADR-0018 구조와 ADR-0019 정보 구조·상호작용 규칙은 유지한다. 단계 U1~U8이 task 하나씩이고 task마다 Lane 1 PR 하나다. branch는 `lane1/ui-parity-<단계>-<yyyymmdd>`이고, merge된 뒤의 새 branch는 `origin/main`에서 만든다. Web 파일은 MSI payload라 PR마다 `docs/ga-ready/release-train.json` `queue` 행을 더한다.
 
 **Tech Stack:** TypeScript Web Console(`web/src/modules/*.ts`, `web/src/modules.json`, `npm run build:served --prefix web`), node 시험(`web/node-tests`), 정적 계약(`web/contracts`), Playwright·axe(`npm run browser:ui-gates`), web Pester(`web/tests`), Delivery 계약 시험
 
-## 사용자 결정 (승인 대기)
+## 사용자 결정 (2026-11-09)
 
-승인 원문: (구현 campaign을 열 때 채운다)
-
-제안하는 승인 범위:
+승인 원문: `UI 개편 구현 campaign 열기와 ADR-0020 채택 승인` (campaign `ui-parity-design-20261109` `next_approval_required` 1에 대한 답)
 
 | 항목 | 범위 |
 | --- | --- |
-| 1 | ADR-0020을 채택한다(opening commit에서 상태를 채택으로 바꾸고 `docs/ADR_INDEX.md` 적용 표로 옮긴다) |
+| 1 | ADR-0020을 채택한다. opening commit에서 상태를 채택으로 바꾸고 `docs/ADR_INDEX.md` 적용 표로 옮겼다 |
 | 2 | Task 1~8(U1~U8)을 Lane 1로 구현한다. grok 구현, Claude 리뷰 |
 | 3 | task마다 push, PR, Required CI 다섯 check green 뒤 merge(2026-11-09 상시 merge 승인) |
 | 4 | host mutation 없음. release train 출발과 설치본 시연은 이 campaign 밖이고 따로 승인한다 |
@@ -52,7 +50,11 @@ git diff --check
 
 ## Task 1: U1 지금 틀린 동작과 작은 정리
 
-- [ ] 설계 4.4절. B-11 `mobile.ts:219,242,328-329`를 `PCV.vm.queueVmLifecycle`·`queueVmDelete`로 바꾸고 `mobile.ts`가 부르는 `PCV.vm.*`가 export(`vm.ts:2738`)에 있는지 node 시험으로 고정한다. B-07 로그인 노드 칸은 새 route 없이 Web Console version과 접속 주소만 보인다. B-08 TLS pill에 scheme을 보인다. B-09 Ctrl+K가 새 팔레트를 연다. B-10 단축키 Ctrl+K, `/`, `?`, Esc를 등록하거나 도움말에서 뺀다. B-12·C-19 로그아웃(`api.ts:112-126`)에서 열린 modal을 닫는다. B-14 경고 영역(`monitor.ts:697-715`)과 진단(`index.html:459-465`)의 로그인 폼을 지우고 "다시 로그인"이 오버레이를 연다. B-15 도움말 카탈로그, B-18 사이드바 `aria-label`, C-17 화면 제목, A-23 요약 탭 원시 필드 라벨. 공통 검증, release-train queue 행. push, PR, green CI 뒤 merge.
+- [x] 설계 4.4절. B-11 `mobile.ts:219,242,328-329`를 `PCV.vm.queueVmLifecycle`·`queueVmDelete`로 바꾸고 `mobile.ts`가 부르는 `PCV.vm.*`가 export(`vm.ts:2738`)에 있는지 node 시험으로 고정한다. B-07 로그인 노드 칸은 새 route 없이 Web Console version과 접속 주소만 보인다. B-08 TLS pill에 scheme을 보인다. B-09 Ctrl+K가 새 팔레트를 연다. B-10 단축키 Ctrl+K, `/`, `?`, Esc를 등록하거나 도움말에서 뺀다. B-12·C-19 로그아웃(`api.ts:112-126`)에서 열린 modal을 닫는다. B-14 경고 영역(`monitor.ts:697-715`)과 진단(`index.html:459-465`)의 로그인 폼을 지우고 "다시 로그인"이 오버레이를 연다. B-15 도움말 카탈로그, B-18 사이드바 `aria-label`, C-17 화면 제목, A-23 요약 탭 원시 필드 라벨. 공통 검증, release-train queue 행. push, PR, green CI 뒤 merge.
+
+실행 기록(2026-11-09): checkpoint 1은 grok 작업이 37분 걸려 Lane 1 예산 30분을 넘어 멈췄다(회로 개방, 변경은 commit하지 않고 보관). 사용자 승인 `U1 checkpoint 2 승인`으로 이어 갔다. 고친 것: B-11 모바일 전원·삭제를 `queueVmLifecycle`·`queueVmDelete`로 바꾸고 모바일 일괄 삭제 UI는 숨김(U3 공통 모달 뒤 되살림), B-07 로그인 칸은 새 route 없이 접속 주소와 이미 읽은 version만, B-08 TLS pill에 scheme, B-09 Ctrl+K와 검색 버튼이 새 팔레트를 염(옛 `#command-palette`는 U8까지 숨김), B-10 단축키는 Ctrl+K·`/`·`?`·Esc만 등록·안내, B-12·C-19 로그아웃에서 modal·팔레트·메뉴를 닫음, B-14 경고 영역과 진단의 로그인 폼을 지우고 "다시 로그인" 버튼, B-15 도움말 카탈로그에 비밀번호 route 2개와 계정 화면 view 값, C-17 화면 제목(작업, 증적, 진단), A-23 요약 readback 라벨과 Linux 전용 필드 숨김. B-18은 바꿀 것이 없었다: 사이드바 nav에는 이미 `copy.shell.nav` 라벨이 있고, 감사가 가리킨 `shell.ts:152`는 검색 버튼이었다(라벨을 붙이면 axe `label-content-name-mismatch`가 나서 되돌렸다). 상한: `vm.ts` 2,739→2,734줄(ratchet 상한을 내리고 policy spec pin을 `Update-PcvContractSpecPins.ps1 -Apply`로 갱신), domsafe 38→37. axe 기준선은 지운 로그인 요소 때문에 이름이 바뀐 선택자 27개를 더했다(`--prune` 하지 않음). 검증: `npm run test:required --prefix web`에서 node 계약 369/369, parity, fixture 통과. browser gate는 첫 실행이 알려진 `vm-detail-summary` bgGradient flake 6건으로 실패했고 재실행 `ok=true`(violations 0). web Pester 50/50, module-size ratchet 3/3, `dotnet test src/DesktopNode.Delivery.Tests -c Release` 785/785, `git diff --check` 통과. host mutation 없음.
+
+task 크기(2026-11-09 사용자 승인 `U1 checkpoint 2 승인`): Task 2부터는 한 task가 Lane 1 checkpoint 하나(30분, grok 작업 시간 포함)에 들어가도록 grok 지시 하나(항목 3~4개, 20분 안쪽, 멈춤 시각 포함)로 자른다. Task 2를 시작할 때 Task 2~8을 `Task Na`, `Task Nb`로 나누는 plan·campaign 변경을 먼저 commit한다.
 
 ## Task 2: U2 VM 목록·상세 골격
 

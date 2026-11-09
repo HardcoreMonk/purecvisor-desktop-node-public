@@ -947,8 +947,8 @@ var I18N = {
       'copy.filter': '필터',
       'copy.status': '상태',
       'copy.sort': '정렬',
-      'copy.jobs.eyebrow': '세션',
-      'copy.jobs.title': '추적 작업',
+      'copy.jobs.eyebrow': '관제',
+      'copy.jobs.title': '작업',
       'copy.jobs.placeholder': '작업 ID, 동작, 오류',
       'copy.jobs.status_filter': '작업 상태 필터',
       'copy.jobs.sort_label': '작업 정렬',
@@ -966,9 +966,9 @@ var I18N = {
       'copy.activity.eyebrow': '운영',
       'copy.activity.title': '운영자 활동',
       'copy.evidence.eyebrow': '배치 증적',
-      'copy.evidence.title': '감독 증적',
+      'copy.evidence.title': '증적',
       'copy.trouble.eyebrow': '지원',
-      'copy.trouble.title': '장애 대응',
+      'copy.trouble.title': '진단',
       'copy.events.panel': '이벤트 기록',
       'copy.confirm.manage': 'VM {name}을 관리 표시할까요?',
       'copy.confirm.vm_id': 'VM id: {id}',
@@ -1130,6 +1130,22 @@ var I18N = {
       'copy.settings.invalid': '잘못된 설정 파일',
       'copy.nav.unknown': '알 수 없는 탭:',
       'copy.shell.nav': '주 탐색',
+      'copy.login.tls_http': 'HTTP · 내부망',
+      'copy.login.tls_https': 'HTTPS',
+      'copy.login.version': '버전',
+      'copy.login.host': '주소',
+      'copy.login.again': '다시 로그인',
+      'copy.login.user': '계정 이름',
+      'copy.login.password': '비밀번호',
+      'vm.readback.field.mutation_supported': '변경 지원',
+      'vm.readback.field.status': '상태',
+      'vm.readback.field.guest_exec_supported': '게스트 실행',
+      'vm.readback.field.reachable': '도달',
+      'vm.readback.field.guest_heartbeat_verified': '게스트 심박',
+      'vm.readback.field.startup_mb': '시작 메모리(MB)',
+      'vm.readback.field.assigned_mb': '할당 메모리(MB)',
+      'vm.readback.field.dynamic': '동적 메모리',
+      'vm.readback.field.count': 'vCPU',
       'copy.mon.bundle_kicker': '지원 산출물',
       'copy.mon.bundle_title': '진단 번들',
       'copy.mon.create_bundle': '번들 만들기',
@@ -2088,8 +2104,8 @@ var I18N = {
       'copy.filter': 'Filter',
       'copy.status': 'Status',
       'copy.sort': 'Sort',
-      'copy.jobs.eyebrow': 'Session',
-      'copy.jobs.title': 'Tracked Jobs',
+      'copy.jobs.eyebrow': 'Monitoring',
+      'copy.jobs.title': 'Jobs',
       'copy.jobs.placeholder': 'Job id, operation, error',
       'copy.jobs.status_filter': 'Job status filter',
       'copy.jobs.sort_label': 'Job sort',
@@ -2107,9 +2123,9 @@ var I18N = {
       'copy.activity.eyebrow': 'Operations',
       'copy.activity.title': 'Operator Activity',
       'copy.evidence.eyebrow': 'Batch Evidence',
-      'copy.evidence.title': 'Supervisor Evidence',
+      'copy.evidence.title': 'Evidence',
       'copy.trouble.eyebrow': 'Support',
-      'copy.trouble.title': 'Incident Command',
+      'copy.trouble.title': 'Diagnostics',
       'copy.events.panel': 'Event log panel',
       'copy.confirm.manage': 'Manage VM {name}?',
       'copy.confirm.vm_id': 'VM id: {id}',
@@ -2271,6 +2287,22 @@ var I18N = {
       'copy.settings.invalid': 'Invalid settings file',
       'copy.nav.unknown': 'Unknown tab:',
       'copy.shell.nav': 'Main navigation',
+      'copy.login.tls_http': 'HTTP · 내부망',
+      'copy.login.tls_https': 'HTTPS',
+      'copy.login.version': 'Version',
+      'copy.login.host': 'Address',
+      'copy.login.again': 'Sign in again',
+      'copy.login.user': 'Account name',
+      'copy.login.password': 'Password',
+      'vm.readback.field.mutation_supported': 'Change supported',
+      'vm.readback.field.status': 'Status',
+      'vm.readback.field.guest_exec_supported': 'Guest execution',
+      'vm.readback.field.reachable': 'Reachable',
+      'vm.readback.field.guest_heartbeat_verified': 'Guest heartbeat',
+      'vm.readback.field.startup_mb': 'Startup MB',
+      'vm.readback.field.assigned_mb': 'Assigned MB',
+      'vm.readback.field.dynamic': 'Dynamic memory',
+      'vm.readback.field.count': 'vCPU',
       'copy.mon.bundle_kicker': 'Support artifact',
       'copy.mon.bundle_title': 'Diagnostic Bundle',
       'copy.mon.create_bundle': 'Create bundle',
@@ -2318,6 +2350,33 @@ var I18N = {
   }
 };
 function t(key, params) { return I18N.t(key, params); }
+var PCV_READBACK_FIELD_LABELS = {
+  mutation_supported: 'vm.readback.field.mutation_supported',
+  status: 'vm.readback.field.status',
+  guest_exec_supported: 'vm.readback.field.guest_exec_supported',
+  reachable: 'vm.readback.field.reachable',
+  guest_heartbeat_verified: 'vm.readback.field.guest_heartbeat_verified',
+  startup_mb: 'vm.readback.field.startup_mb',
+  assigned_mb: 'vm.readback.field.assigned_mb',
+  dynamic: 'vm.readback.field.dynamic',
+  count: 'vm.readback.field.count'
+};
+var PCV_READBACK_SKIP_FIELDS = {
+  linux_blkio_compatible: true,
+  linux_bandwidth_compatible: true,
+  qemu_guest_agent: true
+};
+function pcvReadbackFieldPart(bucket, field) {
+  if (!bucket || !field) return '';
+  if (PCV_READBACK_SKIP_FIELDS[field] || String(field).indexOf('linux_') === 0) return '';
+  var value = bucket[field];
+  if (value === undefined || value === null || value === '') return '';
+  var key = PCV_READBACK_FIELD_LABELS[field];
+  var label = key ? t(key) : field;
+  var formatted = (typeof formatObjectValue === 'function') ? formatObjectValue(value) : String(value);
+  return label + '=' + formatted;
+}
+window.pcvReadbackFieldPart = pcvReadbackFieldPart;
 function applyI18n() {
   document.querySelectorAll('[data-i18n]').forEach(function(el) {
     var key = el.getAttribute('data-i18n');

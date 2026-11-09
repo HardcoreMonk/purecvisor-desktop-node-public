@@ -674,7 +674,7 @@ test("one render paints the account list only on the accounts view", () => {
   const session = env.document.getElementById("account-session-panel");
   const accounts = env.document.getElementById("accounts-panel");
   assert.equal(session.querySelector(".account-directory-card"), null);
-  assert.match(session.innerHTML, /account-login-form/);
+  assert.match(session.innerHTML, /data-action="open-login-overlay"/);
   assert.match(accounts.textContent, /ada/);
   assert.match(accounts.textContent, /operator/);
   assert.equal(accounts.querySelectorAll('[data-action="account-disable"]').length, 1);
@@ -1167,4 +1167,34 @@ test("BL-0034 keeps the VM row when a different tracked job succeeds", async () 
 
   assert.equal(sandbox.state.vms.map((row) => row.name).join(","), "keep,probe");
   assert.equal(sandbox.state.selectedVmId, "gone-id");
+});
+
+test("mobile power and delete call exported vm methods", () => {
+  const mobile = fs.readFileSync(webRoot + "src/modules/mobile.ts", "utf8");
+  const vmSource = fs.readFileSync(webRoot + "src/modules/vm.ts", "utf8");
+  const exportLine = vmSource.slice(vmSource.lastIndexOf("PCV.vm = Object.assign"));
+  const names = new Set();
+  for (const match of mobile.matchAll(/PCV\.vm\.([A-Za-z0-9_]+)/g)) names.add(match[1]);
+  assert.ok(names.size > 0);
+  for (const name of names) assert.match(exportLine, new RegExp("\\b" + name + "\\b"));
+  assert.equal(names.has("bulkDelete"), false);
+  assert.equal(names.has("vmDel"), false);
+  assert.equal(names.has("lifecycle"), false);
+  assert.match(mobile, /queueVmLifecycle/);
+  assert.match(mobile, /queueVmDelete/);
+  assert.doesNotMatch(mobile, /m-vm-bulk-delete|m-vm-select/);
+});
+
+test("logout closes open modals", async () => {
+  if (!env.document.getElementById("toasts")) {
+    const toasts = env.document.createElement("div");
+    toasts.id = "toasts";
+    env.document.body.appendChild(toasts);
+  }
+  env.PCV.modalCore.open("one");
+  env.PCV.modalCore.open("two");
+  const openCount = () => [...env.document.querySelectorAll("dialog")].filter((dialog) => dialog.open).length;
+  assert.equal(openCount(), 2);
+  await env.doLogout();
+  assert.equal(openCount(), 0);
 });
