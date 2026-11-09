@@ -11,7 +11,7 @@
   ],
   "mutation_allowed": false,
   "current_write_allowed": false,
-  "next_step": "Task 1 (U1, PR #123), Task 2a (vm-list.ts split) Task 2b (list-detail layout), Task 2c (deep link, empty state) Task 2d (captures, U2 PR #124) Task 3a (row menu) Task 3b (header sort, j/k) Task 3c (checkbox bulk start/stop) Task 3d (bulk delete) Task 3e (U3 PR #125) Task 4a (view registry) Task 4b (network view) Task 4c (U4 PR #126) Task 5a (jobs view) Task 5b (events view) Task 5c (U5 PR #127) Task 6a (dashboard pagehead, KPI cards) Task 6b (workload table, alert feed) Task 6c (U6 PR #128) Task 7a (diagnostics view) and Task 7b (evidence, accounts) done. Run Task 7c from docs/superpowers/plans/2026-11-09-purecvisor-desktop-node-ui-parity-impl.md, then the queue in order.",
+  "next_step": "Task 1 (U1, PR #123), Task 2a (vm-list.ts split) Task 2b (list-detail layout), Task 2c (deep link, empty state) Task 2d (captures, U2 PR #124) Task 3a (row menu) Task 3b (header sort, j/k) Task 3c (checkbox bulk start/stop) Task 3d (bulk delete) Task 3e (U3 PR #125) Task 4a (view registry) Task 4b (network view) Task 4c (U4 PR #126) Task 5a (jobs view) Task 5b (events view) Task 5c (U5 PR #127) Task 6a (dashboard pagehead, KPI cards) Task 6b (workload table, alert feed) Task 6c (U6 PR #128) Task 7a (diagnostics view) Task 7b (evidence, accounts) and Task 7c (U7 PR #129) done. Run Task 8a from docs/superpowers/plans/2026-11-09-purecvisor-desktop-node-ui-parity-impl.md, then the queue in order.",
   "plan": "docs/superpowers/plans/2026-11-09-purecvisor-desktop-node-ui-parity-impl.md",
   "task_queue": [
     "Task 1",
@@ -40,7 +40,7 @@
     "Task 8b"
   ],
   "task_lanes": {},
-  "next_task": "Task 7c",
+  "next_task": "Task 8a",
   "completed_tasks": [
     "Task 1",
     "Task 2a",
@@ -62,7 +62,8 @@
     "Task 6b",
     "Task 6c",
     "Task 7a",
-    "Task 7b"
+    "Task 7b",
+    "Task 7c"
   ],
   "commit_policy": "local-commit-per-task",
   "push_allowed": true,

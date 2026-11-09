@@ -51,6 +51,14 @@
       "summary": "ui-parity U6 (ADR-0020): dashboard on the render registry with six KPI cards (VMs running/off/templates, active jobs, 24h failed jobs, Hyper-V readiness), pagehead with + New VM and secondary links, workload table of top VMs linking to VM detail, alert feed of 24h failed jobs and ops summary incidents; hero, quick-action tiles and second cockpit header removed",
       "lane2_probe": null,
       "risk_tier": "M"
+    },
+    {
+      "pr": 129,
+      "merge_commit": "388bf658",
+      "area": "web",
+      "summary": "ui-parity U7 (ADR-0020): diagnostics view with four two-column cards (Hyper-V readiness, service/listener, session with logout, diagnostics bundle) and a closed advanced section (registry bridge, Host Ops buckets, boundary chips); evidence operator cards with release engineering values collapsed; accounts role chips and role pill table",
+      "lane2_probe": null,
+      "risk_tier": "M"
     }
   ],
   "trains": [
