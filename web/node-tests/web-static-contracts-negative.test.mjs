@@ -412,7 +412,8 @@ const defectCases = [
   {
     name: "missing network inventory panel",
     id: "web.static.network-inventory",
-    overrides: () => removeOnce("web/index.html", "data-view-mount"),
+    // Remove the network section mount itself; the dashboard KPI mount comes earlier in index.html.
+    overrides: () => removeOnce("web/index.html", "<div data-view-mount"),
     expectedCode: assertionFailed,
     expectedLabel: "network-inventory:panel"
   },

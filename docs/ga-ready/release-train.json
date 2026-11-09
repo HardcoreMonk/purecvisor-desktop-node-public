@@ -43,6 +43,14 @@
       "summary": "ui-parity U5 (ADR-0020): jobs view (status chips, kind select, data table with sort/CSV, DOM job actions, next page) and events view (severity cards and chips, event table) on the render registry; activity panel links to jobs; English job/ops copy to i18n; stable data table ids",
       "lane2_probe": null,
       "risk_tier": "M"
+    },
+    {
+      "pr": 128,
+      "merge_commit": "bdc5874e",
+      "area": "web",
+      "summary": "ui-parity U6 (ADR-0020): dashboard on the render registry with six KPI cards (VMs running/off/templates, active jobs, 24h failed jobs, Hyper-V readiness), pagehead with + New VM and secondary links, workload table of top VMs linking to VM detail, alert feed of 24h failed jobs and ops summary incidents; hero, quick-action tiles and second cockpit header removed",
+      "lane2_probe": null,
+      "risk_tier": "M"
     }
   ],
   "trains": [

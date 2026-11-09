@@ -203,47 +203,60 @@
         <section id="alert-region" class="alert-region" aria-live="polite"></section>
         <section id="dashboard" class="section app-view" data-view="dashboard">
           <div id="view-dashboard">
-          <div class="dashboard-hero">
-            <section class="hero-panel">
-              <p class="eyebrow">Desktop Node</p>
-              <h2>운영 대시보드</h2>
-              <p>호스트 상태, VM 자산, 작업 경고를 한 화면에서 확인합니다.</p>
-              <div class="hero-chips">
-                <span>활성 워크로드 <strong id="hero-workload">—</strong></span>
-                <span>호스트 상태 <strong id="hero-host-mode">—</strong></span>
-                <span>최근 경고 <strong id="hero-alerts">—</strong></span>
-              </div>
-            </section>
-            <aside class="operator-memo">
-              <p class="eyebrow">운영 메모</p>
-              <dl>
-                <div><dt>현재 역할</dt><dd>단독 운영</dd></div>
-                <div><dt>웹소켓</dt><dd>미사용</dd></div>
-                <div><dt>운영 우선순위</dt><dd>자원 추이 점검</dd></div>
-              </dl>
-            </aside>
-          </div>
-          <div class="dashboard-pills" data-i18n-aria="copy.dashboard.items" aria-label="표시 중인 대시보드 항목">
-            <span>운영 요약</span>
-            <span>빠른 작업</span>
-            <span>자원 추이</span>
-            <span>최근 경고</span>
-            <span>워크로드 표</span>
-          </div>
-          <div class="quick-action-grid" data-i18n-aria="copy.dashboard.actions" aria-label="빠른 작업">
-            <a href="#vms" data-shell-action="open-create-vm"><span class="qa-icon">▣</span><span>새 VM</span></a>
-            <a href="#jobs" data-view-link="jobs"><span class="qa-icon">☷</span><span>작업 큐</span></a>
-            <a href="#network" data-view-link="network"><span class="qa-icon">◎</span><span>네트워크</span></a>
-            <a href="#activity" data-view-link="activity"><span class="qa-icon">⌁</span><span>운영 개요</span></a>
-            <a href="#dashboard" data-view-link="dashboard"><span class="qa-icon">▤</span><span>호스트 상태</span></a>
-            <a href="#troubleshooting" data-view-link="troubleshooting"><span class="qa-icon">▥</span><span>서비스 가이드</span></a>
-          </div>
-          <div class="section-header">
-            <div>
-              <p class="eyebrow" data-i18n="copy.dashboard.eyebrow">대시보드</p>
-              <h2 data-i18n="copy.dashboard.title">운영 콕핏</h2>
+          <div class="pagehead dashboard-pagehead">
+            <div class="pagehead-copy">
+              <h1 class="pagehead-title" data-i18n="copy.dashboard.title">운영 콕핏</h1>
+              <p class="pagehead-desc" data-i18n="copy.dashboard.desc">VM, 작업, Hyper-V 준비 상태를 한 화면에서 확인합니다.</p>
             </div>
-            <button id="open-create-vm" type="button" data-i18n="copy.dashboard.create">새 VM</button>
+            <div class="pagehead-actions">
+              <button id="open-create-vm" type="button" class="btn btn-primary">+ <span data-i18n="copy.dashboard.create">새 VM</span></button>
+              <a href="#/jobs" class="btn" data-view-link="jobs" data-i18n="copy.dashboard.jobs_link">작업</a>
+              <a href="#/network" class="btn" data-view-link="network" data-i18n="nav.network">네트워크</a>
+              <a href="#/activity" class="btn" data-view-link="activity" data-i18n="nav.activity">이벤트</a>
+              <a href="#/troubleshooting" class="btn" data-view-link="troubleshooting" data-i18n="nav.troubleshooting">진단</a>
+            </div>
+          </div>
+          <div id="dashboard-kpi" class="dashboard-kpi" data-view-mount>
+            <a class="dashboard-kpi-card" href="#/vms" data-view-link="vms" data-kpi="vm-running">
+              <span class="dashboard-kpi-label" data-i18n="copy.dashboard.kpi.vm_running">실행 중</span>
+              <strong id="kpi-vm-running" class="dashboard-kpi-value">-</strong>
+              <span id="kpi-vm-running-note" class="dashboard-kpi-note" role="status" data-i18n="copy.dashboard.kpi.loading">읽는 중</span>
+            </a>
+            <a class="dashboard-kpi-card" href="#/vms" data-view-link="vms" data-kpi="vm-off">
+              <span class="dashboard-kpi-label" data-i18n="copy.dashboard.kpi.vm_off">꺼짐</span>
+              <strong id="kpi-vm-off" class="dashboard-kpi-value">-</strong>
+              <span id="kpi-vm-off-note" class="dashboard-kpi-note" role="status" data-i18n="copy.dashboard.kpi.loading">읽는 중</span>
+            </a>
+            <a class="dashboard-kpi-card" href="#/vms" data-view-link="vms" data-kpi="templates">
+              <span class="dashboard-kpi-label" data-i18n="copy.dashboard.kpi.templates">템플릿</span>
+              <strong id="kpi-templates" class="dashboard-kpi-value">-</strong>
+              <span id="kpi-templates-note" class="dashboard-kpi-note" role="status" data-i18n="copy.dashboard.kpi.loading">읽는 중</span>
+            </a>
+            <a class="dashboard-kpi-card" href="#/jobs" data-view-link="jobs" data-kpi="jobs-active">
+              <span class="dashboard-kpi-label" data-i18n="copy.dashboard.kpi.jobs_active">진행 중 작업</span>
+              <strong id="kpi-jobs-active" class="dashboard-kpi-value">-</strong>
+              <span id="kpi-jobs-active-note" class="dashboard-kpi-note" role="status"></span>
+            </a>
+            <a class="dashboard-kpi-card" href="#/jobs" data-view-link="jobs" data-kpi="jobs-failed-24h">
+              <span class="dashboard-kpi-label" data-i18n="copy.dashboard.kpi.jobs_failed_24h">24시간 실패 작업</span>
+              <strong id="kpi-jobs-failed-24h" class="dashboard-kpi-value">-</strong>
+              <span id="kpi-jobs-failed-24h-note" class="dashboard-kpi-note" role="status"></span>
+            </a>
+            <div class="dashboard-kpi-card" data-kpi="hyperv" data-hv-state="unknown">
+              <span class="dashboard-kpi-label" data-i18n="copy.dashboard.kpi.hyperv">Hyper-V 준비</span>
+              <strong id="kpi-hyperv" class="dashboard-kpi-value">-</strong>
+              <span id="kpi-hyperv-note" class="dashboard-kpi-note" role="status" data-i18n="copy.dashboard.kpi.loading">읽는 중</span>
+            </div>
+          </div>
+          <div class="dashboard-grid">
+            <section id="dashboard-workload" aria-labelledby="dashboard-workload-title">
+              <h2 id="dashboard-workload-title" class="dashboard-panel-title" data-i18n="copy.dashboard.workload.title">워크로드</h2>
+              <div id="dashboard-workload-body"></div>
+            </section>
+            <aside id="dashboard-alerts" aria-labelledby="dashboard-alerts-title">
+              <h2 id="dashboard-alerts-title" class="dashboard-panel-title" data-i18n="copy.dashboard.alerts.title">경고</h2>
+              <div id="dashboard-alerts-body"></div>
+            </aside>
           </div>
           <div id="ops-summary-panel" class="ops-summary-panel"></div>
           <div id="priority-panel" class="priority-panel"></div>

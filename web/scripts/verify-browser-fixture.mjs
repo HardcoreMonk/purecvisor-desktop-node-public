@@ -53,9 +53,12 @@ const requiredIds = [
   "shell-sidebar",
   "shell-topbar",
   "shell-statusbar",
-  "hero-workload",
-  "hero-host-mode",
-  "hero-alerts"
+  "kpi-vm-running",
+  "kpi-vm-off",
+  "kpi-templates",
+  "kpi-jobs-active",
+  "kpi-jobs-failed-24h",
+  "kpi-hyperv"
 ];
 
 class FixtureElement {
@@ -1548,11 +1551,13 @@ requireIncludes(partialFailureAlert, "retry_after_seconds=15", "partial failure 
 requireIncludes(partialFailureAlert, "route_timeout_seconds=30", "partial failure alert");
 requireIncludes(partialFailureAlert, "req-problem-details-fixture", "partial failure alert");
 requireIncludes(partialFailureRun.document.getElementById("host-details").innerHTML, "Windows", "partial failure host panel");
-// The connection badge and the five footer strings are not on this shell.
-// A failed vm.list leaves the workload chip as an em dash while the host
-// panel and host-mode chip still show the host status that did load.
-requireIncludes(partialFailureRun.document.getElementById("hero-workload").textContent, "—", "partial failure hero workload");
-requireIncludes(partialFailureRun.document.getElementById("hero-host-mode").textContent, "Ready", "partial failure hero host mode");
+// A failed vm.list leaves the running KPI unknown while Hyper-V still shows
+// the host status that did load. The placeholder is "-" and must not be a count.
+requireIncludes(partialFailureRun.document.getElementById("kpi-vm-running").textContent, "-", "partial failure running KPI");
+if (/\d/.test(partialFailureRun.document.getElementById("kpi-vm-running").textContent)) {
+  fail(`partial failure running KPI must not be a number but was "${partialFailureRun.document.getElementById("kpi-vm-running").textContent}"`);
+}
+requireIncludes(partialFailureRun.document.getElementById("kpi-hyperv").textContent, "Ready", "partial failure Hyper-V KPI");
 
 const emptyJobsRun = await runFixture({ jobs: [], initialTrackedJobs: [] });
 await emptyJobsRun.context.navigateTo("jobs");
@@ -1807,23 +1812,21 @@ for (const value of ["Create Linux VM", "ubuntu-24.04"]) {
 const unauthenticatedRun = await runFixture({ failAllAuth: true });
 const unauthDoc = unauthenticatedRun.document;
 
-// The connection badge and footer strings are not on this shell. Hero chips
-// are the inventory and host readback: an auth failure must not show a healthy
-// host or a definitive VM count.
-const unauthHero = [
-  "hero-workload",
-  "hero-host-mode",
-  "hero-alerts"
+// KPI values are the inventory and host readback: an auth failure must not show
+// a healthy host or a definitive VM count. Unknown stays "-".
+const unauthKpi = [
+  "kpi-vm-running",
+  "kpi-vm-off",
+  "kpi-templates",
+  "kpi-hyperv"
 ].map((id) => unauthDoc.getElementById(id).textContent).join(" | ");
 
-requireNotIncludes(unauthHero, "4/5", "unauthenticated hero chips");
-requireNotIncludes(unauthHero, "Ready", "unauthenticated hero chips");
-requireNotIncludes(unauthHero, "0/0", "unauthenticated hero chips");
-if (unauthDoc.getElementById("hero-workload").textContent !== "—") {
-  fail(`unauthenticated hero workload must be — but was "${unauthDoc.getElementById("hero-workload").textContent}"`);
-}
-if (unauthDoc.getElementById("hero-host-mode").textContent !== "—") {
-  fail(`unauthenticated hero host mode must be — but was "${unauthDoc.getElementById("hero-host-mode").textContent}"`);
+requireNotIncludes(unauthKpi, "Ready", "unauthenticated KPI cards");
+requireNotIncludes(unauthKpi, "0", "unauthenticated KPI cards");
+for (const id of ["kpi-vm-running", "kpi-vm-off", "kpi-templates", "kpi-hyperv"]) {
+  if (unauthDoc.getElementById(id).textContent !== "-") {
+    fail(`unauthenticated ${id} must be - but was "${unauthDoc.getElementById(id).textContent}"`);
+  }
 }
 
 // The Metrics panel and Ops Cockpit read the same host-readiness and VM-count
@@ -1849,18 +1852,25 @@ requireIncludes(unauthCockpit, '<span class="muted">Checkpoint warnings</span><s
 const sessionExpiry = { expired: false };
 const sessionExpiryRun = await runFixture({ authExpiry: sessionExpiry, skipVmSelect: true });
 requireIncludes(sessionExpiryRun.document.getElementById("host-details").innerHTML, "Windows", "authenticated host panel");
-requireIncludes(sessionExpiryRun.document.getElementById("hero-workload").textContent, "0/1", "authenticated hero chips");
-requireIncludes(sessionExpiryRun.document.getElementById("hero-host-mode").textContent, "Ready", "authenticated hero chips");
+if (sessionExpiryRun.document.getElementById("kpi-vm-running").textContent !== "0") {
+  fail(`authenticated running KPI must be 0 but was "${sessionExpiryRun.document.getElementById("kpi-vm-running").textContent}"`);
+}
+if (sessionExpiryRun.document.getElementById("kpi-vm-off").textContent !== "1") {
+  fail(`authenticated off KPI must be 1 but was "${sessionExpiryRun.document.getElementById("kpi-vm-off").textContent}"`);
+}
+requireIncludes(sessionExpiryRun.document.getElementById("kpi-hyperv").textContent, "Ready", "authenticated Hyper-V KPI");
 
 sessionExpiry.expired = true;
 await sessionExpiryRun.context.refreshAll();
 await flush();
-requireNotIncludes(sessionExpiryRun.document.getElementById("hero-workload").textContent, "0/1", "expired-session hero chips");
-if (sessionExpiryRun.document.getElementById("hero-host-mode").textContent !== "—") {
-  fail(`expired-session hero host mode must be — but was "${sessionExpiryRun.document.getElementById("hero-host-mode").textContent}"`);
+if (sessionExpiryRun.document.getElementById("kpi-hyperv").textContent !== "-") {
+  fail(`expired-session Hyper-V KPI must be - but was "${sessionExpiryRun.document.getElementById("kpi-hyperv").textContent}"`);
 }
-if (sessionExpiryRun.document.getElementById("hero-workload").textContent !== "—") {
-  fail(`expired-session hero workload must be — but was "${sessionExpiryRun.document.getElementById("hero-workload").textContent}"`);
+if (sessionExpiryRun.document.getElementById("kpi-vm-running").textContent !== "-") {
+  fail(`expired-session running KPI must be - but was "${sessionExpiryRun.document.getElementById("kpi-vm-running").textContent}"`);
+}
+if (sessionExpiryRun.document.getElementById("kpi-vm-off").textContent !== "-") {
+  fail(`expired-session off KPI must be - but was "${sessionExpiryRun.document.getElementById("kpi-vm-off").textContent}"`);
 }
 
 const noSessionRun = await runFixture({

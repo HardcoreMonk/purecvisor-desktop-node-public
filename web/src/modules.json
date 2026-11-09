@@ -31,7 +31,8 @@
     "accounts",
     "view-network",
     "view-jobs",
-    "view-events"
+    "view-events",
+    "view-dashboard"
   ],
   "bootstrap": "src/bootstrap.ts"
 }

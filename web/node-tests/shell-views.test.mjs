@@ -1916,7 +1916,7 @@ test("registered views render only the active screen and leave legacy screens al
     assert.equal(env.PCV.views.isRegistered("network"), true);
     assert.equal(typeof env.PCV.views.get("network").render, "function");
     assert.equal(env.pcvLegacyViewSkipped("network"), true);
-    assert.equal(env.pcvLegacyViewSkipped("dashboard"), false);
+    assert.equal(env.pcvLegacyViewSkipped("evidence"), false);
 
     env.navigateTo("network");
     assert.equal(which, "second");
@@ -1941,7 +1941,7 @@ test("registered views render only the active screen and leave legacy screens al
     assert.equal(dashboard.hidden, false);
     assert.equal(network.hidden, true);
     assert.equal(dashboard.querySelector("#u4-dash-keep"), keptDash);
-    assert.equal(env.PCV.views.isRegistered("dashboard"), false);
+    assert.equal(env.PCV.views.isRegistered("evidence"), false);
 
     env.PCV.views.unregister("jobs");
     network.hidden = false;
@@ -2465,6 +2465,305 @@ test("registered activity render draws severity cards, chips, table columns, and
     if (mount.parentNode) mount.remove();
     if (panel.parentNode) panel.remove();
     env.PCV.views.register("activity", { render: product });
+  }
+});
+
+test("registered dashboard render draws six KPI cards, links, Hyper-V states, and drops the hero", () => {
+  const dashboard = env.document.querySelector('.app-view[data-view="dashboard"]');
+  const index = fs.readFileSync(webRoot + "index.html", "utf8");
+  // The registry renders into the first [data-view-mount] of the section; index.html already ships #dashboard-kpi.
+  let mount = dashboard.querySelector("[data-view-mount]");
+  if (!mount) {
+    mount = env.document.createElement("div");
+    mount.id = "dashboard-kpi";
+    mount.className = "dashboard-kpi";
+    mount.setAttribute("data-view-mount", "");
+    dashboard.appendChild(mount);
+  }
+  const product = env.PCV.viewDashboard.render;
+  env.PCV.views.register("dashboard", { render: product });
+  const saved = {
+    vms: env.state.vms,
+    serverJobs: env.state.serverJobs,
+    trackedJobs: env.state.trackedJobs,
+    lastRefreshedAt: env.state.lastRefreshedAt,
+    partialFailures: env.state.partialFailures,
+    host: env.state.host,
+    opsSummary: env.state.opsSummary
+  };
+  function card(kpi) {
+    // The test DOM does not match class selectors on <a>; read the mount children directly.
+    return [...mount.children].find((node) => node.getAttribute("data-kpi") === kpi);
+  }
+  function value(kpi) {
+    return card(kpi).querySelector(".dashboard-kpi-value").textContent;
+  }
+  const now = Date.now();
+  try {
+    env.state.lastRefreshedAt = now;
+    env.state.partialFailures = [];
+    env.state.opsSummary = null;
+    env.state.host = { supported: true };
+    env.state.vms = [
+      { name: "run-1", state: "Running" },
+      { name: "off-1", state: "Off" },
+      { name: "off-2", state: "Off" },
+      { name: "paused-1", state: "Paused" },
+      { name: "tpl-1", state: "Off", template_lock: true }
+    ];
+    env.state.serverJobs = [
+      { job_id: "j-run", status: "running", created_at: new Date(now - 1000).toISOString() },
+      { job_id: "j-q", status: "queued", created_at: new Date(now - 2000).toISOString() },
+      { job_id: "j-fail-new", status: "failed", created_at: new Date(now - 60 * 60 * 1000).toISOString() },
+      { job_id: "j-fail-old", status: "failed", created_at: new Date(now - 48 * 60 * 60 * 1000).toISOString() },
+      { job_id: "j-fail-blank", status: "failed", created_at: "" },
+      { job_id: "j-ok", status: "succeeded", created_at: new Date(now - 1000).toISOString() }
+    ];
+    env.state.trackedJobs = [];
+    env.navigateTo("dashboard");
+    assert.equal(mount.children.length, 6);
+    assert.equal(value("vm-running"), "1");
+    assert.equal(value("vm-off"), "2");
+    assert.equal(value("templates"), "1");
+    assert.equal(value("jobs-active"), "2");
+    assert.equal(value("jobs-failed-24h"), "1");
+    assert.equal(card("hyperv").getAttribute("data-hv-state"), "ready");
+    assert.equal(value("hyperv"), "준비");
+    assert.match(card("hyperv").querySelector(".dashboard-kpi-note").textContent, /준비/);
+    assert.equal(card("vm-running").getAttribute("href"), "#/vms");
+    assert.equal(card("vm-off").getAttribute("data-view-link"), "vms");
+    assert.equal(card("templates").getAttribute("href"), "#/vms");
+    assert.equal(card("jobs-active").getAttribute("href"), "#/jobs");
+    assert.equal(card("jobs-failed-24h").getAttribute("data-view-link"), "jobs");
+    assert.equal(card("hyperv").tagName, "DIV");
+    assert.equal(card("vm-running").querySelector(".dashboard-kpi-note").textContent.includes("읽는 중"), false);
+    assert.match(index, /id="open-create-vm"/);
+    assert.match(index, /data-i18n="copy\.dashboard\.title"[^>]*>운영 콕핏</);
+    assert.match(index, /data-i18n="copy\.dashboard\.desc"/);
+    assert.match(index, /id="dashboard-kpi"[^>]*data-view-mount/);
+    assert.match(index, /id="ops-summary-panel"/);
+    assert.match(index, /id="priority-panel"/);
+    assert.match(index, /id="dashboard-activity-panel"/);
+    assert.match(index, /id="metric-grid"/);
+    assert.match(index, /id="host-details"/);
+    assert.match(index, /id="monitoring"/);
+    assert.match(index, /id="monitoring-panel"/);
+    assert.doesNotMatch(index, /class="dashboard-hero"/);
+    assert.doesNotMatch(index, /class="quick-action-grid"/);
+    assert.doesNotMatch(index, /class="operator-memo"/);
+    assert.doesNotMatch(index, /id="hero-workload"/);
+
+    env.state.host = { supported: false };
+    env.render();
+    assert.equal(card("hyperv").getAttribute("data-hv-state"), "not-ready");
+    assert.equal(value("hyperv"), "미준비");
+    assert.match(card("hyperv").querySelector(".dashboard-kpi-note").textContent, /확인 필요/);
+
+    env.state.host = { supported: true };
+    env.state.opsSummary = { host: { readiness: "needs attention" } };
+    env.render();
+    assert.equal(card("hyperv").getAttribute("data-hv-state"), "not-ready");
+    assert.match(card("hyperv").querySelector(".dashboard-kpi-note").textContent, /needs attention/);
+
+    env.state.lastRefreshedAt = null;
+    env.state.host = null;
+    env.state.opsSummary = null;
+    env.render();
+    assert.equal(value("vm-running"), "-");
+    assert.equal(value("vm-off"), "-");
+    assert.equal(value("templates"), "-");
+    assert.match(card("vm-running").querySelector(".dashboard-kpi-note").textContent, /읽는 중/);
+    assert.equal(card("hyperv").getAttribute("data-hv-state"), "unknown");
+    assert.equal(value("hyperv"), "-");
+    assert.match(card("hyperv").querySelector(".dashboard-kpi-note").textContent, /읽는 중/);
+    assert.equal(value("jobs-active"), "2");
+    assert.equal(value("jobs-failed-24h"), "1");
+  } finally {
+    env.state.vms = saved.vms;
+    env.state.serverJobs = saved.serverJobs;
+    env.state.trackedJobs = saved.trackedJobs;
+    env.state.lastRefreshedAt = saved.lastRefreshedAt;
+    env.state.partialFailures = saved.partialFailures;
+    env.state.host = saved.host;
+    env.state.opsSummary = saved.opsSummary;
+    if (mount.parentNode) mount.remove();
+    env.navigateTo("dashboard");
+    env.PCV.views.register("dashboard", { render: product });
+  }
+});
+
+test("dashboard workload table and alert feed keep running-first order, 24h failures, and distinct empty copy", () => {
+  const dashboard = env.document.querySelector('.app-view[data-view="dashboard"]');
+  const index = fs.readFileSync(webRoot + "index.html", "utf8");
+  function plant(id, tag) {
+    const node = env.document.createElement(tag);
+    node.id = id;
+    const body = env.document.createElement("div");
+    body.id = id + "-body";
+    node.appendChild(body);
+    dashboard.appendChild(node);
+    return node;
+  }
+  const workload = plant("dashboard-workload", "section");
+  const alerts = plant("dashboard-alerts", "aside");
+  const opener = env.document.createElement("button");
+  opener.id = "open-create-vm";
+  opener.type = "button";
+  let opened = 0;
+  opener.addEventListener("click", () => { opened += 1; });
+  dashboard.appendChild(opener);
+  const product = env.PCV.viewDashboard.render;
+  env.PCV.views.register("dashboard", { render: product });
+  const saved = {
+    vms: env.state.vms,
+    serverJobs: env.state.serverJobs,
+    trackedJobs: env.state.trackedJobs,
+    lastRefreshedAt: env.state.lastRefreshedAt,
+    partialFailures: env.state.partialFailures,
+    opsSummary: env.state.opsSummary,
+    summaryError: env.state.summaryError
+  };
+  const now = Date.now();
+  const iso = (ageMs) => new Date(now - ageMs).toISOString();
+  function links() {
+    return [...workload.querySelectorAll("[data-workload-vm]")];
+  }
+  function alertItems() {
+    return [...alerts.querySelectorAll("[data-alert-kind]")];
+  }
+  try {
+    assert.match(index, /class="dashboard-grid"/);
+    assert.match(index, /id="dashboard-kpi"[\s\S]{0,4000}class="dashboard-grid"[\s\S]{0,2000}id="ops-summary-panel"/);
+    assert.match(index, /id="dashboard-workload"[^>]*aria-labelledby="dashboard-workload-title"/);
+    assert.match(index, /id="dashboard-alerts"[^>]*aria-labelledby="dashboard-alerts-title"/);
+    assert.match(index, /data-i18n="copy\.dashboard\.workload\.title"[^>]*>워크로드</);
+    assert.match(index, /data-i18n="copy\.dashboard\.alerts\.title"[^>]*>경고</);
+    assert.match(index, /id="ops-summary-panel"/);
+    assert.doesNotMatch(index, /id="dashboard-workload"[^>]*data-view-mount/);
+    assert.doesNotMatch(index, /id="dashboard-alerts"[^>]*data-view-mount/);
+
+    env.state.lastRefreshedAt = now;
+    env.state.partialFailures = [];
+    env.state.summaryError = null;
+    env.state.opsSummary = { errors: [], signals: [] };
+    env.state.trackedJobs = [];
+    env.state.serverJobs = [];
+    env.state.vms = [
+      { name: "b-run", state: "Running", vcpu: 4, memory_mb: 2048 },
+      { name: "a-run", state: "Running", cpu: { count: 8 }, memory: { startup_mb: 4096 }, template_lock: true },
+      { name: "c", state: "Off", vcpu: 1, memory_mb: 512 },
+      { name: "d", state: "Off", vcpu: 1, memory_mb: 512 },
+      { name: "e", state: "Off", vcpu: 1, memory_mb: 512 },
+      { name: "f", state: "Paused", vcpu: 1, memory_mb: 512 },
+      { name: "g", state: "Off", vcpu: 1, memory_mb: 512 },
+      { name: "h", state: "Off", vcpu: 1, memory_mb: 512 },
+      { name: "i", state: "Off", vcpu: 1, memory_mb: 512 },
+      { name: "a b", state: "Off", vcpu: 2, memory_mb: 1024 }
+    ];
+    env.navigateTo("dashboard");
+    const names = links().map((node) => node.getAttribute("data-workload-vm"));
+    assert.deepEqual(names, ["a-run", "b-run", "a b", "c", "d", "e", "f", "g"]);
+    assert.equal(links().find((node) => node.getAttribute("data-workload-vm") === "a b").getAttribute("href"), "#/vms/a%20b/summary");
+    assert.equal(links()[0].getAttribute("href"), "#/vms/a-run/summary");
+    assert.equal(links()[0].tagName, "A");
+    assert.equal(workload.querySelector("#dt-dashboard-workload-table").tagName, "TABLE");
+    const templateCell = links()[0].closest("tr").textContent;
+    assert.match(templateCell, /예/);
+    assert.match(templateCell, /8/);
+    assert.match(templateCell, /4096/);
+    assert.equal(names.includes("i"), false);
+    assert.equal(names.includes("h"), false);
+
+    env.state.vms = [];
+    env.render();
+    const create = workload.querySelector("[data-workload-create]");
+    assert.equal(workload.querySelector("[data-workload-state]").getAttribute("data-workload-state"), "empty");
+    assert.match(workload.textContent, /표시할 VM이 없습니다/);
+    assert.equal(create.textContent, "+ 새 VM");
+    assert.equal(create.hasAttribute("data-shell-action"), false);
+    assert.equal(links().length, 0);
+    create.click();
+    assert.equal(opened, 1);
+
+    env.state.lastRefreshedAt = null;
+    env.state.vms = [{ name: "hidden-vm", state: "Running", vcpu: 99, memory_mb: 99 }];
+    env.render();
+    assert.equal(workload.querySelector("[data-workload-state]").getAttribute("data-workload-state"), "loading");
+    assert.match(workload.textContent, /읽는 중/);
+    assert.equal(workload.textContent.includes("hidden-vm"), false);
+    assert.equal(workload.textContent.includes("99"), false);
+    assert.equal(workload.querySelector("[data-workload-create]"), null);
+
+    env.state.lastRefreshedAt = now;
+    env.state.partialFailures = [];
+    env.state.summaryError = null;
+    env.state.vms = [{ name: "quiet", state: "Off" }];
+    env.state.serverJobs = [
+      { job_id: "fail-new", status: "failed", operation: "vm.start", vm_id: "quiet", created_at: iso(60 * 60 * 1000), error: { code: "PCV_X", message: "시작 실패" } },
+      { job_id: "fail-old", status: "failed", operation: "vm.stop", created_at: iso(48 * 60 * 60 * 1000), error: { code: "OLD", message: "오래됨" } },
+      { job_id: "fail-blank", status: "failed", operation: "vm.delete", created_at: "", error: { message: "시각 없음" } },
+      { job_id: "fail-future", status: "failed", operation: "vm.create", created_at: new Date(now + 60 * 60 * 1000).toISOString(), error: { message: "미래" } },
+      { job_id: "ok-job", status: "succeeded", operation: "vm.start", created_at: iso(1000) }
+    ];
+    env.state.opsSummary = {
+      errors: [
+        { code: "PCV_OLD", message: "오래된 오류", detail: "로그를 확인", created_at: iso(3 * 60 * 60 * 1000) }
+      ],
+      signals: [
+        { severity: "ok", message: "정상 신호", created_at: iso(1000) },
+        { severity: "critical", message: "스위치 단절", recommended_action: "스위치를 다시 연결", created_at: iso(30 * 60 * 1000) }
+      ]
+    };
+    env.render();
+    const kinds = alertItems().map((node) => node.getAttribute("data-alert-kind"));
+    assert.deepEqual(kinds, ["incident", "job", "incident"]);
+    assert.equal(alertItems()[0].querySelector('[data-alert-field="title"]').textContent, "스위치 단절");
+    assert.equal(alertItems()[0].querySelector("[data-alert-severity]").getAttribute("data-alert-severity"), "error");
+    assert.match(alertItems()[0].textContent, /스위치를 다시 연결/);
+    assert.equal(alertItems()[1].querySelector("[data-alert-job]").getAttribute("href"), "#/jobs");
+    assert.equal(alertItems()[1].querySelector('[data-alert-field="kind"]').textContent, "vm.start");
+    assert.equal(alertItems()[1].querySelector('[data-alert-field="target"]').textContent, "quiet");
+    assert.match(alertItems()[1].textContent, /시작 실패/);
+    assert.equal(alertItems()[2].querySelector('[data-alert-field="title"]').textContent, "오래된 오류");
+    assert.match(alertItems()[2].textContent, /로그를 확인/);
+    const feed = alerts.textContent;
+    assert.equal(feed.includes("오래됨"), false);
+    assert.equal(feed.includes("시각 없음"), false);
+    assert.equal(feed.includes("미래"), false);
+    assert.equal(feed.includes("정상 신호"), false);
+    assert.equal(feed.includes("경고 없음"), false);
+
+    env.state.serverJobs = [];
+    env.state.trackedJobs = [];
+    env.state.opsSummary = { errors: [], signals: [] };
+    env.state.summaryError = null;
+    env.render();
+    assert.equal(alerts.querySelector("[data-alerts-state]").getAttribute("data-alerts-state"), "empty");
+    assert.match(alerts.textContent, /경고 없음/);
+    assert.equal(alerts.textContent.includes("운영 요약을 읽지 못했습니다"), false);
+
+    env.state.summaryError = { code: "PCV_OPS", message: "unread", operation: "ops.summary" };
+    env.state.opsSummary = {
+      signals: [{ severity: "critical", message: "숨겨야 함", recommended_action: "하지 말 것", created_at: iso(1000) }]
+    };
+    env.render();
+    assert.equal(alerts.querySelector("[data-alerts-state]").getAttribute("data-alerts-state"), "unavailable");
+    assert.match(alerts.textContent, /운영 요약을 읽지 못했습니다/);
+    assert.equal(alerts.textContent.includes("경고 없음"), false);
+    assert.equal(alerts.textContent.includes("숨겨야 함"), false);
+  } finally {
+    env.state.vms = saved.vms;
+    env.state.serverJobs = saved.serverJobs;
+    env.state.trackedJobs = saved.trackedJobs;
+    env.state.lastRefreshedAt = saved.lastRefreshedAt;
+    env.state.partialFailures = saved.partialFailures;
+    env.state.opsSummary = saved.opsSummary;
+    env.state.summaryError = saved.summaryError;
+    workload.remove();
+    alerts.remove();
+    opener.remove();
+    env.navigateTo("dashboard");
+    env.PCV.views.register("dashboard", { render: product });
   }
 });
 

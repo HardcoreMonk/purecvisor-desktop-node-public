@@ -546,7 +546,7 @@ function verifyVisualShell(context) {
     [/class="shell-sidebar"/i, "console"],
     [/id="shell-topbar"/i, "topbar"],
     [/id="shell-statusbar"/i, "controls"],
-    [/class="dashboard-hero"/i, "rail"]
+    [/class="[^"]*\bdashboard-pagehead\b/i, "rail"]
   ]) {
     context.assertMatch(index, pattern, `visual-shell:${label}`);
   }
@@ -557,8 +557,8 @@ function verifyVisualShell(context) {
     [/\.shell-sidebar/i, "console-selector"],
     [/\.shell-topbar/i, "topbar-selector"],
     [/\.shell-statusbar/i, "control-selector"],
-    [/\.dashboard-hero/i, "rail-selector"],
-    [/\.dashboard-pills/i, "active-selector"],
+    [/\.dashboard-pagehead/i, "rail-selector"],
+    [/\.dashboard-kpi/i, "active-selector"],
     [/body::before/i, "body-selector"]
   ]) {
     context.assertMatch(styles, pattern, `visual-shell:${label}`);
@@ -575,19 +575,19 @@ function verifyWorkbenchFrame(context) {
     "shell-sidebar",
     "shell-topbar",
     "shell-statusbar",
-    "dashboard-hero",
-    "dashboard-pills",
-    "quick-action-grid"
+    "dashboard-pagehead",
+    "dashboard-kpi",
+    "dashboard-kpi-card"
   ]) {
-    context.assertMatch(index, new RegExp(`class="${className}"`, "i"), `workbench-frame:index-${className}`);
+    context.assertMatch(index, new RegExp(`class="[^"]*\\b${className}\\b`, "i"), `workbench-frame:index-${className}`);
   }
   for (const selector of [
     "shell-sidebar",
     "shell-topbar",
     "shell-statusbar",
-    "dashboard-hero",
-    "dashboard-pills",
-    "quick-action-grid"
+    "dashboard-pagehead",
+    "dashboard-kpi",
+    "dashboard-kpi-card"
   ]) {
     context.assertMatch(styles, new RegExp(`\\.${selector}`, "i"), `workbench-frame:styles-${selector}`);
   }
@@ -1383,13 +1383,14 @@ function verifyOpsCockpit(context) {
     [/id="dashboard-activity-panel"/i, "dashboard-activity-panel"],
     [/id="vm-workbench-context"/i, "vm-workbench-context"],
     [/id="incident-panel"/i, "incident-panel"],
-    [/data-view-link="dashboard"/i, "dashboard-link"],
     [/data-view-link="jobs"/i, "jobs-link"],
     [/data-view-link="activity"/i, "activity-link"],
     [/data-view-link="troubleshooting"/i, "troubleshooting-link"]
   ]) {
     context.assertMatch(index, pattern, `ops-cockpit:${label}`);
   }
+  // The dashboard hero tiles are gone (ui-parity U6); the dashboard link lives in the shell nav definition.
+  context.assertMatch(context.readText("web/src/modules/shell.ts"), /id: 'dashboard', key: 'nav.dashboard'/, "ops-cockpit:dashboard-link");
   const shellNav = context.readText("web/src/modules/shell.ts");
   context.assertMatch(shellNav, /id:\s*'vms'/i, "ops-cockpit:vms-link");
   context.assertMatch(shellNav, /'data-nav':\s*it\.id/i, "ops-cockpit:nav-attribute");
@@ -1969,8 +1970,8 @@ async function verifyNoFabricatedValues(context) {
   await context.runOwners(["static-contract", "browser-fixture"]);
   const index = context.readText("web/index.html");
   for (const literal of [">Connected<", "VM: 3/3", "API: 10ms avg", "Updated 0s ago", "<strong>4/5</strong>", "pcv-node-a", "pcv-node-b", "lab-vm-01"]) context.assertNotMatch(index, new RegExp(literal.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i"), `no-fabricated-values:literal-${literal}`);
-  for (const [pattern, label] of [[/id="status-connection"[^>]*>\s*Connected\b/i, "connection"], [/id="status-host"[^>]*>\s*\w/i, "host"], [/id="status-updated"[^>]*>\s*Updated\s+\d/i, "updated"], [/id="status-vm-count"[^>]*>\s*VM:\s*\d/i, "vm-count"], [/id="hero-workload"[^>]*>\s*\d/i, "workload"], [/id="hero-host-mode"[^>]*>\s*\w/i, "host-mode"], [/id="hero-alerts"[^>]*>\s*\d/i, "alerts"], [/id="asset-count"[^>]*>\s*\d/i, "asset-count"]]) context.assertNotMatch(index, pattern, `no-fabricated-values:binding-${label}`);
-  for (const id of ["hero-workload", "hero-host-mode", "hero-alerts", "shell-statusbar", "ws-s"]) context.assertMatch(index, new RegExp(`id="${id}"`, "i"), `no-fabricated-values:required-${id}`);
+  for (const [pattern, label] of [[/id="status-connection"[^>]*>\s*Connected\b/i, "connection"], [/id="status-host"[^>]*>\s*\w/i, "host"], [/id="status-updated"[^>]*>\s*Updated\s+\d/i, "updated"], [/id="status-vm-count"[^>]*>\s*VM:\s*\d/i, "vm-count"], [/id="kpi-vm-running"[^>]*>\s*\d/i, "vm-running"], [/id="kpi-vm-off"[^>]*>\s*\d/i, "vm-off"], [/id="kpi-templates"[^>]*>\s*\d/i, "templates"], [/id="kpi-jobs-active"[^>]*>\s*\d/i, "jobs-active"], [/id="kpi-jobs-failed-24h"[^>]*>\s*\d/i, "jobs-failed-24h"], [/id="kpi-hyperv"[^>]*>\s*\w/i, "hyperv"], [/id="asset-count"[^>]*>\s*\d/i, "asset-count"]]) context.assertNotMatch(index, pattern, `no-fabricated-values:binding-${label}`);
+  for (const id of ["kpi-vm-running", "kpi-vm-off", "kpi-templates", "kpi-jobs-active", "kpi-jobs-failed-24h", "kpi-hyperv", "shell-statusbar", "ws-s"]) context.assertMatch(index, new RegExp(`id="${id}"`, "i"), `no-fabricated-values:required-${id}`);
 }
 
 export const WEB_STATIC_VERIFIERS = Object.freeze({
