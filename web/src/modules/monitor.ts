@@ -708,7 +708,10 @@ function renderActiveView() {
   });
   document.querySelectorAll('[data-view-link]').forEach((link) => {
     const active = link.dataset?.viewLink === shownView;
-    link.className = active ? 'nav-active' : '';
+    // Keep component classes (KPI cards, pagehead .btn links carry data-view-link too); only toggle nav-active.
+    const kept = String(link.className || '').split(/\s+/).filter((name) => name && name !== 'nav-active');
+    if (active) kept.push('nav-active');
+    link.className = kept.join(' ');
     if (active) link.setAttribute('aria-current', 'page');
     else link.removeAttribute('aria-current');
   });

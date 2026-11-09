@@ -209,7 +209,81 @@ task 크기(2026-11-09 사용자 승인 `U1 checkpoint 2 승인`): Task 2부터�
 
 ## Task 8d: U8 품질 게이트와 닫기
 
-- [ ] browser gate 전체 실행으로 axe 위반 0 기준선을 다시 쓰고 stale·flake 항목을 `--prune`으로 정리한다. browser fixture와 화면 캡처 기준선(가짜 API)을 맞춘다. 감사 61건의 처리 결과(고침, 넣지 않음, API 설계로 넘김)를 plan 실행 기록에 표로 남긴다. 공통 검증. 로컬 commit.
+- [x] browser gate 전체 실행으로 axe 위반 0 기준선을 다시 쓰고 stale·flake 항목을 `--prune`으로 정리한다. browser fixture와 화면 캡처 기준선(가짜 API)을 맞춘다. 감사 61건의 처리 결과(고침, 넣지 않음, API 설계로 넘김)를 plan 실행 기록에 표로 남긴다. 공통 검증. 로컬 commit.
+
+실행 기록(2026-11-10): checkpoint 28(00:39~)과 29(상시 (권장) 자동 승인 "U8d checkpoint 2"). Claude가 직접 했다.
+
+- axe 기준선. CI web job은 ubuntu, 로컬 gate는 Windows msedge라 로컬만의 `--prune`이 Linux에서만 보이는 항목을 지울 수 있는지 먼저 확인했다. main `cc0f9b9` CI 실행은 기준선 2,626개 중 1,107개가 stale(본 항목 1,519)이고, 같은 DOM의 로컬은 그보다 알려진 flake 6건이 많았다. 그래서 CI가 보는 항목이 로컬이 보는 항목 안에 든다고 보고 `--write-baseline --prune`을 적용했다. stale 1,107건(옛 패널·셸의 `pseudoContent`·`bgGradient`)이 빠졌다. 지운 뒤 두 번째 실행에서 Task 7b가 실수로 기록했던 flake(`vm-detail-summary` supanova 테마의 `#shell-crumb`, `#shell-sync`, `#us-name`, `#version-badge`, `b` 6건)가 다시 나왔다. 그래서 그 6건은 `color-contrast`/`bgGradient` 그룹 이유에 "알려진 flake라 의도적으로 남긴다"를 적고 기준선에 남겼다(그룹은 rule·messageKey마다 이유 하나라 따로 둘 수 없다).
+- 캡처(가짜 API, `artifacts/ui-parity-u8-captures-20261110/`, 1440×900·768×1024, 26화면). 1440에서 assertion은 모두 통과했고 violations는 0이다. incomplete 차이는 기본 1280 기준선 밖의 viewport 차이다. 768의 violations 34건은 BL-0036(`.shell-search` 이름)이다. 캡처에서 U6·U7 결함 둘을 찾아 고쳤다. (1) `renderActiveView()`가 `[data-view-link]`가 붙은 모든 요소의 `className`을 `'nav-active'` 또는 빈 문자열로 덮어써서, 대시보드 KPI 카드와 pagehead 보조 링크(`.btn`)가 새로 고칠 때마다 카드·버튼 모양을 잃었다. 다른 class는 지키고 `nav-active`만 넣고 빼게 고치고 node 시험을 더했다(fixture의 `className === "nav-active"` 단언은 그대로 통과). (2) 진단 카드의 라벨과 값이 붙어 보였다("서비스connected수신기-"). `.trouble-grid > section`을 두 열 격자(라벨, 값)로 두고 카드 제목을 14px로 맞췄다. KPI 카드에 남은 하드코딩 색은 `--supanova-line`·`--bg-panel`·`--accent` token으로 바꿨다(설계 6절). 고친 뒤 incomplete 목록이 바뀌어 기준선을 다시 prune하고 flake 6건을 같은 이유로 되돌렸다. 기준선 2,626→1,519.
+- 검증: `npm run test:required`(node 390 pass, gate `ok=true` assertions 121 failed 0 violations 0, 기준선 1,519, flake 미발생 때 stale 6은 경고), 기준선 정리 뒤 gate 연속 8회 `ok=true`, web Pester와 ratchet Pester 53/53, Delivery 785/785, `git diff --check` clean.
+
+감사 61건 처리 결과(분류는 감사 5절, 단계는 설계 10절. "넣지 않음"의 이유는 설계 5절, "API 설계로 넘김"은 설계 4.3절):
+
+| id | 분류 | 처리 | 단계·PR | 메모 |
+| --- | --- | --- | --- | --- |
+| A-01 | a | 고침 | U2 #124 | 왼쪽 목록과 넓은 탭 상세. 좁은 목록의 이름 잘림은 BL-0037 |
+| A-02 | a | 고침 | U2 #124 | 콘솔이 넓은 상세 탭에 보인다 |
+| A-03 | a | 고침 | U2 #124 | 이름 한 번, 탭 한 줄 |
+| A-04 | a | 고침 | U2 #124 | VM pagehead |
+| A-05 | a | 넣지 않음 | — | 카드 보기(렌더러가 둘이 된다) |
+| A-06 | a-API | API 설계로 넘김 | — | 사용률 metrics 묶음 |
+| A-07 | a | 고침 | U3 #125 | 행 `⋯` 메뉴, 우클릭, Shift+F10 |
+| A-08 | a | 고침(비교는 넣지 않음) | U3 #125 | 체크박스, 일괄 시작·종료·삭제. 비교는 metrics 뒤 |
+| A-09 | a | 고침 | U2 #124 | 빈 상태 CTA와 읽기 실패 |
+| A-10 | a | 고침(즐겨찾기는 넣지 않음) | U3 #125 | 정렬 방향 반전, j/k |
+| A-11 | a | 고침 | U2 #124 | `#/vms/<id>/<tab>` |
+| A-12 | d | 그대로 둠 | — | 상태 칩 |
+| A-13 | c | 그대로 둠 | — | 상세 탭 6개 |
+| A-14 | a-API | API 설계로 넘김 | — | 사용률 metrics 묶음 |
+| A-15 | c | 그대로 둠 | — | 헤더 조작 위치 |
+| A-16 | c | 그대로 둠 | — | 생성 마법사 |
+| A-17 | a-API | API 설계로 넘김 | — | ISO 목록 |
+| A-18 | b | 넣지 않음 | — | Linux 전용 저장 형식·QoS·브리지 |
+| A-19 | b, 나머지 c | 넣지 않음(cow/full), 나머지 그대로 둠 | — | 복제는 ADR-0019 모달 |
+| A-20 | c | 그대로 둠 | — | 삭제 이름 확인 |
+| A-21 | b | 넣지 않음 | — | noVNC |
+| A-22 | d | 그대로 둠 | — | 템플릿은 `template_lock` VM 목록 |
+| A-23 | a | 고침 | U1 #123 | 원시 필드 이름을 라벨로 |
+| B-01 | a | 고침(VM·템플릿·도움말은 옛 `render()` 유지) | U4 #126~U8 | 사용자 결정 5 |
+| B-02 | a | 고침 | U2 #124, U4 #126~U7 #129 | pagehead |
+| B-03 | a(ZFS·자가치유 칸 b) | 고침(기간 선택·게이지 넣지 않음) | U6 #128 | KPI, 워크로드 표, 경고 피드 |
+| B-04 | d | 고침 | U6 #128 | KPI 카드가 링크 |
+| B-05 | d | 고침 | U6 #128 | 새 VM 버튼 하나, 보조 링크 |
+| B-06 | d(BL-0026) | 문서 고침 | U8 | `web/DESIGN.md` 기본 테마 설명(Task 8c) |
+| B-07 | a | 고침 | U1 #123 | 로그인 화면 노드 칸 |
+| B-08 | a | 고침 | U1 #123 | TLS pill |
+| B-09 | a | 고침 | U1 #123, U8 | 팔레트 하나로 합침, 옛 `#command-palette` 지움(Task 8a) |
+| B-10 | a | 고침 | U1 #123 | 단축키 등록 |
+| B-11 | a | 고침 | U1 #123 | 600px 이하 VM 전원·삭제 |
+| B-12 | a | 고침 | U1 #123 | 로그아웃 때 modal 닫기 |
+| B-13 | c | 고침 | U4 #126~U7 #129 | 빈 상태·읽기 실패 부품 |
+| B-14 | a | 고침 | U1 #123 | 로그인 폼은 오버레이 하나 |
+| B-15 | d | 고침 | U1 #123 | 도움말 카탈로그 |
+| B-16 | same | 같음 | — | — |
+| B-17 | same | 같음 | — | — |
+| B-18 | a | 고침 | U1 #123, U8 | 사이드바 `aria-label`, 스와이프 코드 지움(Task 8a) |
+| C-01 | a | 고침 | U4 #126~U7 #129 | 화면 등록표와 이식 부품 |
+| C-02 | a | 고침 | U4 #126, U8 | 패널 배경 token(Task 8c) |
+| C-03 | a | 고침 | U5 #127, U7 #129, U8 | 영어 고정 문구(진단 잔여는 Task 8c) |
+| C-04 | a | 고침 | U4 #126~U7 #129 | 빈 상태와 읽기 실패 구분 |
+| C-05 | a | 고침 | U4 #126 | 네트워크 배치 |
+| C-06 | a | 고침 | U4 #126 | 네트워크 VM 수 열 |
+| C-07 | b, 스위치 편집 c | 넣지 않음 | — | 스위치 편집은 host mutation, 따로 설계 |
+| C-08 | a-API | API 설계로 넘김 | — | 사용률 metrics 묶음 |
+| C-09 | a(CPU 막대 API) | 고침(CPU 막대는 API 뒤) | U5 #127 | 심각도 카드와 표 |
+| C-10 | a | 고침 | U5 #127 | 활동 패널은 작업 링크 |
+| C-11 | d | 고침 | U5 #127 | 작업 다음 페이지 |
+| C-12 | a | 고침 | U5 #127 | 작업 `createDataTable` |
+| C-13 | a(표), c(모달) | 고침(모달 그대로) | U7 #129 | 계정 표와 역할 pill |
+| C-14 | a-API | API 설계로 넘김 | — | 계정 관리 묶음 |
+| C-15 | b | 넣지 않음 | — | Suricata, TOTP, API key |
+| C-16 | d | 고침 | U7 #129 | 진단 두 열 카드, 고급 절 |
+| C-17 | a | 고침 | U1 #123 | 화면 제목과 메뉴 이름 |
+| C-18 | d | 고침 | U7 #129 | release 엔지니어링 값은 접힌 절 |
+| C-19 | a | 고침 | U1 #123 | B-12와 같음 |
+| C-20 | b(패턴 a) | 넣지 않음(화면), 패턴만 씀 | U4 #126~U7 #129 | 빈 상태·KPI 패턴 |
+
+합계: 고침 41, 그대로 둠·같음 8, 넣지 않음 7, API 설계로 넘김 5(사용률 metrics 3, ISO 1, 계정 관리 1). 고침 안에 일부를 넣지 않은 것은 A-08, A-10, B-03, C-09이고, A-19는 cow/full만 넣지 않고 나머지를 그대로 둔다.
 
 ## Task 8e: U8 PR
 

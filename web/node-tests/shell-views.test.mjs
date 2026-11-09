@@ -2474,6 +2474,30 @@ test("registered activity render draws severity cards, chips, table columns, and
   }
 });
 
+test("renderActiveView keeps component classes on data-view-link elements and only toggles nav-active", () => {
+  const shown = (env.PCV.nav && typeof env.PCV.nav.activeView === "function" && env.PCV.nav.activeView()) || env.state.activeView;
+  const other = shown === "jobs" ? "network" : "jobs";
+  const make = (view, cls) => {
+    const link = env.document.createElement("a");
+    link.setAttribute("data-view-link", view);
+    link.className = cls;
+    env.document.body.appendChild(link);
+    return link;
+  };
+  const card = make(shown, "dashboard-kpi-card");
+  const button = make(other, "btn nav-active");
+  try {
+    env.renderActiveView();
+    assert.deepEqual(String(card.className).split(/\s+/).sort(), ["dashboard-kpi-card", "nav-active"]);
+    assert.equal(card.getAttribute("aria-current"), "page");
+    assert.equal(button.className, "btn");
+    assert.equal(button.getAttribute("aria-current"), null);
+  } finally {
+    card.remove();
+    button.remove();
+  }
+});
+
 test("registered dashboard render draws six KPI cards, links, Hyper-V states, and drops the hero", () => {
   const dashboard = env.document.querySelector('.app-view[data-view="dashboard"]');
   const index = fs.readFileSync(webRoot + "index.html", "utf8");
