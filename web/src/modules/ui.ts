@@ -561,7 +561,7 @@ function createDataTable(containerId, config) {
   var cfg = config || {};
   var headers = cfg.headers || [];
   var rows = cfg.rows || [];
-  var tableId = 'dt-' + Math.random().toString(36).substr(2, 6);
+  var tableId = cfg.tableId || ('dt-' + Math.random().toString(36).substr(2, 6));
   var sortCol = -1, sortDir = 1;
   var tFn = typeof t === 'function' ? t : function(k) { return k; };
   var contentEl = mk('div');
@@ -579,15 +579,18 @@ function createDataTable(containerId, config) {
       displayRows = filteredRows.slice(start, start + pageSize);
     }
     var children = [];
-    if (cfg.searchable && !searchCount) {
-      var bar = [mk('input', {
-        'aria-label': tFn('search'),
-        id: tableId + '-search',
-        class: 'sb-search',
-        placeholder: tFn('search'),
-        oninput: 'window._dtFilter(\'' + tableId + '\')',
-        style: 'max-width:300px;font-size:12px;padding:6px 10px;border-radius:4px'
-      })];
+    if ((cfg.searchable || cfg.exportable) && !searchCount) {
+      var bar = [];
+      if (cfg.searchable) {
+        bar.push(mk('input', {
+          'aria-label': tFn('search'),
+          id: tableId + '-search',
+          class: 'sb-search',
+          placeholder: tFn('search'),
+          oninput: 'window._dtFilter(\'' + tableId + '\')',
+          style: 'max-width:300px;font-size:12px;padding:6px 10px;border-radius:4px'
+        }));
+      }
       if (cfg.exportable) {
         bar.push(mk('button', {
           class: 'btn',

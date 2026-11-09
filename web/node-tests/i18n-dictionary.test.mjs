@@ -133,7 +133,7 @@ test("BL-0024 shell copy uses i18n keys and the Korean default", () => {
     ["copy.dashboard.create", "새 VM", ">Create VM</button>"],
     ["copy.network.title", "네트워크 인벤토리", "<h2>Network Inventory</h2>"],
     ["copy.jobs.title", "작업", "<h2>Jobs</h2>"],
-    ["copy.activity.title", "운영자 활동", "<h2>Operator Activity</h2>"],
+    ["copy.activity.title", "이벤트", "<h2>Operator Activity</h2>"],
     ["copy.evidence.title", "증적", "<h2>Evidence</h2>"],
     ["copy.trouble.title", "진단", "<h2>Diagnostics</h2>"],
     ["copy.monitoring.title", "모니터링", "<h2>Monitoring</h2>"]

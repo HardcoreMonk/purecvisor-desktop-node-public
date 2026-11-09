@@ -101,6 +101,7 @@ function renderJobCancelButton(job, canOperate) {
 }
 
 function renderJobs() {
+  if (typeof pcvLegacyViewSkipped === 'function' && pcvLegacyViewSkipped('jobs')) return;
   const { allRows, rows } = getFilteredJobRows();
   const canOperate = rbacAllows('operate');
   const summary = renderJobEdgeSummary();
@@ -135,7 +136,7 @@ function renderFailedJobTriageRows() {
     .filter(({ job }) => String(job.status || '').toLowerCase() === 'failed')
     .slice(0, 5);
   if (!failed.length) {
-    return '<p class="muted">No failed jobs are visible.</p>';
+    return `<p class="muted">${pcvEscapeHtml(t('copy.incident.no_failed'))}</p>`;
   }
 
   return `<div class="triage-list">
@@ -165,25 +166,25 @@ function renderIncidentCommand() {
         <span>${pcvEscapeHtml(issue.code)}</span>
         <span class="status-badge ${pcvEscapeHtml(evidenceIssueTone(issue))}">${pcvEscapeHtml(issue.detail || 'issue')}</span>
       </div>`).join('')}</div>`
-    : '<p class="muted">No batch evidence degradation is visible.</p>';
+    : `<p class="muted">${pcvEscapeHtml(t('copy.incident.no_evidence'))}</p>`;
   const priorityHtml = priorityItems.length === 0
-    ? '<p class="muted">No high-priority warnings.</p>'
+    ? `<p class="muted">${pcvEscapeHtml(t('copy.incident.no_priority'))}</p>`
     : priorityItems.map((item) => `<div class="priority-item priority-${pcvEscapeHtml(item.tone)}"><strong>${pcvEscapeHtml(item.label)}</strong><span>${pcvEscapeHtml(item.detail)}</span></div>`).join('');
 
   els.incidentPanel.innerHTML = `
     <div class="incident-grid">
       <div class="incident-card">
-        <span class="muted">Failed jobs</span>
+        <span class="muted">${pcvEscapeHtml(t('copy.incident.failed_jobs'))}</span>
         <strong>${pcvEscapeHtml(failedJobs.length)} failed / ${pcvEscapeHtml(retryableFailedJobs)} retryable</strong>
         ${renderFailedJobTriageRows()}
       </div>
       <div class="incident-card">
-        <span class="muted">Evidence issues</span>
+        <span class="muted">${pcvEscapeHtml(t('copy.incident.evidence'))}</span>
         <strong>${pcvEscapeHtml(evidenceIssues.length)}</strong>
         ${evidenceIssueHtml}
       </div>
       <div class="incident-card">
-        <span class="muted">Priority items</span>
+        <span class="muted">${pcvEscapeHtml(t('copy.incident.priority'))}</span>
         ${priorityHtml}
       </div>
     </div>`;
@@ -226,12 +227,13 @@ function buildEventCenterItems() {
   const failedJobs = rows.filter(({ job }) => String(job?.status || '').toLowerCase() === 'failed');
   if (activeJobs.length > 0) push('warn', t('copy.mon.active_jobs'), t('copy.mon.active_detail', { count: activeJobs.length }), 'jobs');
   if (failedJobs.length > 0) push('error', t('copy.mon.failed_jobs'), t('copy.mon.failed_detail', { count: failedJobs.length }), 'jobs');
-  if (!state.apiToken.trim()) push('info', t('copy.mon.browser_token'), 'token-required routes may show Auth required.', 'session');
+  if (!state.apiToken.trim()) push('info', t('copy.mon.browser_token'), t('copy.events.token_detail'), 'session');
 
   return items.slice(0, 12);
 }
 
 function renderEventCenter() {
+  if (typeof pcvLegacyViewSkipped === 'function' && pcvLegacyViewSkipped('activity')) return;
   if (!els.eventCenterPanel) return;
   const items = buildEventCenterItems();
   const counts = items.reduce((acc, item) => {
@@ -246,7 +248,7 @@ function renderEventCenter() {
         <span class="status-badge ${pcvEscapeHtml(item.tone)}">${pcvEscapeHtml(item.source)}</span>
         <div><strong>${pcvEscapeHtml(item.label)}</strong><p>${pcvEscapeHtml(item.detail)}</p></div>
       </div>`).join('')
-    : '<p class="muted">No operator events are visible.</p>';
+    : `<p class="muted">${pcvEscapeHtml(t('copy.events.empty'))}</p>`;
 
   els.eventCenterPanel.innerHTML = `
     <div class="event-center-header">
@@ -326,38 +328,15 @@ function renderDashboardActivity() {
 }
 
 function renderActivity() {
-  const rows = buildActivityRows();
-  const degraded = state.activityError
-    ? `<div class="activity-warning"><strong>${pcvEscapeHtml(state.activityError.code)}</strong> ${pcvEscapeHtml(state.activityError.message)}</div>`
-    : '';
-  const pageSummary = renderActivityPageSummary();
-
-  if (rows.length === 0) {
-    els.activityPanel.innerHTML = `${degraded}${pageSummary}<p class="muted">No server or browser job activity has been loaded.</p>`;
-    return;
-  }
-
-  els.activityPanel.innerHTML = degraded + pageSummary + rows.map(({ source, job }) => {
-    const status = String(job.status || 'unknown').toLowerCase();
-    const canOperate = rbacAllows('operate');
-    const actions = source === 'browser' ? [
-      renderJobCancelButton(job, canOperate),
-      status === 'failed' ? `<button data-action="retry-job" data-job-id="${pcvEscapeHtml(job.job_id)}"${canOperate ? '' : ' disabled'}>Retry</button>` : '',
-      renderJobReconcileButton(job, canOperate)
-    ].join('') : '';
-
-    return `<div class="activity-row">
-      <div>
-        <strong>${pcvEscapeHtml(job.operation || 'job')}</strong>
-        <div class="muted">${pcvEscapeHtml(job.job_id || '-')}</div>
-        <div class="muted">${pcvEscapeHtml(formatCorrelationValue(job))}</div>
-      </div>
-      <div>${stateBadge(job.status)}</div>
-      <div class="muted">${pcvEscapeHtml(getJobTime(job))}</div>
-      <div>${pcvEscapeHtml(formatJobDetail(job))}</div>
-      <div><span class="badge">${pcvEscapeHtml(source)}</span>${actions}</div>
-    </div>`;
-  }).join('');
+  if (!els.activityPanel || !PCV.uxlib || typeof PCV.uxlib.el !== 'function' || typeof PCV.uxlib.clearEl !== 'function') return;
+  const el = PCV.uxlib.el;
+  PCV.uxlib.clearEl(els.activityPanel);
+  els.activityPanel.appendChild(el('p', { class: 'activity-jobs-hint' }, t('copy.activity.jobs_hint')));
+  els.activityPanel.appendChild(el('a', {
+    href: '#/jobs',
+    class: 'btn',
+    'data-view-link': 'jobs'
+  }, t('copy.activity.jobs_link')));
 }
 
 function renderActivityPageSummary() {
@@ -489,14 +468,15 @@ function renderCurrentEvidenceStatusBadge() {
   return `<span class="status-badge current-evidence ${currentEvidenceTone(normalized)}" title="${pcvEscapeHtml(currentEvidenceStatusLabel(normalized))}">${pcvEscapeHtml(label)}</span>`;
 }
 
-function evidenceValue(value, fallback = 'Unavailable') {
-  return value === undefined || value === null || value === '' ? fallback : String(value);
+function evidenceValue(value, fallback) {
+  const shown = fallback === undefined ? t('copy.evidence.unavailable') : fallback;
+  return value === undefined || value === null || value === '' ? shown : String(value);
 }
 
 function evidenceBooleanLabel(value) {
-  if (value === true) return 'Passed';
-  if (value === false) return 'Failed';
-  return 'Unavailable';
+  if (value === true) return t('copy.evidence.passed');
+  if (value === false) return t('copy.evidence.failed');
+  return t('copy.evidence.unavailable');
 }
 
 function evidenceDashboardDetail(evidence = getBatchEvidence()) {
