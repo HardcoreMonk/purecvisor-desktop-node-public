@@ -174,9 +174,15 @@ task 크기(2026-11-09 사용자 승인 `U1 checkpoint 2 승인`): Task 2부터�
 
 실행 기록(2026-11-09): checkpoint 20(21:36~22:03). grok이 새 모듈 `web/src/modules/view-troubleshooting.ts`(223줄, `register('troubleshooting')`)를 만들었다. mount는 `#troubleshooting-cards.trouble-grid[data-view-mount]` 하나로, 네트워크 mount 뒤에 둔다. 두 열 카드 넷(Hyper-V 준비 상태와 권장 조치, service·listener, 현재 세션의 사용자·역할·로그아웃(로그인 폼 없음), 진단 번들)을 `PCV.uxlib.el`로 그린다. registry bridge, Host Ops lifecycle bucket 표, 경계 칩은 닫힌 `<details id="troubleshooting-advanced">`로 옮겼다(C-16). 붙잡힌 패널(`incident-panel`, `relogin-overlay`, `account-console-panel`, `token-rotation-panel`, `diagnostics-panel`, `beta-followup-panel`, `troubleshooting-panel`)은 접힌 절 밖에 남겼다. 옛 `renderAccountSession`, `renderDiagnosticsBundle`(`monitor.ts`), `renderTroubleshooting`(`vm-console.ts`)은 등록된 동안 카드와 고급 절을 다시 그리지 않는다. 번들 버튼·사실, 배치 증적, 오류 코드 목록은 fixture가 그 패널 문자열로 붙잡고 있어 원래 패널에 남겼다. 고급 절과 카드 문구는 i18n 키(ko·en)로 바꿨다. 진단 패널에 남은 영어 리터럴(`Download latest`, `Retry action`, Mode/Redaction/Latest bundle 등)은 계약·fixture가 붙잡아 U8 정리로 넘긴다. grok은 21:58에 build 전에 멈췄고, Claude가 build·검증·기준선 기록을 했다. domsafe 31(변화 없음), axe 기준선 2,554→2,586(+32, 진단 화면, `--prune` 없음). 검증: `npm run test:required`(node 388 pass, 기준선 기록 뒤 gate 두 번 `ok=true`, assertions 121 failed 0 violations 0), web Pester와 ratchet Pester 53/53, Delivery 785/785, `git diff --check` clean.
 
-## Task 7b: U7 증적과 계정, PR
+## Task 7b: U7 증적과 계정
 
-- [ ] 증적: 운영자 값 카드, release 엔지니어링 값은 접힌 절로(C-18). 계정: `createDataTable`과 역할 pill, 생성 모달 유지(C-13). 공통 검증, release-train queue 행. push, PR(U7 묶음), green CI 뒤 merge.
+- [x] 증적: 운영자 값 카드, release 엔지니어링 값은 접힌 절로(C-18). 계정: `createDataTable`과 역할 pill, 생성 모달 유지(C-13). 공통 검증. 로컬 commit.
+
+실행 기록(2026-11-09): checkpoint 21(22:03~22:23). grok이 두 모듈을 만들었다. `view-evidence.ts`(134줄, `register('evidence')`)는 `#evidence-cards`에 운영 카드 3장(설치 version은 batch evidence `latest.release.version`, operational current는 full admin `version` 또는 `batch_id`, 마지막 검증 시각은 `generated_at` 등. 모르면 "-")을 그린다. GPU snapshot, Public boundary head, signing·service·route/MSI 등 release 엔지니어링 값은 닫힌 `<details id="evidence-release">`로 옮겼다(C-18). `view-accounts.ts`(110줄, `register('accounts')`)는 역할 chip(전체와 역할별 개수)과 `createDataTable`(`tableId` `dt-accounts`: 사용자 이름, 역할 pill, 사용 여부, 기존 `data-action` 행 조작)을 그린다. 생성·재설정 모달(ADR-0019)과 마지막 admin 오류 상자는 그대로다(C-13). 계정 객체에 마지막 로그인 필드가 없어 그 열은 만들지 않았다. Claude 리뷰: 계약이 붙잡은 옛 `#evidence-panel`이 GPU·boundary 값을 펼친 채 보여 C-18이 덜 이뤄졌으므로, 그 패널을 접힌 절 안으로 옮겼다(id와 문자열은 그대로). 기준선 기록 때 그 실행의 알려진 `vm-detail-summary` bgGradient incomplete 6건도 함께 기록됐다(정책은 다시 돌리기). 그 flake가 gate를 깨지 않게 될 뿐이며 U8 기준선 정리에서 다시 본다. domsafe 31(변화 없음), axe 기준선 2,586→2,626(`--prune` 없음). 검증: `npm run test:required`(node 389 pass, 기준선 기록 뒤 gate 두 번 `ok=true`, assertions 121 failed 0 violations 0), web Pester와 ratchet Pester 53/53, Delivery 785/785, `git diff --check` clean. PR은 Task 7c로 나눴다.
+
+## Task 7c: U7 PR
+
+- [ ] clean HEAD 종료 검증(`npm run test:required`, `Invoke-PcvPrGate.ps1`), release-train queue 행. push, PR(U7 묶음, Task 7a~7b), green CI 뒤 merge, merge 뒤 `main` run 확인.
 
 ## Task 8a: U8 옛 렌더러 퇴역
 

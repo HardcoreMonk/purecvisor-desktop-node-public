@@ -33,7 +33,9 @@
     "view-jobs",
     "view-events",
     "view-dashboard",
-    "view-troubleshooting"
+    "view-troubleshooting",
+    "view-evidence",
+    "view-accounts"
   ],
   "bootstrap": "src/bootstrap.ts"
 }

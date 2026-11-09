@@ -363,6 +363,12 @@ function bindAccountsPanel() {
 function paintAccountsView() {
   const root = document.getElementById('accounts-panel');
   if (!root || !PCV.uxlib) return;
+  if (typeof pcvLegacyViewSkipped === 'function' && pcvLegacyViewSkipped('accounts')) {
+    const navView = window.PCV && window.PCV.nav && typeof window.PCV.nav.activeView === 'function'
+      ? window.PCV.nav.activeView()
+      : state.activeView;
+    if (navView === 'accounts') return;
+  }
   PCV.uxlib.clearEl(root);
   bindAccountsPanel();
   if (typeof canManageAccounts === 'function' && !canManageAccounts()) {
