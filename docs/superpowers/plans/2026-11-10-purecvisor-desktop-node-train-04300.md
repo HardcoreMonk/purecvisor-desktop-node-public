@@ -189,11 +189,22 @@ operational current는 `0.42.99-admin-smoke` 그대로다.
 
 ## Task 6: probe Web Console 화면 (queue 123~130)
 
-- [ ] Lane 2. 설치본 `0.43.0`이 loopback(`http://127.0.0.1/`)으로 내주는 Web Console을 확인한다. VM은 만들지 않는다.
+- [x] Lane 2. 설치본 `0.43.0`이 loopback(`http://127.0.0.1/`)으로 내주는 Web Console을 확인한다. VM은 만들지 않는다.
   - 내주는 파일: `app.bundle.js`, `index.html`, `style.css`, `sw.js`의 SHA-256이 Task 1 package payload의 같은 파일과 같은지, `sw.js` CACHE_NAME이 payload commit 소스와 같은지 본다.
   - 화면: Playwright 브라우저로 1440×900과 768×1024에서 대시보드, VM 목록, VM 상세(보존 VM 읽기만), 네트워크, 작업, 이벤트, 진단, evidence, 계정, 템플릿, 도움말, 명령 팔레트(Ctrl+K)를 연다. 화면마다 등록표 화면이 그려지는지(옛 `#command-palette` 없음, KPI 카드와 pagehead 버튼 class 유지, 진단 카드 grid), console error 0을 본다.
   - 캡처는 `artifacts/lane2-ui-parity-probe-20261110-04300/`에 둔다(커밋하지 않음).
   - evidence: `docs/ga-ready/evidence/lane2-ui-parity-probe-2026-11-10-04300.md`. 로컬 commit.
+
+실행 기록(2026-11-10 07:15~07:25 KST): 설치본 `0.43.0-admin-smoke+1f646ee`(계정 없음, loopback 세션 `200`)를 읽기만 했다.
+- 내주는 파일: `app.bundle.js`, `index.html`, `style.css`, `sw.js`, `i18n.js` 다섯 개의 SHA-256이 package payload와 payload commit 소스와 같다. CACHE_NAME `pcv-ui-va5dc518c`도 같다.
+- 화면: 1440×900과 768×1024에서 화면 열 개, VM 상세 deep link, 명령 팔레트가 모두 그려졌다.
+  - 대시보드 KPI 카드 6개가 모두 class를 유지한다. 진단 카드 4개는 grid다. 팔레트는 `role=combobox`, 항목 15개다.
+  - 옛 `#command-palette` 없음, 가로 스크롤 없음, 화면을 도는 동안 console error 0과 HTTP 4xx·5xx 0이다.
+- 캡처 24장은 `artifacts/lane2-ui-parity-probe-20261110-04300/`에 있다(커밋하지 않음).
+- 범위 밖: 새 브라우저 첫 방문의 `runtime/policy` 401 한 번(BL-0040), 진단 카드의 서비스 값 `true`(BL-0041). 둘 다 backlog `undecided`다.
+- evidence: `docs/ga-ready/evidence/lane2-ui-parity-probe-2026-11-10-04300.md`.
+
+operational current는 `0.42.99-admin-smoke` 그대로다.
 
 ## Task 7: 계정 복원
 
