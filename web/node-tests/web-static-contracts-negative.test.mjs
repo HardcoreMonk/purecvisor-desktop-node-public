@@ -412,7 +412,7 @@ const defectCases = [
   {
     name: "missing network inventory panel",
     id: "web.static.network-inventory",
-    overrides: () => removeOnce("web/index.html", 'id="network-inventory-panel"'),
+    overrides: () => removeOnce("web/index.html", "data-view-mount"),
     expectedCode: assertionFailed,
     expectedLabel: "network-inventory:panel"
   },
@@ -538,7 +538,7 @@ const defectCases = [
   {
     name: "missing network change readback chips",
     id: "web.static.network-inventory",
-    overrides: () => removeOnce("web/src/modules/vm.ts", "vm.net.chip_create"),
+    overrides: () => removeOnce("web/src/modules/view-network.ts", "vm.net.chip_create"),
     expectedCode: assertionFailed,
     expectedLabel: "network-inventory:no-switch-create-form:source"
   },

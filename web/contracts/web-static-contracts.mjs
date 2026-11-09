@@ -891,11 +891,11 @@ function verifySearchEventTable(context) {
     [/id="command-palette-input"/i, "command-palette-input"],
     [/id="command-palette-results"/i, "command-palette-results"],
     [/id="event-center-panel"/i, "event-center"],
-    [/id="job-filter"/i, "job-filter"],
-    [/id="network-filter"/i, "network-filter"]
+    [/id="job-filter"/i, "job-filter"]
   ]) {
     context.assertMatch(index, pattern, `search-event-table:${label}`);
   }
+  context.assertMatch(index, /id="network-filter"/i, "search-event-table:network-filter");
   assertSourceAndGenerated(context, shellSource, app, [
     [/function\s+buildCommandPaletteItems\s*\(/i, "build-command-palette"],
     [/function\s+renderCommandPalette\s*\(/i, "render-command-palette"],
@@ -1783,8 +1783,7 @@ function verifyNetworkInventory(context) {
   for (const [pattern, label] of [
     [/data-view-link="network"/i, "network-link"],
     [/id="network"/i, "network-view"],
-    [/id="view-network"/i, "view-network"],
-    [/id="network-inventory-panel"/i, "panel"]
+    [/id="network"[\s\S]{0,800}data-view-mount/i, "panel"]
   ]) {
     context.assertMatch(index, pattern, `network-inventory:${label}`);
   }
@@ -1795,11 +1794,11 @@ function verifyNetworkInventory(context) {
   );
   for (const [pattern, label] of [
     [/networkInventory/i, "network-inventory"],
-    [/loadNetworkInventory/i, "load"],
-    [/renderNetworkInventory/i, "render"]
+    [/loadNetworkInventory/i, "load"]
   ]) {
     context.assertMatch(combined, pattern, `network-inventory:${label}`);
   }
+  context.assertMatch(app, /function renderNetworkView/i, "network-inventory:render");
   for (const [pattern, label] of [
     [/Default Switch/i, "default-switch"],
     [/fixture-ethernet/i, "fixture-ethernet"]
@@ -1807,7 +1806,8 @@ function verifyNetworkInventory(context) {
     context.assertMatch(combined + fixtures, pattern, `network-inventory:${label}`);
   }
   context.assertMatch(combined, /read-only/i, "network-inventory:read-only");
-  const inventorySource = context.readText("web/src/modules/vm.ts");
+  const inventorySource = context.readText("web/src/modules/view-network.ts");
+  const vmDetailSource = context.readText("web/src/modules/vm.ts");
   assertSourceAndGenerated(context, inventorySource, app, [
     [/network-change-readback/i, "network-change-readback"],
     [/vm\.net\.chip_create/i, "no-switch-create-form"],
@@ -1821,13 +1821,14 @@ function verifyNetworkInventory(context) {
   context.assertMatch(i18n, /no DHCP editor/i, "network-inventory:no-dhcp-editor:i18n");
   context.assertMatch(i18n, /switch connect in VM detail/i, "network-inventory:network-connect-vm-detail:i18n");
   context.assertNotMatch(
-    inventorySource + app,
+    inventorySource + vmDetailSource + app,
     /data-action="switch-create"|data-action="switch-remove"|name="nat-network"|name="dhcp-scope"/i,
     "network-inventory:no-editor-form"
   );
-  const inventoryFns = sliceFunction(inventorySource, "renderNetworkInventory") + sliceFunction(inventorySource, "renderNetworkChangeReadback");
+  const inventoryFns = sliceFunction(inventorySource, "renderNetworkView") + sliceFunction(inventorySource, "renderNetworkChangeReadback");
+  context.assertMatch(inventoryFns, /function renderNetworkView/i, "network-inventory:render-body");
   context.assertNotMatch(inventoryFns, /data-action="vm-network-connect"/i, "network-inventory:no-connect-form-in-inventory");
-  context.assertMatch(inventorySource, /data-action="vm-network-connect"/i, "network-inventory:connect-form-in-detail");
+  context.assertMatch(vmDetailSource, /data-action="vm-network-connect"/i, "network-inventory:connect-form-in-detail");
   context.assertNotMatch(
     combined,
     /New-VMSwitch|Remove-VMSwitch|New-NetIPAddress|Set-NetFirewallRule/i,

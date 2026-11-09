@@ -241,7 +241,9 @@ function updateFavicon() {
   document.title = 'PureCVisor Desktop Node' + (running > 0 ? ' (' + running + ' VMs)' : '');
   var canvas = document.createElement('canvas');
   canvas.width = 32; canvas.height = 32;
+  if (typeof canvas.getContext !== 'function') return;
   var ctx = canvas.getContext('2d');
+  if (!ctx) return;
   var color = running > 0 ? '#00ff88' : (vmList && vmList.length > 0 ? '#ffee00' : '#ff2266');
   ctx.beginPath(); ctx.arc(16, 16, 14, 0, Math.PI * 2);
   ctx.fillStyle = color; ctx.fill();

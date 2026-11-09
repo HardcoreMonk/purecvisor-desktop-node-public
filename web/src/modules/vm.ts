@@ -4,110 +4,6 @@
 window.PCV = window.PCV || {};
 (function (PCV) {
 
-function getNetworkInventory() {
-  if (Array.isArray(state.networkInventory)) {
-    return { source: 'network.inventory', mutating: false, switches: state.networkInventory };
-  }
-  return asObject(state.networkInventory);
-}
-
-function getNetworkSwitches() {
-  const inventory = getNetworkInventory();
-  return asArray(inventory.switches || inventory.items || inventory.networks);
-}
-
-function formatNetworkBoolean(value) {
-  if (value === true) return t('vm.net.enabled');
-  if (value === false) return t('vm.net.disabled');
-  return '-';
-}
-
-function renderNetworkFailureGuidance(error) {
-  if (!error) return '';
-  const code = error.code || 'PCV_NETWORK_INVENTORY_UNAVAILABLE';
-  const parity = code === 'PCV_NATIVE_PARITY_INCOMPLETE' || String(error.detail || error.message || '').toLowerCase().includes('parity');
-  const detail = parity
-    ? t('vm.net.error_parity')
-    : error.detail || t('vm.net.error_fallback');
-  return `<div class="activity-warning network-error-state">
-    <strong>${pcvEscapeHtml(code)}</strong>
-    <span>${pcvEscapeHtml(error.message || t('vm.net.error_unavailable'))}</span>
-    <p>${pcvEscapeHtml(detail)}</p>
-  </div>`;
-}
-
-function renderNetworkChangeReadback(switches) {
-  const rows = asArray(switches);
-  const productCount = rows.filter((item) => String(item?.name || '').toLowerCase().startsWith('pcv-')).length;
-  const reservedCount = rows.filter((item) => {
-    const name = String(item?.name || '').toLowerCase();
-    return name === 'default switch' || name.startsWith('wsl');
-  }).length;
-  const externalCount = rows.filter((item) => String(item?.type || item?.switch_type || '').toLowerCase() === 'external').length;
-  return `<div class="network-change-readback">
-      <div class="diagnostics-grid">
-        <div class="diagnostics-fact"><span class="muted">${pcvEscapeHtml(t('vm.net.switch_create'))}</span><strong>${pcvEscapeHtml(t('vm.net.service_only'))}</strong></div>
-        <div class="diagnostics-fact"><span class="muted">${pcvEscapeHtml(t('vm.net.product'))}</span><strong>${pcvEscapeHtml(productCount)}</strong></div>
-        <div class="diagnostics-fact"><span class="muted">${pcvEscapeHtml(t('vm.net.reserved'))}</span><strong>${pcvEscapeHtml(reservedCount)}</strong></div>
-        <div class="diagnostics-fact"><span class="muted">${pcvEscapeHtml(t('vm.net.external'))}</span><strong>${pcvEscapeHtml(externalCount === 0 ? t('vm.net.none') : t('vm.net.present'))}</strong></div>
-        <div class="diagnostics-fact"><span class="muted">${pcvEscapeHtml(t('vm.net.connect_label'))}</span><strong>${pcvEscapeHtml(t('vm.net.connect_value'))}</strong></div>
-        <div class="diagnostics-fact"><span class="muted">${pcvEscapeHtml(t('vm.net.nat'))}</span><strong>${pcvEscapeHtml(t('vm.net.excluded'))}</strong></div>
-      </div>
-      <div class="boundary-chip-row">
-        <span>${pcvEscapeHtml(t('vm.net.chip_create'))}</span>
-        <span>${pcvEscapeHtml(t('vm.net.chip_nat'))}</span>
-        <span>${pcvEscapeHtml(t('vm.net.chip_dhcp'))}</span>
-        <span>${pcvEscapeHtml(t('vm.net.chip_connect'))}</span>
-      </div>
-    </div>`;
-}
-
-function renderNetworkInventory() {
-  if (!els.networkInventoryPanel) return;
-  const inventory = getNetworkInventory();
-  const allSwitches = getNetworkSwitches();
-  const switches = filterRowsByQuery(allSwitches, state.networkFilter, (item) => [
-    item?.name,
-    item?.type || item?.switch_type,
-    item?.net_adapter_interface_description || item?.adapter || item?.adapter_name,
-    item?.is_default === true ? 'default' : ''
-  ].join(' '));
-  const source = inventory.source || 'network.inventory';
-  const mutationMode = inventory.mutating === true ? t('vm.net.mutating') : t('vm.net.readonly');
-  const defaultSwitchCount = switches.filter((item) => item?.is_default === true || String(item?.name || '').toLowerCase() === 'default switch').length;
-  const errorHtml = renderNetworkFailureGuidance(state.networkError);
-  const rows = switches.map((item) => {
-    const isDefault = item?.is_default === true || String(item?.name || '').toLowerCase() === 'default switch';
-    return `
-      <tr>
-        <td><strong>${pcvEscapeHtml(item?.name || '-')}</strong></td>
-        <td>${pcvEscapeHtml(item?.type || item?.switch_type || '-')}</td>
-        <td>${isDefault ? stateBadge('default') : '-'}</td>
-        <td>${pcvEscapeHtml(formatNetworkBoolean(item?.allow_management_os))}</td>
-        <td>${pcvEscapeHtml(item?.net_adapter_interface_description || item?.adapter || item?.adapter_name || '-')}</td>
-      </tr>`;
-  }).join('');
-
-  els.networkInventoryPanel.innerHTML = `
-    ${errorHtml}
-    ${renderTableStateSummary(t('vm.net.switches'), switches.length, allSwitches.length, state.networkFilter, t('vm.net.summary_note'))}
-    ${renderNetworkChangeReadback(allSwitches)}
-    <div class="network-summary-grid">
-      <div class="network-summary-card"><span class="muted">${pcvEscapeHtml(t('vm.net.source'))}</span><strong>${pcvEscapeHtml(source)}</strong></div>
-      <div class="network-summary-card"><span class="muted">${pcvEscapeHtml(t('vm.net.mutation'))}</span><strong>${pcvEscapeHtml(mutationMode)}</strong></div>
-      <div class="network-summary-card"><span class="muted">${pcvEscapeHtml(t('vm.net.switches'))}</span><strong>${pcvEscapeHtml(switches.length)}</strong></div>
-      <div class="network-summary-card"><span class="muted">${pcvEscapeHtml(t('vm.net.default'))}</span><strong>${pcvEscapeHtml(defaultSwitchCount)}</strong></div>
-    </div>
-    <div class="network-table-wrap">
-      ${switches.length === 0
-        ? `<p class="muted network-empty-state">${pcvEscapeHtml(t('vm.net.empty'))}</p>`
-        : `<table class="network-table">
-            <thead><tr><th>${pcvEscapeHtml(t('vm.net.col.name'))}</th><th>${pcvEscapeHtml(t('vm.net.col.type'))}</th><th>${pcvEscapeHtml(t('vm.net.col.default'))}</th><th>${pcvEscapeHtml(t('vm.net.col.mgmt'))}</th><th>${pcvEscapeHtml(t('vm.net.col.adapter'))}</th></tr></thead>
-            <tbody>${rows}</tbody>
-          </table>`}
-    </div>`;
-}
-
 // --- legacy render-vm-detail.ts ---
 function vmPowerKind(vm) {
   const value = String(getVmState(vm) || '').toLowerCase();
@@ -2440,12 +2336,6 @@ function requestCloseCreateVmWizard() {
 
 // exports
 window.vmPowerKind = vmPowerKind;
-window.getNetworkInventory = getNetworkInventory;
-window.getNetworkSwitches = getNetworkSwitches;
-window.formatNetworkBoolean = formatNetworkBoolean;
-window.renderNetworkFailureGuidance = renderNetworkFailureGuidance;
-window.renderNetworkChangeReadback = renderNetworkChangeReadback;
-window.renderNetworkInventory = renderNetworkInventory;
 window.renderVmDetail = renderVmDetail;
 window.renderExportImportReadback = renderExportImportReadback;
 window.renderCheckpointScheduleReadback = renderCheckpointScheduleReadback;
@@ -2495,5 +2385,5 @@ window.openCreateVmWizard = openCreateVmWizard;
 window.requestCloseCreateVmWizard = requestCloseCreateVmWizard;
 window.submitCreateVmWizard = submitCreateVmWizard;
 window.readCreateWizardPayload = readCreateWizardPayload;
-PCV.vm = Object.assign(PCV.vm || {}, { getNetworkInventory, getNetworkSwitches, formatNetworkBoolean, renderNetworkFailureGuidance, renderNetworkChangeReadback, renderNetworkInventory, renderVmDetail, renderExportImportReadback, renderCheckpointScheduleReadback, renderVmWorkbenchContext, renderCheckpointList, getSelectedVmReadbacks, readbackBucket, readbackFieldSummary, readbackErrorFor, renderReadbackCard, renderVmQosGuestReadback, getSelectedVmQosControl, renderQosControlResult, renderVmQosDirectControl, queueVmLifecycle, queueVmAttach, queueVmResourceMutation, readRequiredText, readNonNegativeInt, readBoundedInt, readVmQosPayload, readVmGuestExecPayload, readVmGuestFilePayload, readVmGuestChannelPayload, buildVmQosConfirmation, buildVmGuestExecutionConfirmation, queueVmQosDirectControl, queueVmGuestExecutionControl, refreshVmDeleteStatus, queueVmManage, queueVmGuestFile, queueVmTemplateLock, queueVmClone, queueVmDelete, queueCheckpointCreate, queueCheckpointRestore, queueCheckpointDelete, openVmCloneModal, suggestCloneName, collectVmJobs, openCheckpointCreateModal, suggestCheckpointName, refreshCheckpointSurface, watchCheckpointSurface, bindCreateVmWizard, openCreateVmWizard, requestCloseCreateVmWizard, submitCreateVmWizard, readCreateWizardPayload });
+PCV.vm = Object.assign(PCV.vm || {}, { renderVmDetail, renderExportImportReadback, renderCheckpointScheduleReadback, renderVmWorkbenchContext, renderCheckpointList, getSelectedVmReadbacks, readbackBucket, readbackFieldSummary, readbackErrorFor, renderReadbackCard, renderVmQosGuestReadback, getSelectedVmQosControl, renderQosControlResult, renderVmQosDirectControl, queueVmLifecycle, queueVmAttach, queueVmResourceMutation, readRequiredText, readNonNegativeInt, readBoundedInt, readVmQosPayload, readVmGuestExecPayload, readVmGuestFilePayload, readVmGuestChannelPayload, buildVmQosConfirmation, buildVmGuestExecutionConfirmation, queueVmQosDirectControl, queueVmGuestExecutionControl, refreshVmDeleteStatus, queueVmManage, queueVmGuestFile, queueVmTemplateLock, queueVmClone, queueVmDelete, queueCheckpointCreate, queueCheckpointRestore, queueCheckpointDelete, openVmCloneModal, suggestCloneName, collectVmJobs, openCheckpointCreateModal, suggestCheckpointName, refreshCheckpointSurface, watchCheckpointSurface, bindCreateVmWizard, openCreateVmWizard, requestCloseCreateVmWizard, submitCreateVmWizard, readCreateWizardPayload });
 })(window.PCV);

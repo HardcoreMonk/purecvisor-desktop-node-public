@@ -884,7 +884,6 @@ function render() {
   try { renderMetrics(); } catch (e) { if (window._DEBUG) console.warn('render:renderMetrics', e); }
   try { renderHost(); } catch (e) { if (window._DEBUG) console.warn('render:renderHost', e); }
   try { renderVms(); } catch (e) { if (window._DEBUG) console.warn('render:renderVms', e); }
-  try { renderNetworkInventory(); } catch (e) { if (window._DEBUG) console.warn('render:renderNetworkInventory', e); }
   try { renderVmWorkbenchContext(); } catch (e) { if (window._DEBUG) console.warn('render:renderVmWorkbenchContext', e); }
   try { renderVmDetail(); } catch (e) { if (window._DEBUG) console.warn('render:renderVmDetail', e); }
   try { paintVmConsoleFrame(); } catch (e) { if (window._DEBUG) console.warn('render:paintVmConsoleFrame', e); }

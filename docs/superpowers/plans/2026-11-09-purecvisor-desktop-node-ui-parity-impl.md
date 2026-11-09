@@ -120,9 +120,15 @@ task 크기(2026-11-09 사용자 승인 `U1 checkpoint 2 승인`): Task 2부터�
 
 실행 기록(2026-11-09): checkpoint 8(18:40~18:48). grok이 `nav.ts`에 `PCV.views`(`register`, `isRegistered`, `get`, 시험용 `unregister`, `renderActive(reason)`)를 넣었다. `register`는 nav route 이름과 `render` 함수만 받고, 같은 이름은 교체한다. `renderActive`는 활성 화면이 등록돼 있을 때만 그 `render(mount, ctx)` 하나를 부른다. `ctx`는 `{ reason, generation, isCurrent }`이고, `isCurrent`는 이동했거나 활성 화면이 바뀌면 false다. `render`가 throw하면 그 mount에만 `loadError`를 붙인다. mount 규칙: `#cb .app-view[data-view="<name>"]` 안의 `[data-view-mount]`, 없으면 섹션 자체다. 기존 자식은 지우지 않는다. `_renderContentPaint`는 섹션을 켠 뒤 `renderActive('navigate')`를 부르고, 같은 페인트 안에서 옛 `render()`가 다시 부르지 않게 막는다(`navPaintActive`). `monitor.ts` `render()`는 옛 그리기 뒤에 `renderActive('refresh')`를 부르고, `renderActiveView()`는 등록된 섹션의 표시를 nav에 맡긴다. 옛 그리기 함수 guard는 `pcvLegacyViewSkipped(name)`으로 두고, 각 화면을 옮길 때 건다. `HN.*`(`ui.ts`)는 `PCV.uxlib.el`로 DOM 노드를 돌려주므로, 등록 화면은 `HN`·`uxlib.el`로 노드를 만들어 mount에 붙이는 경로로 domsafe 천장(34)을 올리지 않는다. 등록된 제품 화면은 아직 없다. 검증: `npm run test:required` exit 0(node 382 pass, browser gate assertions 121 failed 0 violations 0, 기준선 변화 없음), web Pester 50/50, ratchet Pester 3/3, Delivery 785/785, `git diff --check` clean.
 
-## Task 4b: U4 네트워크, PR
+## Task 4b: U4 네트워크
 
-- [ ] 네트워크를 등록표로 옮긴다: `HN.pagehead`, `filterBar` 종류 chip(스위치 `type` 값별)과 개수, `createDataTable`(이름, 종류, 연결 VM 수, 어댑터, 상태 pill), 768px 이하 카드, 빈 상태와 읽기 실패(문구 구분 node 시험), 하드코딩 패널 색을 token으로. 공통 검증, release-train queue 행. push, PR(U4 묶음), green CI 뒤 merge.
+- [x] 네트워크를 등록표로 옮긴다: `HN.pagehead`, `filterBar` 종류 chip(스위치 `type` 값별)과 개수, `createDataTable`(이름, 종류, 연결 VM 수, 어댑터, 상태 pill), 768px 이하 카드, 빈 상태와 읽기 실패(문구 구분 node 시험), 하드코딩 패널 색을 token으로. 공통 검증. 로컬 commit.
+
+실행 기록(2026-11-09): checkpoint 9(18:48~19:11)에서 grok이 새 모듈 `web/src/modules/view-network.ts`(`PCV.views.register('network')`, 214줄)를 만들었다. 내용은 종류 chip(전체와 type별 개수), `createDataTable`(이름, 종류, 연결 VM 수, 어댑터, 상태 pill. 연결 VM 수는 `state.vms` 어댑터 switch로 VM 단위로 셈), skeleton, `loadError`(기존 parity 안내 재사용), `emptyState`, 경계 절(읽기 전용, 스위치 생성은 service만, NAT 제외 chip)이다. 옛 `vm.ts` `renderNetworkInventory`와 전용 helper를 지웠고, 768px 이하 카드와 token 색을 넣었다. 계약이 잡지 않던 요약 카드(source, 스위치 수, 기본 수)와 관리 OS 열은 뺐다. 검증 전에 한도에 걸려, 권장안 자동 승인으로 checkpoint 10(19:11~19:33)에서 이어 했다. Claude는 `vm.ts` ratchet을 2,538→2,389로 낮추고 pin을 갱신했으며(`Update-PcvContractSpecPins.ps1 -Apply`), domsafe 천장을 34→33으로 낮췄다. grok은 node 시험을 더하고 첫 `test:required` 실패를 고쳤다. 네트워크 머리와 검색은 VM 화면처럼 `index.html`의 정적 pagehead와 원래 `#network-filter` markup으로 두어 계약(`search-event-table`, i18n BL-0024)을 그대로 지켰다. 빈 상태에 `network-empty-state` class를 붙였다. fixture에서 canvas가 없을 때 `updateFavicon`이 멈추던 것(`getContext`)에 guard를 넣었다. `network-inventory:panel` 계약의 창은 pagehead가 들어가 240→800자로 넓혔다(mount 제거 결함 주입은 그대로 실패). axe 기준선 2,256→2,314(+58, `--prune` 없음). 검증: `npm run test:required` exit 0(node 383 pass, browser gate assertions 121 failed 0 violations 0), web Pester와 ratchet Pester 53/53, Delivery 785/785, `git diff --check` clean. PR은 Task 4c로 나눴다.
+
+## Task 4c: U4 PR
+
+- [ ] clean HEAD 종료 검증(`npm run test:required`, `Invoke-PcvPrGate.ps1`), release-train queue 행. push, PR(U4 묶음, Task 4a~4b), green CI 뒤 merge, merge 뒤 `main` run 확인.
 
 ## Task 5a: U5 작업
 
