@@ -164,7 +164,9 @@ task 크기(2026-11-09 사용자 승인 `U1 checkpoint 2 승인`): Task 2부터�
 
 ## Task 6c: U6 PR
 
-- [ ] clean HEAD 종료 검증(`npm run test:required`, `Invoke-PcvPrGate.ps1`), release-train queue 행. push, PR(U6 묶음, Task 6a~6b), green CI 뒤 merge, merge 뒤 `main` run 확인.
+- [x] clean HEAD 종료 검증(`npm run test:required`, `Invoke-PcvPrGate.ps1`), release-train queue 행. push, PR(U6 묶음, Task 6a~6b), green CI 뒤 merge, merge 뒤 `main` run 확인.
+
+실행 기록(2026-11-09): checkpoint 19(21:27~). clean HEAD `bdc5874e`에서 `npm run test:required` node 387 pass. browser gate 첫 실행은 알려진 `vm-detail-summary` bgGradient flake였고, 한 번 다시 돌려 `ok=true`였다. `Invoke-PcvPrGate.ps1` ok, `git diff --check origin/main...HEAD` clean. push 뒤 PR #128, release-train queue 행(merge_commit `bdc5874e`).
 
 ## Task 7a: U7 진단
 
