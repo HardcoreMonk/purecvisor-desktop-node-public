@@ -2125,6 +2125,218 @@ test("registered network render draws pagehead, type chips, connected VM counts,
   }
 });
 
+test("registered jobs render draws chips, kind select, table columns, and does not repaint the legacy jobs list", async () => {
+  const jobs = env.document.querySelector('.app-view[data-view="jobs"]');
+  const index = fs.readFileSync(webRoot + "index.html", "utf8");
+  const head = env.document.createElement("div");
+  head.className = "pagehead";
+  const title = env.document.createElement("h1");
+  title.className = "pagehead-title";
+  title.setAttribute("data-i18n", "copy.jobs.title");
+  title.textContent = "작업";
+  const desc = env.document.createElement("p");
+  desc.className = "pagehead-desc";
+  desc.setAttribute("data-i18n", "copy.jobs.desc");
+  desc.textContent = "접수된 작업과 진행 상태입니다.";
+  head.appendChild(title);
+  head.appendChild(desc);
+  const statusSelect = env.document.createElement("select");
+  statusSelect.id = "job-status-filter";
+  for (const value of ["all", "queued", "running", "succeeded", "failed", "canceled"]) {
+    const option = env.document.createElement("option");
+    option.value = value;
+    option.textContent = value;
+    statusSelect.appendChild(option);
+  }
+  const filter = env.document.createElement("input");
+  filter.id = "job-filter";
+  filter.setAttribute("type", "search");
+  const mount = env.document.createElement("div");
+  mount.id = "jobs-panel";
+  mount.className = "jobs-panel";
+  mount.setAttribute("data-view-mount", "");
+  jobs.appendChild(head);
+  jobs.appendChild(filter);
+  jobs.appendChild(statusSelect);
+  jobs.appendChild(mount);
+  env.els.jobsPanel = mount;
+  const saved = {
+    serverJobs: env.state.serverJobs,
+    trackedJobs: env.state.trackedJobs,
+    serverJobPage: env.state.serverJobPage,
+    jobStatusFilter: env.state.jobStatusFilter,
+    jobFilter: env.state.jobFilter,
+    jobSort: env.state.jobSort,
+    jobOperationFilter: env.state.jobOperationFilter,
+    activityError: env.state.activityError,
+    authAccessToken: env.state.authAccessToken,
+    authSession: env.state.authSession
+  };
+  const product = env.PCV.viewJobs.render;
+  env.PCV.views.register("jobs", { render: product });
+  const sample = [
+    { job_id: "job-run", operation: "vm.create", status: "running", created_at: "2026-05-05T00:00:00.000Z", updated_at: "2026-05-05T00:00:05.000Z", target: "vm-run" },
+    { job_id: "job-ok", operation: "vm.shutdown", status: "succeeded", created_at: "2026-05-05T00:00:00.000Z", updated_at: "2026-05-05T00:00:05.000Z", target: "vm-ok" },
+    { job_id: "job-fail", operation: "vm.delete", status: "failed", created_at: "2026-05-05T00:00:00.000Z", updated_at: "2026-05-05T00:00:05.000Z", target: "vm-fail", error: { code: "PCV_JOB_FAILED", message: "boom" } },
+    { job_id: "job-cancel", operation: "checkpoint.create", status: "canceled", created_at: "2026-05-05T00:00:00.000Z", updated_at: "2026-05-05T00:00:05.000Z", target: "vm-cancel" },
+    { job_id: "job-queue", operation: "vm.restart", status: "queued", created_at: "2026-05-05T00:00:00.000Z", updated_at: "2026-05-05T00:00:05.000Z", target: "vm-queue" }
+  ];
+  const chip = (value) => mount.querySelector(`[data-facet="jobStatus"][data-val="${value}"]`);
+  const previousNext = env.loadNextJobPage;
+  try {
+    env.state.serverJobs = sample.map((job) => ({ ...job }));
+    env.state.trackedJobs = [];
+    env.state.serverJobPage = { next_offset: null, limit: 50, offset: 0, retention: { max_terminal_jobs: 500 } };
+    env.state.jobStatusFilter = "all";
+    env.state.jobFilter = "";
+    env.state.jobSort = "updated:desc";
+    env.state.jobOperationFilter = "";
+    env.state.activityError = null;
+    env.state.authAccessToken = "";
+    env.state.authSession = null;
+    env.PCV.ui.filterState.apply({ jobStatus: [] });
+    env.navigateTo("jobs");
+    assert.match(index, /data-i18n="copy\.jobs\.title"[^>]*>작업</);
+    assert.match(index, /data-i18n="copy\.jobs\.desc"[^>]*>[^<]*접수된 작업/);
+    assert.match(index, /id="job-filter"/);
+    assert.match(index, /id="job-status-filter"/);
+    assert.match(index, /id="job-sort"/);
+    assert.match(index, /id="clear-job-history"/);
+    assert.match(index, /id="jobs-panel"[^>]*data-view-mount/);
+    assert.equal(mount.querySelector(".pagehead"), null);
+    assert.equal(mount.querySelector("#job-filter"), null);
+    assert.equal(chip("__all__").querySelector(".chip-c").textContent, "5");
+    assert.equal(chip("running").querySelector(".chip-c").textContent, "1");
+    assert.equal(chip("running").textContent.includes("진행 중"), true);
+    assert.equal(chip("succeeded").querySelector(".chip-c").textContent, "1");
+    assert.equal(chip("failed").querySelector(".chip-c").textContent, "1");
+    assert.equal(chip("canceled").querySelector(".chip-c").textContent, "1");
+    assert.equal(mount.querySelector("#job-operation-filter").value, "");
+    assert.deepEqual(
+      [...mount.querySelectorAll(".jobs-view-table thead th")].map((cell) => cell.textContent),
+      ["접수 시각", "종류", "대상", "상태", "걸린 시간", "오류 요약", "조작"]
+    );
+    assert.equal(mount.querySelector(".jobs-view-table .sb-search"), null);
+    assert.equal([...mount.querySelectorAll("button")].some((button) => button.textContent === "CSV"), true);
+    const runCancel = [...mount.querySelectorAll('[data-action="cancel-job"]')].find((button) => button.getAttribute("data-job-id") === "job-run");
+    assert.equal(runCancel.getAttribute("data-job-cancel-scope"), "job");
+    assert.equal(runCancel.disabled, false);
+    assert.equal(mount.querySelector('[data-action="retry-job"]').getAttribute("data-job-id"), "job-fail");
+    assert.equal(mount.querySelector('[data-action="retry-job"]').disabled, false);
+
+    chip("failed").click();
+    assert.equal(env.state.jobStatusFilter, "failed");
+    assert.equal(statusSelect.value, "failed");
+    assert.equal(chip("failed").classList.contains("on"), true);
+    assert.equal(mount.querySelector('[data-action="retry-job"]').getAttribute("data-job-id"), "job-fail");
+    assert.equal(mount.querySelector('[data-action="cancel-job"]'), null);
+
+    statusSelect.value = "succeeded";
+    statusSelect.dispatchEvent({ type: "change", target: statusSelect });
+    assert.equal(env.state.jobStatusFilter, "succeeded");
+    assert.equal(chip("succeeded").classList.contains("on"), true);
+    assert.match(mount.textContent, /vm-ok/);
+
+    const kind = mount.querySelector("#job-operation-filter");
+    kind.value = "vm.delete";
+    kind.dispatchEvent({ type: "change", target: kind });
+    assert.equal(env.state.jobOperationFilter, "vm.delete");
+    assert.equal(env.state.jobStatusFilter, "succeeded");
+    assert.ok(mount.querySelector(".jobs-empty-filter"));
+    assert.match(mount.textContent, /현재 필터와 맞는 작업이 없습니다/);
+
+    env.state.authAccessToken = "jwt";
+    env.state.authSession = { role: "viewer", permissions: ["read"] };
+    env.state.jobStatusFilter = "all";
+    env.state.jobOperationFilter = "";
+    env.render();
+    assert.equal(mount.querySelector('[data-action="cancel-job"]').disabled, true);
+    assert.equal(mount.querySelector('[data-action="retry-job"]').disabled, true);
+    env.state.authAccessToken = "";
+    env.state.authSession = null;
+
+    env.state.serverJobs = [];
+    env.state.trackedJobs = [];
+    env.state.jobStatusFilter = "all";
+    env.state.jobFilter = "";
+    env.state.jobOperationFilter = "";
+    env.state.activityError = null;
+    env.render();
+    const emptyPage = mount.querySelector(".jobs-empty-page").textContent;
+    assert.match(emptyPage, /이 페이지에 작업이 없습니다/);
+    assert.equal(mount.querySelector(".pcv-load-error"), null);
+    assert.equal(mount.querySelector(".jobs-empty-filter"), null);
+
+    env.state.jobFilter = "zzzz-no-match";
+    env.render();
+    const emptyFilter = mount.querySelector(".jobs-empty-filter").textContent;
+    assert.match(emptyFilter, /현재 필터와 맞는 작업이 없습니다/);
+    assert.equal(emptyFilter.includes("이 페이지에 작업이 없습니다"), false);
+    assert.equal(mount.querySelector(".pcv-load-error"), null);
+
+    env.state.jobFilter = "";
+    env.state.activityError = { code: "PCV_JOB_LIST_FAILED", message: "jobs down" };
+    env.render();
+    const errorText = mount.querySelector(".pcv-load-error").textContent;
+    assert.match(errorText, /읽지 못했습니다/);
+    assert.match(errorText, /PCV_JOB_LIST_FAILED/);
+    assert.equal(mount.querySelector(".jobs-empty-page"), null);
+    assert.equal(mount.querySelector(".jobs-empty-filter"), null);
+    assert.equal(errorText.includes("이 페이지에 작업이 없습니다"), false);
+    assert.equal(errorText.includes("현재 필터와 맞는 작업이 없습니다"), false);
+
+    env.state.activityError = null;
+    env.state.serverJobs = sample.map((job) => ({ ...job }));
+    env.state.serverJobPage = { next_offset: 50, limit: 50, offset: 0, retention: { max_terminal_jobs: 500 } };
+    env.render();
+    const next = mount.querySelector('[data-action="load-next-jobs"]');
+    assert.equal(next.getAttribute("data-next-offset"), "50");
+    assert.match(next.textContent, /다음 페이지/);
+    const seen = [];
+    env.loadNextJobPage = () => {
+      seen.push(env.state.serverJobPage.next_offset);
+      return Promise.resolve();
+    };
+    next.click();
+    await flush();
+    assert.deepEqual(seen, [50]);
+
+    const marker = env.document.createElement("p");
+    marker.textContent = "legacy-marker";
+    mount.appendChild(marker);
+    env.renderJobs();
+    assert.equal(mount.querySelector("p").textContent, "legacy-marker");
+    assert.equal(mount.querySelector(".job-row"), null);
+    env.PCV.views.unregister("jobs");
+    env.state.serverJobs = [];
+    env.state.trackedJobs = [];
+    env.state.jobFilter = "";
+    env.state.jobStatusFilter = "all";
+    env.renderJobs();
+    assert.match(mount.innerHTML, /No jobs on this page/);
+    assert.equal(mount.textContent.includes("legacy-marker"), false);
+  } finally {
+    env.loadNextJobPage = previousNext;
+    env.state.serverJobs = saved.serverJobs;
+    env.state.trackedJobs = saved.trackedJobs;
+    env.state.serverJobPage = saved.serverJobPage;
+    env.state.jobStatusFilter = saved.jobStatusFilter;
+    env.state.jobFilter = saved.jobFilter;
+    env.state.jobSort = saved.jobSort;
+    env.state.jobOperationFilter = saved.jobOperationFilter || "";
+    env.state.activityError = saved.activityError;
+    env.state.authAccessToken = saved.authAccessToken;
+    env.state.authSession = saved.authSession;
+    env.navigateTo("dashboard");
+    env.PCV.ui.filterState.apply({ jobStatus: [] });
+    if (head.parentNode) head.remove();
+    if (filter.parentNode) filter.remove();
+    if (statusSelect.parentNode) statusSelect.remove();
+    if (mount.parentNode) mount.remove();
+    env.PCV.views.register("jobs", { render: product });
+  }
+});
+
 test("logout closes open modals", async () => {
   if (!env.document.getElementById("toasts")) {
     const toasts = env.document.createElement("div");

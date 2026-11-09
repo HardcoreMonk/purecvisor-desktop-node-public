@@ -1382,6 +1382,8 @@ await context.downloadLatestDiagnosticBundle();
 await flush();
 await context.navigateTo("network");
 await flush();
+await context.navigateTo("jobs");
+await flush();
 await context.navigateTo("dashboard");
 await flush();
 
@@ -1553,7 +1555,9 @@ requireIncludes(partialFailureRun.document.getElementById("hero-workload").textC
 requireIncludes(partialFailureRun.document.getElementById("hero-host-mode").textContent, "Ready", "partial failure hero host mode");
 
 const emptyJobsRun = await runFixture({ jobs: [], initialTrackedJobs: [] });
-const emptyJobsHtml = emptyJobsRun.document.getElementById("jobs-panel").innerHTML;
+await emptyJobsRun.context.navigateTo("jobs");
+await flush();
+const emptyJobsHtml = collectDomText(emptyJobsRun.document.getElementById("jobs"));
 requireIncludes(emptyJobsHtml, "No jobs on this page", "empty jobs panel");
 requireIncludes(emptyJobsHtml, "retained terminal jobs", "empty jobs panel");
 requireIncludes(emptyJobsHtml, "failed job retry", "empty jobs panel");

@@ -356,11 +356,13 @@
         </section>
 
         <section id="jobs" class="section app-view" data-view="jobs">
-          <div class="section-header">
-            <div>
-              <p class="eyebrow" data-i18n="copy.jobs.eyebrow">관제</p>
-              <h2 data-i18n="copy.jobs.title">작업</h2>
+          <div class="pagehead">
+            <div class="pagehead-copy">
+              <h1 class="pagehead-title" data-i18n="copy.jobs.title">작업</h1>
+              <p class="pagehead-desc" data-i18n="copy.jobs.desc">접수된 작업과 진행 상태입니다.</p>
             </div>
+          </div>
+          <div class="section-header jobs-toolbar">
             <label class="filter-control">
               <span data-i18n="copy.filter">필터</span>
               <input id="job-filter" type="search" autocomplete="off" placeholder="작업 ID, 동작, 오류" data-i18n-placeholder="copy.jobs.placeholder">
@@ -387,7 +389,7 @@
             </label>
             <button id="clear-job-history" type="button" data-i18n="copy.jobs.clear">기록 지우기</button>
           </div>
-          <div id="jobs-panel" class="jobs-panel"></div>
+          <div id="jobs-panel" class="jobs-panel" data-view-mount></div>
         </section>
 
         <section id="activity" class="section app-view" data-view="activity">

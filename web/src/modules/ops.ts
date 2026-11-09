@@ -101,6 +101,7 @@ function renderJobCancelButton(job, canOperate) {
 }
 
 function renderJobs() {
+  if (typeof pcvLegacyViewSkipped === 'function' && pcvLegacyViewSkipped('jobs')) return;
   const { allRows, rows } = getFilteredJobRows();
   const canOperate = rbacAllows('operate');
   const summary = renderJobEdgeSummary();

@@ -29,7 +29,8 @@
     "ops",
     "monitor",
     "accounts",
-    "view-network"
+    "view-network",
+    "view-jobs"
   ],
   "bootstrap": "src/bootstrap.ts"
 }

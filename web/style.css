@@ -5597,7 +5597,8 @@ dialog::backdrop {
   min-width: 680px;
 }
 
-.network-toolbar {
+.network-toolbar,
+.jobs-toolbar {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
@@ -5606,6 +5607,7 @@ dialog::backdrop {
 }
 
 .network-view-table,
+.jobs-view-table,
 .network-change-readback {
   color: var(--fg);
   background: var(--bg3);
@@ -5620,17 +5622,21 @@ dialog::backdrop {
 
 @media (max-width: 768px) {
   .network-view-table table,
-  .network-view-table tbody {
+  .network-view-table tbody,
+  .jobs-view-table table,
+  .jobs-view-table tbody {
     display: block;
     width: 100%;
     min-width: 0;
   }
 
-  .network-view-table thead {
+  .network-view-table thead,
+  .jobs-view-table thead {
     display: none;
   }
 
-  .network-view-table tr {
+  .network-view-table tr,
+  .jobs-view-table tr {
     display: block;
     margin: 0 0 8px;
     padding: 8px;
@@ -5639,7 +5645,8 @@ dialog::backdrop {
     background: var(--bg3);
   }
 
-  .network-view-table td {
+  .network-view-table td,
+  .jobs-view-table td {
     display: block;
     width: auto;
     border: 0;

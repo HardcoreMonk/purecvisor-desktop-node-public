@@ -134,7 +134,9 @@ task 크기(2026-11-09 사용자 승인 `U1 checkpoint 2 승인`): Task 2부터�
 
 ## Task 5a: U5 작업
 
-- [ ] 작업 화면을 등록표로 옮긴다: 상태 chip과 종류 select, `createDataTable`(접수 시각, 종류, 대상, 상태 pill, 걸린 시간, 오류 요약), 정렬·검색·CSV, 다음 페이지 버튼(C-11), 영어 고정 문구를 i18n 키로. 공통 검증. 로컬 commit.
+- [x] 작업 화면을 등록표로 옮긴다: 상태 chip과 종류 select, `createDataTable`(접수 시각, 종류, 대상, 상태 pill, 걸린 시간, 오류 요약), 정렬·검색·CSV, 다음 페이지 버튼(C-11), 영어 고정 문구를 i18n 키로. 공통 검증. 로컬 commit.
+
+실행 기록(2026-11-09): checkpoint 12(19:42~20:03). grok이 새 모듈 `web/src/modules/view-jobs.ts`(326줄, `register('jobs')`)를 만들었다. mount는 `#jobs-panel.jobs-panel[data-view-mount]`이며, id와 class를 유지해 bootstrap 위임 click이 그대로 동작한다. mount에는 다음을 그린다. 상태 chip(전체, 대기, 진행 중, 성공, 실패, 취소, 개수 포함. `state.jobStatusFilter`와 `#job-status-filter`가 같은 값), 종류 select(`state.jobOperationFilter`), `createDataTable`(접수 시각, 종류, 대상, 상태 pill, 걸린 시간, 오류 요약, 조작. 정렬과 CSV를 켜고, 검색은 기존 `#job-filter`). 조작은 cancel·retry·reconcile 버튼으로, `PCV.uxlib.el`과 기존 `data-action`·`data-job-id`·`data-job-cancel-scope`를 쓰고 `operate`가 없으면 꺼진다. 그 밖에 경계 요약 `job-edge-summary`, 빈 상태 두 가지와 읽기 실패의 서로 다른 문구, 다음 페이지 버튼(`load-next-jobs` → `loadNextJobPage`, C-11)이 있다. 영어 고정 문구는 i18n 키(ko·en)로 바꿨다. 정적 pagehead와 `#job-filter`·`#job-status-filter`·`#job-sort`·`#clear-job-history`는 `index.html`에 남겼다. `createDataTable`은 `searchable` 없이 `exportable`만 켜도 CSV 버튼을 낸다. 옛 `ops.ts` `renderJobs`는 `pcvLegacyViewSkipped('jobs')`로 막았다. 본문과 문자열 helper는 활동 화면과 guest-exec 계약이 붙잡아 U8까지 남긴다. domsafe 33(변화 없음), ratchet 변화 없음, axe 기준선 2,314→2,346(+32, `--prune` 없음). 검증: `npm run test:required` exit 0(node 384 pass, browser gate assertions 121 failed 0 violations 0), web Pester 50/50, ratchet Pester 3/3, Delivery 785/785, `git diff --check` clean.
 
 ## Task 5b: U5 이벤트, PR
 

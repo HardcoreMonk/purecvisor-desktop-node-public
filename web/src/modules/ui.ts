@@ -579,15 +579,18 @@ function createDataTable(containerId, config) {
       displayRows = filteredRows.slice(start, start + pageSize);
     }
     var children = [];
-    if (cfg.searchable && !searchCount) {
-      var bar = [mk('input', {
-        'aria-label': tFn('search'),
-        id: tableId + '-search',
-        class: 'sb-search',
-        placeholder: tFn('search'),
-        oninput: 'window._dtFilter(\'' + tableId + '\')',
-        style: 'max-width:300px;font-size:12px;padding:6px 10px;border-radius:4px'
-      })];
+    if ((cfg.searchable || cfg.exportable) && !searchCount) {
+      var bar = [];
+      if (cfg.searchable) {
+        bar.push(mk('input', {
+          'aria-label': tFn('search'),
+          id: tableId + '-search',
+          class: 'sb-search',
+          placeholder: tFn('search'),
+          oninput: 'window._dtFilter(\'' + tableId + '\')',
+          style: 'max-width:300px;font-size:12px;padding:6px 10px;border-radius:4px'
+        }));
+      }
       if (cfg.exportable) {
         bar.push(mk('button', {
           class: 'btn',
