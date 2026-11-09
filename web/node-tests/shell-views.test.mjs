@@ -1887,6 +1887,244 @@ test("mobile power and delete call exported vm methods", () => {
   assert.doesNotMatch(mobile, /PCV\.vm\.bulkDelete|customConfirm\([^)]*일괄 삭제/);
 });
 
+test("registered views render only the active screen and leave legacy screens alone", () => {
+  const network = env.document.querySelector('.app-view[data-view="network"]');
+  const jobs = env.document.querySelector('.app-view[data-view="jobs"]');
+  const dashboard = env.document.querySelector('.app-view[data-view="dashboard"]');
+  const marker = env.document.createElement("span");
+  marker.id = "u4-keep";
+  network.appendChild(marker);
+  const keptDash = env.document.createElement("span");
+  keptDash.id = "u4-dash-keep";
+  dashboard.appendChild(keptDash);
+  const mountPoint = env.document.createElement("div");
+  mountPoint.setAttribute("data-view-mount", "");
+  network.appendChild(mountPoint);
+  const calls = { network: [], jobs: [] };
+  let which = "";
+  try {
+    env.PCV.views.register("network", { render() { which = "first"; } });
+    env.PCV.views.register("network", {
+      render(mount, ctx) {
+        which = "second";
+        calls.network.push({ mount, ctx });
+      }
+    });
+    env.PCV.views.register("jobs", {
+      render(mount, ctx) { calls.jobs.push({ mount, ctx }); }
+    });
+    assert.equal(env.PCV.views.isRegistered("network"), true);
+    assert.equal(typeof env.PCV.views.get("network").render, "function");
+    assert.equal(env.pcvLegacyViewSkipped("network"), true);
+    assert.equal(env.pcvLegacyViewSkipped("dashboard"), false);
+
+    env.navigateTo("network");
+    assert.equal(which, "second");
+    assert.equal(calls.network.length, 1);
+    assert.equal(calls.jobs.length, 0);
+    assert.equal(calls.network[0].mount, mountPoint);
+    assert.equal(calls.network[0].ctx.reason, "navigate");
+    assert.equal(typeof calls.network[0].ctx.generation, "number");
+    assert.equal(calls.network[0].ctx.isCurrent(), true);
+    assert.equal(network.querySelector("#u4-keep"), marker);
+    assert.equal(network.hidden, false);
+
+    env.render();
+    assert.equal(calls.network.length, 2);
+    assert.equal(calls.jobs.length, 0);
+    assert.equal(calls.network[1].ctx.reason, "refresh");
+    assert.equal(calls.network[1].ctx.isCurrent(), true);
+
+    env.navigateTo("dashboard");
+    assert.equal(calls.jobs.length, 0);
+    assert.equal(calls.network[0].ctx.isCurrent(), false);
+    assert.equal(dashboard.hidden, false);
+    assert.equal(network.hidden, true);
+    assert.equal(dashboard.querySelector("#u4-dash-keep"), keptDash);
+    assert.equal(env.PCV.views.isRegistered("dashboard"), false);
+
+    env.PCV.views.unregister("jobs");
+    network.hidden = false;
+    jobs.hidden = false;
+    env.renderActiveView();
+    assert.equal(network.hidden, false);
+    assert.equal(jobs.hidden, true);
+    assert.equal(dashboard.hidden, false);
+
+    env.PCV.views.register("network", {
+      render() { throw new Error("boom"); }
+    });
+    env.navigateTo("network");
+    const error = mountPoint.querySelector(".pcv-load-error");
+    assert.ok(error);
+    assert.match(error.textContent, /boom/);
+    assert.equal(dashboard.querySelector(".pcv-load-error"), null);
+    assert.equal(network.querySelector("#u4-keep"), marker);
+
+    assert.throws(() => env.PCV.views.register("not-a-view", { render() {} }));
+    assert.throws(() => env.PCV.views.register("jobs", {}));
+    assert.throws(() => env.PCV.views.register("jobs", { render: "no" }));
+    assert.equal(env.PCV.views.isRegistered("jobs"), false);
+  } finally {
+    env.PCV.views.unregister("network");
+    env.PCV.views.unregister("jobs");
+    if (marker.parentNode) marker.remove();
+    if (keptDash.parentNode) keptDash.remove();
+    if (mountPoint.parentNode) mountPoint.remove();
+    const leftover = network.querySelector(".pcv-load-error");
+    if (leftover) leftover.remove();
+    env.navigateTo("dashboard");
+  }
+});
+
+test("registered network render draws pagehead, type chips, connected VM counts, and separates empty from load errors", () => {
+  const network = env.document.querySelector('.app-view[data-view="network"]');
+  const jobs = env.document.querySelector('.app-view[data-view="jobs"]');
+  const index = fs.readFileSync(webRoot + "index.html", "utf8");
+  const head = env.document.createElement("div");
+  head.className = "pagehead";
+  const title = env.document.createElement("h1");
+  title.className = "pagehead-title";
+  title.setAttribute("data-i18n", "copy.network.title");
+  title.textContent = "네트워크 인벤토리";
+  const desc = env.document.createElement("p");
+  desc.className = "pagehead-desc";
+  desc.setAttribute("data-i18n", "copy.network.desc");
+  desc.textContent = "Hyper-V 스위치 인벤토리입니다. 이 화면은 읽기 전용입니다.";
+  head.appendChild(title);
+  head.appendChild(desc);
+  const filter = env.document.createElement("input");
+  filter.id = "network-filter";
+  filter.setAttribute("type", "search");
+  const mount = env.document.createElement("div");
+  mount.setAttribute("data-view-mount", "");
+  network.appendChild(head);
+  network.appendChild(filter);
+  network.appendChild(mount);
+  const saved = {
+    vms: env.state.vms,
+    networkInventory: env.state.networkInventory,
+    networkError: env.state.networkError,
+    networkFilter: env.state.networkFilter
+  };
+  const product = env.PCV.viewNetwork.render;
+  const paints = [];
+  env.PCV.views.register("network", {
+    render(mountNode, ctx) {
+      paints.push(ctx && ctx.reason);
+      product(mountNode, ctx);
+    }
+  });
+  const chip = (value) => mount.querySelector(`[data-facet="networkType"][data-val="${value}"]`);
+  const rowCells = () => [...mount.querySelectorAll(".network-view-table tbody tr")].map((row) => (
+    [...row.querySelectorAll("td")].map((cell) => cell.textContent)
+  ));
+  try {
+    env.state.vms = [];
+    env.state.networkInventory = null;
+    env.state.networkError = null;
+    env.state.networkFilter = "";
+    env.PCV.ui.filterState.apply({ networkType: [] });
+    env.navigateTo("network");
+    assert.equal(paints[0], "navigate");
+    assert.match(index, /data-i18n="copy\.network\.title"[^>]*>네트워크 인벤토리</);
+    assert.match(index, /data-i18n="copy\.network\.desc"[^>]*>[^<]*읽기 전용/);
+    assert.match(index, /<input id="network-filter" type="search"/);
+    assert.equal(network.querySelector(".pagehead-title").textContent, "네트워크 인벤토리");
+    assert.match(network.querySelector(".pagehead-desc").textContent, /읽기 전용/);
+    assert.equal(mount.querySelector(".pagehead"), null);
+    assert.equal(mount.querySelector("#network-filter"), null);
+    assert.equal(network.querySelector("#network-filter"), filter);
+    assert.ok(mount.querySelector(".network-loading .skeleton"));
+    assert.equal(typeof env.renderNetworkInventory, "undefined");
+
+    env.state.vms = [
+      {
+        name: "vm-a",
+        network: [
+          { name: "fixture-nic", switch: "Default Switch", mode: "nat" },
+          { name: "fixture-nic-2", switch: "Default Switch", mode: "nat" }
+        ]
+      },
+      { name: "vm-b", network: [{ name: "ext-nic", switch: "lab-external", mode: "external" }] }
+    ];
+    env.state.networkInventory = {
+      switches: [
+        { name: "Default Switch", type: "Internal", is_default: true, net_adapter_interface_description: "fixture-ethernet" },
+        { name: "lab-external", type: "External", net_adapter_interface_description: "Intel(R) Ethernet" }
+      ]
+    };
+    env.render();
+    assert.equal(paints.at(-1), "refresh");
+    assert.equal(network.querySelector(".pagehead-title").textContent, "네트워크 인벤토리");
+    assert.match(network.querySelector(".pagehead-desc").textContent, /읽기 전용/);
+    assert.equal(mount.querySelector(".pagehead"), null);
+    assert.equal(network.querySelector("#network-filter"), filter);
+    assert.equal(chip("__all__").querySelector(".chip-c").textContent, "2");
+    assert.equal(chip("Internal").querySelector(".chip-c").textContent, "1");
+    assert.equal(chip("External").querySelector(".chip-c").textContent, "1");
+    assert.deepEqual(
+      [...mount.querySelectorAll(".network-view-table thead th")].map((cell) => cell.textContent),
+      ["이름", "종류", "연결 VM", "어댑터", "상태"]
+    );
+    const rows = Object.fromEntries(rowCells().map((cells) => [cells[0], cells]));
+    assert.equal(rows["Default Switch"][2], "1");
+    assert.match(rows["Default Switch"][3], /fixture-ethernet/);
+    assert.match(rows["Default Switch"][4], /default/);
+    assert.equal(rows["lab-external"][2], "1");
+    const readback = mount.querySelector(".network-change-readback").textContent;
+    assert.match(readback, /스위치 만들기 폼 없음/);
+    assert.match(readback, /NAT 편집기 없음/);
+    assert.match(readback, /읽기 전용/);
+    assert.equal(jobs.querySelector(".pagehead"), null);
+
+    chip("External").click();
+    assert.deepEqual(rowCells().map((cells) => cells[0]), ["lab-external"]);
+
+    env.PCV.ui.filterState.apply({ networkType: [] });
+    env.state.networkFilter = "fixture-ethernet";
+    env.render();
+    assert.deepEqual(rowCells().map((cells) => cells[0]), ["Default Switch"]);
+    env.state.networkFilter = "";
+
+    env.PCV.ui.filterState.apply({ networkType: [] });
+    env.state.networkInventory = { switches: [] };
+    env.state.networkError = null;
+    env.state.networkFilter = "";
+    env.render();
+    const emptyNode = mount.querySelector(".pcv-empty");
+    assert.ok(emptyNode.classList.contains("network-empty-state"));
+    const empty = emptyNode.textContent;
+    assert.match(empty, /스위치가 없습니다/);
+    assert.match(empty, /스위치를 만들거나/);
+    assert.equal(mount.querySelector(".pcv-load-error"), null);
+
+    env.state.networkInventory = null;
+    env.state.networkError = {
+      code: "PCV_NATIVE_PARITY_INCOMPLETE",
+      message: "Native parity failed",
+      detail: "parity"
+    };
+    env.render();
+    const error = mount.querySelector(".pcv-load-error").textContent;
+    assert.match(error, /PCV_NATIVE_PARITY_INCOMPLETE/);
+    assert.match(error, /도우미 폴백은 의도적으로/);
+    assert.equal(mount.querySelector(".pcv-empty"), null);
+    assert.equal(error.includes("스위치가 없습니다"), false);
+  } finally {
+    env.state.vms = saved.vms;
+    env.state.networkInventory = saved.networkInventory;
+    env.state.networkError = saved.networkError;
+    env.state.networkFilter = saved.networkFilter;
+    env.navigateTo("dashboard");
+    env.PCV.ui.filterState.apply({ networkType: [] });
+    if (head.parentNode) head.remove();
+    if (filter.parentNode) filter.remove();
+    if (mount.parentNode) mount.remove();
+    env.PCV.views.register("network", { render: product });
+  }
+});
+
 test("logout closes open modals", async () => {
   if (!env.document.getElementById("toasts")) {
     const toasts = env.document.createElement("div");

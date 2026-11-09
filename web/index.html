@@ -342,19 +342,17 @@
         </section>
 
         <section id="network" class="section app-view" data-view="network">
-          <div id="view-network">
-          <div class="section-header">
-            <div>
-              <p class="eyebrow" data-i18n="copy.network.eyebrow">인벤토리</p>
-              <h2 data-i18n="copy.network.title">네트워크 인벤토리</h2>
+          <div class="pagehead">
+            <div class="pagehead-copy">
+              <h1 class="pagehead-title" data-i18n="copy.network.title">네트워크 인벤토리</h1>
+              <p class="pagehead-desc" data-i18n="copy.network.desc">Hyper-V 스위치 인벤토리입니다. 이 화면은 읽기 전용입니다.</p>
             </div>
-            <label class="filter-control">
-              <span data-i18n="copy.filter">필터</span>
-              <input id="network-filter" type="search" autocomplete="off" placeholder="스위치, 종류, 어댑터" data-i18n-placeholder="copy.network.placeholder">
-            </label>
           </div>
-          <div id="network-inventory-panel" class="network-inventory-panel"></div>
-          </div>
+          <label class="filter-control">
+            <span data-i18n="copy.filter">필터</span>
+            <input id="network-filter" type="search" autocomplete="off" placeholder="스위치, 종류, 어댑터" data-i18n-placeholder="copy.network.placeholder">
+          </label>
+          <div data-view-mount></div>
         </section>
 
         <section id="jobs" class="section app-view" data-view="jobs">

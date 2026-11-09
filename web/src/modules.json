@@ -28,7 +28,8 @@
     "vm-console",
     "ops",
     "monitor",
-    "accounts"
+    "accounts",
+    "view-network"
   ],
   "bootstrap": "src/bootstrap.ts"
 }

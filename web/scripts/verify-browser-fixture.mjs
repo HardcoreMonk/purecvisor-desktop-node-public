@@ -20,7 +20,6 @@ const requiredIds = [
   "troubleshooting",
   "view-dashboard",
   "view-vms",
-  "view-network",
   "view-evidence",
   "view-troubleshooting",
   "ops-summary-panel",
@@ -37,7 +36,6 @@ const requiredIds = [
   "vm-state-chips",
   "vm-sort",
   "vm-table",
-  "network-inventory-panel",
   "vm-detail-panel",
   "vm-detail-title",
   "vm-detail-content",
@@ -1360,6 +1358,17 @@ async function runFixture(options = {}) {
   return { document, window: context, context, fetchCalls: fixtureFetch.fetchCalls };
 }
 
+function collectDomText(node, seen = new Set()) {
+  if (!node || typeof node !== "object" || seen.has(node)) return "";
+  seen.add(node);
+  const attrs = node.attributes && typeof node.attributes === "object" && !Array.isArray(node.attributes)
+    ? Object.entries(node.attributes).map(([key, value]) => `${key}="${value}"`).join(" ")
+    : "";
+  let text = `${node.textContent || ""}\n${node.innerHTML || ""}\n${node.className || ""}\n${attrs}`;
+  for (const child of node.children || []) text += `\n${collectDomText(child, seen)}`;
+  return text;
+}
+
 const { document, window, context } = await runFixture();
 if (typeof context.createDiagnosticBundleFromPanel !== "function" || typeof context.downloadLatestDiagnosticBundle !== "function") {
   fail("diagnostic bundle panel action functions must be available to the browser fixture");
@@ -1371,10 +1380,12 @@ await context.openSelectedConsole();
 await context.createDiagnosticBundleFromPanel();
 await context.downloadLatestDiagnosticBundle();
 await flush();
+await context.navigateTo("network");
+await flush();
+await context.navigateTo("dashboard");
+await flush();
 
-const renderedText = [...document.elements.values()]
-  .map((element) => `${element.textContent}\n${element.innerHTML}`)
-  .join("\n");
+const renderedText = [...document.elements.values()].map((element) => collectDomText(element)).join("\n");
 const combinedText = `${indexText}\n${renderedText}`;
 
 for (const value of ["운영 콕핏", "Ready", "네트워크 인벤토리", "Default Switch", "fixture-ethernet", "read-only", "pcv-browser-fixture", "data-action=\"vm-delete\"", "QoS / Guest readback", "Change supported=false", "Guest heartbeat=false", "Startup MB=4096", "vCPU=2", "DVD media", "pcv-browser-fixture-tools.iso", "job-browser-fixture", "req-browser-fixture", "운영자 활동", "Pagination", "next_offset", "max_terminal_jobs", "Job edge cases", "active running jobs", "failed job retry", "retained terminal jobs", "모니터링", "Token policy", "Checkpoint warnings", "Route timeout", "30s", "Request limit", "120/min", "Burst limit", "20", "Retry-After", "15s", "진단", "Failed jobs", "Token Rotation", "rotation handoff", "Clear browser token", "no service token mutation", "browser token empty", "Token-required route status", "%ProgramData%\\PureCVisor\\desktop-node\\api-token.dpapi.json", "Diagnostic Bundle", "CollectDiagnostics", "API action", "Create bundle", "Download latest", "Account/Console", "account permission", "current role", "Windows console", "noVNC enabled", "noVNC status", "noVNC reason_code", "noVNC path/reason", "no target save form", "CLI/API configure only", "data-action=\"checkpoint-schedule-preview\"", "name=\"interval_minutes\"", "Preview before save", "No infinite retention", "Preview export", "Preview import", "preview before export/import", "new VM identity on import", "no OVF", "no TPM key copy", "network-change-readback", "no switch create form", "no NAT editor", "no DHCP editor", "switch connect in VM detail", "Connect switch", "Add device", "Hyper-V export/import", "/api/v1/console/novnc/pcv-browser-fixture", "Open selected console", "Open the noVNC browser session for this VM, or use vmconnect from the host console.", "Current evidence", "runtime-api-current-evidence-rollup-v1", "0.42.22-admin-smoke -&gt; 0.42.23-admin-smoke", "Manual admin next", "0.42.55-admin-smoke -&gt; next-admin-smoke-required", "not-opened-no-next-product-payload-target", "Runtime/API registry bridge", "runtime-api-diagnostics-ops-summary-registry-bridge-v2", "DesktopNodeApiRuntimeRoutes", "4 routes", "GET /api/v1/ops/summary -&gt; OpsSummary", "GET /api/v1/diagnostics/bundles", "POST /api/v1/diagnostics/bundles -&gt; CreateDiagnosticBundle", "route detail metadata only", "Host Ops lifecycle buckets", "service-action-eventlog-firewall-truststore-credential-manager-data-root-separated", "service-action", "DesktopNodeServiceLifecycleOps", "windows-service-control-manager", "credential-manager-system-proof", "allowlisted-programdata-root", "Host mutation: not performed by diagnostics view", "Retained bundles", "Load more bundles", "next_offset=none", "max_bundle_count=50", "pcv-diag-20260509T010101Z-abcdef12", "served-by-download-route", "application/vnd.purecvisor.diagnostic-bundle+json", "no host mutation", "token values", "Authorization headers", "%ProgramData%\\PureCVisor\\desktop-node\\diagnostics", "Installed listener QA automation", "service token revoke handoff", "diagnostic retention pagination", "VM delete guarded", "ops cockpit P0/P1/P2", "public distribution bundle", "host mutation not started from browser", "PCV_JOB_STORE_SCHEMA_UNSUPPORTED", "app.bundle.js"]) {
@@ -1390,11 +1401,12 @@ requireNotIncludes(readbackHtml, "linux_bandwidth_compatible", "readback panel")
 requireNotIncludes(readbackHtml, "qemu_guest_agent", "readback panel");
 requireNotIncludes(document.getElementById("account-console-panel").innerHTML, "novnc-target-apply", "console panel");
 requireNotIncludes(document.getElementById("account-console-panel").innerHTML, "allow_lan_target", "console panel");
-requireNotIncludes(document.getElementById("network-inventory-panel").innerHTML, "data-action=\"switch-create\"", "switch create form");
-requireNotIncludes(document.getElementById("network-inventory-panel").innerHTML, "data-action=\"switch-remove\"", "switch remove form");
-requireNotIncludes(document.getElementById("network-inventory-panel").innerHTML, "data-action=\"vm-network-connect\"", "vm network connect form");
-requireNotIncludes(document.getElementById("network-inventory-panel").innerHTML, "name=\"nat-network\"", "NAT editor");
-requireNotIncludes(document.getElementById("network-inventory-panel").innerHTML, "name=\"dhcp-scope\"", "DHCP editor");
+const networkHtml = collectDomText(document.getElementById("network"));
+requireNotIncludes(networkHtml, "data-action=\"switch-create\"", "switch create form");
+requireNotIncludes(networkHtml, "data-action=\"switch-remove\"", "switch remove form");
+requireNotIncludes(networkHtml, "data-action=\"vm-network-connect\"", "vm network connect form");
+requireNotIncludes(networkHtml, "name=\"nat-network\"", "NAT editor");
+requireNotIncludes(networkHtml, "name=\"dhcp-scope\"", "DHCP editor");
 requireNotIncludes(document.getElementById("account-console-panel").innerHTML, "name=\"novnc-host\"", "console panel");
 requireNotIncludes(document.getElementById("priority-panel").innerHTML, "High priority", "priority panel");
 requireIncludes(document.getElementById("dashboard-activity-panel").innerHTML, "job-summary-recent-fixture", "dashboard activity panel");
@@ -1547,7 +1559,9 @@ requireIncludes(emptyJobsHtml, "retained terminal jobs", "empty jobs panel");
 requireIncludes(emptyJobsHtml, "failed job retry", "empty jobs panel");
 
 const networkFailureRun = await runFixture({ failNetworkProblemDetails: true });
-const networkFailureHtml = networkFailureRun.document.getElementById("network-inventory-panel").innerHTML;
+await networkFailureRun.context.navigateTo("network");
+await flush();
+const networkFailureHtml = collectDomText(networkFailureRun.document.getElementById("network"));
 requireIncludes(networkFailureHtml, "PCV_NATIVE_PARITY_INCOMPLETE", "network native parity failure");
 requireIncludes(networkFailureHtml, "Native parity failed", "network native parity failure");
 requireIncludes(networkFailureHtml, "Helper fallback is intentionally excluded", "network native parity failure");

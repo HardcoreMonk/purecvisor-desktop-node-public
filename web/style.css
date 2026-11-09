@@ -5597,6 +5597,56 @@ dialog::backdrop {
   min-width: 680px;
 }
 
+.network-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.network-view-table,
+.network-change-readback {
+  color: var(--fg);
+  background: var(--bg3);
+  border: 1px solid var(--border-panel);
+  border-radius: var(--r);
+}
+
+.network-change-readback {
+  margin-top: 10px;
+  padding: 10px;
+}
+
+@media (max-width: 768px) {
+  .network-view-table table,
+  .network-view-table tbody {
+    display: block;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .network-view-table thead {
+    display: none;
+  }
+
+  .network-view-table tr {
+    display: block;
+    margin: 0 0 8px;
+    padding: 8px;
+    border: 1px solid var(--border-panel);
+    border-radius: var(--r);
+    background: var(--bg3);
+  }
+
+  .network-view-table td {
+    display: block;
+    width: auto;
+    border: 0;
+    padding: 2px 0;
+  }
+}
+
 .evidence-table {
   width: 100%;
   border-collapse: collapse;

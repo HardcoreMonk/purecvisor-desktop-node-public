@@ -904,17 +904,17 @@ Describe 'PcvDesktopWeb static console assets' {
         $servedSource = Get-Content -LiteralPath $script:ServedSourcePath -Raw
         $apiTypes = Get-Content -LiteralPath (Join-Path $script:SrcRoot 'api-types.ts') -Raw
         $fixtures = Get-Content -LiteralPath $script:UserVisibleFixturePath -Raw
-        $inventorySource = Get-Content -LiteralPath (Join-Path $script:SrcRoot 'modules/vm.ts') -Raw
+        $inventorySource = Get-Content -LiteralPath (Join-Path $script:SrcRoot 'modules/view-network.ts') -Raw
+        $vmDetailSource = Get-Content -LiteralPath (Join-Path $script:SrcRoot 'modules/vm.ts') -Raw
         $i18n = Get-Content -LiteralPath (Join-Path $script:WebRoot 'i18n.js') -Raw
 
         $index | Should -Match 'data-view-link="network"'
         $index | Should -Match 'id="network"'
-        $index | Should -Match 'id="view-network"'
-        $index | Should -Match 'id="network-inventory-panel"'
+        $index | Should -Match 'id="network"[\s\S]{0,800}data-view-mount'
         ($app + $servedSource + $apiTypes) | Should -Match '/api/v1/network/inventory'
         ($app + $servedSource) | Should -Match 'networkInventory'
         ($app + $servedSource) | Should -Match 'loadNetworkInventory'
-        ($app + $servedSource) | Should -Match 'renderNetworkInventory'
+        $app | Should -Match 'function renderNetworkView'
         ($app + $servedSource + $fixtures) | Should -Match 'Default Switch'
         ($app + $servedSource + $fixtures) | Should -Match 'fixture-ethernet'
         ($app + $servedSource) | Should -Match 'read-only'
@@ -927,10 +927,11 @@ Describe 'PcvDesktopWeb static console assets' {
         $i18n | Should -Match 'no NAT editor'
         $i18n | Should -Match 'no DHCP editor'
         $i18n | Should -Match 'switch connect in VM detail'
-        ($app + $inventorySource) | Should -Not -Match 'data-action="switch-create"|data-action="switch-remove"|name="nat-network"|name="dhcp-scope"'
-        $inventoryFns = (Get-PcvFunctionBody $inventorySource 'renderNetworkInventory') + (Get-PcvFunctionBody $inventorySource 'renderNetworkChangeReadback')
+        ($app + $inventorySource + $vmDetailSource) | Should -Not -Match 'data-action="switch-create"|data-action="switch-remove"|name="nat-network"|name="dhcp-scope"'
+        $inventoryFns = (Get-PcvFunctionBody $inventorySource 'renderNetworkView') + (Get-PcvFunctionBody $inventorySource 'renderNetworkChangeReadback')
+        $inventoryFns | Should -Match 'function renderNetworkView'
         $inventoryFns | Should -Not -Match 'data-action="vm-network-connect"'
-        $inventorySource | Should -Match 'data-action="vm-network-connect"'
+        $vmDetailSource | Should -Match 'data-action="vm-network-connect"'
         ($app + $servedSource) | Should -Not -Match 'New-VMSwitch|Remove-VMSwitch|New-NetIPAddress|Set-NetFirewallRule'
     }
 
