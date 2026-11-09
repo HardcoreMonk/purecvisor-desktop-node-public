@@ -827,6 +827,24 @@ test("the VM row primary action follows template lock, then running, then off", 
   assert.match(env.els.vmTable.innerHTML, /vCPU/);
 });
 
+test("VM list name cell keeps a compact meta for the narrow detail list", () => {
+  resetSession(env);
+  env.state.vms = [
+    { id: "run-1", name: "run-1", state: "Running" },
+    { id: "lock-run", name: "lock-run", state: "Off", template_lock: true }
+  ];
+  env.renderVms();
+  const cell = (id) => env.document.querySelector(`#vm-table tr[data-vm-id="${id}"] td[title]`);
+  const run = cell("run-1");
+  assert.equal(run.querySelector(".pcv-vm-list-name").textContent, "run-1");
+  assert.ok(run.querySelector(".pcv-vm-compact-meta"));
+  assert.equal(run.querySelector(".pcv-vm-compact-meta .badge"), null);
+  const locked = cell("lock-run");
+  assert.equal(locked.querySelector(".pcv-vm-list-name").textContent, "lock-run");
+  assert.ok(locked.querySelector(".pcv-vm-compact-meta .badge"));
+  assert.match(locked.querySelector(".pcv-vm-compact-meta").textContent, /템플릿/);
+});
+
 test("VM list detail mode opens only after a VM is chosen and close returns to the list", () => {
   resetSession(env);
   env.state.vms = [

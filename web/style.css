@@ -5203,6 +5203,52 @@ dialog::backdrop {
   display: none;
 }
 
+.vm-workspace.is-detail .pcv-vm-table th:nth-child(3),
+.vm-workspace.is-detail .pcv-vm-table td:nth-child(3),
+.vm-workspace.is-detail .pcv-vm-table th:nth-child(7),
+.vm-workspace.is-detail .pcv-vm-table td:nth-child(7) {
+  display: none;
+}
+
+.pcv-vm-compact-meta {
+  display: none;
+}
+
+.vm-workspace.is-detail .pcv-vm-compact-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex: 0 0 auto;
+  position: relative;
+}
+
+.vm-workspace.is-detail .pcv-vm-table td:nth-child(2) {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.vm-workspace.is-detail .pcv-vm-table td:nth-child(2) .pcv-vm-list-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pcv-vm-state-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex: 0 0 auto;
+  background: var(--fg3);
+}
+
+.pcv-vm-state-dot.is-ok { background: var(--green); }
+.pcv-vm-state-dot.is-error { background: var(--red); }
+.pcv-vm-state-dot.is-warn { background: var(--yellow); }
+
 .vm-workspace.is-detail > .table-wrap {
   min-width: 0;
 }

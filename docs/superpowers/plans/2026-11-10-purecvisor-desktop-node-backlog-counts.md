@@ -68,10 +68,20 @@
 
 ## Task 3: 좁은 VM 목록 이름 (BL-0037)
 
-- [ ] VM을 골라 목록이 260px로 줄었을 때 이름이 잘리지 않게 한다. 그 상태에서는 상태·표시 열을 숨기고, 이름 칸에 작은 상태 점과 템플릿 배지를 붙인다. 넓은 목록(선택 전)은 바꾸지 않는다.
+- [x] VM을 골라 목록이 260px로 줄었을 때 이름이 잘리지 않게 한다. 그 상태에서는 상태·표시 열을 숨기고, 이름 칸에 작은 상태 점과 템플릿 배지를 붙인다. 넓은 목록(선택 전)은 바꾸지 않는다.
   - 위치는 `web/src/modules/vm-list.ts`와 `web/style.css`의 목록·상세 배치 규칙이다.
   - node 시험과 1440·768 캡처로 확인한다.
 - 검증은 Task 1과 같고, 캡처를 본다. 로컬 commit.
+
+실행 기록(2026-11-10): grok이 08:34~08:48에 구현했고 Claude가 리뷰했다.
+- 수정: 이름 칸을 `<span class="pcv-vm-list-name">` 이름과 `<span class="pcv-vm-compact-meta">`(상태 점 `aria-hidden`, `sr-only` 상태 글자, 템플릿 배지)로 나눴다.
+  - 넓은 목록에서는 meta를 숨긴다.
+  - `.vm-workspace.is-detail`에서는 meta를 보이고 3열(상태)·7열(표시)을 숨긴다. 이름은 남은 폭을 쓰고 말줄임한다.
+  - 점 색은 `--green`/`--red`/`--yellow`/`--fg3`이다.
+- 리뷰 수정: grok은 목록 span에 `pcv-vm-name`을 썼다. 그 class는 상세 제목 `h2.pcv-vm-name`, 그 CSS, QA 스크립트 2개(`capture-destructive-lifecycle-ui-qa.mjs`, `capture-installed-listener-qa.mjs`)가 쓴다. 그래서 목록 class를 `pcv-vm-list-name`으로 바꾸고 gate `detailReady` 선택자를 원래대로 되돌렸다.
+- axe 기준선: grok의 기준선 쓰기를 되돌리고 다시 썼다. 1519→1597, 추가 78, 제거 0, `--prune` 없음. 추가는 모두 color-contrast `bgGradient`·`pseudoContent`(새 이름 span과 점)다.
+- 캡처: `artifacts/backlog-counts-bl0037-captures/1440x900/vm-detail-summary.png`. VM을 고른 260px 목록에 이름 전체, 상태 점, 템플릿 배지가 보인다. 768 폭에서는 기존 900px 규칙으로 목록이 숨는다(바꾸지 않음).
+- 검증: `npm run test:required --prefix web` exit 0(node 394 pass, domsafe 27, browser gate `ok=true` assertions 121 failed 0 violations 0), web Pester와 ratchet 53/53, `git diff --check` clean.
 
 ## Task 4: 고대비·mockup 테마 (BL-0039)
 
