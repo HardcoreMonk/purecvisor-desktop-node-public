@@ -1081,7 +1081,7 @@ function verifyVmDetailMount(context) {
   const app = context.readText("web/app.bundle.js");
   const stateSource = context.readText("web/src/modules/core.ts");
   const servedAppSource = context.readText("web/src/bootstrap.ts");
-  const inventorySource = context.readText("web/src/modules/vm.ts");
+  const inventorySource = context.readText("web/src/modules/vm-list.ts");
   for (const [pattern, label] of [
     [/id="vm-detail-panel"/i, "panel"],
     [/id="vm-detail-content"/i, "content"],

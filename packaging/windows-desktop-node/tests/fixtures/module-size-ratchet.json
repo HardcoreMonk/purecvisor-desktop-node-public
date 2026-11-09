@@ -158,9 +158,9 @@
     },
     {
       "path": "web/src/modules/vm.ts",
-      "max_lines": 2734,
+      "max_lines": 2538,
       "owner": "Web Console VM inventory, detail, and lifecycle mutations",
-      "note": "2026-11-07 Task 9b: 옛 web/src/served/mutate.ts 항목을 지우며 새 셸 VM 모듈을 현재 크기로 등록했다. 2026-11-09 BL-0032: 미리보기 뒤에도 interval/retention 입력을 유지하는 초안 때문에 상한을 2655로 올렸다. BL-0033: 실행 중 복원 안내를 같은 모듈에 두어 상한을 2663으로 올렸다. BL-0027: 상세를 다시 그린 뒤 data-action과 id가 같은 컨트롤로 포커스를 돌려 상한을 2721로 올렸다. BL-0031: 체크포인트 시각, 복제 용량, 삭제 문구를 같은 모듈에 두어 상한을 2739로 올렸다. 등록은 성장을 막을 뿐 분할이 아니다. plan: docs/superpowers/plans/2026-11-05-purecvisor-desktop-node-ui-redesign.md"
+      "note": "2026-11-07 Task 9b: 옛 web/src/served/mutate.ts 항목을 지우며 새 셸 VM 모듈을 현재 크기로 등록했다. 2026-11-09 BL-0032: 미리보기 뒤에도 interval/retention 입력을 유지하는 초안 때문에 상한을 2655로 올렸다. BL-0033: 실행 중 복원 안내를 같은 모듈에 두어 상한을 2663으로 올렸다. BL-0027: 상세를 다시 그린 뒤 data-action과 id가 같은 컨트롤로 포커스를 돌려 상한을 2721로 올렸다. BL-0031: 체크포인트 시각, 복제 용량, 삭제 문구를 같은 모듈에 두어 상한을 2739로 올렸다. 2026-11-09 ui-parity Task 2a: 목록 렌더를 vm-list.ts로 옮겨 상한을 2538로 내렸다. 등록은 성장을 막을 뿐 분할이 아니다. plan: docs/superpowers/plans/2026-11-05-purecvisor-desktop-node-ui-redesign.md"
     },
     {
       "path": "src/DesktopNode.HyperV/DesktopNodeHyperVWmiVmProvider.cs",

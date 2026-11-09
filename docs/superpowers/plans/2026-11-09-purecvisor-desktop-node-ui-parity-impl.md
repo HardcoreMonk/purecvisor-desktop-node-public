@@ -62,7 +62,9 @@ task 크기(2026-11-09 사용자 승인 `U1 checkpoint 2 승인`): Task 2부터�
 
 ## Task 2a: U2 `vm-list.ts` 분리
 
-- [ ] 동작을 바꾸지 않고 VM 목록 쪽 함수(목록 렌더, 필터, 상태 칩, 정렬, 템플릿 목록 등)를 새 모듈 `web/src/modules/vm-list.ts`(`modules.json`에서 `vm` 앞)로 옮긴다. `PCV.vm` export 이름과 동작은 그대로다. `vm.ts` 줄 수 상한을 실제 줄 수로 낮추고 새 모듈을 ratchet 규칙대로 등록하며, policy spec pin을 `Update-PcvContractSpecPins.ps1 -Apply`로 갱신한다. 공통 검증. 로컬 commit.
+- [x] 동작을 바꾸지 않고 VM 목록 쪽 함수(목록 렌더, 필터, 상태 칩, 정렬, 템플릿 목록 등)를 새 모듈 `web/src/modules/vm-list.ts`(`modules.json`에서 `vm` 앞)로 옮긴다. `PCV.vm` export 이름과 동작은 그대로다. `vm.ts` 줄 수 상한을 실제 줄 수로 낮추고 새 모듈을 ratchet 규칙대로 등록하며, policy spec pin을 `Update-PcvContractSpecPins.ps1 -Apply`로 갱신한다. 공통 검증. 로컬 commit.
+
+실행 기록(2026-11-09): grok이 14분(10:48–11:01)에 옮겼다. 옮긴 함수는 필터(`vmQueryText`, `matchesVmQuery`, `matchesVmStateChip`, `matchesVmFilter`), 정렬(`getVmUpdatedValue`, `compareVms`), 행 주 조작(`vmListPrimaryButton`), 상태 칩(`paintVmChips`), 템플릿 목록(`templateRowButton`, `renderTemplates`), 목록 렌더(`vmScalarText`, `vmCpuText`, `vmMemoryText`, `renderVms`)다. `modules.json`에서 `vm-list`는 `vm` 바로 앞이다(쓰는 값은 `core`가 window에 둔 것이고, `vmPowerKind`만 `vm.ts`가 `window.vmPowerKind`로 공개해 호출 시점에 읽는다). Claude 확인: `vm.ts`에서 지운 줄과 `vm-list.ts` 줄을 비교해 새 줄은 모듈 감싸기와 export 나누기뿐이고, 다른 모듈이 이름으로 직접 부르는 옮긴 함수는 `renderVms` 하나이며 window에 공개돼 있다. 줄 수: `vm.ts` 2,734→2,538(ratchet 상한도 2,538, spec pin 갱신), `vm-list.ts` 205(ratchet 계약은 목록에 있는 파일만 재고 모듈 수 31을 고정하므로 등록하지 않음). 고친 계약: `web-static-contracts.mjs`와 negative 시험의 `compareVms` 경로, `bundle-load.test.mjs` 네임스페이스. domsafe 37 그대로. 검증(Claude 재실행): `npm run test:required --prefix web` exit 0(browser gate `ok=true`, violations 0), web Pester 50/50, module-size ratchet 3/3, Delivery 785/785, `git diff --check` 통과. host mutation 없음.
 
 ## Task 2b: U2 목록·상세 골격
 
