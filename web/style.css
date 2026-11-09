@@ -3466,7 +3466,9 @@ body.mshell #ev-side { display: none !important; }
 
 @media (max-width: 900px) {
   .shell-search { flex: 0 0 auto; max-width: none; margin-left: 0; padding: 6px 8px; }
-  .shell-search .shell-search-ph, .shell-search kbd { display: none; }
+  .shell-search kbd { display: none; }
+  /* BL-0036: keep the label in the accessibility tree (visually hidden) so the button keeps its name. */
+  .shell-search .shell-search-ph { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
 }
 @media (max-width: 768px) {
   .shell-search, .shell-iconbtn, .mobile-menu-btn, .shell-navitem {

@@ -35,10 +35,19 @@
 
 ## Task 1: 작은 수정 세 건 (BL-0036, BL-0041, BL-0038)
 
-- [ ] BL-0036: 셸 검색 버튼(`web/src/modules/shell.ts` `.shell-search`, `role=button`)에 좁은 화면에서도 남는 접근 가능한 이름(`aria-label`, i18n)을 준다. node 시험으로 이름이 있는지 본다.
+- [x] BL-0036: 셸 검색 버튼(`web/src/modules/shell.ts` `.shell-search`, `role=button`)에 좁은 화면에서도 남는 접근 가능한 이름(`aria-label`, i18n)을 준다. node 시험으로 이름이 있는지 본다.
 - BL-0041: 진단 "서비스와 수신기" 카드의 서비스 값이 boolean 그대로(`true`) 나오지 않게 i18n 상태 문구로 바꾼다. 값이 없으면 지금처럼 `-`다.
 - BL-0038: browser gate `delete-confirm/accept-deletes`가 고정 `sleep(400)` 대신 DELETE 요청이 mock에 기록될 때까지(상한 있음) 기다리게 한다.
 - 검증: `npm run build:served --prefix web`, `npm run test:required --prefix web`, web Pester, module-size ratchet Pester, `git diff --check`. 로컬 commit.
+
+실행 기록(2026-11-10): grok이 08:10~08:23에 구현했고 Claude가 리뷰했다.
+- BL-0036: grok은 `aria-label="검색Ctrl+K"`(공백 없음)로 axe를 맞췄다. 리뷰에서 원인 쪽을 고쳤다.
+  - 900px 이하 CSS가 `.shell-search-ph`를 `display:none`으로 숨겨 이름이 사라졌다. 그 글자를 시각적으로만 숨기게(sr-only 속성) 바꾸고 `aria-label`은 뺐다.
+  - 이름은 보이는 글자 "검색"과 같다. `kbd`는 `aria-hidden`이다. `aria-keyshortcuts="Control+K"`를 더했다.
+  - 768×1024 gate 실행: violations 0, assertions 121 통과, `aria-command-name`·label mismatch 0건. 기준선이 1280용이라 incomplete 차이로 `ok=false`인 것은 직전과 같다.
+- BL-0041: 진단 카드의 서비스·수신기 값이 boolean이면 `copy.trouble.service.running`/`stopped`(실행 중/멈춤, Running/Stopped)로 보인다. 문자열과 `-`는 그대로다.
+- BL-0038: gate `delete-confirm/accept-deletes`가 고정 400ms 대신 DELETE 요청이 기록될 때까지 150ms 간격으로 최대 5초 기다린다. 단언과 이름은 같다.
+- 검증: `npm run test:required --prefix web` exit 0(node 391 pass, domsafe 27, browser gate `ok=true` assertions 121 failed 0 violations 0), web Pester와 ratchet 53/53, `git diff --check` clean.
 
 ## Task 2: 첫 방문 runtime/policy 401 (BL-0040)
 

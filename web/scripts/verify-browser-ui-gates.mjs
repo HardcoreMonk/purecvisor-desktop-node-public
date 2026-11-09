@@ -1500,8 +1500,13 @@ async function main() {
       const armed = await call(client, "confirmState");
       check("delete-confirm", "typed-name-enables-accept", armed.acceptDisabled === false, armed);
       await call(client, "click", ['[data-pcv-confirm="accept"]']);
-      await sleep(400);
-      const deletes = mock.requests.slice(beforeAcceptDelete).filter((entry) => entry.method === "DELETE" && entry.path === "/api/v1/vms/pcv-demo-off");
+      const deleteDeadline = Date.now() + 5000;
+      let deletes = [];
+      for (;;) {
+        deletes = mock.requests.slice(beforeAcceptDelete).filter((entry) => entry.method === "DELETE" && entry.path === "/api/v1/vms/pcv-demo-off");
+        if (deletes.length > 0 || Date.now() >= deleteDeadline) break;
+        await sleep(150);
+      }
       check("delete-confirm", "accept-deletes", deletes.length === 1, deletes);
 
       await call(client, "click", ['#vm-table tr[data-vm-id="pcv-demo-off"] td']);
