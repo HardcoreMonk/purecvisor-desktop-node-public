@@ -162,10 +162,263 @@ function renderTemplates() {
   host.appendChild(PCV.uxlib.el('table', { class: 'pcv-vm-table' }, PCV.uxlib.el('thead', {}, head), body));
 }
 
+const VM_DETAIL_TABS = ['summary', 'console', 'checkpoints', 'hardware', 'guest', 'jobs'];
+let vmRouteHold = false;
+let vmDeepLinkPending = false;
+let vmApplyToken = 0;
+let syncingVmHash = false;
+
 function syncVmListDetailMode() {
   const workspace = document.querySelector('.vm-workspace');
   if (!workspace || !workspace.classList) return;
   workspace.classList.toggle('is-detail', Boolean(state.selectedVmId));
+}
+
+function decodeVmRouteId(id) {
+  const raw = String(id || '');
+  if (!raw) return '';
+  try { return decodeURIComponent(raw); } catch (_) { return raw; }
+}
+
+function normalizeVmTab(tab) {
+  const key = String(tab || '').toLowerCase();
+  return VM_DETAIL_TABS.indexOf(key) >= 0 ? key : 'summary';
+}
+
+function parseVmRoute(hash) {
+  const raw = String(hash || '').replace(/^#\/?/, '');
+  const parts = raw ? raw.split('/') : [];
+  return {
+    page: String(parts[0] || '').toLowerCase(),
+    id: decodeVmRouteId(parts[1] || ''),
+    tab: String(parts[2] || '').toLowerCase()
+  };
+}
+
+function vmHashFor(id, tab) {
+  return '#/vms/' + encodeURIComponent(id) + '/' + normalizeVmTab(tab);
+}
+
+function rememberVmRoute(hash) {
+  const route = parseVmRoute(hash == null ? location.hash : hash);
+  window.__pcvVmHashRoute = route;
+  if (route.page === 'vms' && route.id) vmDeepLinkPending = true;
+  return route;
+}
+
+function writeVmHash(hash, mode) {
+  if (!hash || (location.hash || '') === hash) return;
+  const url = String(location.pathname || '') + String(location.search || '') + hash;
+  syncingVmHash = true;
+  try {
+    const method = mode === 'push' ? history.pushState : history.replaceState;
+    if (typeof method === 'function') {
+      try { method.call(history, null, '', url); } catch (_) { /* history may be a test stub */ }
+    }
+    if ((location.hash || '') !== hash) location.hash = hash;
+  } finally {
+    syncingVmHash = false;
+  }
+}
+
+function currentVmDetailTab() {
+  const explicit = String(window.__pcvVmDetailTab || '').toLowerCase();
+  if (VM_DETAIL_TABS.indexOf(explicit) >= 0) return explicit;
+  const route = parseVmRoute(location.hash);
+  if (route.page === 'vms' && route.tab) return normalizeVmTab(route.tab);
+  return 'summary';
+}
+
+function syncVmListHash() {
+  if (vmRouteHold || syncingVmHash) return;
+  if (state.activeView !== 'vms') return;
+  const route = parseVmRoute(location.hash);
+  if (!state.selectedVmId) {
+    if (vmDeepLinkPending && route.page === 'vms' && route.id) return;
+    if (route.page === 'vms' && route.id) writeVmHash('#/vms', 'replace');
+    return;
+  }
+  vmDeepLinkPending = false;
+  const desired = vmHashFor(state.selectedVmId, currentVmDetailTab());
+  if ((location.hash || '') === desired) return;
+  const sameVm = route.page === 'vms' && route.id && route.id === state.selectedVmId;
+  writeVmHash(desired, sameVm ? 'replace' : 'push');
+}
+
+function clearVmSelection() {
+  state.selectedVmId = '';
+  state.selectedVm = null;
+  state.selectedVmCheckpoints = [];
+  state.selectedVmReadbacks = null;
+  state.selectedVmQosControl = null;
+}
+
+function vmListFailure() {
+  if (state.vmListError) return state.vmListError;
+  return asArray(state.partialFailures).find((item) => item && item.operation === 'vm.list') || null;
+}
+
+function clearVmListFailure() {
+  state.vmListError = null;
+  if (Array.isArray(state.partialFailures)) {
+    state.partialFailures = state.partialFailures.filter((item) => !item || item.operation !== 'vm.list');
+  }
+}
+
+function mountVmListHost(node) {
+  const host = els.vmTable;
+  if (!host) return;
+  if (typeof host.replaceChildren === 'function') {
+    host.replaceChildren(node || undefined);
+    if (!node || host.firstChild) return;
+  }
+  while (host.firstChild) host.removeChild(host.firstChild);
+  if (node) host.appendChild(node);
+}
+
+function clearVmListFilter() {
+  state.vmFilter = '';
+  state.vmStateFilter = 'all';
+  if (els.vmFilter) els.vmFilter.value = '';
+  if (typeof render === 'function') render();
+  else renderVms();
+}
+
+function retryVmListLoad() {
+  const run = typeof loadVms === 'function' ? Promise.resolve(loadVms()) : Promise.resolve();
+  run.then(() => {
+    clearVmListFailure();
+  }).catch((error) => {
+    state.vmListError = typeof normalizeError === 'function' ? normalizeError(error) : { message: String(error && error.message || error || '') };
+  }).then(() => {
+    if (typeof render === 'function') render();
+    else renderVms();
+  });
+}
+
+function vmListEmptyAction(node) {
+  if (!node || node.nodeType === 3) return null;
+  const className = String(node.className || '');
+  if (className.split(/\s+/).includes('pcv-empty-action')) return node;
+  if (typeof node.querySelector === 'function') {
+    const found = node.querySelector('.pcv-empty-action');
+    if (found) return found;
+  }
+  const kids = node.children || node.childNodes || [];
+  for (const child of kids) {
+    const found = vmListEmptyAction(child);
+    if (found) return found;
+  }
+  return null;
+}
+
+function renderVmListEmpty(filtered) {
+  if (!PCV.components || typeof PCV.components.emptyState !== 'function') return;
+  if (filtered) {
+    mountVmListHost(PCV.components.emptyState({
+      titleKey: 'vm.list.empty_filter',
+      bodyKey: 'vm.list.empty_filter',
+      actionLabelKey: 'vm.list.clear_filter',
+      onAction: clearVmListFilter
+    }));
+    return;
+  }
+  const node = PCV.components.emptyState({
+    titleKey: 'vm.list.empty',
+    bodyKey: 'vm.list.empty_body',
+    actionLabelKey: 'vm.list.create'
+  });
+  const action = vmListEmptyAction(node);
+  if (action) action.setAttribute('data-shell-action', 'open-create-vm');
+  mountVmListHost(node);
+}
+
+function renderVmListFailure(failure) {
+  if (!PCV.components || typeof PCV.components.loadError !== 'function') return;
+  mountVmListHost(PCV.components.loadError({
+    titleKey: 'ui.load_error.title',
+    detail: failure.message || failure.detail || '',
+    onRetry: retryVmListLoad
+  }));
+}
+
+async function applyVmDeepLink(id, tab) {
+  const token = ++vmApplyToken;
+  vmRouteHold = true;
+  let failed = false;
+  try {
+    if (typeof loadVms === 'function') await loadVms();
+  } catch (_) {
+    failed = true;
+  }
+  if (token !== vmApplyToken) return;
+  if (failed) {
+    vmRouteHold = false;
+    vmDeepLinkPending = false;
+    if (typeof render === 'function') render();
+    else renderVms();
+    return;
+  }
+  const found = asArray(state.vms).find((vm) => getVmId(vm) === id || getVmName(vm) === id);
+  if (!found) {
+    clearVmSelection();
+    vmRouteHold = false;
+    vmDeepLinkPending = false;
+    writeVmHash('#/vms', 'replace');
+    if (PCV.components && typeof PCV.components.toast === 'function') {
+      PCV.components.toast(t('vm.list.missing'), { kind: 'info' });
+    }
+    if (typeof render === 'function') render();
+    else renderVms();
+    return;
+  }
+  state.selectedVmId = getVmId(found);
+  state.selectedVm = found;
+  window.__pcvVmDetailTab = normalizeVmTab(tab);
+  vmRouteHold = false;
+  vmDeepLinkPending = false;
+  writeVmHash(vmHashFor(state.selectedVmId, window.__pcvVmDetailTab), 'replace');
+  if (typeof render === 'function') render();
+  else renderVms();
+}
+
+function vmListTabIdFromButton(button) {
+  if (!button) return '';
+  const match = /^pcv-tab-(summary|console|checkpoints|hardware|guest|jobs)-/.exec(String(button.id || ''));
+  return match ? match[1] : '';
+}
+
+function vmListOnDetailTabClick(event) {
+  const target = event && event.target;
+  if (!target || typeof target.closest !== 'function') return;
+  const button = target.closest('[role="tab"]');
+  if (!button || typeof button.closest !== 'function' || !button.closest('#vm-detail-panel')) return;
+  const tab = vmListTabIdFromButton(button);
+  if (!tab) return;
+  window.__pcvVmDetailTab = tab;
+  syncVmListHash();
+}
+
+function vmListOnDetailTabKey(event) {
+  const key = event && event.key;
+  if (key !== 'ArrowRight' && key !== 'ArrowLeft' && key !== 'ArrowDown' && key !== 'ArrowUp' && key !== 'Home' && key !== 'End') return;
+  const target = event.target;
+  if (!target || typeof target.closest !== 'function' || !target.closest('#vm-detail-panel')) return;
+  const selected = document.querySelector('#vm-detail-panel [role="tab"][aria-selected="true"]');
+  const tab = vmListTabIdFromButton(selected);
+  if (!tab) return;
+  window.__pcvVmDetailTab = tab;
+  syncVmListHash();
+}
+
+function vmListOnHashChange() {
+  if (vmRouteHold || syncingVmHash) return;
+  const route = window.__pcvVmHashRoute || parseVmRoute(location.hash);
+  if (route.page !== 'vms' || route.id || !state.selectedVmId) return;
+  clearVmSelection();
+  vmDeepLinkPending = false;
+  if (typeof render === 'function') render();
+  else renderVms();
 }
 
 function renderVms() {
@@ -173,22 +426,33 @@ function renderVms() {
   const named = asArray(state.vms).filter(matchesVmQuery);
   paintVmChips(named);
   renderTemplates();
-  if (!els.vmTable) return;
+  if (!els.vmTable) {
+    syncVmListHash();
+    return;
+  }
+  const failure = vmListFailure();
+  if (failure) {
+    renderVmListFailure(failure);
+    syncVmListHash();
+    return;
+  }
   const vms = named.filter((vm) => matchesVmStateChip(vm, state.vmStateFilter)).sort(compareVms);
   if (vms.length === 0) {
     const filtered = String(state.vmFilter || '').trim() || String(state.vmStateFilter || 'all') !== 'all';
-    els.vmTable.innerHTML = `<p class="muted">${pcvEscapeHtml(t(filtered ? 'vm.list.empty_filter' : 'vm.list.empty'))}</p>`;
+    renderVmListEmpty(filtered);
+    syncVmListHash();
     return;
   }
   const rows = vms.map((vm) => {
     const vmId = getVmId(vm);
+    const name = getVmName(vm);
     const selected = vmId && vmId === state.selectedVmId ? ' class="selected-row" aria-selected="true"' : '';
     const templateBadge = isTemplateLockedVm(vm)
       ? `<span class="badge badge-warn">${pcvEscapeHtml(t('vm.badge.template'))}</span>`
       : '';
     return `
     <tr${selected} data-vm-id="${pcvEscapeHtml(vmId)}">
-      <td>${pcvEscapeHtml(getVmName(vm))}</td>
+      <td title="${pcvEscapeHtml(name)}">${pcvEscapeHtml(name)}</td>
       <td>${stateBadge(getVmState(vm) || vm.status)}</td>
       <td>${pcvEscapeHtml(vmScalarText(vm.generation))}</td>
       <td>${pcvEscapeHtml(vmCpuText(vm))}</td>
@@ -202,6 +466,7 @@ function renderVms() {
       <thead><tr><th>${pcvEscapeHtml(t('vm.list.col.name'))}</th><th>${pcvEscapeHtml(t('vm.list.col.state'))}</th><th>${pcvEscapeHtml(t('vm.list.col.generation'))}</th><th>${pcvEscapeHtml(t('vm.list.col.cpu'))}</th><th>${pcvEscapeHtml(t('vm.list.col.memory'))}</th><th>${pcvEscapeHtml(t('vm.list.col.display'))}</th><th>${pcvEscapeHtml(t('vm.list.col.action'))}</th></tr></thead>
       <tbody>${rows}</tbody>
     </table>`;
+  syncVmListHash();
 }
 
 function vmListEscapeTargetInOverlay(target) {
@@ -221,16 +486,52 @@ function vmListEscapeClearsSelection(event) {
   if (dialogOpen) return;
   if (state.commandPaletteOpen || window.cmdPaletteOpen || window.kbdHelpOpen) return;
   if (!state.selectedVmId) return;
-  state.selectedVmId = '';
-  state.selectedVm = null;
-  state.selectedVmCheckpoints = [];
-  state.selectedVmReadbacks = null;
-  state.selectedVmQosControl = null;
+  clearVmSelection();
   if (typeof render === 'function') render();
 }
 
 if (typeof document !== 'undefined' && document && typeof document.addEventListener === 'function') {
   document.addEventListener('keydown', vmListEscapeClearsSelection);
+  document.addEventListener('keydown', vmListOnDetailTabKey);
+  document.addEventListener('click', vmListOnDetailTabClick);
+}
+
+rememberVmRoute(typeof location !== 'undefined' ? location.hash : '');
+if (typeof window !== 'undefined' && window.addEventListener) {
+  window.addEventListener('hashchange', () => { rememberVmRoute(location.hash); }, true);
+  window.addEventListener('hashchange', vmListOnHashChange);
+}
+if (typeof window !== 'undefined' && typeof window.navigateToHash === 'function') {
+  const previousNavigateToHash = window.navigateToHash;
+  window.navigateToHash = function () {
+    rememberVmRoute(location.hash);
+    return previousNavigateToHash.apply(this, arguments);
+  };
+}
+if (typeof window !== 'undefined' && typeof window.loadVms === 'function') {
+  const previousLoadVms = window.loadVms;
+  window.loadVms = function () {
+    return Promise.resolve(previousLoadVms.apply(this, arguments)).then((result) => {
+      clearVmListFailure();
+      return result;
+    }, (error) => {
+      state.vmListError = typeof normalizeError === 'function' ? normalizeError(error) : { message: String(error && error.message || error || '') };
+      throw error;
+    });
+  };
+}
+if (typeof window !== 'undefined') {
+  const previousOpenResource = window.openResourceById;
+  window.openResourceById = function (page, id) {
+    if (String(page || '').toLowerCase() !== 'vms') {
+      if (typeof previousOpenResource === 'function') return previousOpenResource.apply(this, arguments);
+      return undefined;
+    }
+    const decoded = decodeVmRouteId(id);
+    const saved = window.__pcvVmHashRoute;
+    const tab = saved && saved.page === 'vms' && saved.id === decoded ? saved.tab : '';
+    return applyVmDeepLink(decoded, tab);
+  };
 }
 
 window.matchesVmFilter = matchesVmFilter;

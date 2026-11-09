@@ -72,9 +72,15 @@ task 크기(2026-11-09 사용자 승인 `U1 checkpoint 2 승인`): Task 2부터�
 
 실행 기록(2026-11-09): checkpoint 4(11:05~11:26)에서 grok이 골격을 구현했지만 `bootstrap.ts` 512줄(상한 499)과 browser gate assertion 10건 실패로 멈췄다. 원인은 더 보기 메뉴가 Esc를 먼저 처리(`preventDefault`)해 메뉴를 닫은 뒤, `bootstrap.ts` 스냅샷이 아무것도 열려 있지 않다고 보고 VM 선택을 해제해 상세와 메뉴가 사라진 것이다. "U2b checkpoint 2 승인" 뒤 checkpoint 5(15:33~15:46)에서 Esc 선택 해제를 `vm-list.ts` 모듈 로드 때 등록하는 document keydown으로 옮기고, `defaultPrevented`이거나 메뉴·대화상자·확인 창 안에서 누른 Esc는 건너뛰게 했다. `bootstrap.ts` 497줄(HEAD 그대로), `vm.ts` 2,538→2,508줄(slack 50 안이라 ratchet 그대로), `vm-list.ts` 205→241줄, domsafe 천장 37→35, axe 기준선 1,906→2,054(+148, `--prune` 없음, stale 551 경고). 검증: `npm run build:served`, `npm run test:required` exit 0(web-contracts 370 pass, browser gate assertions 121 failed 0 violations 0), web Pester 50/50, ratchet Pester 3/3, Delivery 785/785, `git diff --check` clean. 가짜 API 1280 캡처(`vms`, `vm-detail-summary`, `vm-detail-console`)에서 두 상태, 고른 행 표시, 이름 한 번, 넓어진 상세·콘솔 폭을 확인했다. 콘솔 맞춤 배율은 이미 stage 폭으로 계산해 `vm-console.ts`는 고치지 않았다. 768·390 캡처 비교와 260px 목록에서 상태·템플릿 배지와 VM 이름이 글자 중간에서 줄바꿈되는 문제(`Faile d`, `Runni ng`)는 Task 2c로 넘겼다.
 
-## Task 2c: U2 바로 가는 링크, 빈 상태, 좁은 화면, PR
+## Task 2c: U2 바로 가는 링크, 빈 상태, 목록 줄바꿈
 
-- [ ] hash `#/vms/<vm-id>/<tab>`(`core.ts:351-354`)와 뒤로 가기, 없는 VM 처리. 빈 상태 CTA와 읽기 실패(`components.emptyState`·`loadError`). 600px 이하는 목록과 상세를 하나씩. node 시험. Task 2b에서 넘어온 것: 260px 목록의 배지·이름 줄바꿈 수정, 가짜 API 캡처 768·390 비교. 공통 검증, release-train queue 행. push, PR(U2 묶음), green CI 뒤 merge.
+- [x] hash `#/vms/<vm-id>/<tab>`(`core.ts:351-354`)와 뒤로 가기, 없는 VM 처리. 빈 상태 CTA와 읽기 실패(`components.emptyState`·`loadError`). Task 2b에서 넘어온 260px 목록의 배지·이름 줄바꿈 수정. node 시험. 공통 검증. 로컬 commit.
+
+실행 기록(2026-11-09): checkpoint 6(15:42~16:06). grok이 `vm-list.ts`에 다음을 넣었다. hash 바로 가는 링크(`#/vms/<id>/<tab>`. 목록에서 상세로 갈 때 `pushState` 한 번, 탭 변경은 `replaceState`, 뒤로 가기·닫기·Esc는 `#/vms`, 없는 id는 목록과 toast `vm.list.missing`). 빈 상태 `emptyState`와 CTA `open-create-vm`, 필터 빈 상태의 필터 지우기, 읽기 실패 `loadError`와 다시 시도. 260px 목록 배지 `nowrap`, 이름 말줄임(`title`). 리뷰에서 결함 하나를 찾았다. `render()`(`monitor.ts:872-882`)가 모든 화면에서 `renderVms()`를 부르므로, VM을 고른 채 다른 화면으로 가면 hash가 VM 경로로 바뀐다. Claude가 `syncVmListHash`에 `state.activeView !== 'vms'` 가드 한 줄을 더했다. `vm-list.ts` 241→542줄(ratchet 미등록), `vm.ts` 2,508, `bootstrap.ts` 497, domsafe 천장 35→34, axe 기준선 2,054→2,118(+64, `td[title]` 선택자, `--prune` 없음). 검증: `npm run test:required` exit 0(browser gate assertions 121 failed 0 violations 0), web Pester와 ratchet Pester 53/53, Delivery 785/785, `git diff --check` clean. 가드 회귀 node 시험, 600px 이하 확인, 768·390 캡처 비교는 Task 2d로 넘겼다.
+
+## Task 2d: U2 캡처 비교와 PR
+
+- [ ] 가짜 API 캡처(1440, 768, 390)를 원본 캡처와 비교하고, 600px 이하에서 목록과 상세가 하나씩 보이는지 확인한다. VM을 고른 채 다른 화면으로 가도 hash가 그 화면을 따르는지 node 시험을 더한다. 공통 검증, release-train queue 행. push, PR(U2 묶음), green CI 뒤 merge.
 
 ## Task 3a: U3 행 메뉴
 

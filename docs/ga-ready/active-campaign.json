@@ -11,13 +11,14 @@
   ],
   "mutation_allowed": false,
   "current_write_allowed": false,
-  "next_step": "Task 1 (U1, PR #123), Task 2a (vm-list.ts split) and Task 2b (list-detail layout) done. Run Task 2c from docs/superpowers/plans/2026-11-09-purecvisor-desktop-node-ui-parity-impl.md, then the queue in order.",
+  "next_step": "Task 1 (U1, PR #123), Task 2a (vm-list.ts split) Task 2b (list-detail layout) and Task 2c (deep link, empty state) done. Run Task 2d from docs/superpowers/plans/2026-11-09-purecvisor-desktop-node-ui-parity-impl.md, then the queue in order.",
   "plan": "docs/superpowers/plans/2026-11-09-purecvisor-desktop-node-ui-parity-impl.md",
   "task_queue": [
     "Task 1",
     "Task 2a",
     "Task 2b",
     "Task 2c",
+    "Task 2d",
     "Task 3a",
     "Task 3b",
     "Task 3c",
@@ -34,16 +35,17 @@
     "Task 8b"
   ],
   "task_lanes": {},
-  "next_task": "Task 2c",
+  "next_task": "Task 2d",
   "completed_tasks": [
     "Task 1",
     "Task 2a",
-    "Task 2b"
+    "Task 2b",
+    "Task 2c"
   ],
   "commit_policy": "local-commit-per-task",
   "push_allowed": true,
   "merge_policy": "after-green-ci",
-  "checkpoint_limit": 18,
+  "checkpoint_limit": 19,
   "approval_locator": "User-Approval: 2026-09-27 campaign runner commit policy local-commit-per-task; User-Approval: 2026-11-09 \"UI 개편 구현 campaign 열기와 ADR-0020 채택 승인\" (answer to ui-parity-design-20261109 next_approval_required 1): open this campaign from the implementation plan and adopt ADR-0020; Lane 1, Tasks 1-8 (U1-U8), grok implements and Claude reviews, push, PR and merge after green Required CI per task; no host mutation; release train departure needs a separate approval; User-Approval: 2026-11-09 standing merge approval (\"앞으로 Required CI가 green이면 PR merge도 자동 승인\"): merge after the five Required checks pass, revert PR if the main push run is red; User-Approval: 2026-11-09 \"U1 checkpoint 2 승인\": continue Task 1 in a new 30-min checkpoint from the uncommitted diff, then from Task 2 split each stage into checkpoint-sized tasks (one grok brief each, more tasks)",
   "next_approval_required": [],
   "stop_on": [
