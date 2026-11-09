@@ -11,18 +11,18 @@ function getDiagnosticActionPolicy(error = state.diagnosticBundleError) {
   const pending = Boolean(state.pendingDiagnosticAction);
   const bundleId = getDiagnosticBundleId();
   const guideByStatus: Record<number, string> = {
-    401: '401 auth required: enter a browser token and retry.',
-    403: '403 auth forbidden: verify the token source before retrying.',
-    404: '404 PCV_DIAGNOSTIC_BUNDLE_API_UNSUPPORTED: installed listener does not expose the diagnostic bundle API.',
-    500: '500 server failure: keep the error details for support triage.'
+    401: t('copy.mon.guide_401'),
+    403: t('copy.mon.guide_403'),
+    404: t('copy.mon.guide_404'),
+    500: t('copy.mon.guide_500')
   };
   const timedOut = status === 408 || status === 504 || code === 'PCV_ROUTE_TIMEOUT' || message.includes('timeout');
   const unsupported = status === 404 || code === 'PCV_DIAGNOSTIC_BUNDLE_API_UNSUPPORTED';
   const auth = status === 401 || status === 403 || isAuthError(error);
   const retryable = Boolean(error?.retryable || timedOut || status >= 500 || auth);
   const guide = timedOut
-    ? 'timeout: retry after the listener is responsive or after the Retry-After hint.'
-    : guideByStatus[status] || (code ? `${code}: review problem-details and retry when safe.` : t('copy.mon.diag_ready'));
+    ? t('copy.mon.guide_timeout')
+    : guideByStatus[status] || (code ? t('copy.mon.guide_code', { code }) : t('copy.mon.diag_ready'));
 
   return {
     createDisabled: pending || unsupported,
@@ -271,26 +271,27 @@ function renderDiagnosticsBundle() {
   const createDisabled = policy.createDisabled || !canCreate ? 'disabled aria-disabled="true"' : '';
   const downloadDisabled = policy.downloadDisabled || !canDownload ? 'disabled aria-disabled="true"' : '';
   const facts = [
-    ['Mode', t('copy.mon.api_action')],
-    ['Mutation', 'no host mutation'],
+    [t('copy.mon.mode'), t('copy.mon.api_action')],
+    [t('copy.mon.mutation'), t('copy.mon.no_host_mutation')],
     [t('copy.mon.output_root'), DIAGNOSTIC_BUNDLE_ROOT],
-    ['Route', DESKTOP_NODE_API_ROUTES.diagnosticBundles],
+    [t('copy.mon.route'), DESKTOP_NODE_API_ROUTES.diagnosticBundles],
     [t('copy.mon.list_route'), DESKTOP_NODE_API_ROUTES.diagnosticBundlesPage(10, 0)],
-    ['CollectDiagnostics', 'server-side compatible archive'],
-    ['Redaction', 'token values and Authorization headers redacted']
+    ['CollectDiagnostics', t('copy.mon.collect_archive')],
+    [t('copy.mon.redaction'), t('copy.mon.redaction_value')]
   ];
+  const readyDetail = [
+    bundle.created_at,
+    bundle.download_status,
+    bundle.redaction_status,
+    bundle.retention_status
+  ].filter(Boolean).join(' / ') || t('copy.mon.ready_download');
   const statusHtml = state.diagnosticBundleError
-    ? `<div class="diagnostics-result error"><span class="muted">Last action</span><strong>${pcvEscapeHtml(state.diagnosticBundleError.code)}</strong><p>${pcvEscapeHtml(state.diagnosticBundleError.message)} ${pcvEscapeHtml(state.diagnosticBundleError.detail)}</p><p>${pcvEscapeHtml(policy.guide)}</p></div>`
+    ? `<div class="diagnostics-result error"><span class="muted">${pcvEscapeHtml(t('copy.mon.last_action'))}</span><strong>${pcvEscapeHtml(state.diagnosticBundleError.code)}</strong><p>${pcvEscapeHtml(state.diagnosticBundleError.message)} ${pcvEscapeHtml(state.diagnosticBundleError.detail)}</p><p>${pcvEscapeHtml(policy.guide)}</p></div>`
     : bundleId
-      ? `<div class="diagnostics-result"><span class="muted">Latest bundle</span><strong>${pcvEscapeHtml(bundleId)}</strong><p>${pcvEscapeHtml([
-          bundle.created_at,
-          bundle.download_status,
-          bundle.redaction_status,
-          bundle.retention_status
-        ].filter(Boolean).join(' / ') || 'ready for authenticated download')}</p></div>`
-      : `<div class="diagnostics-result"><span class="muted">Latest bundle</span><strong>Not created in this browser session</strong><p>Create uses POST ${pcvEscapeHtml(DESKTOP_NODE_API_ROUTES.diagnosticBundles)} and keeps the archive server-side.</p></div>`;
+      ? `<div class="diagnostics-result"><span class="muted">${pcvEscapeHtml(t('copy.mon.latest_bundle'))}</span><strong>${pcvEscapeHtml(bundleId)}</strong><p>${pcvEscapeHtml(readyDetail)}</p></div>`
+      : `<div class="diagnostics-result"><span class="muted">${pcvEscapeHtml(t('copy.mon.latest_bundle'))}</span><strong>${pcvEscapeHtml(t('copy.mon.not_created'))}</strong><p>${pcvEscapeHtml(t('copy.mon.create_uses_post', { route: DESKTOP_NODE_API_ROUTES.diagnosticBundles }))}</p></div>`;
   const downloadHtml = download.bundle_id
-    ? `<div class="diagnostics-result"><span class="muted">Last download</span><strong>${pcvEscapeHtml(download.file_name || download.bundle_id)}</strong><p>${pcvEscapeHtml(download.content_type || 'application/vnd.purecvisor.diagnostic-bundle+json')} / ${pcvEscapeHtml(download.size_bytes ?? 0)} bytes</p></div>`
+    ? `<div class="diagnostics-result"><span class="muted">${pcvEscapeHtml(t('copy.mon.last_download'))}</span><strong>${pcvEscapeHtml(download.file_name || download.bundle_id)}</strong><p>${pcvEscapeHtml(download.content_type || 'application/vnd.purecvisor.diagnostic-bundle+json')} / ${pcvEscapeHtml(download.size_bytes ?? 0)} ${pcvEscapeHtml(t('copy.mon.bytes'))}</p></div>`
     : '';
   els.diagnosticsPanel.innerHTML = `<div class="diagnostics-card">
     <div class="diagnostics-header">
@@ -305,9 +306,9 @@ function renderDiagnosticsBundle() {
     </div>
     <div class="diagnostics-actions">
       <button type="button" data-action="diagnostic-create" ${createDisabled}>${pcvEscapeHtml(t('copy.mon.create_bundle'))}</button>
-      <button type="button" data-action="diagnostic-download" data-bundle-id="${pcvEscapeHtml(bundleId)}" ${downloadDisabled}>Download latest</button>
-      ${policy.retryVisible ? '<button type="button" data-action="diagnostic-retry">Retry action</button>' : ''}
-      <span class="muted">Authenticated create/download only; command strings and token values are not rendered.</span>
+      <button type="button" data-action="diagnostic-download" data-bundle-id="${pcvEscapeHtml(bundleId)}" ${downloadDisabled}>${pcvEscapeHtml(t('copy.trouble.download'))}</button>
+      ${policy.retryVisible ? `<button type="button" data-action="diagnostic-retry">${pcvEscapeHtml(t('copy.mon.retry_action'))}</button>` : ''}
+      <span class="muted">${pcvEscapeHtml(t('copy.mon.auth_only_note'))}</span>
     </div>
     ${statusHtml}
     ${renderDiagnosticBundleList()}
@@ -323,15 +324,15 @@ function renderTokenRotation() {
   const policy = state.runtimePolicy || {};
   const storage = readNested(policy, ['auth', 'token_storage']) || readNested(policy, ['token', 'storage']) || getTokenPolicyLabel();
   const exposure = readNested(policy, ['network', 'current_exposure']) || readNested(policy, ['network', 'bind']) || getRuntimeExposure();
-  const browserToken = state.apiToken.trim() ? 'browser token present' : 'browser token empty';
+  const browserToken = state.apiToken.trim() ? t('copy.mon.browser_token_present') : t('copy.mon.browser_token_empty');
   const facts = [
-    ['Mode', 'rotation handoff'],
-    [t('copy.mon.service_token'), 'no service token mutation'],
+    [t('copy.mon.mode'), t('copy.mon.rotation_handoff')],
+    [t('copy.mon.service_token'), t('copy.mon.no_service_token_mutation')],
     [t('copy.mon.protected_token'), TOKEN_PROTECTED_FILE],
     [t('copy.mon.browser_token'), browserToken],
     [t('copy.mon.token_route'), tokenRequiredRouteStatus()],
-    ['Storage', formatPolicyValue(storage)],
-    ['Exposure', formatPolicyValue(exposure)]
+    [t('copy.mon.storage'), formatPolicyValue(storage)],
+    [t('copy.mon.exposure_label'), formatPolicyValue(exposure)]
   ];
 
   els.tokenRotationPanel.innerHTML = `<div class="token-rotation-card">
@@ -340,20 +341,20 @@ function renderTokenRotation() {
         <span class="muted">${pcvEscapeHtml(t('copy.mon.token_kicker'))}</span>
         <strong>${pcvEscapeHtml(t('copy.mon.token_title'))}</strong>
       </div>
-      <span class="status-badge warn">operator handoff</span>
+      <span class="status-badge warn">${pcvEscapeHtml(t('copy.mon.operator_handoff'))}</span>
     </div>
     <div class="diagnostics-grid">
       ${facts.map(([label, value]) => `<div class="diagnostics-fact"><span class="muted">${pcvEscapeHtml(label)}</span><strong>${pcvEscapeHtml(value)}</strong></div>`).join('')}
     </div>
     <div class="token-rotation-actions">
       <button type="button" data-action="clear-browser-token">${pcvEscapeHtml(t('copy.mon.clear_browser_token'))}</button>
-      <span class="muted">Token values and Authorization headers are not rendered.</span>
+      <span class="muted">${pcvEscapeHtml(t('copy.mon.token_values_hidden'))}</span>
     </div>
-    ${state.tokenActionMessage ? `<div class="diagnostics-result"><span class="muted">Last browser action</span><strong>${pcvEscapeHtml(state.tokenActionMessage)}</strong></div>` : ''}
+    ${state.tokenActionMessage ? `<div class="diagnostics-result"><span class="muted">${pcvEscapeHtml(t('copy.mon.last_browser_action'))}</span><strong>${pcvEscapeHtml(state.tokenActionMessage)}</strong></div>` : ''}
     <div class="boundary-chip-row">
-      <span>revoke browser token only</span>
-      <span>service token replacement operator-owned</span>
-      <span>no host mutation</span>
+      <span>${pcvEscapeHtml(t('copy.mon.revoke_browser_only'))}</span>
+      <span>${pcvEscapeHtml(t('copy.mon.service_token_operator'))}</span>
+      <span>${pcvEscapeHtml(t('copy.mon.no_host_mutation'))}</span>
     </div>
   </div>`;
 }

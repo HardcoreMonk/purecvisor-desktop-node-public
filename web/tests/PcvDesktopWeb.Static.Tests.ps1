@@ -764,9 +764,11 @@ Describe 'PcvDesktopWeb static console assets' {
         $diagI18n = Get-Content -LiteralPath (Join-Path $script:WebRoot 'i18n.js') -Raw
         $diagI18n | Should -Match 'Host mutation: not performed by diagnostics view'
         $diagI18n | Should -Match 'API action'
-        ($app + $servedSource) | Should -Match 'token values'
-        ($app + $servedSource) | Should -Match 'Authorization headers'
-        ($app + $servedSource) | Should -Match 'no host mutation'
+        ($app + $servedSource) | Should -Match 'copy\.mon\.redaction_value'
+        ($app + $servedSource) | Should -Match 'copy\.mon\.no_host_mutation'
+        $diagI18n | Should -Match 'token values'
+        $diagI18n | Should -Match 'Authorization headers'
+        $diagI18n | Should -Match 'no host mutation'
         ($app + $servedSource) | Should -Not -Match '\b(?:pwsh|powershell)(?:\.exe)?\s+\S|Restart-Computer|msiexec|New-VM|Remove-VM|New-NetFirewallRule|Register-EventSource|New-EventLog|Register-ScheduledTask'
         ($app + $servedSource) | Should -Not -Match 'Bearer\s+(?!\$\{)[A-Za-z0-9._~+/=-]{24,}'
     }
@@ -864,12 +866,14 @@ Describe 'PcvDesktopWeb static console assets' {
         ($app + $servedSource) | Should -Match 'renderTokenRotation'
         ($app + $servedSource) | Should -Match 'copy\.mon\.token_title'
         ($app + $servedSource) | Should -Match 'api-token\.dpapi\.json'
-        ($app + $servedSource) | Should -Match 'rotation handoff'
+        ($app + $servedSource) | Should -Match 'copy\.mon\.rotation_handoff'
         ($app + $servedSource) | Should -Match 'copy\.mon\.clear_browser_token'
-        ($app + $servedSource) | Should -Match 'no service token mutation'
+        ($app + $servedSource) | Should -Match 'copy\.mon\.no_service_token_mutation'
         $tokenI18n = Get-Content -LiteralPath (Join-Path $script:WebRoot 'i18n.js') -Raw
         $tokenI18n | Should -Match 'copy\.mon\.token_title'': ''Token Rotation'''
         $tokenI18n | Should -Match 'copy\.mon\.clear_browser_token'': ''Clear browser token'''
+        $tokenI18n | Should -Match 'rotation handoff'
+        $tokenI18n | Should -Match 'no service token mutation'
         ($app + $servedSource) | Should -Not -Match 'Restart-Computer|msiexec|New-VM|Remove-VM|New-NetFirewallRule|Register-EventSource|New-EventLog|Register-ScheduledTask'
         ($app + $servedSource) | Should -Not -Match 'Bearer\s+(?!\$\{)[A-Za-z0-9._~+/=-]{24,}'
     }

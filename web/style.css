@@ -4793,7 +4793,7 @@ th {
 .dashboard-activity-row {
   background:
     linear-gradient(180deg, rgba(255, 255, 255, .035), transparent 72px),
-    rgba(17, 26, 43, .78);
+    var(--supanova-panel);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, .035);
 }
 

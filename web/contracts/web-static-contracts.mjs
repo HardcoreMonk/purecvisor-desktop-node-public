@@ -1528,15 +1528,18 @@ function verifyDiagnosticBundle(context) {
     [/copy\.mon\.mutation_diagnostics/, "host-mutation-boundary"],
     [/runtime_api_registry_bridge|runtimeApiRegistryBridge/i, "registry-bridge-key"],
     [/copy\.mon\.api_action/, "api-action"],
-    [/token values/i, "token-redaction"],
-    [/Authorization headers/i, "authorization-redaction"],
-    [/no host mutation/i, "no-host-mutation-label"]
+    [/copy\.mon\.redaction_value/, "token-redaction"],
+    [/copy\.mon\.redaction_value/, "authorization-redaction"],
+    [/copy\.mon\.no_host_mutation/, "no-host-mutation-label"]
   ]) {
     context.assertMatch(combined, pattern, "diagnostic-bundle:" + label);
   }
   const diagI18n = context.readText("web/i18n.js");
   context.assertMatch(diagI18n, /Host mutation: not performed by diagnostics view/, "diagnostic-bundle:host-mutation-boundary:i18n");
   context.assertMatch(diagI18n, /API action/, "diagnostic-bundle:api-action:i18n");
+  context.assertMatch(diagI18n, /token values/, "diagnostic-bundle:token-redaction:i18n");
+  context.assertMatch(diagI18n, /Authorization headers/, "diagnostic-bundle:authorization-redaction:i18n");
+  context.assertMatch(diagI18n, /no host mutation/, "diagnostic-bundle:no-host-mutation-label:i18n");
   for (const [pattern, label] of [
     [/service-action-eventlog-firewall-truststore-credential-manager-data-root-separated/i, "hostops-bucket-contract"],
     [/credential-manager-system-proof/i, "credential-manager-proof"],
@@ -1698,15 +1701,17 @@ function verifyTokenRotation(context) {
     [/renderTokenRotation/i, "render"],
     [/copy\.mon\.token_title/, "title"],
     [/api-token\.dpapi\.json/i, "protected-token-file"],
-    [/rotation handoff/i, "handoff"],
+    [/copy\.mon\.rotation_handoff/, "handoff"],
     [/copy\.mon\.clear_browser_token/, "clear-browser-token"],
-    [/no service token mutation/i, "no-service-token-mutation"]
+    [/copy\.mon\.no_service_token_mutation/, "no-service-token-mutation"]
   ]) {
     context.assertMatch(combined, pattern, `token-rotation:${label}`);
   }
   const tokenI18n = context.readText("web/i18n.js");
   context.assertMatch(tokenI18n, /'copy\.mon\.token_title': 'Token Rotation'/, "token-rotation:title:i18n");
   context.assertMatch(tokenI18n, /'copy\.mon\.clear_browser_token': 'Clear browser token'/, "token-rotation:clear-browser-token:i18n");
+  context.assertMatch(tokenI18n, /'copy\.mon\.rotation_handoff': 'rotation handoff'/, "token-rotation:handoff:i18n");
+  context.assertMatch(tokenI18n, /'copy\.mon\.no_service_token_mutation': 'no service token mutation'/, "token-rotation:no-service-token-mutation:i18n");
   context.assertNotMatch(
     combined,
     /Restart-Computer|msiexec|New-VM|Remove-VM|New-NetFirewallRule|Register-EventSource|New-EventLog|Register-ScheduledTask/i,

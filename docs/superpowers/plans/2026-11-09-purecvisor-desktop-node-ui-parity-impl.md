@@ -203,7 +203,9 @@ task 크기(2026-11-09 사용자 승인 `U1 checkpoint 2 승인`): Task 2부터�
 
 ## Task 8c: U8 하드코딩 색과 테마 설명
 
-- [ ] 남은 하드코딩 색을 token으로 바꾸고 `web/DESIGN.md` 기본 테마 설명(`:79-81`, `:84-100`)을 BL-0026대로 하나로 고친다. 진단 패널에 남은 영어 리터럴을 i18n 키로 바꾼다(붙잡힌 문자열은 계약을 같은 강도로 옮긴다). 공통 검증. 로컬 commit.
+- [x] 남은 하드코딩 색을 token으로 바꾸고 `web/DESIGN.md` 기본 테마 설명(`:79-81`, `:84-100`)을 BL-0026대로 하나로 고친다. 진단 패널에 남은 영어 리터럴을 i18n 키로 바꾼다(붙잡힌 문자열은 계약을 같은 강도로 옮긴다). 공통 검증. 로컬 commit.
+
+실행 기록(2026-11-10): checkpoint 27(00:28~00:39). 감사 C-02 범위(Part 2 패널 배경)를 확인하니 `rgba(17, 26, 43, .78)`는 패널 규칙 23개가 함께 쓰는 블록 하나에만 남아 있었다. grok이 그 값을 같은 RGB의 `var(--supanova-panel)`로 바꿨다(장식용 흰 highlight 그라데이션과 token 정의 블록은 그대로). 진단 번들·토큰 교체 패널의 영어 고정 문구 33개를 `copy.mon.*` i18n 키(ko 기본, en은 fixture가 보던 문장 그대로)로 바꾸고, `Download latest`는 기존 `copy.trouble.download`를 쓴다. 번들의 영어 리터럴을 보던 계약·Pester pin 다섯 개(`diagnostic-bundle:token-redaction` 등)는 키 이름과 `i18n.js` 영어 문장 둘 다로 옮겨 강도를 유지했다. `renderRuntimeApiRegistryBridge`·`renderHostOpsLifecycleBucketTable`의 영어(고급 절 안의 기술 값)는 계약·fixture가 붙잡아 남겼다. Claude가 `web/DESIGN.md` 기본 테마 설명을 하나로 고쳤다. 기본 token 표를 실제 기본값인 Part 2 `:root`의 어두운 값으로 바꾸고, 그 `:root`가 테마 블록보다 뒤에 있어 핵심 token은 테마와 관계없이 그 값이 쓰인다고 적었다(B-06, BL-0026). 같은 분석에서 고대비·mockup 테마의 핵심 색이 바뀌지 않는다는 범위 밖 발견을 BL-0039로 적었다(report-only). domsafe 27(변화 없음), axe 기준선 변화 없음(2,626). 검증: `npm run test:required`(node 389 pass, gate `ok=true` assertions 121 failed 0 violations 0), DESIGN.md 수정 뒤 계약 node 시험 149 pass, web Pester와 ratchet Pester 53/53, Delivery 785/785, `check:served` current, `git diff --check` clean.
 
 ## Task 8d: U8 품질 게이트와 닫기
 
