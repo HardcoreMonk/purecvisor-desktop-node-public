@@ -1449,6 +1449,120 @@ test("an enabled VM row menu item selects that VM and clicks the same detail act
   }
 });
 
+function vmSortIds() {
+  return [...env.document.querySelectorAll("#vm-table tbody tr[data-vm-id]")].map((row) => row.getAttribute("data-vm-id"));
+}
+
+function vmSortFixture() {
+  resetSession(env);
+  env.state.selectedVmId = "";
+  env.state.selectedVm = null;
+  env.state.connectionState = "idle";
+  env.state.vmFilter = "";
+  env.state.vmStateFilter = "all";
+  env.state.vmSort = "name";
+  env.state.vmSortDir = "asc";
+  env.state.vms = [
+    { id: "mid", name: "mid", state: "Running", generation: 2, cpu: { count: 4 }, memory: { startup_mb: 512 }, updated_at: "2026-01-02T00:00:00Z" },
+    { id: "low", name: "aaa", state: "Off", generation: 1, cpu: { count: 1 }, memory: { startup_mb: 4096 }, updated_at: "2026-01-03T00:00:00Z" },
+    { id: "none", name: "zzz", state: "Off", updated_at: "2026-01-01T00:00:00Z" }
+  ];
+  if (!env.els.vmSort) {
+    const select = env.document.createElement("select");
+    select.id = "vm-sort";
+    env.document.body.appendChild(select);
+    env.els.vmSort = select;
+  }
+  env.renderVms();
+}
+
+test("column headers sort, toggle direction, set aria-sort, and mirror the select", () => {
+  vmSortFixture();
+  assert.deepEqual(vmSortIds(), ["low", "mid", "none"]);
+  assert.equal(env.document.querySelector('#vm-table button[data-vm-sort="name"]').parentNode.getAttribute("aria-sort"), "ascending");
+  assert.equal(env.document.querySelector('#vm-table button[data-vm-sort="memory"]').parentNode.getAttribute("aria-sort"), "none");
+  const heads = [...env.document.querySelectorAll("#vm-table thead th")];
+  assert.equal(heads[heads.length - 1].querySelector("button"), null);
+  env.document.querySelector('#vm-table button[data-vm-sort="memory"]').click();
+  assert.equal(env.state.selectedVmId, "");
+  assert.equal(env.state.vmSort, "memory");
+  assert.equal(env.state.vmSortDir, "asc");
+  assert.equal(env.els.vmSort.value, "memory");
+  assert.equal(env.document.querySelector('#vm-table button[data-vm-sort="memory"]').parentNode.getAttribute("aria-sort"), "ascending");
+  assert.deepEqual(vmSortIds(), ["mid", "low", "none"]);
+  env.document.querySelector('#vm-table button[data-vm-sort="memory"]').click();
+  assert.equal(env.state.vmSortDir, "desc");
+  assert.equal(env.document.querySelector('#vm-table button[data-vm-sort="memory"]').parentNode.getAttribute("aria-sort"), "descending");
+  assert.deepEqual(vmSortIds(), ["low", "mid", "none"]);
+  env.els.vmSort.value = "state";
+  env.els.vmSort.dispatchEvent(new env.Event("change"));
+  assert.equal(env.state.vmSort, "state");
+  assert.equal(env.state.vmSortDir, "asc");
+  assert.deepEqual(vmSortIds(), ["low", "none", "mid"]);
+  env.state.vmSort = "name";
+  env.state.vmSortDir = "asc";
+  env.renderVms();
+  assert.deepEqual(vmSortIds(), ["low", "mid", "none"]);
+  env.state.vmSort = "state";
+  env.state.vmSortDir = "asc";
+  env.renderVms();
+  assert.deepEqual(vmSortIds(), ["low", "none", "mid"]);
+  env.state.vmSort = "updated";
+  env.state.vmSortDir = "desc";
+  env.renderVms();
+  assert.deepEqual(vmSortIds(), ["low", "mid", "none"]);
+});
+
+test("j and k move the VM row selection and focus, and ignore a search field and Ctrl+j", async () => {
+  vmSortFixture();
+  const calls = [];
+  env.loadVmDetail = async (id) => {
+    calls.push(id);
+    env.state.selectedVmId = id;
+    env.state.selectedVm = env.state.vms.find((vm) => vm.id === id);
+  };
+  const rows = () => [...env.document.querySelectorAll("#vm-table tbody tr[data-vm-id]")];
+  assert.equal(rows()[0].getAttribute("tabindex"), "-1");
+  rows()[0].focus();
+  keyOn(rows()[0], "j");
+  await flush();
+  assert.deepEqual(calls, ["low"]);
+  assert.equal(env.state.selectedVmId, "low");
+  assert.equal(env.state.connectionState, "connected");
+  assert.equal(env.document.activeElement, rows()[0]);
+  keyOn(env.document.activeElement, "j");
+  await flush();
+  assert.deepEqual(calls, ["low", "mid"]);
+  assert.equal(env.state.selectedVmId, "mid");
+  assert.equal(env.document.activeElement, rows()[1]);
+  keyOn(env.document.activeElement, "k");
+  await flush();
+  assert.equal(env.state.selectedVmId, "low");
+  assert.equal(env.document.activeElement, rows()[0]);
+  keyOn(rows()[0], "k");
+  await flush();
+  assert.equal(env.state.selectedVmId, "low");
+  env.state.selectedVmId = "";
+  env.state.selectedVm = null;
+  keyOn(rows()[0], "k");
+  await flush();
+  assert.equal(env.state.selectedVmId, "none");
+  const before = calls.length;
+  const input = env.document.createElement("input");
+  input.id = "vm-filter";
+  env.document.body.appendChild(input);
+  input.focus();
+  keyOn(input, "j");
+  await flush();
+  assert.equal(calls.length, before);
+  assert.equal(env.state.selectedVmId, "none");
+  rows()[0].focus();
+  keyOn(rows()[0], "j", { ctrlKey: true });
+  await flush();
+  assert.equal(calls.length, before);
+  assert.equal(env.state.selectedVmId, "none");
+});
+
 function bootVmDeleteList(nextJob) {
   const sandbox = createEnv();
   const listError = new Error("parity");

@@ -92,7 +92,9 @@ task 크기(2026-11-09 사용자 승인 `U1 checkpoint 2 승인`): Task 2부터�
 
 ## Task 3b: U3 정렬과 j/k
 
-- [ ] 열 머리를 누르면 그 열로 정렬하고 다시 누르면 방향을 바꾼다. 목록에 포커스가 있으면 j/k로 행을 옮긴다. node 시험. 공통 검증. 로컬 commit.
+- [x] 열 머리를 누르면 그 열로 정렬하고 다시 누르면 방향을 바꾼다. 목록에 포커스가 있으면 j/k로 행을 옮긴다. node 시험. 공통 검증. 로컬 commit.
+
+실행 기록(2026-11-09): checkpoint 4(17:32~17:49). grok이 다음을 넣었다. 정렬할 수 있는 머리(이름, 상태, 세대, vCPU, 메모리, 표시)를 `<th aria-sort>` 안 `button[data-vm-sort]`로 바꿨다. 다른 열은 기본 방향(updated만 desc), 같은 열은 방향 전환이다. `state.vmSortDir`을 더했다. `compareVms`는 방향을 반영하고, 세대·vCPU·메모리는 숫자로 비교하며(없는 값은 끝), 동점은 이름 asc다. `#vm-sort`에 세대, vCPU, 메모리, 표시 옵션을 더해 머리와 맞췄다(라벨은 기존 `vm.list.col.*`). `#vm-table` 안 j/k는 보이는 다음·이전 행을 행 클릭과 같은 경로로 고르고 그 행에 포커스를 둔다. 끝에서 돌지 않고, 수정 키, 입력 요소, 메뉴·대화상자에서는 무시한다. `bootstrap.ts`와 `vm.ts`는 바꾸지 않았다. `vm-list.ts` 833→972줄, domsafe 34, axe 기준선 2,126→2,196(+70, 정렬 버튼 pseudoContent·방향 기호 nonBmp, `--prune` 없음). 검증: `npm run test:required` exit 0(web-contracts 379 pass, browser gate assertions 121 failed 0 violations 0), web Pester 50/50, ratchet Pester 3/3, Delivery 785/785, `git diff --check` clean. grok의 첫 gate 실행에서 `delete-confirm/accept-deletes` assertion이 한 번 실패했고, 뒤의 세 번은 통과했다(BL-0038).
 
 ## Task 3c: U3 선택과 일괄 시작·종료
 

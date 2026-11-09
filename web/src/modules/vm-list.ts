@@ -42,15 +42,50 @@ function getVmUpdatedValue(vm) {
   return Number.isFinite(stamp) ? stamp : 0;
 }
 
+function vmSortDefaultDir(sort) {
+  return String(sort || '').toLowerCase() === 'updated' ? 'desc' : 'asc';
+}
+
+function vmSortSign() {
+  return state.vmSortDir === 'desc' ? -1 : 1;
+}
+
+function vmSortNumeric(vm, sort) {
+  let raw;
+  if (sort === 'generation') raw = vm ? vm.generation : undefined;
+  else if (sort === 'cpu') {
+    raw = vm && vm.cpu && typeof vm.cpu === 'object' ? vm.cpu.count : vm && vm.cpu;
+    if (raw == null || raw === '') raw = vm ? (vm.vcpu != null ? vm.vcpu : vm.processor_count) : undefined;
+  } else if (sort === 'memory') {
+    raw = vm && vm.memory && typeof vm.memory === 'object' ? vm.memory.startup_mb : vm && vm.memory;
+    if (raw == null || raw === '') raw = vm ? (vm.memory_mb != null ? vm.memory_mb : vm.memory_assigned_mb) : undefined;
+  }
+  if (raw == null || raw === '') return null;
+  const number = Number(raw);
+  return Number.isFinite(number) ? number : null;
+}
+
 function compareVms(left, right) {
   const sort = String(state.vmSort || 'name').toLowerCase();
-  if (sort === 'state') {
-    return getVmState(left).localeCompare(getVmState(right)) || getVmName(left).localeCompare(getVmName(right));
+  const dir = vmSortSign();
+  const byName = getVmName(left).localeCompare(getVmName(right));
+  if (sort === 'state') return dir * getVmState(left).localeCompare(getVmState(right)) || byName;
+  if (sort === 'updated') return dir * (getVmUpdatedValue(left) - getVmUpdatedValue(right)) || byName;
+  if (sort === 'generation' || sort === 'cpu' || sort === 'memory') {
+    const a = vmSortNumeric(left, sort);
+    const b = vmSortNumeric(right, sort);
+    if (a == null || b == null) {
+      if (a == null && b == null) return byName;
+      return a == null ? 1 : -1;
+    }
+    return dir * (a - b) || byName;
   }
-  if (sort === 'updated') {
-    return getVmUpdatedValue(right) - getVmUpdatedValue(left) || getVmName(left).localeCompare(getVmName(right));
+  if (sort === 'display') {
+    const a = isTemplateLockedVm(left) ? 1 : 0;
+    const b = isTemplateLockedVm(right) ? 1 : 0;
+    return dir * (a - b) || byName;
   }
-  return getVmName(left).localeCompare(getVmName(right));
+  return dir * getVmName(left).localeCompare(getVmName(right)) || byName;
 }
 
 function vmScalarText(value) {
@@ -702,8 +737,109 @@ function keepVmRowMenuAfterRender(vms) {
   if (target && typeof target.focus === 'function') target.focus();
 }
 
+function vmSortHeader(key, labelKey) {
+  const sort = String(state.vmSort || 'name').toLowerCase();
+  const active = sort === key;
+  const dir = state.vmSortDir === 'desc' ? 'desc' : 'asc';
+  const aria = active ? (dir === 'desc' ? 'descending' : 'ascending') : 'none';
+  const mark = active ? (dir === 'desc' ? '▼' : '▲') : '';
+  const symbol = mark ? ` <span aria-hidden="true">${mark}</span>` : '';
+  return `<th aria-sort="${aria}"><button type="button" data-vm-sort="${key}">${pcvEscapeHtml(t(labelKey))}${symbol}</button></th>`;
+}
+
+function syncVmSortSelect() {
+  if (!els.vmSort) return;
+  const sort = String(state.vmSort || 'name');
+  if (els.vmSort.value !== sort) els.vmSort.value = sort;
+}
+
+function onVmSortHeaderClick(event) {
+  const node = vmListEventElement(event && event.target);
+  const button = node && typeof node.closest === 'function' ? node.closest('button[data-vm-sort]') : null;
+  if (!button) return;
+  if (typeof event.preventDefault === 'function') event.preventDefault();
+  const key = button.getAttribute('data-vm-sort') || 'name';
+  if (String(state.vmSort || 'name').toLowerCase() === key) state.vmSortDir = state.vmSortDir === 'desc' ? 'asc' : 'desc';
+  else {
+    state.vmSort = key;
+    state.vmSortDir = vmSortDefaultDir(key);
+  }
+  syncVmSortSelect();
+  if (typeof render === 'function') render();
+  else renderVms();
+}
+
+function bindVmSortHeaderClicks() {
+  if (!els.vmTable || els.vmTable.__pcvVmSortBound) return;
+  els.vmTable.__pcvVmSortBound = true;
+  els.vmTable.addEventListener('click', onVmSortHeaderClick);
+}
+
+function onVmSortSelectChange(event) {
+  const target = event && event.target;
+  if (!target || target.id !== 'vm-sort') return;
+  const key = target.value || 'name';
+  state.vmSort = key;
+  state.vmSortDir = vmSortDefaultDir(key);
+  if (typeof render === 'function') render();
+  else renderVms();
+}
+
+function vmListRows() {
+  const host = els.vmTable || document.getElementById('vm-table');
+  if (!host || typeof host.querySelectorAll !== 'function') return [];
+  return Array.prototype.filter.call(host.querySelectorAll('tbody tr[data-vm-id]'), (row) => !row.hidden);
+}
+
+function focusVmListRow(vmId) {
+  const rows = vmListRows();
+  for (let index = 0; index < rows.length; index += 1) {
+    if ((rows[index].getAttribute('data-vm-id') || '') !== vmId) continue;
+    if (typeof rows[index].focus === 'function') rows[index].focus();
+    return;
+  }
+}
+
+async function moveVmListSelection(vmId) {
+  state.error = null;
+  try {
+    if (typeof loadVmDetail === 'function') await loadVmDetail(vmId);
+    state.connectionState = 'connected';
+  } catch (error) {
+    state.error = typeof normalizeError === 'function' ? normalizeError(error) : error;
+  }
+  if (typeof render === 'function') render();
+  else renderVms();
+  focusVmListRow(vmId);
+}
+
+function onVmListJk(event) {
+  if (!event || event.defaultPrevented || event.ctrlKey || event.altKey || event.metaKey) return;
+  const key = String(event.key || '').toLowerCase();
+  if (key !== 'j' && key !== 'k') return;
+  const target = event.target;
+  if (!target) return;
+  const tag = String(target.tagName || '').toUpperCase();
+  if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA' || target.isContentEditable) return;
+  if (vmListEscapeTargetInOverlay(target)) return;
+  const table = document.getElementById('vm-table');
+  if (!table || typeof table.contains !== 'function' || !table.contains(target)) return;
+  const rows = vmListRows();
+  if (!rows.length) return;
+  const ids = rows.map((row) => row.getAttribute('data-vm-id') || '');
+  const current = ids.indexOf(state.selectedVmId || '');
+  let next = -1;
+  if (current < 0) next = key === 'j' ? 0 : ids.length - 1;
+  else if (key === 'j') next = current + 1;
+  else next = current - 1;
+  if (next < 0 || next >= ids.length) return;
+  if (typeof event.preventDefault === 'function') event.preventDefault();
+  moveVmListSelection(ids[next]);
+}
+
 function renderVms() {
   syncVmListDetailMode();
+  syncVmSortSelect();
   const named = asArray(state.vms).filter(matchesVmQuery);
   paintVmChips(named);
   renderTemplates();
@@ -735,7 +871,7 @@ function renderVms() {
       ? `<span class="badge badge-warn">${pcvEscapeHtml(t('vm.badge.template'))}</span>`
       : '';
     return `
-    <tr${selected} data-vm-id="${pcvEscapeHtml(vmId)}">
+    <tr${selected} data-vm-id="${pcvEscapeHtml(vmId)}" tabindex="-1">
       <td title="${pcvEscapeHtml(name)}">${pcvEscapeHtml(name)}</td>
       <td>${stateBadge(getVmState(vm) || vm.status)}</td>
       <td>${pcvEscapeHtml(vmScalarText(vm.generation))}</td>
@@ -747,10 +883,11 @@ function renderVms() {
   }).join('');
   els.vmTable.innerHTML = `
     <table class="pcv-vm-table">
-      <thead><tr><th>${pcvEscapeHtml(t('vm.list.col.name'))}</th><th>${pcvEscapeHtml(t('vm.list.col.state'))}</th><th>${pcvEscapeHtml(t('vm.list.col.generation'))}</th><th>${pcvEscapeHtml(t('vm.list.col.cpu'))}</th><th>${pcvEscapeHtml(t('vm.list.col.memory'))}</th><th>${pcvEscapeHtml(t('vm.list.col.display'))}</th><th>${pcvEscapeHtml(t('vm.list.col.action'))}</th></tr></thead>
+      <thead><tr>${vmSortHeader('name', 'vm.list.col.name')}${vmSortHeader('state', 'vm.list.col.state')}${vmSortHeader('generation', 'vm.list.col.generation')}${vmSortHeader('cpu', 'vm.list.col.cpu')}${vmSortHeader('memory', 'vm.list.col.memory')}${vmSortHeader('display', 'vm.list.col.display')}<th>${pcvEscapeHtml(t('vm.list.col.action'))}</th></tr></thead>
       <tbody>${rows}</tbody>
     </table>`;
   bindVmRowMenuButtons();
+  bindVmSortHeaderClicks();
   keepVmRowMenuAfterRender(vms);
   syncVmListHash();
 }
@@ -778,6 +915,8 @@ function vmListEscapeClearsSelection(event) {
 
 if (typeof document !== 'undefined' && document && typeof document.addEventListener === 'function') {
   document.addEventListener('keydown', onVmRowMenuContextKey);
+  document.addEventListener('keydown', onVmListJk);
+  document.addEventListener('change', onVmSortSelectChange);
   document.addEventListener('contextmenu', onVmRowContextMenu);
   document.addEventListener('click', onVmRowMenuOutsideClick);
   document.addEventListener('keydown', vmListEscapeClearsSelection);
