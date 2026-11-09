@@ -37,6 +37,7 @@
 | 6 | 계정 보관과 복원은 권장안 자동 승인(`"앞으로는 권장 사항 자동 승인 처리 한다."`, 2026-11-08)으로 연다(train `0.42.99` 사용자 결정 5와 같다). 범위는 train 전 `accounts.json` 백업(저장소와 제품 data 폴더 밖 보호 위치)과 data root에서 치우기, train 뒤 복원과 해시 비교다. 백업 삭제는 사용자에게 묻는다 |
 | probe | queue 행의 `lane2_probe`는 모두 `null`이다. 승인 3의 `probe(Web Console 화면)` 범위 안에서 설치본이 내주는 Web Console이 U1~U8 화면인지 확인한다(Task 6). VM은 만들지 않는다 |
 | ADR-0016 | standing approval(2026-10-07)은 `pcv-it-` 접두사 VM 생성·구성·삭제로 한정한다. disk는 `artifacts/` 아래에 둔다 |
+| 7 | 마무리 뒤 사용자 결정 "train 계정 백업 삭제, counts"(2026-11-10, 마무리 보고의 다음 승인 1·2). 1: train 계정 백업을 지우고 기록은 문서 PR 하나로 남겨 Required CI green 뒤 merge한다. 2: BL-0036~BL-0041을 모두 `counts`로 분류한다 |
 
 ## 적재 변경
 
@@ -299,6 +300,13 @@ PR #131(`lane1/train-04300-20261110`)을 열었고 Required CI 다섯 개(`dotne
 - hygiene: C2 `met=true`(current `0.43.0-admin-smoke` = operational current, train promoted, queue 0, 미완료 train 0), C3 4/4, C4 15/15, C7 `met=false`(`open_counts=0, undecided=6`: BL-0036~0041, 모두 `user-decision`).
 - 판정을 인용한 감사 문서 `docs/project-status-audit-2026-11-10.md`를 썼다(§6.2).
 - campaign을 닫았다. 다음 승인으로 train 계정 백업 삭제와 backlog 분류를 사용자에게 묻는다.
+
+마무리 뒤 기록(2026-11-10, 사용자 결정 7):
+- 지우기 전에 data root 계정 파일과 백업 `accounts.json`의 SHA-256이 같은 것(1,153 bytes)을 확인했다.
+- 보호 위치의 백업 `accounts.json`, 옮긴 빈 저장소, ACL 기록 파일을 지웠다. 비게 된 백업 폴더도 지웠다. 빈 저장소의 ACL은 바꾸지 않았다.
+- 확인: data root 계정 파일의 SHA-256과 ACL이 지우기 전과 같다. service Running/Automatic, Web `200`, loopback 세션 `409` `PCV_LOOPBACK_SESSION_DISABLED`(계정 모드).
+- backlog BL-0036~BL-0041을 `counts`로 분류했다(상태 `open`). 운영 위생 C7은 이제 `open_counts=6, undecided=0`이고, 여섯 건을 고쳐 닫아야 충족한다.
+- campaign `next_approval_required`를 수정 campaign 승인 문장 하나로 바꿨다.
 
 ## Nonclaims
 
