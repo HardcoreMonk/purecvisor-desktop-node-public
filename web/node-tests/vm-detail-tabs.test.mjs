@@ -392,7 +392,7 @@ function createEnv() {
   sandbox.addEventListener = () => {};
   sandbox.removeEventListener = () => {};
   vm.createContext(sandbox);
-  for (const file of ["i18n.js", "src/modules/uxlib.ts", "src/modules/modal-core.ts", "src/modules/components.ts", "src/modules/vm.ts"]) {
+  for (const file of ["i18n.js", "src/modules/uxlib.ts", "src/modules/modal-core.ts", "src/modules/components.ts", "src/modules/vm-list.ts", "src/modules/vm.ts"]) {
     vm.runInContext(fs.readFileSync(webRoot + file, "utf8"), sandbox, { filename: file });
   }
   return sandbox;

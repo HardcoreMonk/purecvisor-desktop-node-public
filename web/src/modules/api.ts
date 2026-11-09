@@ -119,6 +119,7 @@ function _closeOperatorSurfaces() {
   try { if (typeof window.closeCommandPalette === 'function') window.closeCommandPalette(); } catch (e) {}
   var more = document.getElementById('pcv-vm-more-menu');
   if (more) more.hidden = true;
+  try { if (typeof window.closeVmRowMenu === 'function') window.closeVmRowMenu(); } catch (e) {}
   var toggle = document.querySelector('[data-action="vm-more-toggle"]');
   if (toggle) toggle.setAttribute('aria-expanded', 'false');
   var ctx = document.getElementById('ctx');

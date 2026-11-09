@@ -19,6 +19,14 @@
       "summary": "ui-parity U2 (ADR-0020): VM list moved to vm-list.ts, list-detail layout (full-width table, 260px list after selection, detail-only under 900px), name shown once, static pagehead, Esc and close return to the list, #/vms/<vm-id>/<tab> deep link with back navigation, empty-state CTA and load-error retry, gate --viewport option",
       "lane2_probe": null,
       "risk_tier": "M"
+    },
+    {
+      "pr": 125,
+      "merge_commit": "06d958af",
+      "area": "web",
+      "summary": "ui-parity U3 (ADR-0020): VM row menu (ellipsis, right-click, ContextMenu key, Shift+F10) with the detail more-menu items, header sort with aria-sort and j/k row selection, checkbox selection bar with bulk start/shut down, bulk delete confirm with typed target count, mobile bulk delete restored",
+      "lane2_probe": null,
+      "risk_tier": "M"
     }
   ],
   "trains": [

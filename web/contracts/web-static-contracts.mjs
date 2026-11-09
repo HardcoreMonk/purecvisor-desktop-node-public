@@ -1118,25 +1118,27 @@ function verifyVmLifecycleActions(context) {
   assertSourceAndGenerated(context, detailSource, app, [
     [/data-action="vm-start"/i, "start"],
     [/data-action="vm-shutdown"/i, "shutdown"],
-    [/data-action="vm-poweroff"/i, "poweroff"],
     [/data-action="vm-restart"/i, "restart"],
     [/data-action="vm-save"/i, "save"],
     [/data-action="vm-resume-saved"/i, "resume-saved"],
     [/vm\.power\.resume_saved/i, "resume-saved-label"],
     [/data-action="vm-manage"/i, "manage"],
     [/vm\.power\.manage/i, "manage-label"],
-    [/data-action="vm-template-lock"/i, "template-lock"],
-    [/vm\.menu\.lock/i, "template-lock-label"],
-    [/data-action="vm-template-unlock"/i, "template-unlock"],
-    [/vm\.menu\.unlock/i, "template-unlock-label"],
     [/data-action="vm-clone-open"/i, "clone"],
     [/vm\.menu\.clone/i, "clone-label"],
-    [/data-action="vm-delete"/i, "delete"],
     [/export-import-readback/i, "export-import-readback"],
     [/vm-export-preview/i, "export-preview"],
     [/vm-import-preview/i, "import-preview"],
     [/vm\.export\.chip_ovf/i, "no-ovf"],
     [/vm\.export\.chip_tpm/i, "no-tpm-key-copy"]
+  ], "vm-lifecycle-actions");
+  assertSourceAndGenerated(context, context.readText("web/src/modules/vm-list.ts"), app, [
+    [/data-action="vm-template-lock"/i, "template-lock"],
+    [/vm\.menu\.lock/i, "template-lock-label"],
+    [/data-action="vm-template-unlock"/i, "template-unlock"],
+    [/vm\.menu\.unlock/i, "template-unlock-label"],
+    [/data-action="vm-poweroff"/i, "poweroff"],
+    [/data-action="vm-delete"/i, "delete"]
   ], "vm-lifecycle-actions");
   assertSourceAndGenerated(context, mutateSource, app, [
     [/function\s+queueVmManage\s*\(/i, "queue-manage"],

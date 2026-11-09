@@ -86,19 +86,33 @@ task 크기(2026-11-09 사용자 승인 `U1 checkpoint 2 승인`): Task 2부터�
 
 ## Task 3a: U3 행 메뉴
 
-- [ ] 행 `⋯` 메뉴와 우클릭(ContextMenu 키, Shift+F10 포함)이 ADR-0019 더 보기 메뉴와 같은 항목을 연다. 상태에 맞지 않는 항목은 끈다. 행 주 조작 하나는 그대로다. node 시험: 메뉴 키보드(열기, 화살표, Esc). 공통 검증. 로컬 commit.
+- [x] 행 `⋯` 메뉴와 우클릭(ContextMenu 키, Shift+F10 포함)이 ADR-0019 더 보기 메뉴와 같은 항목을 연다. 상태에 맞지 않는 항목은 끈다. 행 주 조작 하나는 그대로다. node 시험: 메뉴 키보드(열기, 화살표, Esc). 공통 검증. 로컬 commit.
+
+실행 기록(2026-11-09): checkpoint 1(16:47~17:12)에서 grok이 행 `⋯` 버튼, 우클릭, ContextMenu 키·Shift+F10, 상세 더 보기와 같은 항목과 끄는 규칙 helper(`vmMoreMenuModel`, `vmMoreMenuItemsHtml`)를 넣었다. 하지만 context 압축이 두 번 일어나 마지막 검증 전에 멈췄다(diff 보존). 권장안 자동 승인으로 checkpoint 2(17:12~17:15)에서 Claude가 검증과 리뷰를 했다. 주기적 `render()`에도 열린 행 메뉴를 새 버튼에 붙여 유지하는 `keepVmRowMenuAfterRender`를 더했다(상세 더 보기와 같은 동작, VM이 목록에서 빠지면 닫힘). 첫 `test:required` 실패 5건은 checkpoint 3(17:15~17:31)에서 grok이 고쳤다. 상세 복제 버튼이 IIFE 지역 `openVmCloneModal`을 직접 불러 행 메뉴와 시험 stub이 닿지 않던 것을 `window.openVmCloneModal`로 바꿨다. 그 대화상자가 남아 실패하던 logout 시험이 풀렸고, 로그아웃(`_closeOperatorSurfaces`)이 행 메뉴도 닫는다. 메뉴 항목 계약 검사 위치를 `vm-list.ts`로 옮겼다(정규식 그대로). `vm.ts` 2,508→2,499줄, `vm-list.ts` 542→833줄, domsafe 34, axe 기준선 2,118→2,126(+8, `⋯` 버튼 nonBmp, `--prune` 없음). 검증: `npm run test:required` exit 0(web-contracts 377 pass, browser gate assertions 121 failed 0 violations 0), web Pester 50/50, ratchet Pester 3/3, Delivery 785/785, `git diff --check` clean.
 
 ## Task 3b: U3 정렬과 j/k
 
-- [ ] 열 머리를 누르면 그 열로 정렬하고 다시 누르면 방향을 바꾼다. 목록에 포커스가 있으면 j/k로 행을 옮긴다. node 시험. 공통 검증. 로컬 commit.
+- [x] 열 머리를 누르면 그 열로 정렬하고 다시 누르면 방향을 바꾼다. 목록에 포커스가 있으면 j/k로 행을 옮긴다. node 시험. 공통 검증. 로컬 commit.
+
+실행 기록(2026-11-09): checkpoint 4(17:32~17:49). grok이 다음을 넣었다. 정렬할 수 있는 머리(이름, 상태, 세대, vCPU, 메모리, 표시)를 `<th aria-sort>` 안 `button[data-vm-sort]`로 바꿨다. 다른 열은 기본 방향(updated만 desc), 같은 열은 방향 전환이다. `state.vmSortDir`을 더했다. `compareVms`는 방향을 반영하고, 세대·vCPU·메모리는 숫자로 비교하며(없는 값은 끝), 동점은 이름 asc다. `#vm-sort`에 세대, vCPU, 메모리, 표시 옵션을 더해 머리와 맞췄다(라벨은 기존 `vm.list.col.*`). `#vm-table` 안 j/k는 보이는 다음·이전 행을 행 클릭과 같은 경로로 고르고 그 행에 포커스를 둔다. 끝에서 돌지 않고, 수정 키, 입력 요소, 메뉴·대화상자에서는 무시한다. `bootstrap.ts`와 `vm.ts`는 바꾸지 않았다. `vm-list.ts` 833→972줄, domsafe 34, axe 기준선 2,126→2,196(+70, 정렬 버튼 pseudoContent·방향 기호 nonBmp, `--prune` 없음). 검증: `npm run test:required` exit 0(web-contracts 379 pass, browser gate assertions 121 failed 0 violations 0), web Pester 50/50, ratchet Pester 3/3, Delivery 785/785, `git diff --check` clean. grok의 첫 gate 실행에서 `delete-confirm/accept-deletes` assertion이 한 번 실패했고, 뒤의 세 번은 통과했다(BL-0038).
 
 ## Task 3c: U3 선택과 일괄 시작·종료
 
-- [ ] 표 첫 열 체크박스와 선택 막대(선택 n개, 시작, 종료, 선택 해제). VM마다 job 하나와 자리 진행 줄. node 시험: job 수. 공통 검증. 로컬 commit.
+- [x] 표 첫 열 체크박스와 선택 막대(선택 n개, 시작, 종료, 선택 해제). VM마다 job 하나와 자리 진행 줄. node 시험: job 수. 공통 검증. 로컬 commit.
 
-## Task 3d: U3 일괄 삭제, PR
+실행 기록(2026-11-09): checkpoint 5(17:50~18:13). grok이 다음을 넣었다. 표 첫 열에 행 체크박스(`{이름} 선택`)와 머리의 보이는 VM 모두 선택(일부면 `indeterminate`)을 두었다. 체크해도 상세는 열리지 않는다. `state.vmChecked`를 두고, 목록에 없는 id는 다시 그릴 때 지운다. 하나 이상 고르면 선택 막대(선택 n개, 시작, 종료, 선택 해제, 건너뜀 n)가 나온다. 시작은 꺼진 VM만, 종료는 확인 창 한 번 뒤 실행 중 VM만 대상이고, 템플릿 잠금·대기 중 VM은 건너뛴다. VM마다 `queueVmAction`을 한 번 부르고 `setVmActionPending`, `pcvTrackJob`, `startPolling`, `clearVmActionPending`을 단일 동작과 같이 쓴다. 막대 아래 VM마다 진행 줄을 두고 `trackJob`으로 갱신한다. 260px 상세 목록에서 숨기는 열을 1(체크박스), 4, 5, 6, 8로 옮겼다(1열에 남은 ellipsis 선택자는 숨은 열이라 효과가 없다). i18n 키 7개(ko·en)를 더했다. `vm-list.ts` 972→1,163줄, `core.ts` 1,584줄, `vm.ts`·`bootstrap.ts`는 바꾸지 않았다. domsafe 34, axe 기준선 2,196→2,256(+60, 열 이동으로 바뀐 선택자, `--prune` 없음). grok은 18:10에 마지막 `build:served` 전에 멈췄고, Claude가 다시 만들어 검증했다. 검증: `npm run test:required`에서 node 380 pass, browser gate 기준선 기록 뒤 `ok=true`(assertions 121 failed 0 violations 0), web Pester 50/50, ratchet Pester 3/3, Delivery 785/785, `git diff --check` clean.
 
-- [ ] 일괄 삭제 확인 모달(대상 이름 목록, 고른 개수를 입력해야 버튼이 켜짐)과 선택 막대 삭제 버튼. 모바일 일괄 삭제를 이 모달로 되살린다. node 시험: 개수 gate, VM마다 job 하나. 공통 검증, release-train queue 행. push, PR(U3 묶음), green CI 뒤 merge.
+## Task 3d: U3 일괄 삭제
+
+- [x] 일괄 삭제 확인 모달(대상 이름 목록, 고른 개수를 입력해야 버튼이 켜짐)과 선택 막대 삭제 버튼. 모바일 일괄 삭제를 이 모달로 되살린다. node 시험: 개수 gate, VM마다 job 하나. 공통 검증. 로컬 commit.
+
+실행 기록(2026-11-09): checkpoint 6(18:14~18:29). grok이 `vm-list.ts`에 `queueVmBulkDelete(vmIds)`를 넣고 `PCV.vm`으로 내보냈다. 선택 막대에 위험 표시 삭제 버튼을 두었다. 실행 중, 템플릿 잠금, 대기 중 VM은 대상에서 빼고 그 수를 따로 보여 준다. 대상 0이거나 `operate`가 없으면 버튼이 꺼진다. 확인은 `confirmDialog` 한 번(`danger`, `typedName`=대상 개수, 설명에 대상 이름 목록)이다. 수락하면 VM마다 `desktopApi.deleteVm`을 한 번 부르고 `pcvTrackJob`, pending, `startPolling`, 진행 줄은 Task 3c와 같다. U1에서 지운 모바일 체크 선택과 일괄 삭제(`m-vm-bulk-delete`)를 되살렸고, 삭제는 같은 `PCV.vm.queueVmBulkDelete`만 부른다. i18n 키 4개(ko·en)를 더했다. `vm-list.ts` 1,163→1,233줄, `mobile.ts` 393줄, `vm.ts`·`bootstrap.ts`·CSS는 바꾸지 않았다. domsafe 34. 검증: `npm run test:required` exit 0(node 381 pass, browser gate `ok=true` assertions 121 failed 0 violations 0, 기준선 변화 없음), web Pester 50/50, ratchet Pester 3/3, Delivery 785/785, `git diff --check` clean. PR은 Task 3e로 나눴다.
+
+## Task 3e: U3 PR
+
+- [x] clean HEAD 종료 검증(`npm run test:required`, `Invoke-PcvPrGate.ps1`), release-train queue 행. push, PR(U3 묶음, Task 3a~3d), green CI 뒤 merge, merge 뒤 `main` run 확인.
+
+실행 기록(2026-11-09): checkpoint 7(18:29~). clean HEAD `06d958af`에서 `npm run test:required` exit 0(node 381 pass, browser gate assertions 121 failed 0 violations 0), `Invoke-PcvPrGate.ps1` ok(build, dotnet-test-release, module-size-ratchet), Delivery 785/785, `git diff --check origin/main...HEAD` clean. push 뒤 PR #125, release-train queue 행(merge_commit `06d958af`).
 
 ## Task 4a: U4 화면 렌더 등록표
 

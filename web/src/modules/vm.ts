@@ -336,7 +336,7 @@ function mountVmDetailTabs(root, vmId) {
     button.addEventListener('click', (event) => {
       if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
       if (button.disabled) return;
-      openVmCloneModal(button.getAttribute('data-vm-id') || vmId);
+      window.openVmCloneModal(button.getAttribute('data-vm-id') || vmId);
     });
   });
   root.querySelectorAll('[data-action="checkpoint-create-open"]').forEach((button) => {
@@ -839,11 +839,7 @@ function renderVmDetail() {
     [t('vm.detail.label.notes'), vm.error?.message || vm.notes]
   ];
   const vmName = getVmName(vm);
-  const deleteDisabled = isVmActionPending(vmId) || !canOperate || templateLocked ? ' disabled' : '';
   const id = pcvEscapeHtml(vmId);
-  const templateMenuItem = templateLocked
-    ? `<button type="button" role="menuitem" data-action="vm-template-unlock" data-vm-id="${id}"${actionDisabled}>${pcvEscapeHtml(t('vm.menu.unlock'))}</button>`
-    : `<button type="button" role="menuitem" data-action="vm-template-lock" data-vm-id="${id}"${actionDisabled}>${pcvEscapeHtml(t('vm.menu.lock'))}</button>`;
   const templateCloneButton = templateLocked
     ? `<button type="button" class="btn" data-action="vm-clone-open" data-vm-id="${id}"${actionDisabled}>${pcvEscapeHtml(t('vm.menu.clone'))}</button>`
     : '';
@@ -865,12 +861,7 @@ function renderVmDetail() {
         <div class="pcv-vm-menu-wrap">
           <button type="button" data-action="vm-more-toggle" aria-haspopup="menu" aria-expanded="false" aria-controls="pcv-vm-more-menu">${pcvEscapeHtml(t('vm.menu.more'))}</button>
           <div id="pcv-vm-more-menu" class="pcv-vm-menu" role="menu" hidden>
-            <button type="button" role="menuitem" data-action="vm-clone-open" data-vm-id="${id}"${actionDisabled}>${pcvEscapeHtml(t('vm.menu.clone'))}</button>
-            ${templateMenuItem}
-            <button type="button" role="menuitem" data-action="vm-export-focus" data-vm-id="${id}"${actionDisabled}>${pcvEscapeHtml(t('vm.menu.export'))}</button>
-            <button type="button" role="menuitem" data-action="vm-console" data-vm-id="${id}"${consoleDisabled}>${pcvEscapeHtml(t('vm.menu.vmconnect'))}</button>
-            <button type="button" role="menuitem" class="pcv-menu-danger" data-action="vm-poweroff" data-vm-id="${id}"${lockedMutationDisabled}>${pcvEscapeHtml(t('vm.menu.poweroff'))}</button>
-            <button type="button" role="menuitem" class="pcv-menu-danger" data-action="vm-delete" data-vm-id="${id}"${deleteDisabled}>${pcvEscapeHtml(t('vm.menu.delete'))}</button>
+            ${vmMoreMenuItemsHtml(vm)}
           </div>
         </div>
       </div>

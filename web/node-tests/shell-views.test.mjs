@@ -481,8 +481,11 @@ function createEnv() {
   body.appendChild(topbar);
   body.appendChild(statusbar);
   body.appendChild(cb);
-  body.appendChild(detailTitle);
-  body.appendChild(detailContent);
+  const detailPanel = document.createElement("aside");
+  detailPanel.id = "vm-detail-panel";
+  detailPanel.appendChild(detailTitle);
+  detailPanel.appendChild(detailContent);
+  body.appendChild(detailPanel);
   document.getElementById("vms").appendChild(chips);
   document.getElementById("vms").appendChild(workspace);
   document.getElementById("templates").appendChild(templateTable);
@@ -560,6 +563,7 @@ function createEnv() {
   }
   sandbox.els.vmTable = vmTable;
   sandbox.els.templateTable = templateTable;
+  sandbox.els.vmDetailPanel = detailPanel;
   sandbox.els.vmDetailTitle = detailTitle;
   sandbox.els.vmDetailContent = detailContent;
   sandbox.els.closeVmDetail = closeVmDetail;
@@ -884,7 +888,7 @@ test("VM hash opens a VM and tab, tab changes replace, and an unknown id returns
   assert.equal(calls.filter((call) => call.mode === "push").length, 1);
   assert.equal(env.location.hash, "#/vms/a%20b/summary");
   const namedRow = [...env.document.querySelectorAll("#vm-table tr[data-vm-id]")].find((row) => row.getAttribute("data-vm-id") === "a b");
-  assert.equal(namedRow.querySelector("td").getAttribute("title"), "a b");
+  assert.equal(namedRow.querySelector("td[title]").getAttribute("title"), "a b");
   const panel = env.document.createElement("div");
   panel.id = "vm-detail-panel";
   const tab = env.document.createElement("button");
@@ -1290,6 +1294,383 @@ test("service bearer and loopback sessions hide the password change entry", () =
   env.state.authSession = null;
 });
 
+function vmRowMenuFixture() {
+  resetSession(env);
+  env.state.selectedVmId = "";
+  env.state.selectedVm = null;
+  env.state.connectionState = "idle";
+  env.state.vms = [
+    { id: "off-1", name: "off-1", state: "Off", generation: 2, cpu: { count: 1 }, memory: { startup_mb: 1024 } },
+    { id: "lock-1", name: "lock-1", state: "Running", template_lock: true, generation: 2, cpu: { count: 2 }, memory: { startup_mb: 2048 } }
+  ];
+  env.renderVms();
+}
+
+function vmRowMenuButton(id) {
+  return env.document.querySelector(`#vm-table tr[data-vm-id="${id}"] [data-action="vm-row-menu"]`);
+}
+
+function vmRowMenu() {
+  return env.document.getElementById("pcv-vm-row-menu");
+}
+
+function vmRowMenuItems() {
+  return [...vmRowMenu().querySelectorAll('[role="menuitem"]')];
+}
+
+function keyOn(node, key, extra) {
+  const event = new env.Event("keydown");
+  event.key = key;
+  if (extra) Object.assign(event, extra);
+  node.dispatchEvent(event);
+  return event;
+}
+
+test("the VM row menu opens from the ellipsis without selecting the row", () => {
+  vmRowMenuFixture();
+  const button = vmRowMenuButton("off-1");
+  assert.equal(button.getAttribute("aria-haspopup"), "menu");
+  assert.equal(button.getAttribute("aria-expanded"), "false");
+  assert.match(button.getAttribute("aria-label"), /off-1/);
+  assert.match(button.textContent, /⋯/);
+  button.click();
+  const menu = vmRowMenu();
+  assert.equal(env.state.selectedVmId, "");
+  assert.equal(env.state.selectedVm, null);
+  assert.equal(menu.hidden, false);
+  assert.equal(menu.getAttribute("role"), "menu");
+  assert.equal(button.getAttribute("aria-expanded"), "true");
+  const items = vmRowMenuItems().filter((item) => !item.disabled);
+  assert.equal(env.document.activeElement, items[0]);
+  assert.equal(items[0].getAttribute("data-action"), "vm-clone-open");
+  // A periodic render rebuilds the rows but keeps the open menu on the rebuilt toggle and item.
+  env.render();
+  assert.equal(vmRowMenu().hidden, false);
+  assert.equal(vmRowMenuButton("off-1").getAttribute("aria-expanded"), "true");
+  assert.equal(env.document.activeElement.getAttribute("data-action"), "vm-clone-open");
+  assert.equal(env.state.selectedVmId, "");
+  // The menu closes once its VM is no longer listed.
+  env.state.vms = env.state.vms.filter((vm) => vm.id !== "off-1");
+  env.render();
+  assert.equal(vmRowMenu().hidden, true);
+});
+
+test("the VM row menu opens from contextmenu and Shift+F10 and moves with arrows", () => {
+  vmRowMenuFixture();
+  const row = env.document.querySelector('#vm-table tr[data-vm-id="off-1"]');
+  const context = new env.Event("contextmenu");
+  context.clientX = 15;
+  context.clientY = 25;
+  row.dispatchEvent(context);
+  assert.equal(context.defaultPrevented, true);
+  assert.equal(env.state.selectedVmId, "");
+  const menu = vmRowMenu();
+  assert.equal(menu.hidden, false);
+  assert.equal(menu.style.left, "15px");
+  assert.equal(menu.style.top, "25px");
+  env.renderVms();
+  const primary = env.document.querySelector('#vm-table tr[data-vm-id="off-1"] .pcv-row-action');
+  primary.focus();
+  const f10 = keyOn(primary, "F10", { shiftKey: true });
+  assert.equal(f10.defaultPrevented, true);
+  assert.equal(vmRowMenu().hidden, false);
+  assert.equal(env.state.selectedVmId, "");
+  const items = vmRowMenuItems().filter((item) => !item.disabled);
+  assert.equal(env.document.activeElement, items[0]);
+  const down = keyOn(items[0], "ArrowDown");
+  assert.equal(down.defaultPrevented, true);
+  assert.equal(env.document.activeElement, items[1]);
+  const end = keyOn(env.document.activeElement, "End");
+  assert.equal(end.defaultPrevented, true);
+  assert.equal(env.document.activeElement, items[items.length - 1]);
+  const home = keyOn(env.document.activeElement, "Home");
+  assert.equal(home.defaultPrevented, true);
+  assert.equal(env.document.activeElement, items[0]);
+  const up = keyOn(items[0], "ArrowUp");
+  assert.equal(up.defaultPrevented, true);
+  assert.equal(env.document.activeElement, items[items.length - 1]);
+  env.renderVms();
+  const again = env.document.querySelector('#vm-table tr[data-vm-id="off-1"] .pcv-row-action');
+  again.focus();
+  keyOn(again, "ContextMenu");
+  assert.equal(vmRowMenu().hidden, false);
+  const tab = keyOn(env.document.activeElement, "Tab");
+  assert.equal(vmRowMenu().hidden, true);
+  assert.equal(tab.defaultPrevented, undefined);
+});
+
+test("Escape closes the VM row menu, restores focus, and keeps the selection", () => {
+  vmRowMenuFixture();
+  env.state.selectedVmId = "off-1";
+  env.state.selectedVm = env.state.vms[0];
+  env.renderVms();
+  const button = vmRowMenuButton("off-1");
+  button.focus();
+  button.click();
+  assert.equal(vmRowMenu().hidden, false);
+  const escape = keyOn(env.document.activeElement, "Escape");
+  assert.equal(escape.defaultPrevented, true);
+  assert.equal(vmRowMenu().hidden, true);
+  assert.equal(env.document.activeElement, button);
+  assert.equal(env.state.selectedVmId, "off-1");
+  assert.equal(button.getAttribute("aria-expanded"), "false");
+});
+
+test("a template-locked VM disables force poweroff and delete in the row menu", () => {
+  vmRowMenuFixture();
+  vmRowMenuButton("lock-1").click();
+  const item = (action) => vmRowMenuItems().find((node) => node.getAttribute("data-action") === action);
+  assert.equal(item("vm-poweroff").disabled, true);
+  assert.equal(item("vm-delete").disabled, true);
+  assert.equal(item("vm-clone-open").disabled, false);
+  assert.equal(item("vm-template-unlock").disabled, false);
+  assert.equal(item("vm-template-lock"), undefined);
+  const before = env.state.selectedVmId;
+  item("vm-poweroff").click();
+  assert.equal(env.state.selectedVmId, before);
+  assert.equal(vmRowMenu().hidden, false);
+});
+
+test("an enabled VM row menu item selects that VM and clicks the same detail action", () => {
+  vmRowMenuFixture();
+  const calls = [];
+  const original = env.openVmCloneModal;
+  env.openVmCloneModal = (id) => { calls.push(id); };
+  try {
+    vmRowMenuButton("off-1").click();
+    const item = vmRowMenuItems().find((node) => node.getAttribute("data-action") === "vm-clone-open");
+    item.click();
+    assert.equal(env.state.selectedVmId, "off-1");
+    assert.equal(env.state.selectedVm.id, "off-1");
+    assert.equal(env.state.connectionState, "connected");
+    assert.deepEqual(calls, ["off-1"]);
+  } finally {
+    env.openVmCloneModal = original;
+  }
+});
+
+function vmSortIds() {
+  return [...env.document.querySelectorAll("#vm-table tbody tr[data-vm-id]")].map((row) => row.getAttribute("data-vm-id"));
+}
+
+function vmSortFixture() {
+  resetSession(env);
+  env.state.selectedVmId = "";
+  env.state.selectedVm = null;
+  env.state.connectionState = "idle";
+  env.state.vmFilter = "";
+  env.state.vmStateFilter = "all";
+  env.state.vmSort = "name";
+  env.state.vmSortDir = "asc";
+  env.state.vms = [
+    { id: "mid", name: "mid", state: "Running", generation: 2, cpu: { count: 4 }, memory: { startup_mb: 512 }, updated_at: "2026-01-02T00:00:00Z" },
+    { id: "low", name: "aaa", state: "Off", generation: 1, cpu: { count: 1 }, memory: { startup_mb: 4096 }, updated_at: "2026-01-03T00:00:00Z" },
+    { id: "none", name: "zzz", state: "Off", updated_at: "2026-01-01T00:00:00Z" }
+  ];
+  if (!env.els.vmSort) {
+    const select = env.document.createElement("select");
+    select.id = "vm-sort";
+    env.document.body.appendChild(select);
+    env.els.vmSort = select;
+  }
+  env.renderVms();
+}
+
+test("column headers sort, toggle direction, set aria-sort, and mirror the select", () => {
+  vmSortFixture();
+  assert.deepEqual(vmSortIds(), ["low", "mid", "none"]);
+  assert.equal(env.document.querySelector('#vm-table button[data-vm-sort="name"]').parentNode.getAttribute("aria-sort"), "ascending");
+  assert.equal(env.document.querySelector('#vm-table button[data-vm-sort="memory"]').parentNode.getAttribute("aria-sort"), "none");
+  const heads = [...env.document.querySelectorAll("#vm-table thead th")];
+  assert.equal(heads[heads.length - 1].querySelector("button"), null);
+  env.document.querySelector('#vm-table button[data-vm-sort="memory"]').click();
+  assert.equal(env.state.selectedVmId, "");
+  assert.equal(env.state.vmSort, "memory");
+  assert.equal(env.state.vmSortDir, "asc");
+  assert.equal(env.els.vmSort.value, "memory");
+  assert.equal(env.document.querySelector('#vm-table button[data-vm-sort="memory"]').parentNode.getAttribute("aria-sort"), "ascending");
+  assert.deepEqual(vmSortIds(), ["mid", "low", "none"]);
+  env.document.querySelector('#vm-table button[data-vm-sort="memory"]').click();
+  assert.equal(env.state.vmSortDir, "desc");
+  assert.equal(env.document.querySelector('#vm-table button[data-vm-sort="memory"]').parentNode.getAttribute("aria-sort"), "descending");
+  assert.deepEqual(vmSortIds(), ["low", "mid", "none"]);
+  env.els.vmSort.value = "state";
+  env.els.vmSort.dispatchEvent(new env.Event("change"));
+  assert.equal(env.state.vmSort, "state");
+  assert.equal(env.state.vmSortDir, "asc");
+  assert.deepEqual(vmSortIds(), ["low", "none", "mid"]);
+  env.state.vmSort = "name";
+  env.state.vmSortDir = "asc";
+  env.renderVms();
+  assert.deepEqual(vmSortIds(), ["low", "mid", "none"]);
+  env.state.vmSort = "state";
+  env.state.vmSortDir = "asc";
+  env.renderVms();
+  assert.deepEqual(vmSortIds(), ["low", "none", "mid"]);
+  env.state.vmSort = "updated";
+  env.state.vmSortDir = "desc";
+  env.renderVms();
+  assert.deepEqual(vmSortIds(), ["low", "mid", "none"]);
+});
+
+test("j and k move the VM row selection and focus, and ignore a search field and Ctrl+j", async () => {
+  vmSortFixture();
+  const calls = [];
+  env.loadVmDetail = async (id) => {
+    calls.push(id);
+    env.state.selectedVmId = id;
+    env.state.selectedVm = env.state.vms.find((vm) => vm.id === id);
+  };
+  const rows = () => [...env.document.querySelectorAll("#vm-table tbody tr[data-vm-id]")];
+  assert.equal(rows()[0].getAttribute("tabindex"), "-1");
+  rows()[0].focus();
+  keyOn(rows()[0], "j");
+  await flush();
+  assert.deepEqual(calls, ["low"]);
+  assert.equal(env.state.selectedVmId, "low");
+  assert.equal(env.state.connectionState, "connected");
+  assert.equal(env.document.activeElement, rows()[0]);
+  keyOn(env.document.activeElement, "j");
+  await flush();
+  assert.deepEqual(calls, ["low", "mid"]);
+  assert.equal(env.state.selectedVmId, "mid");
+  assert.equal(env.document.activeElement, rows()[1]);
+  keyOn(env.document.activeElement, "k");
+  await flush();
+  assert.equal(env.state.selectedVmId, "low");
+  assert.equal(env.document.activeElement, rows()[0]);
+  keyOn(rows()[0], "k");
+  await flush();
+  assert.equal(env.state.selectedVmId, "low");
+  env.state.selectedVmId = "";
+  env.state.selectedVm = null;
+  keyOn(rows()[0], "k");
+  await flush();
+  assert.equal(env.state.selectedVmId, "none");
+  const before = calls.length;
+  const input = env.document.createElement("input");
+  input.id = "vm-filter";
+  env.document.body.appendChild(input);
+  input.focus();
+  keyOn(input, "j");
+  await flush();
+  assert.equal(calls.length, before);
+  assert.equal(env.state.selectedVmId, "none");
+  rows()[0].focus();
+  keyOn(rows()[0], "j", { ctrlKey: true });
+  await flush();
+  assert.equal(calls.length, before);
+  assert.equal(env.state.selectedVmId, "none");
+});
+
+test("VM checkboxes select visible rows, keep detail closed, and bulk start or shut down", async () => {
+  env.state.vms = [
+    { id: "off-1", name: "off-1", state: "Off" },
+    { id: "off-2", name: "off-2", state: "Off" },
+    { id: "run-1", name: "run-1", state: "Running" },
+    { id: "lock-1", name: "lock-1", state: "Off", template_lock: true }
+  ];
+  env.state.vmChecked = [];
+  env.state.vmFilter = "";
+  env.state.vmStateFilter = "all";
+  env.state.vmSort = "name";
+  env.state.vmSortDir = "asc";
+  env.state.selectedVmId = "";
+  env.state.selectedVm = null;
+  env.state.authAccessToken = "";
+  env.state.authSession = null;
+  env.state.pendingVmActions = {};
+  env.state.trackedJobs = [];
+  const previousLoad = env.loadVmDetail;
+  const previousPoll = env.startPolling;
+  const previousApi = env.desktopApi;
+  const previousTrack = env.PCV.components.trackJob;
+  const detailCalls = [];
+  const actionCalls = [];
+  const trackedJobs = [];
+  env.loadVmDetail = async (id) => { detailCalls.push(id); };
+  env.startPolling = () => {};
+  env.PCV.components.trackJob = (jobId, onUpdate) => {
+    trackedJobs.push(jobId);
+    if (typeof onUpdate === "function") onUpdate({ job_id: jobId, status: "running" });
+    return () => {};
+  };
+  stubDesktopApi(env, {
+    queueVmAction: async (id, action) => {
+      actionCalls.push([id, action]);
+      return { job_id: "job-" + action + "-" + id, status: "queued" };
+    },
+    getJob: async (id) => ({ job_id: id, status: "succeeded" })
+  });
+  env.renderVms();
+
+  assert.equal(env.document.querySelector("[data-vm-bulk]"), null);
+  assert.ok(env.document.querySelector('#vm-table button[data-vm-sort="name"]'));
+  const rowBox = env.document.querySelector('input[data-vm-check="row"][data-vm-id="off-1"]');
+  assert.equal(rowBox.getAttribute("aria-label"), "off-1 선택");
+  rowBox.checked = true;
+  rowBox.click();
+  await flush();
+  assert.deepEqual(detailCalls, []);
+  assert.equal(env.state.selectedVmId, "");
+  assert.deepEqual(env.state.vmChecked, ["off-1"]);
+  assert.match(env.document.querySelector("[data-vm-bulk]").textContent, /선택 1개/);
+  const allBox = env.document.querySelector('input[data-vm-check="all"]');
+  assert.equal(allBox.getAttribute("aria-label"), "보이는 VM 모두 선택");
+  assert.equal(allBox.indeterminate, true);
+  assert.equal(allBox.checked, false);
+
+  allBox.click();
+  await flush();
+  assert.deepEqual(detailCalls, []);
+  assert.deepEqual([...env.state.vmChecked].sort(), ["lock-1", "off-1", "off-2", "run-1"]);
+  const allAfter = env.document.querySelector('input[data-vm-check="all"]');
+  assert.equal(allAfter.indeterminate, false);
+  assert.equal(allAfter.checked, true);
+  assert.match(env.document.querySelector("[data-vm-bulk]").textContent, /선택 4개/);
+  assert.match(env.document.querySelector("[data-vm-bulk]").textContent, /건너뜀 1/);
+
+  env.document.querySelector('[data-vm-bulk-action="start"]').click();
+  await flush();
+  assert.deepEqual(actionCalls, [["off-1", "start"], ["off-2", "start"]]);
+  assert.equal(env.document.querySelectorAll("[data-vm-bulk-line]").length, 2);
+
+  env.document.querySelector('[data-vm-bulk-action="shutdown"]').click();
+  await flush();
+  const message = env.document.querySelector(".pcv-confirm .pcv-confirm-message");
+  assert.ok(message);
+  assert.match(message.textContent, /run-1/);
+  env.document.querySelector('.pcv-confirm [data-pcv-confirm="accept"]').click();
+  await flush();
+  assert.deepEqual(actionCalls, [["off-1", "start"], ["off-2", "start"], ["run-1", "shutdown"]]);
+  assert.equal(env.document.querySelectorAll("[data-vm-bulk-line]").length, actionCalls.length);
+  assert.equal(trackedJobs.length, actionCalls.length);
+
+  env.state.authAccessToken = "jwt";
+  env.state.authSession = { role: "viewer", permissions: ["read"] };
+  env.renderVms();
+  assert.equal(env.document.querySelector('[data-vm-bulk-action="start"]').disabled, true);
+  assert.equal(env.document.querySelector('[data-vm-bulk-action="shutdown"]').disabled, true);
+  assert.equal(env.document.querySelector('[data-vm-bulk-action="clear"]').disabled, false);
+  env.document.querySelector('[data-vm-bulk-action="clear"]').click();
+  await flush();
+  assert.equal(env.state.vmChecked.length, 0);
+  assert.equal(env.document.querySelector("[data-vm-bulk]"), null);
+
+  env.loadVmDetail = previousLoad;
+  env.startPolling = previousPoll;
+  env.desktopApi = previousApi;
+  env.PCV.components.trackJob = previousTrack;
+  env.state.authAccessToken = "";
+  env.state.authSession = null;
+  env.state.pendingVmActions = {};
+  env.state.trackedJobs = [];
+  if (env.state.pollTimer) {
+    clearTimeout(env.state.pollTimer);
+    env.state.pollTimer = null;
+  }
+});
+
 function bootVmDeleteList(nextJob) {
   const sandbox = createEnv();
   const listError = new Error("parity");
@@ -1361,10 +1742,135 @@ test("BL-0034 keeps the VM row when a different tracked job succeeds", async () 
   assert.equal(sandbox.state.selectedVmId, "gone-id");
 });
 
+test("bulk delete confirms the target count, skips running and locked VMs, and uses one deleteVm each", async () => {
+  env.state.vms = [
+    { id: "off-1", name: "off-1", state: "Off" },
+    { id: "off-2", name: "off-2", state: "Off" },
+    { id: "run-1", name: "run-1", state: "Running" },
+    { id: "lock-1", name: "lock-1", state: "Off", template_lock: true }
+  ];
+  env.state.vmChecked = ["off-1", "off-2", "run-1", "lock-1"];
+  env.state.vmFilter = "";
+  env.state.vmStateFilter = "all";
+  env.state.vmSort = "name";
+  env.state.vmSortDir = "asc";
+  env.state.selectedVmId = "";
+  env.state.selectedVm = null;
+  env.state.authAccessToken = "";
+  env.state.authSession = null;
+  env.state.pendingVmActions = {};
+  env.state.trackedJobs = [];
+  const previousPoll = env.startPolling;
+  const previousApi = env.desktopApi;
+  const previousTrack = env.PCV.components.trackJob;
+  const deleteCalls = [];
+  env.startPolling = () => {};
+  env.PCV.components.trackJob = (jobId, onUpdate) => {
+    if (typeof onUpdate === "function") onUpdate({ job_id: jobId, status: "running" });
+    return () => {};
+  };
+  stubDesktopApi(env, {
+    deleteVm: async (id) => {
+      deleteCalls.push(id);
+      return { job_id: "job-delete-" + id, status: "queued" };
+    },
+    getJob: async (id) => ({ job_id: id, status: "succeeded" })
+  });
+  env.renderVms();
+  const button = env.document.querySelector('[data-vm-bulk-action="delete"]');
+  assert.equal(button.classList.contains("pcv-menu-danger"), true);
+  assert.equal(button.disabled, false);
+  assert.match(env.document.querySelector("[data-vm-bulk]").textContent, /삭제 건너뜀 2/);
+  assert.match(env.document.querySelector("[data-vm-bulk]").textContent, /건너뜀 1/);
+
+  button.click();
+  await flush();
+  const message = env.document.querySelector(".pcv-confirm-message");
+  assert.match(message.textContent, /off-1/);
+  assert.match(message.textContent, /off-2/);
+  assert.doesNotMatch(message.textContent, /run-1/);
+  assert.doesNotMatch(message.textContent, /lock-1/);
+  const typed = env.document.querySelector(".pcv-confirm-typed");
+  const accept = () => env.document.querySelector(".pcv-confirm-danger");
+  assert.equal(accept().disabled, true);
+  typed.value = "4";
+  typed.dispatchEvent(new env.Event("input"));
+  assert.equal(accept().disabled, true);
+  typed.value = "2";
+  typed.dispatchEvent(new env.Event("input"));
+  assert.equal(accept().disabled, false);
+  env.document.querySelector('[data-pcv-confirm="cancel"]').click();
+  await flush();
+  assert.deepEqual(deleteCalls, []);
+
+  env.document.querySelector('[data-vm-bulk-action="delete"]').click();
+  await flush();
+  const typedAgain = env.document.querySelector(".pcv-confirm-typed");
+  typedAgain.value = "2";
+  typedAgain.dispatchEvent(new env.Event("input"));
+  env.document.querySelector(".pcv-confirm-danger").click();
+  await flush();
+  assert.deepEqual(deleteCalls, ["off-1", "off-2"]);
+  const lineIds = [...env.document.querySelectorAll("[data-vm-bulk-line]")].map((line) => line.getAttribute("data-vm-bulk-line"));
+  assert.ok(lineIds.includes("off-1"));
+  assert.ok(lineIds.includes("off-2"));
+
+  env.state.authAccessToken = "jwt";
+  env.state.authSession = { role: "viewer", permissions: ["read"] };
+  env.renderVms();
+  const denied = env.document.querySelector('[data-vm-bulk-action="delete"]');
+  assert.equal(denied.disabled, true);
+  denied.click();
+  await flush();
+  assert.deepEqual(deleteCalls, ["off-1", "off-2"]);
+
+  env.state.authAccessToken = "";
+  env.state.authSession = null;
+  env.state.vmChecked = ["run-1", "lock-1"];
+  env.renderVms();
+  assert.equal(env.document.querySelector('[data-vm-bulk-action="delete"]').disabled, true);
+
+  const directDelete = env.PCV.vm.queueVmBulkDelete([
+    { id: "off-2", name: "off-2", state: "Off" },
+    { id: "run-1", name: "run-1", state: "Running" },
+    { id: "lock-1", name: "lock-1", state: "Off", template_lock: true }
+  ]);
+  await flush();
+  const directTyped = env.document.querySelector(".pcv-confirm-typed");
+  assert.equal(env.document.querySelector(".pcv-confirm-danger").disabled, true);
+  directTyped.value = "3";
+  directTyped.dispatchEvent(new env.Event("input"));
+  assert.equal(env.document.querySelector(".pcv-confirm-danger").disabled, true);
+  directTyped.value = "1";
+  directTyped.dispatchEvent(new env.Event("input"));
+  assert.equal(env.document.querySelector(".pcv-confirm-danger").disabled, false);
+  env.document.querySelector(".pcv-confirm-danger").click();
+  await directDelete;
+  await flush();
+  assert.deepEqual(deleteCalls, ["off-1", "off-2", "off-2"]);
+
+  env.startPolling = previousPoll;
+  env.desktopApi = previousApi;
+  env.PCV.components.trackJob = previousTrack;
+  env.state.authAccessToken = "";
+  env.state.authSession = null;
+  env.state.vmChecked = [];
+  env.state.pendingVmActions = {};
+  env.state.trackedJobs = [];
+  if (env.state.pollTimer) {
+    clearTimeout(env.state.pollTimer);
+    env.state.pollTimer = null;
+  }
+  const leftover = env.document.querySelector('[data-pcv-confirm="cancel"]');
+  if (leftover) leftover.click();
+});
+
 test("mobile power and delete call exported vm methods", () => {
   const mobile = fs.readFileSync(webRoot + "src/modules/mobile.ts", "utf8");
   const vmSource = fs.readFileSync(webRoot + "src/modules/vm.ts", "utf8");
-  const exportLine = vmSource.slice(vmSource.lastIndexOf("PCV.vm = Object.assign"));
+  const listSource = fs.readFileSync(webRoot + "src/modules/vm-list.ts", "utf8");
+  const exportLine = vmSource.slice(vmSource.lastIndexOf("PCV.vm = Object.assign"))
+    + listSource.slice(listSource.lastIndexOf("PCV.vm = Object.assign"));
   const names = new Set();
   for (const match of mobile.matchAll(/PCV\.vm\.([A-Za-z0-9_]+)/g)) names.add(match[1]);
   assert.ok(names.size > 0);
@@ -1372,9 +1878,13 @@ test("mobile power and delete call exported vm methods", () => {
   assert.equal(names.has("bulkDelete"), false);
   assert.equal(names.has("vmDel"), false);
   assert.equal(names.has("lifecycle"), false);
+  assert.equal(names.has("queueVmBulkDelete"), true);
   assert.match(mobile, /queueVmLifecycle/);
   assert.match(mobile, /queueVmDelete/);
-  assert.doesNotMatch(mobile, /m-vm-bulk-delete|m-vm-select/);
+  assert.match(mobile, /PCV\.vm\.queueVmBulkDelete/);
+  assert.match(mobile, /m-vm-bulk-delete/);
+  assert.match(mobile, /m-vm-select/);
+  assert.doesNotMatch(mobile, /PCV\.vm\.bulkDelete|customConfirm\([^)]*일괄 삭제/);
 });
 
 test("logout closes open modals", async () => {

@@ -195,6 +195,8 @@ interface PcvState {
   vmFilter: string;
   vmStateFilter: string;
   vmSort: string;
+  vmSortDir: 'asc' | 'desc';
+  vmChecked: string[];
   jobFilter: string;
   jobStatusFilter: string;
   jobSort: string;
@@ -288,6 +290,8 @@ const state: PcvState = {
   vmFilter: '',
   vmStateFilter: 'all',
   vmSort: 'name',
+  vmSortDir: 'asc',
+  vmChecked: [],
   jobFilter: '',
   jobStatusFilter: 'all',
   jobSort: 'updated:desc',
