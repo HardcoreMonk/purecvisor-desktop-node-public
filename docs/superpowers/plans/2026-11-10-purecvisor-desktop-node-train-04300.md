@@ -147,10 +147,29 @@ operational current는 `0.42.99-admin-smoke` 그대로다.
 
 ## Task 4: fullgate
 
-- [ ] Lane 2. `pcvverify train-host-inputs --kind fullgate-manifest --write`로 manifest를 만든다. LAN prefix가 필요하면 지금 호스트 주소에서 실행 경계로 만들고 환경 변수 `PCV_TRAIN_LAN_PREFIX`로만 넘긴다.
+- [x] Lane 2. `pcvverify train-host-inputs --kind fullgate-manifest --write`로 manifest를 만든다. LAN prefix가 필요하면 지금 호스트 주소에서 실행 경계로 만들고 환경 변수 `PCV_TRAIN_LAN_PREFIX`로만 넘긴다.
   - supervisor를 `-DryRun -AllowHostMutation`으로 돌린 뒤 `full-admin-host-mutation-gate-20261110-04300`을 돌린다.
   - 사후 검사: 설치본 Host/CLI ProductVersion == gate build commit, 같은 version ARP 1개, PureCVisor firewall 규칙 0, service Running/Automatic, Web 200, 보존 VM 둘 그대로.
   - `train-facts`로 fullgate 문서를 쓴다. 로컬 commit.
+
+실행 기록(2026-11-10):
+- manifest: `train-host-inputs --kind fullgate-manifest --write`로 만들었다(SHA-256 `8e3a529990951db1c8a9d9fc4f4f354dbe09ae2ee9b45b48c64c5b3bbe6cf8ab`).
+  - LAN prefix는 기본 게이트웨이가 있는 호스트 사설 IPv4와 직전 manifest의 port로 실행 경계에서 만들었다.
+  - 값은 환경 변수 `PCV_TRAIN_LAN_PREFIX`로만 넘겼고 출력하지 않았다.
+- supervisor `-DryRun -AllowHostMutation`은 두 단계 계획에 `ok=true`였다. 실행 전 ARP는 1개였다.
+- 실행: 07:00:36부터 07:13:03 KST까지 돌았다. `ok=true`, `status=completed`다. stdout은 `artifacts/batch-manifests/full-admin-host-mutation-gate-20261110-04300.result.json`이고 stderr는 0 byte다.
+- step:
+  - `service-msi-hyperv-admin-smoke` exit 0(시도 1, 735.3초). train `0.42.99`의 420.2초보다 길었지만 시도 한 번에 통과했다.
+  - `os-mutation-gate` exit 0(시도 1, 11.1초)
+  - executed 2, skipped 0
+- 사후 검사:
+  - 설치본 Host/CLI `0.43.0-admin-smoke+1f646ee`는 gate build HEAD `1f646ee`(Task 3 commit)와 같다. product source는 payload `6355e6ba`와 같다.
+  - ARP `{C948BEA2…}` `0.43.0` 1개, PureCVisor 방화벽 규칙 `0`, listener `127.0.0.1:7777`·`127.0.0.1:80`.
+  - service Running/Automatic, Web `200`, loopback 세션 `200`.
+  - `pcv-guest-installed-04253-r1` Off, `pcv-it-s2-source` Off(그대로).
+- 문서: `train-facts`로 fullgate 문서 `docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-11-10-04300-hostmutation.md`(`generated=35`, `narrative=2`)를 썼다. `train-evidence --check`는 여덟 문서 모두 `current`이고, 시험은 `26/26`이다. 문서에는 LAN 주소가 없다(`[redacted-private-endpoint]`).
+
+operational current는 `0.42.99-admin-smoke` 그대로다.
 
 ## Task 5: installed current-card
 
