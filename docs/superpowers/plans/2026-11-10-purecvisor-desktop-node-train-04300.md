@@ -40,18 +40,16 @@
 
 ## 적재 변경
 
-| PR | merge | 영역 | 요약 | Lane 2 probe |
+| PR | 변경 commit(merge) | 영역 | 요약 | Lane 2 probe |
 | --- | --- | --- | --- | --- |
-| #123 | U1 | web | 동작 결함 9건 수정과 새 명령 팔레트 | Task 6 |
-| #124 | U2 | web | VM 목록 골격 | Task 6 |
-| #125 | U3 | web | VM 상세 골격 | Task 6 |
-| #126 | U4 | web | 화면별 렌더 등록표, 네트워크 화면 | Task 6 |
-| #127 | U5 | web | 작업·이벤트 화면 | Task 6 |
-| #128 | U6 | web | 대시보드·진단 화면 | Task 6 |
-| #129 | U7 | web | evidence·계정 화면 | Task 6 |
-| #130 | U8 | web | 옛 렌더러 퇴역, 패널 색 token, 진단 i18n, axe 기준선 정리 | Task 6 |
-
-Task 0에서 `release-train.json` queue 행의 change commit과 summary로 이 표의 merge 열을 채운다.
+| #123 | `866d18ef`(`aa2726ef`) | web | U1: 모바일 전원·삭제, 새 route 없는 로그인 상자, TLS scheme 표시, 명령 팔레트 하나, 등록된 단축키, 로그아웃이 modal을 닫음, 로그인 form 하나, 도움말 비밀번호 route, 화면 제목, VM 읽기 라벨 | Task 6 |
+| #124 | `7b189a98`(`4fbba1b7`) | web | U2: VM 목록을 `vm-list.ts`로, 목록·상세 배치(선택 뒤 260px 목록, 900px 아래 상세만), 이름 한 번, `#/vms/<vm-id>/<tab>` deep link, 빈 상태 CTA와 읽기 실패 재시도 | Task 6 |
+| #125 | `06d958af`(`e60e061a`) | web | U3: VM 행 메뉴(…, 오른쪽 클릭, ContextMenu, Shift+F10), 머리글 정렬과 j/k 선택, checkbox 선택 막대와 일괄 시작·종료, 대상 수를 입력하는 일괄 삭제 확인 | Task 6 |
+| #126 | `a0178508`(`9514fd7a`) | web | U4: 화면별 렌더 등록표(`PCV.views.register`), 네트워크 화면을 `view-network.ts`로(종류 chip, 연결 VM 수 표, 빈 상태와 읽기 실패 구분) | Task 6 |
+| #127 | `43bba65a`(`0dd4da16`) | web | U5: 작업 화면(상태 chip, 종류 선택, 정렬·CSV 표, 다음 page)과 이벤트 화면(심각도 카드와 chip, 이벤트 표), 작업·ops 영어 문구 i18n | Task 6 |
+| #128 | `bdc5874e`(`c343c834`) | web | U6: 대시보드(KPI 카드 6개, `+ 새 VM` pagehead, 상위 VM 표, 24시간 실패 작업·ops 사건 알림), 옛 hero·빠른 실행 tile 제거 | Task 6 |
+| #129 | `388bf658`(`cc0f9b9a`) | web | U7: 진단 화면(카드 4개와 닫힌 고급 절), evidence 운영자 카드, 계정 역할 chip과 역할 표 | Task 6 |
+| #130 | `d32daa8f`(`6355e6ba`) | web | U8: 옛 명령 팔레트·스와이프·옛 그리기 본문 제거, 팔레트 계정 항목 `account.manage`, 패널 배경 token, 진단 i18n, `[data-view-link]` class 유지, 진단 카드 grid, axe 기준선 2,626→1,519 | Task 6 |
 
 ## Global Constraints
 
@@ -78,11 +76,18 @@ Task 0에서 `release-train.json` queue 행의 change commit과 summary로 이 �
 
 ## Task 0: 출발
 
-- [ ] 먼저 payload commit `6355e6ba`의 main push Development Gates와 Public Boundary가 success임을 run id로 적는다.
+- [x] 먼저 payload commit `6355e6ba`의 main push Development Gates와 Public Boundary가 success임을 run id로 적는다.
   - `release-train.json`의 `queue` 8행을 train `0.43.0-admin-smoke`의 `carriages` `[123, 124, 125, 126, 127, 128, 129, 130]`로 옮긴다.
   - `status=running`, `departed_at`, `source_commit`을 적고, `queue`는 빈 목록으로 둔다.
   - `docs/ga-ready/trains/0.43.0-admin-smoke.host-inputs.json`을 쓴다. ISO는 위 smoke ISO다.
   - 검증: `PcvReleaseTrainContractTests`, `git diff --check`. host mutation 없음. 로컬 commit.
+
+실행 기록(2026-11-10): 출발 시각은 `2026-11-10T06:47:00+09:00`이다.
+- payload: `6355e6ba6ae5592fa669e34e84ef316925d1876f`(PR #130 merge, origin/main)
+- payload main push run: Development Gates `42650495121`과 Public Boundary Contract `42650495136`이 success다.
+- carriages `[123, 124, 125, 126, 127, 128, 129, 130]`(8행)이다. queue를 비우고 train `status=running`으로 두었다.
+- `docs/ga-ready/trains/0.43.0-admin-smoke.host-inputs.json`의 ISO는 `artifacts/smoke-media-20261108/pcv-route-parity-smoke-20261108.iso`(`45056` byte, 있음)다.
+- 검증: `PcvReleaseTrainContractTests` `6/6`, `git diff --check` 통과. host mutation은 없다. operational current는 `0.42.99-admin-smoke` 그대로다.
 
 ## Task 1: package
 
