@@ -110,7 +110,9 @@ task 크기(2026-11-09 사용자 승인 `U1 checkpoint 2 승인`): Task 2부터�
 
 ## Task 3e: U3 PR
 
-- [ ] clean HEAD 종료 검증(`npm run test:required`, `Invoke-PcvPrGate.ps1`), release-train queue 행. push, PR(U3 묶음, Task 3a~3d), green CI 뒤 merge, merge 뒤 `main` run 확인.
+- [x] clean HEAD 종료 검증(`npm run test:required`, `Invoke-PcvPrGate.ps1`), release-train queue 행. push, PR(U3 묶음, Task 3a~3d), green CI 뒤 merge, merge 뒤 `main` run 확인.
+
+실행 기록(2026-11-09): checkpoint 7(18:29~). clean HEAD `06d958af`에서 `npm run test:required` exit 0(node 381 pass, browser gate assertions 121 failed 0 violations 0), `Invoke-PcvPrGate.ps1` ok(build, dotnet-test-release, module-size-ratchet), Delivery 785/785, `git diff --check origin/main...HEAD` clean. push 뒤 PR #125, release-train queue 행(merge_commit `06d958af`).
 
 ## Task 4a: U4 화면 렌더 등록표
 
