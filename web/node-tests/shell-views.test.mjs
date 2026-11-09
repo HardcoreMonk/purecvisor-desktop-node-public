@@ -1742,10 +1742,135 @@ test("BL-0034 keeps the VM row when a different tracked job succeeds", async () 
   assert.equal(sandbox.state.selectedVmId, "gone-id");
 });
 
+test("bulk delete confirms the target count, skips running and locked VMs, and uses one deleteVm each", async () => {
+  env.state.vms = [
+    { id: "off-1", name: "off-1", state: "Off" },
+    { id: "off-2", name: "off-2", state: "Off" },
+    { id: "run-1", name: "run-1", state: "Running" },
+    { id: "lock-1", name: "lock-1", state: "Off", template_lock: true }
+  ];
+  env.state.vmChecked = ["off-1", "off-2", "run-1", "lock-1"];
+  env.state.vmFilter = "";
+  env.state.vmStateFilter = "all";
+  env.state.vmSort = "name";
+  env.state.vmSortDir = "asc";
+  env.state.selectedVmId = "";
+  env.state.selectedVm = null;
+  env.state.authAccessToken = "";
+  env.state.authSession = null;
+  env.state.pendingVmActions = {};
+  env.state.trackedJobs = [];
+  const previousPoll = env.startPolling;
+  const previousApi = env.desktopApi;
+  const previousTrack = env.PCV.components.trackJob;
+  const deleteCalls = [];
+  env.startPolling = () => {};
+  env.PCV.components.trackJob = (jobId, onUpdate) => {
+    if (typeof onUpdate === "function") onUpdate({ job_id: jobId, status: "running" });
+    return () => {};
+  };
+  stubDesktopApi(env, {
+    deleteVm: async (id) => {
+      deleteCalls.push(id);
+      return { job_id: "job-delete-" + id, status: "queued" };
+    },
+    getJob: async (id) => ({ job_id: id, status: "succeeded" })
+  });
+  env.renderVms();
+  const button = env.document.querySelector('[data-vm-bulk-action="delete"]');
+  assert.equal(button.classList.contains("pcv-menu-danger"), true);
+  assert.equal(button.disabled, false);
+  assert.match(env.document.querySelector("[data-vm-bulk]").textContent, /삭제 건너뜀 2/);
+  assert.match(env.document.querySelector("[data-vm-bulk]").textContent, /건너뜀 1/);
+
+  button.click();
+  await flush();
+  const message = env.document.querySelector(".pcv-confirm-message");
+  assert.match(message.textContent, /off-1/);
+  assert.match(message.textContent, /off-2/);
+  assert.doesNotMatch(message.textContent, /run-1/);
+  assert.doesNotMatch(message.textContent, /lock-1/);
+  const typed = env.document.querySelector(".pcv-confirm-typed");
+  const accept = () => env.document.querySelector(".pcv-confirm-danger");
+  assert.equal(accept().disabled, true);
+  typed.value = "4";
+  typed.dispatchEvent(new env.Event("input"));
+  assert.equal(accept().disabled, true);
+  typed.value = "2";
+  typed.dispatchEvent(new env.Event("input"));
+  assert.equal(accept().disabled, false);
+  env.document.querySelector('[data-pcv-confirm="cancel"]').click();
+  await flush();
+  assert.deepEqual(deleteCalls, []);
+
+  env.document.querySelector('[data-vm-bulk-action="delete"]').click();
+  await flush();
+  const typedAgain = env.document.querySelector(".pcv-confirm-typed");
+  typedAgain.value = "2";
+  typedAgain.dispatchEvent(new env.Event("input"));
+  env.document.querySelector(".pcv-confirm-danger").click();
+  await flush();
+  assert.deepEqual(deleteCalls, ["off-1", "off-2"]);
+  const lineIds = [...env.document.querySelectorAll("[data-vm-bulk-line]")].map((line) => line.getAttribute("data-vm-bulk-line"));
+  assert.ok(lineIds.includes("off-1"));
+  assert.ok(lineIds.includes("off-2"));
+
+  env.state.authAccessToken = "jwt";
+  env.state.authSession = { role: "viewer", permissions: ["read"] };
+  env.renderVms();
+  const denied = env.document.querySelector('[data-vm-bulk-action="delete"]');
+  assert.equal(denied.disabled, true);
+  denied.click();
+  await flush();
+  assert.deepEqual(deleteCalls, ["off-1", "off-2"]);
+
+  env.state.authAccessToken = "";
+  env.state.authSession = null;
+  env.state.vmChecked = ["run-1", "lock-1"];
+  env.renderVms();
+  assert.equal(env.document.querySelector('[data-vm-bulk-action="delete"]').disabled, true);
+
+  const directDelete = env.PCV.vm.queueVmBulkDelete([
+    { id: "off-2", name: "off-2", state: "Off" },
+    { id: "run-1", name: "run-1", state: "Running" },
+    { id: "lock-1", name: "lock-1", state: "Off", template_lock: true }
+  ]);
+  await flush();
+  const directTyped = env.document.querySelector(".pcv-confirm-typed");
+  assert.equal(env.document.querySelector(".pcv-confirm-danger").disabled, true);
+  directTyped.value = "3";
+  directTyped.dispatchEvent(new env.Event("input"));
+  assert.equal(env.document.querySelector(".pcv-confirm-danger").disabled, true);
+  directTyped.value = "1";
+  directTyped.dispatchEvent(new env.Event("input"));
+  assert.equal(env.document.querySelector(".pcv-confirm-danger").disabled, false);
+  env.document.querySelector(".pcv-confirm-danger").click();
+  await directDelete;
+  await flush();
+  assert.deepEqual(deleteCalls, ["off-1", "off-2", "off-2"]);
+
+  env.startPolling = previousPoll;
+  env.desktopApi = previousApi;
+  env.PCV.components.trackJob = previousTrack;
+  env.state.authAccessToken = "";
+  env.state.authSession = null;
+  env.state.vmChecked = [];
+  env.state.pendingVmActions = {};
+  env.state.trackedJobs = [];
+  if (env.state.pollTimer) {
+    clearTimeout(env.state.pollTimer);
+    env.state.pollTimer = null;
+  }
+  const leftover = env.document.querySelector('[data-pcv-confirm="cancel"]');
+  if (leftover) leftover.click();
+});
+
 test("mobile power and delete call exported vm methods", () => {
   const mobile = fs.readFileSync(webRoot + "src/modules/mobile.ts", "utf8");
   const vmSource = fs.readFileSync(webRoot + "src/modules/vm.ts", "utf8");
-  const exportLine = vmSource.slice(vmSource.lastIndexOf("PCV.vm = Object.assign"));
+  const listSource = fs.readFileSync(webRoot + "src/modules/vm-list.ts", "utf8");
+  const exportLine = vmSource.slice(vmSource.lastIndexOf("PCV.vm = Object.assign"))
+    + listSource.slice(listSource.lastIndexOf("PCV.vm = Object.assign"));
   const names = new Set();
   for (const match of mobile.matchAll(/PCV\.vm\.([A-Za-z0-9_]+)/g)) names.add(match[1]);
   assert.ok(names.size > 0);
@@ -1753,9 +1878,13 @@ test("mobile power and delete call exported vm methods", () => {
   assert.equal(names.has("bulkDelete"), false);
   assert.equal(names.has("vmDel"), false);
   assert.equal(names.has("lifecycle"), false);
+  assert.equal(names.has("queueVmBulkDelete"), true);
   assert.match(mobile, /queueVmLifecycle/);
   assert.match(mobile, /queueVmDelete/);
-  assert.doesNotMatch(mobile, /m-vm-bulk-delete|m-vm-select/);
+  assert.match(mobile, /PCV\.vm\.queueVmBulkDelete/);
+  assert.match(mobile, /m-vm-bulk-delete/);
+  assert.match(mobile, /m-vm-select/);
+  assert.doesNotMatch(mobile, /PCV\.vm\.bulkDelete|customConfirm\([^)]*일괄 삭제/);
 });
 
 test("logout closes open modals", async () => {

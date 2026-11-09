@@ -858,6 +858,25 @@ function vmBulkSkipped(vm) {
   return typeof isVmActionPending === 'function' && isVmActionPending(getVmId(vm));
 }
 
+function vmCanBulkDelete(vm) {
+  if (!vm || vmBulkSkipped(vm)) return false;
+  const kind = typeof vmPowerKind === 'function' ? vmPowerKind(vm) : 'off';
+  return kind !== 'running';
+}
+
+function vmBulkDeleteRecords(vmIds) {
+  if (!Array.isArray(vmIds)) return checkedVmRecords();
+  const byId = new Map(asArray(state.vms).map((vm) => [getVmId(vm), vm]));
+  return vmIds.map((entry) => {
+    if (entry && typeof entry === 'object') return entry;
+    return byId.get(String(entry || '')) || null;
+  }).filter(Boolean);
+}
+
+function vmBulkDeleteTargets(vmIds) {
+  return vmBulkDeleteRecords(vmIds).filter(vmCanBulkDelete);
+}
+
 function vmBulkTargets(action) {
   return checkedVmRecords().filter((vm) => {
     if (vmBulkSkipped(vm)) return false;
@@ -873,12 +892,19 @@ function vmBulkBarHtml() {
   if (!checked.length) return '';
   const skipped = checked.filter(vmBulkSkipped).length;
   const skipText = skipped > 0 ? `<span>${pcvEscapeHtml(t('vm.list.skipped', { count: String(skipped) }))}</span>` : '';
-  const locked = typeof rbacAllows === 'function' && !rbacAllows('operate') ? ' disabled' : '';
+  const deleteTargets = checked.filter(vmCanBulkDelete);
+  const deleteSkipped = checked.length - deleteTargets.length;
+  const deleteSkipText = deleteSkipped > 0 ? `<span>${pcvEscapeHtml(t('vm.list.bulk_delete_skipped', { count: String(deleteSkipped) }))}</span>` : '';
+  const noOperate = typeof rbacAllows === 'function' && !rbacAllows('operate');
+  const locked = noOperate ? ' disabled' : '';
+  const deleteLocked = (noOperate || deleteTargets.length === 0) ? ' disabled' : '';
   return `<div class="pcv-vm-bulk" data-vm-bulk>
     <span>${pcvEscapeHtml(t('vm.list.selected_count', { count: String(checked.length) }))}</span>
     ${skipText}
+    ${deleteSkipText}
     <button type="button" data-vm-bulk-action="start"${locked}>${pcvEscapeHtml(t('vm.power.start'))}</button>
     <button type="button" data-vm-bulk-action="shutdown"${locked}>${pcvEscapeHtml(t('vm.power.shutdown'))}</button>
+    <button type="button" class="pcv-menu-danger" data-vm-bulk-action="delete"${deleteLocked}>${pcvEscapeHtml(t('vm.list.bulk_delete'))}</button>
     <button type="button" data-vm-bulk-action="clear">${pcvEscapeHtml(t('vm.list.clear_checked'))}</button>
   </div>`;
 }
@@ -1008,6 +1034,49 @@ function onVmBulkClick(event) {
     return;
   }
   if (action === 'start' || action === 'shutdown') runVmBulk(action);
+  if (action === 'delete') queueVmBulkDelete();
+}
+
+async function queueVmBulkDelete(vmIds) {
+  if (typeof requireRbac === 'function') requireRbac('operate', t('vm.rbac.delete'));
+  const targets = vmBulkDeleteTargets(vmIds);
+  if (!targets.length) return;
+  const names = targets.map((vm) => getVmName(vm)).join(', ');
+  const count = String(targets.length);
+  if (!PCV.components || typeof PCV.components.confirmDialog !== 'function') return;
+  const accepted = await PCV.components.confirmDialog({
+    title: t('vm.list.bulk_delete_title'),
+    message: t('vm.list.bulk_delete_message', { names, count }),
+    confirmLabel: t('vm.delete.confirm_label'),
+    cancelLabel: t('ui.confirm.cancel'),
+    danger: true,
+    typedName: count
+  });
+  if (!accepted) return;
+  for (let index = 0; index < targets.length; index += 1) {
+    const vm = targets[index];
+    const vmId = getVmId(vm);
+    state.actionPending = true;
+    if (typeof setVmActionPending === 'function') setVmActionPending(vmId, 'delete');
+    state.error = null;
+    if (typeof render === 'function') render();
+    else renderVms();
+    try {
+      const job = await desktopApi.deleteVm(vmId);
+      if (typeof pcvTrackJob === 'function') pcvTrackJob(job);
+      rememberVmBulkJob(vmId, getVmName(vm), job);
+      watchVmBulkJob(vmId, job);
+      state.connectionState = 'connected';
+      if (typeof startPolling === 'function') startPolling();
+    } catch (error) {
+      state.error = typeof normalizeError === 'function' ? normalizeError(error) : error;
+    } finally {
+      if (typeof clearVmActionPending === 'function') clearVmActionPending(vmId);
+      state.actionPending = false;
+      if (typeof render === 'function') render();
+      else renderVms();
+    }
+  }
 }
 
 function bindVmChecks() {
@@ -1159,5 +1228,6 @@ window.matchesVmFilter = matchesVmFilter;
 window.getVmUpdatedValue = getVmUpdatedValue;
 window.compareVms = compareVms;
 window.renderVms = renderVms;
-PCV.vm = Object.assign(PCV.vm || {}, { matchesVmFilter, getVmUpdatedValue, compareVms, renderVms });
+window.queueVmBulkDelete = queueVmBulkDelete;
+PCV.vm = Object.assign(PCV.vm || {}, { matchesVmFilter, getVmUpdatedValue, compareVms, renderVms, queueVmBulkDelete });
 })(window.PCV);
