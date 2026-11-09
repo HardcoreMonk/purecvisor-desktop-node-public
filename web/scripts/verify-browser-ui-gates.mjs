@@ -14,7 +14,7 @@ const BASELINE_CONTRACT = "pcv-browser-ui-gates-baseline-v2";
 const BASELINE_TODO_REASON = "TODO: 눈으로 확인 뒤 이유를 적는다";
 const BASELINE_UPDATE_HINT = "의도한 변경이면 `node web/scripts/verify-browser-ui-gates.mjs --write-baseline` 뒤 새 reason을 확인하라";
 const BASELINE_STALE_HINT = "기준선에만 있는 incomplete는 경고다. 지우려면 `node web/scripts/verify-browser-ui-gates.mjs --write-baseline --prune`";
-const VIEWPORT = { width: 1280, height: 720 };
+let VIEWPORT = { width: 1280, height: 720 };
 const THEMES = ["supanova", "supanova-cyan"];
 const DEMO_TOKEN = "pcv-demo-token";
 const UNSERVED_DIRS = new Set(["src", "node_modules", "scripts", "tests", "node-tests", "contracts", "config", "generated"]);
@@ -381,6 +381,14 @@ function getArg(name) {
 
 function hasFlag(name) {
   return process.argv.slice(2).some((arg) => arg === `--${name}`);
+}
+
+function applyViewportArg() {
+  const raw = String(getArg("viewport") || "").trim();
+  if (!raw) return;
+  const match = /^(\d+)x(\d+)$/i.exec(raw);
+  if (!match) throw new Error(`viewport must be WxH, got ${raw}`);
+  VIEWPORT = { width: Number(match[1]), height: Number(match[2]) };
 }
 
 function sleep(ms) {
@@ -1050,6 +1058,7 @@ function mutationsSince(requests, index) {
 }
 
 async function main() {
+  applyViewportArg();
   const started = Date.now();
   const screenshotArg = getArg("screenshots");
   const screenshotDir = screenshotArg ? path.resolve(repoRoot, screenshotArg) : "";

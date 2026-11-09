@@ -910,6 +910,17 @@ test("VM hash opens a VM and tab, tab changes replace, and an unknown id returns
   const css = fs.readFileSync(webRoot + "style.css", "utf8");
   assert.match(css, /\.vm-workspace\.is-detail \.pcv-vm-table \.badge\s*\{[^}]*white-space:\s*nowrap/);
   assert.match(css, /\.vm-workspace\.is-detail \.pcv-vm-table td:nth-child\(1\)\s*\{[^}]*text-overflow:\s*ellipsis/);
+  calls.length = 0;
+  env.state.selectedVmId = "a b";
+  env.state.selectedVm = env.state.vms[0];
+  env.state.activeView = "dashboard";
+  env.location.hash = "#/dashboard";
+  env.render();
+  assert.equal(env.location.hash, "#/dashboard");
+  assert.equal(calls.length, 0);
+  env.state.selectedVmId = "";
+  env.state.selectedVm = null;
+  env.state.activeView = "dashboard";
   env.history.pushState = previousPush;
   env.history.replaceState = previousReplace;
   env.desktopApi = previousApi;
