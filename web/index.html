@@ -264,11 +264,16 @@
 
         <section id="vms" class="section app-view" data-view="vms">
           <div id="view-vms">
-          <div class="section-header vm-list-toolbar">
-            <div>
-              <p class="eyebrow" data-i18n="copy.vms.eyebrow">인벤토리</p>
-              <h2 data-i18n="nav.vms">가상 머신</h2>
+          <div class="pagehead">
+            <div class="pagehead-copy">
+              <h1 class="pagehead-title" data-i18n="nav.vms">가상 머신</h1>
+              <p class="pagehead-desc" data-i18n="vm.list.page_desc">노드의 VM 자산과 전원 상태를 한 화면에서 관리합니다.</p>
             </div>
+            <div class="pagehead-actions">
+              <button id="vm-list-create" type="button" class="btn btn-primary" data-shell-action="open-create-vm" data-i18n="vm.list.create">+ 새 VM</button>
+            </div>
+          </div>
+          <div class="section-header vm-list-toolbar">
             <label class="filter-control">
               <span data-i18n="vm.list.search">이름</span>
               <input id="vm-filter" type="search" autocomplete="off" placeholder="이름" data-i18n-placeholder="vm.list.search_placeholder">
@@ -303,17 +308,13 @@
                 <option value="updated" data-i18n="vm.list.sort.updated">업데이트</option>
               </select>
             </label>
-            <button id="vm-list-create" type="button" data-shell-action="open-create-vm" data-i18n="vm.list.create">+ 새 VM</button>
           </div>
           <div id="vm-workbench-context" class="vm-workbench-context"></div>
           <div class="vm-workspace">
             <div id="vm-table" class="table-wrap"></div>
             <aside id="vm-detail-panel" class="vm-detail-panel" aria-live="polite">
               <div class="section-header">
-                <div>
-                  <p class="eyebrow" data-i18n="vm.detail.eyebrow">선택한 VM</p>
-                  <h2 id="vm-detail-title" data-i18n="vm.detail.none_title">VM이 선택되지 않았습니다</h2>
-                </div>
+                <h2 id="vm-detail-title" hidden data-i18n="vm.detail.none_title">VM이 선택되지 않았습니다</h2>
                 <button id="close-vm-detail" type="button" data-i18n="vm.detail.close">닫기</button>
               </div>
               <div id="vm-detail-content">

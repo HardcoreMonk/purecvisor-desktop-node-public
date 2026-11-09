@@ -173,7 +173,7 @@ test("i18n.js and app.bundle.js evaluate in the index.html DOM and expose every 
   assert.ok(PCV, "window.PCV");
   assert.equal(typeof sandbox.I18N.t, "function");
   assert.equal(sandbox._L("가", "a"), "가");
-  const namespaces = { endpoints: "endpoints", api: "api", events: "events", ui: "ui", uxlib: "uxlib", metrics: "metrics", charts: "charts", theme: "theme", "modal-core": "modalCore", modal: "modal", components: "components", nav: "nav", shell: "shell", mobile: "mobile", prefs: "prefs", help: "help", core: "core", "desktop-api": "desktopApi", vm: "vm", "vm-console": "vmConsole", ops: "ops", monitor: "monitor", accounts: "accounts", "filter-state": null };
+  const namespaces = { endpoints: "endpoints", api: "api", events: "events", ui: "ui", uxlib: "uxlib", metrics: "metrics", charts: "charts", theme: "theme", "modal-core": "modalCore", modal: "modal", components: "components", nav: "nav", shell: "shell", mobile: "mobile", prefs: "prefs", help: "help", core: "core", "desktop-api": "desktopApi", "vm-list": "vm", vm: "vm", "vm-console": "vmConsole", ops: "ops", monitor: "monitor", accounts: "accounts", "filter-state": null };
   for (const name of order.modules) {
     const ns = namespaces[name];
     if (ns === null) continue;
@@ -208,7 +208,19 @@ test("the bootstrap binds the index.html elements, renders every panel and start
   await new Promise((resolve) => setTimeout(resolve, 50));
   assert.ok(sandbox.els && sandbox.els.vmTable, "els bound to the index.html content ids");
   assert.equal(sandbox.els.connectionForm, null, "shell-only legacy elements are absent and tolerated");
-  assert.match(sandbox.els.vmTable.innerHTML, /No VMs|muted/, "VM table rendered an empty state");
+  const bundleText = (node) => {
+    if (!node || typeof node !== "object") return "";
+    if (node.nodeType === 3) return String(node.textContent || "");
+    return (node.children || []).map(bundleText).join("");
+  };
+  assert.match(bundleText(sandbox.els.vmTable), /표시할 VM이 없습니다/, "VM table rendered an empty state");
+  const shellActions = [];
+  (function walk(node) {
+    if (!node || node.nodeType === 3) return;
+    if (node.attributes && node.attributes["data-shell-action"] === "open-create-vm") shellActions.push(node);
+    for (const child of node.children || []) walk(child);
+  })(sandbox.els.vmTable);
+  assert.equal(shellActions.length, 1, "empty state CTA uses open-create-vm");
   assert.ok(sandbox.fetchLog.some((entry) => entry.url.endsWith("/api/v1/auth/loopback-session") && entry.method === "POST"), "loopback session requested on a loopback host");
   const fatal = warnings.filter((line) => /bootstrap:init|bootstrap:shell|render:/.test(line));
   assert.deepEqual(fatal, [], "render() does not take a catch path on the new shell DOM");

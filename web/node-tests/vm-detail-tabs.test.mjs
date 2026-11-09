@@ -517,7 +517,8 @@ test("vm detail shows six tabs and only the selected panel", () => {
   assert.equal(guest.querySelector(".qos-control-panel") != null, true);
   assert.equal(summary.querySelector(".qos-control-panel"), null);
   assert.match(root.querySelector(".pcv-vm-crumb").textContent, /가상 머신/);
-  assert.match(root.querySelector(".pcv-vm-crumb").textContent, /alpha/);
+  assert.equal(root.querySelector(".pcv-vm-crumb").textContent.includes("alpha"), false);
+  assert.match(root.querySelector(".pcv-vm-name").textContent, /alpha/);
   assert.match(root.querySelector(".pcv-vm-badges").textContent, /Off/);
   assert.match(root.querySelector(".pcv-vm-badges").innerHTML || root.querySelector(".badge").className, /badge/);
   tabs[3].click();

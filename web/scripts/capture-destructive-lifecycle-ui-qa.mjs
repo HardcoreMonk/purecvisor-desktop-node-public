@@ -359,7 +359,7 @@ async function selectVmInUi(client, vmName) {
     button.click();
     return true;
   })()`);
-  await waitForExpression(client, `document.querySelector('#vm-detail-title')?.textContent.trim() === ${JSON.stringify(vmName)}`, 30000);
+  await waitForExpression(client, `document.querySelector('.pcv-vm-name')?.textContent.trim() === ${JSON.stringify(vmName)}`, 30000);
 }
 
 async function captureState(client, name, outDir, screenshots, states, width = 1366, height = 900) {
@@ -375,7 +375,7 @@ async function captureState(client, name, outDir, screenshots, states, width = 1
       visible_view: [...document.querySelectorAll('.app-view')].find((node) => !node.hidden)?.id || '',
       connection_state: document.querySelector('#connection-state')?.textContent || '',
       alert_text: document.querySelector('#alert-region')?.textContent || '',
-      selected_vm_title: document.querySelector('#vm-detail-title')?.textContent || '',
+      selected_vm_title: document.querySelector('.pcv-vm-name')?.textContent || '',
       selected_vm_detail: document.querySelector('#vm-detail-content')?.textContent || '',
       checkpoint_text: document.querySelector('.checkpoint-panel')?.textContent || '',
       jobs_text: document.querySelector('#jobs-panel')?.textContent || ''

@@ -449,6 +449,13 @@ function createEnv() {
   }
   const vmTable = document.createElement("div");
   vmTable.id = "vm-table";
+  const workspace = document.createElement("div");
+  workspace.className = "vm-workspace";
+  const closeVmDetail = document.createElement("button");
+  closeVmDetail.id = "close-vm-detail";
+  closeVmDetail.type = "button";
+  workspace.appendChild(vmTable);
+  workspace.appendChild(closeVmDetail);
   const chips = document.createElement("div");
   chips.id = "vm-state-chips";
   for (const name of ["all", "running", "off", "template", "failed"]) {
@@ -477,7 +484,7 @@ function createEnv() {
   body.appendChild(detailTitle);
   body.appendChild(detailContent);
   document.getElementById("vms").appendChild(chips);
-  document.getElementById("vms").appendChild(vmTable);
+  document.getElementById("vms").appendChild(workspace);
   document.getElementById("templates").appendChild(templateTable);
   document.getElementById("accounts").appendChild(accountsPanel);
   document.getElementById("troubleshooting").appendChild(session);
@@ -555,6 +562,7 @@ function createEnv() {
   sandbox.els.templateTable = templateTable;
   sandbox.els.vmDetailTitle = detailTitle;
   sandbox.els.vmDetailContent = detailContent;
+  sandbox.els.closeVmDetail = closeVmDetail;
   sandbox.els.accountSessionPanel = session;
   sandbox.bindEvents();
   sandbox.PCV.shell.mount();
@@ -790,6 +798,190 @@ test("the VM row primary action follows template lock, then running, then off", 
   assert.equal(action("paused-1"), null);
   assert.match(env.els.vmTable.innerHTML, /세대/);
   assert.match(env.els.vmTable.innerHTML, /vCPU/);
+});
+
+test("VM list detail mode opens only after a VM is chosen and close returns to the list", () => {
+  resetSession(env);
+  env.state.vms = [
+    { id: "run-1", name: "run-1", state: "Running", generation: 2, cpu: { count: 2 }, memory: { startup_mb: 2048 } },
+    { id: "off-1", name: "off-1", state: "Off", generation: 2, cpu: { count: 1 }, memory: { startup_mb: 1024 } }
+  ];
+  env.state.selectedVmId = "";
+  env.state.selectedVm = null;
+  env.renderVms();
+  const workspace = env.document.querySelector(".vm-workspace");
+  assert.equal(workspace.classList.contains("is-detail"), false);
+  env.state.selectedVmId = "off-1";
+  env.renderVms();
+  assert.equal(workspace.classList.contains("is-detail"), true);
+  const chosen = env.document.querySelector('#vm-table tr[data-vm-id="off-1"]');
+  assert.equal(chosen.getAttribute("aria-selected"), "true");
+  assert.equal(chosen.classList.contains("selected-row"), true);
+  assert.equal(env.document.querySelector('#vm-table tr[data-vm-id="run-1"]').hasAttribute("aria-selected"), false);
+  const css = fs.readFileSync(webRoot + "style.css", "utf8");
+  assert.match(css, /\.vm-workspace\.is-detail\s*\{[^}]*grid-template-columns:\s*260px minmax\(0,\s*1fr\)/);
+  assert.match(css, /\.vm-workspace > \.vm-detail-panel\s*\{[^}]*display:\s*none/);
+  assert.match(css, /\.vm-workspace\.is-detail > \.table-wrap\s*\{[^}]*display:\s*none/);
+  env.document.getElementById("close-vm-detail").click();
+  assert.equal(env.state.selectedVmId, "");
+  assert.equal(workspace.classList.contains("is-detail"), false);
+  env.state.selectedVmId = "off-1";
+  env.renderVms();
+  const keydown = (defaultPrevented) => {
+    const event = {
+      type: "keydown",
+      key: "Escape",
+      defaultPrevented,
+      preventDefault() { this.defaultPrevented = true; },
+      stopPropagation() { this.cancelBubble = true; }
+    };
+    env.document.body.dispatchEvent(event);
+  };
+  keydown(false);
+  assert.equal(env.state.selectedVmId, "");
+  assert.equal(workspace.classList.contains("is-detail"), false);
+  env.state.selectedVmId = "off-1";
+  env.renderVms();
+  keydown(true);
+  assert.equal(env.state.selectedVmId, "off-1");
+  assert.equal(workspace.classList.contains("is-detail"), true);
+});
+
+test("VM hash opens a VM and tab, tab changes replace, and an unknown id returns to the list", async () => {
+  resetSession(env);
+  const calls = [];
+  const previousPush = env.history.pushState;
+  const previousReplace = env.history.replaceState;
+  const previousApi = env.desktopApi;
+  env.history.pushState = (_state, _title, url) => { calls.push({ mode: "push", url: String(url) }); };
+  env.history.replaceState = (_state, _title, url) => { calls.push({ mode: "replace", url: String(url) }); };
+  stubDesktopApi(env, { listVms: async () => env.state.vms.map((vm) => ({ ...vm })) });
+  env.state.vmListError = null;
+  env.state.partialFailures = [];
+  env.state.vms = [{ id: "a b", name: "a b", state: "Off", generation: 2 }];
+  env.state.selectedVmId = "";
+  env.state.selectedVm = null;
+  env.__pcvVmDetailTab = "";
+  env.location.hash = "#/vms/" + encodeURIComponent("a b") + "/console";
+  env.navigateToHash();
+  await new Promise((resolve) => setTimeout(resolve, 250));
+  assert.equal(env.state.selectedVmId, "a b");
+  assert.equal(env.__pcvVmDetailTab, "console");
+  assert.equal(env.location.hash, "#/vms/a%20b/console");
+  assert.equal(calls.some((call) => call.mode === "push"), false);
+  env.location.hash = "#/vms/" + encodeURIComponent("a b") + "/nope";
+  env.__pcvVmHashRoute = { page: "vms", id: "a b", tab: "nope" };
+  await env.openResourceById("vms", "a%20b");
+  assert.equal(env.__pcvVmDetailTab, "summary");
+  assert.equal(env.location.hash, "#/vms/a%20b/summary");
+  calls.length = 0;
+  env.location.hash = "#/vms";
+  env.state.selectedVmId = "";
+  env.renderVms();
+  env.state.selectedVmId = "a b";
+  env.__pcvVmDetailTab = "summary";
+  env.renderVms();
+  assert.equal(calls.filter((call) => call.mode === "push").length, 1);
+  assert.equal(env.location.hash, "#/vms/a%20b/summary");
+  const namedRow = [...env.document.querySelectorAll("#vm-table tr[data-vm-id]")].find((row) => row.getAttribute("data-vm-id") === "a b");
+  assert.equal(namedRow.querySelector("td").getAttribute("title"), "a b");
+  const panel = env.document.createElement("div");
+  panel.id = "vm-detail-panel";
+  const tab = env.document.createElement("button");
+  tab.id = "pcv-tab-jobs-2";
+  tab.setAttribute("role", "tab");
+  panel.appendChild(tab);
+  env.document.body.appendChild(panel);
+  calls.length = 0;
+  tab.click();
+  assert.equal(env.__pcvVmDetailTab, "jobs");
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0].mode, "replace");
+  assert.equal(env.location.hash, "#/vms/a%20b/jobs");
+  calls.length = 0;
+  env.document.getElementById("close-vm-detail").click();
+  assert.equal(env.state.selectedVmId, "");
+  assert.equal(env.location.hash, "#/vms");
+  assert.equal(calls.every((call) => call.mode === "replace"), true);
+  await env.openResourceById("vms", "missing-vm");
+  assert.equal(env.state.selectedVmId, "");
+  assert.equal(env.location.hash, "#/vms");
+  assert.match(env.document.querySelector(".pcv-toast-message").textContent, /요청한 VM이 목록에 없습니다/);
+  const css = fs.readFileSync(webRoot + "style.css", "utf8");
+  assert.match(css, /\.vm-workspace\.is-detail \.pcv-vm-table \.badge\s*\{[^}]*white-space:\s*nowrap/);
+  assert.match(css, /\.vm-workspace\.is-detail \.pcv-vm-table td:nth-child\(1\)\s*\{[^}]*text-overflow:\s*ellipsis/);
+  calls.length = 0;
+  env.state.selectedVmId = "a b";
+  env.state.selectedVm = env.state.vms[0];
+  env.state.activeView = "dashboard";
+  env.location.hash = "#/dashboard";
+  env.render();
+  assert.equal(env.location.hash, "#/dashboard");
+  assert.equal(calls.length, 0);
+  env.state.selectedVmId = "";
+  env.state.selectedVm = null;
+  env.state.activeView = "dashboard";
+  env.history.pushState = previousPush;
+  env.history.replaceState = previousReplace;
+  env.desktopApi = previousApi;
+  env.location.hash = "";
+  env.__pcvVmDetailTab = "";
+  env.state.vmListError = null;
+  env.state.partialFailures = [];
+  panel.remove();
+});
+
+test("VM list empty state offers create, a filter empty state clears the filter, and a read failure can be retried", async () => {
+  resetSession(env);
+  env.state.vmListError = null;
+  env.state.partialFailures = [];
+  env.state.vms = [];
+  env.state.vmFilter = "";
+  env.state.vmStateFilter = "all";
+  env.state.selectedVmId = "";
+  env.location.hash = "#/vms";
+  env.renderVms();
+  const create = env.document.querySelector("#vm-table .pcv-empty-action");
+  assert.equal(create.getAttribute("data-shell-action"), "open-create-vm");
+  assert.equal(create.textContent, "+ 새 VM");
+  assert.equal(env.document.querySelector("#vm-table .pcv-empty-title").textContent, "표시할 VM이 없습니다.");
+  assert.match(env.document.querySelector("#vm-table .pcv-empty-body").textContent, /이 노드에 표시할 VM이 없습니다/);
+  env.state.vms = [{ id: "off-1", name: "off-1", state: "Off", generation: 2 }];
+  env.state.vmFilter = "zzz";
+  env.renderVms();
+  assert.equal(env.document.querySelector("#vm-table .pcv-empty-title").textContent, "조건에 맞는 VM이 없습니다.");
+  const clear = env.document.querySelector("#vm-table .pcv-empty-action");
+  assert.equal(clear.textContent, "필터 지우기");
+  assert.equal(clear.hasAttribute("data-shell-action"), false);
+  clear.click();
+  assert.equal(env.state.vmFilter, "");
+  assert.equal(env.state.vmStateFilter, "all");
+  assert.ok(env.document.querySelector('#vm-table tr[data-vm-id="off-1"]'));
+  env.state.vmListError = null;
+  env.state.partialFailures = [{ operation: "vm.list", message: "partial" }];
+  env.renderVms();
+  assert.match(env.document.querySelector("#vm-table .pcv-load-error-detail").textContent, /partial/);
+  env.state.partialFailures = [];
+  env.state.vmListError = { message: "boom" };
+  env.renderVms();
+  assert.match(env.document.querySelector("#vm-table .pcv-load-error-detail").textContent, /boom/);
+  const previousApi = env.desktopApi;
+  let calls = 0;
+  stubDesktopApi(env, {
+    listVms: async () => {
+      calls += 1;
+      return [{ id: "off-1", name: "off-1", state: "Off", generation: 2 }];
+    }
+  });
+  env.document.querySelector("#vm-table .pcv-load-error-retry").click();
+  await flush();
+  assert.equal(calls, 1);
+  assert.equal(env.state.vmListError, null);
+  assert.ok(env.document.querySelector('#vm-table tr[data-vm-id="off-1"]'));
+  env.desktopApi = previousApi;
+  env.state.vmListError = null;
+  env.state.partialFailures = [];
+  env.location.hash = "";
 });
 
 test("the templates view lists only locked VMs and shows emptyState when none are locked", () => {

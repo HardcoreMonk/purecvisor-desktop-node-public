@@ -492,9 +492,14 @@ Describe 'PcvDesktopWeb static console assets' {
 
         $index | Should -Match 'id="vm-detail-panel"'
         $index | Should -Match 'id="vm-detail-content"'
+        $index | Should -Match 'id="close-vm-detail"'
+        $index | Should -Match 'class="pagehead"'
+        $index | Should -Match 'id="vm-list-create"'
         $index | Should -Match 'id="vm-state-chips"'
         $index | Should -Match 'data-vm-chip="failed"'
         $index | Should -Match 'id="vm-sort"'
+        $css = Get-Content -LiteralPath (Join-Path $script:WebRoot 'style.css') -Raw
+        $css | Should -Match '\.vm-workspace\.is-detail\s*\{[^}]*260px\s+minmax\(0,\s*1fr\)'
         $app | Should -Match 'vmStateFilter'
         $app | Should -Match 'vmSort'
         $app | Should -Match 'compareVms'

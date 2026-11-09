@@ -1081,7 +1081,7 @@ function verifyVmDetailMount(context) {
   const app = context.readText("web/app.bundle.js");
   const stateSource = context.readText("web/src/modules/core.ts");
   const servedAppSource = context.readText("web/src/bootstrap.ts");
-  const inventorySource = context.readText("web/src/modules/vm.ts");
+  const inventorySource = context.readText("web/src/modules/vm-list.ts");
   for (const [pattern, label] of [
     [/id="vm-detail-panel"/i, "panel"],
     [/id="vm-detail-content"/i, "content"],
@@ -1102,6 +1102,11 @@ function verifyVmDetailMount(context) {
   assertSourceAndGenerated(context, inventorySource, app, [
     [/function\s+compareVms\s*\(/i, "compare"]
   ], "vm-detail-mount");
+  const css = context.readText("web/style.css");
+  context.assertMatch(index, /class="pagehead"/i, "vm-detail-mount:pagehead");
+  context.assertMatch(index, /id="vm-list-create"/i, "vm-detail-mount:create");
+  context.assertMatch(css, /\.vm-workspace\.is-detail\s*\{[^}]*260px\s+minmax\(0,\s*1fr\)/i, "vm-detail-mount:detail-columns");
+  context.assertMatch(index, /id="close-vm-detail"/i, "vm-detail-mount:close");
 }
 
 function verifyVmLifecycleActions(context) {

@@ -468,7 +468,7 @@ const defectCases = [
   {
     name: "missing VM detail sort authoritative source owner",
     id: "web.static.vm-detail-mount",
-    overrides: () => removeOnce("web/src/modules/vm.ts", "function compareVms(left, right)"),
+    overrides: () => removeOnce("web/src/modules/vm-list.ts", "function compareVms(left, right)"),
     expectedCode: assertionFailed,
     expectedLabel: "vm-detail-mount:compare:source"
   },
