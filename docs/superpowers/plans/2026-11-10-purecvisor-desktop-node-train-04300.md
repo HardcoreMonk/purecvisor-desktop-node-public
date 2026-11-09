@@ -270,7 +270,7 @@ operational current는 `0.42.99-admin-smoke` 그대로다.
 
 ## Task 10: train PR
 
-- [ ] clean HEAD 종료 검증을 한다.
+- [x] clean HEAD 종료 검증을 한다.
   - `dotnet build src/DesktopNode.sln -c Release`
   - `Invoke-PcvPrGate.ps1`
   - Pester 4종
@@ -279,12 +279,26 @@ operational current는 `0.42.99-admin-smoke` 그대로다.
   - `Update-PcvCurrentEvidenceDocs.ps1 -Check`, `git diff --check origin/main...HEAD`
   - 그다음 push와 PR을 한다. merge 직전 base가 `origin/main`과 같은지 본다. Required CI 다섯 개 green 뒤 merge한다(`--match-head-commit`). merge 뒤 main push run을 기다리고, red면 revert PR을 열고 멈춘다.
 
+실행 기록(2026-11-10): clean HEAD `a90803e`에서 종료 검증을 했다.
+- PR gate `artifacts/pr-gate/20261109-222512` `ok=True`: build, `dotnet-test-release`(솔루션 전체, clean tree), module-size-ratchet
+- Pester 실패 0: packaging 528, installer 49, web 50, manual-admin 140
+- `test:public-source-safety` exit 0, `Update-PcvCurrentEvidenceDocs.ps1 -Check` current, `git diff --check origin/main...HEAD` clean
+- `train-path-check --payload 6355e6ba --head baecad5` `ok=true`(Task 9 기록). `a90803e`는 plan 문서만 더 바꿨다.
+
+PR #131(`lane1/train-04300-20261110`)을 열었고 Required CI 다섯 개(`dotnet`, `web`, `delivery`, `installer-policy`, `public-boundary-ci-required`)가 pass였다. base가 `origin/main`과 같은 것을 확인하고, 상시 merge 승인으로 `--match-head-commit a90803e` merge했다(merge commit `a8e2b57`). main push run은 Development Gates `42713120467`, Public Boundary `42713120027`이고 둘 다 success다. operational current는 이제 `0.43.0-admin-smoke`다.
+
 ## Task 11: 판정과 마무리
 
-- [ ] clean `main`에서 `pcvverify completion`을 돌린다. `complete=true`이고 hygiene C2가 queue 0·train promoted로 충족되는지 본다.
+- [x] clean `main`에서 `pcvverify completion`을 돌린다. `complete=true`이고 hygiene C2가 queue 0·train promoted로 충족되는지 본다.
   - exit `0`이면 판정을 인용한 감사 문서 `docs/project-status-audit-2026-11-10.md`를 쓴다.
   - 계정 백업 삭제를 사용자에게 물을 문장을 남긴다.
   - campaign을 닫는다. push와 PR 뒤 Required CI green이면 merge한다.
+
+실행 기록(2026-11-10): clean `main` `a8e2b57`에서 `pcvverify completion`(`artifacts/completion/20261110/`)을 돌렸다.
+- 결과: `complete=true met=7/7 gaps=0`, exit `0`이다.
+- hygiene: C2 `met=true`(current `0.43.0-admin-smoke` = operational current, train promoted, queue 0, 미완료 train 0), C3 4/4, C4 15/15, C7 `met=false`(`open_counts=0, undecided=6`: BL-0036~0041, 모두 `user-decision`).
+- 판정을 인용한 감사 문서 `docs/project-status-audit-2026-11-10.md`를 썼다(§6.2).
+- campaign을 닫았다. 다음 승인으로 train 계정 백업 삭제와 backlog 분류를 사용자에게 묻는다.
 
 ## Nonclaims
 
