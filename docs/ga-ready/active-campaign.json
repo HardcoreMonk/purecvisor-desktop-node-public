@@ -11,7 +11,7 @@
   ],
   "mutation_allowed": false,
   "current_write_allowed": false,
-  "next_step": "Task 1 (U1, PR #123) and Task 2a (vm-list.ts split) done. Run Task 2b from docs/superpowers/plans/2026-11-09-purecvisor-desktop-node-ui-parity-impl.md, then the queue in order.",
+  "next_step": "Task 1 (U1, PR #123), Task 2a (vm-list.ts split) and Task 2b (list-detail layout) done. Run Task 2c from docs/superpowers/plans/2026-11-09-purecvisor-desktop-node-ui-parity-impl.md, then the queue in order.",
   "plan": "docs/superpowers/plans/2026-11-09-purecvisor-desktop-node-ui-parity-impl.md",
   "task_queue": [
     "Task 1",
@@ -34,10 +34,11 @@
     "Task 8b"
   ],
   "task_lanes": {},
-  "next_task": "Task 2b",
+  "next_task": "Task 2c",
   "completed_tasks": [
     "Task 1",
-    "Task 2a"
+    "Task 2a",
+    "Task 2b"
   ],
   "commit_policy": "local-commit-per-task",
   "push_allowed": true,

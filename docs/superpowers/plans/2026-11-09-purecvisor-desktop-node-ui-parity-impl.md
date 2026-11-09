@@ -68,11 +68,13 @@ task 크기(2026-11-09 사용자 승인 `U1 checkpoint 2 승인`): Task 2부터�
 
 ## Task 2b: U2 목록·상세 골격
 
-- [ ] 설계 4.1절의 두 상태. 고르지 않으면 전체 폭 표, 고르면 왼쪽 260px 목록과 넓은 상세(`web/index.html:291-347`, `web/style.css:5212-5225`). 선택 카드를 지우고 이름은 상세 헤더 h2 하나다. `HN.pagehead`(제목, 설명, `+ 새 VM`). 콘솔 탭 맞춤 배율이 넓어진 폭을 쓰는지 확인한다. 설계 7절의 VM 골격 계약·시험 8곳을 고친다. 공통 검증, 가짜 API 캡처(1440, 768, 390)를 원본 캡처와 비교. 로컬 commit.
+- [x] 설계 4.1절의 두 상태. 고르지 않으면 전체 폭 표, 고르면 왼쪽 260px 목록과 넓은 상세(`web/index.html:291-347`, `web/style.css:5212-5225`). 선택 카드를 지우고 이름은 상세 헤더 h2 하나다. `HN.pagehead`(제목, 설명, `+ 새 VM`). 콘솔 탭 맞춤 배율이 넓어진 폭을 쓰는지 확인한다. 설계 7절의 VM 골격 계약·시험 8곳을 고친다. 공통 검증, 가짜 API 캡처(1440, 768, 390)를 원본 캡처와 비교. 로컬 commit.
+
+실행 기록(2026-11-09): checkpoint 4(11:05~11:26)에서 grok이 골격을 구현했지만 `bootstrap.ts` 512줄(상한 499)과 browser gate assertion 10건 실패로 멈췄다. 원인은 더 보기 메뉴가 Esc를 먼저 처리(`preventDefault`)해 메뉴를 닫은 뒤, `bootstrap.ts` 스냅샷이 아무것도 열려 있지 않다고 보고 VM 선택을 해제해 상세와 메뉴가 사라진 것이다. "U2b checkpoint 2 승인" 뒤 checkpoint 5(15:33~15:46)에서 Esc 선택 해제를 `vm-list.ts` 모듈 로드 때 등록하는 document keydown으로 옮기고, `defaultPrevented`이거나 메뉴·대화상자·확인 창 안에서 누른 Esc는 건너뛰게 했다. `bootstrap.ts` 497줄(HEAD 그대로), `vm.ts` 2,538→2,508줄(slack 50 안이라 ratchet 그대로), `vm-list.ts` 205→241줄, domsafe 천장 37→35, axe 기준선 1,906→2,054(+148, `--prune` 없음, stale 551 경고). 검증: `npm run build:served`, `npm run test:required` exit 0(web-contracts 370 pass, browser gate assertions 121 failed 0 violations 0), web Pester 50/50, ratchet Pester 3/3, Delivery 785/785, `git diff --check` clean. 가짜 API 1280 캡처(`vms`, `vm-detail-summary`, `vm-detail-console`)에서 두 상태, 고른 행 표시, 이름 한 번, 넓어진 상세·콘솔 폭을 확인했다. 콘솔 맞춤 배율은 이미 stage 폭으로 계산해 `vm-console.ts`는 고치지 않았다. 768·390 캡처 비교와 260px 목록에서 상태·템플릿 배지와 VM 이름이 글자 중간에서 줄바꿈되는 문제(`Faile d`, `Runni ng`)는 Task 2c로 넘겼다.
 
 ## Task 2c: U2 바로 가는 링크, 빈 상태, 좁은 화면, PR
 
-- [ ] hash `#/vms/<vm-id>/<tab>`(`core.ts:351-354`)와 뒤로 가기, 없는 VM 처리. 빈 상태 CTA와 읽기 실패(`components.emptyState`·`loadError`). 600px 이하는 목록과 상세를 하나씩. node 시험. 공통 검증, release-train queue 행. push, PR(U2 묶음), green CI 뒤 merge.
+- [ ] hash `#/vms/<vm-id>/<tab>`(`core.ts:351-354`)와 뒤로 가기, 없는 VM 처리. 빈 상태 CTA와 읽기 실패(`components.emptyState`·`loadError`). 600px 이하는 목록과 상세를 하나씩. node 시험. Task 2b에서 넘어온 것: 260px 목록의 배지·이름 줄바꿈 수정, 가짜 API 캡처 768·390 비교. 공통 검증, release-train queue 행. push, PR(U2 묶음), green CI 뒤 merge.
 
 ## Task 3a: U3 행 메뉴
 

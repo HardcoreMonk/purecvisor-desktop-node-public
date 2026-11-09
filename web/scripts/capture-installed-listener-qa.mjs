@@ -201,7 +201,7 @@ async function collectState(client) {
       visible_view: visibleView,
       connection_state: document.querySelector('#connection-state')?.textContent || '',
       alert_text: document.querySelector('#alert-region')?.textContent || '',
-      selected_vm_title: document.querySelector('#vm-detail-title')?.textContent || '',
+      selected_vm_title: document.querySelector('.pcv-vm-name')?.textContent || '',
       diagnostics_text: document.querySelector('#diagnostics-panel')?.textContent || '',
       jobs_text: document.querySelector('#jobs-panel')?.textContent || '',
       network_text: document.querySelector('#network-inventory-panel')?.textContent || '',

@@ -5211,9 +5211,32 @@ dialog::backdrop {
 
 .vm-workspace {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(320px, 380px);
+  grid-template-columns: minmax(0, 1fr);
   gap: 14px;
   align-items: start;
+}
+
+.vm-workspace > .vm-detail-panel {
+  display: none;
+}
+
+.vm-workspace.is-detail {
+  grid-template-columns: 260px minmax(0, 1fr);
+}
+
+.vm-workspace.is-detail > .vm-detail-panel {
+  display: block;
+}
+
+.vm-workspace.is-detail .pcv-vm-table th:nth-child(3),
+.vm-workspace.is-detail .pcv-vm-table td:nth-child(3),
+.vm-workspace.is-detail .pcv-vm-table th:nth-child(4),
+.vm-workspace.is-detail .pcv-vm-table td:nth-child(4),
+.vm-workspace.is-detail .pcv-vm-table th:nth-child(5),
+.vm-workspace.is-detail .pcv-vm-table td:nth-child(5),
+.vm-workspace.is-detail .pcv-vm-table th:nth-child(7),
+.vm-workspace.is-detail .pcv-vm-table td:nth-child(7) {
+  display: none;
 }
 
 .vm-detail-panel {
@@ -5315,8 +5338,10 @@ dialog::backdrop {
   overflow-wrap: anywhere;
 }
 
-.selected-row {
+.selected-row,
+.pcv-vm-table tr[aria-selected="true"] {
   background: rgba(34, 211, 238, .08);
+  box-shadow: inset 2px 0 0 var(--accent);
 }
 
 .link-button {
@@ -5631,6 +5656,14 @@ dialog::backdrop {
       position: static;
     }
 
+  .vm-workspace.is-detail {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+  .vm-workspace.is-detail > .table-wrap {
+      display: none;
+    }
+
   .checkpoint-actions,
     .evidence-boundary,
     .diagnostics-header,
@@ -5767,6 +5800,11 @@ textarea[aria-invalid="true"] {
 
 .pcv-tablist {
   border-bottom: 1px solid var(--border);
+}
+
+.vm-detail-panel .pcv-tablist {
+  flex-wrap: nowrap;
+  overflow-x: auto;
 }
 
 .pcv-tab {

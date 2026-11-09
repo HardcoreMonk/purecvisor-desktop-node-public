@@ -449,6 +449,13 @@ function createEnv() {
   }
   const vmTable = document.createElement("div");
   vmTable.id = "vm-table";
+  const workspace = document.createElement("div");
+  workspace.className = "vm-workspace";
+  const closeVmDetail = document.createElement("button");
+  closeVmDetail.id = "close-vm-detail";
+  closeVmDetail.type = "button";
+  workspace.appendChild(vmTable);
+  workspace.appendChild(closeVmDetail);
   const chips = document.createElement("div");
   chips.id = "vm-state-chips";
   for (const name of ["all", "running", "off", "template", "failed"]) {
@@ -477,7 +484,7 @@ function createEnv() {
   body.appendChild(detailTitle);
   body.appendChild(detailContent);
   document.getElementById("vms").appendChild(chips);
-  document.getElementById("vms").appendChild(vmTable);
+  document.getElementById("vms").appendChild(workspace);
   document.getElementById("templates").appendChild(templateTable);
   document.getElementById("accounts").appendChild(accountsPanel);
   document.getElementById("troubleshooting").appendChild(session);
@@ -555,6 +562,7 @@ function createEnv() {
   sandbox.els.templateTable = templateTable;
   sandbox.els.vmDetailTitle = detailTitle;
   sandbox.els.vmDetailContent = detailContent;
+  sandbox.els.closeVmDetail = closeVmDetail;
   sandbox.els.accountSessionPanel = session;
   sandbox.bindEvents();
   sandbox.PCV.shell.mount();
@@ -790,6 +798,53 @@ test("the VM row primary action follows template lock, then running, then off", 
   assert.equal(action("paused-1"), null);
   assert.match(env.els.vmTable.innerHTML, /세대/);
   assert.match(env.els.vmTable.innerHTML, /vCPU/);
+});
+
+test("VM list detail mode opens only after a VM is chosen and close returns to the list", () => {
+  resetSession(env);
+  env.state.vms = [
+    { id: "run-1", name: "run-1", state: "Running", generation: 2, cpu: { count: 2 }, memory: { startup_mb: 2048 } },
+    { id: "off-1", name: "off-1", state: "Off", generation: 2, cpu: { count: 1 }, memory: { startup_mb: 1024 } }
+  ];
+  env.state.selectedVmId = "";
+  env.state.selectedVm = null;
+  env.renderVms();
+  const workspace = env.document.querySelector(".vm-workspace");
+  assert.equal(workspace.classList.contains("is-detail"), false);
+  env.state.selectedVmId = "off-1";
+  env.renderVms();
+  assert.equal(workspace.classList.contains("is-detail"), true);
+  const chosen = env.document.querySelector('#vm-table tr[data-vm-id="off-1"]');
+  assert.equal(chosen.getAttribute("aria-selected"), "true");
+  assert.equal(chosen.classList.contains("selected-row"), true);
+  assert.equal(env.document.querySelector('#vm-table tr[data-vm-id="run-1"]').hasAttribute("aria-selected"), false);
+  const css = fs.readFileSync(webRoot + "style.css", "utf8");
+  assert.match(css, /\.vm-workspace\.is-detail\s*\{[^}]*grid-template-columns:\s*260px minmax\(0,\s*1fr\)/);
+  assert.match(css, /\.vm-workspace > \.vm-detail-panel\s*\{[^}]*display:\s*none/);
+  assert.match(css, /\.vm-workspace\.is-detail > \.table-wrap\s*\{[^}]*display:\s*none/);
+  env.document.getElementById("close-vm-detail").click();
+  assert.equal(env.state.selectedVmId, "");
+  assert.equal(workspace.classList.contains("is-detail"), false);
+  env.state.selectedVmId = "off-1";
+  env.renderVms();
+  const keydown = (defaultPrevented) => {
+    const event = {
+      type: "keydown",
+      key: "Escape",
+      defaultPrevented,
+      preventDefault() { this.defaultPrevented = true; },
+      stopPropagation() { this.cancelBubble = true; }
+    };
+    env.document.body.dispatchEvent(event);
+  };
+  keydown(false);
+  assert.equal(env.state.selectedVmId, "");
+  assert.equal(workspace.classList.contains("is-detail"), false);
+  env.state.selectedVmId = "off-1";
+  env.renderVms();
+  keydown(true);
+  assert.equal(env.state.selectedVmId, "off-1");
+  assert.equal(workspace.classList.contains("is-detail"), true);
 });
 
 test("the templates view lists only locked VMs and shows emptyState when none are locked", () => {

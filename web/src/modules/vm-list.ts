@@ -162,7 +162,14 @@ function renderTemplates() {
   host.appendChild(PCV.uxlib.el('table', { class: 'pcv-vm-table' }, PCV.uxlib.el('thead', {}, head), body));
 }
 
+function syncVmListDetailMode() {
+  const workspace = document.querySelector('.vm-workspace');
+  if (!workspace || !workspace.classList) return;
+  workspace.classList.toggle('is-detail', Boolean(state.selectedVmId));
+}
+
 function renderVms() {
+  syncVmListDetailMode();
   const named = asArray(state.vms).filter(matchesVmQuery);
   paintVmChips(named);
   renderTemplates();
@@ -175,7 +182,7 @@ function renderVms() {
   }
   const rows = vms.map((vm) => {
     const vmId = getVmId(vm);
-    const selected = vmId && vmId === state.selectedVmId ? ' class="selected-row"' : '';
+    const selected = vmId && vmId === state.selectedVmId ? ' class="selected-row" aria-selected="true"' : '';
     const templateBadge = isTemplateLockedVm(vm)
       ? `<span class="badge badge-warn">${pcvEscapeHtml(t('vm.badge.template'))}</span>`
       : '';
@@ -195,6 +202,35 @@ function renderVms() {
       <thead><tr><th>${pcvEscapeHtml(t('vm.list.col.name'))}</th><th>${pcvEscapeHtml(t('vm.list.col.state'))}</th><th>${pcvEscapeHtml(t('vm.list.col.generation'))}</th><th>${pcvEscapeHtml(t('vm.list.col.cpu'))}</th><th>${pcvEscapeHtml(t('vm.list.col.memory'))}</th><th>${pcvEscapeHtml(t('vm.list.col.display'))}</th><th>${pcvEscapeHtml(t('vm.list.col.action'))}</th></tr></thead>
       <tbody>${rows}</tbody>
     </table>`;
+}
+
+function vmListEscapeTargetInOverlay(target) {
+  if (!target || typeof target.closest !== 'function') return false;
+  return Boolean(target.closest('[role="menu"]') || target.closest('dialog') || target.closest('.pcv-confirm'));
+}
+
+function vmListEscapeClearsSelection(event) {
+  if (!event || event.key !== 'Escape' || event.defaultPrevented) return;
+  if (vmListEscapeTargetInOverlay(event.target)) return;
+  let dialogOpen = false;
+  if (typeof document.querySelectorAll === 'function') {
+    document.querySelectorAll('dialog').forEach((dialog) => {
+      if (dialog.open) dialogOpen = true;
+    });
+  }
+  if (dialogOpen) return;
+  if (state.commandPaletteOpen || window.cmdPaletteOpen || window.kbdHelpOpen) return;
+  if (!state.selectedVmId) return;
+  state.selectedVmId = '';
+  state.selectedVm = null;
+  state.selectedVmCheckpoints = [];
+  state.selectedVmReadbacks = null;
+  state.selectedVmQosControl = null;
+  if (typeof render === 'function') render();
+}
+
+if (typeof document !== 'undefined' && document && typeof document.addEventListener === 'function') {
+  document.addEventListener('keydown', vmListEscapeClearsSelection);
 }
 
 window.matchesVmFilter = matchesVmFilter;

@@ -798,7 +798,7 @@ function renderVmDetail() {
   const focusMarker = els && els.vmDetailContent ? detailFocusMarker(els.vmDetailContent) : null;
   const vm = state.selectedVm;
   if (!vm) {
-    els.vmDetailTitle.textContent = t('vm.detail.none_title');
+    if (els.vmDetailTitle) els.vmDetailTitle.textContent = t('vm.detail.none_title');
     state.selectedVmCheckpoints = [];
     state.selectedVmReadbacks = null;
     state.selectedVmQosControl = null;
@@ -806,7 +806,7 @@ function renderVmDetail() {
     return;
   }
 
-  els.vmDetailTitle.textContent = getVmName(vm);
+  if (els.vmDetailTitle) els.vmDetailTitle.textContent = '';
   const vmId = getVmId(vm);
   const canOperate = rbacAllows('operate');
   const canViewConsole = rbacAllows('console.view');
@@ -853,8 +853,6 @@ function renderVmDetail() {
     <header class="pcv-vm-header">
       <nav class="pcv-vm-crumb" aria-label="${pcvEscapeHtml(t('vm.crumb.label'))}">
         <span>${pcvEscapeHtml(t('vm.crumb.vms'))}</span>
-        <span aria-hidden="true"> › </span>
-        <span>${pcvEscapeHtml(vmName)}</span>
       </nav>
       <div class="pcv-vm-title-row">
         <h2 class="pcv-vm-name">${pcvEscapeHtml(vmName)}</h2>
@@ -1081,36 +1079,8 @@ function renderCheckpointScheduleReadback(vm, vmId, actionDisabled = '') {
 }
 
 function renderVmWorkbenchContext() {
-  const vm = state.selectedVm;
-  if (!vm) {
-    els.vmWorkbenchContext.innerHTML = `<p class="muted">${pcvEscapeHtml(t('vm.workbench.empty'))}</p>`;
-    return;
-  }
-
-  const vmId = getVmId(vm);
-  const vmName = getVmName(vm);
-  const activity = buildActivityRows()
-    .map(({ job }) => job)
-    .find((job) => {
-      const haystack = [job?.job_id, job?.operation, job?.request_id, job?.correlation_id, JSON.stringify(job?.result || {})].join(' ').toLowerCase();
-      return haystack.includes(vmId.toLowerCase()) || haystack.includes(vmName.toLowerCase());
-    });
-  const activityHtml = activity
-    ? `<span>${pcvEscapeHtml(activity.operation || t('vm.workbench.job'))}</span>${stateBadge(activity.status)}`
-    : `<span class="muted">${pcvEscapeHtml(t('vm.workbench.none'))}</span>`;
-
-  els.vmWorkbenchContext.innerHTML = `
-    <div class="vm-context-card">
-      <div>
-        <span class="muted">${pcvEscapeHtml(t('vm.workbench.selected'))}</span>
-        <strong>${pcvEscapeHtml(vmName)}</strong>
-      </div>
-      <div>${stateBadge(vm.state || vm.status)}</div>
-      <div class="vm-context-activity">
-        <span class="muted">${pcvEscapeHtml(t('vm.workbench.activity'))}</span>
-        ${activityHtml}
-      </div>
-    </div>`;
+  if (!els.vmWorkbenchContext) return;
+  els.vmWorkbenchContext.textContent = '';
 }
 
 // --- legacy render-qos.ts ---
