@@ -51,11 +51,20 @@
 
 ## Task 2: 첫 방문 runtime/policy 401 (BL-0040)
 
-- [ ] 새 브라우저(저장된 token 없음)로 loopback 주소를 열 때, 첫 보호 API 요청 전에 loopback 세션을 먼저 만들어 `401`이 나지 않게 한다. 위치는 `web/src/modules/api.ts`(`_createLoopbackSession`, `_recoverSession`)와 첫 refresh 흐름이다.
+- [x] 새 브라우저(저장된 token 없음)로 loopback 주소를 열 때, 첫 보호 API 요청 전에 loopback 세션을 먼저 만들어 `401`이 나지 않게 한다. 위치는 `web/src/modules/api.ts`(`_createLoopbackSession`, `_recoverSession`)와 첫 refresh 흐름이다.
   - 계정이 있는 설치본(loopback 세션 `409`)에서는 지금처럼 로그인 상자로 간다.
   - 비 loopback 주소에서는 바뀌지 않는다.
   - node 시험: token 없는 첫 refresh에서 `auth/loopback-session`이 보호 API보다 먼저 불리는지, `409`이면 로그인 상자로 가는지 본다.
 - 검증은 Task 1과 같다. 로컬 commit.
+
+실행 기록(2026-11-10): Claude가 원인을 찾았고, grok이 08:27~08:32에 구현했으며 Claude가 리뷰했다.
+- 원인: `web/index.html` `_pcvInitUI()`가 DOMContentLoaded에 `updateVersionBadge()`(`nav.ts`)를 부른다. 이 함수가 loopback 세션이 생기기 전 빈 Bearer로 `GET /api/v1/runtime/policy`를 보냈다. `refreshAll()`은 이미 세션을 먼저 만든다.
+- 수정:
+  - `updateVersionBadge()`는 token이 없으면 공유 `ensureLoopbackSession()`을 기다린 뒤 읽는다. 세션이 열리지 않으면(계정 모드 `409`, 비 loopback) 부르지 않고 badge를 숨긴다.
+  - `_finishLogin()` 끝에서 badge를 다시 그린다(계정 로그인 뒤 version 표시).
+  - 첫 방문에는 token을 가진 policy 읽기가 두 번 일어날 수 있다. 리뷰에서 받아들였다.
+- 시험: `bundle-load.test.mjs`에 둘을 더했다. loopback 성공이면 `auth/loopback-session`이 `runtime/policy`보다 먼저이고 Bearer가 있다. `409`이면 policy 요청이 없다.
+- 검증: `npm run test:required --prefix web` exit 0(node 393 pass, browser gate `ok=true` assertions 121 failed 0 violations 0), web Pester와 ratchet 53/53, `git diff --check` clean.
 
 ## Task 3: 좁은 VM 목록 이름 (BL-0037)
 
