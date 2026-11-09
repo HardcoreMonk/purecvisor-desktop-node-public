@@ -35,6 +35,14 @@
       "summary": "ui-parity U4 (ADR-0020): view render registry (PCV.views.register, active-view refresh, isCurrent guard, per-mount loadError), network view moved to view-network.ts with type chips, data table with connected VM counts, distinct empty and load-error states and read-only boundary facts; vm.ts ratchet 2389",
       "lane2_probe": null,
       "risk_tier": "M"
+    },
+    {
+      "pr": 127,
+      "merge_commit": "43bba65a",
+      "area": "web",
+      "summary": "ui-parity U5 (ADR-0020): jobs view (status chips, kind select, data table with sort/CSV, DOM job actions, next page) and events view (severity cards and chips, event table) on the render registry; activity panel links to jobs; English job/ops copy to i18n; stable data table ids",
+      "lane2_probe": null,
+      "risk_tier": "M"
     }
   ],
   "trains": [
