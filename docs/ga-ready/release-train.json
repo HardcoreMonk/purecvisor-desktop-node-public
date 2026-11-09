@@ -59,6 +59,14 @@
       "summary": "ui-parity U7 (ADR-0020): diagnostics view with four two-column cards (Hyper-V readiness, service/listener, session with logout, diagnostics bundle) and a closed advanced section (registry bridge, Host Ops buckets, boundary chips); evidence operator cards with release engineering values collapsed; accounts role chips and role pill table",
       "lane2_probe": null,
       "risk_tier": "M"
+    },
+    {
+      "pr": 130,
+      "merge_commit": "d32daa8f",
+      "area": "web",
+      "summary": "ui-parity U8 (ADR-0020): remove the unreachable old command palette, swipe code and legacy draw bodies behind the view registry guards (render()/renderActiveView() stay for VM, templates and help); accounts entry in the live palette follows account.manage; panel background token and diagnostics copy i18n; renderActiveView keeps component classes on data-view-link elements (dashboard KPI cards, pagehead buttons); diagnostics cards as label/value grids; axe baseline pruned 2,626 -> 1,519",
+      "lane2_probe": null,
+      "risk_tier": "M"
     }
   ],
   "trains": [

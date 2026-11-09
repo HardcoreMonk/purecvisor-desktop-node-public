@@ -287,7 +287,9 @@ task 크기(2026-11-09 사용자 승인 `U1 checkpoint 2 승인`): Task 2부터�
 
 ## Task 8e: U8 PR
 
-- [ ] clean HEAD 종료 검증(`dotnet test src/DesktopNode.sln -c Release`, `npm run test:required`, `Invoke-PcvPrGate.ps1`), release-train queue 행. campaign을 닫고 `next_approval_required`에 release train 출발 문장을 둔다. push, PR(U8 묶음, Task 8a~8e), green CI 뒤 merge, `main` push run green 확인.
+- [x] clean HEAD 종료 검증(`dotnet test src/DesktopNode.sln -c Release`, `npm run test:required`, `Invoke-PcvPrGate.ps1`), release-train queue 행. campaign을 닫고 `next_approval_required`에 release train 출발 문장을 둔다. push, PR(U8 묶음, Task 8a~8e), green CI 뒤 merge, `main` push run green 확인.
+
+실행 기록(2026-11-10): checkpoint 30(00:54~). clean HEAD `d32daa8f`에서 `dotnet test src/DesktopNode.sln -c Release`(시험 assembly 9개 모두 통과), `npm run test:required` exit 0(node 390 pass, browser gate `ok=true` assertions 121 failed 0 violations 0, 기준선 1,519), `Invoke-PcvPrGate.ps1` ok(build, dotnet-test-release, module-size-ratchet), `git diff --check origin/main...HEAD` clean. push 뒤 PR #130, release-train queue 행(merge_commit `d32daa8f`). campaign을 닫고 `next_approval_required`에 release train `0.42.100-admin-smoke` 출발 문장(queue #123~#130)을 두었다. 사용자 결정 5의 `host mutation ok`는 U8에 필요한 곳이 없어 쓰지 않았다.
 
 ## Nonclaims
 
