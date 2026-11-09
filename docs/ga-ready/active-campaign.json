@@ -11,7 +11,7 @@
   ],
   "mutation_allowed": false,
   "current_write_allowed": false,
-  "next_step": "Task 1 (U1, PR #123), Task 2a (vm-list.ts split) Task 2b (list-detail layout), Task 2c (deep link, empty state) Task 2d (captures, U2 PR #124) Task 3a (row menu) Task 3b (header sort, j/k) Task 3c (checkbox bulk start/stop) Task 3d (bulk delete) Task 3e (U3 PR #125) Task 4a (view registry) Task 4b (network view) Task 4c (U4 PR #126) and Task 5a (jobs view) done. Run Task 5b from docs/superpowers/plans/2026-11-09-purecvisor-desktop-node-ui-parity-impl.md, then the queue in order.",
+  "next_step": "Task 1 (U1, PR #123), Task 2a (vm-list.ts split) Task 2b (list-detail layout), Task 2c (deep link, empty state) Task 2d (captures, U2 PR #124) Task 3a (row menu) Task 3b (header sort, j/k) Task 3c (checkbox bulk start/stop) Task 3d (bulk delete) Task 3e (U3 PR #125) Task 4a (view registry) Task 4b (network view) Task 4c (U4 PR #126) Task 5a (jobs view) and Task 5b (events view) done. Run Task 5c from docs/superpowers/plans/2026-11-09-purecvisor-desktop-node-ui-parity-impl.md, then the queue in order.",
   "plan": "docs/superpowers/plans/2026-11-09-purecvisor-desktop-node-ui-parity-impl.md",
   "task_queue": [
     "Task 1",
@@ -29,6 +29,7 @@
     "Task 4c",
     "Task 5a",
     "Task 5b",
+    "Task 5c",
     "Task 6a",
     "Task 6b",
     "Task 7a",
@@ -37,7 +38,7 @@
     "Task 8b"
   ],
   "task_lanes": {},
-  "next_task": "Task 5b",
+  "next_task": "Task 5c",
   "completed_tasks": [
     "Task 1",
     "Task 2a",
@@ -52,12 +53,13 @@
     "Task 4a",
     "Task 4b",
     "Task 4c",
-    "Task 5a"
+    "Task 5a",
+    "Task 5b"
   ],
   "commit_policy": "local-commit-per-task",
   "push_allowed": true,
   "merge_policy": "after-green-ci",
-  "checkpoint_limit": 21,
+  "checkpoint_limit": 22,
   "approval_locator": "User-Approval: 2026-09-27 campaign runner commit policy local-commit-per-task; User-Approval: 2026-11-09 \"UI 개편 구현 campaign 열기와 ADR-0020 채택 승인\" (answer to ui-parity-design-20261109 next_approval_required 1): open this campaign from the implementation plan and adopt ADR-0020; Lane 1, Tasks 1-8 (U1-U8), grok implements and Claude reviews, push, PR and merge after green Required CI per task; no host mutation; release train departure needs a separate approval; User-Approval: 2026-11-09 standing merge approval (\"앞으로 Required CI가 green이면 PR merge도 자동 승인\"): merge after the five Required checks pass, revert PR if the main push run is red; User-Approval: 2026-11-09 \"U1 checkpoint 2 승인\": continue Task 1 in a new 30-min checkpoint from the uncommitted diff, then from Task 2 split each stage into checkpoint-sized tasks (one grok brief each, more tasks); User-Approval: 2026-11-08 standing auto-approval of the recommended option (\"앞으로는 권장 사항 자동 승인 처리 한다\"): 2026-11-09 \"main run 실패 처리\" (PR #124 main run web flake rerun once), \"U3a checkpoint 2\" and \"U3a checkpoint 3\", \"U4b checkpoint 2\" (continue Task 3a and Task 4b from the uncommitted diff in new 30-min checkpoints)",
   "next_approval_required": [],
   "stop_on": [

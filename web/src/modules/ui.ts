@@ -561,7 +561,7 @@ function createDataTable(containerId, config) {
   var cfg = config || {};
   var headers = cfg.headers || [];
   var rows = cfg.rows || [];
-  var tableId = 'dt-' + Math.random().toString(36).substr(2, 6);
+  var tableId = cfg.tableId || ('dt-' + Math.random().toString(36).substr(2, 6));
   var sortCol = -1, sortDir = 1;
   var tFn = typeof t === 'function' ? t : function(k) { return k; };
   var contentEl = mk('div');

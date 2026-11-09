@@ -180,7 +180,7 @@ window.PCV = window.PCV || {};
         empty.classList.add('network-empty-state');
         tableHost.appendChild(empty);
       } else {
-        createDataTable(tableHost, {
+        createDataTable(tableHost, { tableId: 'dt-network',
           headers: [
             { label: t('vm.net.col.name'), key: 'name', sortable: false },
             { label: t('vm.net.col.type'), key: 'type', sortable: false },

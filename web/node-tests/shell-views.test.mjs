@@ -2337,6 +2337,137 @@ test("registered jobs render draws chips, kind select, table columns, and does n
   }
 });
 
+test("registered activity render draws severity cards, chips, table columns, and a jobs link", () => {
+  const activity = env.document.querySelector('.app-view[data-view="activity"]');
+  const index = fs.readFileSync(webRoot + "index.html", "utf8");
+  const product = env.PCV.viewEvents.render;
+  env.PCV.views.register("activity", { render: product });
+  const mount = env.document.createElement("div");
+  mount.id = "event-center-panel";
+  mount.className = "event-center-panel";
+  mount.setAttribute("data-view-mount", "");
+  const panel = env.document.createElement("div");
+  panel.id = "activity-panel";
+  panel.className = "activity-panel";
+  activity.appendChild(mount);
+  activity.appendChild(panel);
+  env.els.eventCenterPanel = mount;
+  env.els.activityPanel = panel;
+  const saved = {
+    apiToken: env.state.apiToken,
+    error: env.state.error,
+    summaryError: env.state.summaryError,
+    activityError: env.state.activityError,
+    networkError: env.state.networkError,
+    diagnosticBundleError: env.state.diagnosticBundleError,
+    authError: env.state.authError,
+    consoleError: env.state.consoleError,
+    partialFailures: env.state.partialFailures,
+    loading: env.state.loading,
+    eventSeverityFilter: env.state.eventSeverityFilter,
+    build: env.buildEventCenterItems
+  };
+  function chip(value) {
+    return mount.querySelector(`[data-facet="eventSeverity"][data-val="${value}"]`);
+  }
+  function cardCount(tone) {
+    return mount.querySelector(".event-count-card.event-" + tone).querySelector("strong").textContent;
+  }
+  try {
+    env.state.apiToken = "present";
+    env.state.error = { code: "PCV_EVT_ERROR", message: "disk failed", operation: "host.status" };
+    env.state.summaryError = null;
+    env.state.activityError = null;
+    env.state.networkError = null;
+    env.state.diagnosticBundleError = null;
+    env.state.authError = null;
+    env.state.consoleError = null;
+    env.state.partialFailures = [{ code: "PCV_EVT_WARN", message: "slow link", operation: "vm.list" }];
+    env.state.loading = false;
+    env.state.eventSeverityFilter = "all";
+    env.PCV.ui.filterState.apply({ eventSeverity: [] });
+    env.navigateTo("activity");
+    assert.match(index, /id="activity"/);
+    assert.match(index, /id="activity-panel"/);
+    assert.match(index, /id="event-center-panel"[^>]*data-view-mount/);
+    assert.match(index, /data-i18n="copy\.activity\.title"[^>]*>이벤트</);
+    assert.match(index, /data-i18n="copy\.activity\.desc"/);
+    assert.ok(mount.querySelector(".event-severity-lane"));
+    assert.equal(mount.querySelectorAll(".event-count-card").length, 4);
+    assert.equal(cardCount("error"), chip("error").querySelector(".chip-c").textContent);
+    assert.equal(cardCount("warn"), chip("warn").querySelector(".chip-c").textContent);
+    assert.equal(chip("__all__").querySelector(".chip-c").textContent, String(
+      ["error", "warn", "info", "ok"].reduce((sum, tone) => sum + Number(cardCount(tone)), 0)
+    ));
+    assert.equal(Number(cardCount("error")) >= 1, true);
+    assert.equal(Number(cardCount("warn")) >= 1, true);
+    assert.deepEqual(
+      [...mount.querySelectorAll(".events-view-table thead th")].map((cell) => cell.textContent),
+      ["시각", "심각도", "출처", "메시지"]
+    );
+    assert.equal(mount.querySelector(".events-view-table .sb-search"), null);
+    assert.equal([...mount.querySelectorAll("button")].some((button) => button.textContent === "CSV"), true);
+    assert.match(mount.textContent, /PCV_EVT_ERROR/);
+    assert.match(mount.textContent, /PCV_EVT_WARN/);
+    assert.match(panel.textContent, /작업 기록은 작업 화면에서 봅니다/);
+    const jobsLink = panel.querySelector('a[href="#/jobs"]');
+    assert.equal(jobsLink.getAttribute("data-view-link"), "jobs");
+    assert.match(jobsLink.textContent, /작업 화면/);
+    assert.equal(panel.querySelector('[data-action="cancel-job"]'), null);
+    assert.equal(panel.querySelector(".activity-row"), null);
+
+    env.buildEventCenterItems = () => [];
+    env.state.loading = true;
+    env.render();
+    assert.match(mount.textContent, /이벤트를 읽고 있습니다/);
+    assert.equal(mount.textContent.includes("보이는 운영 이벤트가 없습니다"), false);
+    assert.equal(mount.textContent.includes("읽지 못했습니다"), false);
+
+    env.state.loading = false;
+    env.state.summaryError = { code: "PCV_OPS_SUMMARY_FAILED", message: "summary unavailable", operation: "ops.summary" };
+    env.render();
+    assert.match(mount.textContent, /읽지 못했습니다/);
+    assert.match(mount.textContent, /PCV_OPS_SUMMARY_FAILED/);
+    assert.equal(mount.textContent.includes("보이는 운영 이벤트가 없습니다"), false);
+    assert.equal(mount.textContent.includes("이벤트를 읽고 있습니다"), false);
+
+    env.state.summaryError = null;
+    env.render();
+    assert.match(mount.textContent, /보이는 운영 이벤트가 없습니다/);
+    assert.equal(mount.textContent.includes("읽지 못했습니다"), false);
+    assert.equal(mount.querySelector(".events-empty"), mount.querySelector(".pcv-empty"));
+    assert.equal(mount.querySelector(".pcv-load-error"), null);
+
+    const marker = env.document.createElement("p");
+    marker.textContent = "legacy-marker";
+    mount.appendChild(marker);
+    env.renderEventCenter();
+    assert.match(mount.textContent, /legacy-marker/);
+    env.PCV.views.unregister("activity");
+    env.renderEventCenter();
+    assert.equal(mount.textContent.includes("legacy-marker"), false);
+    assert.match(mount.innerHTML, /event-severity-lane/);
+  } finally {
+    env.buildEventCenterItems = saved.build;
+    env.state.apiToken = saved.apiToken;
+    env.state.error = saved.error;
+    env.state.summaryError = saved.summaryError;
+    env.state.activityError = saved.activityError;
+    env.state.networkError = saved.networkError;
+    env.state.diagnosticBundleError = saved.diagnosticBundleError;
+    env.state.authError = saved.authError;
+    env.state.consoleError = saved.consoleError;
+    env.state.partialFailures = saved.partialFailures;
+    env.state.loading = saved.loading;
+    env.state.eventSeverityFilter = saved.eventSeverityFilter || "all";
+    env.navigateTo("dashboard");
+    env.PCV.ui.filterState.apply({ eventSeverity: [] });
+    if (mount.parentNode) mount.remove();
+    if (panel.parentNode) panel.remove();
+    env.PCV.views.register("activity", { render: product });
+  }
+});
+
 test("logout closes open modals", async () => {
   if (!env.document.getElementById("toasts")) {
     const toasts = env.document.createElement("div");

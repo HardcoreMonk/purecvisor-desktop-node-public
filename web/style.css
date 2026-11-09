@@ -4982,6 +4982,17 @@ th {
   gap: 8px;
 }
 
+.event-count-card {
+  display: grid;
+  min-width: 88px;
+  gap: 2px;
+}
+
+.event-count-card strong {
+  font-size: 18px;
+  color: var(--fg);
+}
+
 .event-pill {
   display: inline-flex;
   align-items: center;
@@ -5598,7 +5609,8 @@ dialog::backdrop {
 }
 
 .network-toolbar,
-.jobs-toolbar {
+.jobs-toolbar,
+.events-toolbar {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
@@ -5608,6 +5620,7 @@ dialog::backdrop {
 
 .network-view-table,
 .jobs-view-table,
+.events-view-table,
 .network-change-readback {
   color: var(--fg);
   background: var(--bg3);
@@ -5624,19 +5637,23 @@ dialog::backdrop {
   .network-view-table table,
   .network-view-table tbody,
   .jobs-view-table table,
-  .jobs-view-table tbody {
+  .jobs-view-table tbody,
+  .events-view-table table,
+  .events-view-table tbody {
     display: block;
     width: 100%;
     min-width: 0;
   }
 
   .network-view-table thead,
-  .jobs-view-table thead {
+  .jobs-view-table thead,
+  .events-view-table thead {
     display: none;
   }
 
   .network-view-table tr,
-  .jobs-view-table tr {
+  .jobs-view-table tr,
+  .events-view-table tr {
     display: block;
     margin: 0 0 8px;
     padding: 8px;
@@ -5646,7 +5663,8 @@ dialog::backdrop {
   }
 
   .network-view-table td,
-  .jobs-view-table td {
+  .jobs-view-table td,
+  .events-view-table td {
     display: block;
     width: auto;
     border: 0;

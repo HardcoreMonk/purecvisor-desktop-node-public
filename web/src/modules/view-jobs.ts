@@ -46,6 +46,17 @@ window.PCV = window.PCV || {};
     }).length;
   }
 
+  function kindCell(job) {
+    var el = PCV.uxlib.el;
+    var correlation = typeof formatCorrelationValue === 'function'
+      ? formatCorrelationValue(job)
+      : String((job && (job.request_id || job.correlation_id)) || '-');
+    return el('div', null,
+      String((job && job.operation) || '-'),
+      el('div', { class: 'muted' }, String((job && job.job_id) || '-')),
+      el('div', { class: 'muted' }, String(correlation || '-')));
+  }
+
   function jobTarget(job) {
     return String((job && (job.target || job.vm_name || job.vm_id || job.subject || job.name)) || '-');
   }
@@ -151,6 +162,8 @@ window.PCV = window.PCV || {};
       ' ' + t('copy.jobs.edge.active') + '=' + String(active),
       ' / ' + t('copy.jobs.edge.failed') + '=' + String(failed),
       ' / ' + t('copy.jobs.edge.retained') + '=' + String(retained),
+      ' / ' + t('copy.jobs.pagination'),
+      ' / max_terminal_jobs=' + String(retained),
       ' / next_offset=' + String(nextOffset));
   }
 
@@ -252,7 +265,7 @@ window.PCV = window.PCV || {};
       }
       var tableHost = el('div', { class: 'jobs-view-table' });
       mount.appendChild(tableHost);
-      createDataTable(tableHost, {
+      createDataTable(tableHost, { tableId: 'dt-jobs',
         searchable: false,
         exportable: true,
         headers: [
@@ -269,7 +282,7 @@ window.PCV = window.PCV || {};
           var status = String(job.status || '').toLowerCase();
           return [
             String(job.created_at || '-'),
-            String(job.operation || '-'),
+            kindCell(job),
             jobTarget(job),
             HN.statusPill(statusTone(status), statusLabel(status)),
             formatDuration(job),

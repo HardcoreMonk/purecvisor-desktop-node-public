@@ -30,7 +30,8 @@
     "monitor",
     "accounts",
     "view-network",
-    "view-jobs"
+    "view-jobs",
+    "view-events"
   ],
   "bootstrap": "src/bootstrap.ts"
 }

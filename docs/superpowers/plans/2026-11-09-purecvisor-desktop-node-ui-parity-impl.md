@@ -138,9 +138,15 @@ task 크기(2026-11-09 사용자 승인 `U1 checkpoint 2 승인`): Task 2부터�
 
 실행 기록(2026-11-09): checkpoint 12(19:42~20:03). grok이 새 모듈 `web/src/modules/view-jobs.ts`(326줄, `register('jobs')`)를 만들었다. mount는 `#jobs-panel.jobs-panel[data-view-mount]`이며, id와 class를 유지해 bootstrap 위임 click이 그대로 동작한다. mount에는 다음을 그린다. 상태 chip(전체, 대기, 진행 중, 성공, 실패, 취소, 개수 포함. `state.jobStatusFilter`와 `#job-status-filter`가 같은 값), 종류 select(`state.jobOperationFilter`), `createDataTable`(접수 시각, 종류, 대상, 상태 pill, 걸린 시간, 오류 요약, 조작. 정렬과 CSV를 켜고, 검색은 기존 `#job-filter`). 조작은 cancel·retry·reconcile 버튼으로, `PCV.uxlib.el`과 기존 `data-action`·`data-job-id`·`data-job-cancel-scope`를 쓰고 `operate`가 없으면 꺼진다. 그 밖에 경계 요약 `job-edge-summary`, 빈 상태 두 가지와 읽기 실패의 서로 다른 문구, 다음 페이지 버튼(`load-next-jobs` → `loadNextJobPage`, C-11)이 있다. 영어 고정 문구는 i18n 키(ko·en)로 바꿨다. 정적 pagehead와 `#job-filter`·`#job-status-filter`·`#job-sort`·`#clear-job-history`는 `index.html`에 남겼다. `createDataTable`은 `searchable` 없이 `exportable`만 켜도 CSV 버튼을 낸다. 옛 `ops.ts` `renderJobs`는 `pcvLegacyViewSkipped('jobs')`로 막았다. 본문과 문자열 helper는 활동 화면과 guest-exec 계약이 붙잡아 U8까지 남긴다. domsafe 33(변화 없음), ratchet 변화 없음, axe 기준선 2,314→2,346(+32, `--prune` 없음). 검증: `npm run test:required` exit 0(node 384 pass, browser gate assertions 121 failed 0 violations 0), web Pester 50/50, ratchet Pester 3/3, Delivery 785/785, `git diff --check` clean.
 
-## Task 5b: U5 이벤트, PR
+## Task 5b: U5 이벤트
 
-- [ ] 이벤트 화면을 등록표로 옮긴다: 심각도별 개수 카드와 표. 작업 목록을 다시 그리는 활동 패널(`ops.ts:328-361`)을 지우고 작업 화면 링크로 바꾼다(C-10). `ops.ts`의 남은 영어 고정 문구를 i18n 키로(C-03). 공통 검증, release-train queue 행. push, PR(U5 묶음), green CI 뒤 merge.
+- [x] 이벤트 화면을 등록표로 옮긴다: 심각도별 개수 카드와 표. 작업 목록을 다시 그리는 활동 패널(`ops.ts:328-361`)을 지우고 작업 화면 링크로 바꾼다(C-10). `ops.ts`의 남은 영어 고정 문구를 i18n 키로(C-03). 공통 검증. 로컬 commit.
+
+실행 기록(2026-11-09): checkpoint 13(20:03~20:26). grok이 새 모듈 `web/src/modules/view-events.ts`(167줄, `register('activity')`)를 만들었다. mount `#event-center-panel[data-view-mount]`에 다음을 그린다: 심각도 개수 카드(`event-severity-lane` 유지), 심각도 chip(`state.eventSeverityFilter`), `createDataTable`(시각, 심각도, 출처, 메시지, 정렬, CSV), 읽는 중·요약 읽기 실패·빈 목록의 서로 다른 문구. 제목 `copy.activity.title`은 이벤트/Events다. `#activity-panel`은 작업 목록을 다시 그리지 않고 "작업 기록은 작업 화면에서 봅니다"와 `#/jobs` 링크만 보인다(C-10). 활동 패널에서 빠지는 `Pagination`, `max_terminal_jobs`, `request_id`는 작업 화면 경계 줄로 옮겼다. `ops.ts`의 사건 카드, 이벤트 빈 문구, 토큰 안내, 증적 상태 영어 문구를 i18n으로 옮겼다(C-03). `renderJobs`와 대시보드 활동 영어는 계약·U6 범위라 남겼다. 이벤트 화면에는 원래 다음 페이지가 없었다(최대 12행). 옛 `renderEventCenter`는 `pcvLegacyViewSkipped('activity')`로 막았다. domsafe 천장 33→31. Claude 리뷰에서 결함을 하나 찾았다. `createDataTable` id가 `dt-`+난수라 axe 선택자가 실행마다 바뀌어 gate가 기준선과 맞지 않았다(활동 화면 incomplete 6건이 매번 새로 나옴). `cfg.tableId`를 받게 하고 세 화면에 고정 id(`dt-events`, `dt-jobs`, `dt-network`)를 주었다. 난수 id로 남은 기준선 항목은 stale 경고로만 남고, U8에서 정리한다. axe 기준선 2,346→2,414(`--prune` 없음). 검증: `npm run test:required` exit 0(node 385 pass, browser gate assertions 121 failed 0 violations 0, 두 번 연속 `ok=true`), web Pester와 ratchet Pester 53/53, Delivery 785/785(grok 실행), `git diff --check` clean. PR은 Task 5c로 나눴다.
+
+## Task 5c: U5 PR
+
+- [ ] clean HEAD 종료 검증(`npm run test:required`, `Invoke-PcvPrGate.ps1`), release-train queue 행. push, PR(U5 묶음, Task 5a~5b), green CI 뒤 merge, merge 뒤 `main` run 확인.
 
 ## Task 6a: U6 대시보드 머리와 KPI
 
