@@ -2,73 +2,8 @@
   "schema_version": 1,
   "contract": "pcv-release-train-v1",
   "design": "docs/superpowers/specs/2026-10-04-purecvisor-desktop-node-release-train-design.md",
-  "operational_current": "0.42.99-admin-smoke",
-  "queue": [
-    {
-      "pr": 123,
-      "merge_commit": "866d18ef",
-      "area": "web",
-      "summary": "ui-parity U1 (ADR-0020): mobile power/delete fixed, login box without a new route, TLS scheme pill, one command palette, registered shortcuts, logout closes modals, one login form, help catalog password routes, screen titles, VM readback labels",
-      "lane2_probe": null,
-      "risk_tier": "M"
-    },
-    {
-      "pr": 124,
-      "merge_commit": "7b189a98",
-      "area": "web",
-      "summary": "ui-parity U2 (ADR-0020): VM list moved to vm-list.ts, list-detail layout (full-width table, 260px list after selection, detail-only under 900px), name shown once, static pagehead, Esc and close return to the list, #/vms/<vm-id>/<tab> deep link with back navigation, empty-state CTA and load-error retry, gate --viewport option",
-      "lane2_probe": null,
-      "risk_tier": "M"
-    },
-    {
-      "pr": 125,
-      "merge_commit": "06d958af",
-      "area": "web",
-      "summary": "ui-parity U3 (ADR-0020): VM row menu (ellipsis, right-click, ContextMenu key, Shift+F10) with the detail more-menu items, header sort with aria-sort and j/k row selection, checkbox selection bar with bulk start/shut down, bulk delete confirm with typed target count, mobile bulk delete restored",
-      "lane2_probe": null,
-      "risk_tier": "M"
-    },
-    {
-      "pr": 126,
-      "merge_commit": "a0178508",
-      "area": "web",
-      "summary": "ui-parity U4 (ADR-0020): view render registry (PCV.views.register, active-view refresh, isCurrent guard, per-mount loadError), network view moved to view-network.ts with type chips, data table with connected VM counts, distinct empty and load-error states and read-only boundary facts; vm.ts ratchet 2389",
-      "lane2_probe": null,
-      "risk_tier": "M"
-    },
-    {
-      "pr": 127,
-      "merge_commit": "43bba65a",
-      "area": "web",
-      "summary": "ui-parity U5 (ADR-0020): jobs view (status chips, kind select, data table with sort/CSV, DOM job actions, next page) and events view (severity cards and chips, event table) on the render registry; activity panel links to jobs; English job/ops copy to i18n; stable data table ids",
-      "lane2_probe": null,
-      "risk_tier": "M"
-    },
-    {
-      "pr": 128,
-      "merge_commit": "bdc5874e",
-      "area": "web",
-      "summary": "ui-parity U6 (ADR-0020): dashboard on the render registry with six KPI cards (VMs running/off/templates, active jobs, 24h failed jobs, Hyper-V readiness), pagehead with + New VM and secondary links, workload table of top VMs linking to VM detail, alert feed of 24h failed jobs and ops summary incidents; hero, quick-action tiles and second cockpit header removed",
-      "lane2_probe": null,
-      "risk_tier": "M"
-    },
-    {
-      "pr": 129,
-      "merge_commit": "388bf658",
-      "area": "web",
-      "summary": "ui-parity U7 (ADR-0020): diagnostics view with four two-column cards (Hyper-V readiness, service/listener, session with logout, diagnostics bundle) and a closed advanced section (registry bridge, Host Ops buckets, boundary chips); evidence operator cards with release engineering values collapsed; accounts role chips and role pill table",
-      "lane2_probe": null,
-      "risk_tier": "M"
-    },
-    {
-      "pr": 130,
-      "merge_commit": "d32daa8f",
-      "area": "web",
-      "summary": "ui-parity U8 (ADR-0020): remove the unreachable old command palette, swipe code and legacy draw bodies behind the view registry guards (render()/renderActiveView() stay for VM, templates and help); accounts entry in the live palette follows account.manage; panel background token and diagnostics copy i18n; renderActiveView keeps component classes on data-view-link elements (dashboard KPI cards, pagehead buttons); diagnostics cards as label/value grids; axe baseline pruned 2,626 -> 1,519",
-      "lane2_probe": null,
-      "risk_tier": "M"
-    }
-  ],
+  "operational_current": "0.43.0-admin-smoke",
+  "queue": [],
   "trains": [
     {
       "version": "0.42.89-admin-smoke",
@@ -158,6 +93,22 @@
         113,
         115,
         116
+      ],
+      "status": "promoted"
+    },
+    {
+      "version": "0.43.0-admin-smoke",
+      "departed_at": "2026-11-10T06:47:00+09:00",
+      "source_commit": "6355e6ba6ae5592fa669e34e84ef316925d1876f",
+      "carriages": [
+        123,
+        124,
+        125,
+        126,
+        127,
+        128,
+        129,
+        130
       ],
       "status": "promoted"
     }
