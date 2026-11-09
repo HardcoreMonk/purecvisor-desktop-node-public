@@ -1,0 +1,61 @@
+# Admin smoke package `0.43.0-admin-smoke` (2026-11-10)
+
+evidence_id: `admin-smoke-package-2026-11-10-04300`
+result: `PASS`
+evidence_scope: `internal-admin-smoke-only`
+version: `0.43.0-admin-smoke`
+source_commit: `87eb923659ff55d24cf30674b27dd32b19be8c13`
+release_train: `0.43.0-admin-smoke`
+train_carriages: `PR #123` (변경 `866d18ef`, web), `PR #124` (변경 `7b189a98`, web), `PR #125` (변경 `06d958af`, web), `PR #126` (변경 `a0178508`, web), `PR #127` (변경 `43bba65a`, web), `PR #128` (변경 `bdc5874e`, web), `PR #129` (변경 `388bf658`, web), `PR #130` (변경 `d32daa8f`, web); payload: PR #130 merge
+artifact_root: `artifacts/admin-smoke-package-20261110-04300`
+signing_mode: `AllowUnsignedDev`
+signing_trust_model: `LocalTest`
+clean_package_msi_sha256: `1eb5d98424ba72c6cb42b7ef5d9c7bbe3778c29ab49a0ae28494bb0b9e1997ec`
+clean_package_payload_aggregate_sha256: `5a1c8d806932f4abbf90bf6e588e3e2e71bce33b65b496f595d757ccf9873202`
+product_wrapper_sha256: `a2ec149aa9634ec8276f799996390424fddebed67bfaf88dae05a933f63d4103`
+service_host_sha256: `2726021e591b622cf6d1ec778cfd91c57aa58548c0997e5bc977df5aa33b87f2`
+cli_sha256: `96475ae3acbfb97b253090d7be1f6b021b41d44441f5f18d7f56991fb61a1b9e`
+update_zip_sha256: `548af0f2e9e010662f9977315c78521eb5670cc2a4e3b6d668c62b6571e229f5`
+payload_file_count: `31`
+wix_version: `5.0.2+aa65968c`
+build_utc: `2026-11-09T21:49:58.8470270Z`
+host_mutation_performed: `false`
+package_installed: `false`
+canonical_current_evidence: `0.42.99-admin-smoke`
+canonical_current_changed: `false`
+public_trusted_signing: `not-claimed`
+external_stable_publication: `not-claimed`
+
+## 배경
+
+release train `0.43.0`의 package다. UI 개편 campaign `ui-parity-20261109`(ADR-0020 U1~U8)가 queue에 쌓은 Web Console 변경 여덟 행을 싣는다(campaign `train-04300-20261110`). version은 `0.42.100` 대신 `0.43.0`이다. train 도구의 다섯 자리 version 꼬리표가 세 자리 patch를 받지 못해서다(사용자 결정 2026-11-10). 적재는 123(U1 동작 결함 9건과 명령 팔레트 하나), 124(U2 VM 목록 골격), 125(U3 VM 행 메뉴와 일괄 작업), 126(U4 렌더 등록표와 네트워크 화면), 127(U5 작업·이벤트 화면), 128(U6 대시보드), 129(U7 진단·evidence·계정 화면), 130(U8 옛 렌더러 퇴역)이다. payload 파일은 `0.42.99`와 같은 31개다(`web/app.js`·`web/styles.css` 호환 파일 포함, BL-0030 fixture). build 64초. pair baseline은 train `0.42.99` Task 1 package다.
+
+빌드 중 설치, 서비스 교체, Hyper-V 변경은 하지 않았다.
+
+```powershell
+packaging/windows-desktop-node/installer/build.ps1 -Version 0.43.0-admin-smoke -MsiProductVersion 0.43.0 `
+  -SigningMode AllowUnsignedDev -SigningTrustModel LocalTest -OutputRoot artifacts/admin-smoke-package-20261110-04300
+```
+
+update ZIP은 `New-PcvAdminSmokeUpdatePackage.ps1`가 payload 31개 파일을 root에 두고 deflate와 `/` 구분자로 만들었다(항목 구성은 0.42.99 ZIP과 같다).
+
+## 빌드 결과
+
+| 항목 | 결과 |
+| --- | --- |
+| self-contained `DesktopNode.Host.exe` publish | `PASS`, ProductVersion `0.43.0-admin-smoke+87eb923659ff55d24cf30674b27dd32b19be8c13` |
+| self-contained `pcvcli.exe` publish | `PASS`, ProductVersion가 Host와 같다 |
+| MSI build (WiX 5.0.2) | `PASS` (exit `0`, `64`초) |
+| provenance commit | `87eb923659ff55d24cf30674b27dd32b19be8c13` (HEAD와 같음) |
+| product-manifest version | `0.43.0-admin-smoke` |
+| MSI Upgrade 행 | `VersionMax=0.43.0` 포함(Attributes `513`), `RemoveExistingProducts` `1401` |
+| TUI payload | 없음 |
+
+## 아직 하지 않은 검증
+
+pair, fullgate, current-card, 설치본 Web Console 화면(queue 123~130, 승인의 `probe(Web Console 화면)`) Lane 2 probe, current-evidence 쓰기는 `not-run`이다.
+
+## Nonclaims
+
+- operational current는 `0.42.99-admin-smoke`다. 이 패키지는 `package_candidate`다.
+- public trusted signing과 external stable publication을 주장하지 않는다.
