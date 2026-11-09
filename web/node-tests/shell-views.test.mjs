@@ -682,6 +682,7 @@ test("BL-0031 the top KPI strip uses loaded VM host job alert and evidence count
 test("one render paints the account list only on the accounts view", () => {
   resetSession(env);
   env.state.accountDirectory = [{ username: "ada", role: "operator", enabled: true }];
+  env.navigateTo("accounts");
   env.render();
   const session = env.document.getElementById("account-session-panel");
   const accounts = env.document.getElementById("accounts-panel");
@@ -696,28 +697,38 @@ test("one render paints the account list only on the accounts view", () => {
   assert.doesNotMatch(source, /stripAccountDirectory/);
 });
 
-test("command palette view labels follow the sidebar keys and accounts follows account.manage", () => {
+test("command palette opens on the new search dialog, filters Korean screen labels and hides accounts without account.manage", () => {
   resetSession(env);
   assert.equal(env.getViewLabel("templates"), env.t("nav.templates"));
   assert.equal(env.getViewLabel("accounts"), env.t("nav.accounts"));
   assert.equal(env.getViewLabel("vms"), "가상 머신");
   assert.equal(env.getViewLabel("activity"), "이벤트");
-  const viewIds = () => env.buildCommandPaletteItems().filter((item) => String(item.id).startsWith("view:")).map((item) => String(item.id));
-  assert.deepEqual(hostValue(viewIds()), [
-    "view:dashboard", "view:vms", "view:templates", "view:network", "view:jobs",
-    "view:activity", "view:evidence", "view:accounts", "view:troubleshooting"
-  ]);
-  const templates = env.buildCommandPaletteItems().find((item) => item.id === "view:templates");
-  assert.equal(templates.label, "템플릿");
-  assert.equal(templates.detail, "템플릿 열기");
+  const proto = Object.getPrototypeOf(env.document.body);
+  if (typeof proto.scrollIntoView !== "function") proto.scrollIntoView = function () {};
+  env.openCmdPalette();
+  const input = env.document.getElementById("cmd-input");
+  const list = env.document.getElementById("cmd-list");
+  assert.equal(env.document.activeElement, input);
+  for (const label of ["대시보드", "가상 머신", "템플릿", "네트워크", "작업", "이벤트", "증적", "계정", "진단"]) {
+    assert.match(list.textContent, new RegExp(label));
+  }
+  env.renderCmdPalette("템플");
+  assert.match(list.textContent, /템플릿/);
+  assert.doesNotMatch(list.textContent, /대시보드/);
   env.state.authAccessToken = "jwt";
   env.state.runtimePolicy = { auth: { rbac: true, mode: "account" } };
   env.state.authSession = { username: "op", role: "operator", permissions: ["operate"] };
-  assert.equal(viewIds().includes("view:accounts"), false);
+  env.renderCmdPalette("");
+  assert.doesNotMatch(list.textContent, /계정/);
+  env.renderCmdPalette("계정");
+  assert.doesNotMatch(list.textContent, /계정/);
   env.state.authSession.permissions = ["account.manage"];
-  assert.equal(viewIds().includes("view:accounts"), true);
+  env.renderCmdPalette("");
+  assert.match(list.textContent, /계정/);
   env.state.authSession.permissions = ["*"];
-  assert.equal(viewIds().includes("view:accounts"), true);
+  env.renderCmdPalette("계정");
+  assert.match(list.textContent, /계정/);
+  env.closeCmdPalette();
 });
 
 test("#/templates and #/accounts show only that section", () => {
@@ -1081,6 +1092,7 @@ test("disable uses a danger confirmDialog and shows PCV_ACCOUNT_LAST_ADMIN", asy
       throw { code: "PCV_ACCOUNT_LAST_ADMIN", status: 409, message: "The last enabled admin cannot be disabled.", detail: "Create another admin before disabling this account." };
     }
   });
+  env.navigateTo("accounts");
   env.render();
   env.document.querySelector('[data-action="account-disable"]').click();
   await flush();
@@ -1108,6 +1120,7 @@ test("password reset is an admin row action and password change follows the sign
     { username: "ada", role: "admin", enabled: true },
     { username: "op", role: "operator", enabled: false }
   ];
+  env.navigateTo("accounts");
   env.render();
   const change = () => env.document.querySelector('[data-action="account-change-password"]');
   const panelChange = () => env.document.querySelector("#accounts-panel").querySelector('[data-action="account-change-password"]');
@@ -1142,6 +1155,7 @@ test("password reset modal shows the target, sends confirm_username, and clears 
   env.state.runtimePolicy = { auth: { rbac: true, mode: "account" } };
   env.state.authSession = { username: "root", role: "admin", permissions: ["account.manage"] };
   env.state.accountDirectory = [{ username: "ada", role: "operator", enabled: true }];
+  env.navigateTo("accounts");
   const calls = [];
   stubDesktopApi(env, {
     resetAccountPassword: async (username, body) => {
@@ -1180,6 +1194,7 @@ test("resetting the signed-in account clears the session and asks for login", as
   stubDesktopApi(env, {
     resetAccountPassword: async () => ({ username: "ada", enabled: true })
   });
+  env.navigateTo("accounts");
   env.render();
   env.document.querySelector('[data-action="account-reset-password"]').click();
   const form = env.document.getElementById("account-reset-form");
@@ -2305,20 +2320,12 @@ test("registered jobs render draws chips, kind select, table columns, and does n
     await flush();
     assert.deepEqual(seen, [50]);
 
-    const marker = env.document.createElement("p");
-    marker.textContent = "legacy-marker";
-    mount.appendChild(marker);
-    env.renderJobs();
-    assert.equal(mount.querySelector("p").textContent, "legacy-marker");
+    env.render();
+    assert.equal(mount.innerHTML.includes("No jobs on this page"), false);
     assert.equal(mount.querySelector(".job-row"), null);
-    env.PCV.views.unregister("jobs");
-    env.state.serverJobs = [];
-    env.state.trackedJobs = [];
-    env.state.jobFilter = "";
-    env.state.jobStatusFilter = "all";
-    env.renderJobs();
-    assert.match(mount.innerHTML, /No jobs on this page/);
-    assert.equal(mount.textContent.includes("legacy-marker"), false);
+    assert.ok(mount.querySelector(".job-edge-summary"));
+    assert.ok(mount.querySelector('[data-action="load-next-jobs"]'));
+    assert.equal(typeof env.renderJobs, "undefined");
   } finally {
     env.loadNextJobPage = previousNext;
     env.state.serverJobs = saved.serverJobs;
@@ -2442,15 +2449,10 @@ test("registered activity render draws severity cards, chips, table columns, and
     assert.equal(mount.querySelector(".events-empty"), mount.querySelector(".pcv-empty"));
     assert.equal(mount.querySelector(".pcv-load-error"), null);
 
-    const marker = env.document.createElement("p");
-    marker.textContent = "legacy-marker";
-    mount.appendChild(marker);
-    env.renderEventCenter();
-    assert.match(mount.textContent, /legacy-marker/);
-    env.PCV.views.unregister("activity");
-    env.renderEventCenter();
-    assert.equal(mount.textContent.includes("legacy-marker"), false);
-    assert.match(mount.innerHTML, /event-severity-lane/);
+    env.render();
+    assert.ok(mount.querySelector(".event-severity-lane"));
+    assert.equal(mount.querySelector(".event-center-header"), null);
+    assert.equal(typeof env.renderEventCenter, "undefined");
   } finally {
     env.buildEventCenterItems = saved.build;
     env.state.apiToken = saved.apiToken;
@@ -2469,6 +2471,30 @@ test("registered activity render draws severity cards, chips, table columns, and
     if (mount.parentNode) mount.remove();
     if (panel.parentNode) panel.remove();
     env.PCV.views.register("activity", { render: product });
+  }
+});
+
+test("renderActiveView keeps component classes on data-view-link elements and only toggles nav-active", () => {
+  const shown = (env.PCV.nav && typeof env.PCV.nav.activeView === "function" && env.PCV.nav.activeView()) || env.state.activeView;
+  const other = shown === "jobs" ? "network" : "jobs";
+  const make = (view, cls) => {
+    const link = env.document.createElement("a");
+    link.setAttribute("data-view-link", view);
+    link.className = cls;
+    env.document.body.appendChild(link);
+    return link;
+  };
+  const card = make(shown, "dashboard-kpi-card");
+  const button = make(other, "btn nav-active");
+  try {
+    env.renderActiveView();
+    assert.deepEqual(String(card.className).split(/\s+/).sort(), ["dashboard-kpi-card", "nav-active"]);
+    assert.equal(card.getAttribute("aria-current"), "page");
+    assert.equal(button.className, "btn");
+    assert.equal(button.getAttribute("aria-current"), null);
+  } finally {
+    card.remove();
+    button.remove();
   }
 });
 
@@ -3068,12 +3094,12 @@ test("evidence operator cards and accounts directory use the registry", () => {
     assert.equal(accountsPanel.querySelector('[data-action="account-disable"][data-username="op"]').disabled, true);
     assert.equal(accountsPanel.querySelector('[data-action="account-disable"][data-username="ada"]').disabled, false);
     assert.equal(accountsPanel.querySelector("form"), null);
-    const accountMarker = env.document.createElement("p");
-    accountMarker.textContent = "legacy-account-marker";
-    accountsPanel.appendChild(accountMarker);
-    env.paintAccountsView();
-    assert.equal([...accountsPanel.children].some((node) => node.textContent === "legacy-account-marker"), true);
-    assert.equal(env.document.getElementById("dt-accounts-table") !== null, true);
+    env.render();
+    assert.equal(accountsPanel.querySelector(".account-directory-table"), null);
+    const paintedAccounts = env.document.getElementById("dt-accounts-table");
+    assert.ok(paintedAccounts);
+    assert.match(paintedAccounts.textContent, /ada/);
+    assert.equal(typeof env.paintAccountsView, "undefined");
   } finally {
     env.state.opsSummary = saved.opsSummary;
     env.state.accountDirectory = saved.accountDirectory;

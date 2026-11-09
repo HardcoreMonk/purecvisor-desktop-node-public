@@ -40,7 +40,7 @@ test("content area carries every Desktop Node view and dialog", () => {
   for (const view of ["dashboard", "vms", "network", "jobs", "activity", "evidence", "troubleshooting"]) {
     assert.match(html, new RegExp(`<section id="${view}" class="section app-view" data-view="${view}">`), `view ${view}`);
   }
-  for (const id of ["alert-region", "vm-detail-panel", "vm-table", "jobs-panel", "event-center-panel", "activity-panel", "evidence-panel", "relogin-overlay", "account-console-panel", "token-rotation-panel", "diagnostics-panel", "command-palette", "command-palette-input", "create-vm-dialog", "create-vm-form"]) {
+  for (const id of ["alert-region", "vm-detail-panel", "vm-table", "jobs-panel", "event-center-panel", "activity-panel", "evidence-panel", "relogin-overlay", "account-console-panel", "token-rotation-panel", "diagnostics-panel", "create-vm-dialog", "create-vm-form"]) {
     assert.match(html, new RegExp(`id="${id}"`), `missing id ${id}`);
   }
   const cbStart = html.indexOf('<div class="cb" id="cb"');

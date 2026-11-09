@@ -864,8 +864,11 @@ function verifyGuestExecCancel(context) {
   assertSourceAndGenerated(context, renderJobsSource, app, [
     [/function\s+formatJobCancelLabel\s*\(/i, "format-label"],
     [/function\s+getJobCancelScope\s*\(/i, "cancel-scope"],
-    [/data-job-cancel-scope="\$\{pcvEscapeHtml\(cancelScope\)\}"/i, "scope-attribute"],
     [/running-guest-execution/i, "running-scope"]
+  ], "guest-exec-cancel");
+  const viewJobsSource = context.readText("web/src/modules/view-jobs.ts");
+  assertSourceAndGenerated(context, viewJobsSource, app, [
+    [/'data-job-cancel-scope':\s*scope/i, "scope-attribute"]
   ], "guest-exec-cancel");
   assertSourceAndGenerated(context, jobPollingSource, app, [
     [/requireRbac\(['"]operate['"],\s*t\(['"]copy\.rbac\.guest_exec_cancel['"]\)\)/, "rbac"]
@@ -878,8 +881,7 @@ function verifySearchEventTable(context) {
   const styles = context.readText("web/style.css");
   const app = context.readText("web/app.bundle.js");
   const servedSource = context.readShellSource();
-  const shellSource = context.readText("web/src/modules/monitor.ts");
-  const activitySource = context.readText("web/src/modules/ops.ts");
+  const eventsSource = context.readText("web/src/modules/view-events.ts");
   const tableSource = context.readText("web/src/modules/core.ts");
   const shellNav = context.readText("web/src/modules/shell.ts");
   const navSource = context.readText("web/src/modules/nav.ts");
@@ -887,23 +889,22 @@ function verifySearchEventTable(context) {
   context.assertMatch(navSource, /function\s+toggleGlobalSearch\s*\(/i, "search-event-table:global-search-toggle");
   context.assertMatch(shellNav, /toggleGlobalSearch/i, "search-event-table:global-search-open");
   for (const [pattern, label] of [
-    [/id="command-palette"/i, "command-palette"],
-    [/id="command-palette-input"/i, "command-palette-input"],
-    [/id="command-palette-results"/i, "command-palette-results"],
     [/id="event-center-panel"/i, "event-center"],
     [/id="job-filter"/i, "job-filter"]
   ]) {
     context.assertMatch(index, pattern, `search-event-table:${label}`);
   }
   context.assertMatch(index, /id="network-filter"/i, "search-event-table:network-filter");
-  assertSourceAndGenerated(context, shellSource, app, [
-    [/function\s+buildCommandPaletteItems\s*\(/i, "build-command-palette"],
-    [/function\s+renderCommandPalette\s*\(/i, "render-command-palette"],
-    [/function\s+handleCommandSearch\s*\(/i, "handle-command-search"]
+  assertSourceAndGenerated(context, navSource, app, [
+    [/function\s+openCmdPalette\s*\(/i, "open-cmd-palette"],
+    [/function\s+renderCmdPalette\s*\(/i, "render-cmd-palette"],
+    [/function\s+closeCmdPalette\s*\(/i, "close-cmd-palette"],
+    [/id:\s*'cmd-input'/i, "cmd-input"],
+    [/role:\s*'combobox'/i, "cmd-combobox"]
   ], "search-event-table");
-  assertSourceAndGenerated(context, activitySource, app, [
-    [/function\s+buildEventCenterItems\s*\(/i, "build-event-center"],
-    [/function\s+renderEventCenter\s*\(/i, "render-event-center"]
+  assertSourceAndGenerated(context, eventsSource, app, [
+    [/typeof buildEventCenterItems === 'function' \? buildEventCenterItems\(\)/, "build-event-center"],
+    [/function\s+renderEventsView\s*\(/i, "render-event-center"]
   ], "search-event-table");
   assertSourceAndGenerated(context, tableSource, app, [
     [/filterRowsByQuery/i, "filter-rows"],
@@ -915,7 +916,7 @@ function verifySearchEventTable(context) {
   context.assertNotMatch(bootstrapSource, /openCommandPalette\(state\.globalSearch\)/i, "search-event-table:command-palette-open:source-old");
   context.assertMatch(app, /toggleGlobalSearch\(\)/i, "search-event-table:command-palette-open:generated");
   context.assertNotMatch(app, /openCommandPalette\(state\.globalSearch\)/i, "search-event-table:command-palette-open:generated-old");
-  context.assertMatch(activitySource, /event-severity-lane/i, "search-event-table:severity-lane:source");
+  context.assertMatch(eventsSource, /class:\s*'event-severity-lane'/i, "search-event-table:severity-lane:source");
   context.assertMatch(styles, /event-severity-lane/i, "search-event-table:severity-lane:styles");
   context.assertMatch(app, /event-severity-lane/i, "search-event-table:severity-lane:generated");
   for (const [source, label] of [[index, "index"], [styles, "styles"], [servedSource, "source"], [app, "generated"]]) {
@@ -1240,7 +1241,7 @@ function verifyJobOrchestration(context) {
   const pollingSource = context.readText("web/src/modules/events.ts");
   const routesSource = context.readText("web/src/modules/core.ts");
   const clientSource = context.readText("web/src/modules/desktop-api.ts");
-  const jobsSource = context.readText("web/src/modules/ops.ts");
+  const jobsSource = context.readText("web/src/modules/view-jobs.ts");
   const activitySource = context.readText("web/src/modules/ops.ts");
   const servedAppSource = context.readText("web/src/bootstrap.ts");
   assertSourceAndGenerated(context, stateSource, app, [
@@ -1276,9 +1277,9 @@ function verifyJobOrchestration(context) {
     [/reconcileJob:\s*\(jobId/i, "reconcile-client"]
   ], "job-orchestration");
   assertSourceAndGenerated(context, jobsSource, app, [
-    [/data-action="cancel-job"/i, "cancel-control"],
-    [/data-action="retry-job"/i, "retry-control"],
-    [/data-action="reconcile-job"/i, "reconcile-control"]
+    [/'data-action':\s*'cancel-job'/i, "cancel-control"],
+    [/'data-action':\s*'retry-job'/i, "retry-control"],
+    [/'data-action':\s*'reconcile-job'/i, "reconcile-control"]
   ], "job-orchestration");
   assertSourceAndGenerated(context, activitySource, app, [
     [/next_offset/i, "render-next-offset"],
@@ -1295,13 +1296,12 @@ function verifyJobOrchestration(context) {
 function verifyShellControls(context) {
   const index = context.readText("web/index.html");
   const app = context.readText("web/app.bundle.js");
-  const shellSource = context.readText("web/src/modules/monitor.ts");
   const actionsSource = context.readText("web/src/modules/accounts.ts");
   const loadSource = context.readText("web/src/modules/core.ts");
   const servedAppSource = context.readText("web/src/bootstrap.ts");
   const servedSource = context.readShellSource();
+  const navSource = context.readText("web/src/modules/nav.ts");
   for (const [pattern, label] of [
-    [/id="command-palette"/i, "command-palette"],
     [/id="shell-sidebar"/i, "shell-sidebar"],
     [/id="shell-statusbar"/i, "shell-statusbar"],
     [/data-view-link="network"/i, "network-view"],
@@ -1311,9 +1311,10 @@ function verifyShellControls(context) {
     context.assertMatch(index, pattern, `shell-controls:${label}`);
   }
   context.assertNotMatch(index, /id="vm-asset-list"|id="workspace-tabbar"|id="connection-state"/i, "shell-controls:dropped-surfaces");
-  assertSourceAndGenerated(context, shellSource, app, [
-    [/command:refresh/i, "refresh-command"],
-    [/command:clear-browser-state/i, "clear-browser-state-command"]
+  assertSourceAndGenerated(context, navSource, app, [
+    [/function\s+closeCmdPalette\s*\(/i, "close-cmd-palette"],
+    [/id:\s*'cmd-input'/i, "cmd-input"],
+    [/role:\s*'combobox'/i, "cmd-combobox"]
   ], "shell-controls");
   assertSourceAndGenerated(context, actionsSource, app, [
     [/handleShellCommand/i, "handle-command"],
@@ -1527,15 +1528,18 @@ function verifyDiagnosticBundle(context) {
     [/copy\.mon\.mutation_diagnostics/, "host-mutation-boundary"],
     [/runtime_api_registry_bridge|runtimeApiRegistryBridge/i, "registry-bridge-key"],
     [/copy\.mon\.api_action/, "api-action"],
-    [/token values/i, "token-redaction"],
-    [/Authorization headers/i, "authorization-redaction"],
-    [/no host mutation/i, "no-host-mutation-label"]
+    [/copy\.mon\.redaction_value/, "token-redaction"],
+    [/copy\.mon\.redaction_value/, "authorization-redaction"],
+    [/copy\.mon\.no_host_mutation/, "no-host-mutation-label"]
   ]) {
     context.assertMatch(combined, pattern, "diagnostic-bundle:" + label);
   }
   const diagI18n = context.readText("web/i18n.js");
   context.assertMatch(diagI18n, /Host mutation: not performed by diagnostics view/, "diagnostic-bundle:host-mutation-boundary:i18n");
   context.assertMatch(diagI18n, /API action/, "diagnostic-bundle:api-action:i18n");
+  context.assertMatch(diagI18n, /token values/, "diagnostic-bundle:token-redaction:i18n");
+  context.assertMatch(diagI18n, /Authorization headers/, "diagnostic-bundle:authorization-redaction:i18n");
+  context.assertMatch(diagI18n, /no host mutation/, "diagnostic-bundle:no-host-mutation-label:i18n");
   for (const [pattern, label] of [
     [/service-action-eventlog-firewall-truststore-credential-manager-data-root-separated/i, "hostops-bucket-contract"],
     [/credential-manager-system-proof/i, "credential-manager-proof"],
@@ -1611,10 +1615,10 @@ function verifyFrontendEdgeCases(context) {
     [/timeout/i, "timeout"],
     [/tokenRequiredRouteStatus/i, "token-required-status"],
     [/account\.token\.cleared/i, "token-cleared-key"],
-    [/renderJobEdgeSummary/i, "job-edge-summary"],
-    [/No jobs on this page/i, "empty-job-page"],
-    [/retained terminal jobs/i, "retained-terminal-jobs"],
-    [/failed job retry/i, "failed-job-retry"],
+    [/function\s+edgeSummary\s*\(/i, "job-edge-summary"],
+    [/jobs-empty-page/i, "empty-job-page"],
+    [/copy\.jobs\.edge\.retained/i, "retained-terminal-jobs"],
+    [/copy\.jobs\.edge\.failed/i, "failed-job-retry"],
     [/vm\.delete/i, "vm-delete"],
     [/copy\.job\.reconcile_delete/, "reconcile-delete"],
     [/checkpoint\.create/i, "checkpoint-create"],
@@ -1697,15 +1701,17 @@ function verifyTokenRotation(context) {
     [/renderTokenRotation/i, "render"],
     [/copy\.mon\.token_title/, "title"],
     [/api-token\.dpapi\.json/i, "protected-token-file"],
-    [/rotation handoff/i, "handoff"],
+    [/copy\.mon\.rotation_handoff/, "handoff"],
     [/copy\.mon\.clear_browser_token/, "clear-browser-token"],
-    [/no service token mutation/i, "no-service-token-mutation"]
+    [/copy\.mon\.no_service_token_mutation/, "no-service-token-mutation"]
   ]) {
     context.assertMatch(combined, pattern, `token-rotation:${label}`);
   }
   const tokenI18n = context.readText("web/i18n.js");
   context.assertMatch(tokenI18n, /'copy\.mon\.token_title': 'Token Rotation'/, "token-rotation:title:i18n");
   context.assertMatch(tokenI18n, /'copy\.mon\.clear_browser_token': 'Clear browser token'/, "token-rotation:clear-browser-token:i18n");
+  context.assertMatch(tokenI18n, /'copy\.mon\.rotation_handoff': 'rotation handoff'/, "token-rotation:handoff:i18n");
+  context.assertMatch(tokenI18n, /'copy\.mon\.no_service_token_mutation': 'no service token mutation'/, "token-rotation:no-service-token-mutation:i18n");
   context.assertNotMatch(
     combined,
     /Restart-Computer|msiexec|New-VM|Remove-VM|New-NetFirewallRule|Register-EventSource|New-EventLog|Register-ScheduledTask/i,

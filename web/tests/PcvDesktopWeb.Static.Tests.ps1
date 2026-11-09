@@ -347,7 +347,7 @@ Describe 'PcvDesktopWeb static console assets' {
 
         $combined | Should -Match 'formatJobCancelLabel'
         $combined | Should -Match 'getJobCancelScope'
-        $combined | Should -Match 'data-job-cancel-scope="\$\{pcvEscapeHtml\(cancelScope\)\}"'
+        $combined | Should -Match "'data-job-cancel-scope': scope"
         $combined | Should -Match 'running-guest-execution'
         $combined | Should -Match 'copy\.job\.cancel_guest'
         $combined | Should -Match 'copy\.rbac\.guest_exec_cancel'
@@ -368,17 +368,25 @@ Describe 'PcvDesktopWeb static console assets' {
         $shellNav | Should -Match "class:\s*'shell-search'"
         $navSource | Should -Match 'function\s+toggleGlobalSearch\s*\('
         $shellNav | Should -Match 'toggleGlobalSearch'
-        $index | Should -Match 'id="command-palette"'
-        $index | Should -Match 'id="command-palette-input"'
-        $index | Should -Match 'id="command-palette-results"'
         $index | Should -Match 'id="event-center-panel"'
         $index | Should -Match 'id="job-filter"'
         $index | Should -Match 'id="network-filter"'
-        $combined | Should -Match 'buildCommandPaletteItems'
-        $combined | Should -Match 'renderCommandPalette'
-        $combined | Should -Match 'handleCommandSearch'
+        $navSource | Should -Match 'function\s+openCmdPalette\s*\('
+        $navSource | Should -Match 'function\s+renderCmdPalette\s*\('
+        $navSource | Should -Match 'function\s+closeCmdPalette\s*\('
+        $navSource | Should -Match "id:\s*'cmd-input'"
+        $navSource | Should -Match "role:\s*'combobox'"
+        $app | Should -Match 'function\s+openCmdPalette\s*\('
+        $app | Should -Match 'function\s+renderCmdPalette\s*\('
+        $app | Should -Match 'function\s+closeCmdPalette\s*\('
+        $app | Should -Match "id:\s*'cmd-input'"
+        $app | Should -Match "role:\s*'combobox'"
         $combined | Should -Match 'buildEventCenterItems'
-        $combined | Should -Match 'renderEventCenter'
+        $eventsSource = Get-Content -LiteralPath (Join-Path $script:SrcRoot 'modules/view-events.ts') -Raw
+        $eventsSource | Should -Match 'function\s+renderEventsView\s*\('
+        $eventsSource | Should -Match "typeof buildEventCenterItems === 'function' \? buildEventCenterItems\(\)"
+        $eventsSource | Should -Match "class:\s*'event-severity-lane'"
+        $app | Should -Match 'function\s+renderEventsView\s*\('
         $combined | Should -Match 'filterRowsByQuery'
         $combined | Should -Match 'sortRowsByKey'
         $combined | Should -Match 'renderTableStateSummary'
@@ -573,17 +581,21 @@ Describe 'PcvDesktopWeb static console assets' {
         $index = Get-Content -LiteralPath $script:IndexPath -Raw
         $app = Get-Content -LiteralPath $script:AppPath -Raw
         $servedSource = Get-PcvWebShellSource
+        $navSource = Get-Content -LiteralPath (Join-Path $script:SrcRoot 'modules/nav.ts') -Raw
         $combined = $app + $servedSource
 
-        $index | Should -Match 'id="command-palette"'
         $index | Should -Match 'id="shell-sidebar"'
         $index | Should -Match 'id="shell-statusbar"'
         $index | Should -Match 'data-view-link="network"'
         $index | Should -Match 'data-shell-action="open-create-vm"'
         $index | Should -Match 'onclick="doLogout\(\)"'
         $index | Should -Not -Match 'id="vm-asset-list"|id="workspace-tabbar"|id="connection-state"'
-        $combined | Should -Match 'command:refresh'
-        $combined | Should -Match 'command:clear-browser-state'
+        $navSource | Should -Match 'function\s+closeCmdPalette\s*\('
+        $navSource | Should -Match "id:\s*'cmd-input'"
+        $navSource | Should -Match "role:\s*'combobox'"
+        $app | Should -Match 'function\s+closeCmdPalette\s*\('
+        $app | Should -Match "id:\s*'cmd-input'"
+        $app | Should -Match "role:\s*'combobox'"
         $combined | Should -Match 'handleShellCommand'
         $combined | Should -Match 'selectVmFromShell'
         $combined | Should -Match 'clearBrowserState'
@@ -752,9 +764,11 @@ Describe 'PcvDesktopWeb static console assets' {
         $diagI18n = Get-Content -LiteralPath (Join-Path $script:WebRoot 'i18n.js') -Raw
         $diagI18n | Should -Match 'Host mutation: not performed by diagnostics view'
         $diagI18n | Should -Match 'API action'
-        ($app + $servedSource) | Should -Match 'token values'
-        ($app + $servedSource) | Should -Match 'Authorization headers'
-        ($app + $servedSource) | Should -Match 'no host mutation'
+        ($app + $servedSource) | Should -Match 'copy\.mon\.redaction_value'
+        ($app + $servedSource) | Should -Match 'copy\.mon\.no_host_mutation'
+        $diagI18n | Should -Match 'token values'
+        $diagI18n | Should -Match 'Authorization headers'
+        $diagI18n | Should -Match 'no host mutation'
         ($app + $servedSource) | Should -Not -Match '\b(?:pwsh|powershell)(?:\.exe)?\s+\S|Restart-Computer|msiexec|New-VM|Remove-VM|New-NetFirewallRule|Register-EventSource|New-EventLog|Register-ScheduledTask'
         ($app + $servedSource) | Should -Not -Match 'Bearer\s+(?!\$\{)[A-Za-z0-9._~+/=-]{24,}'
     }
@@ -801,10 +815,10 @@ Describe 'PcvDesktopWeb static console assets' {
         $edgeI18n | Should -Match 'The browser token was cleared'
         $edgeI18n | Should -Match 'All views refresh'
         $edgeI18n | Should -Match 'pending jobs are rechecked'
-        $combined | Should -Match 'renderJobEdgeSummary'
-        $combined | Should -Match 'No jobs on this page'
-        $combined | Should -Match 'retained terminal jobs'
-        $combined | Should -Match 'failed job retry'
+        $combined | Should -Match 'function\s+edgeSummary\s*\('
+        $combined | Should -Match 'jobs-empty-page'
+        $combined | Should -Match 'copy\.jobs\.edge\.retained'
+        $combined | Should -Match 'copy\.jobs\.edge\.failed'
         $combined | Should -Match 'vm\.delete'
         $combined | Should -Match 'copy\.job\.reconcile_delete'
         $combined | Should -Match 'checkpoint\.create'
@@ -852,12 +866,14 @@ Describe 'PcvDesktopWeb static console assets' {
         ($app + $servedSource) | Should -Match 'renderTokenRotation'
         ($app + $servedSource) | Should -Match 'copy\.mon\.token_title'
         ($app + $servedSource) | Should -Match 'api-token\.dpapi\.json'
-        ($app + $servedSource) | Should -Match 'rotation handoff'
+        ($app + $servedSource) | Should -Match 'copy\.mon\.rotation_handoff'
         ($app + $servedSource) | Should -Match 'copy\.mon\.clear_browser_token'
-        ($app + $servedSource) | Should -Match 'no service token mutation'
+        ($app + $servedSource) | Should -Match 'copy\.mon\.no_service_token_mutation'
         $tokenI18n = Get-Content -LiteralPath (Join-Path $script:WebRoot 'i18n.js') -Raw
         $tokenI18n | Should -Match 'copy\.mon\.token_title'': ''Token Rotation'''
         $tokenI18n | Should -Match 'copy\.mon\.clear_browser_token'': ''Clear browser token'''
+        $tokenI18n | Should -Match 'rotation handoff'
+        $tokenI18n | Should -Match 'no service token mutation'
         ($app + $servedSource) | Should -Not -Match 'Restart-Computer|msiexec|New-VM|Remove-VM|New-NetFirewallRule|Register-EventSource|New-EventLog|Register-ScheduledTask'
         ($app + $servedSource) | Should -Not -Match 'Bearer\s+(?!\$\{)[A-Za-z0-9._~+/=-]{24,}'
     }

@@ -81,23 +81,27 @@ command palette(`Ctrl+K`), 환경설정(`Ctrl+P`: 테마, 언어, Local API 주�
 덮어 라이트로 보이지 않기 때문이다. 저장된 `supanova`는 기본값 `supanova-cyan`로 옮긴다. Part 2의 어두운 콘솔 색은 유지한다.
 장식보다 판독성, 상태 식별, 정보 밀도, 빠른 비교를 우선한다.
 
-기본 token(`web/style.css` `[data-theme="supanova"]`):
+기본 token은 `web/style.css` Part 2(Desktop Node additions) `:root`가 정한다(BL-0026 결정: 어두운 기본, 화면 색은 그대로).
+이 `:root`는 앞쪽 `[data-theme=...]` 블록과 선택자 우선순위가 같고 파일에서 뒤에 있다. 그래서 아래 token은 어느 테마를 골라도
+이 값이 화면에 쓰이고, 테마 선택은 Part 2가 정하지 않는 token(차트 색 등)과 테마 편집기 값(inline style)만 바꾼다.
 
 | Token | Default | Role |
 |---|---:|---|
-| `--bg` | `#ffffff` | page background |
-| `--bg2` | `#f5f7fa` | shell, toolbar, sidebar |
-| `--bg3` | `#edf1f5` | rows, fields, compact panels |
-| `--border` | `#dce1e8` | divider |
-| `--fg` | `#171c24` | primary text |
-| `--fg2` | `#5c6675` | secondary text |
-| `--accent` | `#12627a` | focus, selected, primary action |
-| `--green` | `#18794e` | running, healthy, success |
-| `--yellow` | `#8a6100` | warning, pending |
-| `--red` | `#b42332` | error, destructive, blocked |
+| `--bg` | `#0a0f1a` | page background |
+| `--bg2` | `#0f1525` | shell, toolbar, sidebar |
+| `--bg3` | `#141c2e` | rows, fields, compact panels |
+| `--bg-panel` | `rgba(15, 21, 37, .72)` | panel background |
+| `--border` | `#1e293b` | divider |
+| `--fg` | `#e0f0ff` | primary text |
+| `--fg2` | `#8895b5` | secondary text |
+| `--accent` | `#22d3ee` | focus, selected, primary action |
+| `--green` | `#34d399` | running, healthy, success |
+| `--yellow` | `#fbbf24` | warning, pending |
+| `--red` | `#f43f5e` | error, destructive, blocked |
 
-`:root`의 남색 값(`--bg #0a0f1a`, `--accent #22d3ee` 등)은 테마 속성이 붙기 전의 폴백이다. 새 화면은 폴백 값이 아니라 위 token
-이름으로 색을 쓴다.
+Part 2는 별칭(`--panel`, `--text`, `--muted`, `--line`, `--danger`, `--warn`, `--ok`)과 패널 token(`--supanova-panel`,
+`--supanova-line`, `--supanova-glass`)도 둔다. 새 화면은 색 값을 직접 쓰지 않고 이 token 이름으로 색을 쓴다(ADR-0020 설계 6절).
+`[data-theme="supanova"]` 블록의 흰 캔버스 값은 선택 목록에서 뺀 테마의 기록이다.
 
 규칙:
 

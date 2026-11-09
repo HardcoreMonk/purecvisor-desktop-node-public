@@ -161,6 +161,7 @@ test("BL-0024 shell copy uses i18n keys and the Korean default", () => {
 
   const monitor = fs.readFileSync(webRoot + "src/modules/monitor.ts", "utf8");
   const ops = fs.readFileSync(webRoot + "src/modules/ops.ts", "utf8");
+  const viewEvents = fs.readFileSync(webRoot + "src/modules/view-events.ts", "utf8");
   const theme = fs.readFileSync(webRoot + "src/modules/theme.ts", "utf8");
   for (const [source, key] of [
     [monitor, "copy.mon.bundle_kicker"],
@@ -169,8 +170,8 @@ test("BL-0024 shell copy uses i18n keys and the Korean default", () => {
     [monitor, "copy.mon.token_kicker"],
     [monitor, "copy.mon.token_title"],
     [monitor, "copy.mon.clear_browser_token"],
-    [ops, "copy.events.center"],
-    [ops, "copy.events.severity"],
+    [viewEvents, "copy.events.col.severity"],
+    [viewEvents, "copy.events.filter"],
     [ops, "copy.jobs.pagination"],
     [ops, "copy.jobs.load_next"],
     [ops, "copy.job.cancel"],
@@ -183,13 +184,11 @@ test("BL-0024 shell copy uses i18n keys and the Korean default", () => {
   assert.doesNotMatch(ops, />Event Center<|>Severity lane<|>Pagination<|>Load next jobs</);
   assert.doesNotMatch(ops, /: 'Cancel'/);
   assert.doesNotMatch(theme, /'Import'|'Cancel'/);
-  assert.match(html, /data-i18n-aria="copy\.palette\.label"/);
-  assert.match(html, /aria-label="명령 팔레트"/);
+  const nav = fs.readFileSync(webRoot + "src/modules/nav.ts", "utf8");
+  assert.match(nav, /role:\s*'combobox'/);
+  assert.match(nav, /_L\('명령·객체·IP 검색', 'Search commands, objects, IPs'\)/);
   assert.doesNotMatch(html, /aria-label="Command palette"/);
-  assert.match(html, /data-i18n="copy\.palette\.search"[^>]*>명령 검색</);
   assert.doesNotMatch(html, />Command search</);
-  assert.match(html, /data-i18n-placeholder="copy\.palette\.placeholder"/);
-  assert.match(html, /placeholder="화면, 자산, 작업, 진단 검색"/);
   assert.doesNotMatch(html, /placeholder="Search views, assets, jobs, diagnostics"/);
 
   const koBlock = text.slice(koStart, enStart);

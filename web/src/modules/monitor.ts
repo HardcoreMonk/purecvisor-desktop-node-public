@@ -11,18 +11,18 @@ function getDiagnosticActionPolicy(error = state.diagnosticBundleError) {
   const pending = Boolean(state.pendingDiagnosticAction);
   const bundleId = getDiagnosticBundleId();
   const guideByStatus: Record<number, string> = {
-    401: '401 auth required: enter a browser token and retry.',
-    403: '403 auth forbidden: verify the token source before retrying.',
-    404: '404 PCV_DIAGNOSTIC_BUNDLE_API_UNSUPPORTED: installed listener does not expose the diagnostic bundle API.',
-    500: '500 server failure: keep the error details for support triage.'
+    401: t('copy.mon.guide_401'),
+    403: t('copy.mon.guide_403'),
+    404: t('copy.mon.guide_404'),
+    500: t('copy.mon.guide_500')
   };
   const timedOut = status === 408 || status === 504 || code === 'PCV_ROUTE_TIMEOUT' || message.includes('timeout');
   const unsupported = status === 404 || code === 'PCV_DIAGNOSTIC_BUNDLE_API_UNSUPPORTED';
   const auth = status === 401 || status === 403 || isAuthError(error);
   const retryable = Boolean(error?.retryable || timedOut || status >= 500 || auth);
   const guide = timedOut
-    ? 'timeout: retry after the listener is responsive or after the Retry-After hint.'
-    : guideByStatus[status] || (code ? `${code}: review problem-details and retry when safe.` : t('copy.mon.diag_ready'));
+    ? t('copy.mon.guide_timeout')
+    : guideByStatus[status] || (code ? t('copy.mon.guide_code', { code }) : t('copy.mon.diag_ready'));
 
   return {
     createDisabled: pending || unsupported,
@@ -271,37 +271,28 @@ function renderDiagnosticsBundle() {
   const createDisabled = policy.createDisabled || !canCreate ? 'disabled aria-disabled="true"' : '';
   const downloadDisabled = policy.downloadDisabled || !canDownload ? 'disabled aria-disabled="true"' : '';
   const facts = [
-    ['Mode', t('copy.mon.api_action')],
-    ['Mutation', 'no host mutation'],
+    [t('copy.mon.mode'), t('copy.mon.api_action')],
+    [t('copy.mon.mutation'), t('copy.mon.no_host_mutation')],
     [t('copy.mon.output_root'), DIAGNOSTIC_BUNDLE_ROOT],
-    ['Route', DESKTOP_NODE_API_ROUTES.diagnosticBundles],
+    [t('copy.mon.route'), DESKTOP_NODE_API_ROUTES.diagnosticBundles],
     [t('copy.mon.list_route'), DESKTOP_NODE_API_ROUTES.diagnosticBundlesPage(10, 0)],
-    ['CollectDiagnostics', 'server-side compatible archive'],
-    ['Redaction', 'token values and Authorization headers redacted']
+    ['CollectDiagnostics', t('copy.mon.collect_archive')],
+    [t('copy.mon.redaction'), t('copy.mon.redaction_value')]
   ];
+  const readyDetail = [
+    bundle.created_at,
+    bundle.download_status,
+    bundle.redaction_status,
+    bundle.retention_status
+  ].filter(Boolean).join(' / ') || t('copy.mon.ready_download');
   const statusHtml = state.diagnosticBundleError
-    ? `<div class="diagnostics-result error"><span class="muted">Last action</span><strong>${pcvEscapeHtml(state.diagnosticBundleError.code)}</strong><p>${pcvEscapeHtml(state.diagnosticBundleError.message)} ${pcvEscapeHtml(state.diagnosticBundleError.detail)}</p><p>${pcvEscapeHtml(policy.guide)}</p></div>`
+    ? `<div class="diagnostics-result error"><span class="muted">${pcvEscapeHtml(t('copy.mon.last_action'))}</span><strong>${pcvEscapeHtml(state.diagnosticBundleError.code)}</strong><p>${pcvEscapeHtml(state.diagnosticBundleError.message)} ${pcvEscapeHtml(state.diagnosticBundleError.detail)}</p><p>${pcvEscapeHtml(policy.guide)}</p></div>`
     : bundleId
-      ? `<div class="diagnostics-result"><span class="muted">Latest bundle</span><strong>${pcvEscapeHtml(bundleId)}</strong><p>${pcvEscapeHtml([
-          bundle.created_at,
-          bundle.download_status,
-          bundle.redaction_status,
-          bundle.retention_status
-        ].filter(Boolean).join(' / ') || 'ready for authenticated download')}</p></div>`
-      : `<div class="diagnostics-result"><span class="muted">Latest bundle</span><strong>Not created in this browser session</strong><p>Create uses POST ${pcvEscapeHtml(DESKTOP_NODE_API_ROUTES.diagnosticBundles)} and keeps the archive server-side.</p></div>`;
+      ? `<div class="diagnostics-result"><span class="muted">${pcvEscapeHtml(t('copy.mon.latest_bundle'))}</span><strong>${pcvEscapeHtml(bundleId)}</strong><p>${pcvEscapeHtml(readyDetail)}</p></div>`
+      : `<div class="diagnostics-result"><span class="muted">${pcvEscapeHtml(t('copy.mon.latest_bundle'))}</span><strong>${pcvEscapeHtml(t('copy.mon.not_created'))}</strong><p>${pcvEscapeHtml(t('copy.mon.create_uses_post', { route: DESKTOP_NODE_API_ROUTES.diagnosticBundles }))}</p></div>`;
   const downloadHtml = download.bundle_id
-    ? `<div class="diagnostics-result"><span class="muted">Last download</span><strong>${pcvEscapeHtml(download.file_name || download.bundle_id)}</strong><p>${pcvEscapeHtml(download.content_type || 'application/vnd.purecvisor.diagnostic-bundle+json')} / ${pcvEscapeHtml(download.size_bytes ?? 0)} bytes</p></div>`
+    ? `<div class="diagnostics-result"><span class="muted">${pcvEscapeHtml(t('copy.mon.last_download'))}</span><strong>${pcvEscapeHtml(download.file_name || download.bundle_id)}</strong><p>${pcvEscapeHtml(download.content_type || 'application/vnd.purecvisor.diagnostic-bundle+json')} / ${pcvEscapeHtml(download.size_bytes ?? 0)} ${pcvEscapeHtml(t('copy.mon.bytes'))}</p></div>`
     : '';
-  const showLegacyTrouble = !(typeof pcvLegacyViewSkipped === 'function' && pcvLegacyViewSkipped('troubleshooting'));
-  const legacyTroubleHtml = `${renderRuntimeApiRegistryBridge()}
-    ${renderHostOpsLifecycleBucketTable()}
-    <div class="boundary-chip-row">
-      <span>token file content excluded</span>
-      <span>protected token blobs omitted</span>
-      <span>public signing not claimed</span>
-      <span>external publication not claimed</span>
-    </div>`;
-
   els.diagnosticsPanel.innerHTML = `<div class="diagnostics-card">
     <div class="diagnostics-header">
       <div>
@@ -315,16 +306,15 @@ function renderDiagnosticsBundle() {
     </div>
     <div class="diagnostics-actions">
       <button type="button" data-action="diagnostic-create" ${createDisabled}>${pcvEscapeHtml(t('copy.mon.create_bundle'))}</button>
-      <button type="button" data-action="diagnostic-download" data-bundle-id="${pcvEscapeHtml(bundleId)}" ${downloadDisabled}>Download latest</button>
-      ${policy.retryVisible ? '<button type="button" data-action="diagnostic-retry">Retry action</button>' : ''}
-      <span class="muted">Authenticated create/download only; command strings and token values are not rendered.</span>
+      <button type="button" data-action="diagnostic-download" data-bundle-id="${pcvEscapeHtml(bundleId)}" ${downloadDisabled}>${pcvEscapeHtml(t('copy.trouble.download'))}</button>
+      ${policy.retryVisible ? `<button type="button" data-action="diagnostic-retry">${pcvEscapeHtml(t('copy.mon.retry_action'))}</button>` : ''}
+      <span class="muted">${pcvEscapeHtml(t('copy.mon.auth_only_note'))}</span>
     </div>
     ${statusHtml}
-    ${showLegacyTrouble ? legacyTroubleHtml : ''}
     ${renderDiagnosticBundleList()}
     ${downloadHtml}
   </div>`;
-  if (!showLegacyTrouble && window.PCV && PCV.viewTroubleshooting && typeof PCV.viewTroubleshooting.paintAdvanced === 'function') {
+  if (window.PCV && PCV.viewTroubleshooting && typeof PCV.viewTroubleshooting.paintAdvanced === 'function') {
     PCV.viewTroubleshooting.paintAdvanced();
   }
 }
@@ -334,15 +324,15 @@ function renderTokenRotation() {
   const policy = state.runtimePolicy || {};
   const storage = readNested(policy, ['auth', 'token_storage']) || readNested(policy, ['token', 'storage']) || getTokenPolicyLabel();
   const exposure = readNested(policy, ['network', 'current_exposure']) || readNested(policy, ['network', 'bind']) || getRuntimeExposure();
-  const browserToken = state.apiToken.trim() ? 'browser token present' : 'browser token empty';
+  const browserToken = state.apiToken.trim() ? t('copy.mon.browser_token_present') : t('copy.mon.browser_token_empty');
   const facts = [
-    ['Mode', 'rotation handoff'],
-    [t('copy.mon.service_token'), 'no service token mutation'],
+    [t('copy.mon.mode'), t('copy.mon.rotation_handoff')],
+    [t('copy.mon.service_token'), t('copy.mon.no_service_token_mutation')],
     [t('copy.mon.protected_token'), TOKEN_PROTECTED_FILE],
     [t('copy.mon.browser_token'), browserToken],
     [t('copy.mon.token_route'), tokenRequiredRouteStatus()],
-    ['Storage', formatPolicyValue(storage)],
-    ['Exposure', formatPolicyValue(exposure)]
+    [t('copy.mon.storage'), formatPolicyValue(storage)],
+    [t('copy.mon.exposure_label'), formatPolicyValue(exposure)]
   ];
 
   els.tokenRotationPanel.innerHTML = `<div class="token-rotation-card">
@@ -351,69 +341,29 @@ function renderTokenRotation() {
         <span class="muted">${pcvEscapeHtml(t('copy.mon.token_kicker'))}</span>
         <strong>${pcvEscapeHtml(t('copy.mon.token_title'))}</strong>
       </div>
-      <span class="status-badge warn">operator handoff</span>
+      <span class="status-badge warn">${pcvEscapeHtml(t('copy.mon.operator_handoff'))}</span>
     </div>
     <div class="diagnostics-grid">
       ${facts.map(([label, value]) => `<div class="diagnostics-fact"><span class="muted">${pcvEscapeHtml(label)}</span><strong>${pcvEscapeHtml(value)}</strong></div>`).join('')}
     </div>
     <div class="token-rotation-actions">
       <button type="button" data-action="clear-browser-token">${pcvEscapeHtml(t('copy.mon.clear_browser_token'))}</button>
-      <span class="muted">Token values and Authorization headers are not rendered.</span>
+      <span class="muted">${pcvEscapeHtml(t('copy.mon.token_values_hidden'))}</span>
     </div>
-    ${state.tokenActionMessage ? `<div class="diagnostics-result"><span class="muted">Last browser action</span><strong>${pcvEscapeHtml(state.tokenActionMessage)}</strong></div>` : ''}
+    ${state.tokenActionMessage ? `<div class="diagnostics-result"><span class="muted">${pcvEscapeHtml(t('copy.mon.last_browser_action'))}</span><strong>${pcvEscapeHtml(state.tokenActionMessage)}</strong></div>` : ''}
     <div class="boundary-chip-row">
-      <span>revoke browser token only</span>
-      <span>service token replacement operator-owned</span>
-      <span>no host mutation</span>
+      <span>${pcvEscapeHtml(t('copy.mon.revoke_browser_only'))}</span>
+      <span>${pcvEscapeHtml(t('copy.mon.service_token_operator'))}</span>
+      <span>${pcvEscapeHtml(t('copy.mon.no_host_mutation'))}</span>
     </div>
   </div>`;
 }
 
 function renderAccountSession() {
   if (!els.accountSessionPanel) return;
-  const legacySession = !(typeof pcvLegacyViewSkipped === 'function' && pcvLegacyViewSkipped('troubleshooting'));
-  if (!legacySession && typeof els.accountSessionPanel.querySelector === 'function' && els.accountSessionPanel.querySelector('#relogin-overlay')) return;
-  const session = state.authSession || {};
-  const role = getAccountRoleLabel();
-  const permissions = getAccountPermissions();
-  const signedIn = Boolean(state.authAccessToken && session.username);
-  const status = state.authPending ? 'pending' : signedIn ? role : 'not signed in';
-  const errorHtml = state.authError
-    ? `<div class="diagnostics-result error"><span class="muted">Account auth</span><strong>${pcvEscapeHtml(state.authError.code)}</strong><p>${pcvEscapeHtml(state.authError.message)} ${pcvEscapeHtml(state.authError.detail)}</p></div>`
-    : '';
-  const reloginHtml = signedIn
-    ? ''
-    : `<button type="button" data-action="open-login-overlay">${pcvEscapeHtml(t('copy.login.again'))}</button>`;
-
-  const legacySessionHtml = `<div class="token-rotation-card account-session-card">
-    <div class="diagnostics-header">
-      <div>
-        <span class="muted">Account</span>
-        <strong>RBAC Session</strong>
-      </div>
-      <span class="status-badge ${signedIn ? 'ok' : 'warn'}">${pcvEscapeHtml(status)}</span>
-    </div>
-    ${reloginHtml}
-    <div class="diagnostics-grid">
-      <div class="diagnostics-fact"><span class="muted">User</span><strong>${pcvEscapeHtml(session.username || '-')}</strong></div>
-      <div class="diagnostics-fact"><span class="muted">Role</span><strong>${pcvEscapeHtml(role)}</strong></div>
-      <div class="diagnostics-fact"><span class="muted">JWT access</span><strong>${pcvEscapeHtml(state.authAccessToken ? 'present' : 'empty')}</strong></div>
-      <div class="diagnostics-fact"><span class="muted">Refresh</span><strong>${pcvEscapeHtml(state.authRefreshToken ? 'present' : 'empty')}</strong></div>
-    </div>
-    <div class="token-rotation-actions">
-      <button type="button" data-action="account-refresh"${state.authRefreshToken ? '' : ' disabled aria-disabled="true"'}>Refresh JWT</button>
-      <button type="button" data-action="account-logout"${signedIn ? '' : ' disabled aria-disabled="true"'}>Logout account</button>
-      <span class="muted">JWT and password values are kept out of the DOM after submit.</span>
-    </div>
-    <div class="boundary-chip-row">
-      <span>permissions: ${pcvEscapeHtml(permissions.length ? permissions.join(', ') : 'none')}</span>
-      <span>service bearer fallback preserved</span>
-      <span>RBAC gates destructive actions</span>
-    </div>
-    ${errorHtml}
-  </div>`;
+  if (typeof els.accountSessionPanel.querySelector === 'function' && els.accountSessionPanel.querySelector('#relogin-overlay')) return;
   const pinnedSessionHtml = `<button id="relogin-overlay" type="button" data-action="open-login-overlay">${pcvEscapeHtml(t('copy.login.again'))}</button>`;
-  els.accountSessionPanel.innerHTML = legacySession ? legacySessionHtml : pinnedSessionHtml;
+  els.accountSessionPanel.innerHTML = pinnedSessionHtml;
 }
 
 function renderAccountDirectory() {
@@ -744,102 +694,6 @@ function getViewLabel(view) {
   return typeof t === 'function' ? t(key) : key;
 }
 
-function buildCommandPaletteItems() {
-  const viewItems = ['dashboard', 'vms', 'templates', 'network', 'jobs', 'activity', 'evidence', 'accounts', 'troubleshooting']
-    .filter((view) => view !== 'accounts' || typeof canManageAccounts !== 'function' || canManageAccounts())
-    .map((view) => {
-      const label = getViewLabel(view);
-      return {
-        id: `view:${view}`,
-        label,
-        detail: typeof t === 'function' ? t('shell.view.open', { label }) : label,
-        tone: view === state.activeView ? 'ok' : 'info',
-        view
-      };
-    });
-  const commandItems = [
-    { id: 'command:refresh', label: t('copy.mon.refresh'), detail: t('copy.mon.refresh_detail'), tone: 'info', command: 'refresh' },
-    { id: 'command:create-vm', label: t('copy.dashboard.create'), detail: t('copy.mon.create_vm_detail'), tone: 'warn', command: 'open-create-vm' },
-    { id: 'command:clear-browser-state', label: t('copy.mon.clear_session'), detail: t('copy.mon.clear_session_detail'), tone: 'warn', command: 'clear-browser-state' }
-  ];
-  const vmItems = asArray(state.vms).slice(0, 20).map((vm) => ({
-    id: `vm:${getVmId(vm)}`,
-    label: getVmName(vm),
-    detail: `VM ${getVmState(vm) || 'unknown'} / ${getVmId(vm)}`,
-    tone: isRunningVmState(getVmState(vm)) ? 'ok' : 'info',
-    vmId: getVmId(vm)
-  }));
-  const jobItems = buildActivityRows().slice(0, 20).map(({ source, job }) => ({
-    id: `job:${job?.job_id || source}`,
-    label: job?.operation || job?.job_id || 'job',
-    detail: `${job?.status || 'unknown'} / ${job?.job_id || source}`,
-    tone: String(job?.status || '').toLowerCase() === 'failed' ? 'error' : 'info',
-    view: 'jobs'
-  }));
-  const routeItems = DESKTOP_NODE_ROUTE_COVERAGE.map((route) => ({
-    id: `route:${route.id}`,
-    label: route.id,
-    detail: `${route.method} ${route.route}`,
-    tone: route.mutating ? 'warn' : 'info',
-    view: route.view === 'service' ? 'troubleshooting' : route.view
-  }));
-  return [...viewItems, ...commandItems, ...vmItems, ...jobItems, ...routeItems];
-}
-
-function getCommandPaletteMatches() {
-  const query = state.commandQuery || state.globalSearch;
-  return filterRowsByQuery(buildCommandPaletteItems(), query, (item) => [
-    item.label,
-    item.detail,
-    item.id,
-    item.view,
-    item.command
-  ].join(' ')).slice(0, 12);
-}
-
-function renderCommandPalette() {
-  if (els.commandPalette) els.commandPalette.hidden = true;
-  if (els.commandPaletteResults) els.commandPaletteResults.innerHTML = '';
-}
-
-function openCommandPalette() {
-  if (typeof openCmdPalette === 'function') openCmdPalette();
-}
-
-function closeCommandPalette() {
-  state.commandPaletteOpen = false;
-  state.commandQuery = '';
-  state.globalSearch = '';
-  if (typeof closeCmdPalette === 'function') closeCmdPalette();
-  renderCommandPalette();
-}
-
-function handleCommandSearch(query) {
-  state.globalSearch = query;
-  state.commandQuery = query;
-  state.commandPaletteOpen = false;
-  render();
-}
-
-async function runCommandPaletteItem(commandId) {
-  const item = buildCommandPaletteItems().find((entry) => entry.id === commandId);
-  if (!item) return;
-  state.commandPaletteOpen = false;
-  state.commandQuery = '';
-  state.globalSearch = '';
-  if (item.vmId) {
-    await selectVmFromShell(item.vmId);
-    return;
-  }
-  if (item.command) {
-    handleShellCommand(item.command);
-    return;
-  }
-  if (item.view) {
-    navigateToView(item.view);
-  }
-}
-
 function renderActiveView() {
   // BL-0019: in the Single Edge shell PCV.nav owns the shown section; the legacy view state only follows it.
   // A registered view's section visibility stays with nav so the two painters do not fight.
@@ -854,7 +708,10 @@ function renderActiveView() {
   });
   document.querySelectorAll('[data-view-link]').forEach((link) => {
     const active = link.dataset?.viewLink === shownView;
-    link.className = active ? 'nav-active' : '';
+    // Keep component classes (KPI cards, pagehead .btn links carry data-view-link too); only toggle nav-active.
+    const kept = String(link.className || '').split(/\s+/).filter((name) => name && name !== 'nav-active');
+    if (active) kept.push('nav-active');
+    link.className = kept.join(' ');
     if (active) link.setAttribute('aria-current', 'page');
     else link.removeAttribute('aria-current');
   });
@@ -865,7 +722,6 @@ function render() {
   try { applyUiPreferences(); } catch (e) { if (window._DEBUG) console.warn('render:applyUiPreferences', e); }
   try { renderError(); } catch (e) { if (window._DEBUG) console.warn('render:renderError', e); }
   try { renderAuthGate(); } catch (e) { if (window._DEBUG) console.warn('render:renderAuthGate', e); }
-  try { renderCommandPalette(); } catch (e) { if (window._DEBUG) console.warn('render:renderCommandPalette', e); }
   try { renderOpsCockpit(); } catch (e) { if (window._DEBUG) console.warn('render:renderOpsCockpit', e); }
   try { renderMetrics(); } catch (e) { if (window._DEBUG) console.warn('render:renderMetrics', e); }
   try { renderHost(); } catch (e) { if (window._DEBUG) console.warn('render:renderHost', e); }
@@ -873,15 +729,12 @@ function render() {
   try { renderVmWorkbenchContext(); } catch (e) { if (window._DEBUG) console.warn('render:renderVmWorkbenchContext', e); }
   try { renderVmDetail(); } catch (e) { if (window._DEBUG) console.warn('render:renderVmDetail', e); }
   try { paintVmConsoleFrame(); } catch (e) { if (window._DEBUG) console.warn('render:paintVmConsoleFrame', e); }
-  try { renderJobs(); } catch (e) { if (window._DEBUG) console.warn('render:renderJobs', e); }
   try { renderDashboardActivity(); } catch (e) { if (window._DEBUG) console.warn('render:renderDashboardActivity', e); }
   try { renderActivity(); } catch (e) { if (window._DEBUG) console.warn('render:renderActivity', e); }
-  try { renderEventCenter(); } catch (e) { if (window._DEBUG) console.warn('render:renderEventCenter', e); }
   try { renderEvidenceDashboard(); } catch (e) { if (window._DEBUG) console.warn('render:renderEvidenceDashboard', e); }
   try { renderMonitoring(); } catch (e) { if (window._DEBUG) console.warn('render:renderMonitoring', e); }
   try { renderIncidentCommand(); } catch (e) { if (window._DEBUG) console.warn('render:renderIncidentCommand', e); }
   try { renderAccountSession(); } catch (e) { if (window._DEBUG) console.warn('render:renderAccountSession', e); }
-  try { if (typeof paintAccountsView === 'function') paintAccountsView(); } catch (e) { if (window._DEBUG) console.warn('render:paintAccountsView', e); }
   try { if (window.PCV && PCV.shell && typeof PCV.shell.syncAccountNav === 'function') PCV.shell.syncAccountNav(); } catch (e) { if (window._DEBUG) console.warn('render:syncAccountNav', e); }
   try { if (window.PCV && PCV.shell && typeof PCV.shell.syncFromOperatorState === 'function') PCV.shell.syncFromOperatorState(); } catch (e) { if (window._DEBUG) console.warn('render:shellKpi', e); }
   try { renderConsolePanel(); } catch (e) { if (window._DEBUG) console.warn('render:renderConsolePanel', e); }
@@ -935,14 +788,7 @@ window.bindAlertRegionAuthGate = bindAlertRegionAuthGate;
 window.renderAuthGate = renderAuthGate;
 window.applyUiPreferences = applyUiPreferences;
 window.getViewLabel = getViewLabel;
-window.buildCommandPaletteItems = buildCommandPaletteItems;
-window.getCommandPaletteMatches = getCommandPaletteMatches;
-window.renderCommandPalette = renderCommandPalette;
-window.openCommandPalette = openCommandPalette;
-window.closeCommandPalette = closeCommandPalette;
-window.handleCommandSearch = handleCommandSearch;
-window.runCommandPaletteItem = runCommandPaletteItem;
 window.renderActiveView = renderActiveView;
 window.render = render;
-PCV.monitor = Object.assign(PCV.monitor || {}, { getDiagnosticActionPolicy, buildPartialRefreshError, collectRefreshFailures, getPriorityItems, renderMetrics, renderHost, renderOpsSummaryCard, renderOpsCockpit, renderRuntimeApiRegistryBridge, renderHostOpsLifecycleBucketTable, renderDiagnosticsBundle, renderTokenRotation, renderAccountSession, renderAccountDirectory, readNested, formatPolicyValue, countJobsByStatus, getVmCheckpointCount, countVmCheckpointWarnings, countSelectedOldCheckpointWarnings, buildMonitoringSignals, evidenceStatusMessage, renderEvidenceDashboard, renderCurrentEvidenceSummary, renderMonitoring, renderTroubleshootingEvidence, renderError, pcvFormatRelativeTime, hasRefreshedOperation, needsAuthGate, bindAlertRegionAuthGate, renderAuthGate, applyUiPreferences, getViewLabel, buildCommandPaletteItems, getCommandPaletteMatches, renderCommandPalette, openCommandPalette, closeCommandPalette, handleCommandSearch, runCommandPaletteItem, renderActiveView, render });
+PCV.monitor = Object.assign(PCV.monitor || {}, { getDiagnosticActionPolicy, buildPartialRefreshError, collectRefreshFailures, getPriorityItems, renderMetrics, renderHost, renderOpsSummaryCard, renderOpsCockpit, renderRuntimeApiRegistryBridge, renderHostOpsLifecycleBucketTable, renderDiagnosticsBundle, renderTokenRotation, renderAccountSession, renderAccountDirectory, readNested, formatPolicyValue, countJobsByStatus, getVmCheckpointCount, countVmCheckpointWarnings, countSelectedOldCheckpointWarnings, buildMonitoringSignals, evidenceStatusMessage, renderEvidenceDashboard, renderCurrentEvidenceSummary, renderMonitoring, renderTroubleshootingEvidence, renderError, pcvFormatRelativeTime, hasRefreshedOperation, needsAuthGate, bindAlertRegionAuthGate, renderAuthGate, applyUiPreferences, getViewLabel, renderActiveView, render });
 })(window.PCV);

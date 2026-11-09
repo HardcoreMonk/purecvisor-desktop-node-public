@@ -342,10 +342,6 @@ function clearAccountSecretFields(scope) {
   });
 }
 
-function accountEnabledText(account) {
-  return account?.enabled === false ? t('account.list.disabled') : t('account.list.enabled');
-}
-
 function bindAccountsPanel() {
   const panel = document.getElementById('accounts-panel');
   if (!panel || panel._pcvAccountsBound || typeof panel.addEventListener !== 'function') return;
@@ -358,72 +354,6 @@ function bindAccountsPanel() {
     else if (button.dataset.action === 'account-reset-password') openAccountResetModal(button.getAttribute('data-username'));
     else if (button.dataset.action === 'account-change-password') openAccountChangeModal();
   });
-}
-
-function paintAccountsView() {
-  const root = document.getElementById('accounts-panel');
-  if (!root || !PCV.uxlib) return;
-  if (typeof pcvLegacyViewSkipped === 'function' && pcvLegacyViewSkipped('accounts')) {
-    const navView = window.PCV && window.PCV.nav && typeof window.PCV.nav.activeView === 'function'
-      ? window.PCV.nav.activeView()
-      : state.activeView;
-    if (navView === 'accounts') return;
-  }
-  PCV.uxlib.clearEl(root);
-  bindAccountsPanel();
-  if (typeof canManageAccounts === 'function' && !canManageAccounts()) {
-    root.appendChild(PCV.uxlib.el('div', { class: 'pcv-account-denied', role: 'status' },
-      PCV.uxlib.el('h2', {}, t('account.denied.title')),
-      PCV.uxlib.el('p', {}, t('account.denied.body'))));
-    return;
-  }
-  const error = state.accountDirectoryError;
-  if (error) {
-    const serverText = [error.message, error.detail].filter(Boolean).join(' ');
-    const lastAdmin = error.code === 'PCV_ACCOUNT_LAST_ADMIN' ? t('account.error.last_admin') : '';
-    root.appendChild(PCV.uxlib.el('div', { class: 'pcv-account-error', role: 'alert' },
-      PCV.uxlib.el('strong', {}, String(error.code || '')),
-      PCV.uxlib.el('p', {}, [lastAdmin, serverText].filter(Boolean).join(' '))));
-  }
-  const accounts = asArray(state.accountDirectory).filter((account) => account && account.username);
-  const body = PCV.uxlib.el('tbody');
-  if (!accounts.length) {
-    body.appendChild(PCV.uxlib.el('tr', {}, PCV.uxlib.el('td', { colspan: '4' }, t('account.list.empty'))));
-  } else {
-    accounts.forEach((account) => {
-      const username = String(account.username || '');
-      const enabled = account.enabled !== false;
-      const disable = PCV.uxlib.el('button', {
-        type: 'button',
-        class: 'btn',
-        'data-action': 'account-disable',
-        'data-username': username
-      }, t('account.disable.action'));
-      disable.disabled = !!state.accountManagePending || !enabled;
-      const reset = PCV.uxlib.el('button', {
-        type: 'button',
-        class: 'btn',
-        'data-action': 'account-reset-password',
-        'data-username': username
-      }, t('account.reset.open'));
-      reset.disabled = !!state.accountManagePending;
-      body.appendChild(PCV.uxlib.el('tr', {},
-        PCV.uxlib.el('td', {}, username),
-        PCV.uxlib.el('td', {}, String(account.role || '-')),
-        PCV.uxlib.el('td', {}, accountEnabledText(account)),
-        PCV.uxlib.el('td', {}, disable, reset)));
-    });
-  }
-  const create = PCV.uxlib.el('button', { type: 'button', class: 'btn', 'data-action': 'account-create-open' }, t('account.create.open'));
-  create.disabled = !!state.accountManagePending;
-  root.appendChild(create);
-  root.appendChild(PCV.uxlib.el('table', { class: 'pcv-vm-table account-directory-table' },
-    PCV.uxlib.el('thead', {}, PCV.uxlib.el('tr', {},
-      PCV.uxlib.el('th', {}, t('account.list.username')),
-      PCV.uxlib.el('th', {}, t('account.list.role')),
-      PCV.uxlib.el('th', {}, t('account.list.state')),
-      PCV.uxlib.el('th', {}, ''))),
-    body));
 }
 
 function openAccountCreateModal() {
@@ -764,7 +694,7 @@ window.disableAccountFromButton = disableAccountFromButton;
 window.openAccountCreateModal = openAccountCreateModal;
 window.openAccountResetModal = openAccountResetModal;
 window.openAccountChangeModal = openAccountChangeModal;
-window.paintAccountsView = paintAccountsView;
+window.bindAccountsPanel = bindAccountsPanel;
 window.openSelectedConsole = openSelectedConsole;
 window.clearBrowserToken = clearBrowserToken;
 window.clearBrowserState = clearBrowserState;

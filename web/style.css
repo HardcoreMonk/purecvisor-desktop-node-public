@@ -4527,17 +4527,15 @@ th {
   min-width: 0;
   min-height: 84px;
   padding: 12px;
-  border: 1px solid rgba(126, 217, 255, .12);
+  border: 1px solid var(--supanova-line);
   border-radius: var(--r);
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, .04), transparent 70%),
-    rgba(255, 255, 255, .035);
+  background: var(--bg-panel);
   color: inherit;
   text-decoration: none;
 }
 
 .dashboard-kpi-card:hover {
-  border-color: rgba(34, 211, 238, .42);
+  border-color: var(--accent);
 }
 
 .dashboard-kpi-label {
@@ -4579,6 +4577,35 @@ th {
   border-radius: var(--r);
   background: var(--bg-panel);
   color: var(--fg);
+}
+
+.trouble-grid > section {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  align-content: start;
+  gap: 6px 12px;
+}
+
+.trouble-grid > section > h2,
+.trouble-grid > section > p,
+.trouble-grid > section > [data-hv-value] {
+  grid-column: 1 / -1;
+}
+
+.trouble-grid > section > h2 {
+  margin: 0 0 4px;
+  color: var(--fg);
+  font-size: 14px;
+}
+
+.trouble-grid > section > span,
+.trouble-grid > section > p {
+  margin: 0;
+  color: var(--fg2);
+}
+
+.trouble-grid > section > button {
+  justify-self: start;
 }
 
 .dashboard-grid > section,
@@ -4793,7 +4820,7 @@ th {
 .dashboard-activity-row {
   background:
     linear-gradient(180deg, rgba(255, 255, 255, .035), transparent 72px),
-    rgba(17, 26, 43, .78);
+    var(--supanova-panel);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, .035);
 }
 
@@ -4868,52 +4895,6 @@ th {
 .token-rotation-panel,
 .diagnostics-panel {
   margin-bottom: 12px;
-}
-
-.command-palette {
-  position: fixed;
-  inset: 0;
-  z-index: 50;
-  display: grid;
-  place-items: start center;
-  padding: 92px 18px 18px;
-  background: rgba(2, 6, 14, .42);
-  backdrop-filter: blur(6px);
-}
-
-.command-palette[hidden] {
-  display: none;
-}
-
-.command-palette-panel {
-  width: min(760px, 100%);
-  border: 1px solid rgba(126, 217, 255, .22);
-  border-radius: 8px;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, .045), transparent 80px),
-    rgba(8, 13, 23, .96);
-  box-shadow: var(--supanova-shadow);
-  padding: 12px;
-}
-
-.command-palette-panel input {
-  width: 100%;
-}
-
-.command-palette-results {
-  display: grid;
-  gap: 8px;
-  margin-top: 10px;
-  max-height: min(56vh, 520px);
-  overflow: auto;
-}
-
-.command-palette-results button {
-  display: grid;
-  grid-template-columns: auto minmax(140px, 1fr) minmax(180px, 1.4fr);
-  align-items: center;
-  gap: 10px;
-  text-align: left;
 }
 
 .table-state-summary,

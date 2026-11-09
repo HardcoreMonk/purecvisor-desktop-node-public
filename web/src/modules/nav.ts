@@ -277,7 +277,7 @@ var CMD_ACTIONS = PCV.filterEditionItems([
   { icon: 'ci-refresh', label: _L('작업', 'Jobs'), action: () => window.navigateTo('jobs') },
   { icon: 'ci-warning', label: _L('이벤트', 'Events'), action: () => window.navigateTo('activity') },
   { icon: 'ci-file-document', label: _L('증적', 'Evidence'), action: () => window.navigateTo('evidence') },
-  { icon: 'ci-users', label: _L('계정', 'Accounts'), action: () => window.navigateTo('accounts') },
+  { icon: 'ci-users', label: _L('계정', 'Accounts'), perm: 'account.manage', action: () => window.navigateTo('accounts') },
   { icon: 'ci-settings', label: _L('진단', 'Diagnostics'), action: () => window.navigateTo('troubleshooting') },
   { icon: 'ci-info', label: _L('도움말', 'Help'), action: () => window.navigateTo('helppage') },
   { icon: 'ci-settings', label: _L('환경설정', 'Preferences'), action: () => showPrefs() },
@@ -379,7 +379,7 @@ function _cmdPalettePages() {
     { id: 'jobs', label: _L('작업', 'Jobs'), icon: 'ci-refresh' },
     { id: 'activity', label: _L('이벤트', 'Events'), icon: 'ci-warning' },
     { id: 'evidence', label: _L('증적', 'Evidence'), icon: 'ci-file-document' },
-    { id: 'accounts', label: _L('계정', 'Accounts'), icon: 'ci-users' },
+    { id: 'accounts', label: _L('계정', 'Accounts'), icon: 'ci-users', perm: 'account.manage' },
     { id: 'troubleshooting', label: _L('진단', 'Diagnostics'), icon: 'ci-settings' },
     { id: 'helppage', label: _L('도움말', 'Help'), icon: 'ci-info' },
   ]);
@@ -424,6 +424,7 @@ function renderCmdPalette(filter) {
   const cmds = CMD_ACTIONS.filter(a => {
     if (a.cluster && !window.pcvClusterEnabled) return false;
     if (a.role && !pcvRoleAllows(a.role)) return false;
+    if (a.perm && typeof rbacAllows === 'function' && !rbacAllows(a.perm)) return false;
     return !q || fuzzyMatch(a.label, q);
   });
   if (q && cmds.length) _group(_L('명령', 'Commands'));
@@ -468,6 +469,7 @@ function renderCmdPalette(filter) {
   var pages = _cmdPalettePages().filter(function (p) {
     if (p.cluster && !window.pcvClusterEnabled) return false;
     if (p.role && !pcvRoleAllows(p.role)) return false;
+    if (p.perm && typeof rbacAllows === 'function' && !rbacAllows(p.perm)) return false;
     return fuzzyMatch(p.label, q);
   });
   if (pages.length) {
@@ -752,42 +754,6 @@ function highlightText(text, query) {
   return escaped.replace(re, '<mark style="background:var(--yellow);color:#000;padding:0 2px;border-radius:2px">$1</mark>');
 }
 window.highlightText = highlightText;
-(function() {
-  var touchStartX = 0, touchStartY = 0, touchStartTime = 0;
-  document.addEventListener('touchstart', function(e) {
-    touchStartX = e.touches[0].clientX;
-    touchStartY = e.touches[0].clientY;
-    touchStartTime = Date.now();
-  }, { passive: true });
-  document.addEventListener('touchend', function(e) {
-    var dx = e.changedTouches[0].clientX - touchStartX;
-    var dy = e.changedTouches[0].clientY - touchStartY;
-    var dt = Date.now() - touchStartTime;
-    if (dt > 500 || Math.abs(dx) < 50) return;
-    if (Math.abs(dy) > Math.abs(dx)) return;
-    var tabs = ['summary', 'console', 'snapshots', 'performance', 'timeline'];
-    var idx = tabs.indexOf(currentTab);
-    if (idx === -1) return;
-    if (dx < -50 && idx < tabs.length - 1) {
-      navigateTo(tabs[idx + 1]);
-    } else if (dx > 50 && idx > 0) {
-      navigateTo(tabs[idx - 1]);
-    }
-  }, { passive: true });
-  var longPressTimer = null;
-  document.addEventListener('touchstart', function(e) {
-    var vi = e.target.closest('.vi');
-    if (!vi) return;
-    longPressTimer = setTimeout(function() {
-      var idx = Array.from(vi.parentElement.children).filter(function(c) { return c.classList.contains('vi'); }).indexOf(vi);
-      if (idx >= 0 && typeof showCtx === 'function') {
-        showCtx({ preventDefault: function(){}, pageX: e.touches[0].clientX, pageY: e.touches[0].clientY }, idx);
-      }
-    }, 600);
-  }, { passive: true });
-  document.addEventListener('touchend', function() { clearTimeout(longPressTimer); }, { passive: true });
-  document.addEventListener('touchmove', function() { clearTimeout(longPressTimer); }, { passive: true });
-})();
 document.addEventListener('keydown', function(e) {
   if (e.defaultPrevented) return;
   var el = e.target.closest && e.target.closest('[role="button"], [role="menuitem"], [role="link"]');

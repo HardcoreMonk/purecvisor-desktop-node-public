@@ -79,7 +79,7 @@ window.PCV = window.PCV || {};
       return [
         username,
         el('span', { class: 'status-badge', 'data-account-role-pill': role }, role),
-        typeof accountEnabledText === 'function' ? accountEnabledText(account) : (enabled ? t('account.list.enabled') : t('account.list.disabled')),
+        enabled ? t('account.list.enabled') : t('account.list.disabled'),
         el('span', null, disable, reset)
       ];
     });

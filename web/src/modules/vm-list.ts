@@ -1167,7 +1167,7 @@ function vmListEscapeClearsSelection(event) {
     });
   }
   if (dialogOpen) return;
-  if (state.commandPaletteOpen || window.cmdPaletteOpen || window.kbdHelpOpen) return;
+  if (window.cmdPaletteOpen || window.kbdHelpOpen) return;
   if (!state.selectedVmId) return;
   clearVmSelection();
   if (typeof render === 'function') render();
