@@ -116,7 +116,6 @@ function _closeOperatorSurfaces() {
   try { if (typeof window.closeCmdPalette === 'function') window.closeCmdPalette(); } catch (e) {}
   try { if (typeof window.closeKbdHelp === 'function') window.closeKbdHelp(); } catch (e) {}
   try { if (typeof window.closeMobileSB === 'function') window.closeMobileSB(); } catch (e) {}
-  try { if (typeof window.closeCommandPalette === 'function') window.closeCommandPalette(); } catch (e) {}
   var more = document.getElementById('pcv-vm-more-menu');
   if (more) more.hidden = true;
   try { if (typeof window.closeVmRowMenu === 'function') window.closeVmRowMenu(); } catch (e) {}

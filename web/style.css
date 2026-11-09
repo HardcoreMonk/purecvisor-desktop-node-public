@@ -4870,52 +4870,6 @@ th {
   margin-bottom: 12px;
 }
 
-.command-palette {
-  position: fixed;
-  inset: 0;
-  z-index: 50;
-  display: grid;
-  place-items: start center;
-  padding: 92px 18px 18px;
-  background: rgba(2, 6, 14, .42);
-  backdrop-filter: blur(6px);
-}
-
-.command-palette[hidden] {
-  display: none;
-}
-
-.command-palette-panel {
-  width: min(760px, 100%);
-  border: 1px solid rgba(126, 217, 255, .22);
-  border-radius: 8px;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, .045), transparent 80px),
-    rgba(8, 13, 23, .96);
-  box-shadow: var(--supanova-shadow);
-  padding: 12px;
-}
-
-.command-palette-panel input {
-  width: 100%;
-}
-
-.command-palette-results {
-  display: grid;
-  gap: 8px;
-  margin-top: 10px;
-  max-height: min(56vh, 520px);
-  overflow: auto;
-}
-
-.command-palette-results button {
-  display: grid;
-  grid-template-columns: auto minmax(140px, 1fr) minmax(180px, 1.4fr);
-  align-items: center;
-  gap: 10px;
-  text-align: left;
-}
-
 .table-state-summary,
 .event-center-header,
 .event-row {

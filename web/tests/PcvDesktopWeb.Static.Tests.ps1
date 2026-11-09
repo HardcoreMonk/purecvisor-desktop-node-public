@@ -368,15 +368,19 @@ Describe 'PcvDesktopWeb static console assets' {
         $shellNav | Should -Match "class:\s*'shell-search'"
         $navSource | Should -Match 'function\s+toggleGlobalSearch\s*\('
         $shellNav | Should -Match 'toggleGlobalSearch'
-        $index | Should -Match 'id="command-palette"'
-        $index | Should -Match 'id="command-palette-input"'
-        $index | Should -Match 'id="command-palette-results"'
         $index | Should -Match 'id="event-center-panel"'
         $index | Should -Match 'id="job-filter"'
         $index | Should -Match 'id="network-filter"'
-        $combined | Should -Match 'buildCommandPaletteItems'
-        $combined | Should -Match 'renderCommandPalette'
-        $combined | Should -Match 'handleCommandSearch'
+        $navSource | Should -Match 'function\s+openCmdPalette\s*\('
+        $navSource | Should -Match 'function\s+renderCmdPalette\s*\('
+        $navSource | Should -Match 'function\s+closeCmdPalette\s*\('
+        $navSource | Should -Match "id:\s*'cmd-input'"
+        $navSource | Should -Match "role:\s*'combobox'"
+        $app | Should -Match 'function\s+openCmdPalette\s*\('
+        $app | Should -Match 'function\s+renderCmdPalette\s*\('
+        $app | Should -Match 'function\s+closeCmdPalette\s*\('
+        $app | Should -Match "id:\s*'cmd-input'"
+        $app | Should -Match "role:\s*'combobox'"
         $combined | Should -Match 'buildEventCenterItems'
         $combined | Should -Match 'renderEventCenter'
         $combined | Should -Match 'filterRowsByQuery'
@@ -573,17 +577,21 @@ Describe 'PcvDesktopWeb static console assets' {
         $index = Get-Content -LiteralPath $script:IndexPath -Raw
         $app = Get-Content -LiteralPath $script:AppPath -Raw
         $servedSource = Get-PcvWebShellSource
+        $navSource = Get-Content -LiteralPath (Join-Path $script:SrcRoot 'modules/nav.ts') -Raw
         $combined = $app + $servedSource
 
-        $index | Should -Match 'id="command-palette"'
         $index | Should -Match 'id="shell-sidebar"'
         $index | Should -Match 'id="shell-statusbar"'
         $index | Should -Match 'data-view-link="network"'
         $index | Should -Match 'data-shell-action="open-create-vm"'
         $index | Should -Match 'onclick="doLogout\(\)"'
         $index | Should -Not -Match 'id="vm-asset-list"|id="workspace-tabbar"|id="connection-state"'
-        $combined | Should -Match 'command:refresh'
-        $combined | Should -Match 'command:clear-browser-state'
+        $navSource | Should -Match 'function\s+closeCmdPalette\s*\('
+        $navSource | Should -Match "id:\s*'cmd-input'"
+        $navSource | Should -Match "role:\s*'combobox'"
+        $app | Should -Match 'function\s+closeCmdPalette\s*\('
+        $app | Should -Match "id:\s*'cmd-input'"
+        $app | Should -Match "role:\s*'combobox'"
         $combined | Should -Match 'handleShellCommand'
         $combined | Should -Match 'selectVmFromShell'
         $combined | Should -Match 'clearBrowserState'

@@ -251,9 +251,9 @@ const defectCases = [
   {
     name: "missing command palette",
     id: "web.static.search-event-table",
-    overrides: () => removeOnce("web/index.html", "id=\"command-palette\""),
+    overrides: () => removeOnce("web/src/modules/nav.ts", "function openCmdPalette"),
     expectedCode: assertionFailed,
-    expectedLabel: "search-event-table:command-palette"
+    expectedLabel: "search-event-table:open-cmd-palette:source"
   },
   {
     name: "missing staged errors source wiring",
@@ -335,9 +335,9 @@ const defectCases = [
   {
     name: "missing shell refresh command",
     id: "web.static.shell-controls",
-    overrides: () => removeOnce("web/src/modules/monitor.ts", "command:refresh"),
+    overrides: () => removeOnce("web/src/modules/nav.ts", "id: 'cmd-input'"),
     expectedCode: assertionFailed,
-    expectedLabel: "shell-controls:refresh-command:source"
+    expectedLabel: "shell-controls:cmd-input:source"
   },
   {
     name: "missing activity troubleshooting panel",
@@ -434,9 +434,9 @@ const defectCases = [
   {
     name: "missing shell controls authoritative source owner",
     id: "web.static.shell-controls",
-    overrides: () => removeOnce("web/index.html", "id=\"command-palette\""),
+    overrides: () => removeOnce("web/src/modules/nav.ts", "function closeCmdPalette"),
     expectedCode: assertionFailed,
-    expectedLabel: "shell-controls:command-palette"
+    expectedLabel: "shell-controls:close-cmd-palette:source"
   },
   {
     name: "missing VM create payload authoritative source owner",
@@ -672,9 +672,9 @@ const defectCases = [
   {
     name: "missing search authoritative source owner",
     id: "web.static.search-event-table",
-    overrides: () => removeOnce("web/src/modules/monitor.ts", "buildCommandPaletteItems"),
+    overrides: () => removeOnce("web/src/modules/nav.ts", "function renderCmdPalette"),
     expectedCode: assertionFailed,
-    expectedLabel: "search-event-table:build-command-palette:source"
+    expectedLabel: "search-event-table:render-cmd-palette:source"
   },
   {
     name: "missing account authoritative source owner",

@@ -29,22 +29,8 @@ function bindEvents() {
     state.language = els.languageSelect.value || 'ko';
     render();
   });
-  els.globalSearchInput?.addEventListener('input', () => handleCommandSearch(els.globalSearchInput.value));
   els.openCommandPalette?.addEventListener('click', () => {
     if (typeof toggleGlobalSearch === 'function') toggleGlobalSearch();
-  });
-  els.commandPaletteInput?.addEventListener('input', () => {
-    state.commandQuery = els.commandPaletteInput.value;
-  });
-  els.commandPaletteResults?.addEventListener('click', async (event) => {
-    const button = event.target.closest('button[data-command-id]');
-    if (!button) return;
-    try {
-      await runCommandPaletteItem(button.dataset.commandId);
-    } catch (error) {
-      state.error = normalizeError(error);
-      render();
-    }
   });
   els.accountSessionPanel?.addEventListener('submit', async (event) => {
     if (event.target.closest('form#account-create-form')) {
@@ -127,8 +113,7 @@ function bindEvents() {
       return;
     }
     if (event.key === 'Escape') {
-      if (state.commandPaletteOpen && typeof closeCommandPalette === 'function') closeCommandPalette();
-      else if (typeof closeCmdPalette === 'function') closeCmdPalette();
+      if (typeof closeCmdPalette === 'function') closeCmdPalette();
       if (typeof closeKbdHelp === 'function') closeKbdHelp();
       if (typeof closeMobileSB === 'function') closeMobileSB();
       const more = document.getElementById('pcv-vm-more-menu');
@@ -400,11 +385,7 @@ function init() {
     apiToken: byId('api-token'),
     themeSelect: byId('theme-select'),
     languageSelect: byId('language-select'),
-    globalSearchInput: byId('global-search-input'),
     openCommandPalette: byId('open-command-palette'),
-    commandPalette: byId('command-palette'),
-    commandPaletteInput: byId('command-palette-input'),
-    commandPaletteResults: byId('command-palette-results'),
     clearToken: byId('clear-token'),
     refreshAll: byId('refresh-all'),
     heroWorkload: byId('hero-workload'),

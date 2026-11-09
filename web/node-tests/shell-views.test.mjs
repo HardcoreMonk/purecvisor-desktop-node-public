@@ -696,28 +696,38 @@ test("one render paints the account list only on the accounts view", () => {
   assert.doesNotMatch(source, /stripAccountDirectory/);
 });
 
-test("command palette view labels follow the sidebar keys and accounts follows account.manage", () => {
+test("command palette opens on the new search dialog, filters Korean screen labels and hides accounts without account.manage", () => {
   resetSession(env);
   assert.equal(env.getViewLabel("templates"), env.t("nav.templates"));
   assert.equal(env.getViewLabel("accounts"), env.t("nav.accounts"));
   assert.equal(env.getViewLabel("vms"), "가상 머신");
   assert.equal(env.getViewLabel("activity"), "이벤트");
-  const viewIds = () => env.buildCommandPaletteItems().filter((item) => String(item.id).startsWith("view:")).map((item) => String(item.id));
-  assert.deepEqual(hostValue(viewIds()), [
-    "view:dashboard", "view:vms", "view:templates", "view:network", "view:jobs",
-    "view:activity", "view:evidence", "view:accounts", "view:troubleshooting"
-  ]);
-  const templates = env.buildCommandPaletteItems().find((item) => item.id === "view:templates");
-  assert.equal(templates.label, "템플릿");
-  assert.equal(templates.detail, "템플릿 열기");
+  const proto = Object.getPrototypeOf(env.document.body);
+  if (typeof proto.scrollIntoView !== "function") proto.scrollIntoView = function () {};
+  env.openCmdPalette();
+  const input = env.document.getElementById("cmd-input");
+  const list = env.document.getElementById("cmd-list");
+  assert.equal(env.document.activeElement, input);
+  for (const label of ["대시보드", "가상 머신", "템플릿", "네트워크", "작업", "이벤트", "증적", "계정", "진단"]) {
+    assert.match(list.textContent, new RegExp(label));
+  }
+  env.renderCmdPalette("템플");
+  assert.match(list.textContent, /템플릿/);
+  assert.doesNotMatch(list.textContent, /대시보드/);
   env.state.authAccessToken = "jwt";
   env.state.runtimePolicy = { auth: { rbac: true, mode: "account" } };
   env.state.authSession = { username: "op", role: "operator", permissions: ["operate"] };
-  assert.equal(viewIds().includes("view:accounts"), false);
+  env.renderCmdPalette("");
+  assert.doesNotMatch(list.textContent, /계정/);
+  env.renderCmdPalette("계정");
+  assert.doesNotMatch(list.textContent, /계정/);
   env.state.authSession.permissions = ["account.manage"];
-  assert.equal(viewIds().includes("view:accounts"), true);
+  env.renderCmdPalette("");
+  assert.match(list.textContent, /계정/);
   env.state.authSession.permissions = ["*"];
-  assert.equal(viewIds().includes("view:accounts"), true);
+  env.renderCmdPalette("계정");
+  assert.match(list.textContent, /계정/);
+  env.closeCmdPalette();
 });
 
 test("#/templates and #/accounts show only that section", () => {

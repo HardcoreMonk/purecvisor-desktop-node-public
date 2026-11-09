@@ -20,6 +20,7 @@
 | 2 | Task 1~8(U1~U8)을 Lane 1로 구현한다. grok 구현, Claude 리뷰 |
 | 3 | task마다 push, PR, Required CI 다섯 check green 뒤 merge(2026-11-09 상시 merge 승인) |
 | 4 | host mutation 없음. release train 출발과 설치본 시연은 이 campaign 밖이고 따로 승인한다 |
+| 5 | 2026-11-09 `U8 범위 조정 승인`, `host mutation ok`(Task 8a에서 `new-design-required`로 멈춘 보고의 다음 승인 1에 대한 답). U8을 Task 8a~8e로 나눈다. `render()`/`renderActiveView()`는 등록되지 않은 VM·템플릿·도움말의 새로 고침 경로로 남기고, 아무도 쓰지 않는 옛 코드(옛 명령 팔레트, 스와이프 코드, 등록 화면 guard 뒤의 옛 그리기 본문)만 지운다. 그 코드를 붙잡은 계약·시험은 같은 강도로 새 위치를 보게 옮긴다. 품질 게이트에서 stale·flake 기준선 항목을 `--prune`으로 정리한다. `host mutation ok`는 U8 안에서 필요하면 host mutation을 해도 된다는 뜻으로 적는다. U8 task는 host mutation이 필요 없어 하지 않는다. release train 출발은 Lane 2와 Lane 3(`current-evidence.json` 쓰기)을 함께 열어야 하므로 이 문장으로 열지 않고, campaign을 닫을 때 `next_approval_required`에 출발 문장을 둔다 |
 
 ## Global Constraints
 
@@ -186,13 +187,29 @@ task 크기(2026-11-09 사용자 승인 `U1 checkpoint 2 승인`): Task 2부터�
 
 실행 기록(2026-11-09): checkpoint 22(22:24~). clean HEAD `388bf658`에서 `npm run test:required` exit 0(node 389 pass, browser gate assertions 121 failed 0 violations 0), `Invoke-PcvPrGate.ps1` ok, `git diff --check origin/main...HEAD` clean. push 뒤 PR #129, release-train queue 행(merge_commit `388bf658`).
 
-## Task 8a: U8 옛 렌더러 퇴역
+## Task 8a: U8 옛 명령 팔레트와 스와이프 코드
 
-- [ ] 모든 화면이 등록표로 옮겨졌는지 확인하고 옛 `render()`(`monitor.ts:904-938`), `renderActiveView()`, `index.html` 정적 섹션, 옛 `#command-palette`, 쓰이지 않는 스와이프 코드(`nav.ts:659-693`)를 지운다. 공통 검증. 로컬 commit.
+원래 문장(사용자 결정 5로 범위를 바꿈): "모든 화면이 등록표로 옮겨졌는지 확인하고 옛 `render()`(`monitor.ts:904-938`), `renderActiveView()`, `index.html` 정적 섹션, 옛 `#command-palette`, 쓰이지 않는 스와이프 코드(`nav.ts:659-693`)를 지운다." 착수 때 확인한 결과 VM·템플릿·도움말은 등록표에 없고 `render()`에 기대므로, 그 둘과 붙잡힌 정적 섹션은 남긴다.
 
-## Task 8b: U8 품질 게이트와 닫기, PR
+- [x] 열리는 곳이 없는 옛 `#command-palette`(markup, `monitor.ts` 함수, state, CSS)와 쓰이지 않는 스와이프 코드(`nav.ts:755-790`)를 지운다. 계약·Pester·node 시험의 pin은 같은 강도로 새 팔레트(`nav.ts` `openCmdPalette`)를 보게 옮긴다. 공통 검증. 로컬 commit.
 
-- [ ] 남은 하드코딩 색을 지우고 `web/DESIGN.md` 기본 테마 설명(`:79-81`, `:84-100`)을 BL-0026대로 하나로 고친다. axe 위반 0 기준선(필요하면 `--prune`), browser fixture, 화면 캡처 기준선을 맞춘다. 감사 61건의 처리 결과(고침, 넣지 않음, API 설계로 넘김)를 plan 실행 기록에 표로 남긴다. campaign을 닫고 `next_approval_required`에 release train 출발 문장을 둔다. 공통 검증과 clean HEAD 종료 검증(`dotnet test src/DesktopNode.sln -c Release`, PR gate). release-train queue 행. push, PR(U8 묶음), green CI 뒤 merge, `main` push run green 확인.
+실행 기록(2026-11-09): checkpoint 23(23:35~23:53)과 24(23:54~, 상시 (권장) 자동 승인 "U8a checkpoint 2"). 첫 checkpoint는 tool batch 한도에 닿아 green diff를 남기고 멈췄다. grok이 옛 `#command-palette` markup, `monitor.ts`의 옛 팔레트 함수 7개(`buildCommandPaletteItems` 등)와 export, `.command-palette*` CSS, `state.commandPaletteOpen`, `nav.ts`의 터치 스와이프 IIFE를 지웠다. 계약 `search-event-table`·`shell-controls`, web Pester, 음성 시험의 pin은 새 팔레트(`nav.ts` `openCmdPalette`·`renderCmdPalette`·`closeCmdPalette`, `id: 'cmd-input'`, `role: 'combobox'`)를 source와 generated 둘 다로 붙잡게 옮겼고 `shell-controls` pin 수 3을 유지했다. Claude 리뷰: 옛 팔레트 시험이 확인하던 `account.manage` 규칙(권한 없으면 계정 화면 항목을 숨김)을 새 팔레트가 지키지 않아, `CMD_ACTIONS`와 화면 목록의 계정 항목에 `perm: 'account.manage'` 필터를 더하고 node 시험에 그 단언을 되살렸다(사이드바 `syncAccountNav`와 같은 규칙). `bootstrap.ts`에 남은 옛 팔레트 배선(지운 `handleCommandSearch`·`runCommandPaletteItem`을 부르는 listener, Escape 분기, `els` 항목)과 쓰이지 않는 `state.commandQuery`도 지웠다(`bootstrap.ts` 497→478줄). `render()`/`renderActiveView()`는 `renderCommandPalette()` 호출 한 줄만 빠졌다. `copy.palette.*` i18n 키는 남겼다. domsafe 31→30, axe 기준선 변화 없음(2,626). 검증: `npm run test:required`(node 389 pass, gate `ok=true` assertions 121 failed 0 violations 0), web Pester와 ratchet Pester 53/53, Delivery 785/785, `git diff --check` clean.
+
+## Task 8b: U8 등록 화면의 옛 그리기 본문
+
+- [ ] 등록된 화면에서 `pcvLegacyViewSkipped` guard 뒤에 남은 옛 그리기 본문(`ops.ts` `renderJobs`·`renderEventCenter`, `monitor.ts` 진단·세션 부분, `vm-console.ts` `renderTroubleshooting`, `accounts.ts` 옛 표)을 지운다. 그 본문을 붙잡은 계약·fixture·Pester·node 시험은 같은 강도로 등록 화면 모듈을 보게 옮긴다. `render()`/`renderActiveView()`는 VM·템플릿·도움말 새로 고침 경로로 남긴다. 공통 검증. 로컬 commit.
+
+## Task 8c: U8 하드코딩 색과 테마 설명
+
+- [ ] 남은 하드코딩 색을 token으로 바꾸고 `web/DESIGN.md` 기본 테마 설명(`:79-81`, `:84-100`)을 BL-0026대로 하나로 고친다. 진단 패널에 남은 영어 리터럴을 i18n 키로 바꾼다(붙잡힌 문자열은 계약을 같은 강도로 옮긴다). 공통 검증. 로컬 commit.
+
+## Task 8d: U8 품질 게이트와 닫기
+
+- [ ] browser gate 전체 실행으로 axe 위반 0 기준선을 다시 쓰고 stale·flake 항목을 `--prune`으로 정리한다. browser fixture와 화면 캡처 기준선(가짜 API)을 맞춘다. 감사 61건의 처리 결과(고침, 넣지 않음, API 설계로 넘김)를 plan 실행 기록에 표로 남긴다. 공통 검증. 로컬 commit.
+
+## Task 8e: U8 PR
+
+- [ ] clean HEAD 종료 검증(`dotnet test src/DesktopNode.sln -c Release`, `npm run test:required`, `Invoke-PcvPrGate.ps1`), release-train queue 행. campaign을 닫고 `next_approval_required`에 release train 출발 문장을 둔다. push, PR(U8 묶음, Task 8a~8e), green CI 뒤 merge, `main` push run green 확인.
 
 ## Nonclaims
 

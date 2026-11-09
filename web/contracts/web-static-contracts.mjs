@@ -878,7 +878,6 @@ function verifySearchEventTable(context) {
   const styles = context.readText("web/style.css");
   const app = context.readText("web/app.bundle.js");
   const servedSource = context.readShellSource();
-  const shellSource = context.readText("web/src/modules/monitor.ts");
   const activitySource = context.readText("web/src/modules/ops.ts");
   const tableSource = context.readText("web/src/modules/core.ts");
   const shellNav = context.readText("web/src/modules/shell.ts");
@@ -887,19 +886,18 @@ function verifySearchEventTable(context) {
   context.assertMatch(navSource, /function\s+toggleGlobalSearch\s*\(/i, "search-event-table:global-search-toggle");
   context.assertMatch(shellNav, /toggleGlobalSearch/i, "search-event-table:global-search-open");
   for (const [pattern, label] of [
-    [/id="command-palette"/i, "command-palette"],
-    [/id="command-palette-input"/i, "command-palette-input"],
-    [/id="command-palette-results"/i, "command-palette-results"],
     [/id="event-center-panel"/i, "event-center"],
     [/id="job-filter"/i, "job-filter"]
   ]) {
     context.assertMatch(index, pattern, `search-event-table:${label}`);
   }
   context.assertMatch(index, /id="network-filter"/i, "search-event-table:network-filter");
-  assertSourceAndGenerated(context, shellSource, app, [
-    [/function\s+buildCommandPaletteItems\s*\(/i, "build-command-palette"],
-    [/function\s+renderCommandPalette\s*\(/i, "render-command-palette"],
-    [/function\s+handleCommandSearch\s*\(/i, "handle-command-search"]
+  assertSourceAndGenerated(context, navSource, app, [
+    [/function\s+openCmdPalette\s*\(/i, "open-cmd-palette"],
+    [/function\s+renderCmdPalette\s*\(/i, "render-cmd-palette"],
+    [/function\s+closeCmdPalette\s*\(/i, "close-cmd-palette"],
+    [/id:\s*'cmd-input'/i, "cmd-input"],
+    [/role:\s*'combobox'/i, "cmd-combobox"]
   ], "search-event-table");
   assertSourceAndGenerated(context, activitySource, app, [
     [/function\s+buildEventCenterItems\s*\(/i, "build-event-center"],
@@ -1295,13 +1293,12 @@ function verifyJobOrchestration(context) {
 function verifyShellControls(context) {
   const index = context.readText("web/index.html");
   const app = context.readText("web/app.bundle.js");
-  const shellSource = context.readText("web/src/modules/monitor.ts");
   const actionsSource = context.readText("web/src/modules/accounts.ts");
   const loadSource = context.readText("web/src/modules/core.ts");
   const servedAppSource = context.readText("web/src/bootstrap.ts");
   const servedSource = context.readShellSource();
+  const navSource = context.readText("web/src/modules/nav.ts");
   for (const [pattern, label] of [
-    [/id="command-palette"/i, "command-palette"],
     [/id="shell-sidebar"/i, "shell-sidebar"],
     [/id="shell-statusbar"/i, "shell-statusbar"],
     [/data-view-link="network"/i, "network-view"],
@@ -1311,9 +1308,10 @@ function verifyShellControls(context) {
     context.assertMatch(index, pattern, `shell-controls:${label}`);
   }
   context.assertNotMatch(index, /id="vm-asset-list"|id="workspace-tabbar"|id="connection-state"/i, "shell-controls:dropped-surfaces");
-  assertSourceAndGenerated(context, shellSource, app, [
-    [/command:refresh/i, "refresh-command"],
-    [/command:clear-browser-state/i, "clear-browser-state-command"]
+  assertSourceAndGenerated(context, navSource, app, [
+    [/function\s+closeCmdPalette\s*\(/i, "close-cmd-palette"],
+    [/id:\s*'cmd-input'/i, "cmd-input"],
+    [/role:\s*'combobox'/i, "cmd-combobox"]
   ], "shell-controls");
   assertSourceAndGenerated(context, actionsSource, app, [
     [/handleShellCommand/i, "handle-command"],

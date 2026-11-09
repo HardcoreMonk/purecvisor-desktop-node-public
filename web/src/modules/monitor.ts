@@ -744,102 +744,6 @@ function getViewLabel(view) {
   return typeof t === 'function' ? t(key) : key;
 }
 
-function buildCommandPaletteItems() {
-  const viewItems = ['dashboard', 'vms', 'templates', 'network', 'jobs', 'activity', 'evidence', 'accounts', 'troubleshooting']
-    .filter((view) => view !== 'accounts' || typeof canManageAccounts !== 'function' || canManageAccounts())
-    .map((view) => {
-      const label = getViewLabel(view);
-      return {
-        id: `view:${view}`,
-        label,
-        detail: typeof t === 'function' ? t('shell.view.open', { label }) : label,
-        tone: view === state.activeView ? 'ok' : 'info',
-        view
-      };
-    });
-  const commandItems = [
-    { id: 'command:refresh', label: t('copy.mon.refresh'), detail: t('copy.mon.refresh_detail'), tone: 'info', command: 'refresh' },
-    { id: 'command:create-vm', label: t('copy.dashboard.create'), detail: t('copy.mon.create_vm_detail'), tone: 'warn', command: 'open-create-vm' },
-    { id: 'command:clear-browser-state', label: t('copy.mon.clear_session'), detail: t('copy.mon.clear_session_detail'), tone: 'warn', command: 'clear-browser-state' }
-  ];
-  const vmItems = asArray(state.vms).slice(0, 20).map((vm) => ({
-    id: `vm:${getVmId(vm)}`,
-    label: getVmName(vm),
-    detail: `VM ${getVmState(vm) || 'unknown'} / ${getVmId(vm)}`,
-    tone: isRunningVmState(getVmState(vm)) ? 'ok' : 'info',
-    vmId: getVmId(vm)
-  }));
-  const jobItems = buildActivityRows().slice(0, 20).map(({ source, job }) => ({
-    id: `job:${job?.job_id || source}`,
-    label: job?.operation || job?.job_id || 'job',
-    detail: `${job?.status || 'unknown'} / ${job?.job_id || source}`,
-    tone: String(job?.status || '').toLowerCase() === 'failed' ? 'error' : 'info',
-    view: 'jobs'
-  }));
-  const routeItems = DESKTOP_NODE_ROUTE_COVERAGE.map((route) => ({
-    id: `route:${route.id}`,
-    label: route.id,
-    detail: `${route.method} ${route.route}`,
-    tone: route.mutating ? 'warn' : 'info',
-    view: route.view === 'service' ? 'troubleshooting' : route.view
-  }));
-  return [...viewItems, ...commandItems, ...vmItems, ...jobItems, ...routeItems];
-}
-
-function getCommandPaletteMatches() {
-  const query = state.commandQuery || state.globalSearch;
-  return filterRowsByQuery(buildCommandPaletteItems(), query, (item) => [
-    item.label,
-    item.detail,
-    item.id,
-    item.view,
-    item.command
-  ].join(' ')).slice(0, 12);
-}
-
-function renderCommandPalette() {
-  if (els.commandPalette) els.commandPalette.hidden = true;
-  if (els.commandPaletteResults) els.commandPaletteResults.innerHTML = '';
-}
-
-function openCommandPalette() {
-  if (typeof openCmdPalette === 'function') openCmdPalette();
-}
-
-function closeCommandPalette() {
-  state.commandPaletteOpen = false;
-  state.commandQuery = '';
-  state.globalSearch = '';
-  if (typeof closeCmdPalette === 'function') closeCmdPalette();
-  renderCommandPalette();
-}
-
-function handleCommandSearch(query) {
-  state.globalSearch = query;
-  state.commandQuery = query;
-  state.commandPaletteOpen = false;
-  render();
-}
-
-async function runCommandPaletteItem(commandId) {
-  const item = buildCommandPaletteItems().find((entry) => entry.id === commandId);
-  if (!item) return;
-  state.commandPaletteOpen = false;
-  state.commandQuery = '';
-  state.globalSearch = '';
-  if (item.vmId) {
-    await selectVmFromShell(item.vmId);
-    return;
-  }
-  if (item.command) {
-    handleShellCommand(item.command);
-    return;
-  }
-  if (item.view) {
-    navigateToView(item.view);
-  }
-}
-
 function renderActiveView() {
   // BL-0019: in the Single Edge shell PCV.nav owns the shown section; the legacy view state only follows it.
   // A registered view's section visibility stays with nav so the two painters do not fight.
@@ -865,7 +769,6 @@ function render() {
   try { applyUiPreferences(); } catch (e) { if (window._DEBUG) console.warn('render:applyUiPreferences', e); }
   try { renderError(); } catch (e) { if (window._DEBUG) console.warn('render:renderError', e); }
   try { renderAuthGate(); } catch (e) { if (window._DEBUG) console.warn('render:renderAuthGate', e); }
-  try { renderCommandPalette(); } catch (e) { if (window._DEBUG) console.warn('render:renderCommandPalette', e); }
   try { renderOpsCockpit(); } catch (e) { if (window._DEBUG) console.warn('render:renderOpsCockpit', e); }
   try { renderMetrics(); } catch (e) { if (window._DEBUG) console.warn('render:renderMetrics', e); }
   try { renderHost(); } catch (e) { if (window._DEBUG) console.warn('render:renderHost', e); }
@@ -935,14 +838,7 @@ window.bindAlertRegionAuthGate = bindAlertRegionAuthGate;
 window.renderAuthGate = renderAuthGate;
 window.applyUiPreferences = applyUiPreferences;
 window.getViewLabel = getViewLabel;
-window.buildCommandPaletteItems = buildCommandPaletteItems;
-window.getCommandPaletteMatches = getCommandPaletteMatches;
-window.renderCommandPalette = renderCommandPalette;
-window.openCommandPalette = openCommandPalette;
-window.closeCommandPalette = closeCommandPalette;
-window.handleCommandSearch = handleCommandSearch;
-window.runCommandPaletteItem = runCommandPaletteItem;
 window.renderActiveView = renderActiveView;
 window.render = render;
-PCV.monitor = Object.assign(PCV.monitor || {}, { getDiagnosticActionPolicy, buildPartialRefreshError, collectRefreshFailures, getPriorityItems, renderMetrics, renderHost, renderOpsSummaryCard, renderOpsCockpit, renderRuntimeApiRegistryBridge, renderHostOpsLifecycleBucketTable, renderDiagnosticsBundle, renderTokenRotation, renderAccountSession, renderAccountDirectory, readNested, formatPolicyValue, countJobsByStatus, getVmCheckpointCount, countVmCheckpointWarnings, countSelectedOldCheckpointWarnings, buildMonitoringSignals, evidenceStatusMessage, renderEvidenceDashboard, renderCurrentEvidenceSummary, renderMonitoring, renderTroubleshootingEvidence, renderError, pcvFormatRelativeTime, hasRefreshedOperation, needsAuthGate, bindAlertRegionAuthGate, renderAuthGate, applyUiPreferences, getViewLabel, buildCommandPaletteItems, getCommandPaletteMatches, renderCommandPalette, openCommandPalette, closeCommandPalette, handleCommandSearch, runCommandPaletteItem, renderActiveView, render });
+PCV.monitor = Object.assign(PCV.monitor || {}, { getDiagnosticActionPolicy, buildPartialRefreshError, collectRefreshFailures, getPriorityItems, renderMetrics, renderHost, renderOpsSummaryCard, renderOpsCockpit, renderRuntimeApiRegistryBridge, renderHostOpsLifecycleBucketTable, renderDiagnosticsBundle, renderTokenRotation, renderAccountSession, renderAccountDirectory, readNested, formatPolicyValue, countJobsByStatus, getVmCheckpointCount, countVmCheckpointWarnings, countSelectedOldCheckpointWarnings, buildMonitoringSignals, evidenceStatusMessage, renderEvidenceDashboard, renderCurrentEvidenceSummary, renderMonitoring, renderTroubleshootingEvidence, renderError, pcvFormatRelativeTime, hasRefreshedOperation, needsAuthGate, bindAlertRegionAuthGate, renderAuthGate, applyUiPreferences, getViewLabel, renderActiveView, render });
 })(window.PCV);

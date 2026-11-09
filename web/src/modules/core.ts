@@ -201,8 +201,6 @@ interface PcvState {
   jobStatusFilter: string;
   jobSort: string;
   networkFilter: string;
-  commandPaletteOpen: boolean;
-  commandQuery: string;
   globalSearch: string;
   shellMessage: string;
   trackedJobs: any[];
@@ -296,8 +294,6 @@ const state: PcvState = {
   jobStatusFilter: 'all',
   jobSort: 'updated:desc',
   networkFilter: '',
-  commandPaletteOpen: false,
-  commandQuery: '',
   globalSearch: '',
   shellMessage: '',
   trackedJobs: [],
