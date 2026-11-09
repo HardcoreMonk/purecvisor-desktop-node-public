@@ -855,9 +855,13 @@ async function runCommandPaletteItem(commandId) {
 
 function renderActiveView() {
   // BL-0019: in the Single Edge shell PCV.nav owns the shown section; the legacy view state only follows it.
+  // A registered view's section visibility stays with nav so the two painters do not fight.
   const navView = window.PCV && window.PCV.nav && typeof window.PCV.nav.activeView === 'function' ? window.PCV.nav.activeView() : null;
   const shownView = navView || state.activeView;
+  const skip = typeof pcvLegacyViewSkipped === 'function' ? pcvLegacyViewSkipped : () => false;
   document.querySelectorAll('.app-view').forEach((section) => {
+    const name = section.dataset?.view || section.id;
+    if (skip(name)) return;
     const active = section.dataset?.view === shownView || section.id === shownView;
     section.hidden = !active;
   });
@@ -900,6 +904,12 @@ function render() {
   try { renderDiagnosticsBundle(); } catch (e) { if (window._DEBUG) console.warn('render:renderDiagnosticsBundle', e); }
   try { renderBetaFollowup(); } catch (e) { if (window._DEBUG) console.warn('render:renderBetaFollowup', e); }
   try { renderTroubleshooting(); } catch (e) { if (window._DEBUG) console.warn('render:renderTroubleshooting', e); }
+  try {
+    if (window.PCV && PCV.views && typeof PCV.views.renderActive === 'function') {
+      const painting = typeof PCV.views.navPaintActive === 'function' && PCV.views.navPaintActive();
+      if (!painting) PCV.views.renderActive('refresh');
+    }
+  } catch (e) { if (window._DEBUG) console.warn('render:views', e); }
   if (els.openCreateVm) {
     els.openCreateVm.disabled = !rbacAllows('operate');
   }

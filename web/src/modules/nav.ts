@@ -6,6 +6,91 @@ window.PCV = window.PCV || {};
 window._navGeneration = 0;
 // BL-0019: the #cb view this nav last showed; the legacy renderActiveView() follows it (null until the first paint).
 var _shownView = null;
+var _navPaintDepth = 0;
+var _knownViews = {
+  dashboard: true,
+  vms: true,
+  templates: true,
+  network: true,
+  jobs: true,
+  activity: true,
+  evidence: true,
+  accounts: true,
+  troubleshooting: true,
+  helppage: true
+};
+var _viewRegistry = Object.create(null);
+
+function _viewSection(name) {
+  var cb = document.getElementById('cb');
+  if (!cb || typeof cb.querySelector !== 'function') return null;
+  return cb.querySelector('.app-view[data-view="' + name + '"]');
+}
+
+function _viewMount(name) {
+  var section = _viewSection(name);
+  if (!section) return null;
+  var nested = typeof section.querySelector === 'function' ? section.querySelector('[data-view-mount]') : null;
+  return nested || section;
+}
+
+function _activeViewName() {
+  if (PCV.nav && typeof PCV.nav.activeView === 'function') {
+    var active = PCV.nav.activeView();
+    if (active) return active;
+  }
+  if (typeof currentTab !== 'undefined' && currentTab) return currentTab;
+  return null;
+}
+
+PCV.views = {
+  register: function (name, spec) {
+    if (!_knownViews[name]) throw new Error('unknown view: ' + name);
+    if (!spec || typeof spec.render !== 'function') throw new Error('view render function required');
+    _viewRegistry[name] = spec;
+  },
+  unregister: function (name) {
+    delete _viewRegistry[name];
+  },
+  isRegistered: function (name) {
+    return Object.prototype.hasOwnProperty.call(_viewRegistry, name);
+  },
+  get: function (name) {
+    return Object.prototype.hasOwnProperty.call(_viewRegistry, name) ? _viewRegistry[name] : null;
+  },
+  navPaintActive: function () { return _navPaintDepth > 0; },
+  renderActive: function (reason) {
+    var name = _activeViewName();
+    if (!name || !Object.prototype.hasOwnProperty.call(_viewRegistry, name)) return;
+    var spec = _viewRegistry[name];
+    var generation = window._navGeneration || 0;
+    var mount = _viewMount(name);
+    var ctx = {
+      reason: reason,
+      generation: generation,
+      isCurrent: function () {
+        return (window._navGeneration || 0) === generation && _activeViewName() === name;
+      }
+    };
+    try {
+      spec.render(mount, ctx);
+    } catch (err) {
+      if (!mount || !PCV.components || typeof PCV.components.loadError !== 'function' || typeof mount.appendChild !== 'function') return;
+      var node = PCV.components.loadError({
+        titleKey: 'ui.load_error.title',
+        detail: err && err.message ? err.message : String(err || '')
+      });
+      var old = typeof mount.querySelector === 'function' ? mount.querySelector('.pcv-load-error') : null;
+      if (old && typeof old.remove === 'function') old.remove();
+      mount.appendChild(node);
+    }
+  }
+};
+
+window.pcvLegacyViewSkipped = function (name) {
+  return !!(PCV.views && typeof PCV.views.isRegistered === 'function' && PCV.views.isRegistered(name));
+};
+
 function _commitNavigation(n) {
   window._navGeneration = (window._navGeneration || 0) + 1;
   if (typeof clearAllFormDirty === 'function') clearAllFormDirty();
@@ -40,6 +125,14 @@ function renderContent() {
   });
 }
 function _renderContentPaint(tab, generation) {
+  _navPaintDepth += 1;
+  try {
+    _paintNavContent(tab, generation);
+  } finally {
+    _navPaintDepth -= 1;
+  }
+}
+function _paintNavContent(tab, generation) {
   tab = tab || currentTab;
   generation = generation ?? (window._navGeneration || 0);
   if (typeof destroyAllCharts === 'function') destroyAllCharts();
@@ -63,6 +156,7 @@ function _renderContentPaint(tab, generation) {
     PCV.ui._renderTarget = b;
     _shownView = viewId;
     if (window.VALID_VIEWS && window.VALID_VIEWS.has(viewId) && typeof setActiveView === 'function') setActiveView(viewId);
+    if (PCV.views && PCV.views.isRegistered(viewId)) PCV.views.renderActive('navigate');
   }
   var v = (window.vmList || [])[window.selectedVmIndex || 0];
   var gen = generation;

@@ -116,7 +116,9 @@ task 크기(2026-11-09 사용자 승인 `U1 checkpoint 2 승인`): Task 2부터�
 
 ## Task 4a: U4 화면 렌더 등록표
 
-- [ ] 설계 4.2절. `nav.ts`에 `PCV.views.register(name, { render(mount, ctx) })`를 두고 옛 `renderActiveView()`가 등록된 화면을 건너뛰게 한다. 주기 새로 고침은 활성 화면의 `render`만 부른다. `HN.*` 반환 형식을 확인해 domsafe ceiling을 올리지 않는 경로를 정하고 실행 기록에 적는다. 화면은 아직 옮기지 않는다. node 시험: 등록된 화면 건너뜀. 공통 검증. 로컬 commit.
+- [x] 설계 4.2절. `nav.ts`에 `PCV.views.register(name, { render(mount, ctx) })`를 두고 옛 `renderActiveView()`가 등록된 화면을 건너뛰게 한다. 주기 새로 고침은 활성 화면의 `render`만 부른다. `HN.*` 반환 형식을 확인해 domsafe ceiling을 올리지 않는 경로를 정하고 실행 기록에 적는다. 화면은 아직 옮기지 않는다. node 시험: 등록된 화면 건너뜀. 공통 검증. 로컬 commit.
+
+실행 기록(2026-11-09): checkpoint 8(18:40~18:48). grok이 `nav.ts`에 `PCV.views`(`register`, `isRegistered`, `get`, 시험용 `unregister`, `renderActive(reason)`)를 넣었다. `register`는 nav route 이름과 `render` 함수만 받고, 같은 이름은 교체한다. `renderActive`는 활성 화면이 등록돼 있을 때만 그 `render(mount, ctx)` 하나를 부른다. `ctx`는 `{ reason, generation, isCurrent }`이고, `isCurrent`는 이동했거나 활성 화면이 바뀌면 false다. `render`가 throw하면 그 mount에만 `loadError`를 붙인다. mount 규칙: `#cb .app-view[data-view="<name>"]` 안의 `[data-view-mount]`, 없으면 섹션 자체다. 기존 자식은 지우지 않는다. `_renderContentPaint`는 섹션을 켠 뒤 `renderActive('navigate')`를 부르고, 같은 페인트 안에서 옛 `render()`가 다시 부르지 않게 막는다(`navPaintActive`). `monitor.ts` `render()`는 옛 그리기 뒤에 `renderActive('refresh')`를 부르고, `renderActiveView()`는 등록된 섹션의 표시를 nav에 맡긴다. 옛 그리기 함수 guard는 `pcvLegacyViewSkipped(name)`으로 두고, 각 화면을 옮길 때 건다. `HN.*`(`ui.ts`)는 `PCV.uxlib.el`로 DOM 노드를 돌려주므로, 등록 화면은 `HN`·`uxlib.el`로 노드를 만들어 mount에 붙이는 경로로 domsafe 천장(34)을 올리지 않는다. 등록된 제품 화면은 아직 없다. 검증: `npm run test:required` exit 0(node 382 pass, browser gate assertions 121 failed 0 violations 0, 기준선 변화 없음), web Pester 50/50, ratchet Pester 3/3, Delivery 785/785, `git diff --check` clean.
 
 ## Task 4b: U4 네트워크, PR
 

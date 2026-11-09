@@ -1887,6 +1887,96 @@ test("mobile power and delete call exported vm methods", () => {
   assert.doesNotMatch(mobile, /PCV\.vm\.bulkDelete|customConfirm\([^)]*일괄 삭제/);
 });
 
+test("registered views render only the active screen and leave legacy screens alone", () => {
+  const network = env.document.querySelector('.app-view[data-view="network"]');
+  const jobs = env.document.querySelector('.app-view[data-view="jobs"]');
+  const dashboard = env.document.querySelector('.app-view[data-view="dashboard"]');
+  const marker = env.document.createElement("span");
+  marker.id = "u4-keep";
+  network.appendChild(marker);
+  const keptDash = env.document.createElement("span");
+  keptDash.id = "u4-dash-keep";
+  dashboard.appendChild(keptDash);
+  const mountPoint = env.document.createElement("div");
+  mountPoint.setAttribute("data-view-mount", "");
+  network.appendChild(mountPoint);
+  const calls = { network: [], jobs: [] };
+  let which = "";
+  try {
+    env.PCV.views.register("network", { render() { which = "first"; } });
+    env.PCV.views.register("network", {
+      render(mount, ctx) {
+        which = "second";
+        calls.network.push({ mount, ctx });
+      }
+    });
+    env.PCV.views.register("jobs", {
+      render(mount, ctx) { calls.jobs.push({ mount, ctx }); }
+    });
+    assert.equal(env.PCV.views.isRegistered("network"), true);
+    assert.equal(typeof env.PCV.views.get("network").render, "function");
+    assert.equal(env.pcvLegacyViewSkipped("network"), true);
+    assert.equal(env.pcvLegacyViewSkipped("dashboard"), false);
+
+    env.navigateTo("network");
+    assert.equal(which, "second");
+    assert.equal(calls.network.length, 1);
+    assert.equal(calls.jobs.length, 0);
+    assert.equal(calls.network[0].mount, mountPoint);
+    assert.equal(calls.network[0].ctx.reason, "navigate");
+    assert.equal(typeof calls.network[0].ctx.generation, "number");
+    assert.equal(calls.network[0].ctx.isCurrent(), true);
+    assert.equal(network.querySelector("#u4-keep"), marker);
+    assert.equal(network.hidden, false);
+
+    env.render();
+    assert.equal(calls.network.length, 2);
+    assert.equal(calls.jobs.length, 0);
+    assert.equal(calls.network[1].ctx.reason, "refresh");
+    assert.equal(calls.network[1].ctx.isCurrent(), true);
+
+    env.navigateTo("dashboard");
+    assert.equal(calls.jobs.length, 0);
+    assert.equal(calls.network[0].ctx.isCurrent(), false);
+    assert.equal(dashboard.hidden, false);
+    assert.equal(network.hidden, true);
+    assert.equal(dashboard.querySelector("#u4-dash-keep"), keptDash);
+    assert.equal(env.PCV.views.isRegistered("dashboard"), false);
+
+    env.PCV.views.unregister("jobs");
+    network.hidden = false;
+    jobs.hidden = false;
+    env.renderActiveView();
+    assert.equal(network.hidden, false);
+    assert.equal(jobs.hidden, true);
+    assert.equal(dashboard.hidden, false);
+
+    env.PCV.views.register("network", {
+      render() { throw new Error("boom"); }
+    });
+    env.navigateTo("network");
+    const error = mountPoint.querySelector(".pcv-load-error");
+    assert.ok(error);
+    assert.match(error.textContent, /boom/);
+    assert.equal(dashboard.querySelector(".pcv-load-error"), null);
+    assert.equal(network.querySelector("#u4-keep"), marker);
+
+    assert.throws(() => env.PCV.views.register("not-a-view", { render() {} }));
+    assert.throws(() => env.PCV.views.register("jobs", {}));
+    assert.throws(() => env.PCV.views.register("jobs", { render: "no" }));
+    assert.equal(env.PCV.views.isRegistered("jobs"), false);
+  } finally {
+    env.PCV.views.unregister("network");
+    env.PCV.views.unregister("jobs");
+    if (marker.parentNode) marker.remove();
+    if (keptDash.parentNode) keptDash.remove();
+    if (mountPoint.parentNode) mountPoint.remove();
+    const leftover = network.querySelector(".pcv-load-error");
+    if (leftover) leftover.remove();
+    env.navigateTo("dashboard");
+  }
+});
+
 test("logout closes open modals", async () => {
   if (!env.document.getElementById("toasts")) {
     const toasts = env.document.createElement("div");
