@@ -152,7 +152,9 @@ task 크기(2026-11-09 사용자 승인 `U1 checkpoint 2 승인`): Task 2부터�
 
 ## Task 6a: U6 대시보드 머리와 KPI
 
-- [ ] `web/index.html:228-286`의 hero, 고정 메모, 빠른 작업 6칸, "운영 콕핏" 머리를 지운다. 대시보드를 등록표로 옮겨 pagehead(주 버튼 `+ 새 VM`)와 KPI 카드(VM 실행 중·꺼짐·템플릿, 진행 중 job, 최근 24시간 실패 job, Hyper-V 준비 상태)를 그린다. 공통 검증. 로컬 commit.
+- [x] `web/index.html:228-286`의 hero, 고정 메모, 빠른 작업 6칸, "운영 콕핏" 머리를 지운다. 대시보드를 등록표로 옮겨 pagehead(주 버튼 `+ 새 VM`)와 KPI 카드(VM 실행 중·꺼짐·템플릿, 진행 중 job, 최근 24시간 실패 job, Hyper-V 준비 상태)를 그린다. 공통 검증. 로컬 commit.
+
+실행 기록(2026-11-09): checkpoint 15(20:37~20:58)에서 grok이 새 모듈 `web/src/modules/view-dashboard.ts`(168줄, `register('dashboard')`)를 만들었다. `#dashboard-kpi[data-view-mount]`에 KPI 카드 6개를 그린다. VM 실행 중·꺼짐·템플릿은 `state.vms`·`vmPowerKind`·`isTemplateLockedVm`으로 세며, 템플릿은 실행/꺼짐에서 빠진다. 진행 중 job은 queued와 running을 센다. 최근 24시간 실패 job은 `created_at` 기준이다. Hyper-V 준비 상태는 준비, 미준비, 알 수 없음과 짧은 이유로 보인다. VM 목록을 아직 읽지 못했으면 "-"와 읽는 중으로 보이고 꾸민 값은 없다. 정적 pagehead에는 `#open-create-vm`(`+ 새 VM`)과 보조 링크를 두었다. hero, 운영 메모, pills, 빠른 작업 6칸, 두 번째 "운영 콕핏" 머리, `renderHeroChips`를 지웠다. 붙잡힌 패널(`ops-summary-panel`, `priority-panel`, `dashboard-activity-panel`, `metric-grid`, `host-details`, `monitoring`, `monitoring-panel`)은 남겼다. 새 시험이 실패한 채 한도에 걸렸다. 권장안 자동 승인으로 checkpoint 16(20:58~21:02)과 17(21:02~21:07)에서 Claude가 이어서 고쳤다. 시험의 가짜 DOM이 `<a>`의 class 선택자를 맞추지 못해 카드 6개 중 1개만 셌으므로, mount 자식으로 셌다. 렌더 결과는 원래 맞았다. 빠른 작업 칸에만 있던 `data-view-link`(network, activity, troubleshooting)는 pagehead 보조 링크(작업, 네트워크, 이벤트, 진단)로 옮겼다. `dashboard` 링크 검사는 계약(`ops-cockpit:dashboard-link`)과 Pester 모두에서 실제 위치인 셸 nav 정의(`shell.ts` `id: 'dashboard'`)를 보게 했다. 대시보드 mount가 `index.html`에서 먼저 나와서, network panel 음성 시험의 결함 주입은 네트워크 섹션 mount(`<div data-view-mount`)를 가리키게 했다. domsafe 31(변화 없음), axe 기준선 2,414→2,502(+88, `--prune` 없음). 검증: `npm run test:required`(node 386 pass, 기준선 기록 뒤 gate 두 번 `ok=true`, assertions 121 failed 0 violations 0), web Pester 50/50, ratchet Pester 3/3, Delivery 785/785, `git diff --check` clean.
 
 ## Task 6b: U6 워크로드 표와 경고 피드, PR
 

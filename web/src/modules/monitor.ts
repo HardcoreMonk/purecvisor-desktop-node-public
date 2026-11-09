@@ -667,28 +667,6 @@ function hasRefreshedOperation(operation) {
   return !failures.some((failure) => failure?.operation === operation);
 }
 
-function renderHeroChips() {
-  if (els.heroWorkload) {
-    if (hasRefreshedOperation('vm.list')) {
-      const counts = getSummaryVmCounts();
-      els.heroWorkload.textContent = `${counts.running}/${counts.total}`;
-    } else {
-      els.heroWorkload.textContent = '—';
-    }
-  }
-  if (els.heroHostMode) {
-    // getHostReadinessLabel() now gates itself, so calling it unconditionally
-    // keeps this chip agreeing with the metric grid and ops cockpit when only
-    // one of ops.summary / host.status came back.
-    els.heroHostMode.textContent = String(getHostReadinessLabel());
-  }
-  if (els.heroAlerts) {
-    els.heroAlerts.textContent = state.lastRefreshedAt === null
-      ? '—'
-      : String((state.partialFailures || []).length);
-  }
-}
-
 function needsAuthGate() {
   return state.connectionState === 'auth'
     && !state.authAccessToken.trim()
@@ -878,7 +856,6 @@ function render() {
   try { applyUiPreferences(); } catch (e) { if (window._DEBUG) console.warn('render:applyUiPreferences', e); }
   try { renderError(); } catch (e) { if (window._DEBUG) console.warn('render:renderError', e); }
   try { renderAuthGate(); } catch (e) { if (window._DEBUG) console.warn('render:renderAuthGate', e); }
-  try { renderHeroChips(); } catch (e) { if (window._DEBUG) console.warn('render:renderHeroChips', e); }
   try { renderCommandPalette(); } catch (e) { if (window._DEBUG) console.warn('render:renderCommandPalette', e); }
   try { renderOpsCockpit(); } catch (e) { if (window._DEBUG) console.warn('render:renderOpsCockpit', e); }
   try { renderMetrics(); } catch (e) { if (window._DEBUG) console.warn('render:renderMetrics', e); }
@@ -944,7 +921,6 @@ window.renderTroubleshootingEvidence = renderTroubleshootingEvidence;
 window.renderError = renderError;
 window.pcvFormatRelativeTime = pcvFormatRelativeTime;
 window.hasRefreshedOperation = hasRefreshedOperation;
-window.renderHeroChips = renderHeroChips;
 window.needsAuthGate = needsAuthGate;
 window.bindAlertRegionAuthGate = bindAlertRegionAuthGate;
 window.renderAuthGate = renderAuthGate;
@@ -959,5 +935,5 @@ window.handleCommandSearch = handleCommandSearch;
 window.runCommandPaletteItem = runCommandPaletteItem;
 window.renderActiveView = renderActiveView;
 window.render = render;
-PCV.monitor = Object.assign(PCV.monitor || {}, { getDiagnosticActionPolicy, buildPartialRefreshError, collectRefreshFailures, getPriorityItems, renderMetrics, renderHost, renderOpsSummaryCard, renderOpsCockpit, renderRuntimeApiRegistryBridge, renderHostOpsLifecycleBucketTable, renderDiagnosticsBundle, renderTokenRotation, renderAccountSession, renderAccountDirectory, readNested, formatPolicyValue, countJobsByStatus, getVmCheckpointCount, countVmCheckpointWarnings, countSelectedOldCheckpointWarnings, buildMonitoringSignals, evidenceStatusMessage, renderEvidenceDashboard, renderCurrentEvidenceSummary, renderMonitoring, renderTroubleshootingEvidence, renderError, pcvFormatRelativeTime, hasRefreshedOperation, renderHeroChips, needsAuthGate, bindAlertRegionAuthGate, renderAuthGate, applyUiPreferences, getViewLabel, buildCommandPaletteItems, getCommandPaletteMatches, renderCommandPalette, openCommandPalette, closeCommandPalette, handleCommandSearch, runCommandPaletteItem, renderActiveView, render });
+PCV.monitor = Object.assign(PCV.monitor || {}, { getDiagnosticActionPolicy, buildPartialRefreshError, collectRefreshFailures, getPriorityItems, renderMetrics, renderHost, renderOpsSummaryCard, renderOpsCockpit, renderRuntimeApiRegistryBridge, renderHostOpsLifecycleBucketTable, renderDiagnosticsBundle, renderTokenRotation, renderAccountSession, renderAccountDirectory, readNested, formatPolicyValue, countJobsByStatus, getVmCheckpointCount, countVmCheckpointWarnings, countSelectedOldCheckpointWarnings, buildMonitoringSignals, evidenceStatusMessage, renderEvidenceDashboard, renderCurrentEvidenceSummary, renderMonitoring, renderTroubleshootingEvidence, renderError, pcvFormatRelativeTime, hasRefreshedOperation, needsAuthGate, bindAlertRegionAuthGate, renderAuthGate, applyUiPreferences, getViewLabel, buildCommandPaletteItems, getCommandPaletteMatches, renderCommandPalette, openCommandPalette, closeCommandPalette, handleCommandSearch, runCommandPaletteItem, renderActiveView, render });
 })(window.PCV);

@@ -137,15 +137,15 @@ Describe 'PcvDesktopWeb static console assets' {
         $index | Should -Match 'class="shell-sidebar"'
         $index | Should -Match 'id="shell-topbar"'
         $index | Should -Match 'id="shell-statusbar"'
-        $index | Should -Match 'class="dashboard-hero"'
+        $index | Should -Match 'class="[^"]*\bdashboard-pagehead\b'
         $styles | Should -Match '--supanova-glass:\s*rgba'
         $styles | Should -Match '--supanova-rail:\s*rgba'
         $styles | Should -Match '--supanova-shadow:'
         $styles | Should -Match '\.shell-sidebar'
         $styles | Should -Match '\.shell-topbar'
         $styles | Should -Match '\.shell-statusbar'
-        $styles | Should -Match '\.dashboard-hero'
-        $styles | Should -Match '\.dashboard-pills'
+        $styles | Should -Match '\.dashboard-pagehead'
+        $styles | Should -Match '\.dashboard-kpi'
         $styles | Should -Match 'body::before'
         $combined | Should -Not -Match '<base\s+href="/ui/"|/auth/token|/ws/events|/containers|(?<!/qos)/storage|/ovn|/networks'
         $combined | Should -Not -Match 'journalctl|libvirt|\bKVM\b|\bZFS\b|\bOVS\b|\bOVN\b|purecvisorsd|Create Linux VM|ubuntu-24\.04'
@@ -159,15 +159,15 @@ Describe 'PcvDesktopWeb static console assets' {
         $index | Should -Match 'class="shell-sidebar"'
         $index | Should -Match 'class="shell-topbar"'
         $index | Should -Match 'class="shell-statusbar"'
-        $index | Should -Match 'class="dashboard-hero"'
-        $index | Should -Match 'class="dashboard-pills"'
-        $index | Should -Match 'class="quick-action-grid"'
+        $index | Should -Match 'class="[^"]*\bdashboard-pagehead\b'
+        $index | Should -Match 'class="[^"]*\bdashboard-kpi\b'
+        $index | Should -Match 'class="[^"]*\bdashboard-kpi-card\b'
         $styles | Should -Match '\.shell-sidebar'
         $styles | Should -Match '\.shell-topbar'
         $styles | Should -Match '\.shell-statusbar'
-        $styles | Should -Match '\.dashboard-hero'
-        $styles | Should -Match '\.dashboard-pills'
-        $styles | Should -Match '\.quick-action-grid'
+        $styles | Should -Match '\.dashboard-pagehead'
+        $styles | Should -Match '\.dashboard-kpi'
+        $styles | Should -Match '\.dashboard-kpi-card'
         $combined | Should -Not -Match '컨테이너|LXC|ZFS|\bOVN\b|OVS|KVM|libvirt|purecvisorsd|/containers|/storage|/ovn|/networks'
     }
 
@@ -631,10 +631,11 @@ Describe 'PcvDesktopWeb static console assets' {
         $index | Should -Match 'id="dashboard-activity-panel"'
         $index | Should -Match 'id="vm-workbench-context"'
         $index | Should -Match 'id="incident-panel"'
-        $index | Should -Match 'data-view-link="dashboard"'
         $index | Should -Match 'data-view-link="jobs"'
         $shellNav = Get-Content -LiteralPath (Join-Path $script:SrcRoot 'modules/shell.ts') -Raw
         $shellNav | Should -Match "id:\s*'vms'"
+        # The dashboard hero tiles are gone (ui-parity U6); the dashboard link lives in the shell nav.
+        $shellNav | Should -Match "id:\s*'dashboard'"
         $shellNav | Should -Match "'data-nav':\s*it\.id"
         $shellNav | Should -Match 'navigateTo\(navTarget\(it\.id\)'
         $index | Should -Match 'data-view-link="activity"'
@@ -1237,9 +1238,12 @@ Describe 'PcvDesktopWeb static console assets' {
             'id="status-host"[^>]*>\s*\w'                 = 'hardcoded host identifier or Windows caption'
             'id="status-updated"[^>]*>\s*Updated\s+\d'    = 'fabricated refresh timestamp'
             'id="status-vm-count"[^>]*>\s*VM:\s*\d'       = 'fabricated VM count'
-            'id="hero-workload"[^>]*>\s*\d'               = 'fabricated active workload count'
-            'id="hero-host-mode"[^>]*>\s*\w'              = 'fabricated host mode/readiness'
-            'id="hero-alerts"[^>]*>\s*\d'                 = 'fabricated recent alert count'
+            'id="kpi-vm-running"[^>]*>\s*\d'              = 'fabricated running VM count'
+            'id="kpi-vm-off"[^>]*>\s*\d'                  = 'fabricated off VM count'
+            'id="kpi-templates"[^>]*>\s*\d'               = 'fabricated template count'
+            'id="kpi-jobs-active"[^>]*>\s*\d'             = 'fabricated in-progress job count'
+            'id="kpi-jobs-failed-24h"[^>]*>\s*\d'         = 'fabricated 24h failed job count'
+            'id="kpi-hyperv"[^>]*>\s*\w'                  = 'fabricated Hyper-V readiness'
             'id="asset-count"[^>]*>\s*\d'                 = 'fabricated VM asset count seed'
         }
         foreach ($binding in $forbiddenBindings.GetEnumerator()) {
@@ -1247,9 +1251,12 @@ Describe 'PcvDesktopWeb static console assets' {
         }
 
         $requiredIds = @(
-            'hero-workload',
-            'hero-host-mode',
-            'hero-alerts',
+            'kpi-vm-running',
+            'kpi-vm-off',
+            'kpi-templates',
+            'kpi-jobs-active',
+            'kpi-jobs-failed-24h',
+            'kpi-hyperv',
             'shell-statusbar',
             'ws-s'
         )

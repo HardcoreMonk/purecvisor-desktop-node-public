@@ -1916,7 +1916,7 @@ test("registered views render only the active screen and leave legacy screens al
     assert.equal(env.PCV.views.isRegistered("network"), true);
     assert.equal(typeof env.PCV.views.get("network").render, "function");
     assert.equal(env.pcvLegacyViewSkipped("network"), true);
-    assert.equal(env.pcvLegacyViewSkipped("dashboard"), false);
+    assert.equal(env.pcvLegacyViewSkipped("evidence"), false);
 
     env.navigateTo("network");
     assert.equal(which, "second");
@@ -1941,7 +1941,7 @@ test("registered views render only the active screen and leave legacy screens al
     assert.equal(dashboard.hidden, false);
     assert.equal(network.hidden, true);
     assert.equal(dashboard.querySelector("#u4-dash-keep"), keptDash);
-    assert.equal(env.PCV.views.isRegistered("dashboard"), false);
+    assert.equal(env.PCV.views.isRegistered("evidence"), false);
 
     env.PCV.views.unregister("jobs");
     network.hidden = false;
@@ -2465,6 +2465,130 @@ test("registered activity render draws severity cards, chips, table columns, and
     if (mount.parentNode) mount.remove();
     if (panel.parentNode) panel.remove();
     env.PCV.views.register("activity", { render: product });
+  }
+});
+
+test("registered dashboard render draws six KPI cards, links, Hyper-V states, and drops the hero", () => {
+  const dashboard = env.document.querySelector('.app-view[data-view="dashboard"]');
+  const index = fs.readFileSync(webRoot + "index.html", "utf8");
+  // The registry renders into the first [data-view-mount] of the section; index.html already ships #dashboard-kpi.
+  let mount = dashboard.querySelector("[data-view-mount]");
+  if (!mount) {
+    mount = env.document.createElement("div");
+    mount.id = "dashboard-kpi";
+    mount.className = "dashboard-kpi";
+    mount.setAttribute("data-view-mount", "");
+    dashboard.appendChild(mount);
+  }
+  const product = env.PCV.viewDashboard.render;
+  env.PCV.views.register("dashboard", { render: product });
+  const saved = {
+    vms: env.state.vms,
+    serverJobs: env.state.serverJobs,
+    trackedJobs: env.state.trackedJobs,
+    lastRefreshedAt: env.state.lastRefreshedAt,
+    partialFailures: env.state.partialFailures,
+    host: env.state.host,
+    opsSummary: env.state.opsSummary
+  };
+  function card(kpi) {
+    // The test DOM does not match class selectors on <a>; read the mount children directly.
+    return [...mount.children].find((node) => node.getAttribute("data-kpi") === kpi);
+  }
+  function value(kpi) {
+    return card(kpi).querySelector(".dashboard-kpi-value").textContent;
+  }
+  const now = Date.now();
+  try {
+    env.state.lastRefreshedAt = now;
+    env.state.partialFailures = [];
+    env.state.opsSummary = null;
+    env.state.host = { supported: true };
+    env.state.vms = [
+      { name: "run-1", state: "Running" },
+      { name: "off-1", state: "Off" },
+      { name: "off-2", state: "Off" },
+      { name: "paused-1", state: "Paused" },
+      { name: "tpl-1", state: "Off", template_lock: true }
+    ];
+    env.state.serverJobs = [
+      { job_id: "j-run", status: "running", created_at: new Date(now - 1000).toISOString() },
+      { job_id: "j-q", status: "queued", created_at: new Date(now - 2000).toISOString() },
+      { job_id: "j-fail-new", status: "failed", created_at: new Date(now - 60 * 60 * 1000).toISOString() },
+      { job_id: "j-fail-old", status: "failed", created_at: new Date(now - 48 * 60 * 60 * 1000).toISOString() },
+      { job_id: "j-fail-blank", status: "failed", created_at: "" },
+      { job_id: "j-ok", status: "succeeded", created_at: new Date(now - 1000).toISOString() }
+    ];
+    env.state.trackedJobs = [];
+    env.navigateTo("dashboard");
+    assert.equal(mount.children.length, 6);
+    assert.equal(value("vm-running"), "1");
+    assert.equal(value("vm-off"), "2");
+    assert.equal(value("templates"), "1");
+    assert.equal(value("jobs-active"), "2");
+    assert.equal(value("jobs-failed-24h"), "1");
+    assert.equal(card("hyperv").getAttribute("data-hv-state"), "ready");
+    assert.equal(value("hyperv"), "준비");
+    assert.match(card("hyperv").querySelector(".dashboard-kpi-note").textContent, /준비/);
+    assert.equal(card("vm-running").getAttribute("href"), "#/vms");
+    assert.equal(card("vm-off").getAttribute("data-view-link"), "vms");
+    assert.equal(card("templates").getAttribute("href"), "#/vms");
+    assert.equal(card("jobs-active").getAttribute("href"), "#/jobs");
+    assert.equal(card("jobs-failed-24h").getAttribute("data-view-link"), "jobs");
+    assert.equal(card("hyperv").tagName, "DIV");
+    assert.equal(card("vm-running").querySelector(".dashboard-kpi-note").textContent.includes("읽는 중"), false);
+    assert.match(index, /id="open-create-vm"/);
+    assert.match(index, /data-i18n="copy\.dashboard\.title"[^>]*>운영 콕핏</);
+    assert.match(index, /data-i18n="copy\.dashboard\.desc"/);
+    assert.match(index, /id="dashboard-kpi"[^>]*data-view-mount/);
+    assert.match(index, /id="ops-summary-panel"/);
+    assert.match(index, /id="priority-panel"/);
+    assert.match(index, /id="dashboard-activity-panel"/);
+    assert.match(index, /id="metric-grid"/);
+    assert.match(index, /id="host-details"/);
+    assert.match(index, /id="monitoring"/);
+    assert.match(index, /id="monitoring-panel"/);
+    assert.doesNotMatch(index, /class="dashboard-hero"/);
+    assert.doesNotMatch(index, /class="quick-action-grid"/);
+    assert.doesNotMatch(index, /class="operator-memo"/);
+    assert.doesNotMatch(index, /id="hero-workload"/);
+
+    env.state.host = { supported: false };
+    env.render();
+    assert.equal(card("hyperv").getAttribute("data-hv-state"), "not-ready");
+    assert.equal(value("hyperv"), "미준비");
+    assert.match(card("hyperv").querySelector(".dashboard-kpi-note").textContent, /확인 필요/);
+
+    env.state.host = { supported: true };
+    env.state.opsSummary = { host: { readiness: "needs attention" } };
+    env.render();
+    assert.equal(card("hyperv").getAttribute("data-hv-state"), "not-ready");
+    assert.match(card("hyperv").querySelector(".dashboard-kpi-note").textContent, /needs attention/);
+
+    env.state.lastRefreshedAt = null;
+    env.state.host = null;
+    env.state.opsSummary = null;
+    env.render();
+    assert.equal(value("vm-running"), "-");
+    assert.equal(value("vm-off"), "-");
+    assert.equal(value("templates"), "-");
+    assert.match(card("vm-running").querySelector(".dashboard-kpi-note").textContent, /읽는 중/);
+    assert.equal(card("hyperv").getAttribute("data-hv-state"), "unknown");
+    assert.equal(value("hyperv"), "-");
+    assert.match(card("hyperv").querySelector(".dashboard-kpi-note").textContent, /읽는 중/);
+    assert.equal(value("jobs-active"), "2");
+    assert.equal(value("jobs-failed-24h"), "1");
+  } finally {
+    env.state.vms = saved.vms;
+    env.state.serverJobs = saved.serverJobs;
+    env.state.trackedJobs = saved.trackedJobs;
+    env.state.lastRefreshedAt = saved.lastRefreshedAt;
+    env.state.partialFailures = saved.partialFailures;
+    env.state.host = saved.host;
+    env.state.opsSummary = saved.opsSummary;
+    if (mount.parentNode) mount.remove();
+    env.navigateTo("dashboard");
+    env.PCV.views.register("dashboard", { render: product });
   }
 });
 
