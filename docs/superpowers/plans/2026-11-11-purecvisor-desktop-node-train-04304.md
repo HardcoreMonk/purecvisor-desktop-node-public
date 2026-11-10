@@ -264,7 +264,7 @@ operational current는 `0.43.3-admin-smoke` 그대로다.
 
 ## Task 10: train PR
 
-- [ ] clean HEAD 종료 검증을 한다.
+- [x] clean HEAD 종료 검증을 한다.
   - `dotnet build src/DesktopNode.sln -c Release`
   - `Invoke-PcvPrGate.ps1`
   - Pester 4종
@@ -273,12 +273,27 @@ operational current는 `0.43.3-admin-smoke` 그대로다.
   - `Update-PcvCurrentEvidenceDocs.ps1 -Check`, `git diff --check origin/main...HEAD`
   - 그다음 push와 PR을 한다. merge 직전 base가 `origin/main`과 같은지 본다. Required CI 다섯 개 green 뒤 merge한다(`--match-head-commit`). merge 뒤 main push run을 기다리고, red면 revert PR을 열고 멈춘다.
 
+실행 기록(2026-11-11): clean HEAD `f817241`에서 종료 검증을 했다.
+- `dotnet build src/DesktopNode.sln -c Release` 성공
+- PR gate `artifacts/pr-gate/20261110-185907` `ok=True`: build, `dotnet-test-release`(솔루션 전체, clean tree), module-size-ratchet
+- Pester 실패 0: packaging 528, installer 49, web 50, manual-admin 140
+- `test:public-source-safety` exit 0, `Update-PcvCurrentEvidenceDocs.ps1 -Check` current, `git diff --check origin/main...HEAD` clean, base는 `origin/main`
+- `train-path-check --payload e957f15b --head 1a29127` `ok=true`(Task 9 기록). `f817241`은 plan만 더 바꿨다.
+
+PR #147(`lane1/train-04304-20261111`)를 열었고 Required CI 다섯 개(`dotnet`, `web`, `delivery`, `installer-policy`, `public-boundary-ci-required`)가 pass였다. base가 `origin/main`과 같은 것을 확인하고, 상시 merge 승인으로 `--match-head-commit f817241` merge했다(merge commit `9d583e6`). main push run은 Development Gates `42882044894`, Public Boundary `42882045120`이고 둘 다 success다. operational current는 이제 `0.43.4-admin-smoke`다.
+
 ## Task 11: 판정과 마무리
 
-- [ ] clean `main`에서 `pcvverify completion`을 돌린다. `complete=true`이고 hygiene C2가 queue 0·train promoted로 충족되는지 본다.
+- [x] clean `main`에서 `pcvverify completion`을 돌린다. `complete=true`이고 hygiene C2가 queue 0·train promoted로 충족되는지 본다.
   - exit `0`이면 판정을 인용한 감사 문서 `docs/project-status-audit-2026-11-11-r2.md`를 쓴다(같은 날 두 번째 감사다).
   - 계정 백업 삭제를 사용자에게 물을 문장을 남긴다.
   - campaign을 닫는다. push와 PR 뒤 Required CI green이면 merge한다.
+
+실행 기록(2026-11-11): clean `main` `9d583e6`에서 `pcvverify completion`(`artifacts/completion/20261111-r4/`)을 돌렸다.
+- 결과: `complete=true met=7/7 gaps=0`, exit `0`이다.
+- hygiene: C2 충족(queue 0, train promoted), C3 4/4, C4 15/15, C7 충족(`open_counts=0`, `undecided=0`).
+- 판정을 인용한 감사 문서 `docs/project-status-audit-2026-11-11-r2.md`를 썼다(§6.2). 같은 날 사용자 요청으로 한 제로베이스 감사의 요지와 후속 조치 후보를 §5에 옮겼다.
+- campaign을 닫았다. 다음 승인으로 train 계정 백업 삭제와 제로베이스 감사 후속 조치 세 가지를 사용자에게 묻는다.
 
 ## Nonclaims
 
