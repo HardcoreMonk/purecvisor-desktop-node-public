@@ -25,7 +25,7 @@
 | 3 | "release train 묶음 출발 기준: Lane 1 문서·정책 변경(DEVELOPMENT_PROCEDURE §10 train 출발 기준 명확화, 필요한 spec pin 갱신), host mutation 없음. push, PR, green CI 뒤 merge." Task 2, 3 |
 | 4 | "대시보드 첫 로드 시간: Lane 1 개발(ops/summary 응답 시간과 Web 첫 갱신 취소 경로, 지연 mock 시험), host mutation 없음. push, PR, green CI 뒤 merge. 설치본 반영은 다음 train 출발 승인으로." Task 12, 13 |
 | merge | 2026-11-09 상시 승인 `"앞으로 Required CI가 green이면 PR merge도 자동 승인"`(`merge_policy=after-green-ci`). merge 뒤 main push run을 확인한다 |
-| 계정 | 권장안 자동 승인(`"앞으로는 권장 사항 자동 승인 처리 한다."`, 2026-11-08)으로 연다. 설치본은 계정 모드라 loopback 세션이 `409`다. 브라우저 시나리오는 이번에만 쓸 operator 계정 `pcv-s13-operator`로 로그인한다. 계정은 `pcvcli account create --password-env`(service bearer, protected token file)로 만들고, 끝나면 `pcvcli account disable`로 끈다. 비밀번호는 실행 경계에서 만들어 환경 변수로만 넘긴다. 기존 계정 세 개(`pcv-admin`, `pcv-admin2`, `pcv-s4-operator`)는 바꾸지 않는다. 계정 파일을 옮기거나 service를 다시 시작하지 않는다 |
+| 계정 | 사용자 결정 `"임시 operator 계정 (권장)"`(2026-11-11, 로그인 방법 질문에 대한 답)으로 연다. 처음에는 권장안 자동 승인으로 열려 했으나 auto mode가 승인 2 문장 밖이라며 막아 사용자에게 물었다. 설치본은 계정 모드라 loopback 세션이 `409`다. 브라우저 시나리오는 이번에만 쓸 operator 계정 `pcv-s13-operator`로 로그인한다. 계정은 `pcvcli account create --password-env`(service bearer, protected token file)로 만들고, 끝나면 `pcvcli account disable`로 끈다. 비밀번호는 실행 경계에서 만들어 환경 변수로만 넘긴다. 실행 사이에는 저장소 밖 DPAPI 보호 임시 파일에만 두고, 계정을 끈 뒤 지운다. 기존 계정 세 개(`pcv-admin`, `pcv-admin2`, `pcv-s4-operator`)는 바꾸지 않는다. 계정 파일을 옮기거나 service를 다시 시작하지 않는다 |
 | ADR-0016 | standing approval(2026-10-07)은 `pcv-it-` 접두사 VM의 생성·구성·삭제로 한정한다. 이번 VM은 `pcv-it-s1r-*`, `pcv-it-s2r-*`이고 disk는 Local API가 정하는 기본 위치에 둔다 |
 
 ## Global Constraints
@@ -108,13 +108,36 @@ Task 4는 grok 지시 크기(약 20분) 때문에 4a와 4b로 나눴다(2026-11-
 
 ## Task 4b: 브라우저 시나리오 실행 단계 (승인 2, Lane 1)
 
-- [ ] `--execute`를 구현한다(grok 구현, Claude 리뷰). 모든 쓰기 동작은 `assertScenarioVmName`을 거친다.
+- [x] `--execute`를 구현한다(grok 구현, Claude 리뷰). 모든 쓰기 동작은 `assertScenarioVmName`을 거친다.
   - S1: VM 만들기 마법사로 ISO VM을 만들고 시작한다. 콘솔 화면이 비어 있지 않을 때까지 기다리고, 키보드 입력 뒤 화면이 바뀌는지 본다.
   - S2: 꺼진 VM을 template으로 잠그고 복제한다. 복제 job이 끝나는 시간을 잰다(기준 60초).
   - S3: checkpoint를 만들고 복원한다. 예약을 미리 보고 저장한다. `--wait-schedule`이면 첫 예약 실행을 기다린 뒤 예약을 지운다.
   - `--cleanup`: 만든 `pcv-it-` VM을 지운다(template 잠금을 먼저 푼다).
   - 계정이 생기면(Task 6) `--check`를 설치본에 돌려 선택자를 확인한다. 이 확인은 Task 6 기록에 쓴다.
   - 검증: `npm run test:required --prefix web`, `git diff --check`. 로컬 commit.
+
+실행 기록(2026-11-11): grok이 08:25~08:41에 구현했고 Claude가 리뷰하고 고쳤다.
+- 계정
+  - 08:27 시나리오 계정을 처음 만들려 했을 때 auto mode classifier가 거부했다(`Access Added As A Means`). 승인 2 문장에 계정 생성이 없어서다.
+  - 사용자에게 로그인 방법을 물었고 답은 `"임시 operator 계정 (권장)"`이었다. 08:33에 `pcvcli account create`로 `pcv-s13-operator`(operator)를 만들었다(Task 6에서 앞당김).
+  - 비밀번호는 실행 경계에서 만들어 저장소 밖 DPAPI 보호 임시 파일에만 둔다. 기존 계정 세 개는 그대로다.
+- grok 구현
+  - `--execute`: S1(마법사 생성, switch 연결, 시작, 콘솔 frame과 키 입력), S2(끄기, template 잠금, 복제, `clone_seconds`, `--start`), S3(checkpoint 만들기·복원, 예약 미리보기·저장, `--wait-schedule`이면 첫 예약 실행 확인 뒤 지우기), `--cleanup --vm a,b`(잠금 풀기, 끄기, 삭제, 없어진 것 확인)
+  - `--manual-login`, `--profile`
+  - job 판정은 화면 모델 `state.trackedJobs`의 새 job status다(`classifyJobStatus`).
+  - 셸 준비는 `judgeShellReady`다(`connected` 또는 `degraded`).
+  - 오류 메시지는 비밀 값을 지운 뒤 단계 detail과 stderr에 남긴다.
+- Claude 리뷰 수정
+  - (가) 쓰기 클릭은 모두 `clickOwned`를 거친다. 누르는 요소(또는 가장 가까운 `[data-vm-id]` 소유자)의 VM id가 대상 `pcv-it-` VM의 id와 다르면 거절한다.
+    - 대상은 상세 종료·시작, 더보기 메뉴의 잠금·풀기·삭제, 네트워크 연결, checkpoint 만들기·복원·예약 저장·지우기다.
+    - `selectVm`은 상세 패널이 그 VM을 보일 때까지 기다린다. 상세 화면이 늦게 바뀌어 보존 VM에 동작이 가는 일을 막는다.
+  - (나) 첫 화면(모듈 로딩) 동안 계정 모드 셸의 `auth` 상태를 실패로 보던 것을 고쳤다. 로그인 화면이나 준비된 셸이 나올 때까지 기다린다. `auth`/`error`는 셸이 보이고 갱신이 끝난 뒤에만 실패다.
+    - 이 문제는 설치본 `--check`에서 0ms 로그인 실패로 드러났다.
+- 설치본 읽기 전용 `--check`(4b 코드, `--vm pcv-it-s2-source`):
+  - 8단계 모두 pass다(`artifacts/browser-scenario-20261111/check-4b-live2/`).
+  - 로그인 8.6초, 버전 `v0.43.4-admin-smoke`다. 마법사 칸, 상세 시작 버튼, 콘솔 탭, checkpoint 탭, template 표와 복제 폼을 찾았다.
+  - summary에 비밀 값이 없다. 제출과 확인 수락은 하지 않았다.
+- 결과: 새 node 시험 14/14, `npm run test:required --prefix web` exit 0(`test:web-contracts` 414/414, browser gate `ok=true` assertions 121 failed 0 violations 0, 기준선 변화 없음), web Pester 50/50, `git diff --check` clean.
 
 ## Task 5: PR B (스크립트)
 
