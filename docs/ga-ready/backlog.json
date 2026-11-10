@@ -504,8 +504,8 @@
       "basis": "2026-11-10 사용자 결정 \"1, 2 수정\"(campaign train-04301-20261110 다음 승인 2에 대한 답): 이 프로젝트 범위 안이고 고친다. 고치는 일은 따로 여는 Lane 1 campaign에서 한다.",
       "out_of_scope_ref": null,
       "needs_design": false,
-      "status": "open",
-      "closed_by": null
+      "status": "closed",
+      "closed_by": "PR #138 (commit 424780d)"
     }
   ]
 }

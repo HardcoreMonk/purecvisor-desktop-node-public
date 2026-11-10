@@ -61,9 +61,15 @@
 
 ## Task 3: 종료 검증과 PR
 
-- [ ] backlog BL-0042를 닫고(`status=closed`, `closed_by`), `release-train.json` queue 행을 더하고, campaign을 닫는다.
+- [x] backlog BL-0042를 닫고(`status=closed`, `closed_by`), `release-train.json` queue 행을 더하고, campaign을 닫는다.
   - 종료 검증(clean HEAD): `dotnet build src/DesktopNode.sln -c Release`, Required CI 네 shard 로컬 실행, Pester 네 종, `Invoke-PcvPrGate.ps1` `ok=true`, `git diff --check origin/main...HEAD`.
   - push, PR, Required CI 다섯 개 green 뒤 `--match-head-commit` merge. merge 뒤 main push run을 기다린다. red면 멈추고 보고한다.
+
+실행 기록(2026-11-10):
+- 종료 검증(clean HEAD `424780d`): Release build 성공. Required CI 네 shard(`dotnet`, `web`, `delivery`, `installer-policy`) 로컬 실행 `ok=true`. dotnet shard 시험 3,076/3,076(Service 11, Contracts 201, Cli 186, Runtime 129, HyperV 288, Delivery 785, Host 246, Api 545, Verification 685). Pester 실패 0: packaging 528, installer 49, web 50, manual-admin 140.
+- backlog BL-0042를 닫았다(`closed_by` PR #138). 운영 위생 C7은 `open_counts=0, undecided=0`이 된다.
+- `release-train.json` queue에 PR #138 행 하나(`area=api-web`, `risk_tier=M`, `lane2_probe=null`)를 더했다. 설치본 반영은 다음 release train(따로 승인)에서 한다.
+- campaign을 닫고 다음 승인으로 release train `0.43.2-admin-smoke` 출발 문장을 남겼다. PR #138의 CI·merge·main run 결과는 최종 보고에 적는다.
 
 ## Nonclaims
 
