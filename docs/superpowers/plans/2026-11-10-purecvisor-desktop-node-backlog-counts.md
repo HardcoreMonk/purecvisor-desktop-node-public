@@ -107,7 +107,7 @@
 
 ## Task 5: 종료 검증과 PR
 
-- [ ] clean HEAD에서 다음을 돌린다.
+- [x] clean HEAD에서 다음을 돌린다.
   - `dotnet test src/DesktopNode.sln -c Release`
   - `npm run test:required --prefix web`
   - `Invoke-PcvPrGate.ps1`
@@ -119,6 +119,15 @@
   - campaign 닫기
 - Required CI 다섯 개 green 뒤 merge하고 main push run을 확인한다.
 - clean `main`에서 `pcvverify completion`으로 C7이 `open_counts=0, undecided=0`인지 본다.
+
+실행 기록(2026-11-10):
+- 정리 commit `388e6c4`: 직전 train Task 6에서 잘못 commit된 `.playwright-mcp/page-2026-11-09T22-15-41-040Z.yml`을 추적에서 뺐다(첫 화면 일반 문구뿐, 호스트명·주소·경로·token 없음). `.playwright-mcp/`를 `.gitignore`에 더했다.
+- clean HEAD `388e6c4`: `npm run test:required --prefix web` exit 0(node 394, domsafe 27, browser gate `ok=true` assertions 121 failed 0 violations 0, 기준선 1597), PR gate `ok=True`(build, `dotnet-test-release`, module-size-ratchet), `git diff --check origin/main...HEAD` clean.
+- PR #134를 열었다. 같은 PR에 이 docs commit을 더했다.
+  - `release-train.json` queue 행 134(web, 변경 `1e06c13`)
+  - backlog BL-0036~0041 `closed`(`closed_by` PR #134와 task commit)
+  - campaign 닫기
+- merge와 main push run, completion 판정은 merge 뒤 최종 보고에 적는다.
 
 ## Nonclaims
 
