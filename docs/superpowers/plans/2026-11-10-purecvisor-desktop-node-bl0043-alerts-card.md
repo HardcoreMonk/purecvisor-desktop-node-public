@@ -34,9 +34,23 @@
 
 ## Task 1: 재현 시험과 수정 (Web)
 
-- [ ] 먼저 원인을 재현한다. node 시험으로 (가) 이전 갱신의 `loadOpsSummary`가 취소되고 새 갱신의 `loadOpsSummary`가 성공하는 순서(취소 거부가 성공보다 늦게 오는 순서 포함), (나) 그 뒤 대시보드 "경고" 카드 상태를 본다. 고치기 전에는 이 시험이 `unavailable`로 실패해야 한다. browser gate mock 화면에서도 같은 문구가 보이는 이유를 확인한다(mock 응답, 갱신 순서, 다시 그리기). 그다음 고친다. 취소된 요청은 `state.summaryError`와 `state.opsSummary`를 바꾸지 않는다. 같은 모양의 `core.ts` 읽기 함수도 같은 규칙을 따른다.
+- [x] 먼저 원인을 재현한다. node 시험으로 (가) 이전 갱신의 `loadOpsSummary`가 취소되고 새 갱신의 `loadOpsSummary`가 성공하는 순서(취소 거부가 성공보다 늦게 오는 순서 포함), (나) 그 뒤 대시보드 "경고" 카드 상태를 본다. 고치기 전에는 이 시험이 `unavailable`로 실패해야 한다. browser gate mock 화면에서도 같은 문구가 보이는 이유를 확인한다(mock 응답, 갱신 순서, 다시 그리기). 그다음 고친다. 취소된 요청은 `state.summaryError`와 `state.opsSummary`를 바꾸지 않는다. 같은 모양의 `core.ts` 읽기 함수도 같은 규칙을 따른다.
   - 시험: 위 재현 시험(고친 뒤 `empty` 또는 목록), 진짜 실패(예 `500`)는 계속 `unavailable`, 기존 `data-alerts-state` 시험 유지.
   - 검증: `npm run build:served --prefix web`, `npm run test:required --prefix web`, web Pester, `git diff --check`. gate mock 대시보드 1440과 768 캡처에서 "경고" 카드가 "운영 요약을 읽지 못했습니다"를 보이지 않는다. 로컬 commit.
+
+실행 기록(2026-11-10): grok이 23:38~23:55에 구현했고 Claude가 리뷰했다.
+- 원인은 가설과 같다. `refreshAll()`이 새 갱신을 시작하며 이전 controller를 abort하면, 이전 `loadOpsSummary()`가 스스로 잡은 `PCV_REQUEST_ABORTED`로 `state.summaryError`를 쓰고 `state.opsSummary`를 비웠다. 이 거부가 새 갱신의 성공보다 늦게 오면 카드가 `unavailable`로 남는다. `hasRefreshedOperation()`은 `summaryError`를 보지 않으므로 probe의 `true`와도 맞는다.
+- gate mock도 같은 원인이다. 시작 때 `init()`의 `refreshAll()`과 `restoreSession()` → `_finishLogin()` → `loadAll()`의 두 번째 갱신이 겹쳐 첫 갱신이 취소됐다. mock은 바꾸지 않았다.
+- 고치기 전 재현 시험 `BL-0043 a late aborted loadOpsSummary leaves the alerts card available`가 `'unavailable' !== 'empty'`로 실패했다.
+- 수정(`web/src/modules/core.ts`):
+  - 새 함수 `isSupersededRequest`는 넘겨받은 signal이 aborted이거나 오류 코드가 `PCV_REQUEST_ABORTED`이면 참이다.
+  - `loadOpsSummary`와 같은 모양으로 오류를 스스로 잡는 `loadNetworkInventory`, `loadAccountSession`, `loadAccountDirectory`, `loadConsoleCapabilities`, `loadServerJobs`, `loadDiagnosticBundleList`가 이 규칙을 따른다. 취소면 오류도 데이터도 쓰지 않고 돌아간다. 오류는 시작할 때가 아니라 성공한 뒤에 지운다.
+  - 진짜 실패(HTTP `500`)는 지금처럼 오류를 쓴다. `loadHost`·`loadVms`·`loadRuntimePolicy`는 throw하므로 `refreshAll()`의 기존 필터가 처리한다. 바꾸지 않았다.
+- node 시험 3건 추가: 늦은 abort 뒤 카드 `empty`, 이미 abort된 signal은 API를 부르지 않음, HTTP `500`이면 카드 `unavailable`.
+- browser gate 기준선(`web/config/browser-ui-gates-baseline.json`)에 axe incomplete 8개를 더했다(`--write-baseline`, `--prune` 없음, 1597→1605). 수정 뒤 대시보드가 `경고 없음`을 그리고 mock 요약 데이터가 활동·문제 해결 화면에 들어오면서 새로 생긴 항목이다. violation은 0이다.
+- 결과: `npm run test:required --prefix web` exit 0(node 399/399, browser gate `ok=true` assertions 121 failed 0 violations 0), web Pester 50/50, `git diff --check` clean. `web/sw.js` CACHE_NAME은 `pcv-ui-v7e9cc024`다.
+- 화면: gate mock 대시보드 1440×900과 768×1024(`artifacts/bl0043-alerts/`, gitignore)에서 "경고" 카드 본문이 `경고 없음`(`data-alerts-state="empty"`)이다. "운영 요약을 읽지 못했습니다"는 없다.
+- grok이 적은 범위 밖 관찰 두 건은 결함이 아니라 backlog 행으로 쓰지 않았다. 폴링 `runPollTick`의 signal 없는 `loadOpsSummary()`는 진짜 실패를 쓰는 경로다. `loadNextDiagnosticBundlePage`는 사용자가 누르는 다음 페이지 경로라 갱신 취소와 무관하다.
 
 ## Task 2: 종료 검증과 PR
 
