@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Sockets;
 using System.Net.WebSockets;
+using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using DesktopNode.Api;
@@ -27,6 +28,11 @@ public sealed class DesktopNodeHostApplicationTests
         using var document = JsonDocument.Parse(body);
         Assert.Equal("runtime.policy", document.RootElement.GetProperty("operation").GetString());
         Assert.Equal("dotnet", document.RootElement.GetProperty("data").GetProperty("job_runtime").GetProperty("managed_core").GetProperty("candidate").GetString());
+        var informational = typeof(DesktopNodeHostApplication).Assembly
+            .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
+        var expected = string.IsNullOrWhiteSpace(informational) ? null : informational;
+        var productVersion = document.RootElement.GetProperty("data").GetProperty("product_version");
+        Assert.Equal(expected, productVersion.ValueKind == JsonValueKind.Null ? null : productVersion.GetString());
     }
 
     [Fact]

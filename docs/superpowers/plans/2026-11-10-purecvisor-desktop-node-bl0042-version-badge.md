@@ -34,9 +34,15 @@
 
 ## Task 1: runtime policy `product_version` (서버)
 
-- [ ] `RuntimePolicyData`에 `product_version`(string, null 허용)을 더한다. `RuntimePolicyContract.CreateDefault`가 값을 받는다. Host가 `DesktopNode.Host` assembly의 `AssemblyInformationalVersion`을 읽어 API 요청 처리기에 넘긴다. 값이 없으면 `null`이다.
+- [x] `RuntimePolicyData`에 `product_version`(string, null 허용)을 더한다. `RuntimePolicyContract.CreateDefault`가 값을 받는다. Host가 `DesktopNode.Host` assembly의 `AssemblyInformationalVersion`을 읽어 API 요청 처리기에 넘긴다. 값이 없으면 `null`이다.
   - 시험: Contracts(응답 JSON에 `data.product_version`), Api(주입한 값이 `GET /api/v1/runtime/policy`에 나온다), Host(주입 경로). 응답 모양을 고정한 golden·fixture·문서를 함께 고친다.
   - 검증: 바뀐 프로젝트의 `*.Tests`를 `-c Release`로, 그다음 `dotnet test src/DesktopNode.sln -c Release`(commit 뒤 clean HEAD), `git diff --check`. 로컬 commit.
+
+실행 기록(2026-11-10): grok이 19:33~19:39에 구현했고 Claude가 리뷰했다.
+- `RuntimePolicyData` 끝에 `product_version`(`string?`)을 더했다. `CreateDefault`는 빈 값과 공백을 `null`로 바꾼다. 값을 안 주면 JSON에 `"product_version":null`이 나온다.
+- 주입 경로: Host(`DesktopNodeHostApplication`)가 `typeof(DesktopNodeHostApplication).Assembly`의 `AssemblyInformationalVersionAttribute`를 읽어 `DesktopNodeApiRequestProcessor.CreateDefault(productVersion:)`로 넘긴다. processor는 그 값을 `GET /api/v1/runtime/policy`와 `ops.summary`의 `runtime_policy`에 같이 쓴다. API는 entry assembly를 읽지 않는다.
+- 시험: Contracts(값 없음 → JSON null, 값 → 그 문자열), Api(주입한 `0.43.1-admin-smoke+abc`가 policy와 ops summary에 같게 나오고, 없으면 둘 다 null), Host(응답 값이 Host assembly 속성과 같다. 리터럴 version은 단언하지 않는다).
+- 결과(Release): Contracts 201/201, Api 545/545, Host 246/246, module-size ratchet Pester 3/3, `git diff --check` clean. 줄 수: `DesktopNodeApiRequestProcessor.cs` 436(상한 449), `DesktopNodeHostApplication.cs` 177(상한 201). ratchet JSON과 spec pin은 바꾸지 않았다. 솔루션 전체는 Task 3 clean HEAD에서 돈다.
 
 ## Task 2: Web badge 표시
 

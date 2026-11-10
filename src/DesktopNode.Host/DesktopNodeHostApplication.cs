@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Sockets;
 using System.Net.WebSockets;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using DesktopNode.Api;
 
@@ -148,7 +149,9 @@ public sealed partial class DesktopNodeHostApplication : IDisposable
                     accountAuthOptions: accountAuthOptions,
                     consoleOptions: consoleOptions,
                     jobRuntimeEventSink: new DesktopNodeHostJobRuntimeEventSink(options),
-                    checkpointScheduleFilePath: DesktopNodeCheckpointScheduleStore.DefaultFilePath),
+                    checkpointScheduleFilePath: DesktopNodeCheckpointScheduleStore.DefaultFilePath,
+                    productVersion: typeof(DesktopNodeHostApplication).Assembly
+                        .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion),
                 token,
                 allowedWebOrigin,
                 accountAuthService));

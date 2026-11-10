@@ -15,7 +15,8 @@ public sealed record RuntimePolicyData(
     [property: JsonPropertyName("auth")] RuntimePolicyAuthPolicy Auth,
     [property: JsonPropertyName("network")] RuntimePolicyNetworkPolicy Network,
     [property: JsonPropertyName("console")] RuntimePolicyConsolePolicy Console,
-    [property: JsonPropertyName("guest_execution")] RuntimePolicyGuestExecutionPolicy GuestExecution);
+    [property: JsonPropertyName("guest_execution")] RuntimePolicyGuestExecutionPolicy GuestExecution,
+    [property: JsonPropertyName("product_version")] string? ProductVersion = null);
 
 public sealed record RuntimeCorePolicy(
     [property: JsonPropertyName("contract_version")] int ContractVersion,
@@ -183,7 +184,8 @@ public static class RuntimePolicyContract
         string tokenStorage = "none",
         string currentExposure = "loopback",
         RuntimePolicyAuthPolicy? authPolicy = null,
-        RuntimePolicyConsolePolicy? consolePolicy = null)
+        RuntimePolicyConsolePolicy? consolePolicy = null,
+        string? productVersion = null)
     {
         return new RuntimePolicyResponse(
             Ok: true,
@@ -387,7 +389,8 @@ public static class RuntimePolicyContract
                         "POST /api/v1/vms/{vmId}/guest/channel/preview",
                         "POST /api/v1/vms/{vmId}/guest/channel/verify",
                         "POST /api/v1/vms/{vmId}/guest/channel"
-                    ])),
+                    ]),
+                ProductVersion: string.IsNullOrWhiteSpace(productVersion) ? null : productVersion),
             Error: null);
     }
 }
