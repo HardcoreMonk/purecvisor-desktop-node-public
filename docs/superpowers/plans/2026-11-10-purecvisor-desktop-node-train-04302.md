@@ -33,6 +33,7 @@
 | 4 | `Lane 3 current-evidence.json 승격`이다. `0.43.2-admin-smoke`로 쓴다. Task 8~9 |
 | 5 | `단일 PR train, green CI 뒤 merge, merge 뒤 main push가 red면 revert PR`. Task 10. 2026-11-09 상시 승인 `"앞으로 Required CI가 green이면 PR merge도 자동 승인"`과 같다(`merge_policy=after-green-ci`) |
 | 6 | 계정 보관과 복원은 권장안 자동 승인(`"앞으로는 권장 사항 자동 승인 처리 한다."`, 2026-11-08)으로 연다(train `0.43.1` 사용자 결정 6과 같다). 범위는 train 전 `accounts.json` 백업(저장소와 제품 data 폴더 밖 보호 위치)과 data root에서 치우기, train 뒤 복원과 해시 비교다. 백업 삭제는 사용자에게 묻는다 |
+| 7 | 마무리 뒤 사용자 결정 "1"(2026-11-10, 마무리 보고의 다음 승인 1). train 계정 백업을 지우고 기록은 문서 PR 하나로 남겨 Required CI green 뒤 merge한다. 다음 승인 2(BL-0043 분류)는 아직 답이 없다 |
 | probe | queue 행의 `lane2_probe`는 `null`이다. 승인 3의 `probe(Web Console 화면)` 범위 안에서 설치본이 BL-0042 수정(설치 version 표시)을 내주는지 확인한다(Task 6). VM은 만들지 않는다 |
 | ADR-0016 | standing approval(2026-10-07)은 `pcv-it-` 접두사 VM 생성·구성·삭제로 한정한다. disk는 `artifacts/` 아래에 둔다 |
 
@@ -296,6 +297,12 @@ PR #139(`lane1/train-04302-20261110`)를 열었고 Required CI 다섯 개(`dotne
 - hygiene: C2 `met=true`(current `0.43.2-admin-smoke` = operational current, train promoted, queue 0, 미완료 train 0), C3 4/4, C4 15/15, C7 `met=false`(`open_counts=0, undecided=1`: BL-0043, `user-decision`).
 - 판정을 인용한 감사 문서 `docs/project-status-audit-2026-11-10-r3.md`를 썼다(§6.2).
 - campaign을 닫았다. 다음 승인으로 train 계정 백업 삭제와 BL-0043 분류를 사용자에게 묻는다.
+
+마무리 뒤 기록(2026-11-10, 사용자 결정 7):
+- 지우기 전에 data root 계정 파일과 백업 `accounts.json`의 SHA-256이 같은 것(1,153 bytes)을 확인했다. data root 계정 파일의 ACL도 백업의 ACL 기록과 같았다.
+- 보호 위치의 백업 `accounts.json`, 옮긴 빈 저장소, ACL 기록 파일을 지웠다. 비게 된 백업 폴더도 지웠다.
+- 확인: data root 계정 파일의 SHA-256과 ACL이 지우기 전과 같다. service Running/Automatic, Web `200`, loopback 세션 `409` `PCV_LOOPBACK_SESSION_DISABLED`(계정 모드).
+- campaign `next_approval_required`에는 BL-0043 분류만 남겼다.
 
 ## Nonclaims
 
