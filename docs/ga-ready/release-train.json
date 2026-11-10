@@ -3,16 +3,7 @@
   "contract": "pcv-release-train-v1",
   "design": "docs/superpowers/specs/2026-10-04-purecvisor-desktop-node-release-train-design.md",
   "operational_current": "0.43.0-admin-smoke",
-  "queue": [
-    {
-      "pr": 134,
-      "merge_commit": "1e06c13c",
-      "area": "web",
-      "summary": "backlog counts BL-0036..BL-0041: shell search keeps its name at narrow widths, diagnostics running/stopped copy, delete-confirm gate waits for the DELETE request, version badge waits for the loopback session (no first-visit runtime/policy 401), compact VM list shows full names with a state dot and template badge, hi-contrast theme tokens apply and the mockup theme is retired",
-      "lane2_probe": null,
-      "risk_tier": "M"
-    }
-  ],
+  "queue": [],
   "trains": [
     {
       "version": "0.42.89-admin-smoke",
@@ -120,6 +111,15 @@
         130
       ],
       "status": "promoted"
+    },
+    {
+      "version": "0.43.1-admin-smoke",
+      "departed_at": "2026-11-10T16:41:00+09:00",
+      "source_commit": "c685bd514a5c9e6f42e3e647ec6177260e541b6d",
+      "carriages": [
+        134
+      ],
+      "status": "running"
     }
   ]
 }
