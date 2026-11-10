@@ -182,7 +182,7 @@ operational current는 `0.43.2-admin-smoke` 그대로다.
 
 ## Task 6: probe Web Console 화면 (queue 142)
 
-- [ ] Lane 2. 설치본 `0.43.3`이 loopback(`http://127.0.0.1/`)으로 내주는 Web Console을 확인한다. VM은 만들지 않는다.
+- [x] Lane 2. 설치본 `0.43.3`이 loopback(`http://127.0.0.1/`)으로 내주는 Web Console을 확인한다. VM은 만들지 않는다.
   - 내주는 파일: `app.bundle.js`, `index.html`, `style.css`, `sw.js`, `i18n.js`의 SHA-256이 Task 1 package payload의 같은 파일과 같은지, `sw.js` CACHE_NAME이 payload commit 소스와 같은지 본다.
   - 화면: Playwright 브라우저로 1440×900과 768×1024에서 연다. 새 브라우저 context(저장소 비어 있음)에서 `#/dashboard`를 열고 15초 동안 본다.
     - BL-0043: `GET /api/v1/ops/summary`가 `200`으로 온 뒤 대시보드 "경고" 카드의 `data-alerts-state`가 `unavailable`이 아니고(`empty` 또는 목록), "운영 요약을 읽지 못했습니다"가 없다. 취소(`ERR_ABORTED`)된 `ops/summary` 요청 수와 `200` 시각을 적는다. 같은 확인을 새 context로 세 번 한다.
@@ -190,6 +190,15 @@ operational current는 `0.43.2-admin-smoke` 그대로다.
     - 나머지 화면(가상 머신, 네트워크, 작업, 이벤트, evidence, 계정, 진단, 도움말)이 그려지고 console error 0이다.
   - 캡처는 `artifacts/lane2-bl0043-probe-20261111-04303/`에 둔다(커밋하지 않음).
   - evidence: `docs/ga-ready/evidence/lane2-bl0043-probe-2026-11-11-04303.md`. 로컬 commit.
+
+실행 기록(2026-11-11, 00:55~01:05 KST): 설치본 `0.43.3-admin-smoke+db1a762`, 계정 없음(loopback 세션 `200`). VM은 만들지 않았다.
+- 내주는 파일 다섯 개의 SHA-256이 package payload와 같다. CACHE_NAME `pcv-ui-v7e9cc024`는 payload commit 소스와 같다.
+- BL-0043: 1440과 768에서 새 context를 세 번씩 열었다. 취소된 `ops/summary`가 2~3개, `200`이 5.3~8.0초에 왔고, 첫 갱신이 끝나는 9.6~10.7초에 "경고" 카드가 목록으로 바뀌었다. 여섯 번 모두 15초 뒤 "운영 요약을 읽지 못했습니다"가 없다. 목록 항목은 fullgate route smoke가 일부러 요청한 관리 밖 VM 삭제의 거절(`PCV_VM_NOT_MANAGED_BY_PURECVISOR`) 기록이다.
+- 회귀: version 표시 `v0.43.3-admin-smoke`(title 전체 값), loopback 세션이 policy보다 먼저(6/6), 화면 아홉 개 그려짐, HTTP 4xx 0, console error 0.
+- 범위 밖 발견: 첫 갱신이 끝나기 전 약 9초 동안 카드가 읽는 중에도 "운영 요약을 읽지 못했습니다"를 보인다. backlog `BL-0044`(`undecided`)로 썼다.
+- evidence: `docs/ga-ready/evidence/lane2-bl0043-probe-2026-11-11-04303.md`. 캡처는 `artifacts/lane2-bl0043-probe-20261111-04303/`(커밋하지 않음).
+
+operational current는 `0.43.2-admin-smoke` 그대로다.
 
 ## Task 7: 계정 복원
 
