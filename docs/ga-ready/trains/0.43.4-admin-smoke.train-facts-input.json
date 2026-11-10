@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "contract": "pcv-train-facts-input-v1",
+  "version": "0.43.4-admin-smoke",
+  "baseline_version": "0.43.3-admin-smoke",
+  "canonical_current_evidence": "0.43.3-admin-smoke",
+  "date": "2026-11-11",
+  "documents": {
+    "package": "docs/ga-ready/evidence/admin-smoke-package-2026-11-11-04304.md"
+  },
+  "sources": {
+    "package_root": "artifacts/admin-smoke-package-20261111-04304",
+    "baseline_package_root": "artifacts/admin-smoke-package-20261111-04303",
+    "campaign_root": "artifacts/manual-admin-campaign-20261111-04303-04304",
+    "target_update_catalog": "artifacts/admin-smoke-package-20261111-04304/PureCVisorDesktopNode-0.43.4-admin-smoke-update-catalog.json",
+    "signer_thumbprint": "8C5F3B5030D3A54B1150C2C30CFD9868800DF0C6",
+    "fullgate_batch_id": "full-admin-host-mutation-gate-20261111-04304",
+    "iso_path": "artifacts/smoke-media-20261108/pcv-route-parity-smoke-20261108.iso",
+    "current_card_root": "artifacts/installed-operator-surface-current-card-20261111-04304",
+    "fullgate_final_firewall_rule_count": "0"
+  },
+  "narrative": {
+    "package": {
+      "background": "release train `0.43.4`의 package다. BL-0044 수정 campaign `bl0044-alerts-loading-20261111`이 queue에 쌓은 변경 한 행을 싣는다(campaign `train-04304-20261111`). 적재는 146(BL-0044: 첫 갱신이 진행 중이면 대시보드 \"경고\" 카드가 \"운영 요약을 읽지 못했습니다\" 대신 \"운영 요약을 읽고 있습니다.\"를 보인다)이다. payload 파일은 `0.43.3`과 같은 31개다(`web/app.js`·`web/styles.css` 호환 파일 포함, BL-0030 fixture). build 47초. pair baseline은 train `0.43.3` Task 1 package다.",
+      "train_carriages": "`PR #146` (변경 `08589a5f`, web); payload: PR #146 merge",
+      "lane2_probes": "설치본 Web Console 대시보드 \"경고\" 카드의 첫 갱신 중 문구(queue 146, 승인의 `probe(Web Console 화면)`)"
+    }
+  }
+}
