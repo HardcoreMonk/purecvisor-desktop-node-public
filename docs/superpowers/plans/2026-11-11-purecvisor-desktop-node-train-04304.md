@@ -118,11 +118,27 @@ operational current는 `0.43.3-admin-smoke` 그대로다.
 
 ## Task 3: pair
 
-- [ ] Lane 2. orchestrator를 `-PlanOnly`로 돌린 뒤 `-Execute`로 돌린다.
+- [x] Lane 2. orchestrator를 `-PlanOnly`로 돌린 뒤 `-Execute`로 돌린다.
   - 입력: campaign `manual-admin-campaign-20261111-04303-04304`, baseline `artifacts/admin-smoke-package-20261111-04303`, target Task 1 package, base VHD `20348.5761-20261108.vhd`.
   - 통과 조건: 여섯 bucket PASS, closed descriptor, `observation_error` 없음.
   - 끝 상태: 설치본 `0.43.4`·ARP 1개·service Running/Automatic·Web 200·보존 VM 둘 그대로.
   - `train-facts`로 pair 문서를 쓴다. 로컬 commit.
+
+실행 기록(2026-11-11): orchestrator `-PlanOnly`는 `ok=true`였다(host mutation 없음). 실행 전 ARP는 `0.43.3` 1개였다.
+- guest 인증 정보는 실행 스크립트 안에서 무작위로 만들어 `pscredential`로만 넘겼다. 출력하거나 저장하지 않았다.
+- `-Execute`는 root `artifacts/manual-admin-campaign-20261111-04303-04304`에서 03:20:39부터 03:41:01 KST까지 `1222`초 돌았다(직전 train `252`초).
+  - 늘어난 시간은 clean-host bucket(03:21~03:39)이다. Windows Update 준비 재부팅 뒤 guest heartbeat가 `NoContact`였고, runner의 무응답 복구 정책(기준 `900`초)을 거쳐 두 번째 PowerShell Direct 시도에서 이어졌다.
+  - bucket은 PASS다. 시험 guest 부팅 지연을 runner가 설계대로 복구한 것이라 제품 결함으로 보지 않는다.
+- 여섯 bucket이 모두 PASS다: `manual-admin-rebaseline-readiness`, `lifecycle-product-update-rollback`, `clean-host-windows-update`, `burn-bootstrapper-lifecycle`, `msix-package-lifecycle-smoke`, `installed-runtime-ops-summary`.
+- descriptor: closed descriptor를 냈다(SHA-256 `574b22c1200ad59e19dda450bf1dd6fefe4dd52dbe4e16f3c17999a374addb1d`). observation은 15개이고 `observation_error`는 0이다. restoration은 시도하지 않았다(필요 없음).
+- clean-host: base UBR `5761`이고 blocker는 `none`이다. baseline `0.43.3` MSI 설치 뒤 제품 Update로 `0.43.4`가 됐고 Rollback으로 돌아왔다.
+- 끝 상태:
+  - 설치본 `0.43.4-admin-smoke+54a817c…`, ARP `{BF2AD1AA…}` `0.43.4` 1개, service Running/Automatic, Web 200, PureCVisor 방화벽 규칙 0이다.
+  - `pcv-guest-installed-04253-r1` Off·`pcv-it-s2-source` Off(그대로)다.
+  - data root에는 업그레이드된 service가 만든 빈 계정 저장소(0개)가 있고 loopback 세션은 200이다(직전 train과 같다). Task 7에서 fullgate가 남긴 빈 저장소와 같이 다룬다.
+- 문서: `train-facts`로 pair 문서 여섯 개(ops-summary, update-rollback, clean-host, burn, msix, pair-descriptor)를 썼다. `train-evidence --check`는 일곱 문서 모두 `current`다. `TrainEvidenceGoldenTests`·`TrainFactsBuilderTests`는 `30/30`이다. 새 문서의 주소는 loopback뿐이다.
+
+operational current는 `0.43.3-admin-smoke` 그대로다.
 
 ## Task 4: fullgate
 
