@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "contract": "pcv-active-campaign-v1",
-  "status": "open",
+  "status": "closed",
   "id": "train-04303-20261111",
   "intent": "Depart release train 0.43.3-admin-smoke with queue PR #142 (BL-0043 dashboard alerts card), keep the installed accounts across fullgate REMOVE_DATA, probe the installed Web Console for the fix, and promote it to operational current in a single train PR",
   "working_authority": "source_head",
@@ -13,7 +13,7 @@
   ],
   "mutation_allowed": true,
   "current_write_allowed": true,
-  "next_step": "Run Task 0 from docs/superpowers/plans/2026-11-11-purecvisor-desktop-node-train-04303.md, then the queue in order. Single PR train on lane1/train-04303-20261111 (pcv-single-pr-train-v2): Lane 3 is on the same branch; merge after the five Required checks pass.",
+  "next_step": "Closed 2026-11-11: release train 0.43.3-admin-smoke carried queue PR #142 (BL-0043 dashboard alerts card) and was promoted to operational current in single train PR #143 (merge 6844699, main push runs DG 42852748778 and PB 42852748752 green). Package, pair 0.43.2 -> 0.43.3, fullgate, current-card and the installed probe (after superseded ops summary requests the alerts card turns into the alert list at 1440 and 768, three cold visits each) passed; accounts were kept outside the data root during fullgate and restored. Completion on clean main 6844699: complete=true met=7/7 gaps=0. New backlog BL-0044 (the alerts card shows unavailable while the first refresh is still loading) is undecided. Audit docs/project-status-audit-2026-11-11.md.",
   "plan": "docs/superpowers/plans/2026-11-11-purecvisor-desktop-node-train-04303.md",
   "task_queue": [
     "Task 0",
@@ -39,7 +39,7 @@
     "Task 8": "3",
     "Task 9": "3"
   },
-  "next_task": "Task 10",
+  "next_task": null,
   "completed_tasks": [
     "Task 0",
     "Task 1",
@@ -50,14 +50,19 @@
     "Task 6",
     "Task 7",
     "Task 8",
-    "Task 9"
+    "Task 9",
+    "Task 10",
+    "Task 11"
   ],
   "commit_policy": "local-commit-per-task",
   "push_allowed": true,
   "merge_policy": "after-green-ci",
   "checkpoint_limit": 12,
   "approval_locator": "User-Approval: 2026-09-27 campaign runner commit policy local-commit-per-task; User-Approval: 2026-11-11 \"release train 0.43.3-admin-smoke 출발: queue #142 적재. Lane 2 unsigned 개발 MSI build, pair 업그레이드 시험과 fullgate(msiexec 설치·업그레이드·repair·제거와 REMOVE_DATA, service 중지·시작, ADR-0016 pcv-it- VM), 설치본 current-card와 probe(Web Console 화면). Lane 3 current-evidence.json 승격. 단일 PR train, green CI 뒤 merge, merge 뒤 main push가 red면 revert PR.\" (answer to bl0043-alerts-card-20261110 next approval 1, sent verbatim); User-Approval: 2026-11-09 standing merge approval (\"앞으로 Required CI가 green이면 PR merge도 자동 승인\"); User-Approval: 2026-11-08 standing auto-approval of the recommended option (\"앞으로는 권장 사항 자동 승인 처리 한다.\"): back up accounts.json outside the repo and product data before the train and restore it after (backup deletion is asked); ADR-0016 standing approval (2026-10-07): pcv-it- prefixed VM create/configure/delete",
-  "next_approval_required": [],
+  "next_approval_required": [
+    "train 계정 백업 삭제: train `0.43.3` 동안 저장소 밖 보호 위치에 둔 백업 `accounts.json`, fullgate가 만든 빈 계정 저장소, ACL 기록을 지운다. data root의 계정 파일은 그대로 둔다. 지우기 전에 data root 계정 파일과 백업의 SHA-256이 같은지 확인한다. 기록은 문서 PR 하나로 남기고 Required CI green 뒤 merge한다.",
+    "backlog 분류: BL-0044(설치본 대시보드 \"경고\" 카드가 첫 방문의 첫 갱신이 끝나기 전 약 9초 동안, 운영 요약을 기다리는 중에도 \"운영 요약을 읽지 못했습니다\"를 보인다)를 counts 또는 out-of-scope로 정한다."
+  ],
   "stop_on": [
     "same-cause-fail-3",
     "budget",
