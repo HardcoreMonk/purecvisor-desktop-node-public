@@ -1,5 +1,37 @@
 # Desktop Node 증거 인덱스
 
+## 2026-11-11 `0.43.3` operational current promotion
+
+- `docs/ga-ready/current-evidence.json` current version은 `0.43.3-admin-smoke`다.
+- package: `docs/ga-ready/evidence/admin-smoke-package-2026-11-11-04303.md`, clean MSI
+  `66546521fb0fea092de8d0fd390153cc337108d9c17d5622015b748d901de060`.
+- fullgate: `docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-11-11-04303-hostmutation.md`
+  / `full-admin-host-mutation-gate-20261111-04303`. operational MSI
+  `13f716ee18fbbcee0e0322de6cd12895762fb665863a1e7b437ff4bd292d0b59`, provenance `db1a762`.
+- installed current-card:
+  `docs/ga-ready/evidence/installed-operator-surface-current-card-2026-11-11-04303.md`.
+- functional carry-forward:
+  `docs/ga-ready/evidence/functional-correctness-actual-host-validation-2026-11-11-04303-carryforward.md`.
+- pair: `docs/ga-ready/evidence/manual-admin-campaign-2026-11-11-04302-04303.md` /
+  `manual-admin-campaign-20261111-04302-04303-closed`.
+- main push: `docs/ga-ready/evidence/public-boundary-ci-main-push-2026-11-11-04303-payload-pass.md`.
+- canonical current는 `0.43.3-admin-smoke`다. `promotion_eligible=true`, blockers는 없다.
+  P0 feature ledger current version은 `0.42.75-admin-smoke`로 유지한다. 이 Lane 3 호스트
+  설치본은 `0.43.3-admin-smoke`다. public trusted signing과 external stable publication은
+  주장하지 않는다.
+
+## 2026-11-11 `0.43.2 -> 0.43.3` descriptor consume
+
+- `docs/ga-ready/evidence/manual-admin-campaign-2026-11-11-04302-04303.md`는 이미 PASS한
+  여섯 bucket summary를 한 artifact root로 모은 뒤
+  `New-PcvManualAdminCampaignDescriptor -PlanOnly`가 `overall_status=pass`,
+  `runner_count=6`, `missing_count=0`, `not_pass_count=0`을 낸 consume 기록이다.
+- descriptor는 `manual-admin-campaign-20261111-04302-04303-closed`다. pair target MSI는
+  clean package `66546521fb0fea092de8d0fd390153cc337108d9c17d5622015b748d901de060`다.
+- 이 consume는 host mutation을 하지 않았다. 같은 날짜 Lane 3가 current를 `0.43.2-admin-smoke`에서
+  `0.43.3-admin-smoke`로 승격했다. public trusted signing과 external stable publication은
+  주장하지 않는다.
+
 ## 2026-11-10 `0.43.2` operational current promotion
 
 - `docs/ga-ready/current-evidence.json` current version은 `0.43.2-admin-smoke`다.
@@ -1324,18 +1356,18 @@
 <!-- BEGIN GENERATED CURRENT EVIDENCE -->
 ## Current operational evidence (generated)
 
-- Version: `0.43.2-admin-smoke`
+- Version: `0.43.3-admin-smoke`
 - Active operator surfaces: Web Console and PCVCLI; `tui_present=false`.
-- Package evidence: `docs/ga-ready/evidence/admin-smoke-package-2026-11-10-04302.md`.
-- Full admin host mutation: `full-admin-host-mutation-gate-20261110-04302` / `docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-11-10-04302-hostmutation.md`.
-- Actual-VM functional evidence: `docs/ga-ready/evidence/functional-correctness-actual-host-validation-2026-11-10-04302-carryforward.md`.
+- Package evidence: `docs/ga-ready/evidence/admin-smoke-package-2026-11-11-04303.md`.
+- Full admin host mutation: `full-admin-host-mutation-gate-20261111-04303` / `docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-11-11-04303-hostmutation.md`.
+- Actual-VM functional evidence: `docs/ga-ready/evidence/functional-correctness-actual-host-validation-2026-11-11-04303-carryforward.md`.
 - Feature qualification: `contract=pcv-feature-promotion-decision-v1`; `promotion_eligible=true`; `blocker_count=0`; `blockers=none`.
-- Installed CLI/Web current-card: `docs/ga-ready/evidence/installed-operator-surface-current-card-2026-11-10-04302.md`; CLI exit 0, Web HTTP 200, service Running/Automatic, TUI absent.
-- Clean MSI SHA-256: `fa6afbce618568a95bb941c34ded38c188d7a8c221bfc26810d3ac14111b1c0c`.
-- Operational MSI SHA-256: `82e78f2b5247847d72e7cc4b95d04736a842f987bb4ef24c25a67561517228d5`.
-- Operational payload aggregate SHA-256: `71b94bc9852b059c98c5a11f361dcbe9ee7bdd88448cd5c272d4b2d458e7b162`.
-- Provenance commit: `2f19778abb4b948bdaa9f8a4b196166cad90c653`.
-- Latest closed manual-admin pair: `0.43.1-admin-smoke -> 0.43.2-admin-smoke` / `manual-admin-campaign-20261110-04301-04302-closed`.
+- Installed CLI/Web current-card: `docs/ga-ready/evidence/installed-operator-surface-current-card-2026-11-11-04303.md`; CLI exit 0, Web HTTP 200, service Running/Automatic, TUI absent.
+- Clean MSI SHA-256: `66546521fb0fea092de8d0fd390153cc337108d9c17d5622015b748d901de060`.
+- Operational MSI SHA-256: `13f716ee18fbbcee0e0322de6cd12895762fb665863a1e7b437ff4bd292d0b59`.
+- Operational payload aggregate SHA-256: `0ea79bc712613d9fd5ce52e0571ef23cd721c8e821fdd9882598858ba3f1f018`.
+- Provenance commit: `db1a7626b7654264d8fa5059685027d064098445`.
+- Latest closed manual-admin pair: `0.43.2-admin-smoke -> 0.43.3-admin-smoke` / `manual-admin-campaign-20261111-04302-04303-closed`.
 - Claims: `public_trusted_signing=false`; `external_stable_publication=false`.
 <!-- END GENERATED CURRENT EVIDENCE -->
 
