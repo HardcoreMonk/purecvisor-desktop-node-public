@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "contract": "pcv-train-facts-input-v1",
+  "version": "0.43.1-admin-smoke",
+  "baseline_version": "0.43.0-admin-smoke",
+  "canonical_current_evidence": "0.43.0-admin-smoke",
+  "date": "2026-11-10",
+  "documents": {
+    "package": "docs/ga-ready/evidence/admin-smoke-package-2026-11-10-04301.md",
+    "ops-summary": "docs/ga-ready/evidence/installed-runtime-ops-summary-2026-11-10-04301.md",
+    "update-rollback": "docs/ga-ready/evidence/product-update-rollback-2026-11-10-04300-04301.md",
+    "clean-host": "docs/ga-ready/evidence/internal-clean-host-install-update-rollback-smoke-2026-11-10-04300-04301.md",
+    "burn": "docs/ga-ready/evidence/burn-bootstrapper-lifecycle-smoke-2026-11-10-04301.md",
+    "msix": "docs/ga-ready/evidence/msix-package-lifecycle-smoke-2026-11-10-04300-04301.md",
+    "pair-descriptor": "docs/ga-ready/evidence/manual-admin-campaign-descriptor-2026-11-10-04300-04301.md",
+    "fullgate": "docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-11-10-04301-hostmutation.md",
+    "current-card": "docs/ga-ready/evidence/installed-operator-surface-current-card-2026-11-10-04301.md"
+  },
+  "sources": {
+    "package_root": "artifacts/admin-smoke-package-20261110-04301",
+    "baseline_package_root": "artifacts/admin-smoke-package-20261110-04300",
+    "campaign_root": "artifacts/manual-admin-campaign-20261110-04300-04301",
+    "target_update_catalog": "artifacts/admin-smoke-package-20261110-04301/PureCVisorDesktopNode-0.43.1-admin-smoke-update-catalog.json",
+    "signer_thumbprint": "8C5F3B5030D3A54B1150C2C30CFD9868800DF0C6",
+    "fullgate_batch_id": "full-admin-host-mutation-gate-20261110-04301",
+    "iso_path": "artifacts/smoke-media-20261108/pcv-route-parity-smoke-20261108.iso",
+    "current_card_root": "artifacts/installed-operator-surface-current-card-20261110-04301",
+    "fullgate_final_firewall_rule_count": "0"
+  },
+  "narrative": {
+    "package": {
+      "background": "release train `0.43.1`의 package다. backlog counts 수정 campaign `backlog-counts-20261110`이 queue에 쌓은 Web Console 변경 한 행을 싣는다(campaign `train-04301-20261110`). 적재는 134(BL-0036 좁은 폭 셸 검색 버튼 이름, BL-0037 좁은 VM 목록의 전체 이름·상태 점·템플릿 배지, BL-0038 삭제 확인 gate 대기, BL-0039 고대비 테마 token 적용과 mockup 테마 퇴역, BL-0040 첫 방문 `runtime/policy` 401 제거, BL-0041 진단 서비스 값 문구)다. payload 파일은 `0.43.0`과 같은 31개다(`web/app.js`·`web/styles.css` 호환 파일 포함, BL-0030 fixture). build 51초. pair baseline은 train `0.43.0` Task 1 package다.",
+      "train_carriages": "`PR #134` (변경 `1e06c13c`, web); payload: PR #134 merge",
+      "lane2_probes": "설치본 Web Console 화면(queue 134, 승인의 `probe(Web Console 화면)`)"
+    },
+    "fullgate": {
+      "run_context": "gate는 branch `lane1/train-04301-20261110`의 HEAD `143a55b`에서 빌드했다(product source는 payload `c685bd51`과 같고, 그 뒤 commit은 문서뿐이다). manifest는 `pcvverify train-host-inputs --kind fullgate-manifest`로 `docs/ga-ready/trains/0.43.1-admin-smoke.host-inputs.json`에서 만들었다. LAN prefix는 기본 게이트웨이가 있는 호스트 사설 IPv4로 실행 경계에서 만들어 환경 변수로만 넘겼다. 설치본은 pair 뒤의 `0.43.1`(ARP 1개)였고, 계정은 Task 2에서 data root 밖에 보관했다.",
+      "vm_summary": "`pcv-guest-installed-04253-r1` Off, `pcv-it-s2-source` Off(S2 template)는 그대로"
+    },
+    "current-card": {
+      "script_note": "capture 스크립트는 `pcvverify train-host-inputs --kind current-card`가 렌더된 fullgate facts에서 만들었다. 저장소 root(card root 밖)에서 실행했고, 읽기만 한다."
+    }
+  }
+}
