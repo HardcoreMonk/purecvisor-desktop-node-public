@@ -171,6 +171,49 @@
         "msix_evidence": "msix-package-lifecycle-smoke-2026-11-10-04301-04302",
         "ops_summary_evidence": "installed-runtime-ops-summary-2026-11-10-04302"
       }
+    },
+    {
+      "template": "fullgate",
+      "path": "docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-11-10-04302-hostmutation.md",
+      "values": {
+        "evidence_id": "full-admin-host-mutation-gate-2026-11-10-04302-hostmutation",
+        "canonical_current_evidence": "0.43.1-admin-smoke",
+        "date": "2026-11-10",
+        "version": "0.43.2-admin-smoke",
+        "release_train": "0.43.2-admin-smoke",
+        "batch_id": "full-admin-host-mutation-gate-20261110-04302",
+        "batch_evidence_root": "artifacts/batch-runs/full-admin-host-mutation-gate-20261110-04302",
+        "batch_manifest": "artifacts/batch-manifests/full-admin-host-mutation-gate-20261110-04302.json",
+        "routeparity_artifact_root": "artifacts/routeparity-service-msi-hyperv-batch-profile-20261110-04302",
+        "os_mutation_artifact_root": "artifacts/os-mutation-gates-batch-profile-20261110-04302",
+        "batch_summary_sha256": "06ad2e2d4467e85dcda73e45da959df691dcba667bf7416630fe2ea52bb2111c",
+        "routeparity_summary_sha256": "996f40afacac63fe2f830bd7c3c6a50631d5114cb18de142d3c21b96262a5726",
+        "os_summary_sha256": "45add8010d559e83144f34890f34fb2421a6824acf6fbf00b51c25d8f87aee05",
+        "operational_fullgate_msi_sha256": "82e78f2b5247847d72e7cc4b95d04736a842f987bb4ef24c25a67561517228d5",
+        "operational_fullgate_payload_aggregate_sha256": "71b94bc9852b059c98c5a11f361dcbe9ee7bdd88448cd5c272d4b2d458e7b162",
+        "service_host_sha256": "6f61420e21548310022d70c5e0118a15cf5fee9cae9f6435f65962d41ecc9baf",
+        "cli_sha256": "8555fb9a66ac5f252c1c9836921194603874de7534d442482002fa08b9980776",
+        "product_wrapper_sha256": "a2ec149aa9634ec8276f799996390424fddebed67bfaf88dae05a933f63d4103",
+        "installed_product_version": "0.43.2-admin-smoke+2f19778abb4b948bdaa9f8a4b196166cad90c653",
+        "arp_entry_count_before": "1",
+        "arp_entry_count_after": "1",
+        "provenance_commit": "2f19778abb4b948bdaa9f8a4b196166cad90c653",
+        "iso_path": "artifacts/smoke-media-20261108/pcv-route-parity-smoke-20261108.iso",
+        "prestate": "pair가 남긴 clean package `0.43.2`(`{F5F4DAE1-D579-4070-B290-F7D5C2DCCE93}`, ARP 1개)이 설치된 채로 시작했다. 같은 version 재설치(A) 덕분에 손으로 비우지 않았다. VM `pcv-guest-installed-04253-r1` Off, `pcv-it-s2-source` Off, `PureCVisor` firewall rule `0`.",
+        "service_step_row": "| `service-msi-hyperv-admin-smoke` | `PASS` | `0` | `1` | `399.801s` |",
+        "os_step_row": "| `os-mutation-gate` | `PASS` | `0` | `1` | `11.138s` |",
+        "preflight_row": "| `same-version-preflight` | 잔여 `{F5F4DAE1-…}` 기록, `same_version_upgrade_expected=true` |",
+        "install_log_row": "| install log | `WIX_UPGRADE_DETECTED`=`{F5F4DAE1-…}` |",
+        "build_check_row": "| 사후 build commit 검사 | `ok=true`, `2f19778` == gate build |",
+        "arp_check_row": "| 사후 같은 version ARP 검사 | `ok=true`, `{75C2F8E3-E68F-4E3D-8337-2C605DC3AB1B}` 1개 |",
+        "route_vm_context": "route smoke는 설치본 `0.43.2`로 VM `pcv-spike-api-959cfddb`을 만들고, checkpoint create/restore/delete 뒤 `vm delete`를 실행한다. 그 job 결과 `storage_cleanup`은 다음과 같다.",
+        "configuration_root_row": "| `configuration_root` | `<user-temp>\\pcv-hyperv-api-smoke\\pcv-spike-api-959cfddb` |",
+        "final_arp_row": "| ARP `PureCVisor Desktop Node` | `{75C2F8E3-E68F-4E3D-8337-2C605DC3AB1B}` `0.43.2` (1개) |",
+        "final_hash_row": "| 설치본 Host / CLI SHA-256 | gate build와 같음 (`6f61420e…` / `8555fb9a…`) |",
+        "final_product_version_row": "| 설치본 Host ProductVersion | `0.43.2-admin-smoke+2f19778…` |",
+        "run_context": "gate는 branch `lane1/train-04302-20261110`의 HEAD `2f19778`에서 빌드했다(product source는 payload `00b10b66`과 같고, 그 뒤 commit은 문서뿐이다). manifest는 `pcvverify train-host-inputs --kind fullgate-manifest`로 `docs/ga-ready/trains/0.43.2-admin-smoke.host-inputs.json`에서 만들었다. LAN prefix는 기본 게이트웨이가 있는 호스트 사설 IPv4로 실행 경계에서 만들어 환경 변수로만 넘겼다. 설치본은 pair 뒤의 `0.43.2`(ARP 1개)였고, 계정은 Task 2에서 data root 밖에 보관했다.",
+        "vm_summary": "`pcv-guest-installed-04253-r1` Off, `pcv-it-s2-source` Off(S2 template)는 그대로"
+      }
     }
   ]
 }
