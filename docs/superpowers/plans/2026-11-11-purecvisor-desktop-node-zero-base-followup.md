@@ -44,10 +44,15 @@
 
 ## Task 1: train 계정 백업 삭제 (승인 1)
 
-- [ ] 보호 위치의 `pcv-train-accounts-backup-04304`를 지운다.
+- [x] 보호 위치의 `pcv-train-accounts-backup-04304`를 지운다.
   - 지우기 전: data root 계정 파일과 백업 `accounts.json`의 SHA-256과 크기가 같은지, data root 계정 파일의 ACL이 백업의 ACL 기록과 같은지 본다. 다르면 지우지 않고 멈춘다.
   - 지운 뒤: data root 계정 파일의 SHA-256과 ACL이 그대로인지 본다. service Running/Automatic, Web `200`, loopback 세션 `409` `PCV_LOOPBACK_SESSION_DISABLED`도 확인한다.
   - 이 plan에 실행 기록을 쓰고 로컬 commit한다.
+
+실행 기록(2026-11-11 07:59 KST):
+- 지우기 전: data root 계정 파일과 백업 `accounts.json`의 SHA-256이 같았다(1,153 bytes). data root 계정 파일의 ACL도 백업의 ACL 기록과 같았다.
+- 백업 `accounts.json`, fullgate가 만든 빈 저장소, ACL 기록 파일을 지웠다. 비게 된 백업 폴더도 지웠다.
+- 지운 뒤: data root 계정 파일의 SHA-256과 ACL이 지우기 전과 같다. service Running/Automatic, Web `200`, loopback 세션 `409` `PCV_LOOPBACK_SESSION_DISABLED`(계정 모드)다.
 
 ## Task 2: train 묶음 출발 기준 (승인 3)
 
