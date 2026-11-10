@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "contract": "pcv-active-campaign-v1",
-  "status": "open",
+  "status": "closed",
   "id": "bl0044-alerts-loading-20261111",
   "intent": "Fix backlog BL-0044: the dashboard alerts card shows a reading-in-progress message instead of the ops summary unavailable message while the first refresh is still loading",
   "working_authority": "source_head",
@@ -11,23 +11,26 @@
   ],
   "mutation_allowed": false,
   "current_write_allowed": false,
-  "next_step": "Run Task 2 from docs/superpowers/plans/2026-11-11-purecvisor-desktop-node-bl0044-alerts-loading.md (exit verification, close BL-0044, queue row, PR and merge after green CI).",
+  "next_step": "Closed 2026-11-11: backlog BL-0044 is fixed in PR #146. Before the first refresh finished the dashboard alerts card claimed the ops summary could not be read; while the first refresh is in progress it now shows data-alerts-state=loading with the new copy.dashboard.alerts.loading message, and a failed first refresh still ends as unavailable. The product change is queued for the next release train; the installed product still runs 0.43.3-admin-smoke.",
   "plan": "docs/superpowers/plans/2026-11-11-purecvisor-desktop-node-bl0044-alerts-loading.md",
   "task_queue": [
     "Task 1",
     "Task 2"
   ],
   "task_lanes": {},
-  "next_task": "Task 2",
+  "next_task": null,
   "completed_tasks": [
-    "Task 1"
+    "Task 1",
+    "Task 2"
   ],
   "commit_policy": "local-commit-per-task",
   "push_allowed": true,
   "merge_policy": "after-green-ci",
   "checkpoint_limit": 2,
   "approval_locator": "User-Approval: 2026-09-27 campaign runner commit policy local-commit-per-task; User-Approval: 2026-11-11 \"1, 2 문구 수정\" (answer to train-04303-20261111 close report next approvals 1 and 2; 2 = classify BL-0044 as counts and fix its wording): Lane 1 fix of BL-0044, grok implements and Claude reviews, product change queued as one release-train queue row, no host mutation, train departure needs its own approval; User-Approval: 2026-11-09 standing merge approval (\"앞으로 Required CI가 green이면 PR merge도 자동 승인\"); User-Approval: 2026-11-08 standing auto-approval of the recommended option (\"앞으로는 권장 사항 자동 승인 처리 한다.\"): a loading state with a new copy.dashboard.alerts.loading message while the first refresh is in progress, existing states otherwise",
-  "next_approval_required": [],
+  "next_approval_required": [
+    "release train 0.43.4-admin-smoke 출발: queue #146 적재. Lane 2 unsigned 개발 MSI build, pair 업그레이드 시험과 fullgate(msiexec 설치·업그레이드·repair·제거와 REMOVE_DATA, service 중지·시작, ADR-0016 pcv-it- VM), 설치본 current-card와 probe(Web Console 화면). Lane 3 current-evidence.json 승격. 단일 PR train, green CI 뒤 merge, merge 뒤 main push가 red면 revert PR."
+  ],
   "stop_on": [
     "same-cause-fail-3",
     "budget",

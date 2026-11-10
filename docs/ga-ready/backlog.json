@@ -528,8 +528,8 @@
       "basis": "2026-11-11 사용자 결정 \"1, 2 문구 수정\"(campaign train-04303-20261111 마무리 보고의 다음 승인 2에 대한 답): 운영 위생 카운트에 넣고 문구를 고친다. 고치는 일은 따로 여는 Lane 1 campaign에서 한다.",
       "out_of_scope_ref": null,
       "needs_design": false,
-      "status": "open",
-      "closed_by": null
+      "status": "closed",
+      "closed_by": "PR #146 (commit 08589a5)"
     }
   ]
 }
