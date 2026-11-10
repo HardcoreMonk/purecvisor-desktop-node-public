@@ -1196,11 +1196,23 @@ async function loadVms(options = {}) {
   reconcileSelectedVm();
 }
 
+// 새 갱신이 이전 요청을 취소하면, 늦게 도착한 거부가 이미 쓴 데이터와 오류를 덮지 않는다.
+function isSupersededRequest(error, options) {
+  const signal = options && options.signal;
+  if (signal && signal.aborted) return true;
+  if (!error) return false;
+  return normalizeError(error).code === 'PCV_REQUEST_ABORTED';
+}
+
 async function loadNetworkInventory(options = {}) {
-  state.networkError = null;
+  if (isSupersededRequest(null, options)) return;
   try {
-    state.networkInventory = await desktopApi.getNetworkInventory(options);
+    const inventory = await desktopApi.getNetworkInventory(options);
+    if (isSupersededRequest(null, options)) return;
+    state.networkInventory = inventory;
+    state.networkError = null;
   } catch (error) {
+    if (isSupersededRequest(error, options)) return;
     state.networkError = normalizeError(error);
     state.networkInventory = null;
   }
@@ -1217,18 +1229,27 @@ async function loadAccountSession(options = {}) {
     return;
   }
 
-  state.authError = null;
+  if (isSupersededRequest(null, options)) return;
   try {
-    state.authSession = await desktopApi.getAccountSession(options);
-    state.authRbac = await desktopApi.getAccountRbac(options);
+    const session = await desktopApi.getAccountSession(options);
+    const rbac = await desktopApi.getAccountRbac(options);
+    if (isSupersededRequest(null, options)) return;
+    state.authSession = session;
+    state.authRbac = rbac;
+    state.authError = null;
     saveAccountSessionToStorage();
   } catch (error) {
+    if (isSupersededRequest(error, options)) return;
     state.authError = normalizeError(error);
     if (state.authError.code === 'PCV_JWT_EXPIRED' && state.authRefreshToken) {
       await refreshAccountSession({ silent: true });
       if (!state.authAccessToken.trim()) return;
-      state.authSession = await desktopApi.getAccountSession(options);
-      state.authRbac = await desktopApi.getAccountRbac(options);
+      if (isSupersededRequest(null, options)) return;
+      const retriedSession = await desktopApi.getAccountSession(options);
+      const retriedRbac = await desktopApi.getAccountRbac(options);
+      if (isSupersededRequest(null, options)) return;
+      state.authSession = retriedSession;
+      state.authRbac = retriedRbac;
       return;
     }
     if (isAuthError(state.authError)) {
@@ -1240,6 +1261,7 @@ async function loadAccountSession(options = {}) {
 }
 
 async function loadAccountDirectory(options = {}) {
+  if (isSupersededRequest(null, options)) return;
   if (!state.authAccessToken.trim() && !state.apiToken.trim()) {
     state.accountDirectory = null;
     state.accountDirectoryError = null;
@@ -1247,41 +1269,55 @@ async function loadAccountDirectory(options = {}) {
   }
 
   try {
-    state.accountDirectory = await desktopApi.listAccounts(options);
+    const directory = await desktopApi.listAccounts(options);
+    if (isSupersededRequest(null, options)) return;
+    state.accountDirectory = directory;
     state.accountDirectoryError = null;
   } catch (error) {
+    if (isSupersededRequest(error, options)) return;
     state.accountDirectoryError = normalizeError(error);
     state.accountDirectory = null;
   }
 }
 
 async function loadConsoleCapabilities(options = {}) {
-  state.consoleError = null;
+  if (isSupersededRequest(null, options)) return;
   try {
-    state.consoleCapabilities = await desktopApi.getConsoleCapabilities(options);
+    const capabilities = await desktopApi.getConsoleCapabilities(options);
+    if (isSupersededRequest(null, options)) return;
+    state.consoleCapabilities = capabilities;
+    state.consoleError = null;
   } catch (error) {
+    if (isSupersededRequest(error, options)) return;
     state.consoleError = normalizeError(error);
     state.consoleCapabilities = null;
   }
 }
 
 async function loadOpsSummary(options = {}) {
-  state.summaryError = null;
+  if (isSupersededRequest(null, options)) return;
   try {
-    state.opsSummary = await desktopApi.getOpsSummary(options);
+    const summary = await desktopApi.getOpsSummary(options);
+    if (isSupersededRequest(null, options)) return;
+    state.opsSummary = summary;
+    state.summaryError = null;
   } catch (error) {
+    if (isSupersededRequest(error, options)) return;
     state.summaryError = normalizeError(error);
     state.opsSummary = null;
   }
 }
 
 async function loadServerJobs(options = {}) {
-  state.activityError = null;
+  if (isSupersededRequest(null, options)) return;
   try {
     const page = await desktopApi.listJobs(50, 0, options);
+    if (isSupersededRequest(null, options)) return;
     state.serverJobPage = page;
     state.serverJobs = asArray(page);
+    state.activityError = null;
   } catch (error) {
+    if (isSupersededRequest(error, options)) return;
     state.activityError = normalizeError(error);
     state.serverJobPage = null;
     state.serverJobs = [];
@@ -1289,8 +1325,10 @@ async function loadServerJobs(options = {}) {
 }
 
 async function loadDiagnosticBundleList(options = {}) {
+  if (isSupersededRequest(null, options)) return;
   try {
     const page = await desktopApi.listDiagnosticBundles(10, 0, options);
+    if (isSupersededRequest(null, options)) return;
     state.diagnosticBundleError = null;
     state.diagnosticBundlePage = page;
     state.diagnosticBundles = asArray(page);
@@ -1298,6 +1336,7 @@ async function loadDiagnosticBundleList(options = {}) {
       state.diagnosticBundle = state.diagnosticBundles[0];
     }
   } catch (error) {
+    if (isSupersededRequest(error, options)) return;
     const normalized = normalizeError(error);
     state.diagnosticBundlePage = null;
     state.diagnosticBundles = [];

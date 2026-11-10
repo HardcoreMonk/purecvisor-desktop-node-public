@@ -2827,6 +2827,162 @@ test("dashboard workload table and alert feed keep running-first order, 24h fail
   }
 });
 
+function deferred() {
+  let settle;
+  let fail;
+  const promise = new Promise((resolve, reject) => {
+    settle = resolve;
+    fail = reject;
+  });
+  return { promise, resolve: settle, reject: fail };
+}
+
+function plantAlertsCard() {
+  const dashboard = env.document.querySelector('.app-view[data-view="dashboard"]');
+  const alerts = env.document.createElement("aside");
+  alerts.id = "dashboard-alerts";
+  const body = env.document.createElement("div");
+  body.id = "dashboard-alerts-body";
+  alerts.appendChild(body);
+  dashboard.appendChild(alerts);
+  const product = env.PCV.viewDashboard.render;
+  env.PCV.views.register("dashboard", { render: product });
+  return { alerts, product };
+}
+
+function paintAlerts(alerts) {
+  env.state.lastRefreshedAt = Date.now();
+  env.state.partialFailures = [];
+  env.state.serverJobs = [];
+  env.state.trackedJobs = [];
+  env.state.vms = [];
+  env.navigateTo("dashboard");
+  return alerts.querySelector("[data-alerts-state]").getAttribute("data-alerts-state");
+}
+
+test("BL-0043 a late aborted loadOpsSummary leaves the alerts card available", async () => {
+  const { alerts, product } = plantAlertsCard();
+  const saved = {
+    vms: env.state.vms,
+    serverJobs: env.state.serverJobs,
+    trackedJobs: env.state.trackedJobs,
+    lastRefreshedAt: env.state.lastRefreshedAt,
+    partialFailures: env.state.partialFailures,
+    opsSummary: env.state.opsSummary,
+    summaryError: env.state.summaryError,
+    desktopApi: env.desktopApi
+  };
+  const summary = { errors: [], signals: [] };
+  try {
+    const first = deferred();
+    const second = deferred();
+    let calls = 0;
+    stubDesktopApi(env, {
+      getOpsSummary: () => {
+        calls += 1;
+        return calls === 1 ? first.promise : second.promise;
+      }
+    });
+    const older = new env.AbortController();
+    const newer = new env.AbortController();
+    const firstLoad = env.loadOpsSummary({ signal: older.signal });
+    const secondLoad = env.loadOpsSummary({ signal: newer.signal });
+    second.resolve(summary);
+    await secondLoad;
+    older.abort();
+    first.reject({
+      normalized: true,
+      status: 0,
+      operation: "web.request",
+      code: "PCV_REQUEST_ABORTED",
+      message: "superseded",
+      detail: "aborted",
+      retryable: false
+    });
+    await firstLoad;
+    assert.equal(paintAlerts(alerts), "empty");
+    assert.equal(alerts.textContent.includes("운영 요약을 읽지 못했습니다"), false);
+    assert.equal(env.state.summaryError, null);
+    assert.equal(env.state.opsSummary, summary);
+
+    env.state.opsSummary = summary;
+    env.state.summaryError = null;
+    const dead = new env.AbortController();
+    dead.abort();
+    let abortedCalls = 0;
+    stubDesktopApi(env, {
+      getOpsSummary: () => {
+        abortedCalls += 1;
+        return Promise.resolve({ errors: [{ code: "SHOULD_NOT" }], signals: [] });
+      }
+    });
+    await env.loadOpsSummary({ signal: dead.signal });
+    assert.equal(abortedCalls, 0);
+    assert.equal(env.state.opsSummary, summary);
+    assert.equal(env.state.summaryError, null);
+    assert.equal(paintAlerts(alerts), "empty");
+  } finally {
+    env.desktopApi = saved.desktopApi;
+    env.state.vms = saved.vms;
+    env.state.serverJobs = saved.serverJobs;
+    env.state.trackedJobs = saved.trackedJobs;
+    env.state.lastRefreshedAt = saved.lastRefreshedAt;
+    env.state.partialFailures = saved.partialFailures;
+    env.state.opsSummary = saved.opsSummary;
+    env.state.summaryError = saved.summaryError;
+    alerts.remove();
+    env.navigateTo("dashboard");
+    env.PCV.views.register("dashboard", { render: product });
+  }
+});
+
+test("BL-0043 an ops summary HTTP 500 keeps the alerts card unavailable", async () => {
+  const { alerts, product } = plantAlertsCard();
+  const saved = {
+    vms: env.state.vms,
+    serverJobs: env.state.serverJobs,
+    trackedJobs: env.state.trackedJobs,
+    lastRefreshedAt: env.state.lastRefreshedAt,
+    partialFailures: env.state.partialFailures,
+    opsSummary: env.state.opsSummary,
+    summaryError: env.state.summaryError,
+    desktopApi: env.desktopApi
+  };
+  try {
+    env.state.opsSummary = { errors: [], signals: [{ severity: "critical", message: "이전 신호" }] };
+    env.state.summaryError = null;
+    stubDesktopApi(env, {
+      getOpsSummary: async () => {
+        throw {
+          status: 500,
+          operation: "ops.summary",
+          code: "PCV_OPS_SUMMARY_FAILED",
+          message: "summary failed"
+        };
+      }
+    });
+    await env.loadOpsSummary();
+    assert.equal(env.state.summaryError && env.state.summaryError.code, "PCV_OPS_SUMMARY_FAILED");
+    assert.equal(env.state.summaryError.status, 500);
+    assert.equal(env.state.opsSummary, null);
+    assert.equal(paintAlerts(alerts), "unavailable");
+    assert.match(alerts.textContent, /운영 요약을 읽지 못했습니다/);
+    assert.equal(alerts.textContent.includes("이전 신호"), false);
+  } finally {
+    env.desktopApi = saved.desktopApi;
+    env.state.vms = saved.vms;
+    env.state.serverJobs = saved.serverJobs;
+    env.state.trackedJobs = saved.trackedJobs;
+    env.state.lastRefreshedAt = saved.lastRefreshedAt;
+    env.state.partialFailures = saved.partialFailures;
+    env.state.opsSummary = saved.opsSummary;
+    env.state.summaryError = saved.summaryError;
+    alerts.remove();
+    env.navigateTo("dashboard");
+    env.PCV.views.register("dashboard", { render: product });
+  }
+});
+
 test("logout closes open modals", async () => {
   if (!env.document.getElementById("toasts")) {
     const toasts = env.document.createElement("div");
