@@ -19,7 +19,7 @@ test("head declares the Single Edge security and asset wiring for the Desktop No
   assert.match(html, /<link rel="stylesheet" href="style\.css\?v=/);
   assert.match(html, /<link rel="manifest" href="manifest\.json">/);
   assert.match(html, /localStorage\.getItem\('pcv-theme'\)/, "theme bootstrap");
-  assert.match(html, /var allowed = \['supanova-cyan', 'supanova-hicontrast', 'supanova-mockup'\]/);
+  assert.match(html, /var allowed = \['supanova-cyan', 'supanova-hicontrast'\]/);
   assert.match(html, /<title>PureCVisor Desktop Node/);
 });
 
@@ -63,10 +63,10 @@ test("BL-0026 the theme selector omits the light theme and a stored light prefer
   };
   const loaded = new Function("window", "document", "localStorage", `${themeSource}\nreturn window;`)(themeWindow, themeWindow.document, themeWindow.localStorage);
   const ids = loaded.PCV.theme.PREVIEWS.map((theme) => theme.id);
-  assert.deepEqual(ids, ["supanova-cyan", "supanova-hicontrast", "supanova-mockup"]);
+  assert.deepEqual(ids, ["supanova-cyan", "supanova-hicontrast"]);
   assert.equal(loaded.sanitizeTheme("supanova"), "supanova-cyan");
   assert.equal(loaded.sanitizeTheme("contrast"), "supanova-hicontrast");
-  assert.equal(loaded.sanitizeTheme("supanova-mockup"), "supanova-mockup");
+  assert.equal(loaded.sanitizeTheme("supanova-mockup"), "supanova-cyan");
   assert.equal(loaded.sanitizeTheme(""), "supanova-cyan");
 
   function boot(stored) {
@@ -90,6 +90,7 @@ test("BL-0026 the theme selector omits the light theme and a stored light prefer
   assert.deepEqual(boot(undefined), { theme: "supanova-cyan", stored: "supanova-cyan" });
   assert.equal(boot("supanova-hicontrast").theme, "supanova-hicontrast");
   assert.equal(boot("contrast").theme, "supanova-hicontrast");
+  assert.deepEqual(boot("supanova-mockup"), { theme: "supanova-cyan", stored: "supanova-cyan" });
   const custom = boot("custom");
   assert.equal(custom.theme, "supanova-cyan");
 });

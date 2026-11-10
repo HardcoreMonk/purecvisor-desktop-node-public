@@ -6,12 +6,12 @@ window.PCV = window.PCV || {};
 var THEME_PREVIEWS = [
   { id: 'supanova-cyan',    name: 'SUPANOVA CYAN',    colors: ['#07090c','#0891b2','#34d399','#f43f5e'] },
   { id: 'supanova-hicontrast', name: 'SUPANOVA HI-CONTRAST', colors: ['#030405','#facc15','#ffffff','#ff4d6d'] },
-  { id: 'supanova-mockup',  name: 'SUPANOVA MOCKUP', colors: ['#0a0e14','#00e0ff','#24e08c','#ff4d61'] },
 ];
-var SUPANOVA_THEMES = ['supanova-cyan', 'supanova-hicontrast', 'supanova-mockup'];
+var SUPANOVA_THEMES = ['supanova-cyan', 'supanova-hicontrast'];
 var DEFAULT_THEME = 'supanova-cyan';
 function sanitizeTheme(t) {
   if (t === 'contrast') t = 'supanova-hicontrast'; // legacy Desktop Node theme name
+  if (t === 'supanova-mockup') t = 'supanova-cyan'; // retired demo theme; same paint as the default
   if (t === 'supanova') t = DEFAULT_THEME; // retired light theme; Part 2 paints the console dark
   return SUPANOVA_THEMES.indexOf(t) >= 0 ? t : DEFAULT_THEME;
 }

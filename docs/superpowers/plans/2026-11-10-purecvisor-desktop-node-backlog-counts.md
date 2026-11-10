@@ -85,11 +85,25 @@
 
 ## Task 4: 고대비·mockup 테마 (BL-0039)
 
-- [ ] 먼저 브라우저에서 고대비를 골랐을 때 `--bg`, `--fg`, `--accent`가 바뀌지 않는지 확인한다.
+- [x] 먼저 브라우저에서 고대비를 골랐을 때 `--bg`, `--fg`, `--accent`가 바뀌지 않는지 확인한다.
   - 확인되면 고대비 테마 선택자가 Part 2 `:root` token보다 우선하게 고친다(예: `:root[data-theme="supanova-hicontrast"]`). 고대비 화면에서 axe violation이 0인지 본다.
   - mockup은 `theme.ts` 목록, `index.html` 허용 목록, CSS 블록에서 빼고, 저장된 `supanova-mockup`은 `supanova-cyan`으로 옮긴다.
   - `web/DESIGN.md` 테마 표를 고친다(Claude).
 - 검증은 Task 1과 같고, 1440 캡처(기본·고대비)를 본다. 로컬 commit.
+
+실행 기록(2026-11-10): Claude가 현상을 확인했고, grok이 08:52~09:00에 구현했으며 Claude가 리뷰했다.
+- 확인(설치본 `0.43.0`, 같은 CSS): `data-theme`를 세 테마로 바꿔도 `--bg`·`--fg`·`--accent`·`--bg-panel`·`--green`·`--red`와 body 색이 같았다. 정적 분석과 같다.
+- 수정:
+  - 고대비 블록 선택자를 `:root[data-theme="supanova-hicontrast"]`(0,2,0)로 올렸다. Part 2 `:root`의 색 token 20개를 고대비 값으로 다시 정했다(배경 `#030405`, 글자 `#ffffff`, 강조 `#facc15`, 빨강 `#ff4d6d`, 패널 alpha .96~.98, 테두리 흰색 .55).
+  - mockup은 `theme.ts` 목록, `index.html` 허용 목록, CSS 블록 둘에서 뺐다. 저장값 `supanova-mockup`은 `supanova-cyan`으로 정규화한다.
+  - `web/DESIGN.md` Visual Theme 절을 두 테마 기준으로 고쳤다(Claude).
+- 리뷰 확인:
+  - grok의 고대비 캡처는 gate 안에서 테마 전환 전에 찍혀 기본 색으로 보였다. 그래서 Claude가 빌드된 `web/`을 로컬 정적 서버로 열어 다시 확인했다.
+    - 고대비 저장 뒤 다시 읽으면 `--bg #030405`, `--fg #ffffff`, `--accent #facc15`, body `rgb(3, 4, 5)`/`rgb(255, 255, 255)`다.
+    - 캡처는 `artifacts/backlog-counts-bl0039-captures/claude-hicontrast-1440.png`(로그인 화면)다.
+    - 저장값 `supanova-mockup`은 다시 읽으면 `supanova-cyan`으로 바뀌어 저장된다.
+  - grok의 고대비 gate 1회는 violations 0이었다. 기준선은 쓰지 않았다.
+- 검증: `npm run test:required --prefix web` exit 0(node 394 pass, browser gate `ok=true` assertions 121 failed 0 violations 0, 기준선 1597 그대로), web Pester와 ratchet 53/53, `git diff --check` clean.
 
 ## Task 5: 종료 검증과 PR
 
