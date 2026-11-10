@@ -516,8 +516,8 @@
       "basis": "2026-11-10 사용자 결정 \"고칠 대상으로 지정\"(campaign train-04302-20261110 마무리 뒤 보고의 다음 승인 1에 대한 답): 운영 위생 카운트에 넣고 고친다. 고치는 일은 Lane 1 campaign bl0043-alerts-card-20261110에서 한다.",
       "out_of_scope_ref": null,
       "needs_design": false,
-      "status": "open",
-      "closed_by": null
+      "status": "closed",
+      "closed_by": "PR #142 (commit 3d1ce59)"
     }
   ]
 }
