@@ -3,18 +3,18 @@
 <!-- BEGIN GENERATED CURRENT EVIDENCE -->
 ## Current operational evidence (generated)
 
-- Version: `0.43.3-admin-smoke`
+- Version: `0.43.4-admin-smoke`
 - Active operator surfaces: Web Console and PCVCLI; `tui_present=false`.
-- Package evidence: `docs/ga-ready/evidence/admin-smoke-package-2026-11-11-04303.md`.
-- Full admin host mutation: `full-admin-host-mutation-gate-20261111-04303` / `docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-11-11-04303-hostmutation.md`.
-- Actual-VM functional evidence: `docs/ga-ready/evidence/functional-correctness-actual-host-validation-2026-11-11-04303-carryforward.md`.
+- Package evidence: `docs/ga-ready/evidence/admin-smoke-package-2026-11-11-04304.md`.
+- Full admin host mutation: `full-admin-host-mutation-gate-20261111-04304` / `docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-11-11-04304-hostmutation.md`.
+- Actual-VM functional evidence: `docs/ga-ready/evidence/functional-correctness-actual-host-validation-2026-11-11-04304-carryforward.md`.
 - Feature qualification: `contract=pcv-feature-promotion-decision-v1`; `promotion_eligible=true`; `blocker_count=0`; `blockers=none`.
-- Installed CLI/Web current-card: `docs/ga-ready/evidence/installed-operator-surface-current-card-2026-11-11-04303.md`; CLI exit 0, Web HTTP 200, service Running/Automatic, TUI absent.
-- Clean MSI SHA-256: `66546521fb0fea092de8d0fd390153cc337108d9c17d5622015b748d901de060`.
-- Operational MSI SHA-256: `13f716ee18fbbcee0e0322de6cd12895762fb665863a1e7b437ff4bd292d0b59`.
-- Operational payload aggregate SHA-256: `0ea79bc712613d9fd5ce52e0571ef23cd721c8e821fdd9882598858ba3f1f018`.
-- Provenance commit: `db1a7626b7654264d8fa5059685027d064098445`.
-- Latest closed manual-admin pair: `0.43.2-admin-smoke -> 0.43.3-admin-smoke` / `manual-admin-campaign-20261111-04302-04303-closed`.
+- Installed CLI/Web current-card: `docs/ga-ready/evidence/installed-operator-surface-current-card-2026-11-11-04304.md`; CLI exit 0, Web HTTP 200, service Running/Automatic, TUI absent.
+- Clean MSI SHA-256: `c24ef8317c838d659834b7e77446625d9377e5774f9057fedc813318a739fccb`.
+- Operational MSI SHA-256: `c9f87149464776ac04cd53c0c2b82979f712ab093f907fad858d40a5986093d5`.
+- Operational payload aggregate SHA-256: `307491b625c7ac6ec8537912ce1074cb7064aeeb163205b162a1c8769c1e9f02`.
+- Provenance commit: `7b929ecbb618f483a0aa918643ef66c117aedcc5`.
+- Latest closed manual-admin pair: `0.43.3-admin-smoke -> 0.43.4-admin-smoke` / `manual-admin-campaign-20261111-04303-04304-closed`.
 - Claims: `public_trusted_signing=false`; `external_stable_publication=false`.
 <!-- END GENERATED CURRENT EVIDENCE -->
 
@@ -53,8 +53,33 @@
   2026-11-10 Lane 3가 `0.43.1-admin-smoke`로 다시 승격했다.
   2026-11-10 Lane 3가 `0.43.2-admin-smoke`로 다시 승격했다.
   2026-11-11 Lane 3가 `0.43.3-admin-smoke`로 다시 승격했다.
+  2026-11-11 Lane 3가 `0.43.4-admin-smoke`로 다시 승격했다.
 
-## 2026-11-11 `0.43.3` current promotion
+## 2026-11-11 `0.43.4` current promotion
+
+- 최신 product payload package는 `0.43.4-admin-smoke`이며
+  `docs/ga-ready/evidence/admin-smoke-package-2026-11-11-04304.md`가 기록한다. Clean MSI
+  SHA-256은 `c24ef8317c838d659834b7e77446625d9377e5774f9057fedc813318a739fccb`다.
+- full admin host mutation current는
+  `docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-11-11-04304-hostmutation.md` /
+  `full-admin-host-mutation-gate-20261111-04304`다. Operational MSI SHA-256은
+  `c9f87149464776ac04cd53c0c2b82979f712ab093f907fad858d40a5986093d5`, payload aggregate
+  SHA-256은 `307491b625c7ac6ec8537912ce1074cb7064aeeb163205b162a1c8769c1e9f02`, provenance
+  commit은 `7b929ecbb618f483a0aa918643ef66c117aedcc5`다. pair target은 clean MSI이며
+  operational fullgate MSI와 다른 identity다.
+- installed current-card는
+  `docs/ga-ready/evidence/installed-operator-surface-current-card-2026-11-11-04304.md`다.
+- actual-VM functional은
+  `docs/ga-ready/evidence/functional-correctness-actual-host-validation-2026-11-11-04304-carryforward.md`
+  로 04275 PASS를 04277, 04278, 04283, 04284, 04286, 04287, 04288, 04289, 04290, 04291, 04292, 04293, 04296, 04298, 04299, 04300, 04301, 04302, 04303에 이어 carry-forward한다. SERVICE_PLAN P0 actual-VM은 04275 evidence를 유지한다. 04304 BL-0044(대시보드 경고 카드 읽는 중 문구)는 candidate gate를 다시 열지 않는다.
+- `0.43.3-admin-smoke -> 0.43.4-admin-smoke` package-pair는
+  `docs/ga-ready/evidence/manual-admin-campaign-2026-11-11-04303-04304.md` /
+  `manual-admin-campaign-20261111-04303-04304-closed`로 PASS다.
+- operational current는 `0.43.4-admin-smoke`다. `promotion_eligible=true`, blockers는
+  없다. 이 Lane 3 호스트 설치본은 `0.43.4-admin-smoke`다. public trusted signing과
+  external stable publication은 주장하지 않는다.
+
+## 2026-11-11 `0.43.3` predecessor promotion
 
 - 최신 product payload package는 `0.43.3-admin-smoke`이며
   `docs/ga-ready/evidence/admin-smoke-package-2026-11-11-04303.md`가 기록한다. Clean MSI
