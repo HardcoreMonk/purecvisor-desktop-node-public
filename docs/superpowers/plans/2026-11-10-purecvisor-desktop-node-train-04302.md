@@ -117,11 +117,25 @@ operational current는 `0.43.1-admin-smoke` 그대로다.
 
 ## Task 3: pair
 
-- [ ] Lane 2. orchestrator를 `-PlanOnly`로 돌린 뒤 `-Execute`로 돌린다.
+- [x] Lane 2. orchestrator를 `-PlanOnly`로 돌린 뒤 `-Execute`로 돌린다.
   - 입력: campaign `manual-admin-campaign-20261110-04301-04302`, baseline `artifacts/admin-smoke-package-20261110-04301`, target Task 1 package, base VHD `20348.5761-20261108.vhd`.
   - 통과 조건: 여섯 bucket PASS, closed descriptor, `observation_error` 없음.
   - 끝 상태: 설치본 `0.43.2`·ARP 1개·service Running/Automatic·Web 200·보존 VM 둘 그대로.
   - `train-facts`로 pair 문서를 쓴다. 로컬 commit.
+
+실행 기록(2026-11-10): orchestrator `-PlanOnly`는 `ok=true`였다(host mutation 없음). 실행 전 ARP는 `0.43.1` 1개였다.
+- guest 인증 정보는 실행 스크립트 안에서 무작위로 만들어 `pscredential`로만 넘겼다. 출력하거나 저장하지 않았다.
+- `-Execute`는 root `artifacts/manual-admin-campaign-20261110-04301-04302`에서 20:37:38부터 20:42:17 KST까지 `278`초 돌았다.
+- 여섯 bucket이 모두 PASS다: `manual-admin-rebaseline-readiness`, `lifecycle-product-update-rollback`, `clean-host-windows-update`, `burn-bootstrapper-lifecycle`, `msix-package-lifecycle-smoke`, `installed-runtime-ops-summary`.
+- descriptor: closed descriptor를 냈다(SHA-256 `2e1ec0f15139d0f7b874b59e4193d3acf65718ca2e56b00902fbcb1c7183ce7d`). observation은 15개이고 `observation_error`는 0이다. restoration은 시도하지 않았다(필요 없음).
+- clean-host: base UBR `5761`이고 blocker는 `none`이다. baseline `0.43.1` MSI 설치 뒤 제품 Update로 `0.43.2`가 됐고 Rollback으로 돌아왔다.
+- 끝 상태:
+  - 설치본 `0.43.2-admin-smoke+b45e821…`, ARP `{F5F4DAE1…}` `0.43.2` 1개, service Running/Automatic, Web 200, PureCVisor 방화벽 규칙 0이다.
+  - `pcv-guest-installed-04253-r1` Off·`pcv-it-s2-source` Off(그대로)다.
+  - data root에는 업그레이드된 service가 만든 빈 계정 저장소(0개)가 있고 loopback 세션은 200이다. train `0.43.1` Task 3 끝에는 이 파일이 없었다. 빈 저장소라 계정 모드가 아니며, Task 7에서 fullgate가 남긴 빈 저장소와 같이 다룬다.
+- 문서: `train-facts`로 pair 문서 여섯 개(ops-summary, update-rollback, clean-host, burn, msix, pair-descriptor)를 썼다. `train-evidence --check`는 일곱 문서 모두 `current`다. `TrainEvidenceGoldenTests`·`TrainFactsBuilderTests`는 `28/28`이다. 새 문서의 주소는 loopback뿐이다.
+
+operational current는 `0.43.1-admin-smoke` 그대로다.
 
 ## Task 4: fullgate
 
