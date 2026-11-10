@@ -18,7 +18,8 @@
     "Task 1",
     "Task 2",
     "Task 3",
-    "Task 4",
+    "Task 4a",
+    "Task 4b",
     "Task 5",
     "Task 6",
     "Task 7",
@@ -36,16 +37,19 @@
     "Task 9": "2",
     "Task 10": "2"
   },
-  "next_task": "Task 3",
+  "next_task": "Task 5",
   "completed_tasks": [
     "Task 1",
-    "Task 2"
+    "Task 2",
+    "Task 3",
+    "Task 4a",
+    "Task 4b"
   ],
   "commit_policy": "local-commit-per-task",
   "push_allowed": true,
   "merge_policy": "after-green-ci",
-  "checkpoint_limit": 13,
-  "approval_locator": "User-Approval: 2026-09-27 campaign runner commit policy local-commit-per-task; User-Approval: 2026-11-11 \"1,2,3,4\" (answer to train-04304-20261111 next approvals 1-4: 1 delete the train 0.43.4 account backup after a SHA-256 check and record it in one docs PR; 2 (recommended) re-prove S1-S3 on the installed current version in the browser: Lane 1 browser scenario script in web/scripts, PR and merge after green CI, then Lane 2 browser scenario run with S1 Ubuntu install and S2 installed-VM clone (ADR-0016 pcv-it- VM create, start, checkpoint, clone, delete; no install, service or MSI change) and a demo record PR merged after green CI; 3 Lane 1 bundled train departure rule in DEVELOPMENT_PROCEDURE section 10 with spec pins, no host mutation; 4 Lane 1 dashboard first load time (ops/summary response time, Web first refresh cancel path, delayed mock tests), no host mutation, installed later by a separately approved train); User-Approval: 2026-11-09 standing merge approval (\"앞으로 Required CI가 green이면 PR merge도 자동 승인\"); User-Approval: 2026-11-08 standing auto-approval of the recommended option (\"앞으로는 권장 사항 자동 승인 처리 한다.\"): one scenario operator account pcv-s13-operator created with pcvcli account create --password-env and disabled after the run (existing accounts unchanged, no account file move, no service restart); ADR-0016 standing approval (2026-10-07): pcv-it- prefixed VM create/configure/delete",
+  "checkpoint_limit": 14,
+  "approval_locator": "User-Approval: 2026-09-27 campaign runner commit policy local-commit-per-task; User-Approval: 2026-11-11 \"1,2,3,4\" (answer to train-04304-20261111 next approvals 1-4: 1 delete the train 0.43.4 account backup after a SHA-256 check and record it in one docs PR; 2 (recommended) re-prove S1-S3 on the installed current version in the browser: Lane 1 browser scenario script in web/scripts, PR and merge after green CI, then Lane 2 browser scenario run with S1 Ubuntu install and S2 installed-VM clone (ADR-0016 pcv-it- VM create, start, checkpoint, clone, delete; no install, service or MSI change) and a demo record PR merged after green CI; 3 Lane 1 bundled train departure rule in DEVELOPMENT_PROCEDURE section 10 with spec pins, no host mutation; 4 Lane 1 dashboard first load time (ops/summary response time, Web first refresh cancel path, delayed mock tests), no host mutation, installed later by a separately approved train); User-Approval: 2026-11-09 standing merge approval (\"앞으로 Required CI가 green이면 PR merge도 자동 승인\"); User-Approval: 2026-11-11 answer \"임시 operator 계정 (권장)\" to the question on the browser scenario login (the auto mode classifier refused the account under the standing recommended-option approval): one scenario operator account pcv-s13-operator created with pcvcli account create --password-env and disabled after the run, password made at the execution boundary and kept only in a DPAPI-protected temporary file that is deleted after the disable (existing accounts unchanged, no account file move, no service restart); ADR-0016 standing approval (2026-10-07): pcv-it- prefixed VM create/configure/delete",
   "next_approval_required": [],
   "stop_on": [
     "same-cause-fail-3",

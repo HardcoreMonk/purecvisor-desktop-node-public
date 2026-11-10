@@ -25,7 +25,7 @@
 | 3 | "release train 묶음 출발 기준: Lane 1 문서·정책 변경(DEVELOPMENT_PROCEDURE §10 train 출발 기준 명확화, 필요한 spec pin 갱신), host mutation 없음. push, PR, green CI 뒤 merge." Task 2, 3 |
 | 4 | "대시보드 첫 로드 시간: Lane 1 개발(ops/summary 응답 시간과 Web 첫 갱신 취소 경로, 지연 mock 시험), host mutation 없음. push, PR, green CI 뒤 merge. 설치본 반영은 다음 train 출발 승인으로." Task 12, 13 |
 | merge | 2026-11-09 상시 승인 `"앞으로 Required CI가 green이면 PR merge도 자동 승인"`(`merge_policy=after-green-ci`). merge 뒤 main push run을 확인한다 |
-| 계정 | 권장안 자동 승인(`"앞으로는 권장 사항 자동 승인 처리 한다."`, 2026-11-08)으로 연다. 설치본은 계정 모드라 loopback 세션이 `409`다. 브라우저 시나리오는 이번에만 쓸 operator 계정 `pcv-s13-operator`로 로그인한다. 계정은 `pcvcli account create --password-env`(service bearer, protected token file)로 만들고, 끝나면 `pcvcli account disable`로 끈다. 비밀번호는 실행 경계에서 만들어 환경 변수로만 넘긴다. 기존 계정 세 개(`pcv-admin`, `pcv-admin2`, `pcv-s4-operator`)는 바꾸지 않는다. 계정 파일을 옮기거나 service를 다시 시작하지 않는다 |
+| 계정 | 사용자 결정 `"임시 operator 계정 (권장)"`(2026-11-11, 로그인 방법 질문에 대한 답)으로 연다. 처음에는 권장안 자동 승인으로 열려 했으나 auto mode가 승인 2 문장 밖이라며 막아 사용자에게 물었다. 설치본은 계정 모드라 loopback 세션이 `409`다. 브라우저 시나리오는 이번에만 쓸 operator 계정 `pcv-s13-operator`로 로그인한다. 계정은 `pcvcli account create --password-env`(service bearer, protected token file)로 만들고, 끝나면 `pcvcli account disable`로 끈다. 비밀번호는 실행 경계에서 만들어 환경 변수로만 넘긴다. 실행 사이에는 저장소 밖 DPAPI 보호 임시 파일에만 두고, 계정을 끈 뒤 지운다. 기존 계정 세 개(`pcv-admin`, `pcv-admin2`, `pcv-s4-operator`)는 바꾸지 않는다. 계정 파일을 옮기거나 service를 다시 시작하지 않는다 |
 | ADR-0016 | standing approval(2026-10-07)은 `pcv-it-` 접두사 VM의 생성·구성·삭제로 한정한다. 이번 VM은 `pcv-it-s1r-*`, `pcv-it-s2r-*`이고 disk는 Local API가 정하는 기본 위치에 둔다 |
 
 ## Global Constraints
@@ -72,22 +72,82 @@
 
 ## Task 3: PR A (문서)
 
-- [ ] clean HEAD에서 Delivery 시험과 `npm run test:public-source-safety --prefix web`를 돌린다. push하고 PR을 연다. Required CI 다섯 개가 green이면 merge하고 main push run을 확인한다.
+- [x] clean HEAD에서 Delivery 시험과 `npm run test:public-source-safety --prefix web`를 돌린다. push하고 PR을 연다. Required CI 다섯 개가 green이면 merge하고 main push run을 확인한다.
 
-## Task 4: 브라우저 시나리오 스크립트 (승인 2, Lane 1)
+실행 기록(2026-11-11): clean HEAD `951dc1f`에서 `npm run test:public-source-safety --prefix web` exit 0이었다. Delivery 785/785는 Task 2에서 돌렸다.
+- PR #149(`lane1/zero-base-followup-20261111`)를 열었다.
+- 첫 CI에서 `dotnet` shard가 Host 브라우저 시험 하나(`DesktopNodeHostLoopbackBootstrapBrowserTests.ChromiumOpensLoopbackConsoleWithoutServiceTokenPaste`)로 실패했다. 이 PR은 문서만 바꿨다. 실패한 job을 한 번 다시 돌리자 pass했다(flake로 본다).
+- Required CI 다섯 개가 green인 것을 보고 `--match-head-commit 951dc1f`로 merge했다(merge commit `6b29894`). main push run Development Gates `42920679012`와 Public Boundary `42920679190`이 success다.
 
-- [ ] `web/scripts/run-browser-scenario.mjs`와 node 시험을 만든다(grok 구현, Claude 리뷰). Playwright로 현행 Web Console을 조작하고, 시나리오는 `--scenario s1|s2|s3`로 고른다.
+## Task 4a: 브라우저 시나리오 스크립트 뼈대 (승인 2, Lane 1)
+
+Task 4는 grok 지시 크기(약 20분) 때문에 4a와 4b로 나눴다(2026-11-11). 범위는 같다.
+
+- [x] `web/scripts/browser-scenario-cdp.mjs`(Edge + CDP 도우미, `verify-browser-ui-gates.mjs`와 같은 방식, 새 npm 의존성 없음)와 `web/scripts/run-browser-scenario.mjs`를 만든다. grok이 구현하고 Claude가 리뷰한다.
+  - 인자는 `readScenarioArgs`로 읽는다. 시나리오는 `--scenario s1|s2|s3`로 고른다.
+  - 기본은 `--plan-only`다.
   - 로그인: 계정이 있으면 로그인 화면에 `--username`과 환경 변수 `PCV_SCENARIO_PASSWORD`를 넣는다. 계정이 없으면 loopback 세션을 쓴다. token과 비밀번호는 출력하지 않는다.
+  - `--check`: 로그인 뒤 화면과 버튼을 찾기만 하고 제출하지 않는다(읽기 전용).
+  - `assertScenarioVmName`은 `pcv-it-`로 시작하지 않는 이름이면 쓰기를 막는다.
+  - `summary.json`(계약 `pcv-browser-scenario-v1`)과 단계별 캡처를 `artifacts/browser-scenario-<yyyymmdd>/` 아래에 쓴다.
+  - node 시험 `web/node-tests/browser-scenario.test.mjs`를 더한다.
+  - 검증: `npm run test:required --prefix web`, `git diff --check`. 로컬 commit.
+
+실행 기록(2026-11-11): grok이 08:02~08:19에 구현했고 Claude가 리뷰했다.
+- `web/scripts/browser-scenario-cdp.mjs`: Edge + CDP 도우미다. headless가 기본이고 창은 1440×900이다. `fill`은 값을 `Runtime.callFunctionOn` 인자로 넘긴다. 기존 gate 스크립트는 그대로다.
+- `web/scripts/run-browser-scenario.mjs`: plan-only 단계 목록, `--check`(로그인, 버전, VM 목록, 만들기 마법사 칸, 상세 전원 버튼, 콘솔 탭, checkpoint 탭, template 표와 복제 폼), `assertScenarioVmName`, 비밀 값을 지우는 `serializeScenarioSummary`가 들어 있다. `--execute`는 아직 exit 2다.
+- `web/package.json`에 `scenario:browser`를 더했다. `test:web-contracts`에 새 시험을 넣었고, 그 명령 문자열 pin(`web-verification-architecture-boundary.test.mjs`)도 맞췄다.
+- 확인된 화면 구조:
+  - 마법사에는 generation 입력과 switch 선택이 없다(Generation 2 고정, switch는 만든 뒤 하드웨어 탭에서 바꾼다).
+  - template 잠그기는 VM 행 더보기 메뉴에 있다.
+  - 복제·checkpoint 만들기의 시작 버튼에는 `data-action`이 없다.
+- 결과: 새 node 시험 8/8. `npm run test:required --prefix web` exit 0이다(`test:web-contracts` 408/408, browser gate `ok=true` assertions 121 failed 0 violations 0, 기준선 변화 없음). 첫 실행은 gate `loginReady` 대기 시간 초과였고 다시 돌리니 통과했다. `git diff --check` clean.
+- 리뷰 메모(4b에서 고친다):
+  - 셸 준비 판정이 `connectionState === "connected"`만 인정한다. operator는 계정 목록이 `403`이라 `degraded`일 수 있다.
+  - 오류 메시지를 버린다. 비밀 값을 지운 뒤 summary에 남겨야 한다.
+
+## Task 4b: 브라우저 시나리오 실행 단계 (승인 2, Lane 1)
+
+- [x] `--execute`를 구현한다(grok 구현, Claude 리뷰). 모든 쓰기 동작은 `assertScenarioVmName`을 거친다.
   - S1: VM 만들기 마법사로 ISO VM을 만들고 시작한다. 콘솔 화면이 비어 있지 않을 때까지 기다리고, 키보드 입력 뒤 화면이 바뀌는지 본다.
   - S2: 꺼진 VM을 template으로 잠그고 복제한다. 복제 job이 끝나는 시간을 잰다(기준 60초).
-  - S3: checkpoint를 만들고 복원한다. 예약을 미리 보고 저장하고, 원하면 첫 예약 실행을 기다린 뒤 예약을 지운다.
-  - 공통: `--plan-only`(기본)는 요청 없이 단계만 출력한다. `--check`는 로그인 뒤 화면과 버튼만 찾고 제출하지 않는다(읽기 전용). 단계마다 캡처와 `summary.json`(계약 `pcv-browser-scenario-v1`)을 `artifacts/browser-scenario-<yyyymmdd>/` 아래에 쓴다. 끝에 만든 `pcv-it-` VM을 지우는 `--cleanup`이 있다.
-  - 이름 제한: 스크립트는 `pcv-it-`로 시작하지 않는 VM에는 쓰기 동작을 하지 않는다.
-  - 검증: `npm run test:required --prefix web`(새 node 시험 포함), `git diff --check`. 로컬 commit.
+  - S3: checkpoint를 만들고 복원한다. 예약을 미리 보고 저장한다. `--wait-schedule`이면 첫 예약 실행을 기다린 뒤 예약을 지운다.
+  - `--cleanup`: 만든 `pcv-it-` VM을 지운다(template 잠금을 먼저 푼다).
+  - 계정이 생기면(Task 6) `--check`를 설치본에 돌려 선택자를 확인한다. 이 확인은 Task 6 기록에 쓴다.
+  - 검증: `npm run test:required --prefix web`, `git diff --check`. 로컬 commit.
+
+실행 기록(2026-11-11): grok이 08:25~08:41에 구현했고 Claude가 리뷰하고 고쳤다.
+- 계정
+  - 08:27 시나리오 계정을 처음 만들려 했을 때 auto mode classifier가 거부했다(`Access Added As A Means`). 승인 2 문장에 계정 생성이 없어서다.
+  - 사용자에게 로그인 방법을 물었고 답은 `"임시 operator 계정 (권장)"`이었다. 08:33에 `pcvcli account create`로 `pcv-s13-operator`(operator)를 만들었다(Task 6에서 앞당김).
+  - 비밀번호는 실행 경계에서 만들어 저장소 밖 DPAPI 보호 임시 파일에만 둔다. 기존 계정 세 개는 그대로다.
+- grok 구현
+  - `--execute`: S1(마법사 생성, switch 연결, 시작, 콘솔 frame과 키 입력), S2(끄기, template 잠금, 복제, `clone_seconds`, `--start`), S3(checkpoint 만들기·복원, 예약 미리보기·저장, `--wait-schedule`이면 첫 예약 실행 확인 뒤 지우기), `--cleanup --vm a,b`(잠금 풀기, 끄기, 삭제, 없어진 것 확인)
+  - `--manual-login`, `--profile`
+  - job 판정은 화면 모델 `state.trackedJobs`의 새 job status다(`classifyJobStatus`).
+  - 셸 준비는 `judgeShellReady`다(`connected` 또는 `degraded`).
+  - 오류 메시지는 비밀 값을 지운 뒤 단계 detail과 stderr에 남긴다.
+- Claude 리뷰 수정
+  - (가) 쓰기 클릭은 모두 `clickOwned`를 거친다. 누르는 요소(또는 가장 가까운 `[data-vm-id]` 소유자)의 VM id가 대상 `pcv-it-` VM의 id와 다르면 거절한다.
+    - 대상은 상세 종료·시작, 더보기 메뉴의 잠금·풀기·삭제, 네트워크 연결, checkpoint 만들기·복원·예약 저장·지우기다.
+    - `selectVm`은 상세 패널이 그 VM을 보일 때까지 기다린다. 상세 화면이 늦게 바뀌어 보존 VM에 동작이 가는 일을 막는다.
+  - (나) 첫 화면(모듈 로딩) 동안 계정 모드 셸의 `auth` 상태를 실패로 보던 것을 고쳤다. 로그인 화면이나 준비된 셸이 나올 때까지 기다린다. `auth`/`error`는 셸이 보이고 갱신이 끝난 뒤에만 실패다.
+    - 이 문제는 설치본 `--check`에서 0ms 로그인 실패로 드러났다.
+- 설치본 읽기 전용 `--check`(4b 코드, `--vm pcv-it-s2-source`):
+  - 8단계 모두 pass다(`artifacts/browser-scenario-20261111/check-4b-live2/`).
+  - 로그인 8.6초, 버전 `v0.43.4-admin-smoke`다. 마법사 칸, 상세 시작 버튼, 콘솔 탭, checkpoint 탭, template 표와 복제 폼을 찾았다.
+  - summary에 비밀 값이 없다. 제출과 확인 수락은 하지 않았다.
+- 결과: 새 node 시험 14/14, `npm run test:required --prefix web` exit 0(`test:web-contracts` 414/414, browser gate `ok=true` assertions 121 failed 0 violations 0, 기준선 변화 없음), web Pester 50/50, `git diff --check` clean.
 
 ## Task 5: PR B (스크립트)
 
-- [ ] clean HEAD 종료 검증, push, PR, green CI 뒤 merge, main push run 확인.
+- [x] clean HEAD 종료 검증, push, PR, green CI 뒤 merge, main push run 확인.
+
+실행 기록(2026-11-11): clean HEAD `a323316`에서 PR gate를 돌렸다.
+- 첫 실행은 `ok=False`였다. Host 시험 `ChromiumOpensLoopbackConsoleWithoutServiceTokenPaste`가 `http://127.0.0.1:4410/` prefix 충돌(`HttpListenerException`)로 실패했다.
+  - PR #149 CI에서 실패한 것과 같은 시험이다. 이 PR은 `web/scripts`와 문서만 바꿨다.
+  - 범위 밖 발견으로 backlog BL-0045(`undecided`)에 적었다.
+- 두 번째 실행은 `ok=True`다(`artifacts/pr-gate/` build, `dotnet-test-release`, module-size-ratchet). assembly별 시험 수: Service 11, Contracts 201, Cli 186, Runtime 129, HyperV 288, Delivery 785, Host 246, Api 545, Verification 691.
 
 ## Task 6: 계정 준비와 S1 시작 (Lane 2)
 
