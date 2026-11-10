@@ -494,6 +494,18 @@
       "needs_design": false,
       "status": "closed",
       "closed_by": "PR #134 (commit add8d8a)"
+    },
+    {
+      "id": "BL-0042",
+      "found_on": "2026-11-10",
+      "source": "docs/superpowers/plans/2026-11-10-purecvisor-desktop-node-train-04301.md Task 6",
+      "summary": "Web Console version 표시(`#version-badge`)가 설치본에서 보이지 않는다(train 0.43.1 Task 6 probe). `updateVersionBadge()`는 `GET /api/v1/runtime/policy`의 `version`·`product_version`·`service_version`을 읽는데, 이 응답에는 version 값이 없다. BL-0040 수정 전에는 요청이 401로 끝나 같은 결과였으므로 회귀는 아니다. 설치 version을 내주는 곳(policy 응답의 값 추가 또는 다른 route)을 정해야 한다.",
+      "classification": "undecided",
+      "basis": null,
+      "out_of_scope_ref": null,
+      "needs_design": false,
+      "status": "open",
+      "closed_by": null
     }
   ]
 }

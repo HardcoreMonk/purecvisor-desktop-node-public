@@ -181,7 +181,7 @@ operational current는 `0.43.0-admin-smoke` 그대로다.
 
 ## Task 6: probe Web Console 화면 (queue 134)
 
-- [ ] Lane 2. 설치본 `0.43.1`이 loopback(`http://127.0.0.1/`)으로 내주는 Web Console을 확인한다. VM은 만들지 않는다.
+- [x] Lane 2. 설치본 `0.43.1`이 loopback(`http://127.0.0.1/`)으로 내주는 Web Console을 확인한다. VM은 만들지 않는다.
   - 내주는 파일: `app.bundle.js`, `index.html`, `style.css`, `sw.js`, `i18n.js`의 SHA-256이 Task 1 package payload의 같은 파일과 같은지, `sw.js` CACHE_NAME이 payload commit 소스와 같은지 본다.
   - 화면: Playwright 브라우저로 1440×900과 768×1024에서 연다. 새 브라우저 context에서 시작해 다음을 본다.
     - BL-0040: 첫 방문에 `auth/loopback-session`이 `runtime/policy`보다 먼저이고, HTTP 4xx와 console error가 0이다. version 표시가 보인다.
@@ -193,6 +193,23 @@ operational current는 `0.43.0-admin-smoke` 그대로다.
   - BL-0038은 browser gate 시험만 바꿨으므로 설치본 probe 대상이 아니다.
   - 캡처는 `artifacts/lane2-backlog-counts-probe-20261110-04301/`에 둔다(커밋하지 않음).
   - evidence: `docs/ga-ready/evidence/lane2-backlog-counts-probe-2026-11-10-04301.md`. 로컬 commit.
+
+실행 기록(2026-11-10 17:03~17:20 KST): 설치본 `0.43.1-admin-smoke+143a55b`(계정 없음, loopback 세션 `200`)를 읽기만 했다.
+- 내주는 파일: `app.bundle.js`, `index.html`, `style.css`, `sw.js`, `i18n.js` 다섯 개의 SHA-256이 package payload와 payload commit 소스와 같다. CACHE_NAME `pcv-ui-v6c9f22e6`도 같다.
+- 수정 여섯 건:
+  - BL-0040: 새 browser context의 첫 방문에서 `auth/loopback-session`이 `runtime/policy`보다 먼저이고 policy 요청은 Bearer를 가진다. 1440과 768 모두 HTTP 4xx 0, console error 0.
+  - BL-0036: 768 폭 `.shell-search`는 `button "검색"`이다.
+  - BL-0041: 진단 서비스 값은 "실행 중"이고 `true`·`false` 값 줄은 0이다.
+  - BL-0037: 1440에서 VM을 고른 뒤 목록 2행 모두 이름 전체, 상태 점, 화면 읽기용 상태, S2 template 행의 템플릿 배지. 3열·7열 숨김.
+  - BL-0039: 고대비는 `--bg #030405`, `--fg #ffffff`, `--accent #facc15`. 저장값 `supanova-mockup`은 `supanova-cyan`, `contrast`는 `supanova-hicontrast`로 바뀐다.
+  - BL-0038: browser gate 시험만 바꿨으므로 대상이 아니다.
+- 나머지 화면 열 개와 명령 팔레트(항목 15개)가 1440과 768에서 그려지고, 가로 스크롤 0, console error 0, HTTP 4xx·5xx 0이다.
+- probe 실수 하나를 고쳤다: 처음 테마 확인은 같은 URL로 `goto`해서 페이지가 다시 읽히지 않았다. `reload()`로 다시 확인했다.
+- 범위 밖: version 표시가 설치본에서 보이지 않는다(`runtime/policy`에 version 값 없음, 회귀 아님). backlog `BL-0042` `undecided`.
+- 캡처 28장은 `artifacts/lane2-backlog-counts-probe-20261110-04301/`에 있다(커밋하지 않음). 테마 저장값은 원래 값으로 되돌렸다.
+- evidence: `docs/ga-ready/evidence/lane2-backlog-counts-probe-2026-11-10-04301.md`.
+
+operational current는 `0.43.0-admin-smoke` 그대로다.
 
 ## Task 7: 계정 복원
 
