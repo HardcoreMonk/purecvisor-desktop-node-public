@@ -46,9 +46,18 @@
 
 ## Task 2: Web badge 표시
 
-- [ ] `updateVersionBadge()`가 `data.product_version`을 읽어 badge에 `v<+ 앞부분>`(예 `v0.43.1-admin-smoke`)을 보인다. "✓"와 "최신 버전" 대신 title에 설치 version 전체(build metadata 포함)를 i18n 문구로 둔다. 값이 없거나 세션이 없으면 지금처럼 숨긴다. 로그인 화면 version 줄(`#lh-version`)도 같은 값을 쓴다.
+- [x] `updateVersionBadge()`가 `data.product_version`을 읽어 badge에 `v<+ 앞부분>`(예 `v0.43.1-admin-smoke`)을 보인다. "✓"와 "최신 버전" 대신 title에 설치 version 전체(build metadata 포함)를 i18n 문구로 둔다. 값이 없거나 세션이 없으면 지금처럼 숨긴다. 로그인 화면 version 줄(`#lh-version`)도 같은 값을 쓴다.
   - 시험: node 시험(`product_version` 값 → badge 글자와 title, 값 없음 → hidden, `+` 없는 값), 기존 loopback 세션 순서 시험 유지.
   - 검증: `npm run build:served --prefix web`, `npm run test:required --prefix web`, web Pester, `git diff --check`. 화면은 1440과 768 캡처를 본다. 로컬 commit.
+
+실행 기록(2026-11-10): grok이 19:42~19:50에 구현했고 Claude가 리뷰했다.
+- `updateVersionBadge()`는 `data.product_version`을 먼저 읽고, 없으면 지금처럼 `data.version`·`data.service_version`을 읽는다.
+- badge 글자는 `v` + 값의 `+` 앞부분이다(예 `v0.43.1-admin-smoke`). "✓"와 "최신 버전"은 뺐다. title은 새 i18n 키 `copy.badge.installed_version`(ko `설치 버전: {version}`, en `Installed version: {version}`)에 전체 값을 넣는다. 로그인 화면 version 줄도 짧은 값을 쓴다. update 분기와 `checkForUpdates`는 그대로다.
+- 리뷰 수정 1건: `_pcvConsoleVersion`을 정하는 꼬인 조건식을 지우고, 짧은 값을 한 번 계산해 한 줄로 대입하게 했다.
+- `web/src/api-types.ts`에 `product_version?: string | null`, browser gate policy mock에 `product_version: "0.42.96-admin-smoke+0123abc"`를 더했다.
+- node 시험 3건 추가: `+` 앞만 보이고 title은 전체, `version` fallback, 값이 없으면 숨김.
+- 결과: `npm run test:required --prefix web` exit 0(node 397/397, browser-ui-gates `ok=true` violations 0, baseline 변경 없음), web Pester 50/50(리뷰 수정 전), `git diff --check` clean.
+- 화면: gate mock 대시보드 1440과 768(`artifacts/bl0042-badge/`, gitignore)에서 badge가 `v0.42.96-admin-smoke`로 보이고 "✓"가 없다. title은 `설치 버전: 0.42.96-admin-smoke+0123abc`다.
 
 ## Task 3: 종료 검증과 PR
 

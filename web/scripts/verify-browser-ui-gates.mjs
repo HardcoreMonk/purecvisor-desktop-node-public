@@ -674,7 +674,7 @@ function mockData(method, pathname) {
     };
   }
   if (pathname === "/api/v1/runtime/policy") {
-    return { version: "0.42.96-admin-smoke", auth: { mode: "account", rbac: true }, web: { loopback: true } };
+    return { version: "0.42.96-admin-smoke", product_version: "0.42.96-admin-smoke+0123abc", auth: { mode: "account", rbac: true }, web: { loopback: true } };
   }
   if (pathname === "/api/v1/network/inventory") {
     return {

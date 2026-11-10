@@ -297,6 +297,48 @@ test("updateVersionBadge reads runtime policy only after a loopback session toke
   for (const entry of policies) assert.equal(entry.authorization, "Bearer loop-token");
 });
 
+function badgeVisibleText(node) {
+  if (!node || typeof node !== "object") return "";
+  if (node.nodeType === 3) return String(node.textContent || "");
+  return (node.children || []).map(badgeVisibleText).join("");
+}
+
+function policyFetch(data) {
+  return () => Promise.resolve(new Response(JSON.stringify({ ok: true, data }), { status: 200, headers: { "Content-Type": "application/json" } }));
+}
+
+async function renderVersionBadge(data) {
+  const { sandbox } = createSandbox();
+  sandbox.fetch = policyFetch(data);
+  loadBundle(sandbox);
+  sandbox.authToken = "session-token";
+  await sandbox.updateVersionBadge();
+  return sandbox;
+}
+
+test("updateVersionBadge shows the product version before the build metadata", async () => {
+  const sandbox = await renderVersionBadge({ product_version: "0.43.1-admin-smoke+abc" });
+  const badge = sandbox.document.getElementById("version-badge");
+  assert.equal(badge.hidden, false);
+  assert.equal(badgeVisibleText(badge), "v0.43.1-admin-smoke");
+  assert.equal(badgeVisibleText(badge).includes("✓"), false);
+  assert.equal(badge.title, "설치 버전: 0.43.1-admin-smoke+abc");
+  assert.equal(sandbox._pcvConsoleVersion, "v0.43.1-admin-smoke");
+  assert.equal(sandbox.document.getElementById("lh-version").textContent, "v0.43.1-admin-smoke");
+});
+
+test("updateVersionBadge falls back to data.version when product_version is absent", async () => {
+  const sandbox = await renderVersionBadge({ version: "0.42.96-admin-smoke" });
+  const badge = sandbox.document.getElementById("version-badge");
+  assert.equal(badge.hidden, false);
+  assert.equal(badgeVisibleText(badge), "v0.42.96-admin-smoke");
+});
+
+test("updateVersionBadge hides the badge when product_version is null and version is absent", async () => {
+  const sandbox = await renderVersionBadge({ product_version: null });
+  assert.equal(sandbox.document.getElementById("version-badge").hidden, true);
+});
+
 test("updateVersionBadge skips runtime policy when the loopback session is 409", async () => {
   const { sandbox } = createSandbox();
   const log = [];
