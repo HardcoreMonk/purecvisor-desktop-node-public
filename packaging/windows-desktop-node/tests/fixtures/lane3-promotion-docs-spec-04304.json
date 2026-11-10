@@ -1,0 +1,137 @@
+{
+  "schema_version": 1,
+  "contract": "pcv-lane3-promotion-docs-v1",
+  "descriptor_chain": {
+    "schema_version": 1,
+    "contract": "pcv-manual-admin-descriptor-chain-rotation-v1",
+    "previous_tag": "04303",
+    "next_previous_tag": "04304",
+    "values": {
+      "descriptor_id": "manual-admin-next-campaign-descriptor-2026-11-11-04304-promotion-closure",
+      "updated_at": "2026-11-11T04:00:00+09:00",
+      "current_status": "closed-package-pair-04303-04304-and-04304-fullgate-functional-carryforward-current-card-pass",
+      "current_manual_admin_package_pair": "0.43.3-admin-smoke -> 0.43.4-admin-smoke",
+      "current_manual_admin_campaign": "docs/ga-ready/evidence/manual-admin-campaign-2026-11-11-04303-04304.md",
+      "current_manual_admin_campaign_root": "artifacts/manual-admin-campaign-20261111-04303-04304",
+      "current_manual_admin_target_package_root": "artifacts/admin-smoke-package-20261111-04304",
+      "current_manual_admin_target_msi_sha256": "c24ef8317c838d659834b7e77446625d9377e5774f9057fedc813318a739fccb",
+      "current_manual_admin_update_package_sha256": "92630abe393ea54fa3acb0c8a775e03d18fc8c27d0aeb1c4d8b1bc81f3cdb2cc",
+      "current_manual_admin_descriptor_batch_manifest": "manual-admin-campaign-20261111-04303-04304-closed",
+      "current_manual_admin_descriptor_summary": "artifacts/manual-admin-campaign-20261111-04303-04304/manual-admin-campaign-descriptor/summary.json",
+      "current_manual_admin_days_since_previous_closure": "0",
+      "current_installed_operator_surface_current_card_evidence": "docs/ga-ready/evidence/installed-operator-surface-current-card-2026-11-11-04304.md",
+      "current_installed_operator_surface_current_card_summary": "artifacts/installed-operator-surface-current-card-20261111-04304/summary.json",
+      "current_installed_operator_surface_current_card_summary_sha256": "bbbe6d8795353c384cfec466b96d688095b2166adb402780e9475f24596540d0",
+      "current_functional_correctness_actual_host_evidence": "docs/ga-ready/evidence/functional-correctness-actual-host-validation-2026-11-11-04304-carryforward.md",
+      "latest_manual_admin_candidate_package_pair": "0.43.3-admin-smoke -> 0.43.4-admin-smoke",
+      "latest_manual_admin_candidate_campaign": "docs/ga-ready/evidence/manual-admin-campaign-2026-11-11-04303-04304.md",
+      "latest_manual_admin_candidate_campaign_root": "artifacts/manual-admin-campaign-20261111-04303-04304",
+      "latest_manual_admin_candidate_descriptor_batch_manifest": "manual-admin-campaign-20261111-04303-04304-closed",
+      "latest_manual_admin_candidate_descriptor_summary": "artifacts/manual-admin-campaign-20261111-04303-04304/manual-admin-campaign-descriptor/summary.json",
+      "latest_manual_admin_candidate_target_msi_sha256": "c24ef8317c838d659834b7e77446625d9377e5774f9057fedc813318a739fccb",
+      "latest_manual_admin_candidate_update_package_sha256": "92630abe393ea54fa3acb0c8a775e03d18fc8c27d0aeb1c4d8b1bc81f3cdb2cc",
+      "latest_manual_admin_candidate_provenance_commit": "54a817c4ed0a8ab14056405310a998571c99d578",
+      "next_manual_admin_package_pair_trigger": "release-train-departure-after-04304",
+      "next_manual_admin_package_pair_candidate": "0.43.4-admin-smoke -> next-admin-smoke-required",
+      "next_manual_admin_package_pair_candidate_status": "not-opened-awaiting-next-release-train",
+      "next_manual_admin_package_pair_payload_change_source_commit_range": "7b929ecbb618f483a0aa918643ef66c117aedcc5..next-admin-smoke-required",
+      "next_manual_admin_package_pair_payload_changed_source_file_count": "0",
+      "current_full_admin_host_mutation_gate": "docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-11-11-04304-hostmutation.md",
+      "current_full_admin_host_mutation_batch": "full-admin-host-mutation-gate-20261111-04304",
+      "latest_full_admin_gate_batch": "full-admin-host-mutation-gate-20261111-04304",
+      "current_full_admin_host_mutation_current_card": "artifacts/installed-operator-surface-current-card-20261111-04304/summary.json",
+      "current_full_admin_host_mutation_payload_aggregate_sha256": "307491b625c7ac6ec8537912ce1074cb7064aeeb163205b162a1c8769c1e9f02",
+      "current_full_admin_host_mutation_operational_msi_sha256": "c9f87149464776ac04cd53c0c2b82979f712ab093f907fad858d40a5986093d5",
+      "current_full_admin_host_mutation_provenance_commit": "7b929ecbb618f483a0aa918643ef66c117aedcc5",
+      "current_full_admin_host_mutation_routeparity_artifact_root": "artifacts/routeparity-service-msi-hyperv-batch-profile-20261111-04304",
+      "current_full_admin_host_mutation_os_mutation_artifact_root": "artifacts/os-mutation-gates-batch-profile-20261111-04304",
+      "current_required_ci_docs_only_package_candidate_decision": "retain-0.43.4-admin-smoke-no-new-candidate",
+      "current_public_boundary_main_push_compatibility_alias_semantics": "04304-payload-main-push-not-provider-required-authority",
+      "current_public_boundary_main_push_evidence": "docs/ga-ready/evidence/public-boundary-ci-main-push-2026-11-11-04304-payload-pass.md",
+      "current_public_boundary_main_push_run_id": "42866127722",
+      "current_public_boundary_main_push_job_id": "130004810818",
+      "current_public_boundary_main_push_head_sha": "e957f15b08e233ce9faffa809a178056c6b0e952",
+      "current_public_boundary_main_push_package_candidate_decision": "payload-main-push-includes-04304-candidate-sources"
+    }
+  },
+  "ledger_head": {
+    "schema_version": 1,
+    "contract": "pcv-manual-admin-descriptor-chain-rotation-v1",
+    "previous_tag": "04303",
+    "next_previous_tag": "04304",
+    "values": {
+      "current_full_admin_host_mutation": "0.43.4-admin-smoke",
+      "current_manual_admin_package_pair": "0.43.3-admin-smoke -> 0.43.4-admin-smoke",
+      "current_descriptor_batch_id": "manual-admin-campaign-20261111-04303-04304-closed",
+      "current_manual_admin_evidence": "docs/ga-ready/evidence/manual-admin-campaign-2026-11-11-04303-04304.md"
+    }
+  },
+  "ledger_rows": {
+    "schema_version": 1,
+    "contract": "pcv-current-evidence-ledger-rows-rotation-v1",
+    "promoted_tag": "04304",
+    "supersede": [
+      {
+        "id": "full-admin-host-mutation-current",
+        "status": "`pass`, `0.43.4-admin-smoke`",
+        "evidence": "`docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-11-11-04304-hostmutation.md`; `artifacts/batch-runs/full-admin-host-mutation-gate-20261111-04304`; operational MSI SHA-256 `c9f87149464776ac04cd53c0c2b82979f712ab093f907fad858d40a5986093d5`; payload SHA-256 `307491b625c7ac6ec8537912ce1074cb7064aeeb163205b162a1c8769c1e9f02`; provenance `7b929ecbb618f483a0aa918643ef66c117aedcc5`",
+        "rule": "Elevated Service/MSI/Hyper-V route와 OS mutation `2/2`가 재시도 없이 PASS했다. gate는 pair가 남긴 clean `0.43.4` 위에서 시작해 같은 version major upgrade로 교체했고, 끝난 뒤 ARP는 1개이며 설치본 Host/CLI가 gate build `7b929ec`와 같다. pair target은 clean MSI `c24ef831…`이며 operational MSI와 identity가 다르다. 직전 anchor는 `0.43.3-admin-smoke`였다."
+      },
+      {
+        "id": "manual-admin-package-pair-current",
+        "status": "`pass`, `0.43.3-admin-smoke -> 0.43.4-admin-smoke`",
+        "evidence": "`docs/ga-ready/evidence/manual-admin-campaign-2026-11-11-04303-04304.md`; descriptor `manual-admin-campaign-20261111-04303-04304-closed`; update ZIP SHA-256 `92630abe393ea54fa3acb0c8a775e03d18fc8c27d0aeb1c4d8b1bc81f3cdb2cc`",
+        "rule": "release train `0.43.4`의 pair다. 여섯 bucket PASS를 한 root에 쓰고 닫을 때 descriptor가 `missing_count=0`, `not_pass_count=0`이다. baseline은 직전 승격 `0.43.3` package(train `0.43.3` Task 1)다. clean-host bucket은 guest `0.43.3` 설치본의 제품 Update가 `0.43.4` payload를 받는 것을 확인했다. 이 Lane 3는 host mutation을 하지 않았다. 직전 closure는 `0.43.2-admin-smoke -> 0.43.3-admin-smoke`였다."
+      },
+      {
+        "id": "package-build-current",
+        "status": "`package-build-pass`, `0.43.4-admin-smoke`",
+        "evidence": "`docs/ga-ready/evidence/admin-smoke-package-2026-11-11-04304.md`; `artifacts/admin-smoke-package-20261111-04304`; MSI SHA-256 `c24ef8317c838d659834b7e77446625d9377e5774f9057fedc813318a739fccb`",
+        "rule": "CLI/Web-only payload package이며 release train `0.43.4`의 package다. source commit `54a817c`는 PR #146을 포함한다. fullgate provenance는 `7b929ec`이고 product payload는 payload commit `e957f15b`과 같다. functional은 04275 carry-forward이고 설치본 Lane 2 확인(내주는 파일, 대시보드 \"경고\" 카드 읽는 중 문구, 설치 version 표시)은 PASS다."
+      },
+      {
+        "id": "installed-operator-surface-smoke-latest",
+        "status": "`pass`, installed `0.43.4-admin-smoke`",
+        "evidence": "`docs/ga-ready/evidence/installed-operator-surface-current-card-2026-11-11-04304.md`; `artifacts/installed-operator-surface-current-card-20261111-04304/summary.json`; summary SHA-256 `bbbe6d8795353c384cfec466b96d688095b2166adb402780e9475f24596540d0`",
+        "rule": "CLI 3개 exit `0`, Web 2개 HTTP `200`, service `Running/Automatic`, `tui_present=false`, secret observation false이며 04272 token R4를 carry-forward한다. 캡처 artifact는 `not-promoted`다. 설치본 Host/CLI는 gate build(`7b929ec`)이고 clean package hash와는 다르다. 04303은 immediate predecessor다."
+      },
+      {
+        "id": "manual-admin-package-pair-latest-candidate",
+        "status": "`pass-closed`, `0.43.3-admin-smoke -> 0.43.4-admin-smoke`",
+        "evidence": "`docs/ga-ready/evidence/manual-admin-campaign-2026-11-11-04303-04304.md`; descriptor `manual-admin-campaign-20261111-04303-04304-closed`; update ZIP SHA-256 `92630abe393ea54fa3acb0c8a775e03d18fc8c27d0aeb1c4d8b1bc81f3cdb2cc`",
+        "rule": "readiness/update-rollback/clean-host-Windows-Update/Burn/MSIX/runtime ops PASS, `runner_count=6`, `missing_count=0`, `not_pass_count=0`."
+      }
+    ],
+    "replace": [
+      {
+        "id": "latest-product-payload-smoke",
+        "status": "`pass`, package `0.43.4-admin-smoke`",
+        "evidence": "`docs/ga-ready/evidence/admin-smoke-package-2026-11-11-04304.md`; `docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-11-11-04304-hostmutation.md`; operational MSI SHA-256 `c9f87149464776ac04cd53c0c2b82979f712ab093f907fad858d40a5986093d5`; payload SHA-256 `307491b625c7ac6ec8537912ce1074cb7064aeeb163205b162a1c8769c1e9f02`",
+        "rule": "CLI/Web-only package, actual-host fullgate, pair descriptor consume, installed surface current-card가 PASS했다. functional QoS/disk는 04275 carry-forward다. 설치본 대시보드 \"경고\" 카드가 첫 갱신 중에는 읽는 중 문구를 보이고 끝나면 목록이 되며, version 표시가 `v0.43.4-admin-smoke`를 보인다."
+      },
+      {
+        "id": "functional-correctness-actual-host-latest",
+        "status": "`pass`, carry-forward `0.43.4-admin-smoke`",
+        "evidence": "`docs/ga-ready/evidence/functional-correctness-actual-host-validation-2026-11-11-04304-carryforward.md`; predecessor `docs/ga-ready/evidence/functional-correctness-actual-host-validation-2026-08-27-04275.md`; `artifacts/functional-correctness-carryforward-20260827-04275/summary.json`; summary SHA-256 `a907535a5868d0e9a16095f2cf933dc2a8348a947d09af7537e038af4cf16ed5`",
+        "rule": "04304 Lane 3는 QoS/disk suite를 재실행하지 않고 04275 actual-VM PASS를 04277, 04278, 04283, 04284, 04286, 04287, 04288, 04289, 04290, 04291, 04292, 04293, 04296, 04298, 04299, 04300, 04301, 04302, 04303에 이어 carry-forward한다."
+      },
+      {
+        "id": "manual-admin-package-pair-next",
+        "status": "`not-opened-awaiting-next-release-train`, `0.43.4-admin-smoke -> next-admin-smoke-required`",
+        "evidence": "`docs/ga-ready/release-train.json` 다음 train 출발 승인 후 연다",
+        "rule": "`0.43.3-admin-smoke -> 0.43.4-admin-smoke` pair는 current closure다. 04304 fullgate build(`7b929ec`) 뒤 제품 source 변경은 없다. 다음 pair는 release train 대기열의 다음 train에서 연다."
+      }
+    ]
+  },
+  "index_sections": {
+    "schema_version": 1,
+    "contract": "pcv-promotion-index-sections-v1",
+    "date": "2026-11-11",
+    "previous_version": "0.43.3-admin-smoke",
+    "installed_version": "0.43.4-admin-smoke",
+    "p0_feature_ledger_version": "0.42.75-admin-smoke",
+    "pair_evidence": "docs/ga-ready/evidence/manual-admin-campaign-2026-11-11-04303-04304.md",
+    "functional_note": "04275 PASS를 04277, 04278, 04283, 04284, 04286, 04287, 04288, 04289, 04290, 04291, 04292, 04293, 04296, 04298, 04299, 04300, 04301, 04302, 04303에 이어 carry-forward한다. SERVICE_PLAN P0 actual-VM은 04275 evidence를 유지한다. 04304 BL-0044(대시보드 경고 카드 읽는 중 문구)는 candidate gate를 다시 열지 않는다.",
+    "main_push_evidence": "docs/ga-ready/evidence/public-boundary-ci-main-push-2026-11-11-04304-payload-pass.md"
+  }
+}
