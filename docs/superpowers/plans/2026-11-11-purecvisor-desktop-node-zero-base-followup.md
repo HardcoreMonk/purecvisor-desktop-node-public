@@ -56,13 +56,19 @@
 
 ## Task 2: train 묶음 출발 기준 (승인 3)
 
-- [ ] `docs/DEVELOPMENT_PROCEDURE.md` §10의 출발 기준을 고친다.
+- [x] `docs/DEVELOPMENT_PROCEDURE.md` §10의 출발 기준을 고친다.
   - 0.43.1~0.43.4처럼 표시 수정 하나마다 train을 보내지 않는다.
   - 조기 출발 사유(데이터 손실, 설치·업그레이드 실패, 보안 결함)가 아닌 표시·문구 수정은 queue에 쌓아 둔다.
   - 이런 수정은 기능 변경과 함께 싣거나 queue가 정한 수만큼 모였을 때 출발을 제안한다.
   - 에이전트가 다음 승인으로 train 출발을 올릴 때도 이 기준을 따른다.
   - pin 대상이면 같은 commit에서 `Update-PcvContractSpecPins.ps1 -Apply`를 돌린다.
   - 검증: `dotnet test src/DesktopNode.Delivery.Tests -c Release`, `git diff --check`. 로컬 commit.
+
+실행 기록(2026-11-11): `docs/DEVELOPMENT_PROCEDURE.md` §10 출발 조건 바로 아래에 "묶음 출발 기준" 항목을 더했다.
+- 에이전트는 네 경우에만 train 출발을 제안한다. 조기 출발 사유, 시나리오 단계 종료, 시연할 수 있는 동작을 바꾸는 `queue` 행, `queue` 행 `3`개 이상이다.
+- 표시·문구 수정뿐이고 `3`개 미만이면 `queue`에 두고, 마무리 보고에 행 수와 다음 출발 조건을 적는다. 사용자가 직접 요청하면 이 기준과 관계없이 출발한다.
+- 이 문서는 spec pin 대상이 아니다(`Update-PcvContractSpecPins.ps1 -Check` current, 바뀐 spec 0).
+- 결과: Delivery 785/785, `git diff --check` clean.
 
 ## Task 3: PR A (문서)
 
