@@ -809,19 +809,28 @@ function _renderVersionBadge(d) {
   if (d.current) window._pcvConsoleVersion = 'v' + d.current;
   paintLoginSurface();
 }
+function _hideVersionBadge() {
+  var b = document.getElementById('version-badge');
+  if (b) b.setAttribute('hidden', '');
+  paintLoginSurface();
+}
 function updateVersionBadge() {
   // Desktop Node has no online update check (ADR-0006); the badge shows the installed version from the runtime policy.
+  // A cold visit has no token yet. Wait for the shared loopback session instead of sending an empty Bearer.
   paintLoginSurface();
   if (!(PCV.api && typeof PCV.api.fetchGet === 'function' && typeof EP !== 'undefined' && EP.RUNTIME_POLICY)) return;
-  PCV.api.fetchGet(EP.RUNTIME_POLICY()).then(function (r) {
-    var d = r && r.payload ? r.payload : r;
-    var data = d && d.data ? d.data : d;
-    var current = data && (data.version || data.product_version || data.service_version) || '';
-    _renderVersionBadge(current ? { state: 'ok', current: current, update_available: false } : null);
-  }).catch(function () {
-    var b = document.getElementById('version-badge'); if (b) b.setAttribute('hidden', '');
-    paintLoginSurface();
-  });
+  var pending = window.authToken
+    ? Promise.resolve(true)
+    : (typeof PCV.api.ensureLoopbackSession === 'function' ? PCV.api.ensureLoopbackSession() : Promise.resolve(false));
+  return Promise.resolve(pending).then(function (opened) {
+    if (!opened || !window.authToken) { _hideVersionBadge(); return; }
+    return PCV.api.fetchGet(EP.RUNTIME_POLICY()).then(function (r) {
+      var d = r && r.payload ? r.payload : r;
+      var data = d && d.data ? d.data : d;
+      var current = data && (data.version || data.product_version || data.service_version) || '';
+      _renderVersionBadge(current ? { state: 'ok', current: current, update_available: false } : null);
+    }).catch(_hideVersionBadge);
+  }).catch(_hideVersionBadge);
 }
 window.updateVersionBadge = updateVersionBadge;
 function checkForUpdates() {

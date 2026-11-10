@@ -151,6 +151,7 @@ function buildTopbar() {
   root.appendChild(el('div', { class: 'shell-crumb', id: 'shell-crumb' }, 'Desktop Node'));
   root.appendChild(el('div', {
     class: 'shell-search', role: 'button', tabindex: '0',
+    'aria-keyshortcuts': 'Control+K',
     onClick: function () { if (typeof toggleGlobalSearch === 'function') toggleGlobalSearch(); }
   },
     shellIcon('ci-search', 'shell-search-ico'),

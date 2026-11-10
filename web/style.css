@@ -2315,7 +2315,7 @@ svg path { transition: stroke .3s ease, fill .3s ease; }
   --accent:    #0891b2;
   --chart-cpu: rgb(8,145,178);
 }
-[data-theme="supanova-hicontrast"] {
+:root[data-theme="supanova-hicontrast"] {
   --bg:  #030405;
   --bg2: #080a0d;
   --bg3: #11151b;
@@ -2328,32 +2328,21 @@ svg path { transition: stroke .3s ease, fill .3s ease; }
   --cyan:   #38bdf8;
   --peach:  #fb923c;
   --magenta: #ff4d6d;
-  --border: rgba(255,255,255,0.26);
-  --bg-panel: rgba(0,0,0,0.72);
-  --border-panel: rgba(255,255,255,0.28);
+  --border: rgba(255,255,255,0.55);
+  --bg-panel: rgba(3, 4, 5, .96);
+  --border-panel: rgba(255,255,255,0.55);
+  --supanova-glass: rgba(3, 4, 5, .96);
+  --supanova-rail: rgba(3, 4, 5, .98);
+  --supanova-shadow: 0 24px 80px rgba(0, 0, 0, .72);
+  --supanova-line: rgba(255, 255, 255, .45);
+  --supanova-panel: rgba(3, 4, 5, .96);
+  --accent-warm: #facc15;
+  --accent-rose: #ff4d6d;
+  --focus-ring: 0 0 0 3px rgba(250, 204, 21, .55);
   --chart-cpu: rgb(250,204,21);
   --chart-mem: rgb(56,189,248);
   --chart-disk: rgb(255,77,109);
   --chart-net: rgb(74,222,128);
-}
-
-[data-theme="supanova-mockup"] {
-  --bg:       #0a0e14;
-  --bg2:      #111823;
-  --bg3:      #17212f;
-  --fg:       #d7dfe8;
-  --fg2:      #74828f;
-  --accent:   #00e0ff;
-  --green:    #24e08c;
-  --red:      #ff4d61;
-  --yellow:   #ffbe3d;
-  --cyan:     #5aa9ff;
-  --border:   #22303f;
-  --bg-panel: rgba(17,24,35,.75);
-}
-
-[data-theme="supanova-mockup"] .ops-triage-grid {
-  --fg2: #94a0b4;
 }
 
 [data-theme|="supanova"] .toolbar h1 span,
@@ -3466,7 +3455,9 @@ body.mshell #ev-side { display: none !important; }
 
 @media (max-width: 900px) {
   .shell-search { flex: 0 0 auto; max-width: none; margin-left: 0; padding: 6px 8px; }
-  .shell-search .shell-search-ph, .shell-search kbd { display: none; }
+  .shell-search kbd { display: none; }
+  /* BL-0036: keep the label in the accessibility tree (visually hidden) so the button keeps its name. */
+  .shell-search .shell-search-ph { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
 }
 @media (max-width: 768px) {
   .shell-search, .shell-iconbtn, .mobile-menu-btn, .shell-navitem {
@@ -5200,6 +5191,52 @@ dialog::backdrop {
 .vm-workspace.is-detail .pcv-vm-table td:nth-child(8) {
   display: none;
 }
+
+.vm-workspace.is-detail .pcv-vm-table th:nth-child(3),
+.vm-workspace.is-detail .pcv-vm-table td:nth-child(3),
+.vm-workspace.is-detail .pcv-vm-table th:nth-child(7),
+.vm-workspace.is-detail .pcv-vm-table td:nth-child(7) {
+  display: none;
+}
+
+.pcv-vm-compact-meta {
+  display: none;
+}
+
+.vm-workspace.is-detail .pcv-vm-compact-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex: 0 0 auto;
+  position: relative;
+}
+
+.vm-workspace.is-detail .pcv-vm-table td:nth-child(2) {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.vm-workspace.is-detail .pcv-vm-table td:nth-child(2) .pcv-vm-list-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pcv-vm-state-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex: 0 0 auto;
+  background: var(--fg3);
+}
+
+.pcv-vm-state-dot.is-ok { background: var(--green); }
+.pcv-vm-state-dot.is-error { background: var(--red); }
+.pcv-vm-state-dot.is-warn { background: var(--yellow); }
 
 .vm-workspace.is-detail > .table-wrap {
   min-width: 0;

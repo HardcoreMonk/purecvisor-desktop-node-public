@@ -1091,6 +1091,13 @@ function bindVmChecks() {
   paintVmBulkProgress();
 }
 
+function vmCompactStateClass(value) {
+  const normalized = String(value ?? 'unknown').toLowerCase();
+  if (normalized.includes('running') || normalized.includes('ready') || normalized === 'ok') return 'is-ok';
+  if (normalized.includes('fail') || normalized.includes('error') || normalized.includes('forbidden')) return 'is-error';
+  return 'is-warn';
+}
+
 function renderVms() {
   pruneVmChecked();
   syncVmListDetailMode();
@@ -1125,11 +1132,14 @@ function renderVms() {
     const templateBadge = isTemplateLockedVm(vm)
       ? `<span class="badge badge-warn">${pcvEscapeHtml(t('vm.badge.template'))}</span>`
       : '';
+    const stateValue = getVmState(vm) || vm.status;
+    const stateLabel = pcvEscapeHtml(String(stateValue ?? 'unknown'));
+    const compactMeta = `<span class="pcv-vm-compact-meta"><span class="pcv-vm-state-dot ${vmCompactStateClass(stateValue)}" aria-hidden="true"></span><span class="sr-only">${stateLabel}</span>${templateBadge}</span>`;
     const checked = vmCheckedSet().has(vmId) ? ' checked' : '';
     return `
     <tr${selected} data-vm-id="${pcvEscapeHtml(vmId)}" tabindex="-1">
       <td><input type="checkbox" data-vm-check="row" data-vm-id="${pcvEscapeHtml(vmId)}" aria-label="${pcvEscapeHtml(t('vm.list.check', { name }))}"${checked}></td>
-      <td title="${pcvEscapeHtml(name)}">${pcvEscapeHtml(name)}</td>
+      <td title="${pcvEscapeHtml(name)}"><span class="pcv-vm-list-name">${pcvEscapeHtml(name)}</span>${compactMeta}</td>
       <td>${stateBadge(getVmState(vm) || vm.status)}</td>
       <td>${pcvEscapeHtml(vmScalarText(vm.generation))}</td>
       <td>${pcvEscapeHtml(vmCpuText(vm))}</td>

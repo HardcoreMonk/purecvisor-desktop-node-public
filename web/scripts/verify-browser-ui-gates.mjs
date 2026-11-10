@@ -65,7 +65,7 @@ const DIFFERENCES = [
   "confirmDialog는 열릴 때 안쪽으로 포커스를 옮기고 Tab을 가두며 Escape로 닫고 opener로 되돌린다. VM 상세 클릭 처리는 그 다음 render()로 상세 DOM을 갈아 끼워 복원된 opener가 사라진다.",
   "modalCore 대화상자(복제, 비밀번호 재설정)는 Tab 가두기와 opener 복원을 구현하지 않는다. showModal이 안쪽 포커스를 주고 Escape는 닫는다.",
   "삭제는 VM 이름을 입력해야 확인이 켜진다. 체크포인트 복원 확인은 이름 입력이 없는 danger confirm이다.",
-  "선택 테마의 기본은 supanova-cyan이다. 게이트는 남은 라이트 CSS 블록 supanova와 supanova-cyan을 계속 검사한다. supanova-hicontrast와 supanova-mockup은 이번 축 밖이다.",
+  "선택 테마의 기본은 supanova-cyan이다. 게이트는 남은 라이트 CSS 블록 supanova와 supanova-cyan을 계속 검사한다. supanova-hicontrast는 이번 축 밖이다.",
   "비밀번호 재설정은 #account-reset-form 대화상자다. 별도 route가 아니다.",
   "루프백 성공 표시 이름은 제품이 loopback-session으로 고정한다. 비밀번호 변경 버튼은 세션 username을 본다.",
   "첫 navigateTo 전에는 index.html이 helppage만 hidden으로 둔다. shell.mount의 setActive는 사이드바 표시만 바꾸고, section의 hidden/active는 _renderContentPaint가 칠한다. 게이트는 대시보드 항목을 클릭한 뒤에 배타 표시를 확인한다.",
@@ -1500,8 +1500,13 @@ async function main() {
       const armed = await call(client, "confirmState");
       check("delete-confirm", "typed-name-enables-accept", armed.acceptDisabled === false, armed);
       await call(client, "click", ['[data-pcv-confirm="accept"]']);
-      await sleep(400);
-      const deletes = mock.requests.slice(beforeAcceptDelete).filter((entry) => entry.method === "DELETE" && entry.path === "/api/v1/vms/pcv-demo-off");
+      const deleteDeadline = Date.now() + 5000;
+      let deletes = [];
+      for (;;) {
+        deletes = mock.requests.slice(beforeAcceptDelete).filter((entry) => entry.method === "DELETE" && entry.path === "/api/v1/vms/pcv-demo-off");
+        if (deletes.length > 0 || Date.now() >= deleteDeadline) break;
+        await sleep(150);
+      }
       check("delete-confirm", "accept-deletes", deletes.length === 1, deletes);
 
       await call(client, "click", ['#vm-table tr[data-vm-id="pcv-demo-off"] td']);

@@ -655,6 +655,18 @@ test("sidebar groups keep the design order and the account item follows account.
   assert.equal(item().hidden, false);
 });
 
+test("shell search button keeps a non-empty accessible name", () => {
+  resetSession(env);
+  env.PCV.shell.mount();
+  const search = env.document.querySelector(".shell-search");
+  assert.ok(search);
+  // BL-0036: the name comes from the visible label text (kept visually hidden at narrow widths in style.css), not aria-label.
+  assert.equal(search.getAttribute("aria-label"), null);
+  assert.ok(String(search.querySelector(".shell-search-ph").textContent || "").trim().length > 0);
+  assert.equal(search.querySelector("kbd").getAttribute("aria-hidden"), "true");
+  assert.equal(search.getAttribute("aria-keyshortcuts"), "Control+K");
+});
+
 test("BL-0031 the top KPI strip uses loaded VM host job alert and evidence counts", () => {
   resetSession(env);
   env.state.lastRefreshedAt = 1;
@@ -813,6 +825,24 @@ test("the VM row primary action follows template lock, then running, then off", 
   assert.equal(action("paused-1"), null);
   assert.match(env.els.vmTable.innerHTML, /세대/);
   assert.match(env.els.vmTable.innerHTML, /vCPU/);
+});
+
+test("VM list name cell keeps a compact meta for the narrow detail list", () => {
+  resetSession(env);
+  env.state.vms = [
+    { id: "run-1", name: "run-1", state: "Running" },
+    { id: "lock-run", name: "lock-run", state: "Off", template_lock: true }
+  ];
+  env.renderVms();
+  const cell = (id) => env.document.querySelector(`#vm-table tr[data-vm-id="${id}"] td[title]`);
+  const run = cell("run-1");
+  assert.equal(run.querySelector(".pcv-vm-list-name").textContent, "run-1");
+  assert.ok(run.querySelector(".pcv-vm-compact-meta"));
+  assert.equal(run.querySelector(".pcv-vm-compact-meta .badge"), null);
+  const locked = cell("lock-run");
+  assert.equal(locked.querySelector(".pcv-vm-list-name").textContent, "lock-run");
+  assert.ok(locked.querySelector(".pcv-vm-compact-meta .badge"));
+  assert.match(locked.querySelector(".pcv-vm-compact-meta").textContent, /템플릿/);
 });
 
 test("VM list detail mode opens only after a VM is chosen and close returns to the list", () => {
@@ -2928,6 +2958,11 @@ test("troubleshooting cards show Hyper-V states, session logout, bundle action, 
     assert.equal(card("hyperv").getAttribute("data-hv-state"), "not-ready");
     assert.match(card("hyperv").querySelector("[data-hv-action]").textContent, /Default Switch/);
     assert.equal(card("service").querySelector("[data-trouble-service]").textContent, "vmms-down");
+
+    env.state.host = { supported: true, service: true, listener: true };
+    env.render();
+    assert.equal(card("service").querySelector("[data-trouble-service]").textContent, "실행 중");
+    assert.equal(card("service").querySelector("[data-trouble-listener]").textContent, "실행 중");
 
     env.state.opsSummary = { host: { readiness: "needs attention" } };
     env.state.host = { supported: true, service: "vmms-up", listener: "open" };

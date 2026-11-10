@@ -255,3 +255,56 @@ test("the Single Edge nav keeps the chosen section shown through sidebar, hash a
     assert.equal(sandbox.state.activeView, view, `${hash} legacy view state`);
   }
 });
+
+function loadBundle(sandbox) {
+  vm.runInContext(fs.readFileSync(webRoot + "i18n.js", "utf8"), sandbox, { filename: "i18n.js" });
+  vm.runInContext(fs.readFileSync(webRoot + "app.bundle.js", "utf8"), sandbox, { filename: "app.bundle.js" });
+}
+
+function authorizationHeader(headers) {
+  if (!headers) return "";
+  if (typeof headers.get === "function") return headers.get("Authorization") || headers.get("authorization") || "";
+  return headers.Authorization || headers.authorization || "";
+}
+
+function scriptedFetch(log, loopbackStatus) {
+  return (url, init) => {
+    const href = String(url);
+    log.push({ url: href, method: (init && init.method) || "GET", authorization: authorizationHeader(init && init.headers) });
+    if (href.includes("/api/v1/auth/loopback-session")) {
+      const body = loopbackStatus === 200
+        ? { access_token: "loop-token", refresh_token: "loop-refresh", session: { username: "loopback-session", role: "admin", permissions: ["*"] } }
+        : { error: { code: "PCV_LOOPBACK_SESSION_DISABLED", message: "account mode" } };
+      return Promise.resolve(new Response(JSON.stringify(body), { status: loopbackStatus, headers: { "Content-Type": "application/json" } }));
+    }
+    return Promise.resolve(new Response(JSON.stringify({ data: { version: "0.42.96-admin-smoke" } }), { status: 200, headers: { "Content-Type": "application/json" } }));
+  };
+}
+
+test("updateVersionBadge reads runtime policy only after a loopback session token", async () => {
+  const { sandbox } = createSandbox();
+  const log = [];
+  sandbox.fetch = scriptedFetch(log, 200);
+  loadBundle(sandbox);
+  sandbox.authToken = "";
+  await sandbox.updateVersionBadge();
+  const loopback = log.findIndex((entry) => entry.url.includes("/api/v1/auth/loopback-session"));
+  const policy = log.findIndex((entry) => entry.url.includes("/api/v1/runtime/policy"));
+  assert.ok(loopback >= 0, "loopback session requested");
+  assert.ok(policy > loopback, "runtime policy follows the loopback session");
+  const policies = log.filter((entry) => entry.url.includes("/api/v1/runtime/policy"));
+  assert.ok(policies.length >= 1);
+  for (const entry of policies) assert.equal(entry.authorization, "Bearer loop-token");
+});
+
+test("updateVersionBadge skips runtime policy when the loopback session is 409", async () => {
+  const { sandbox } = createSandbox();
+  const log = [];
+  sandbox.fetch = scriptedFetch(log, 409);
+  loadBundle(sandbox);
+  sandbox.authToken = "";
+  await sandbox.updateVersionBadge();
+  assert.ok(log.some((entry) => entry.url.includes("/api/v1/auth/loopback-session")));
+  assert.equal(log.some((entry) => entry.url.includes("/api/v1/runtime/policy")), false);
+  assert.equal(sandbox.document.getElementById("version-badge").hidden, true);
+});

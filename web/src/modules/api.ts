@@ -270,6 +270,7 @@ function _finishLogin(user, d, opts) {
   if (PCV.events && typeof PCV.events.start === 'function') PCV.events.start();
   startSessionWatch();
   if (typeof pcvPostLoginInit === 'function') pcvPostLoginInit();
+  if (typeof window.updateVersionBadge === 'function') window.updateVersionBadge();
 }
 var _loginPageInFlight = false;
 function _setLoginPageBusy(busy) {

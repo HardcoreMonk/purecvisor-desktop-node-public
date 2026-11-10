@@ -26,11 +26,20 @@ window.PCV = window.PCV || {};
     return { state: 'ready', value: label, action: '' };
   }
 
+  function runningPhrase(value) {
+    if (typeof value !== 'boolean') return '';
+    return t(value ? 'copy.trouble.service.running' : 'copy.trouble.service.stopped');
+  }
+
   function serviceValue() {
     var host = state.host || {};
+    var directPhrase = runningPhrase(host.service);
+    if (directPhrase) return directPhrase;
     var direct = scalar(host.service);
     if (direct) return direct;
     var vmms = host.hyperv && host.hyperv.vmms_running;
+    var vmmsPhrase = runningPhrase(vmms);
+    if (vmmsPhrase) return vmmsPhrase;
     var shown = scalar(vmms);
     if (shown) return shown;
     if (state.connectionState) return String(state.connectionState);
@@ -39,12 +48,16 @@ window.PCV = window.PCV || {};
 
   function listenerValue() {
     var host = state.host || {};
+    var directPhrase = runningPhrase(host.listener);
+    if (directPhrase) return directPhrase;
     var direct = scalar(host.listener);
     if (direct) return direct;
     var policy = state.runtimePolicy || {};
     var nested = typeof readNested === 'function'
       ? (readNested(policy, ['network', 'current_exposure']) || readNested(policy, ['network', 'bind']))
       : null;
+    var nestedPhrase = runningPhrase(nested);
+    if (nestedPhrase) return nestedPhrase;
     var shown = scalar(nested);
     return shown || '-';
   }

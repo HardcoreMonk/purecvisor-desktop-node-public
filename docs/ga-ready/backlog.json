@@ -432,8 +432,8 @@
       "basis": "2026-11-10 사용자 결정 \"train 계정 백업 삭제, counts\"(campaign train-04300-20261110 다음 승인 2에 대한 답, BL-0036~BL-0041 모두): 이 프로젝트 범위 안이다. 고치는 일은 따로 승인받는 campaign에서 한다.",
       "out_of_scope_ref": null,
       "needs_design": false,
-      "status": "open",
-      "closed_by": null
+      "status": "closed",
+      "closed_by": "PR #134 (commit add8d8a)"
     },
     {
       "id": "BL-0037",
@@ -444,8 +444,8 @@
       "basis": "2026-11-10 사용자 결정 \"train 계정 백업 삭제, counts\"(campaign train-04300-20261110 다음 승인 2에 대한 답, BL-0036~BL-0041 모두): 이 프로젝트 범위 안이다. 고치는 일은 따로 승인받는 campaign에서 한다.",
       "out_of_scope_ref": null,
       "needs_design": false,
-      "status": "open",
-      "closed_by": null
+      "status": "closed",
+      "closed_by": "PR #134 (commit 1066478)"
     },
     {
       "id": "BL-0038",
@@ -456,8 +456,8 @@
       "basis": "2026-11-10 사용자 결정 \"train 계정 백업 삭제, counts\"(campaign train-04300-20261110 다음 승인 2에 대한 답, BL-0036~BL-0041 모두): 이 프로젝트 범위 안이다. 고치는 일은 따로 승인받는 campaign에서 한다.",
       "out_of_scope_ref": null,
       "needs_design": false,
-      "status": "open",
-      "closed_by": null
+      "status": "closed",
+      "closed_by": "PR #134 (commit add8d8a)"
     },
     {
       "id": "BL-0039",
@@ -468,8 +468,8 @@
       "basis": "2026-11-10 사용자 결정 \"train 계정 백업 삭제, counts\"(campaign train-04300-20261110 다음 승인 2에 대한 답, BL-0036~BL-0041 모두): 이 프로젝트 범위 안이다. 고치는 일은 따로 승인받는 campaign에서 한다.",
       "out_of_scope_ref": null,
       "needs_design": true,
-      "status": "open",
-      "closed_by": null
+      "status": "closed",
+      "closed_by": "PR #134 (commit 1e06c13)"
     },
     {
       "id": "BL-0040",
@@ -480,8 +480,8 @@
       "basis": "2026-11-10 사용자 결정 \"train 계정 백업 삭제, counts\"(campaign train-04300-20261110 다음 승인 2에 대한 답, BL-0036~BL-0041 모두): 이 프로젝트 범위 안이다. 고치는 일은 따로 승인받는 campaign에서 한다.",
       "out_of_scope_ref": null,
       "needs_design": false,
-      "status": "open",
-      "closed_by": null
+      "status": "closed",
+      "closed_by": "PR #134 (commit 3028a49)"
     },
     {
       "id": "BL-0041",
@@ -492,8 +492,8 @@
       "basis": "2026-11-10 사용자 결정 \"train 계정 백업 삭제, counts\"(campaign train-04300-20261110 다음 승인 2에 대한 답, BL-0036~BL-0041 모두): 이 프로젝트 범위 안이다. 고치는 일은 따로 승인받는 campaign에서 한다.",
       "out_of_scope_ref": null,
       "needs_design": false,
-      "status": "open",
-      "closed_by": null
+      "status": "closed",
+      "closed_by": "PR #134 (commit add8d8a)"
     }
   ]
 }

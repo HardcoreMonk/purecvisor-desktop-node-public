@@ -76,9 +76,11 @@ command palette(`Ctrl+K`), 환경설정(`Ctrl+P`: 테마, 언어, Local API 주�
 
 ## Visual Theme
 
-선택 테마는 어둡게 그려지는 `supanova-cyan`(기본), `supanova-hicontrast`, `supanova-mockup`이다
-(`web/src/modules/theme.ts`, `web/index.html`). 흰 캔버스 id `supanova`는 선택 목록에서 뺐다. Part 2 `:root`가 그 팔레트를
-덮어 라이트로 보이지 않기 때문이다. 저장된 `supanova`는 기본값 `supanova-cyan`로 옮긴다. Part 2의 어두운 콘솔 색은 유지한다.
+선택 테마는 `supanova-cyan`(기본)과 `supanova-hicontrast` 둘이다(`web/src/modules/theme.ts`, `web/index.html`).
+- 흰 캔버스 id `supanova`는 선택 목록에서 뺐다. Part 2 `:root`가 그 팔레트를 덮어 라이트로 보이지 않기 때문이다. 저장된 `supanova`는 기본값 `supanova-cyan`로 옮긴다.
+- `supanova-hicontrast`는 선택자 `:root[data-theme="supanova-hicontrast"]`로 Part 2 `:root`보다 우선한다. 핵심 token을 고대비 값으로 다시 정한다(배경 `#030405`, 글자 `#ffffff`, 강조 `#facc15`, 빨강 `#ff4d6d`, 불투명에 가까운 패널, 밝은 테두리)(BL-0039).
+- `supanova-mockup`은 기본과 같은 색으로 그려지는 시연용이라 뺐다. 저장된 값은 `supanova-cyan`으로 옮긴다(BL-0039).
+- Part 2의 어두운 콘솔 색은 기본 테마로 유지한다.
 장식보다 판독성, 상태 식별, 정보 밀도, 빠른 비교를 우선한다.
 
 기본 token은 `web/style.css` Part 2(Desktop Node additions) `:root`가 정한다(BL-0026 결정: 어두운 기본, 화면 색은 그대로).

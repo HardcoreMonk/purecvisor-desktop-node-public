@@ -1,5 +1,6 @@
 .worktrees/
 .superpowers/
+.playwright-mcp/
 artifacts/
 *.log
 *.tmp
