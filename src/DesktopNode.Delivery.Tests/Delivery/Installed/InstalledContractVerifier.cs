@@ -11,7 +11,7 @@ internal static class InstalledContractVerifier
     private static readonly LegacyBatchContractVerifier Core =
         new(
             SpecPath,
-            "8694fb2257ce498288dba3ef75e78ef4e976c5f72a6501388624dee9786b84d6",
+            "e5a15a7ba5a686a570880412785f515126cc6502e832e8e71779bed2b1d0d66f",
             "pcv-installed-smoke-contract-spec-v1",
             ErrorCode,
             [

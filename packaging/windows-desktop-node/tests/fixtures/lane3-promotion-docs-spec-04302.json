@@ -131,7 +131,7 @@
     "installed_version": "0.43.2-admin-smoke",
     "p0_feature_ledger_version": "0.42.75-admin-smoke",
     "pair_evidence": "docs/ga-ready/evidence/manual-admin-campaign-2026-11-10-04301-04302.md",
-    "functional_note": "04275 PASS를 04277, 04278, 04283, 04284, 04286, 04287, 04288, 04289, 04290, 04291, 04292, 04293, 04296, 04298, 04299, 04300, 04301에 이어 carry-forward한다. SERVICE_PLAN P0 actual-VM은 04275 evidence를 유지한다. 04302 BL-0042(runtime policy `product_version`과 Web Console 설치 version 표시)는 candidate gate를 다시 열지 않는다.",
+    "functional_note": "04275 PASS를 04277, 04278, 04283, 04284, 04286, 04287, 04288, 04289, 04290, 04291, 04292, 04293, 04296, 04298, 04299, 04300, 04301에 이어 carry-forward한다. SERVICE_PLAN P0 actual-VM은 04275 evidence를 유지한다. 04302 BL-0042(runtime policy product_version과 Web Console 설치 version 표시)는 candidate gate를 다시 열지 않는다.",
     "main_push_evidence": "docs/ga-ready/evidence/public-boundary-ci-main-push-2026-11-10-04302-payload-pass.md"
   }
 }

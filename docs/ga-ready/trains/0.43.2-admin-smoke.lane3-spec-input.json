@@ -7,7 +7,7 @@
   "output": "packaging/windows-desktop-node/tests/fixtures/lane3-promotion-docs-spec-04302.json",
   "narrative": {
     "updated_at": "2026-11-10T21:10:00+09:00",
-    "functional_note": "04275 PASS를 04277, 04278, 04283, 04284, 04286, 04287, 04288, 04289, 04290, 04291, 04292, 04293, 04296, 04298, 04299, 04300, 04301에 이어 carry-forward한다. SERVICE_PLAN P0 actual-VM은 04275 evidence를 유지한다. 04302 BL-0042(runtime policy `product_version`과 Web Console 설치 version 표시)는 candidate gate를 다시 열지 않는다.",
+    "functional_note": "04275 PASS를 04277, 04278, 04283, 04284, 04286, 04287, 04288, 04289, 04290, 04291, 04292, 04293, 04296, 04298, 04299, 04300, 04301에 이어 carry-forward한다. SERVICE_PLAN P0 actual-VM은 04275 evidence를 유지한다. 04302 BL-0042(runtime policy product_version과 Web Console 설치 version 표시)는 candidate gate를 다시 열지 않는다.",
     "rules": {
       "full-admin-host-mutation-current": "Elevated Service/MSI/Hyper-V route와 OS mutation `2/2`가 재시도 없이 PASS했다. gate는 pair가 남긴 clean `0.43.2` 위에서 시작해 같은 version major upgrade로 교체했고, 끝난 뒤 ARP는 1개이며 설치본 Host/CLI가 gate build `2f19778`와 같다. pair target은 clean MSI `fa6afbce…`이며 operational MSI와 identity가 다르다. 직전 anchor는 `0.43.1-admin-smoke`였다.",
       "manual-admin-package-pair-current": "release train `0.43.2`의 pair다. 여섯 bucket PASS를 한 root에 쓰고 닫을 때 descriptor가 `missing_count=0`, `not_pass_count=0`이다. baseline은 직전 승격 `0.43.1` package(train `0.43.1` Task 1)다. clean-host bucket은 guest `0.43.1` 설치본의 제품 Update가 `0.43.2` payload를 받는 것을 확인했다. 이 Lane 3는 host mutation을 하지 않았다. 직전 closure는 `0.43.0-admin-smoke -> 0.43.1-admin-smoke`였다.",
