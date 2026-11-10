@@ -2,17 +2,8 @@
   "schema_version": 1,
   "contract": "pcv-release-train-v1",
   "design": "docs/superpowers/specs/2026-10-04-purecvisor-desktop-node-release-train-design.md",
-  "operational_current": "0.43.1-admin-smoke",
-  "queue": [
-    {
-      "pr": 138,
-      "merge_commit": "424780d8",
-      "area": "api-web",
-      "summary": "backlog BL-0042: runtime policy carries product_version (the Host injects its informational version) and the Web Console version badge shows v<version> with the full value in its title instead of an Up to date check mark",
-      "lane2_probe": null,
-      "risk_tier": "M"
-    }
-  ],
+  "operational_current": "0.43.2-admin-smoke",
+  "queue": [],
   "trains": [
     {
       "version": "0.42.89-admin-smoke",
@@ -127,6 +118,15 @@
       "source_commit": "c685bd514a5c9e6f42e3e647ec6177260e541b6d",
       "carriages": [
         134
+      ],
+      "status": "promoted"
+    },
+    {
+      "version": "0.43.2-admin-smoke",
+      "departed_at": "2026-11-10T20:35:00+09:00",
+      "source_commit": "00b10b66baa7d704005ebf6638d48bcaa028c940",
+      "carriages": [
+        138
       ],
       "status": "promoted"
     }
