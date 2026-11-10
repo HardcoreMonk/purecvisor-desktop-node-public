@@ -83,7 +83,7 @@
 
 Task 4는 grok 지시 크기(약 20분) 때문에 4a와 4b로 나눴다(2026-11-11). 범위는 같다.
 
-- [ ] `web/scripts/browser-scenario-cdp.mjs`(Edge + CDP 도우미, `verify-browser-ui-gates.mjs`와 같은 방식, 새 npm 의존성 없음)와 `web/scripts/run-browser-scenario.mjs`를 만든다. grok이 구현하고 Claude가 리뷰한다.
+- [x] `web/scripts/browser-scenario-cdp.mjs`(Edge + CDP 도우미, `verify-browser-ui-gates.mjs`와 같은 방식, 새 npm 의존성 없음)와 `web/scripts/run-browser-scenario.mjs`를 만든다. grok이 구현하고 Claude가 리뷰한다.
   - 인자는 `readScenarioArgs`로 읽는다. 시나리오는 `--scenario s1|s2|s3`로 고른다.
   - 기본은 `--plan-only`다.
   - 로그인: 계정이 있으면 로그인 화면에 `--username`과 환경 변수 `PCV_SCENARIO_PASSWORD`를 넣는다. 계정이 없으면 loopback 세션을 쓴다. token과 비밀번호는 출력하지 않는다.
@@ -92,6 +92,19 @@ Task 4는 grok 지시 크기(약 20분) 때문에 4a와 4b로 나눴다(2026-11-
   - `summary.json`(계약 `pcv-browser-scenario-v1`)과 단계별 캡처를 `artifacts/browser-scenario-<yyyymmdd>/` 아래에 쓴다.
   - node 시험 `web/node-tests/browser-scenario.test.mjs`를 더한다.
   - 검증: `npm run test:required --prefix web`, `git diff --check`. 로컬 commit.
+
+실행 기록(2026-11-11): grok이 08:02~08:19에 구현했고 Claude가 리뷰했다.
+- `web/scripts/browser-scenario-cdp.mjs`: Edge + CDP 도우미다. headless가 기본이고 창은 1440×900이다. `fill`은 값을 `Runtime.callFunctionOn` 인자로 넘긴다. 기존 gate 스크립트는 그대로다.
+- `web/scripts/run-browser-scenario.mjs`: plan-only 단계 목록, `--check`(로그인, 버전, VM 목록, 만들기 마법사 칸, 상세 전원 버튼, 콘솔 탭, checkpoint 탭, template 표와 복제 폼), `assertScenarioVmName`, 비밀 값을 지우는 `serializeScenarioSummary`가 들어 있다. `--execute`는 아직 exit 2다.
+- `web/package.json`에 `scenario:browser`를 더했다. `test:web-contracts`에 새 시험을 넣었고, 그 명령 문자열 pin(`web-verification-architecture-boundary.test.mjs`)도 맞췄다.
+- 확인된 화면 구조:
+  - 마법사에는 generation 입력과 switch 선택이 없다(Generation 2 고정, switch는 만든 뒤 하드웨어 탭에서 바꾼다).
+  - template 잠그기는 VM 행 더보기 메뉴에 있다.
+  - 복제·checkpoint 만들기의 시작 버튼에는 `data-action`이 없다.
+- 결과: 새 node 시험 8/8. `npm run test:required --prefix web` exit 0이다(`test:web-contracts` 408/408, browser gate `ok=true` assertions 121 failed 0 violations 0, 기준선 변화 없음). 첫 실행은 gate `loginReady` 대기 시간 초과였고 다시 돌리니 통과했다. `git diff --check` clean.
+- 리뷰 메모(4b에서 고친다):
+  - 셸 준비 판정이 `connectionState === "connected"`만 인정한다. operator는 계정 목록이 `403`이라 `degraded`일 수 있다.
+  - 오류 메시지를 버린다. 비밀 값을 지운 뒤 summary에 남겨야 한다.
 
 ## Task 4b: 브라우저 시나리오 실행 단계 (승인 2, Lane 1)
 
