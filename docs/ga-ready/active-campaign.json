@@ -1,64 +1,30 @@
 {
   "schema_version": 1,
   "contract": "pcv-active-campaign-v1",
-  "status": "closed",
-  "id": "train-04303-20261111",
-  "intent": "Depart release train 0.43.3-admin-smoke with queue PR #142 (BL-0043 dashboard alerts card), keep the installed accounts across fullgate REMOVE_DATA, probe the installed Web Console for the fix, and promote it to operational current in a single train PR",
+  "status": "open",
+  "id": "bl0044-alerts-loading-20261111",
+  "intent": "Fix backlog BL-0044: the dashboard alerts card shows a reading-in-progress message instead of the ops summary unavailable message while the first refresh is still loading",
   "working_authority": "source_head",
   "allowed_lanes": [
     "0",
-    "1",
-    "2",
-    "3"
+    "1"
   ],
-  "mutation_allowed": true,
-  "current_write_allowed": true,
-  "next_step": "Closed 2026-11-11: release train 0.43.3-admin-smoke carried queue PR #142 (BL-0043 dashboard alerts card) and was promoted to operational current in single train PR #143 (merge 6844699, main push runs DG 42852748778 and PB 42852748752 green). Package, pair 0.43.2 -> 0.43.3, fullgate, current-card and the installed probe (after superseded ops summary requests the alerts card turns into the alert list at 1440 and 768, three cold visits each) passed; accounts were kept outside the data root during fullgate and restored. Completion on clean main 6844699: complete=true met=7/7 gaps=0. New backlog BL-0044 (the alerts card shows unavailable while the first refresh is still loading) is undecided. Audit docs/project-status-audit-2026-11-11.md. After close (user decision \"1, 2 문구 수정\"): the train account backup was deleted after a hash check and BL-0044 was classified counts; the BL-0044 wording fix opens as a Lane 1 campaign after this record merges.",
-  "plan": "docs/superpowers/plans/2026-11-11-purecvisor-desktop-node-train-04303.md",
+  "mutation_allowed": false,
+  "current_write_allowed": false,
+  "next_step": "Run Task 1 from docs/superpowers/plans/2026-11-11-purecvisor-desktop-node-bl0044-alerts-loading.md, then the queue in order.",
+  "plan": "docs/superpowers/plans/2026-11-11-purecvisor-desktop-node-bl0044-alerts-loading.md",
   "task_queue": [
-    "Task 0",
     "Task 1",
-    "Task 2",
-    "Task 3",
-    "Task 4",
-    "Task 5",
-    "Task 6",
-    "Task 7",
-    "Task 8",
-    "Task 9",
-    "Task 10",
-    "Task 11"
+    "Task 2"
   ],
-  "task_lanes": {
-    "Task 2": "2",
-    "Task 3": "2",
-    "Task 4": "2",
-    "Task 5": "2",
-    "Task 6": "2",
-    "Task 7": "2",
-    "Task 8": "3",
-    "Task 9": "3"
-  },
-  "next_task": null,
-  "completed_tasks": [
-    "Task 0",
-    "Task 1",
-    "Task 2",
-    "Task 3",
-    "Task 4",
-    "Task 5",
-    "Task 6",
-    "Task 7",
-    "Task 8",
-    "Task 9",
-    "Task 10",
-    "Task 11"
-  ],
+  "task_lanes": {},
+  "next_task": "Task 1",
+  "completed_tasks": [],
   "commit_policy": "local-commit-per-task",
   "push_allowed": true,
   "merge_policy": "after-green-ci",
-  "checkpoint_limit": 12,
-  "approval_locator": "User-Approval: 2026-09-27 campaign runner commit policy local-commit-per-task; User-Approval: 2026-11-11 \"release train 0.43.3-admin-smoke 출발: queue #142 적재. Lane 2 unsigned 개발 MSI build, pair 업그레이드 시험과 fullgate(msiexec 설치·업그레이드·repair·제거와 REMOVE_DATA, service 중지·시작, ADR-0016 pcv-it- VM), 설치본 current-card와 probe(Web Console 화면). Lane 3 current-evidence.json 승격. 단일 PR train, green CI 뒤 merge, merge 뒤 main push가 red면 revert PR.\" (answer to bl0043-alerts-card-20261110 next approval 1, sent verbatim); User-Approval: 2026-11-09 standing merge approval (\"앞으로 Required CI가 green이면 PR merge도 자동 승인\"); User-Approval: 2026-11-08 standing auto-approval of the recommended option (\"앞으로는 권장 사항 자동 승인 처리 한다.\"): back up accounts.json outside the repo and product data before the train and restore it after (backup deletion is asked); ADR-0016 standing approval (2026-10-07): pcv-it- prefixed VM create/configure/delete; User-Approval: 2026-11-11 \"1, 2 문구 수정\" (answer to the close report next approvals 1 and 2): delete the train account backup and record it in one docs PR merged after green CI; classify BL-0044 as counts and fix its wording in a separate Lane 1 campaign",
+  "checkpoint_limit": 2,
+  "approval_locator": "User-Approval: 2026-09-27 campaign runner commit policy local-commit-per-task; User-Approval: 2026-11-11 \"1, 2 문구 수정\" (answer to train-04303-20261111 close report next approvals 1 and 2; 2 = classify BL-0044 as counts and fix its wording): Lane 1 fix of BL-0044, grok implements and Claude reviews, product change queued as one release-train queue row, no host mutation, train departure needs its own approval; User-Approval: 2026-11-09 standing merge approval (\"앞으로 Required CI가 green이면 PR merge도 자동 승인\"); User-Approval: 2026-11-08 standing auto-approval of the recommended option (\"앞으로는 권장 사항 자동 승인 처리 한다.\"): a loading state with a new copy.dashboard.alerts.loading message while the first refresh is in progress, existing states otherwise",
   "next_approval_required": [],
   "stop_on": [
     "same-cause-fail-3",
@@ -71,5 +37,5 @@
     "dirty-tree-at-start"
   ],
   "out_of_scope_is_not_next_step": true,
-  "closed_predecessor": "bl0043-alerts-card-20261110"
+  "closed_predecessor": "train-04303-20261111"
 }
