@@ -181,7 +181,7 @@ operational current는 `0.43.1-admin-smoke` 그대로다.
 
 ## Task 6: probe Web Console 화면 (queue 138)
 
-- [ ] Lane 2. 설치본 `0.43.2`가 loopback(`http://127.0.0.1/`)으로 내주는 Web Console과 runtime policy를 확인한다. VM은 만들지 않는다.
+- [x] Lane 2. 설치본 `0.43.2`가 loopback(`http://127.0.0.1/`)으로 내주는 Web Console과 runtime policy를 확인한다. VM은 만들지 않는다.
   - 내주는 파일: `app.bundle.js`, `index.html`, `style.css`, `sw.js`, `i18n.js`의 SHA-256이 Task 1 package payload의 같은 파일과 같은지, `sw.js` CACHE_NAME이 payload commit 소스와 같은지 본다.
   - API: loopback 세션 뒤 `GET /api/v1/runtime/policy`의 `data.product_version`이 설치본 Host ProductVersion(`0.43.2-admin-smoke+<fullgate build commit>`)과 같고, `ops.summary`의 `runtime_policy.product_version`도 같은지 본다. token 값은 기록하지 않는다.
   - 화면: Playwright 브라우저로 1440×900과 768×1024에서 연다. 새 브라우저 context에서 시작해 다음을 본다.
@@ -190,6 +190,16 @@ operational current는 `0.43.1-admin-smoke` 그대로다.
     - 나머지 화면(대시보드, 가상 머신, 네트워크, 작업, 이벤트, evidence, 계정, 진단, 도움말)이 그려지고 console error 0이다.
   - 캡처는 `artifacts/lane2-bl0042-probe-20261110-04302/`에 둔다(커밋하지 않음).
   - evidence: `docs/ga-ready/evidence/lane2-bl0042-probe-2026-11-10-04302.md`. 로컬 commit.
+
+실행 기록(2026-11-10, 20:53~21:05 KST): VM은 만들지 않았다. evidence `docs/ga-ready/evidence/lane2-bl0042-probe-2026-11-10-04302.md`.
+- 내주는 파일 다섯 개의 SHA-256이 Task 1 payload와 같다. `sw.js` CACHE_NAME `pcv-ui-v144f13a1`은 소스와 같다.
+- API: `GET /api/v1/runtime/policy`의 `data.product_version`과 `ops.summary`의 `runtime_policy.product_version`이 설치본 Host ProductVersion `0.43.2-admin-smoke+2f19778…`과 같다.
+- BL-0042 화면: 1440과 768 모두 badge가 `v0.43.2-admin-smoke`로 보이고 "✓"가 없다. title은 `설치 버전: 0.43.2-admin-smoke+2f19778…`이다. 첫 방문에서 약 5초 뒤에 보인다.
+- 회귀: loopback 세션이 policy보다 먼저다(BL-0040). 아홉 화면이 그려지고 console error 0, HTTP 4xx·5xx 0이다.
+- probe 실수 하나: 첫 시도는 4초만 기다려 1440 badge가 아직 숨은 상태였다. 6초 대기로 네 번 다시 열어 네 번 모두 보이는 것을 확인했다.
+- 범위 밖 발견: backlog `BL-0043`(대시보드 경고 카드가 `ops.summary`를 받은 뒤에도 "운영 요약을 읽지 못했습니다"). `undecided`로 남긴다. 첫 방문 API 응답이 차례로 오는 것(대시보드가 다 차는 데 약 9초)은 관찰로만 적었다.
+
+operational current는 `0.43.1-admin-smoke` 그대로다.
 
 ## Task 7: 계정 복원
 
