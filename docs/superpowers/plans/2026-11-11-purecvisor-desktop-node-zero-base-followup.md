@@ -72,18 +72,36 @@
 
 ## Task 3: PR A (문서)
 
-- [ ] clean HEAD에서 Delivery 시험과 `npm run test:public-source-safety --prefix web`를 돌린다. push하고 PR을 연다. Required CI 다섯 개가 green이면 merge하고 main push run을 확인한다.
+- [x] clean HEAD에서 Delivery 시험과 `npm run test:public-source-safety --prefix web`를 돌린다. push하고 PR을 연다. Required CI 다섯 개가 green이면 merge하고 main push run을 확인한다.
 
-## Task 4: 브라우저 시나리오 스크립트 (승인 2, Lane 1)
+실행 기록(2026-11-11): clean HEAD `951dc1f`에서 `npm run test:public-source-safety --prefix web` exit 0이었다. Delivery 785/785는 Task 2에서 돌렸다.
+- PR #149(`lane1/zero-base-followup-20261111`)를 열었다.
+- 첫 CI에서 `dotnet` shard가 Host 브라우저 시험 하나(`DesktopNodeHostLoopbackBootstrapBrowserTests.ChromiumOpensLoopbackConsoleWithoutServiceTokenPaste`)로 실패했다. 이 PR은 문서만 바꿨다. 실패한 job을 한 번 다시 돌리자 pass했다(flake로 본다).
+- Required CI 다섯 개가 green인 것을 보고 `--match-head-commit 951dc1f`로 merge했다(merge commit `6b29894`). main push run Development Gates `42920679012`와 Public Boundary `42920679190`이 success다.
 
-- [ ] `web/scripts/run-browser-scenario.mjs`와 node 시험을 만든다(grok 구현, Claude 리뷰). Playwright로 현행 Web Console을 조작하고, 시나리오는 `--scenario s1|s2|s3`로 고른다.
+## Task 4a: 브라우저 시나리오 스크립트 뼈대 (승인 2, Lane 1)
+
+Task 4는 grok 지시 크기(약 20분) 때문에 4a와 4b로 나눴다(2026-11-11). 범위는 같다.
+
+- [ ] `web/scripts/browser-scenario-cdp.mjs`(Edge + CDP 도우미, `verify-browser-ui-gates.mjs`와 같은 방식, 새 npm 의존성 없음)와 `web/scripts/run-browser-scenario.mjs`를 만든다. grok이 구현하고 Claude가 리뷰한다.
+  - 인자는 `readScenarioArgs`로 읽는다. 시나리오는 `--scenario s1|s2|s3`로 고른다.
+  - 기본은 `--plan-only`다.
   - 로그인: 계정이 있으면 로그인 화면에 `--username`과 환경 변수 `PCV_SCENARIO_PASSWORD`를 넣는다. 계정이 없으면 loopback 세션을 쓴다. token과 비밀번호는 출력하지 않는다.
+  - `--check`: 로그인 뒤 화면과 버튼을 찾기만 하고 제출하지 않는다(읽기 전용).
+  - `assertScenarioVmName`은 `pcv-it-`로 시작하지 않는 이름이면 쓰기를 막는다.
+  - `summary.json`(계약 `pcv-browser-scenario-v1`)과 단계별 캡처를 `artifacts/browser-scenario-<yyyymmdd>/` 아래에 쓴다.
+  - node 시험 `web/node-tests/browser-scenario.test.mjs`를 더한다.
+  - 검증: `npm run test:required --prefix web`, `git diff --check`. 로컬 commit.
+
+## Task 4b: 브라우저 시나리오 실행 단계 (승인 2, Lane 1)
+
+- [ ] `--execute`를 구현한다(grok 구현, Claude 리뷰). 모든 쓰기 동작은 `assertScenarioVmName`을 거친다.
   - S1: VM 만들기 마법사로 ISO VM을 만들고 시작한다. 콘솔 화면이 비어 있지 않을 때까지 기다리고, 키보드 입력 뒤 화면이 바뀌는지 본다.
   - S2: 꺼진 VM을 template으로 잠그고 복제한다. 복제 job이 끝나는 시간을 잰다(기준 60초).
-  - S3: checkpoint를 만들고 복원한다. 예약을 미리 보고 저장하고, 원하면 첫 예약 실행을 기다린 뒤 예약을 지운다.
-  - 공통: `--plan-only`(기본)는 요청 없이 단계만 출력한다. `--check`는 로그인 뒤 화면과 버튼만 찾고 제출하지 않는다(읽기 전용). 단계마다 캡처와 `summary.json`(계약 `pcv-browser-scenario-v1`)을 `artifacts/browser-scenario-<yyyymmdd>/` 아래에 쓴다. 끝에 만든 `pcv-it-` VM을 지우는 `--cleanup`이 있다.
-  - 이름 제한: 스크립트는 `pcv-it-`로 시작하지 않는 VM에는 쓰기 동작을 하지 않는다.
-  - 검증: `npm run test:required --prefix web`(새 node 시험 포함), `git diff --check`. 로컬 commit.
+  - S3: checkpoint를 만들고 복원한다. 예약을 미리 보고 저장한다. `--wait-schedule`이면 첫 예약 실행을 기다린 뒤 예약을 지운다.
+  - `--cleanup`: 만든 `pcv-it-` VM을 지운다(template 잠금을 먼저 푼다).
+  - 계정이 생기면(Task 6) `--check`를 설치본에 돌려 선택자를 확인한다. 이 확인은 Task 6 기록에 쓴다.
+  - 검증: `npm run test:required --prefix web`, `git diff --check`. 로컬 commit.
 
 ## Task 5: PR B (스크립트)
 
