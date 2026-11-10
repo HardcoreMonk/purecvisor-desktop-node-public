@@ -2983,6 +2983,81 @@ test("BL-0043 an ops summary HTTP 500 keeps the alerts card unavailable", async 
   }
 });
 
+test("BL-0044 the alerts card shows loading until the first refresh finishes", () => {
+  const { alerts, product } = plantAlertsCard();
+  const saved = {
+    vms: env.state.vms,
+    serverJobs: env.state.serverJobs,
+    trackedJobs: env.state.trackedJobs,
+    lastRefreshedAt: env.state.lastRefreshedAt,
+    partialFailures: env.state.partialFailures,
+    opsSummary: env.state.opsSummary,
+    summaryError: env.state.summaryError,
+    loading: env.state.loading
+  };
+  const failedJob = {
+    job_id: "fail-new",
+    status: "failed",
+    operation: "vm.start",
+    created_at: new Date().toISOString(),
+    error: { message: "시작 실패" }
+  };
+  try {
+    env.state.partialFailures = [];
+    env.state.trackedJobs = [];
+    env.state.vms = [];
+    env.state.opsSummary = { errors: [], signals: [] };
+    env.state.serverJobs = [failedJob];
+    env.state.summaryError = null;
+    env.state.loading = true;
+    env.state.lastRefreshedAt = null;
+    env.navigateTo("dashboard");
+    assert.equal(alerts.querySelector("[data-alerts-state]").getAttribute("data-alerts-state"), "loading");
+    assert.equal(alerts.querySelector("[data-alerts-state]").getAttribute("role"), "status");
+    assert.match(alerts.textContent, /운영 요약을 읽고 있습니다\./);
+    assert.equal(alerts.textContent.includes("경고 없음"), false);
+    assert.equal(alerts.textContent.includes("운영 요약을 읽지 못했습니다"), false);
+    assert.equal(alerts.textContent.includes("시작 실패"), false);
+    assert.equal(alerts.querySelector("[data-alert-kind]"), null);
+
+    env.state.loading = false;
+    env.state.lastRefreshedAt = Date.now();
+    env.state.serverJobs = [];
+    env.render();
+    assert.equal(alerts.querySelector("[data-alerts-state]").getAttribute("data-alerts-state"), "empty");
+    assert.match(alerts.textContent, /경고 없음/);
+    assert.equal(alerts.textContent.includes("운영 요약을 읽고 있습니다."), false);
+
+    env.state.loading = false;
+    env.state.lastRefreshedAt = null;
+    env.state.summaryError = null;
+    env.render();
+    assert.equal(alerts.querySelector("[data-alerts-state]").getAttribute("data-alerts-state"), "unavailable");
+    assert.match(alerts.textContent, /운영 요약을 읽지 못했습니다/);
+    assert.equal(alerts.textContent.includes("운영 요약을 읽고 있습니다."), false);
+
+    env.state.loading = true;
+    env.state.lastRefreshedAt = null;
+    env.state.summaryError = { code: "PCV_OPS", message: "unread", operation: "ops.summary" };
+    env.render();
+    assert.equal(alerts.querySelector("[data-alerts-state]").getAttribute("data-alerts-state"), "unavailable");
+    assert.match(alerts.textContent, /운영 요약을 읽지 못했습니다/);
+    assert.equal(alerts.textContent.includes("운영 요약을 읽고 있습니다."), false);
+  } finally {
+    env.state.vms = saved.vms;
+    env.state.serverJobs = saved.serverJobs;
+    env.state.trackedJobs = saved.trackedJobs;
+    env.state.lastRefreshedAt = saved.lastRefreshedAt;
+    env.state.partialFailures = saved.partialFailures;
+    env.state.opsSummary = saved.opsSummary;
+    env.state.summaryError = saved.summaryError;
+    env.state.loading = saved.loading;
+    alerts.remove();
+    env.navigateTo("dashboard");
+    env.PCV.views.register("dashboard", { render: product });
+  }
+});
+
 test("logout closes open modals", async () => {
   if (!env.document.getElementById("toasts")) {
     const toasts = env.document.createElement("div");

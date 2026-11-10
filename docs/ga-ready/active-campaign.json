@@ -11,15 +11,17 @@
   ],
   "mutation_allowed": false,
   "current_write_allowed": false,
-  "next_step": "Run Task 1 from docs/superpowers/plans/2026-11-11-purecvisor-desktop-node-bl0044-alerts-loading.md, then the queue in order.",
+  "next_step": "Run Task 2 from docs/superpowers/plans/2026-11-11-purecvisor-desktop-node-bl0044-alerts-loading.md (exit verification, close BL-0044, queue row, PR and merge after green CI).",
   "plan": "docs/superpowers/plans/2026-11-11-purecvisor-desktop-node-bl0044-alerts-loading.md",
   "task_queue": [
     "Task 1",
     "Task 2"
   ],
   "task_lanes": {},
-  "next_task": "Task 1",
-  "completed_tasks": [],
+  "next_task": "Task 2",
+  "completed_tasks": [
+    "Task 1"
+  ],
   "commit_policy": "local-commit-per-task",
   "push_allowed": true,
   "merge_policy": "after-green-ci",

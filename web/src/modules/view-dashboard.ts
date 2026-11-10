@@ -244,6 +244,11 @@ window.PCV = window.PCV || {};
     return false;
   }
 
+  // 첫 갱신이 끝나기 전에는 실패가 아니라 읽는 중이다. summaryError가 있으면 실패가 우선이다.
+  function alertsLoading() {
+    return state.loading === true && state.lastRefreshedAt === null && !state.summaryError;
+  }
+
   function collectAlerts(skipIncidents) {
     var now = Date.now();
     var items = [];
@@ -300,9 +305,13 @@ window.PCV = window.PCV || {};
     var body = document.getElementById('dashboard-alerts-body');
     if (!body) return;
     var el = PCV.uxlib.el;
+    PCV.uxlib.clearEl(body);
+    if (alertsLoading()) {
+      body.appendChild(el('p', { role: 'status', 'data-alerts-state': 'loading' }, t('copy.dashboard.alerts.loading')));
+      return;
+    }
     var unavailable = alertsUnavailable();
     var items = collectAlerts(unavailable);
-    PCV.uxlib.clearEl(body);
     if (unavailable) {
       body.appendChild(el('p', { role: 'status', 'data-alerts-state': 'unavailable' }, t('copy.dashboard.alerts.unavailable')));
     }

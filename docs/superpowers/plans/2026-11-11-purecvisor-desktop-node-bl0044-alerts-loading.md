@@ -33,9 +33,17 @@
 
 ## Task 1: 읽는 중 상태와 문구 (Web)
 
-- [ ] `view-dashboard.ts`의 경고 카드에 읽는 중 상태를 더한다. 조건과 문구는 위 `설계` 행이다. `i18n.js` ko/en에 `copy.dashboard.alerts.loading`을 더한다. 갱신이 끝나면 카드가 다시 그려지는지(지금처럼 `refreshAll()` 끝의 `render()`) 확인한다.
+- [x] `view-dashboard.ts`의 경고 카드에 읽는 중 상태를 더한다. 조건과 문구는 위 `설계` 행이다. `i18n.js` ko/en에 `copy.dashboard.alerts.loading`을 더한다. 갱신이 끝나면 카드가 다시 그려지는지(지금처럼 `refreshAll()` 끝의 `render()`) 확인한다.
   - 시험: node 시험으로 (가) 첫 갱신 진행 중이면 `loading`과 새 문구, (나) 첫 갱신이 끝나면 `empty` 또는 목록, (다) 첫 갱신이 통째로 실패하면(`state.loading=false`, `lastRefreshedAt=null`) `unavailable`, (라) `summaryError`가 있으면 진행 중이어도 `unavailable`. 기존 `data-alerts-state` 시험과 BL-0043 시험 유지. i18n ko/en 같은 키 시험 통과.
   - 검증: `npm run build:served --prefix web`, `npm run test:required --prefix web`, web Pester, `git diff --check`. gate mock 대시보드 1440과 768 캡처를 본다. 로컬 commit.
+
+실행 기록(2026-11-11): grok이 02:04~02:19에 구현했고 Claude가 리뷰했다.
+- `view-dashboard.ts`: 새 함수 `alertsLoading()`은 `state.loading === true`, `state.lastRefreshedAt === null`, `summaryError` 없음일 때 참이다. `renderAlerts()`는 body를 비운 뒤 읽는 중이면 `<p role="status" data-alerts-state="loading">`에 `copy.dashboard.alerts.loading`만 그리고 돌아간다. 그 밖에는 지금 규칙(`unavailable`, `empty`, 목록)이다.
+- `i18n.js`: `copy.dashboard.alerts.loading` ko `운영 요약을 읽고 있습니다.`, en `Reading the ops summary.`
+- 다시 그리기: `refreshAll()`이 시작할 때 `loading=true`로 `render()`하고, `finally`에서 `loading=false`로 다시 `render()`한다. `render()`는 활성 view(대시보드)를 다시 그린다. 첫 갱신이 통째로 실패하면 `lastRefreshedAt`이 비어 있어도 `loading`이 꺼진 뒤 `unavailable`이다. bootstrap의 첫 `render()`는 `refreshAll()` 바로 앞에서 같은 동기 흐름으로 이어지므로 `unavailable`이 화면에 보이지 않는다(리뷰 확인).
+- node 시험 1건(네 경우: 진행 중 `loading`, 끝나면 `empty`, 통째 실패 `unavailable`, 진행 중이어도 `summaryError`면 `unavailable`) 추가.
+- 결과: `npm run test:required --prefix web` exit 0(node 400/400, browser gate `ok=true` assertions 121 failed 0 violations 0, 기준선 변화 없음), web Pester 50/50, `git diff --check` clean. `web/sw.js` CACHE_NAME은 `pcv-ui-ve4b62dac`다.
+- 화면: gate mock 대시보드 1440×900과 768×1024(`artifacts/bl0044-alerts/`, gitignore)에서 갱신 뒤 카드 본문은 `경고 없음`이다. gate는 갱신이 끝난 뒤 대시보드를 찍으므로 읽는 중 문구는 node 시험이 확인한다. 설치본의 읽는 중 화면은 다음 train probe에서 본다.
 
 ## Task 2: 종료 검증과 PR
 
