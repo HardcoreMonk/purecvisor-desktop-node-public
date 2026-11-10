@@ -1,67 +1,31 @@
 {
   "schema_version": 1,
   "contract": "pcv-active-campaign-v1",
-  "status": "closed",
-  "id": "train-04302-20261110",
-  "intent": "Depart release train 0.43.2-admin-smoke with queue PR #138 (BL-0042 installed version badge), keep the installed accounts across fullgate REMOVE_DATA, probe the installed Web Console and runtime policy for the fix, and promote it to operational current in a single train PR",
+  "status": "open",
+  "id": "bl0043-alerts-card-20261110",
+  "intent": "Fix backlog BL-0043: the dashboard alerts card no longer shows the ops summary as unavailable after a superseded refresh; aborted requests leave state unchanged",
   "working_authority": "source_head",
   "allowed_lanes": [
     "0",
-    "1",
-    "2",
-    "3"
+    "1"
   ],
-  "mutation_allowed": true,
-  "current_write_allowed": true,
-  "next_step": "Closed 2026-11-10: release train 0.43.2-admin-smoke carried queue PR #138 (BL-0042 installed version badge) and was promoted to operational current in single train PR #139 (merge 1466b3c, main push runs DG 42813686523 and PB 42813686484 green). Package, pair 0.43.1 -> 0.43.2, fullgate, current-card and the installed probe (runtime policy product_version equals the installed Host ProductVersion; badge shows v0.43.2-admin-smoke at 1440 and 768) passed; accounts were kept outside the data root during fullgate and restored. Completion on clean main 1466b3c: complete=true met=7/7 gaps=0. New backlog BL-0043 (dashboard alerts card stays unavailable) is undecided. Audit docs/project-status-audit-2026-11-10-r3.md. After close (user decision \"1\"): the train account backup was deleted after a hash check; BL-0043 classification is still asked.",
-  "plan": "docs/superpowers/plans/2026-11-10-purecvisor-desktop-node-train-04302.md",
+  "mutation_allowed": false,
+  "current_write_allowed": false,
+  "next_step": "Run Task 1 from docs/superpowers/plans/2026-11-10-purecvisor-desktop-node-bl0043-alerts-card.md, then the queue in order.",
+  "plan": "docs/superpowers/plans/2026-11-10-purecvisor-desktop-node-bl0043-alerts-card.md",
   "task_queue": [
-    "Task 0",
     "Task 1",
-    "Task 2",
-    "Task 3",
-    "Task 4",
-    "Task 5",
-    "Task 6",
-    "Task 7",
-    "Task 8",
-    "Task 9",
-    "Task 10",
-    "Task 11"
+    "Task 2"
   ],
-  "task_lanes": {
-    "Task 2": "2",
-    "Task 3": "2",
-    "Task 4": "2",
-    "Task 5": "2",
-    "Task 6": "2",
-    "Task 7": "2",
-    "Task 8": "3",
-    "Task 9": "3"
-  },
-  "next_task": null,
-  "completed_tasks": [
-    "Task 0",
-    "Task 1",
-    "Task 2",
-    "Task 3",
-    "Task 4",
-    "Task 5",
-    "Task 6",
-    "Task 7",
-    "Task 8",
-    "Task 9",
-    "Task 10",
-    "Task 11"
-  ],
+  "task_lanes": {},
+  "next_task": "Task 1",
+  "completed_tasks": [],
   "commit_policy": "local-commit-per-task",
   "push_allowed": true,
   "merge_policy": "after-green-ci",
-  "checkpoint_limit": 12,
-  "approval_locator": "User-Approval: 2026-09-27 campaign runner commit policy local-commit-per-task; User-Approval: 2026-11-10 \"release train 0.43.2-admin-smoke 출발: queue #138 적재. Lane 2 unsigned 개발 MSI build, pair 업그레이드 시험과 fullgate(msiexec 설치·업그레이드·repair·제거와 REMOVE_DATA, service 중지·시작, ADR-0016 pcv-it- VM), 설치본 current-card와 probe(Web Console 화면). Lane 3 current-evidence.json 승격. 단일 PR train, green CI 뒤 merge, merge 뒤 main push가 red면 revert PR.\" (answer to bl0042-version-badge-20261110 next approval 1, sent verbatim); User-Approval: 2026-11-09 standing merge approval (\"앞으로 Required CI가 green이면 PR merge도 자동 승인\"); User-Approval: 2026-11-08 standing auto-approval of the recommended option (\"앞으로는 권장 사항 자동 승인 처리 한다.\"): back up accounts.json outside the repo and product data before the train and restore it after (backup deletion is asked); ADR-0016 standing approval (2026-10-07): pcv-it- prefixed VM create/configure/delete; User-Approval: 2026-11-10 \"1\" (answer to the close report next approval 1): delete the train account backup after a hash check and record it in one docs PR merged after green CI",
-  "next_approval_required": [
-    "backlog 분류: BL-0043(설치본 대시보드 \"경고\" 카드가 `ops.summary`를 받은 뒤에도 \"운영 요약을 읽지 못했습니다\"를 보인다)을 counts 또는 out-of-scope로 정한다."
-  ],
+  "checkpoint_limit": 2,
+  "approval_locator": "User-Approval: 2026-09-27 campaign runner commit policy local-commit-per-task; User-Approval: 2026-11-10 \"고칠 대상으로 지정\" (answer to train-04302-20261110 after-close report next approval 1, BL-0043 classification): classify BL-0043 as counts; User-Approval: 2026-11-08 standing auto-approval of the recommended option (\"앞으로는 권장 사항 자동 승인 처리 한다.\"): Lane 1 fix of BL-0043, grok implements and Claude reviews, aborted requests leave Web Console state unchanged, product change queued as one release-train queue row, no host mutation, train departure needs its own approval; User-Approval: 2026-11-09 standing merge approval (\"앞으로 Required CI가 green이면 PR merge도 자동 승인\")",
+  "next_approval_required": [],
   "stop_on": [
     "same-cause-fail-3",
     "budget",
@@ -73,5 +37,5 @@
     "dirty-tree-at-start"
   ],
   "out_of_scope_is_not_next_step": true,
-  "closed_predecessor": "bl0042-version-badge-20261110"
+  "closed_predecessor": "train-04302-20261110"
 }
