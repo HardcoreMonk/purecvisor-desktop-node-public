@@ -275,7 +275,7 @@ operational current는 `0.43.0-admin-smoke` 그대로다.
 
 ## Task 10: train PR
 
-- [ ] clean HEAD 종료 검증을 한다.
+- [x] clean HEAD 종료 검증을 한다.
   - `dotnet build src/DesktopNode.sln -c Release`
   - `Invoke-PcvPrGate.ps1`
   - Pester 4종
@@ -284,12 +284,26 @@ operational current는 `0.43.0-admin-smoke` 그대로다.
   - `Update-PcvCurrentEvidenceDocs.ps1 -Check`, `git diff --check origin/main...HEAD`
   - 그다음 push와 PR을 한다. merge 직전 base가 `origin/main`과 같은지 본다. Required CI 다섯 개 green 뒤 merge한다(`--match-head-commit`). merge 뒤 main push run을 기다리고, red면 revert PR을 열고 멈춘다.
 
+실행 기록(2026-11-10): clean HEAD `60f7811`에서 종료 검증을 했다.
+- PR gate `artifacts/pr-gate/20261110-081628` `ok=True`: build, `dotnet-test-release`(솔루션 전체, clean tree), module-size-ratchet
+- Pester 실패 0: packaging 528, installer 49, web 50, manual-admin 140
+- `test:public-source-safety` exit 0, `Update-PcvCurrentEvidenceDocs.ps1 -Check` current, `git diff --check origin/main...HEAD` clean, base는 `origin/main`
+- `train-path-check --payload c685bd51 --head 2e060cc` `ok=true`(Task 9 기록). `60f7811`은 plan과 campaign만 더 바꿨다.
+
+PR #135(`lane1/train-04301-20261110`)를 열었고 Required CI 다섯 개(`dotnet`, `web`, `delivery`, `installer-policy`, `public-boundary-ci-required`)가 pass였다. base가 `origin/main`과 같은 것을 확인하고, 상시 merge 승인으로 `--match-head-commit 60f7811` merge했다(merge commit `5253b7e`). main push run은 Development Gates `42782473981`, Public Boundary `42782474271`이고 둘 다 success다. operational current는 이제 `0.43.1-admin-smoke`다.
+
 ## Task 11: 판정과 마무리
 
-- [ ] clean `main`에서 `pcvverify completion`을 돌린다. `complete=true`이고 hygiene C2가 queue 0·train promoted로 충족되는지 본다.
+- [x] clean `main`에서 `pcvverify completion`을 돌린다. `complete=true`이고 hygiene C2가 queue 0·train promoted로 충족되는지 본다.
   - exit `0`이면 판정을 인용한 감사 문서 `docs/project-status-audit-2026-11-10-r2.md`를 쓴다(같은 날 첫 감사 문서는 train `0.43.0` 것이다).
   - 계정 백업 삭제를 사용자에게 물을 문장을 남긴다.
   - campaign을 닫는다. push와 PR 뒤 Required CI green이면 merge한다.
+
+실행 기록(2026-11-10): clean `main` `5253b7e`에서 `pcvverify completion`(`artifacts/completion/20261110-r4/`)을 돌렸다.
+- 결과: `complete=true met=7/7 gaps=0`, exit `0`이다.
+- hygiene: C2 `met=true`(current `0.43.1-admin-smoke` = operational current, train promoted, queue 0, 미완료 train 0), C3 4/4, C4 15/15, C7 `met=false`(`open_counts=0, undecided=1`: BL-0042, `user-decision`).
+- 판정을 인용한 감사 문서 `docs/project-status-audit-2026-11-10-r2.md`를 썼다(§6.2).
+- campaign을 닫았다. 다음 승인으로 train 계정 백업 삭제와 BL-0042 분류를 사용자에게 묻는다.
 
 ## Nonclaims
 
