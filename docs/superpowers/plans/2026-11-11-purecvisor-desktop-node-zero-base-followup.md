@@ -141,7 +141,13 @@ Task 4는 grok 지시 크기(약 20분) 때문에 4a와 4b로 나눴다(2026-11-
 
 ## Task 5: PR B (스크립트)
 
-- [ ] clean HEAD 종료 검증, push, PR, green CI 뒤 merge, main push run 확인.
+- [x] clean HEAD 종료 검증, push, PR, green CI 뒤 merge, main push run 확인.
+
+실행 기록(2026-11-11): clean HEAD `a323316`에서 PR gate를 돌렸다.
+- 첫 실행은 `ok=False`였다. Host 시험 `ChromiumOpensLoopbackConsoleWithoutServiceTokenPaste`가 `http://127.0.0.1:4410/` prefix 충돌(`HttpListenerException`)로 실패했다.
+  - PR #149 CI에서 실패한 것과 같은 시험이다. 이 PR은 `web/scripts`와 문서만 바꿨다.
+  - 범위 밖 발견으로 backlog BL-0045(`undecided`)에 적었다.
+- 두 번째 실행은 `ok=True`다(`artifacts/pr-gate/` build, `dotnet-test-release`, module-size-ratchet). assembly별 시험 수: Service 11, Contracts 201, Cli 186, Runtime 129, HyperV 288, Delivery 785, Host 246, Api 545, Verification 691.
 
 ## Task 6: 계정 준비와 S1 시작 (Lane 2)
 
