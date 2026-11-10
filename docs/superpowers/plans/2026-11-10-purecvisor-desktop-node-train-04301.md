@@ -230,11 +230,23 @@ operational current는 `0.43.0-admin-smoke` 그대로다.
 
 ## Task 8: Lane 3 데이터와 lane3-spec
 
-- [ ] Lane 3. 같은 train branch에서 한다.
+- [x] Lane 3. 같은 train branch에서 한다.
   - consume manifest, functional carry-forward·pair consume·`main-push-payload`(payload `c685bd51`의 main push run 인용, `train_pr_head`, `path_check_line`) facts를 쓴다. `main-push` 템플릿과 함께 쓰지 않는다.
   - 그 뒤 `train-evidence --write`, current-card `promoted-current`(`--write --allow-update`), `--check`를 돈다.
   - `current-evidence.json`과 `lane3-spec --write`를 쓴다. `index_sections.previous_version`은 직전 승격 `0.43.0-admin-smoke`, `previous_spec`은 `lane3-promotion-docs-spec-04300.json`이다.
   - `update-preflight-compatibility.json` fixture의 `operational-current` 행을 새 version으로 고친다(DEVELOPMENT_PROCEDURE §10, BL-0030). 로컬 commit.
+
+실행 기록(2026-11-10): train branch `1623d62`에서 했다.
+- consume manifest: `artifacts/manual-admin-campaign-20261110-04300-04301/consume-manifest.json`을 새로 썼다. closed descriptor가 읽은 summary 7개의 SHA-256과 byte 수를 담고, 파일은 복사하지 않았다.
+- facts: functional carry-forward(04300 다음, 변경 commit 1개), pair consume, 단일 PR train용 `main-push-payload`를 더했다.
+  - `main-push-payload`는 payload `c685bd51`(PR #134 merge)의 Public Boundary `42726128946` job `129532099888`, Development Gates `42726129133`(shard job 4개)을 인용한다.
+  - `train_pr_head`는 `1623d62`이고, 그때 `train-path-check --payload c685bd51`은 `ok=true`, 바뀐 경로 18개, `product_paths`·`allowed_pin_paths` 없음이다.
+  - current-card는 `promoted-current`로 바꿨다.
+- `train-evidence --write --allow-update <current-card>` 결과 새 문서 3개, current-card updated. `--check`는 열두 문서 모두 current다.
+- `current-evidence.json` current는 `0.43.1-admin-smoke`다. provenance `143a55b`, clean MSI `37c3163f…`, manual_admin은 `0.43.0 -> 0.43.1`(`manual-admin-campaign-20261110-04300-04301-closed`)이다.
+- `update-preflight-compatibility.json`: `0.43.1-admin-smoke` `operational-current` 행(source `c685bd51`, 파일 목록은 제품 wrapper가 `6355e6ba` 뒤 바뀌지 않아 `0.43.0`과 같음)을 더했다. `0.43.0`은 `retained-older-install`로 남겼다.
+- `lane3-spec --write`로 `packaging/windows-desktop-node/tests/fixtures/lane3-promotion-docs-spec-04301.json`을 만들었다. `index_sections.previous_version=0.43.0-admin-smoke`, descriptor chain `previous_tag=04300`이다.
+- 시험: Verification(lane3-spec, train evidence, facts, host-inputs, path check) `86/86`, `UpdatePreflightCompatibilityContractTests` `3/3`. current evidence 문서 시험과 D2 시험은 Task 9(승격 문서 도구, `release-train.json` 승격)를 기다린다.
 
 ## Task 9: 승격 문서와 release-train 승격
 
