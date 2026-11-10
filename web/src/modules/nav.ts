@@ -782,6 +782,11 @@ function paintLoginSurface() {
   if (verRow) verRow.hidden = !text;
 }
 window.paintLoginSurface = paintLoginSurface;
+function _versionBeforeBuild(value) {
+  var full = String(value || '');
+  var plus = full.indexOf('+');
+  return plus >= 0 ? full.slice(0, plus) : full;
+}
 function _renderVersionBadge(d) {
   var badge = document.getElementById('version-badge');
   if (!badge) { paintLoginSurface(); return; }
@@ -791,6 +796,7 @@ function _renderVersionBadge(d) {
   badge.removeAttribute('hidden');
   badge.onclick = null; badge.title = ''; badge.style.cursor = '';
   if (!d || !d.current) { badge.setAttribute('hidden', ''); paintLoginSurface(); return; }
+  var shown = _versionBeforeBuild(d.current);
   var ok = d.state === 'ok';
   if (ok && d.update_available) {
     badge.classList.add('is-update');
@@ -801,12 +807,12 @@ function _renderVersionBadge(d) {
       badge.onclick = function () { window.open(d.url, '_blank', 'noopener'); };
     }
   } else if (ok) {
-    badge.appendChild(el('span', null, '✓ v' + d.current));
-    badge.title = _L('최신 버전', 'Up to date');
+    badge.appendChild(el('span', null, 'v' + shown));
+    badge.title = t('copy.badge.installed_version', { version: d.current });
   } else {
-    badge.appendChild(el('span', null, 'v' + d.current));
+    badge.appendChild(el('span', null, 'v' + shown));
   }
-  if (d.current) window._pcvConsoleVersion = 'v' + d.current;
+  window._pcvConsoleVersion = 'v' + shown;
   paintLoginSurface();
 }
 function _hideVersionBadge() {
@@ -827,7 +833,7 @@ function updateVersionBadge() {
     return PCV.api.fetchGet(EP.RUNTIME_POLICY()).then(function (r) {
       var d = r && r.payload ? r.payload : r;
       var data = d && d.data ? d.data : d;
-      var current = data && (data.version || data.product_version || data.service_version) || '';
+      var current = data && (data.product_version || data.version || data.service_version) || '';
       _renderVersionBadge(current ? { state: 'ok', current: current, update_available: false } : null);
     }).catch(_hideVersionBadge);
   }).catch(_hideVersionBadge);

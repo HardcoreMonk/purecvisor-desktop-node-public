@@ -31,6 +31,7 @@ internal sealed class DesktopNodeApiOpsSummaryQuery : IDesktopNodeApiOpsSummaryQ
     private readonly DesktopNodeConsoleOptions consoleOptions;
     private readonly string? diagnosticsRoot;
     private readonly DesktopNodeFeatureQualificationSnapshot featureQualification;
+    private readonly string? productVersion;
 
     public DesktopNodeApiOpsSummaryQuery(
         IDesktopNodeHyperVNativeAdapter nativeAdapter,
@@ -41,7 +42,8 @@ internal sealed class DesktopNodeApiOpsSummaryQuery : IDesktopNodeApiOpsSummaryQ
         DesktopNodeConsoleOptions consoleOptions,
         string? batchEvidenceRoot,
         string? diagnosticsRoot,
-        DesktopNodeFeatureQualificationSnapshot? featureQualification = null)
+        DesktopNodeFeatureQualificationSnapshot? featureQualification = null,
+        string? productVersion = null)
     {
         this.nativeAdapter = nativeAdapter;
         this.jobRuntime = jobRuntime;
@@ -52,6 +54,7 @@ internal sealed class DesktopNodeApiOpsSummaryQuery : IDesktopNodeApiOpsSummaryQ
         batchEvidenceReader = new BatchEvidenceSummaryReader(batchEvidenceRoot);
         this.diagnosticsRoot = diagnosticsRoot;
         this.featureQualification = featureQualification ?? DesktopNodeFeatureQualificationSnapshot.Unavailable();
+        this.productVersion = productVersion;
     }
 
     public DesktopNodeApiOpsSummarySnapshot Read(CancellationToken cancellationToken)
@@ -67,7 +70,8 @@ internal sealed class DesktopNodeApiOpsSummaryQuery : IDesktopNodeApiOpsSummaryQ
             tokenStorage,
             currentExposure,
             authSessionHandler.CreateRuntimePolicy(tokenStorage),
-            CreateConsoleRuntimePolicy()).Data;
+            CreateConsoleRuntimePolicy(),
+            productVersion).Data;
 
         var hostResult = Invoke("host.status", cancellationToken);
         var vmResult = Invoke("vm.list", cancellationToken);

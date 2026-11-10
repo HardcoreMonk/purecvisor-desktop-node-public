@@ -16,6 +16,7 @@ export type RuntimePolicyResponse = ApiResult<{
   job_runtime: JobRuntimePolicy;
   network?: NetworkPolicy;
   token?: TokenPolicy;
+  product_version?: string | null;
 }>;
 
 export type JobRuntimePolicy = {

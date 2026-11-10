@@ -57,6 +57,7 @@ public sealed partial class DesktopNodeApiRequestProcessor
 {
     private readonly string tokenStorage;
     private readonly string currentExposure;
+    private readonly string? productVersion;
     private readonly DesktopNodeJobRuntime jobRuntime;
     private readonly IDesktopNodeApiCancellationScopeFactory cancellationScopes;
     private readonly DesktopNodeApiHardeningOptions hardeningOptions;
@@ -98,10 +99,12 @@ public sealed partial class DesktopNodeApiRequestProcessor
         DesktopNodeAccountAuthOptions? accountAuthOptions,
         DesktopNodeConsoleOptions? consoleOptions,
         string? currentEvidencePath,
-        string? checkpointScheduleFilePath)
+        string? checkpointScheduleFilePath,
+        string? productVersion)
     {
         this.tokenStorage = tokenStorage;
         this.currentExposure = currentExposure;
+        this.productVersion = productVersion;
         cancellationScopes = runtimeDependencies.CancellationScopes ?? SystemDesktopNodeApiCancellationScopeFactory.Instance;
         this.hardeningOptions = hardeningOptions ?? new DesktopNodeApiHardeningOptions();
         authSessionHandler = new DesktopNodeApiAuthSessionHandler(accountAuthOptions);
@@ -122,7 +125,8 @@ public sealed partial class DesktopNodeApiRequestProcessor
                 resolvedConsoleOptions,
                 batchEvidenceRoot,
                 diagnosticsHandler.DiagnosticsRoot,
-                featureQualification));
+                featureQualification,
+                productVersion));
         operationInvoker = new DesktopNodeApiHyperVOperationInvoker(nativeAdapter);
         // sync is handed to the throttle and the worker rather than each making its own:
         // this lock is the mutual exclusion between request handling and the worker tick,
@@ -333,7 +337,8 @@ public sealed partial class DesktopNodeApiRequestProcessor
                 tokenStorage,
                 currentExposure,
                 authSessionHandler.CreateRuntimePolicy(tokenStorage),
-                consoleRouteHandler.CreateRuntimePolicy()));
+                consoleRouteHandler.CreateRuntimePolicy(),
+                productVersion));
         }
 
         var opsSummaryResponse = opsSummaryHandler.TryHandle(

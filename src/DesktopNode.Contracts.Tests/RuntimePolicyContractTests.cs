@@ -126,6 +126,22 @@ public sealed class RuntimePolicyContractTests
     }
 
     [Fact]
+    public void RuntimePolicyProductVersionIsJsonNullUnlessProvided()
+    {
+        var omitted = JsonSerializer.Serialize(RuntimePolicyContract.CreateDefault(), RuntimePolicyContract.JsonOptions);
+        using var omittedDocument = JsonDocument.Parse(omitted);
+        Assert.Equal(JsonValueKind.Null, omittedDocument.RootElement.GetProperty("data").GetProperty("product_version").ValueKind);
+
+        var provided = JsonSerializer.Serialize(
+            RuntimePolicyContract.CreateDefault(productVersion: "0.43.1-admin-smoke+abc"),
+            RuntimePolicyContract.JsonOptions);
+        using var providedDocument = JsonDocument.Parse(provided);
+        Assert.Equal(
+            "0.43.1-admin-smoke+abc",
+            providedDocument.RootElement.GetProperty("data").GetProperty("product_version").GetString());
+    }
+
+    [Fact]
     public void RuntimePolicyDeclaresRuntimeCoreApiAuthJobAndDiagnosticsContract()
     {
         var policy = RuntimePolicyContract.CreateDefault(

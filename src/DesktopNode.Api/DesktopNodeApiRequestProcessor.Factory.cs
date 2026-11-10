@@ -17,7 +17,8 @@ public sealed partial class DesktopNodeApiRequestProcessor
         DesktopNodeConsoleOptions? consoleOptions = null,
         IDesktopNodeJobRuntimeEventSink? jobRuntimeEventSink = null,
         string? currentEvidencePath = null,
-        string? checkpointScheduleFilePath = null)
+        string? checkpointScheduleFilePath = null,
+        string? productVersion = null)
     {
         var runtimeDependencies = new DesktopNodeApiRuntimeDependencies(
             JobRuntime: DesktopNodeJobRuntime.CreateDefault(jobStorePath, jobRuntimeEventSink));
@@ -32,7 +33,8 @@ public sealed partial class DesktopNodeApiRequestProcessor
             accountAuthOptions,
             consoleOptions,
             currentEvidencePath: currentEvidencePath,
-            checkpointScheduleFilePath: checkpointScheduleFilePath);
+            checkpointScheduleFilePath: checkpointScheduleFilePath,
+            productVersion: productVersion);
     }
 
     internal static DesktopNodeApiRequestProcessor CreateWithDependencies(
@@ -46,7 +48,8 @@ public sealed partial class DesktopNodeApiRequestProcessor
         DesktopNodeAccountAuthOptions? accountAuthOptions = null,
         DesktopNodeConsoleOptions? consoleOptions = null,
         string? currentEvidencePath = null,
-        string? checkpointScheduleFilePath = null)
+        string? checkpointScheduleFilePath = null,
+        string? productVersion = null)
     {
         return new DesktopNodeApiRequestProcessor(
             tokenStorage,
@@ -59,6 +62,7 @@ public sealed partial class DesktopNodeApiRequestProcessor
             accountAuthOptions,
             consoleOptions,
             currentEvidencePath: currentEvidencePath,
-            checkpointScheduleFilePath: checkpointScheduleFilePath);
+            checkpointScheduleFilePath: checkpointScheduleFilePath,
+            productVersion: productVersion);
     }
 }

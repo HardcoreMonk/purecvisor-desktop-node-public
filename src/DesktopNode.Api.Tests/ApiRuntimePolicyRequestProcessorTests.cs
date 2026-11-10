@@ -4936,6 +4936,47 @@ public sealed partial class ApiRuntimePolicyRequestProcessorTests
     }
 
     [Fact]
+    public void RuntimePolicyAndOpsSummaryCarryInjectedProductVersion()
+    {
+        const string version = "0.43.1-admin-smoke+abc";
+        var nativeCalls = new List<string>();
+        var adapter = new RecordingNativeHyperVAdapter(nativeCalls, new Dictionary<string, string>
+        {
+            ["host.status"] = """
+                {"ok":true,"operation":"host.status","data":{"supported":true,"admin":{"elevated":true},"hyperv":{"vmms_running":true,"feature_enabled":true,"default_switch_present":true}},"error":null}
+                """,
+            ["vm.list"] = """
+                {"ok":true,"operation":"vm.list","data":[],"error":null}
+                """
+        });
+
+        var injected = DesktopNodeApiRequestProcessor.CreateDefault(
+            nativeAdapter: adapter,
+            productVersion: version);
+        var policy = injected.Handle(new DesktopNodeApiRequest("GET", "/api/v1/runtime/policy"));
+        var summary = injected.Handle(new DesktopNodeApiRequest("GET", "/api/v1/ops/summary"));
+
+        Assert.Equal(200, policy.StatusCode);
+        Assert.Equal(200, summary.StatusCode);
+        using var policyDocument = JsonDocument.Parse(policy.Body);
+        using var summaryDocument = JsonDocument.Parse(summary.Body);
+        Assert.Equal(version, policyDocument.RootElement.GetProperty("data").GetProperty("product_version").GetString());
+        Assert.Equal(
+            version,
+            summaryDocument.RootElement.GetProperty("data").GetProperty("runtime_policy").GetProperty("product_version").GetString());
+
+        var omitted = DesktopNodeApiRequestProcessor.CreateDefault(nativeAdapter: adapter);
+        var omittedPolicy = omitted.Handle(new DesktopNodeApiRequest("GET", "/api/v1/runtime/policy"));
+        var omittedSummary = omitted.Handle(new DesktopNodeApiRequest("GET", "/api/v1/ops/summary"));
+        using var omittedPolicyDocument = JsonDocument.Parse(omittedPolicy.Body);
+        using var omittedSummaryDocument = JsonDocument.Parse(omittedSummary.Body);
+        Assert.Equal(JsonValueKind.Null, omittedPolicyDocument.RootElement.GetProperty("data").GetProperty("product_version").ValueKind);
+        Assert.Equal(
+            JsonValueKind.Null,
+            omittedSummaryDocument.RootElement.GetProperty("data").GetProperty("runtime_policy").GetProperty("product_version").ValueKind);
+    }
+
+    [Fact]
     public void RuntimePolicyResponseIncludesRequestId()
     {
         var processor = DesktopNodeApiRequestProcessor.CreateDefault();
