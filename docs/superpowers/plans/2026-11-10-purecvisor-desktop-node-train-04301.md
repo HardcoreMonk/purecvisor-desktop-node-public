@@ -117,11 +117,25 @@ operational current는 `0.43.0-admin-smoke` 그대로다.
 
 ## Task 3: pair
 
-- [ ] Lane 2. orchestrator를 `-PlanOnly`로 돌린 뒤 `-Execute`로 돌린다.
+- [x] Lane 2. orchestrator를 `-PlanOnly`로 돌린 뒤 `-Execute`로 돌린다.
   - 입력: campaign `manual-admin-campaign-20261110-04300-04301`, baseline `artifacts/admin-smoke-package-20261110-04300`, target Task 1 package, base VHD `20348.5761-20261108.vhd`.
   - 통과 조건: 여섯 bucket PASS, closed descriptor, `observation_error` 없음.
   - 끝 상태: 설치본 `0.43.1`·ARP 1개·service Running/Automatic·Web 200·보존 VM 둘 그대로.
   - `train-facts`로 pair 문서를 쓴다. 로컬 commit.
+
+실행 기록(2026-11-10): orchestrator `-PlanOnly`는 `ok=true`였다(host mutation 없음). 실행 전 ARP는 `0.43.0` 1개였다.
+- guest 인증 정보는 실행 스크립트 안에서 무작위로 만들어 `pscredential`로만 넘겼다. 출력하거나 저장하지 않았다.
+- `-Execute`는 root `artifacts/manual-admin-campaign-20261110-04300-04301`에서 16:45:40부터 16:50:20 KST까지 `280`초 돌았다.
+- 여섯 bucket이 모두 PASS다: `manual-admin-rebaseline-readiness`, `lifecycle-product-update-rollback`, `clean-host-windows-update`, `burn-bootstrapper-lifecycle`, `msix-package-lifecycle-smoke`, `installed-runtime-ops-summary`.
+- descriptor: closed descriptor를 냈다(SHA-256 `a3d3aabefb6965e226b5422c07473b9df02dca36f6dcdb4cc9bf24a11ae28e3b`). observation은 15개이고 `observation_error`는 0이다. restoration은 시도하지 않았다(필요 없음).
+- clean-host: base UBR `5761`이고 blocker는 `none`이다. baseline `0.43.0` MSI 설치 뒤 제품 Update로 `0.43.1`이 됐고 Rollback으로 돌아왔다.
+- 끝 상태:
+  - 설치본 `0.43.1-admin-smoke+0be6561…`, ARP `{31E528BD…}` `0.43.1` 1개, service Running/Automatic, Web 200, PureCVisor 방화벽 규칙 0이다.
+  - `pcv-guest-installed-04253-r1` Off·`pcv-it-s2-source` Off(그대로)다.
+  - data root에는 계정 파일이 없고 loopback 세션은 200이다.
+- 문서: `train-facts`로 pair 문서 여섯 개(ops-summary, update-rollback, clean-host, burn, msix, pair-descriptor)를 썼다. `train-evidence --check`는 일곱 문서 모두 `current`다. `TrainEvidenceGoldenTests`·`TrainFactsBuilderTests`는 `27/27`이다. 새 문서의 주소는 loopback뿐이다.
+
+operational current는 `0.43.0-admin-smoke` 그대로다.
 
 ## Task 4: fullgate
 
