@@ -260,6 +260,7 @@ operational current는 `0.43.3-admin-smoke` 그대로다.
   - `Update-PcvCurrentEvidenceDocs.ps1 -Check` ok(target 8개 current)
   - `Update-PcvContractSpecPins.ps1 -Apply`/`-Check` current(spec 9개, 변경 0)
   - `dotnet test src/DesktopNode.Delivery.Tests -c Release` 785/785
+  - `train-path-check --payload e957f15b --head 1a29127`: `ok=true`, 바뀐 경로 40개, `product_paths` 없음, `allowed_pin_paths` 6개(config spec 3개, Delivery verifier 3개)
 
 ## Task 10: train PR
 
