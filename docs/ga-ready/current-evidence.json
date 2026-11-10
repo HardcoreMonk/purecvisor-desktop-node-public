@@ -2,21 +2,21 @@
   "schema_version": 1,
   "contract": "pcv-current-evidence-v1",
   "current": {
-    "version": "0.43.2-admin-smoke",
+    "version": "0.43.3-admin-smoke",
     "operator_surfaces": [
       "web",
       "cli"
     ],
     "tui_present": false,
-    "package_evidence": "docs/ga-ready/evidence/admin-smoke-package-2026-11-10-04302.md",
-    "fullgate_batch": "full-admin-host-mutation-gate-20261110-04302",
-    "fullgate_evidence": "docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-11-10-04302-hostmutation.md",
-    "functional_evidence": "docs/ga-ready/evidence/functional-correctness-actual-host-validation-2026-11-10-04302-carryforward.md",
-    "installed_evidence": "docs/ga-ready/evidence/installed-operator-surface-current-card-2026-11-10-04302.md",
-    "clean_msi_sha256": "fa6afbce618568a95bb941c34ded38c188d7a8c221bfc26810d3ac14111b1c0c",
-    "operational_msi_sha256": "82e78f2b5247847d72e7cc4b95d04736a842f987bb4ef24c25a67561517228d5",
-    "payload_sha256": "71b94bc9852b059c98c5a11f361dcbe9ee7bdd88448cd5c272d4b2d458e7b162",
-    "provenance_commit": "2f19778abb4b948bdaa9f8a4b196166cad90c653"
+    "package_evidence": "docs/ga-ready/evidence/admin-smoke-package-2026-11-11-04303.md",
+    "fullgate_batch": "full-admin-host-mutation-gate-20261111-04303",
+    "fullgate_evidence": "docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-11-11-04303-hostmutation.md",
+    "functional_evidence": "docs/ga-ready/evidence/functional-correctness-actual-host-validation-2026-11-11-04303-carryforward.md",
+    "installed_evidence": "docs/ga-ready/evidence/installed-operator-surface-current-card-2026-11-11-04303.md",
+    "clean_msi_sha256": "66546521fb0fea092de8d0fd390153cc337108d9c17d5622015b748d901de060",
+    "operational_msi_sha256": "13f716ee18fbbcee0e0322de6cd12895762fb665863a1e7b437ff4bd292d0b59",
+    "payload_sha256": "0ea79bc712613d9fd5ce52e0571ef23cd721c8e821fdd9882598858ba3f1f018",
+    "provenance_commit": "db1a7626b7654264d8fa5059685027d064098445"
   },
   "feature_qualification": {
     "schema_version": 1,
@@ -25,9 +25,9 @@
     "blockers": []
   },
   "manual_admin": {
-    "latest_closed_baseline": "0.43.1-admin-smoke",
-    "latest_closed_target": "0.43.2-admin-smoke",
-    "latest_closed_descriptor": "manual-admin-campaign-20261110-04301-04302-closed"
+    "latest_closed_baseline": "0.43.2-admin-smoke",
+    "latest_closed_target": "0.43.3-admin-smoke",
+    "latest_closed_descriptor": "manual-admin-campaign-20261111-04302-04303-closed"
   },
   "claims": {
     "public_trusted_signing": false,

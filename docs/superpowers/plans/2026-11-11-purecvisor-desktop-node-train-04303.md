@@ -216,11 +216,23 @@ operational current는 `0.43.2-admin-smoke` 그대로다.
 
 ## Task 8: Lane 3 데이터와 lane3-spec
 
-- [ ] Lane 3. 같은 train branch에서 한다.
+- [x] Lane 3. 같은 train branch에서 한다.
   - consume manifest, functional carry-forward·pair consume·`main-push-payload`(payload `69675e0c`의 main push run 인용, `train_pr_head`, `path_check_line`) facts를 쓴다. `main-push` 템플릿과 함께 쓰지 않는다.
   - 그 뒤 `train-evidence --write`, current-card `promoted-current`(`--write --allow-update`), `--check`를 돈다.
   - `current-evidence.json`과 `lane3-spec --write`를 쓴다. `index_sections.previous_version`은 직전 승격 `0.43.2-admin-smoke`, `previous_spec`은 `lane3-promotion-docs-spec-04302.json`이다.
   - `update-preflight-compatibility.json` fixture의 `operational-current` 행을 새 version으로 고친다(DEVELOPMENT_PROCEDURE §10, BL-0030). 로컬 commit.
+
+실행 기록(2026-11-11): train branch `1fb874c`에서 했다.
+- consume manifest: `artifacts/manual-admin-campaign-20261111-04302-04303/consume-manifest.json`을 새로 썼다(SHA-256 앞 `f3cb5405`). closed descriptor가 읽은 summary 7개의 SHA-256과 byte 수를 담고, 파일은 복사하지 않았다.
+- facts: functional carry-forward(04302 다음, 변경 commit `3d1ce598`), pair consume, 단일 PR train용 `main-push-payload`를 더했다.
+  - `main-push-payload`는 payload `69675e0c`(PR #142 merge)의 Public Boundary `42841475949` job `129917539146`, Development Gates `42841475706`(shard job 4개)을 인용한다.
+  - `train_pr_head`는 `1fb874c`이고, 그때 `train-path-check --payload 69675e0c`는 `ok=true`, 바뀐 경로 18개, `product_paths`·`allowed_pin_paths` 없음이다.
+  - current-card는 `promoted-current`로 바꿨다.
+- `train-evidence --write --allow-update <current-card>` 결과 새 문서 3개, current-card updated. `--check`는 열두 문서 모두 current다.
+- `current-evidence.json` current는 `0.43.3-admin-smoke`다. provenance `db1a762`, clean MSI `66546521…`, operational MSI `13f716ee…`, payload `0ea79bc7…`, manual_admin은 `0.43.2 -> 0.43.3`(`manual-admin-campaign-20261111-04302-04303-closed`)이다.
+- `update-preflight-compatibility.json`: `0.43.3-admin-smoke` `operational-current` 행(source `69675e0c`, 파일 목록은 `0.43.2`와 같음)을 더했다. `0.43.2`는 `retained-older-install`로 남겼다.
+- `lane3-spec --write`로 `packaging/windows-desktop-node/tests/fixtures/lane3-promotion-docs-spec-04303.json`을 만들었다(입력 `docs/ga-ready/trains/0.43.3-admin-smoke.lane3-spec-input.json`, `previous_spec` 04302). `narrative.functional_note`에는 backtick이 없다.
+- 시험: Verification(lane3, train evidence, facts, host-inputs, path check) `91/91`, `UpdatePreflightCompatibilityContractTests` `3/3`. current evidence 문서 시험과 D2 시험은 Task 9를 기다린다.
 
 ## Task 9: 승격 문서와 release-train 승격
 
