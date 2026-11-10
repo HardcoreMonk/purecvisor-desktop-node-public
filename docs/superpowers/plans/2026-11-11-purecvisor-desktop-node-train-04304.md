@@ -184,7 +184,7 @@ operational current는 `0.43.3-admin-smoke` 그대로다.
 
 ## Task 6: probe Web Console 화면 (queue 146)
 
-- [ ] Lane 2. 설치본 `0.43.4`가 loopback(`http://127.0.0.1/`)으로 내주는 Web Console을 확인한다. VM은 만들지 않는다.
+- [x] Lane 2. 설치본 `0.43.4`가 loopback(`http://127.0.0.1/`)으로 내주는 Web Console을 확인한다. VM은 만들지 않는다.
   - 내주는 파일: `app.bundle.js`, `index.html`, `style.css`, `sw.js`, `i18n.js`의 SHA-256이 Task 1 package payload의 같은 파일과 같은지, `sw.js` CACHE_NAME이 payload commit 소스와 같은지 본다.
   - 화면: Playwright 브라우저로 1440×900과 768×1024에서 연다. 새 브라우저 context(저장소 비어 있음)에서 `#/dashboard`를 열고 15초 동안 0.5초 간격으로 "경고" 카드 상태를 본다. 같은 확인을 화면마다 새 context로 세 번 한다.
     - BL-0044: 첫 갱신이 끝나기 전에는 카드가 `data-alerts-state="loading"`과 "운영 요약을 읽고 있습니다."를 보이고, "운영 요약을 읽지 못했습니다"는 보이지 않는다. 바뀐 시각을 적는다.
@@ -193,6 +193,15 @@ operational current는 `0.43.3-admin-smoke` 그대로다.
     - 나머지 화면(가상 머신, template, 네트워크, 작업, 활동, evidence, 계정, 문제 해결)이 그려지고 console error 0이다.
   - 캡처는 `artifacts/lane2-bl0044-probe-20261111-04304/`에 둔다(커밋하지 않음).
   - evidence: `docs/ga-ready/evidence/lane2-bl0044-probe-2026-11-11-04304.md`. 로컬 commit.
+
+실행 기록(2026-11-11, 03:52~04:00 KST): 설치본 `0.43.4-admin-smoke+7b929ec`, 계정 없음(loopback 세션 `200`). VM은 만들지 않았다.
+- 내주는 파일 다섯 개의 SHA-256이 package payload와 같다. CACHE_NAME `pcv-ui-ve4b62dac`는 payload commit 소스와 같다.
+- BL-0044: 1440과 768에서 새 context를 세 번씩 열었다. 0.9~1.2초부터 카드가 `loading`과 "운영 요약을 읽고 있습니다."를 보였고, 첫 갱신이 끝나는 9.2~10.2초에 목록으로 바뀌었다. 여섯 번 모두 15초 동안 "운영 요약을 읽지 못했습니다"가 한 번도 없었다.
+- 회귀: version 표시 `v0.43.4-admin-smoke`(title 전체 값), loopback 세션이 policy보다 먼저(6/6), 화면 아홉 개 그려짐, HTTP 4xx 0, console error 0. BL-0043(첫 갱신 뒤 목록) 그대로다.
+- 관찰: 대시보드가 다 차는 데 여전히 약 9~10초가 걸린다. 2026-11-11 제로베이스 감사 후속 조치 후보로 다루며 새 backlog 행은 만들지 않았다.
+- evidence: `docs/ga-ready/evidence/lane2-bl0044-probe-2026-11-11-04304.md`. 캡처는 `artifacts/lane2-bl0044-probe-20261111-04304/`(커밋하지 않음).
+
+operational current는 `0.43.3-admin-smoke` 그대로다.
 
 ## Task 7: 계정 복원
 
