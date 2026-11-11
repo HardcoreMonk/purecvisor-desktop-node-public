@@ -221,9 +221,18 @@ operational current는 `0.43.4-admin-smoke` 그대로다.
 
 ## Task 7: 계정 복원
 
-- [ ] Lane 2. Task 2 백업의 `accounts.json`을 data root에 되돌리고 SHA-256을 비교한다. fullgate 재설치가 만든 빈 저장소는 지우지 않고 백업 위치로 옮긴다. 파일 ACL은 train 전 원본 표기와 같게 맞추고 service를 다시 시작한다.
+- [x] Lane 2. Task 2 백업의 `accounts.json`을 data root에 되돌리고 SHA-256을 비교한다. fullgate 재설치가 만든 빈 저장소는 지우지 않고 백업 위치로 옮긴다. 파일 ACL은 train 전 원본 표기와 같게 맞추고 service를 다시 시작한다.
   - 확인: 계정 이름과 상태가 Task 2와 같다, loopback 세션 `409`, Web 200, service Running/Automatic.
   - 이름과 상태만 기록한다. 로컬 commit.
+
+실행 기록(2026-11-12 00:33 KST):
+- fullgate 재설치가 만든 빈 저장소(계정 0개, 174 bytes)는 지우지 않고 백업 위치로 옮겼다.
+- Task 2 백업의 `accounts.json`을 data root에 되돌렸다. SHA-256과 ACL 표기가 백업·train 전 원본 표기와 같다. service를 다시 시작했다.
+- 확인: 계정 4개가 Task 2와 같다(`pcv-admin` admin disabled, `pcv-admin2` admin enabled, `pcv-s13-operator` operator enabled, `pcv-s4-operator` operator disabled). loopback 세션 `409` `PCV_LOOPBACK_SESSION_DISABLED`, Web `200`, service Running/Automatic.
+- 설치본 Host `0.43.7-admin-smoke+3898139`, 보존 VM 둘 Off, `pcv-it-s1r-ubuntu` Running(그대로).
+- 이번 train 백업(백업 `accounts.json`, ACL 기록, 옮긴 빈 저장소)은 저장소 밖 보호 위치에 남아 있다. 삭제는 다음 승인으로 묻는다.
+
+operational current는 `0.43.4-admin-smoke` 그대로다.
 
 ## Task 8: Lane 3 데이터와 lane3-spec
 
