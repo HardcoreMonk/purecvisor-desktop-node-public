@@ -242,7 +242,7 @@ operational current는 `0.43.4-admin-smoke` 그대로다.
   - `current-evidence.json`과 `lane3-spec --write`를 쓴다. `index_sections.previous_version`은 직전 승격 `0.43.4-admin-smoke`, `previous_spec`은 `lane3-promotion-docs-spec-04304.json`이다(직전 train `0.43.5`·`0.43.6` 정차, BL-0021).
   - `update-preflight-compatibility.json` fixture의 `operational-current` 행을 새 version으로 고친다(DEVELOPMENT_PROCEDURE §10, BL-0030). 로컬 commit.
 
-실행 기록(2026-11-12 00:40~00:46 KST): train branch `776e495`에서 했다. Lane 3 문서 세 개는 실제로 쓴 날짜(`2026-11-12`)로 이름을 붙였다.
+실행 기록(2026-11-12, commit 00:40 KST): train branch `776e495`에서 했다. Lane 3 문서 세 개는 실제로 쓴 날짜(`2026-11-12`)로 이름을 붙였다.
 - consume manifest: `artifacts/manual-admin-campaign-20261111-04306-04307-r2/consume-manifest.json`을 새로 썼다(SHA-256 앞 `866a4dd3`). closed descriptor `manual-admin-campaign-20261111-04306-04307-r2-closed`가 읽은 summary 7개의 SHA-256과 byte 수를 담고, 파일은 복사하지 않았다. 첫 실행(FAIL) root는 consume하지 않았다.
 - facts: functional carry-forward(04304 다음, 변경 commit `ff40acd7`, `25709198`, `39976fd2`, `04b1a91b`), pair consume, 단일 PR train용 `main-push-payload`를 더했다.
   - `main-push-payload`는 payload `bf5c214`(PR #160 merge)의 Public Boundary `43017019394`, Development Gates `43017019405`(shard job 4개, 모두 success)를 인용한다.
@@ -262,7 +262,7 @@ operational current는 `0.43.4-admin-smoke` 그대로다.
   - `train-path-check --payload bf5c214 --head HEAD`가 `allowed_pin_paths`만 남기는지 본다.
   - 수기 갱신: `DOCUMENTATION_INDEX` 권위 줄(공개 소스 HEAD는 payload commit), `FEATURE_IMPLEMENTATION_LEDGER` operational 줄, `DEVELOPER_INDEX` train 줄. 로컬 commit.
 
-실행 기록(2026-11-12 00:47~00:58 KST): promotion 도구와 수기 갱신을 했다.
+실행 기록(2026-11-12, commit 00:43 KST): promotion 도구와 수기 갱신을 했다.
 - `Invoke-PcvLane3PromotionDocs.ps1 -SpecPath packaging/windows-desktop-node/tests/fixtures/lane3-promotion-docs-spec-04307.json`
   - dry-run `ok`: current evidence 문서 stale, 나머지는 planned. `functional_note`에 backtick이 없어 첫 dry-run에서 통과했다.
   - `-Apply` `ok`: current evidence 문서, descriptor chain(꼬리표 `04307`), ledger head·rows, index 절, spec pin 갱신
@@ -288,6 +288,14 @@ operational current는 `0.43.4-admin-smoke` 그대로다.
   - `train-path-check --payload bf5c214 --head HEAD` exit `0`
   - `Update-PcvCurrentEvidenceDocs.ps1 -Check`, `git diff --check origin/main...HEAD`
   - 그다음 push와 PR을 한다. merge 직전 base가 `origin/main`과 같은지 본다. Required CI 다섯 개 green 뒤 merge한다(`--match-head-commit`). merge 뒤 main push run을 기다리고, red면 revert PR을 열고 멈춘다.
+
+실행 기록(2026-11-12 00:43~00:48 KST, 종료 검증): clean HEAD `ec62a83`에서 돌렸다.
+- `dotnet build src/DesktopNode.sln -c Release` 오류 0
+- PR gate `artifacts/pr-gate/20261111-154403` `ok=True`: build, `dotnet-test-release`(솔루션 전체, clean tree), module-size-ratchet
+- Pester 실패 0: packaging 528(manual-admin 시험 포함), installer 49, web 50
+- `test:public-source-safety` 23/23, `Update-PcvCurrentEvidenceDocs.ps1 -Check` ok, `git diff --check origin/main...HEAD` clean, base는 `origin/main`(`bf5c214`)
+- `train-path-check --payload bf5c214 --head ec62a83`: `ok=true`, 바뀐 경로 40개, `product_paths` 없음, `allowed_pin_paths` 6개(config spec 3개, Delivery verifier 3개)
+- Task 8·9 실행 기록의 시각은 처음에 추정값으로 적었다가 commit 시각으로 고쳤다.
 
 ## Task 11: 판정
 
