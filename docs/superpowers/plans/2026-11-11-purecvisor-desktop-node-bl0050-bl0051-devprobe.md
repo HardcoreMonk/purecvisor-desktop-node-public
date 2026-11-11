@@ -67,20 +67,30 @@
 
 ## Task 3: PR
 
-- [ ] clean HEAD 종료 검증(PR gate), push, PR, green CI 뒤 merge, main push run 확인.
+- [x] clean HEAD 종료 검증(PR gate), push, PR, green CI 뒤 merge, main push run 확인.
+
+실행 기록(2026-11-11): PR #159의 첫 CI는 #157의 시간 의존 시험 하나로 `dotnet`이 실패했다. 대기 수정(`297eb7c`) 뒤 Required CI 다섯 개가 green이었고, merge commit `dc042b8`의 main push run Development Gates `43015553438`과 Public Boundary `43015553465`가 success다.
 
 ## Task 4: dev probe (Lane 2)
 
-- [ ] `main` merge commit에서 개발 build `0.43.7-admin-smoke`와 update catalog를 만든다(`artifacts/devprobe-package-20261111-04307`).
-- [ ] 계정을 보관한다(보호 위치 백업, data root에서 치우기, service 재시작). `Invoke-PcvDesktopNodeProduct.ps1 -Action Update`를 DryRun 뒤 실행해 dev build를 올린다.
-- [ ] 측정
+- [x] `main` merge commit에서 개발 build `0.43.7-admin-smoke`와 update catalog를 만든다(`artifacts/devprobe-package-20261111-04307`).
+- [x] 계정을 보관한다(보호 위치 백업, data root에서 치우기, service 재시작). `Invoke-PcvDesktopNodeProduct.ps1 -Action Update`를 DryRun 뒤 실행해 dev build를 올린다.
+- [x] 측정
   - 대시보드(loopback 모드, 새 context 여섯 번): loopback 세션 POST 1회, `ops/summary` 1회, 취소 0회, 목록 시각
   - 콘솔 입력(`pcv-it-s1r-ubuntu` 사용자 정보 화면): 사람이 치는 속도로 Backspace와 20자 두 번. 입력 요청 중앙값, 거절 0건, 두 칸 일치, 텍스트 폼(`pcv`, `pcvs1r`)
-- [ ] `-Action Rollback`(DryRun 뒤 실행)으로 `0.43.6`에 되돌리고, 계정을 복원한다(해시·ACL 비교). 끝 상태를 확인한다.
+- [x] `-Action Rollback`(DryRun 뒤 실행)으로 `0.43.6`에 되돌리고, 계정을 복원한다(해시·ACL 비교). 끝 상태를 확인한다.
+
+실행 기록(2026-11-11 20:52~20:58 KST): 상세는 evidence `docs/ga-ready/evidence/lane2-devprobe-2026-11-11-04307.md`에 있다.
+- 개발 build `0.43.7-admin-smoke`는 `dc042b8`에서 만들었다(MSI `a404ac5d…`). 계정 보관 뒤 제품 Update(3초)를 했고, 측정 뒤 제품 Rollback(2초)으로 `0.43.6+bfb30c1`에 되돌렸다. 계정을 복원했다(해시·ACL 일치).
+- 대시보드(loopback 모드, 여섯 번): 통과. 매번 loopback POST 1회, 문서 로드 1회, `ops/summary` 1회, 취소 0회. 목록은 4.3~5.1초다(0.43.6 8.5초).
+- 콘솔 키 입력: 통과. 요청 204건, 중앙값 168ms, 최대 512ms, 거절 0건이다. 같은 20자를 두 칸에 넣은 결과가 일치했다.
+- 텍스트 보내기 폼: 실패. `pcv` → 빈 칸, `pcvs1r` → `n`. backlog BL-0047을 다시 열었다. S1 설치는 키보드 입력으로 할 수 있어 막히지 않는다.
 
 ## Task 5: 기록과 마무리
 
-- [ ] evidence `docs/ga-ready/evidence/lane2-devprobe-2026-11-11-04307.md`를 쓴다. campaign을 닫고 다음 승인(통과하면 release train 출발과 S1~S3 재시연)을 적는다. push, PR, green CI 뒤 merge.
+- [x] evidence `docs/ga-ready/evidence/lane2-devprobe-2026-11-11-04307.md`를 쓴다. campaign을 닫고 다음 승인(통과하면 release train 출발과 S1~S3 재시연)을 적는다. push, PR, green CI 뒤 merge.
+
+실행 기록(Task 5, 2026-11-11): evidence를 쓰고 BL-0050·BL-0051을 닫았다(PR #159, dev probe 통과). BL-0047을 다시 열었다. campaign을 닫는다. 다음 승인은 release train `0.43.7` 출발, S1~S3 재시연, BL-0047, dev probe 계정 백업 삭제다.
 
 ## Nonclaims
 
