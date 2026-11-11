@@ -32,7 +32,9 @@ public sealed partial class DesktopNodeHyperVNativeAdapter
             ThrowIfNativeCanceled(cancellationToken, operation);
             // 재고 조회보다 먼저 줄을 선다. 그래야 같은 VM의 press가 release보다 늦게 실행되지 않는다.
             using var consoleLane = DesktopNodeHyperVConsoleInputLane.Shared.Enter(vmName, cancellationToken);
-            var vm = FindVm(vmProvider.GetVms(cancellationToken), vmName);
+            var vm = vmProvider is IDesktopNodeHyperVVmRunStateProvider runState
+                ? runState.FindVmRunState(vmName, cancellationToken)
+                : FindVmRunStateFromList(vmName, cancellationToken);
             if (vm is null)
             {
                 result = DesktopNodeHyperVOperationResult.Failure(
@@ -44,6 +46,14 @@ public sealed partial class DesktopNodeHyperVNativeAdapter
             {
                 result = DesktopNodeHyperVOperationResult.Failure(
                     operation, "PCV_CONSOLE_VM_NOT_RUNNING", $"VM '{vm.Name}' is {vm.State}, not running.", "Start the VM before sending console input.", false);
+                return true;
+            }
+
+            if (DesktopNodeHyperVVmTemplateLockGuard.TryReject(operation, vm.TemplateLock, vm.Name, out var locked) &&
+                locked is not null)
+            {
+                result = DesktopNodeHyperVOperationResult.Failure(
+                    operation, locked.Code, locked.Message, locked.Detail, locked.Retryable);
                 return true;
             }
 
@@ -92,6 +102,20 @@ public sealed partial class DesktopNodeHyperVNativeAdapter
                 operation, "PCV_CONSOLE_INPUT_FAILED", "The console input was not delivered.", ex.Message, true);
             return true;
         }
+    }
+
+    private DesktopNodeHyperVVmRunState? FindVmRunStateFromList(string vmName, CancellationToken cancellationToken)
+    {
+        foreach (var vm in vmProvider.GetVms(cancellationToken))
+        {
+            if (string.Equals(vm.Id, vmName, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(vm.Name, vmName, StringComparison.OrdinalIgnoreCase))
+            {
+                return new DesktopNodeHyperVVmRunState(vm.Id, vm.Name, vm.State, vm.TemplateLock);
+            }
+        }
+
+        return null;
     }
 
     public static (string Kind, string Action, string Method, object? Argument)? PlanConsoleInput(

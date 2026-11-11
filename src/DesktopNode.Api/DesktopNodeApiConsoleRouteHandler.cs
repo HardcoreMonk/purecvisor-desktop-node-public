@@ -31,7 +31,11 @@ internal sealed partial class DesktopNodeApiConsoleRouteHandler
 
     private DesktopNodeConsoleOptions consoleOptions => noVncTargetStore.Options;
 
-    public DesktopNodeApiResponse? TryHandle(DesktopNodeApiRequest request, string method, string normalizedPath)
+    public DesktopNodeApiResponse? TryHandle(
+        DesktopNodeApiRequest request,
+        string method,
+        string normalizedPath,
+        CancellationToken cancellationToken = default)
     {
         if (DesktopNodeApiRuntimeRoutes.TryMatchOperation(method, normalizedPath, "GetConsoleCapabilities", out _))
         {
@@ -45,12 +49,12 @@ internal sealed partial class DesktopNodeApiConsoleRouteHandler
 
         if (DesktopNodeApiRuntimeRoutes.TryMatchOperation(method, normalizedPath, "GetVmConsoleFrame", out var frameMatch))
         {
-            return HandleVmConsoleFrame(frameMatch.Parameters["vmId"], frameMatch.Parameters["size"]);
+            return HandleVmConsoleFrame(frameMatch.Parameters["vmId"], frameMatch.Parameters["size"], cancellationToken);
         }
 
         if (DesktopNodeApiRuntimeRoutes.TryMatchOperation(method, normalizedPath, "SendVmConsoleInput", out var inputMatch))
         {
-            return HandleVmConsoleInput(request, inputMatch.Parameters["vmId"]);
+            return HandleVmConsoleInput(request, inputMatch.Parameters["vmId"], cancellationToken);
         }
 
         if (DesktopNodeApiRuntimeRoutes.TryMatchOperation(method, normalizedPath, "PreviewNoVncTarget", out _))

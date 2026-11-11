@@ -82,8 +82,10 @@ async function _tryRefreshToken() {
   return _refreshInProgress;
 }
 var _loopbackInProgress = null;
-async function _createLoopbackSession() {
-  if (!isLoopbackHostname(window.location.hostname)) return false;
+// init 의 refreshAll 과 restoreSession 이 각자 POST 하면 token 이 둘이라 앞 갱신이 취소된다.
+// 두 경로가 이 Promise 하나를 같이 기다린다.
+function _sharedLoopbackPayload() {
+  if (!isLoopbackHostname(window.location.hostname)) return Promise.resolve(null);
   if (_loopbackInProgress) return _loopbackInProgress;
   _loopbackInProgress = (async function() {
     try {
@@ -92,14 +94,20 @@ async function _createLoopbackSession() {
         headers: { 'Content-Type': 'application/json' },
         body: '{}'
       });
-      if (!r.ok) return false;
+      if (!r.ok) return null;
       var d = unwrapData(await r.json());
-      if (d && d.access_token) { _storeSession(d, 'loopback-session'); return true; }
-      return false;
-    } catch (e) { return false; }
+      if (!(d && d.access_token)) return null;
+      if (!window.authToken) _storeSession(d, 'loopback-session');
+      return d;
+    } catch (e) { return null; }
     finally { _loopbackInProgress = null; }
   })();
   return _loopbackInProgress;
+}
+window._sharedLoopbackPayload = _sharedLoopbackPayload;
+async function _createLoopbackSession() {
+  var d = await _sharedLoopbackPayload();
+  return !!(d && d.access_token);
 }
 // Recover a rejected bearer token once: refresh token first, then a fresh loopback session on loopback hosts.
 async function _recoverSession() {

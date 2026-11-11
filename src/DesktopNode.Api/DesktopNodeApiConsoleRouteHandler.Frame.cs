@@ -17,7 +17,7 @@ internal sealed partial class DesktopNodeApiConsoleRouteHandler
     // 결정적으로 검증할 수 있고, 실제 서비스는 UtcNow 를 쓴다.
     private readonly ConcurrentDictionary<string, long> lastFrameTicks = new(StringComparer.OrdinalIgnoreCase);
 
-    private DesktopNodeApiResponse HandleVmConsoleFrame(string encodedVmId, string encodedSize)
+    private DesktopNodeApiResponse HandleVmConsoleFrame(string encodedVmId, string encodedSize, CancellationToken cancellationToken = default)
     {
         var routeId = DesktopNodeApiRequestParsing.DecodeRouteId(encodedVmId, "console.frame");
         if (!routeId.Ok)
@@ -39,7 +39,7 @@ internal sealed partial class DesktopNodeApiConsoleRouteHandler
 
         var now = hardeningOptions.Now().ToUnixTimeMilliseconds();
         var vm = routeId.Value!;
-        if (lastFrameTicks.TryGetValue(vm, out var last) && now - last < FrameMinIntervalMilliseconds)
+        if (!TryReserveFrameSlot(vm, now))
         {
             return DesktopNodeApiResponseFactory.Failure(
                 429,
@@ -50,7 +50,6 @@ internal sealed partial class DesktopNodeApiConsoleRouteHandler
                 true);
         }
 
-        lastFrameTicks[vm] = now;
         var result = operationInvoker.Invoke(
             "vm.console.frame",
             DesktopNodeApiResponseFactory.JsonFromObject(new SortedDictionary<string, object?>
@@ -58,7 +57,8 @@ internal sealed partial class DesktopNodeApiConsoleRouteHandler
                 ["vm_name"] = vm,
                 ["width"] = int.Parse(size.Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture),
                 ["height"] = int.Parse(size.Groups[2].Value, System.Globalization.CultureInfo.InvariantCulture)
-            }));
+            }),
+            cancellationToken);
         if (!result.Ok || result.Data is not { } data)
         {
             return DesktopNodeApiResponseFactory.OperationResponse(result);
@@ -82,5 +82,32 @@ internal sealed partial class DesktopNodeApiConsoleRouteHandler
             ["frame_base64"] = Convert.ToBase64String(buffer.ToArray()),
             ["captured_at"] = DateTimeOffset.UtcNow.ToString("o", System.Globalization.CultureInfo.InvariantCulture)
         }, null));
+    }
+
+    // check-then-set 은 동시에 두 frame 이 100ms 간격을 통과한다. 성공한 갱신만 슬롯을 차지한다.
+    private bool TryReserveFrameSlot(string vm, long now)
+    {
+        while (true)
+        {
+            if (!lastFrameTicks.TryGetValue(vm, out var last))
+            {
+                if (lastFrameTicks.TryAdd(vm, now))
+                {
+                    return true;
+                }
+
+                continue;
+            }
+
+            if (now - last < FrameMinIntervalMilliseconds)
+            {
+                return false;
+            }
+
+            if (lastFrameTicks.TryUpdate(vm, now, last))
+            {
+                return true;
+            }
+        }
     }
 }

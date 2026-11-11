@@ -214,6 +214,34 @@ public sealed class DesktopNodeHyperVConsoleKeyboardTests
         }
     }
 
+    [Fact]
+    public void AdapterConsoleInputReadsOneVmRunStateInsteadOfTheFullList()
+    {
+        var provider = new RunStateCountingProvider(new DesktopNodeHyperVVmRunState("lane-a", "lane-a", "running"));
+        var adapter = new DesktopNodeHyperVNativeAdapter(new NoSwitches(), provider);
+        using var press = JsonDocument.Parse("""{"name":"lane-a","kind":"key","action":"type","key_code":13}""");
+        for (var index = 0; index < 4; index++)
+        {
+            Assert.True(adapter.TryInvoke("vm.console.input", press.RootElement, CancellationToken.None, out var result));
+            Assert.True(result.Ok);
+        }
+
+        Assert.Equal(0, provider.GetVmsCalls);
+        Assert.Equal(4, provider.FindCalls);
+
+        var stopped = new RunStateCountingProvider(new DesktopNodeHyperVVmRunState("lane-a", "Lane-A", "stopped"));
+        var stoppedAdapter = new DesktopNodeHyperVNativeAdapter(new NoSwitches(), stopped);
+        Assert.True(stoppedAdapter.TryInvoke("vm.console.input", press.RootElement, CancellationToken.None, out var refused));
+        Assert.Equal("PCV_CONSOLE_VM_NOT_RUNNING", refused.Error!.Code);
+        Assert.Equal(0, stopped.GetVmsCalls);
+
+        var missing = new RunStateCountingProvider(null);
+        var missingAdapter = new DesktopNodeHyperVNativeAdapter(new NoSwitches(), missing);
+        Assert.True(missingAdapter.TryInvoke("vm.console.input", press.RootElement, CancellationToken.None, out var absent));
+        Assert.Equal("PCV_VM_NOT_FOUND", absent.Error!.Code);
+        Assert.Equal(0, missing.GetVmsCalls);
+    }
+
     private static DesktopNodeHyperVVmInfo RunningVm(string name)
     {
         return new DesktopNodeHyperVVmInfo(
@@ -259,5 +287,34 @@ public sealed class DesktopNodeHyperVConsoleKeyboardTests
 
             return 0;
         }
+    }
+
+    private sealed class RunStateCountingProvider(DesktopNodeHyperVVmRunState? state) : IDesktopNodeHyperVVmProvider, IDesktopNodeHyperVVmRunStateProvider
+    {
+        public int GetVmsCalls { get; private set; }
+
+        public int FindCalls { get; private set; }
+
+        public IReadOnlyList<DesktopNodeHyperVVmInfo> GetVms(CancellationToken cancellationToken)
+        {
+            GetVmsCalls++;
+            return [];
+        }
+
+        public DesktopNodeHyperVVmRunState? FindVmRunState(string vmName, CancellationToken cancellationToken)
+        {
+            FindCalls++;
+            if (state is null)
+            {
+                return null;
+            }
+
+            return string.Equals(vmName, state.Name, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(vmName, state.Id, StringComparison.OrdinalIgnoreCase)
+                ? state
+                : null;
+        }
+
+        public uint? SendConsoleKeyboard(string vmId, string method, object? argument, CancellationToken cancellationToken) => 0;
     }
 }
