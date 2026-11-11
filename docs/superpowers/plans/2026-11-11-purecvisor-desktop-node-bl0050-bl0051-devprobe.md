@@ -62,6 +62,8 @@
   - `npm run test:required --prefix web` exit 0(node 433/433, 첫 claim reload 없음과 기존 controller reload 시험 포함, browser gate `ok=true` violations 0)
   - web Pester 50/50, `git diff --check` clean
 - `release-train.json` queue에 PR #159 행을 더했다(queue 4행).
+- PR #159 첫 CI에서 #157의 시험 `ConsoleInputDoesNotHoldTheGlobalLockWhileTheAdapterRuns`가 실패했다. route-timeout probe를 3초 기다리는 자리다. 그 probe는 서버 안에서 공유 thread pool을 쓴다.
+  - 막힌 쪽은 release 전까지 끝나지 않으므로, 기다림을 30초로, frame 중 입력 상한을 10초로 늘렸다(시험만 바꿨다). 그 class 5건을 다섯 번 반복해 모두 통과했다.
 
 ## Task 3: PR
 
