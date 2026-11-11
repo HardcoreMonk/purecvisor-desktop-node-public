@@ -379,3 +379,77 @@ test("storage read and write failures fall back without throwing", () => {
   const html = sandbox.renderVmConsoleFrameCard({ state: "running" }, "id-1", true);
   assert.match(html, /<option value="1024x768" selected>/);
 });
+
+test("console input for one VM waits for the previous request", async () => {
+  const { sandbox } = createEnv();
+  const sent = [];
+  let releaseFirst = null;
+  sandbox.desktopApi.sendVmConsoleInput = (_vmId, payload) => {
+    sent.push(payload.action);
+    if (sent.length === 1) return new Promise((resolve) => { releaseFirst = resolve; });
+    return Promise.resolve({});
+  };
+  const first = sandbox.sendVmConsoleKeyboard("id-1", { kind: "key", action: "press", key_code: 13 });
+  const second = sandbox.sendVmConsoleKeyboard("id-1", { kind: "key", action: "release", key_code: 13 });
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  assert.deepEqual(sent, ["press"]);
+  releaseFirst();
+  await Promise.all([first, second]);
+  assert.deepEqual(sent, ["press", "release"]);
+});
+
+test("console input for another VM is not blocked by the first queue", async () => {
+  const { sandbox } = createEnv();
+  const sent = [];
+  let releaseFirst = null;
+  sandbox.desktopApi.sendVmConsoleInput = (vmId) => {
+    sent.push(vmId);
+    if (vmId === "vm-a") return new Promise((resolve) => { releaseFirst = resolve; });
+    return Promise.resolve({});
+  };
+  const first = sandbox.sendVmConsoleKeyboard("vm-a", { kind: "key", action: "press", key_code: 1 });
+  const second = sandbox.sendVmConsoleKeyboard("vm-b", { kind: "key", action: "press", key_code: 1 });
+  await second;
+  assert.deepEqual(sent, ["vm-a", "vm-b"]);
+  releaseFirst();
+  await first;
+});
+
+test("a rate-limited console input is sent once more", async () => {
+  const { sandbox, document } = createEnv();
+  const status = makeEl(document, "vm-console-frame-status", "p");
+  let calls = 0;
+  sandbox.desktopApi.sendVmConsoleInput = async () => {
+    calls += 1;
+    if (calls === 1) {
+      const error = new Error("limited");
+      error.code = "PCV_CONSOLE_RATE_LIMITED";
+      throw error;
+    }
+  };
+  await sandbox.sendVmConsoleKeyboard("id-1", { kind: "key", action: "press", key_code: 13 });
+  assert.equal(calls, 2);
+  assert.equal(status.textContent, "");
+});
+
+test("a long console input queue is kept and reported", async () => {
+  const { sandbox, document } = createEnv();
+  const status = makeEl(document, "vm-console-frame-status", "p");
+  let calls = 0;
+  let releaseFirst = null;
+  sandbox.desktopApi.sendVmConsoleInput = () => {
+    calls += 1;
+    if (calls === 1) return new Promise((resolve) => { releaseFirst = resolve; });
+    return Promise.resolve({});
+  };
+  const pending = [];
+  for (let index = 0; index < 65; index += 1) {
+    pending.push(sandbox.sendVmConsoleKeyboard("id-1", { kind: "key", action: "press", key_code: 65 }));
+  }
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  assert.equal(calls, 1);
+  assert.equal(status.textContent, "입력이 많이 쌓였습니다. 순서대로 보내는 중입니다.");
+  releaseFirst();
+  await Promise.all(pending);
+  assert.equal(calls, 65);
+});
