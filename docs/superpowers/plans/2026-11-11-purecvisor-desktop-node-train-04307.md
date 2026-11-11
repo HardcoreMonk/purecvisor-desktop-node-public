@@ -198,7 +198,7 @@ operational current는 `0.43.4-admin-smoke` 그대로다.
 
 ## Task 6: probe 대시보드 첫 로드와 브라우저 콘솔 키 입력 (queue 152, 153, 157, 159)
 
-- [ ] Lane 2. 설치본 `0.43.7`이 loopback(`http://127.0.0.1/`)으로 내주는 Web Console을 확인한다. 계정은 Task 2에서 보관 중이라 loopback 모드다.
+- [x] Lane 2. 설치본 `0.43.7`이 loopback(`http://127.0.0.1/`)으로 내주는 Web Console을 확인한다. 계정은 Task 2에서 보관 중이라 loopback 모드다.
   - 내주는 파일: `app.bundle.js`, `index.html`, `style.css`, `sw.js`, `i18n.js`의 SHA-256이 Task 1 package payload와 같은지, `sw.js` CACHE_NAME이 payload commit 소스와 같은지 본다.
   - 대시보드
     - 1440×900과 768×1024에서 새 context를 세 번씩 연다. loopback 세션 POST 횟수, 문서 로드 횟수, `ops/summary` 요청·취소 횟수, 목록이 그려지는 시각과 첫 갱신 끝 시각을 잰다.
@@ -210,6 +210,14 @@ operational current는 `0.43.4-admin-smoke` 그대로다.
     - 텍스트 보내기 폼은 판정에서 뺀다(BL-0047, Task 18).
   - 캡처는 `artifacts/lane2-04307-probe-20261111/`에 둔다(커밋하지 않음).
   - evidence: `docs/ga-ready/evidence/lane2-dashboard-console-probe-2026-11-11-04307.md`. FAIL이면 정차한다. 로컬 commit.
+
+실행 기록(2026-11-11 22:34~22:37 KST): **통과**. 상세는 evidence `docs/ga-ready/evidence/lane2-dashboard-console-probe-2026-11-11-04307.md`에 있다.
+- 내주는 파일 다섯 개는 Task 1 payload와 같고, `sw.js` CACHE_NAME은 payload commit 소스와 같다.
+- 대시보드(loopback 모드, 1440·768 각 세 번): 매번 loopback POST 1회, 문서 로드 1회, `ops/summary` 1회, 취소 0회. 목록은 4.9~5.7초다(`0.43.6` 8.5초). version `v0.43.7-admin-smoke`, 4xx·console error 0.
+- 콘솔 키 입력(`pcv-it-s1r-ubuntu`): 요청 188건, 중앙값 176ms, 최대 405ms, 거절 0건. 새 20자를 두 비밀번호 칸에 넣은 결과가 일치했다.
+- 텍스트 보내기 폼은 승인 문장대로 판정에서 뺐다(BL-0047, Task 18).
+
+operational current는 `0.43.4-admin-smoke` 그대로다.
 
 ## Task 7: 계정 복원
 
