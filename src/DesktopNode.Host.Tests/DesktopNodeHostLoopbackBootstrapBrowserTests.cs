@@ -115,17 +115,31 @@ public sealed class DesktopNodeHostLoopbackBootstrapBrowserTests
             await Task.Delay(200);
         }
 
-        foreach (var processId in FindBrowserProcessIds(userData))
+        // On a busy CI runner msedge.exe can still be exiting, or start a helper process, after one kill.
+        // Keep killing what is left for this user-data-dir until none remain (BL-0045).
+        var killDeadline = DateTime.UtcNow.AddSeconds(20);
+        while (DateTime.UtcNow < killDeadline)
         {
-            try
+            var leftovers = FindBrowserProcessIds(userData);
+            if (leftovers.Count == 0)
             {
-                using var leftover = Process.GetProcessById(processId);
-                leftover.Kill(entireProcessTree: true);
-                leftover.WaitForExit(5000);
+                break;
             }
-            catch (Exception exception) when (exception is ArgumentException or InvalidOperationException or Win32Exception)
+
+            foreach (var processId in leftovers)
             {
+                try
+                {
+                    using var leftover = Process.GetProcessById(processId);
+                    leftover.Kill(entireProcessTree: true);
+                    leftover.WaitForExit(2000);
+                }
+                catch (Exception exception) when (exception is ArgumentException or InvalidOperationException or Win32Exception)
+                {
+                }
             }
+
+            await Task.Delay(250);
         }
     }
 
