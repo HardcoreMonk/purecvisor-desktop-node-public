@@ -1,61 +1,59 @@
 {
   "schema_version": 1,
   "contract": "pcv-active-campaign-v1",
-  "status": "closed",
-  "id": "zero-base-followup-20261111",
-  "intent": "Act on the 2026-11-11 zero-base audit: delete the train 0.43.4 account backup, write the bundled train departure rule, script S1-S3 as browser scenarios and re-prove them on the installed 0.43.4 Web Console with real pcv-it- VMs (Ubuntu install, installed-VM template clone, checkpoints), and fix the 10-second dashboard first load",
+  "status": "open",
+  "id": "train-04305-20261111",
+  "intent": "Depart release train 0.43.5-admin-smoke with queue PRs #152 (dashboard first load) and #153 (browser console input, BL-0046 and BL-0047), keep the installed accounts across fullgate REMOVE_DATA, probe the installed dashboard and browser console input, promote it to operational current in a single train PR, fix BL-0045, then re-demo S1-S3 in the browser on the promoted install",
   "working_authority": "source_head",
   "allowed_lanes": [
     "0",
     "1",
-    "2"
+    "2",
+    "3"
   ],
   "mutation_allowed": true,
-  "current_write_allowed": false,
-  "next_step": "Closed 2026-11-11: the train 0.43.4 account backup was deleted after a hash check (PR #149); the bundled train departure rule is in DEVELOPMENT_PROCEDURE section 10 (PR #149); a browser scenario script drives S1-S3 on the Web Console (PR #150); the S1 browser re-proof on the installed 0.43.4 created, connected and started the VM and showed its screen but stopped at the Ubuntu profile screen because browser console input was slow and wrong (attempt record PR #151, BL-0046 and BL-0047 counts); the dashboard first load runs one refresh with the dashboard steps first (PR #152) and the console input runs in order with a cached keyboard path (PR #153). Tasks 8-10 (S2, S3, cleanup) move to the next approval with the S1-S3 re-demo on the next train. pcv-it-s1r-ubuntu stays Running at the installer and pcv-s13-operator stays enabled for that re-demo.",
-  "plan": "docs/superpowers/plans/2026-11-11-purecvisor-desktop-node-zero-base-followup.md",
+  "current_write_allowed": true,
+  "next_step": "Stopped train 0.43.5-admin-smoke at the Task 6 probe FAIL (dashboard first load and browser console input did not improve on the install; BL-0048, BL-0049). Accounts restored (Task 7). Next: Task 12 (BL-0045, approval 3). Tasks 8-11 and 13-18 are not run; the S1-S3 re-demo needs a new approval after the fixes.",
+  "plan": "docs/superpowers/plans/2026-11-11-purecvisor-desktop-node-train-04305.md",
   "task_queue": [
+    "Task 0",
     "Task 1",
     "Task 2",
     "Task 3",
-    "Task 4a",
-    "Task 4b",
+    "Task 4",
     "Task 5",
     "Task 6",
     "Task 7",
-    "Task 11",
-    "Task 12",
-    "Task 12b",
-    "Task 13"
+    "Task 12"
   ],
   "task_lanes": {
+    "Task 2": "2",
+    "Task 3": "2",
+    "Task 4": "2",
+    "Task 5": "2",
     "Task 6": "2",
     "Task 7": "2"
   },
-  "next_task": null,
+  "next_task": "Task 12",
   "completed_tasks": [
+    "Task 0",
     "Task 1",
     "Task 2",
     "Task 3",
-    "Task 4a",
-    "Task 4b",
+    "Task 4",
     "Task 5",
     "Task 6",
-    "Task 7",
-    "Task 11",
-    "Task 12",
-    "Task 12b",
-    "Task 13"
+    "Task 7"
   ],
   "commit_policy": "local-commit-per-task",
   "push_allowed": true,
   "merge_policy": "after-green-ci",
-  "checkpoint_limit": 12,
-  "approval_locator": "User-Approval: 2026-09-27 campaign runner commit policy local-commit-per-task; User-Approval: 2026-11-11 \"1,2,3,4\" (answer to train-04304-20261111 next approvals 1-4: 1 delete the train 0.43.4 account backup after a SHA-256 check and record it in one docs PR; 2 (recommended) re-prove S1-S3 on the installed current version in the browser: Lane 1 browser scenario script in web/scripts, PR and merge after green CI, then Lane 2 browser scenario run with S1 Ubuntu install and S2 installed-VM clone (ADR-0016 pcv-it- VM create, start, checkpoint, clone, delete; no install, service or MSI change) and a demo record PR merged after green CI; 3 Lane 1 bundled train departure rule in DEVELOPMENT_PROCEDURE section 10 with spec pins, no host mutation; 4 Lane 1 dashboard first load time (ops/summary response time, Web first refresh cancel path, delayed mock tests), no host mutation, installed later by a separately approved train); User-Approval: 2026-11-09 standing merge approval (\"앞으로 Required CI가 green이면 PR merge도 자동 승인\"); User-Approval: 2026-11-11 answer \"임시 operator 계정 (권장)\" to the question on the browser scenario login (the auto mode classifier refused the account under the standing recommended-option approval): one scenario operator account pcv-s13-operator created with pcvcli account create --password-env and disabled after the run, password made at the execution boundary and kept only in a DPAPI-protected temporary file that is deleted after the disable (existing accounts unchanged, no account file move, no service restart); ADR-0016 standing approval (2026-10-07): pcv-it- prefixed VM create/configure/delete; User-Approval: 2026-11-11 \"1\" three times (resume Task 7 with a new Lane 2 budget after each budget stop) and \"1\" once more (stop the S1 browser install, fix the browser console input defects BL-0046 and BL-0047 in Lane 1 with no host mutation, merge Task 12 in this campaign, keep pcv-it-s1r-ubuntu for the retest, re-demo S1-S3 after a train installs the fix)",
+  "checkpoint_limit": 9,
+  "approval_locator": "User-Approval: 2026-09-27 campaign runner commit policy local-commit-per-task; User-Approval: 2026-11-11 \"1,2,3 fix\" (answer to zero-base-followup-20261111 next approvals 1-3): 1 \"(권장) release train 0.43.5-admin-smoke 출발: queue #152, #153 적재. Lane 2 unsigned 개발 MSI build, pair 업그레이드 시험과 fullgate(msiexec 설치·업그레이드·repair·제거와 REMOVE_DATA, service 중지·시작, ADR-0016 pcv-it- VM), 계정 파일 보관과 복원, 설치본 current-card와 probe(Web Console 대시보드 첫 로드와 브라우저 콘솔 입력: pcv-it- VM에서 키 하나 시간, 20자 두 칸 입력 일치, 텍스트 폼). Lane 3 current-evidence.json 승격. 단일 PR train, green CI 뒤 merge, merge 뒤 main push가 red면 revert PR.\"; 2 \"현행 설치본 S1~S3 브라우저 재시연(train 0.43.5 승격 뒤): Lane 2 브라우저 시나리오 스크립트와 브라우저 콘솔로 S1 Ubuntu 설치와 네트워크 확인, S2 설치된 VM template 잠금과 복제(60초 기준), S3 checkpoint 생성·복원·예약 실행(ADR-0016 pcv-it- VM 생성·시작·checkpoint·복제·삭제, 시나리오 operator 계정 pcv-s13-operator 사용과 비밀번호 재설정, 끝난 뒤 disable, 설치본·service·MSI 변경 없음). 정리에서 pcv-it-s1r-ubuntu와 이번에 만든 pcv-it- VM을 지운다. 시연 기록 PR, green CI 뒤 merge.\"; 3 \"backlog 분류: BL-0045(Host 시험 ChromiumOpensLoopbackConsoleWithoutServiceTokenPaste가 포트 0 경합으로 간헐 실패)를 counts 또는 out-of-scope로 정한다.\" answered fix (counts, fix it); User-Approval: 2026-11-09 standing merge approval (\"앞으로 Required CI가 green이면 PR merge도 자동 승인\"); ADR-0016 standing approval (2026-10-07): pcv-it- prefixed VM create/configure/delete",
   "next_approval_required": [
-    "(권장) release train 0.43.5-admin-smoke 출발: queue #152, #153 적재. Lane 2 unsigned 개발 MSI build, pair 업그레이드 시험과 fullgate(msiexec 설치·업그레이드·repair·제거와 REMOVE_DATA, service 중지·시작, ADR-0016 pcv-it- VM), 계정 파일 보관과 복원, 설치본 current-card와 probe(Web Console 대시보드 첫 로드와 브라우저 콘솔 입력: pcv-it- VM에서 키 하나 시간, 20자 두 칸 입력 일치, 텍스트 폼). Lane 3 current-evidence.json 승격. 단일 PR train, green CI 뒤 merge, merge 뒤 main push가 red면 revert PR.",
-    "현행 설치본 S1~S3 브라우저 재시연(train 0.43.5 승격 뒤): Lane 2 브라우저 시나리오 스크립트와 브라우저 콘솔로 S1 Ubuntu 설치와 네트워크 확인, S2 설치된 VM template 잠금과 복제(60초 기준), S3 checkpoint 생성·복원·예약 실행(ADR-0016 pcv-it- VM 생성·시작·checkpoint·복제·삭제, 시나리오 operator 계정 pcv-s13-operator 사용과 비밀번호 재설정, 끝난 뒤 disable, 설치본·service·MSI 변경 없음). 정리에서 pcv-it-s1r-ubuntu와 이번에 만든 pcv-it- VM을 지운다. 시연 기록 PR, green CI 뒤 merge.",
-    "backlog 분류: BL-0045(Host 시험 ChromiumOpensLoopbackConsoleWithoutServiceTokenPaste가 포트 0 경합으로 간헐 실패)를 counts 또는 out-of-scope로 정한다."
+    "(권장) 설치본 개선 실패 원인 수정: Lane 1 개발(BL-0049 콘솔 입력 요청 시간: adapter의 키마다 GetVms 조회와 입력 경로 측정, BL-0048 대시보드 첫 로드: 설치본 흐름의 ops/summary 취소와 동시 요청 측정), host mutation 없음, grok 구현. 확인은 설치본과 같은 흐름의 측정 시험으로 한다. push, PR, green CI 뒤 merge. 그 뒤 release train 출발은 따로 승인받는다.",
+    "backlog 분류: BL-0048(대시보드 첫 로드 개선이 설치본에서 나타나지 않음)과 BL-0049(콘솔 입력 요청 시간 개선이 설치본에서 나타나지 않음)를 counts 또는 out-of-scope로 정한다.",
+    "train 계정 백업 삭제: train 0.43.5 동안 저장소 밖 보호 위치에 둔 백업 accounts.json, fullgate가 만든 빈 계정 저장소, ACL 기록을 지운다. data root의 계정 파일은 그대로 둔다. 지우기 전에 data root 계정 파일과 백업의 SHA-256이 같은지 확인한다. 기록은 다음 문서 PR에 남긴다."
   ],
   "stop_on": [
     "same-cause-fail-3",
@@ -68,5 +66,5 @@
     "dirty-tree-at-start"
   ],
   "out_of_scope_is_not_next_step": true,
-  "closed_predecessor": "train-04304-20261111"
+  "closed_predecessor": "zero-base-followup-20261111"
 }
