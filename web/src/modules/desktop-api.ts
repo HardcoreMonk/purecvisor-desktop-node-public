@@ -281,10 +281,24 @@ const desktopApi: Readonly<PcvDesktopApi> = Object.freeze({
     body: JSON.stringify(payload),
     skipAuth: true
   } as RequestInit & { skipAuth: boolean }),
-  createLoopbackSession: () => apiFetch(DESKTOP_NODE_API_ROUTES.authLoopbackSession, {
-    method: 'POST',
-    skipAuth: true
-  } as RequestInit & { skipAuth: boolean }),
+  createLoopbackSession: () => {
+    const shared = window._sharedLoopbackPayload;
+    if (typeof shared === 'function') {
+      return shared().then((payload) => {
+        if (!payload || !payload.access_token) {
+          const error = new Error('loopback session was not created');
+          error.status = 409;
+          error.code = 'PCV_LOOPBACK_SESSION_DISABLED';
+          throw error;
+        }
+        return payload;
+      });
+    }
+    return apiFetch(DESKTOP_NODE_API_ROUTES.authLoopbackSession, {
+      method: 'POST',
+      skipAuth: true
+    } as RequestInit & { skipAuth: boolean });
+  },
   refreshAccount: (payload: Record<string, unknown>) => apiFetch(DESKTOP_NODE_API_ROUTES.authRefresh, {
     method: 'POST',
     body: JSON.stringify(payload),

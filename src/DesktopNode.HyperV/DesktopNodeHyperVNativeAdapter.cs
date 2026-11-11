@@ -156,7 +156,8 @@ public sealed partial class DesktopNodeHyperVNativeAdapter : IDesktopNodeHyperVN
     {
         result = default!;
         if (domainOperation.Kind != DesktopNodeHyperVOperationKind.Mutation ||
-            DesktopNodeHyperVVmTemplateLockGuard.IsMutationAllowed(operation))
+            DesktopNodeHyperVVmTemplateLockGuard.IsMutationAllowed(operation) ||
+            (operation == "vm.console.input" && vmProvider is IDesktopNodeHyperVVmRunStateProvider))
         {
             return false;
         }

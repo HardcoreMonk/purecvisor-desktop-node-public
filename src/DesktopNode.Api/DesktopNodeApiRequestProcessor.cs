@@ -177,6 +177,12 @@ public sealed partial class DesktopNodeApiRequestProcessor
             RequestId = DesktopNodeApiRequestParsing.NormalizeRequestId(request.RequestId)
         };
 
+        // 콘솔 frame/input 만 rate limit 뒤에 lock 을 놓는다. 나머지 route 는 아래 lock 그대로다.
+        if (IsUnlockedConsoleRoute(normalizedRequest))
+        {
+            return HandleUnlockedConsoleRoute(normalizedRequest);
+        }
+
         lock (sync)
         {
             var rateLimitResponse = throttle.Enforce(normalizedRequest);

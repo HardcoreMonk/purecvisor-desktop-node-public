@@ -6,7 +6,7 @@ using static DesktopNode.HyperV.DesktopNodeHyperVWmiCommon;
 
 namespace DesktopNode.HyperV;
 
-public sealed partial class DesktopNodeHyperVWmiVmProvider : IDesktopNodeHyperVVmProvider
+public sealed partial class DesktopNodeHyperVWmiVmProvider : IDesktopNodeHyperVVmProvider, IDesktopNodeHyperVVmRunStateProvider
 {
     public const string CimQuery = DesktopNodeHyperVWmiCommon.VmQuery;
     public const string VirtualSystemSettingClass = "Msvm_VirtualSystemSettingData";

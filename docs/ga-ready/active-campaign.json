@@ -2,59 +2,41 @@
   "schema_version": 1,
   "contract": "pcv-active-campaign-v1",
   "status": "closed",
-  "id": "train-04305-20261111",
-  "intent": "Depart release train 0.43.5-admin-smoke with queue PRs #152 (dashboard first load) and #153 (browser console input, BL-0046 and BL-0047), keep the installed accounts across fullgate REMOVE_DATA, probe the installed dashboard and browser console input, promote it to operational current in a single train PR, fix BL-0045, then re-demo S1-S3 in the browser on the promoted install",
+  "id": "bl0048-bl0049-fix-20261111",
+  "intent": "Find from read-only traces of the installed flow why the dashboard first load (BL-0048) and browser console input (BL-0049) did not improve in train 0.43.5, fix both with tests that reproduce the installed flow, and delete the train 0.43.5 account backup",
   "working_authority": "source_head",
   "allowed_lanes": [
     "0",
-    "1",
-    "2",
-    "3"
+    "1"
   ],
-  "mutation_allowed": true,
-  "current_write_allowed": true,
-  "next_step": "Closed 2026-11-11: release train 0.43.5-admin-smoke stopped at the Task 6 probe FAIL (PR #154; BL-0048 dashboard first load and BL-0049 console input request time did not improve on the install). Accounts restored; operational current stays 0.43.4-admin-smoke; the installed build is the unpromoted 0.43.5 fullgate build. BL-0045 fixed in tests (PR #155). The S1-S3 re-demo (approval 2) was not run.",
-  "plan": "docs/superpowers/plans/2026-11-11-purecvisor-desktop-node-train-04305.md",
+  "mutation_allowed": false,
+  "current_write_allowed": false,
+  "next_step": "Closed 2026-11-11: read-only traces of the installed 0.43.5 flow found the global Local API request lock (every request one at a time) and two loopback session requests per page. PR #157 runs console frame and input outside the global lock, shares one loopback session request, and checks one VM run state per key. Train 0.43.5 account backup deleted; BL-0048 and BL-0049 are counts.",
+  "plan": "docs/superpowers/plans/2026-11-11-purecvisor-desktop-node-bl0048-bl0049-installed-fix.md",
   "task_queue": [
-    "Task 0",
     "Task 1",
     "Task 2",
     "Task 3",
     "Task 4",
-    "Task 5",
-    "Task 6",
-    "Task 7",
-    "Task 12"
+    "Task 5"
   ],
-  "task_lanes": {
-    "Task 2": "2",
-    "Task 3": "2",
-    "Task 4": "2",
-    "Task 5": "2",
-    "Task 6": "2",
-    "Task 7": "2"
-  },
+  "task_lanes": {},
   "next_task": null,
   "completed_tasks": [
-    "Task 0",
     "Task 1",
     "Task 2",
     "Task 3",
     "Task 4",
-    "Task 5",
-    "Task 6",
-    "Task 7",
-    "Task 12"
+    "Task 5"
   ],
   "commit_policy": "local-commit-per-task",
   "push_allowed": true,
   "merge_policy": "after-green-ci",
-  "checkpoint_limit": 9,
-  "approval_locator": "User-Approval: 2026-09-27 campaign runner commit policy local-commit-per-task; User-Approval: 2026-11-11 \"1,2,3 fix\" (answer to zero-base-followup-20261111 next approvals 1-3): 1 \"(권장) release train 0.43.5-admin-smoke 출발: queue #152, #153 적재. Lane 2 unsigned 개발 MSI build, pair 업그레이드 시험과 fullgate(msiexec 설치·업그레이드·repair·제거와 REMOVE_DATA, service 중지·시작, ADR-0016 pcv-it- VM), 계정 파일 보관과 복원, 설치본 current-card와 probe(Web Console 대시보드 첫 로드와 브라우저 콘솔 입력: pcv-it- VM에서 키 하나 시간, 20자 두 칸 입력 일치, 텍스트 폼). Lane 3 current-evidence.json 승격. 단일 PR train, green CI 뒤 merge, merge 뒤 main push가 red면 revert PR.\"; 2 \"현행 설치본 S1~S3 브라우저 재시연(train 0.43.5 승격 뒤): Lane 2 브라우저 시나리오 스크립트와 브라우저 콘솔로 S1 Ubuntu 설치와 네트워크 확인, S2 설치된 VM template 잠금과 복제(60초 기준), S3 checkpoint 생성·복원·예약 실행(ADR-0016 pcv-it- VM 생성·시작·checkpoint·복제·삭제, 시나리오 operator 계정 pcv-s13-operator 사용과 비밀번호 재설정, 끝난 뒤 disable, 설치본·service·MSI 변경 없음). 정리에서 pcv-it-s1r-ubuntu와 이번에 만든 pcv-it- VM을 지운다. 시연 기록 PR, green CI 뒤 merge.\"; 3 \"backlog 분류: BL-0045(Host 시험 ChromiumOpensLoopbackConsoleWithoutServiceTokenPaste가 포트 0 경합으로 간헐 실패)를 counts 또는 out-of-scope로 정한다.\" answered fix (counts, fix it); User-Approval: 2026-11-09 standing merge approval (\"앞으로 Required CI가 green이면 PR merge도 자동 승인\"); ADR-0016 standing approval (2026-10-07): pcv-it- prefixed VM create/configure/delete",
+  "checkpoint_limit": 5,
+  "approval_locator": "User-Approval: 2026-09-27 campaign runner commit policy local-commit-per-task; User-Approval: 2026-11-11 \"1,2 counts , 3\" (answer to train-04305-20261111 next approvals 1-3): 1 \"(권장) 설치본 개선 실패 원인 수정: Lane 1 개발(BL-0049 콘솔 입력 요청 시간: adapter의 키마다 GetVms 조회와 입력 경로 측정, BL-0048 대시보드 첫 로드: 설치본 흐름의 ops/summary 취소와 동시 요청 측정), host mutation 없음, grok 구현. 확인은 설치본과 같은 흐름의 측정 시험으로 한다. push, PR, green CI 뒤 merge. 그 뒤 release train 출발은 따로 승인받는다.\" (no dev probe); 2 \"backlog 분류: BL-0048(대시보드 첫 로드 개선이 설치본에서 나타나지 않음)과 BL-0049(콘솔 입력 요청 시간 개선이 설치본에서 나타나지 않음)를 counts 또는 out-of-scope로 정한다.\" answered counts; 3 \"train 계정 백업 삭제: train 0.43.5 동안 저장소 밖 보호 위치에 둔 백업 accounts.json, fullgate가 만든 빈 계정 저장소, ACL 기록을 지운다. data root의 계정 파일은 그대로 둔다. 지우기 전에 data root 계정 파일과 백업의 SHA-256이 같은지 확인한다. 기록은 다음 문서 PR에 남긴다.\"; User-Approval: 2026-11-09 standing merge approval (\"앞으로 Required CI가 green이면 PR merge도 자동 승인\")",
   "next_approval_required": [
-    "(권장) 설치본 개선 실패 원인 수정: Lane 1 개발(BL-0049 콘솔 입력 요청 시간: adapter의 키마다 GetVms 조회와 입력 경로 측정, BL-0048 대시보드 첫 로드: 설치본 흐름의 ops/summary 취소와 동시 요청 측정), host mutation 없음, grok 구현. 확인은 설치본과 같은 흐름의 측정 시험으로 한다. push, PR, green CI 뒤 merge. 그 뒤 release train 출발은 따로 승인받는다.",
-    "backlog 분류: BL-0048(대시보드 첫 로드 개선이 설치본에서 나타나지 않음)과 BL-0049(콘솔 입력 요청 시간 개선이 설치본에서 나타나지 않음)를 counts 또는 out-of-scope로 정한다.",
-    "train 계정 백업 삭제: train 0.43.5 동안 저장소 밖 보호 위치에 둔 백업 accounts.json, fullgate가 만든 빈 계정 저장소, ACL 기록을 지운다. data root의 계정 파일은 그대로 둔다. 지우기 전에 data root 계정 파일과 백업의 SHA-256이 같은지 확인한다. 기록은 다음 문서 PR에 남긴다."
+    "(권장) release train 0.43.6-admin-smoke 출발: queue #152, #153, #157 적재. Lane 2 unsigned 개발 MSI build, pair 업그레이드 시험과 fullgate(msiexec 설치·업그레이드·repair·제거와 REMOVE_DATA, service 중지·시작, ADR-0016 pcv-it- VM), 계정 파일 보관과 복원, 설치본 current-card와 probe(대시보드 첫 로드: loopback 모드 loopback 세션 POST 1회·ops/summary 1회·취소 0회와 다 차는 시각, 브라우저 콘솔 입력: pcv-it- VM에서 frame이 도는 중 키 하나 시간, 20자 두 칸 입력 일치, 텍스트 폼). Lane 3 current-evidence.json 승격. 단일 PR train, green CI 뒤 merge, merge 뒤 main push가 red면 revert PR.",
+    "현행 설치본 S1~S3 브라우저 재시연(train 0.43.6 승격 뒤): Lane 2 브라우저 시나리오 스크립트와 브라우저 콘솔로 S1 Ubuntu 설치와 네트워크 확인, S2 설치된 VM template 잠금과 복제(60초 기준), S3 checkpoint 생성·복원·예약 실행(ADR-0016 pcv-it- VM 생성·시작·checkpoint·복제·삭제, 시나리오 operator 계정 pcv-s13-operator 사용과 비밀번호 재설정, 끝난 뒤 disable, 설치본·service·MSI 변경 없음). 정리에서 pcv-it-s1r-ubuntu와 이번에 만든 pcv-it- VM을 지운다. 시연 기록 PR, green CI 뒤 merge."
   ],
   "stop_on": [
     "same-cause-fail-3",
@@ -67,5 +49,5 @@
     "dirty-tree-at-start"
   ],
   "out_of_scope_is_not_next_step": true,
-  "closed_predecessor": "zero-base-followup-20261111"
+  "closed_predecessor": "train-04305-20261111"
 }

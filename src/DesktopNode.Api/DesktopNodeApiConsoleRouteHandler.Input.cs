@@ -22,7 +22,7 @@ internal sealed partial class DesktopNodeApiConsoleRouteHandler
             ? Path.Combine(directory, ConsoleInputAuditFileName)
             : null;
 
-    private DesktopNodeApiResponse HandleVmConsoleInput(DesktopNodeApiRequest request, string encodedVmId)
+    private DesktopNodeApiResponse HandleVmConsoleInput(DesktopNodeApiRequest request, string encodedVmId, CancellationToken cancellationToken = default)
     {
         var routeId = DesktopNodeApiRequestParsing.DecodeRouteId(encodedVmId, "console.input");
         if (!routeId.Ok)
@@ -96,7 +96,8 @@ internal sealed partial class DesktopNodeApiConsoleRouteHandler
                 ["action"] = plan.Value.Action,
                 ["key_code"] = keyCode,
                 ["text"] = text
-            }));
+            }),
+            cancellationToken);
         if (!result.Ok || result.Data is not { } data)
         {
             return DesktopNodeApiResponseFactory.OperationResponse(result);
@@ -115,22 +116,43 @@ internal sealed partial class DesktopNodeApiConsoleRouteHandler
     {
         // frame throttle 과 같이 hardening options 의 clock(ms since epoch)으로 1초 창을 잰다. 시험은 clock 을 고정해
         // limiter 를 결정적으로 검증하고, 실제 서비스는 UtcNow 를 쓴다.
+        // AddOrUpdate 의 갱신 함수는 두 번 돌 수 있어서, 바깥 변수에 허용 여부를 적으면 동시에 한도를 넘긴다.
         var now = hardeningOptions.Now().ToUnixTimeMilliseconds();
-        var allowed = true;
-        inputWindows.AddOrUpdate(
-            vm,
-            _ => (now, 1),
-            (_, window) =>
+        while (true)
+        {
+            if (!inputWindows.TryGetValue(vm, out var window))
             {
-                if (now - window.WindowStart >= 1000)
+                if (inputWindows.TryAdd(vm, (now, 1)))
                 {
-                    return (now, 1);
+                    return true;
                 }
 
-                allowed = window.Count < ConsoleInputMaxPerSecond;
-                return allowed ? (window.WindowStart, window.Count + 1) : window;
-            });
-        return allowed;
+                continue;
+            }
+
+            (long WindowStart, int Count) next;
+            if (now - window.WindowStart >= 1000)
+            {
+                next = (now, 1);
+            }
+            else if (window.Count < ConsoleInputMaxPerSecond)
+            {
+                next = (window.WindowStart, window.Count + 1);
+            }
+            else if (inputWindows.TryUpdate(vm, window, window))
+            {
+                return false;
+            }
+            else
+            {
+                continue;
+            }
+
+            if (inputWindows.TryUpdate(vm, next, window))
+            {
+                return true;
+            }
+        }
     }
 
     private bool TryWriteConsoleInputAudit(DesktopNodeApiRequest request, string vm, string kind, string action, int? keyCode, string? text)

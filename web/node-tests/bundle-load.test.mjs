@@ -350,3 +350,66 @@ test("updateVersionBadge skips runtime policy when the loopback session is 409",
   assert.equal(log.some((entry) => entry.url.includes("/api/v1/runtime/policy")), false);
   assert.equal(sandbox.document.getElementById("version-badge").hidden, true);
 });
+
+function bootFetch(log, loopbackStatus) {
+  return (url, init) => {
+    const href = String(url);
+    const signal = init && init.signal;
+    log.push({
+      url: href,
+      method: (init && init.method) || "GET",
+      aborted: !!(signal && signal.aborted),
+      signal
+    });
+    if (href.includes("/api/v1/auth/loopback-session")) {
+      const body = loopbackStatus === 200
+        ? { ok: true, data: { access_token: "loop-token", refresh_token: "loop-refresh", session: { username: "loopback-session", role: "admin", permissions: ["*"] } } }
+        : { ok: false, error: { code: "PCV_LOOPBACK_SESSION_DISABLED", message: "account mode" } };
+      return Promise.resolve(new Response(JSON.stringify(body), { status: loopbackStatus, headers: { "Content-Type": "application/json" } }));
+    }
+    let data = {};
+    if (href.endsWith("/vms") || href.includes("/accounts") || href.includes("/jobs") || href.includes("/diagnostics/bundles")) data = [];
+    else if (href.includes("/ops/summary")) data = { errors: [], signals: [] };
+    return Promise.resolve(new Response(JSON.stringify({ ok: true, data }), { status: 200, headers: { "Content-Type": "application/json" } }));
+  };
+}
+
+async function bootUntilSettled(sandbox) {
+  sandbox.document.dispatch("DOMContentLoaded");
+  for (let attempt = 0; attempt < 40; attempt += 1) {
+    await new Promise((resolve) => setTimeout(resolve, 25));
+    if (sandbox.state && sandbox.state.loading === false && sandbox.state.connectionState && sandbox.state.connectionState !== "idle") return;
+  }
+}
+
+test("first load shares one loopback session across refreshAll and restoreSession", async () => {
+  const { sandbox } = createSandbox();
+  const log = [];
+  sandbox.fetch = bootFetch(log, 200);
+  loadBundle(sandbox);
+  sandbox.authToken = "";
+  await bootUntilSettled(sandbox);
+  const loopback = log.filter((entry) => entry.url.includes("/api/v1/auth/loopback-session") && entry.method === "POST");
+  const summary = log.filter((entry) => entry.url.includes("/ops/summary"));
+  const cancelled = log.filter((entry) => entry.aborted || (entry.signal && entry.signal.aborted));
+  assert.equal(loopback.length, 1);
+  assert.equal(summary.length, 1);
+  assert.equal(cancelled.length, 0);
+  assert.equal(sandbox.state.connectionState, "connected");
+  assert.equal(sandbox.authToken, "loop-token");
+});
+
+test("account mode 409 still shows the login screen from one loopback attempt", async () => {
+  const { sandbox } = createSandbox();
+  const log = [];
+  sandbox.fetch = bootFetch(log, 409);
+  loadBundle(sandbox);
+  sandbox.authToken = "";
+  await bootUntilSettled(sandbox);
+  const loopback = log.filter((entry) => entry.url.includes("/api/v1/auth/loopback-session") && entry.method === "POST");
+  const summary = log.filter((entry) => entry.url.includes("/ops/summary"));
+  assert.equal(loopback.length, 1);
+  assert.equal(summary.length, 0);
+  assert.equal(sandbox.authToken || "", "");
+  assert.equal(sandbox.document.getElementById("login-page").style.display, "flex");
+});
