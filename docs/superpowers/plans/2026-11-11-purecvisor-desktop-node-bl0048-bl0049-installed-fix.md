@@ -106,11 +106,15 @@
 
 ## Task 4: PR
 
-- [ ] clean HEAD 종료 검증(PR gate는 원래 checkout에서 detached로), push, PR, green CI 뒤 merge, main push run 확인.
+- [x] clean HEAD 종료 검증(PR gate는 원래 checkout에서 detached로), push, PR, green CI 뒤 merge, main push run 확인.
 
 ## Task 5: 마무리
 
-- [ ] campaign을 닫는다. 다음 승인(train 출발과 dev probe 여부)을 `next_approval_required`에 적는다. 이 기록은 Task 4 PR에 함께 담는다.
+- [x] campaign을 닫는다. 다음 승인(train 출발과 dev probe 여부)을 `next_approval_required`에 적는다. 이 기록은 Task 4 PR에 함께 담는다.
+
+실행 기록(Task 4·5, 2026-11-11): Task 3과 같은 branch에서 campaign을 닫았다. clean HEAD 종료 검증과 PR merge 결과는 PR 본문과 다음 campaign 기록에 남는다. 다음 승인은 두 가지다.
+- release train `0.43.6` 출발(queue #152, #153, #157). 설치본 probe에서 고친 효과를 잰다.
+- 그 설치본에서 S1~S3 재시연
 
 ## Nonclaims
 
