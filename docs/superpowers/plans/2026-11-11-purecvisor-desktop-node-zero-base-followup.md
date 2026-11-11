@@ -219,16 +219,41 @@ Task 4는 grok 지시 크기(약 20분) 때문에 4a와 4b로 나눴다(2026-11-
 
 ## Task 11: PR C (시도 기록)
 
-- [ ] Task 5~7 기록, 시도 기록 문서 `docs/ga-ready/demo/s1-browser-reproof-2026-11-11.md`, backlog BL-0046·BL-0047을 PR 하나로 merge한다. 판정 입력(`config/project-completion-criteria.json`)은 바꾸지 않는다. 종료 검증(Delivery, public source safety), push, PR, green CI 뒤 merge.
+- [x] Task 5~7 기록, 시도 기록 문서 `docs/ga-ready/demo/s1-browser-reproof-2026-11-11.md`, backlog BL-0046·BL-0047을 PR 하나로 merge한다. 판정 입력(`config/project-completion-criteria.json`)은 바꾸지 않는다. 종료 검증(Delivery, public source safety), push, PR, green CI 뒤 merge.
+
+실행 기록(2026-11-11): Delivery 785/785, `test:public-source-safety` exit 0이었다. PR #151(`lane2/s1-s3-browser-reproof-20261111`)의 Required CI 다섯 개가 green이었고 `--match-head-commit b56209e`로 merge했다(merge commit `6e0d675`).
 
 ## Task 12: 대시보드 첫 로드 시간 (승인 4)
 
-- [ ] 원인을 측정하고 고친다(grok 구현, Claude 리뷰). 대상은 `ops/summary` 응답 5~7초와 첫 갱신의 취소 경로다.
+- [x] 원인을 측정하고 고친다(grok 구현, Claude 리뷰). 대상은 `ops/summary` 응답 5~7초와 첫 갱신의 취소 경로다.
   - `ops/summary`가 무엇을 기다리는지 서버 코드로 측정하고 줄인다. 예: WMI 조회가 순서대로 도는지, 캐시가 없는지.
   - 첫 방문에서 취소되는 `ops/summary` 요청(probe에서 2~3회)이 왜 생기는지 찾아 없앤다.
   - 시험: 지연 mock(느린 `ops/summary`)으로 첫 갱신이 한 번만 요청하고 결과를 그리는지 확인한다. 서버 쪽은 C# 단위 시험으로 본다.
   - 제품 payload가 바뀌므로 `release-train.json` queue에 한 행을 더한다. train 출발은 하지 않는다.
   - 검증: `dotnet test src/DesktopNode.sln -c Release`(clean HEAD), `npm run test:required --prefix web`, web Pester, `git diff --check`. 로컬 commit.
+
+실행 기록(2026-11-11): grok이 별도 worktree에서 구현했고(Lane 2 시도와 병렬), Claude가 리뷰했다. commit `ff40acd`.
+- 원인
+  - 첫 방문에 `init()`의 `refreshAll()`과 로그인 완료(`_finishLogin` → `window.loadAll()`)가 겹친다.
+  - 새 호출이 앞 갱신을 취소하고 12단계를 처음부터 하나씩 다시 돌았다. 설치본 probe의 `ops/summary` 취소 2~3회와 같은 모양이다.
+- 고친 것
+  - (가) `refreshAll(options)`: 자동 호출은 같은 인증으로 도는 갱신에 합류한다. 사용자 새로 고침, 연결 변경, token 지우기, 계정 변경 뒤 갱신, API base 변경은 `{ force: true }`로 새로 시작한다.
+  - (나) 대시보드 단계(`ops.summary`, `host.status`, `vm.list`)를 동시에 돌려 먼저 그리고, 나머지 단계는 그 뒤 동시에 돈다.
+  - (다) auth 오류는 남은 요청을 취소하고 `connectionState='auth'`다.
+  - (라) `loadHost`·`loadVms`·`loadRuntimePolicy`·`refreshSelectedVm`도 늦게 온 취소 결과가 새 값을 덮지 않는다(BL-0043과 같은 `isSupersededRequest`).
+  - BL-0044 읽는 중 문구 조건은 그대로다.
+- Claude 리뷰 수정: 처음 구현은 자동 호출을 무조건 합류시켰다. 그래서 token 검사를 지난 갱신이 돌 때 로그인이 끝나면 새 token으로 다시 읽지 않을 수 있었다. 갱신이 token 검사를 통과할 때의 인증 값과 지금 인증 값이 같거나, 아직 검사 전일 때만 합류하게 고쳤다.
+- 같은 가짜 지연(`ops/summary` 1,500ms, `host.status` 1,200ms, `vm.list` 500ms, 나머지 100ms)에서 숫자
+  - 첫 갱신 3,884ms → 1,622ms(단계 합 3,800ms보다 짧다)
+  - 첫 요청 50ms 뒤 자동 재호출 때 `ops/summary` 2회 → 1회
+- 서버 `ops/summary`의 `host.status`·`vm.list` 동시 실행은 adapter(COM WMI)의 동시 호출 안전성을 증명하지 못해 하지 않았다. 범위 밖 관찰은 report-only다:
+  - 클라이언트 `host.status`·`vm.list`와 서버 summary 사이에 WMI 일이 겹친다.
+  - job 폴링 tick이 `ops/summary`를 더 부를 수 있다.
+- 결과
+  - 새 node 시험 6건(T12 4건, 인증 합류 2건). BL-0043·BL-0044 시험 유지.
+  - `npm run test:required --prefix web` exit 0(`test:web-contracts` 420/420, browser gate `ok=true` assertions 121 failed 0 violations 0, 기준선 변화 없음)
+  - web Pester 50/50, `git diff --check` clean
+- 제품 payload가 바뀌어 `release-train.json` queue에 PR #152 행을 더했다. train 출발은 하지 않는다.
 
 ## Task 12b: 브라우저 콘솔 입력 결함과 시나리오 도우미 (사용자 결정 `S1 중단`)
 
