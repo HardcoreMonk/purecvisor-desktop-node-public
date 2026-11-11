@@ -51,8 +51,10 @@
     "Task 15": "2",
     "Task 16": "2"
   },
-  "next_task": "Task 0",
-  "completed_tasks": [],
+  "next_task": "Task 1",
+  "completed_tasks": [
+    "Task 0"
+  ],
   "commit_policy": "local-commit-per-task",
   "push_allowed": true,
   "merge_policy": "after-green-ci",

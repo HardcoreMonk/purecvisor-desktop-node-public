@@ -83,12 +83,20 @@ dev probe(`lane2-devprobe-2026-11-11-04307`)에서 통과한 효과를 train 설
 
 ## Task 0: 출발
 
-- [ ] 먼저 payload commit `bf5c214`의 main push Development Gates와 Public Boundary가 success임을 run id로 적는다.
+- [x] 먼저 payload commit `bf5c214`의 main push Development Gates와 Public Boundary가 success임을 run id로 적는다.
   - `release-train.json`의 `queue` 4행을 train `0.43.7-admin-smoke`의 `carriages` `[152, 153, 157, 159]`로 옮긴다.
   - `status=running`, `departed_at`, `source_commit`을 적고, `queue`는 빈 목록으로 둔다.
   - `docs/ga-ready/trains/0.43.7-admin-smoke.host-inputs.json`을 쓴다. ISO는 위 smoke ISO다.
   - BL-0047 grok brief를 보낸다(저장소 밖 worktree, base `bf5c214`, 조사·구현·focused 시험까지, push 없음). 판정과 PR은 Task 18이다.
   - 검증: `PcvReleaseTrainContractTests`, `git diff --check`. host mutation 없음. 로컬 commit.
+
+실행 기록(2026-11-11): 출발 시각은 `2026-11-11T21:43:00+09:00`이다.
+- payload: `bf5c2143e9e8ea90809b529dbf49805dd61c0a15`(PR #160 merge, origin/main. product source는 `dc042b8` PR #159 merge와 같다)
+- payload main push run: Development Gates `43017019405`과 Public Boundary Contract `43017019394`가 success다.
+- carriages `[152, 153, 157, 159]`(4행)이다. queue를 비우고 train `status=running`으로 두었다.
+- `docs/ga-ready/trains/0.43.7-admin-smoke.host-inputs.json`의 ISO는 `artifacts/smoke-media-20261108/pcv-route-parity-smoke-20261108.iso`(`45056` byte, 있음)다.
+- BL-0047 grok brief를 21:43 KST에 보냈다. worktree는 저장소 밖 `pcv-wt-bl0047`, branch `lane1/bl0047-text-keys-20261111`(base `bf5c214`)이다.
+- 검증: `PcvReleaseTrainContractTests` `6/6`, `git diff --check` 통과. host mutation은 없다. operational current는 `0.43.4-admin-smoke` 그대로다.
 
 ## Task 1: package
 
