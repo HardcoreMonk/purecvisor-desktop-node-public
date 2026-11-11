@@ -13,7 +13,7 @@ internal static class ManualAdminContractVerifier
     private static readonly LegacyBatchContractVerifier Core =
         new(
             SpecPath,
-            "8de0520c7f64a5da862c44c7296d924dc3dcee9b9ee2e1c230f8689c42314ef3",
+            "53391c8501edfa6f1e960df09136d6e1eecf039ff0f3e0a8d4cad35115972a1e",
             "pcv-manual-admin-readiness-contract-spec-v1",
             ErrorCode,
             [
