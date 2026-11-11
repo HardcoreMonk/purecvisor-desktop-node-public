@@ -34,7 +34,13 @@
 
 ## Task 1: 계정 백업 삭제와 분류 (승인 2·3)
 
-- [ ] 보호 위치의 `pcv-train-accounts-backup-04306`을 지운다. 지우기 전에 data root 계정 파일과 백업 `accounts.json`의 SHA-256, 크기, ACL 표기가 같은지 본다. 다르면 지우지 않는다. backlog BL-0050·BL-0051을 `counts`로 분류한다. 로컬 commit.
+- [x] 보호 위치의 `pcv-train-accounts-backup-04306`을 지운다. 지우기 전에 data root 계정 파일과 백업 `accounts.json`의 SHA-256, 크기, ACL 표기가 같은지 본다. 다르면 지우지 않는다. backlog BL-0050·BL-0051을 `counts`로 분류한다. 로컬 commit.
+
+실행 기록(2026-11-11 20:17 KST):
+- 지우기 전: data root 계정 파일과 백업 `accounts.json`의 SHA-256이 같았다(1,421 bytes). data root 계정 파일의 ACL도 백업의 ACL 기록과 같았다.
+- 백업 `accounts.json`, fullgate가 만든 빈 저장소(174 bytes), ACL 기록 파일을 지웠다. 비게 된 백업 폴더도 지웠다.
+- 지운 뒤: data root 계정 파일의 SHA-256과 ACL이 그대로다. service Running, Web `200`, loopback 세션 `409`다.
+- backlog BL-0050·BL-0051을 `counts`로 분류했다(상태 `open`).
 
 ## Task 2: 수정 (grok 구현, Claude 리뷰)
 

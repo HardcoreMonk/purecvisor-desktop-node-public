@@ -24,8 +24,10 @@
   "task_lanes": {
     "Task 4": "2"
   },
-  "next_task": "Task 1",
-  "completed_tasks": [],
+  "next_task": "Task 2",
+  "completed_tasks": [
+    "Task 1"
+  ],
   "commit_policy": "local-commit-per-task",
   "push_allowed": true,
   "merge_policy": "after-green-ci",
