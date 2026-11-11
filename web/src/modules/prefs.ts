@@ -73,7 +73,7 @@ window.PCV = window.PCV || {};
           applyLanguage(langSelect.value);
           var baseChanged = applyApiBase(apiInput.value);
           if (tokenInput.value) applyBrowserToken(tokenInput.value);
-          if (baseChanged && typeof loadAll === 'function') loadAll();
+          if (baseChanged && typeof loadAll === 'function') loadAll({ force: true });
           if (typeof toast === 'function') toast(L('환경설정 적용', 'Preferences applied'));
           return true;
         } }

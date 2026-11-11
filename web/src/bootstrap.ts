@@ -18,7 +18,7 @@ function bindEvents() {
     event.preventDefault();
     state.apiBaseUrl = els.apiBaseUrl.value.trim() || window.location.origin;
     state.apiToken = els.apiToken.value.trim();
-    refreshAll();
+    refreshAll({ force: true });
   });
   els.clearToken?.addEventListener('click', clearBrowserToken);
   els.themeSelect?.addEventListener('change', () => {
@@ -90,7 +90,7 @@ function bindEvents() {
       render();
     }
   });
-  els.refreshAll?.addEventListener('click', refreshAll);
+  els.refreshAll?.addEventListener('click', () => refreshAll({ force: true }));
   els.vmFilter?.addEventListener('input', () => {
     state.vmFilter = els.vmFilter.value;
     render();
