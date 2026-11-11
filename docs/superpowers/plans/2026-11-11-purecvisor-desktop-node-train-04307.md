@@ -137,11 +137,27 @@ operational current는 `0.43.4-admin-smoke` 그대로다.
 
 ## Task 3: pair
 
-- [ ] Lane 2. orchestrator를 `-PlanOnly`로 돌린 뒤 `-Execute`로 돌린다.
+- [x] Lane 2. orchestrator를 `-PlanOnly`로 돌린 뒤 `-Execute`로 돌린다.
   - 입력: campaign `manual-admin-campaign-20261111-04306-04307`, baseline `artifacts/admin-smoke-package-20261111-04306`, target Task 1 package, base VHD `20348.5761-20261108.vhd`.
   - 통과 조건: 여섯 bucket PASS, closed descriptor, `observation_error` 없음.
   - 끝 상태: 설치본 `0.43.7`·ARP 1개·service Running/Automatic·Web 200·보존 VM 둘 그대로.
   - `train-facts`로 pair 문서를 쓴다. 로컬 commit.
+
+실행 기록(2026-11-11):
+- orchestrator `-PlanOnly`는 `ok=true`였다(host mutation 없음). 실행 전 ARP는 `0.43.6` 1개였다.
+- 첫 실행 `manual-admin-campaign-20261111-04306-04307`(21:47:47~22:04:04 KST)은 **FAIL**이었다.
+  - bucket `manual-admin-rebaseline-readiness`와 `lifecycle-product-update-rollback`은 PASS였다.
+  - 세 번째 bucket `clean-host-windows-update`가 FAIL이었다. clean-host guest(UBR `5761`)가 2026-11 누적 업데이트 `KB5131090` 1개를 찾았지만 다운로드와 설치 결과가 `4`, HRESULT `0x80246007`(다운로드되지 않음)였다.
+  - 같은 업데이트는 train `0.43.6` pair(같은 날 19시)에서 설치됐다. 그래서 환경 원인 일시 실패로 보고, Global Constraints대로 새 root로 한 번만 다시 돌렸다. 첫 실행 artifact는 그대로 둔다.
+- 재실행 `manual-admin-campaign-20261111-04306-04307-r2`(22:05:21~22:22:25 KST)는 PASS였다.
+  - orchestrator는 설치본이 target `0.43.7`(첫 실행이 남긴 제품 Update 상태)인 것을 보고 baseline으로 먼저 맞췄다(`after:baseline-alignment`).
+  - 여섯 bucket이 PASS다: readiness, Update/Rollback, clean-host, Burn, MSIX, ops summary. closed descriptor를 냈고 `observation_error`는 없다.
+  - 이번 clean-host guest는 적용할 누적 업데이트를 `0`개 찾았다. 그래서 UBR `5761` 그대로 설치·업데이트·롤백을 시험했고, 재부팅은 없었다(문서에 그대로 적었다).
+  - 끝 상태: 설치본 Host `0.43.7-admin-smoke+74b9562`, ARP `0.43.7` 1개, service Running, Web `200`, 보존 VM 둘 Off, `pcv-it-s1r-ubuntu` Running(그대로).
+- 문서: facts 입력의 `campaign_root`를 `-r2`로 두고 `train-facts`로 pair 문서 여섯 개를 썼다. `train-evidence --check`는 일곱 문서 모두 `current`다.
+- 회로 차단기: 첫 실행의 원인을 읽는 동안 Lane 2 tool batch 한도(12회)를 넘겼고, 재실행은 그 뒤에 시작했다. 회로를 열고 멈춘 뒤 진행 중인 재실행만 끝까지 두었다. 사용자 승인 `"1"`(2026-11-11, Task 3 checkpoint 재개)로 새 시작 계약을 열고 재실행 결과를 판정했다.
+
+operational current는 `0.43.4-admin-smoke` 그대로다.
 
 ## Task 4: fullgate
 
