@@ -146,10 +146,26 @@ operational current는 `0.43.4-admin-smoke` 그대로다.
 
 ## Task 4: fullgate
 
-- [ ] Lane 2. `pcvverify train-host-inputs --kind fullgate-manifest --write`로 manifest를 만든다. LAN prefix가 필요하면 지금 호스트 주소에서 실행 경계로 만들고 환경 변수 `PCV_TRAIN_LAN_PREFIX`로만 넘긴다.
+- [x] Lane 2. `pcvverify train-host-inputs --kind fullgate-manifest --write`로 manifest를 만든다. LAN prefix가 필요하면 지금 호스트 주소에서 실행 경계로 만들고 환경 변수 `PCV_TRAIN_LAN_PREFIX`로만 넘긴다.
   - supervisor를 `-DryRun -AllowHostMutation`으로 돌린 뒤 `full-admin-host-mutation-gate-20261111-04305`을 돌린다.
   - 사후 검사: 설치본 Host/CLI ProductVersion == gate build commit, 같은 version ARP 1개, PureCVisor firewall 규칙 0, service Running/Automatic, Web 200, 보존 VM 둘 그대로.
   - `train-facts`로 fullgate 문서를 쓴다. 로컬 commit.
+
+실행 기록(2026-11-11):
+- manifest: `train-host-inputs --kind fullgate-manifest --write`로 만들었다(SHA-256 `d8e7e2f3336b7ed95dce1b7dfe30d7ecd181d7a1e1ddb8411f3a8533d26e9cc1`).
+  - 이 호스트에 기본 게이트웨이가 있는 어댑터가 두 개라, 첫 시도(어댑터 하나를 기대하는 스크립트)는 manifest를 쓰기 전에 멈췄다.
+  - LAN prefix는 직전 train manifest의 값을 쓰되, 그 주소가 지금 이 호스트의 Up 어댑터에 있는지 확인한 뒤 실행 경계에서 환경 변수 `PCV_TRAIN_LAN_PREFIX`로만 넘겼다. 출력하지 않았다.
+- supervisor `-DryRun -AllowHostMutation`은 두 단계 계획에 `ok=true`였다. 실행 전 ARP는 1개였다.
+- 실행: 15:58:38부터 16:05:19 KST까지 돌았다. `ok=true`, `status=completed`다. stdout은 `artifacts/batch-manifests/full-admin-host-mutation-gate-20261111-04305.result.json`이고 stderr는 0 byte다.
+- step: `service-msi-hyperv-admin-smoke` exit 0(시도 1), `os-mutation-gate` exit 0(시도 1)
+- 사후 검사
+  - 설치본 Host/CLI `0.43.5-admin-smoke+8173777`는 gate build HEAD `8173777`(Task 3 commit)와 같다. product source는 payload `91009557`과 같다.
+  - ARP `{BF412A3E…}` `0.43.5` 1개, PureCVisor 방화벽 규칙 `0`, listener `127.0.0.1:7777`·`127.0.0.1:80`
+  - service Running/Automatic, Web `200`, loopback 세션 `200`
+  - `pcv-guest-installed-04253-r1` Off, `pcv-it-s2-source` Off, `pcv-it-s1r-ubuntu` Running(그대로)
+- 문서: `train-facts`로 fullgate 문서 `docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-11-11-04305-hostmutation.md`(`generated=35`, `narrative=2`)를 썼다. `train-evidence --check`는 여덟 문서 모두 `current`다. 문서에는 LAN 주소가 없다(`[redacted-private-endpoint]`).
+
+operational current는 `0.43.4-admin-smoke` 그대로다.
 
 ## Task 5: installed current-card
 
