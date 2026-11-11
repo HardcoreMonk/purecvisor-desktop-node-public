@@ -11,6 +11,14 @@
       "summary": "zero-base audit follow-up: the dashboard first load runs one refresh (automatic calls join the running refresh with the same credential, user refresh forces a new one), renders the dashboard steps ops.summary, host.status and vm.list first and runs the other steps in parallel",
       "lane2_probe": null,
       "risk_tier": "M"
+    },
+    {
+      "pr": 153,
+      "merge_commit": "25709198",
+      "area": "hyperv+web",
+      "summary": "backlog BL-0046 and BL-0047: browser console input for one VM runs in arrival order (service lane and Web Console queue), the Msvm_Keyboard path is cached by VM id, kind=text goes one character per TypeText, and a 429 is retried once",
+      "lane2_probe": null,
+      "risk_tier": "M"
     }
   ],
   "trains": [
