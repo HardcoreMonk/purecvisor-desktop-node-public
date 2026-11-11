@@ -45,15 +45,38 @@
 
 ## Task 2: 설치본 흐름 조사 (Claude, 읽기만)
 
-- [ ] 대시보드(BL-0048)
+- [x] 대시보드(BL-0048)
   - 설치본 Web Console 첫 방문을 Playwright와 CDP `Network.requestWillBeSent` initiator 스택으로 기록한다.
   - `ops/summary`, `host/status`, `vms`, `auth/loopback-session` 등 요청마다 누가(어느 함수가) 불렀는지, 언제 시작·끝났는지, 어느 것이 취소됐는지 적는다. 계정 모드라 loopback 세션은 `409`인 설치본 상태 그대로다. 시나리오 계정 로그인 흐름도 본다.
   - 각 Local API 요청의 서버 처리 시간도 같은 시간선에 놓는다. 동시 요청이 서로를 늦추는지 본다.
-- [ ] 콘솔 입력(BL-0049): 키 하나의 서버 경로에서 읽기 단계의 시간을 잰다.
+- [x] 콘솔 입력(BL-0049): 키 하나의 서버 경로에서 읽기 단계의 시간을 잰다.
   - 대상: `root\virtualization\v2` 연결(`CreateScope`), VM 찾기(`FindVm`), `Msvm_Keyboard` 관계 찾기, `GetVms()` 전체 목록, `Msvm_Keyboard` path로 객체 열기.
   - `InvokeMethod`(키 보내기)는 host mutation이라 재지 않는다. 비슷한 읽기 비용으로 추정한다.
   - 서버 입력 감사 기록 쓰기 비용(파일 append)도 본다.
-- [ ] 결과를 이 plan에 쓰고 원인 후보를 순서대로 정한다. 로컬 commit.
+- [x] 결과를 이 plan에 쓰고 원인 후보를 순서대로 정한다. 로컬 commit.
+
+실행 기록(2026-11-11 17:15~17:30 KST, 설치본 `0.43.5-admin-smoke+8173777`, 읽기만):
+- 대시보드 첫 로드 trace(계정 모드, 시나리오 계정 로그인, CDP initiator 스택; `artifacts/bl0048-trace-20261111/run1/trace.json`)
+  - 페이지 로드 직후 loopback 세션 요청이 두 경로에서 두 번씩 나갔다(0ms·340ms).
+    - `init` → `refreshAll` → `runRefreshAll` → `pcvEnsureLoopbackSession`
+    - `pcvBootstrap` → `restoreSession` → `ensureLoopbackSession`(`api.ts`)
+    - 계정 모드라 모두 `409`다.
+  - 로그인(1.34초) 뒤 대시보드 단계 세 요청을 동시에 보냈다.
+    - `ops/summary` 2.6초, `host/status` 3.8초, `vms`와 `runtime/policy` 4.6초. 각 요청의 서버 처리 시간이 응답 시간과 같다.
+    - 따로 부르면 `ops/summary` 약 1.8초, `host status` 약 1.6초, `vm list` 약 0.65초(pcvcli, 시작 시간 포함)다. 결국 합만큼 걸린다.
+  - 두 번째 묶음 일곱 요청은 모두 약 877ms 뒤 함께 끝났다.
+  - 계정 모드에서는 취소가 없고 `ops/summary`가 한 번이다.
+- 원인 1(서버, BL-0048·BL-0049 공통): `DesktopNodeApiRequestProcessor.Handle`이 모든 API 요청을 전역 `lock (sync)` 안에서 처리한다. 서버는 요청을 한 번에 하나만 처리한다.
+  - 그래서 #152의 동시 요청은 효과가 없다.
+  - 취소된 요청도 줄에서 끝까지 처리돼 뒤 요청을 늦춘다.
+  - 콘솔 입력 요청은 계속 도는 frame 요청(장당 약 0.85초)과 다른 폴링 뒤에서 기다린다.
+- 원인 2(Web, BL-0048 loopback 모드): loopback 세션을 만드는 두 경로가 서로 다른 token을 만든다. #152 리뷰 수정의 "인증이 바뀌면 새로 시작" 규칙이 앞 갱신을 취소한다. train `0.43.5` probe(계정 보관 중, loopback 모드)의 `ops/summary` 3회·취소 2회와 같은 모양이다.
+- 콘솔 입력 경로 WMI 읽기 시간(PowerShell CIM과 System.Management, 각 3회)
+  - 연결 5~33ms, VM 찾기 7~21ms, 전체 VM 목록 5~12ms
+  - `Msvm_Keyboard` 관계 찾기 약 210ms. #153이 이미 캐시한다.
+  - WMI 읽기는 2.4초의 작은 부분이다. 대부분은 전역 lock 대기로 본다.
+- 원인 3(작음): adapter가 키마다 `GetVms()`(전체 VM 요약)를 부른다. 설치본 `vm list`는 약 0.65초다. 키 하나에 VM 하나의 상태만 보면 된다.
+- 고칠 순서: (1) 콘솔 frame·input route를 전역 lock 밖에서 처리 (2) loopback 세션 만들기를 한 경로로 합치기 (3) 키마다 `GetVms()` 대신 VM 하나 상태 조회
 
 ## Task 3: 수정 (grok 구현, Claude 리뷰)
 
