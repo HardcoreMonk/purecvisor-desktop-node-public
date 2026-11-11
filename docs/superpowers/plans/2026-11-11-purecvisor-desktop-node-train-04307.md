@@ -280,7 +280,7 @@ operational current는 `0.43.4-admin-smoke` 그대로다.
 
 ## Task 10: train PR
 
-- [ ] clean HEAD 종료 검증을 한다.
+- [x] clean HEAD 종료 검증을 한다.
   - `dotnet build src/DesktopNode.sln -c Release`
   - `Invoke-PcvPrGate.ps1`
   - Pester 4종
@@ -297,9 +297,17 @@ operational current는 `0.43.4-admin-smoke` 그대로다.
 - `train-path-check --payload bf5c214 --head ec62a83`: `ok=true`, 바뀐 경로 40개, `product_paths` 없음, `allowed_pin_paths` 6개(config spec 3개, Delivery verifier 3개)
 - Task 8·9 실행 기록의 시각은 처음에 추정값으로 적었다가 commit 시각으로 고쳤다.
 
+실행 기록(2026-11-12 00:49~00:55 KST, PR): PR #161(head `921c457`)의 Required CI 다섯 개(`dotnet`, `web`, `delivery`, `installer-policy`, `public-boundary-ci-required`)가 pass였다. base가 `origin/main`인 것을 확인하고 `--match-head-commit`으로 merge했다. merge commit `cb52d33`의 main push run Public Boundary `43052723883`과 Development Gates `43052723918`이 success다. operational current는 `0.43.7-admin-smoke`가 됐다.
+
 ## Task 11: 판정
 
-- [ ] clean `main`에서 `pcvverify completion`을 돌린다. `complete=true`이고 hygiene C2가 queue 0·train promoted로 충족되는지 본다. 결과는 이 plan에 적고 Task 17의 PR로 남긴다. 새 감사 문서는 쓰지 않는다.
+- [x] clean `main`에서 `pcvverify completion`을 돌린다. `complete=true`이고 hygiene C2가 queue 0·train promoted로 충족되는지 본다. 결과는 이 plan에 적고 Task 17의 PR로 남긴다. 새 감사 문서는 쓰지 않는다.
+
+실행 기록(2026-11-12 00:57 KST): clean `main` `cb52d33`에서 `pcvverify completion`을 돌렸다(`artifacts/completion/20261112/`).
+- `completion: complete=true met=7/7 gaps=0 head=cb52d3330d51ddb51b4df34b9068ec6580f21ea9`
+- hygiene C2 `met=true`(current `0.43.7-admin-smoke`, train promoted, queue 0, unfinished train 0), C3 `met=true`, C4 `met=true`
+- hygiene C7 `met=false`(open 3: BL-0047, BL-0048, BL-0049). BL-0048(대시보드 첫 로드)과 BL-0049(콘솔 입력 요청 시간)는 PR #157·#159로 고쳤고 이번 train probe(`lane2-dashboard-console-probe-2026-11-11-04307`)가 설치본에서 확인했으므로 닫았다. BL-0047은 Task 18에서 다룬다.
+- `complete=true`는 판정 입력의 정적 상태다. 현행 설치본의 S1~S3 시연은 Task 12~16에서 다시 한다.
 
 ## Task 12: S1 재시연 시작 (승인 2)
 
