@@ -87,12 +87,21 @@
 
 ## Task 1: package
 
-- [ ] clean HEAD에서 다음 두 명령을 돌린다.
+- [x] clean HEAD에서 다음 두 명령을 돌린다.
   - `build.ps1 -Version 0.43.6-admin-smoke -MsiProductVersion 0.43.6 -SigningMode AllowUnsignedDev -SigningTrustModel LocalTest -OutputRoot artifacts/admin-smoke-package-20261111-04306`
   - `New-PcvAdminSmokeUpdatePackage.ps1 -BuildSeconds <build 초>`
   - payload 수는 `update-preflight-compatibility.json` fixture와 맞는지 본다(`web/app.js`·`web/styles.css` 호환 파일 포함).
   - `train-facts`로 package 문서를 쓴다(`docs/ga-ready/trains/0.43.6-admin-smoke.train-facts-input.json`, narrative는 적재 변경 행).
   - 검증: `train-evidence --check`, `TrainEvidenceGoldenTests`·`TrainFactsBuilderTests`. host mutation 없음(빌드만). 로컬 commit.
+
+실행 기록(2026-11-11): clean HEAD `5758b54`에서 빌드했다. product source는 payload `ee821cbd`와 같고, 그 뒤 commit은 문서뿐이다.
+- 빌드: `build.ps1` `49`초, `build_utc` `2026-11-11T09:27:46Z`, provenance `5758b54a230d52519437cbec7d15b58a4662419e`, WiX `5.0.2+aa65968c`, unsigned(`AllowUnsignedDev`/`LocalTest`).
+- MSI: SHA-256 `59106d65ad70f57ab4cb3d9bd5b5f7cf6dde9f333af76d66ce44d9ba00dd98bd`.
+- payload: `31`개, aggregate `7960b364a05ba83c92ab206a78858fb321adb03a785c62807e7301d9d5089119`. 호환 파일 `web/app.js`·`web/styles.css`가 들어 있다.
+- update ZIP: SHA-256 `048ec1bb33b893fd1587cb60859c27215be9b7e65f15322b2c072a878c805f1e`(entry 31). catalog SHA-256 `f89a25434ba7f57a43d27bc42d04a6f0d0c4fbabe2f61d13953e3e81f88f40cb`.
+- `train-facts`: package 문서 `docs/ga-ready/evidence/admin-smoke-package-2026-11-11-04306.md`. facts 입력의 `canonical_current_evidence`는 `0.43.4-admin-smoke`이고, `baseline_version`은 pair baseline `0.43.5-admin-smoke`다. `train-evidence --check`는 `current`다.
+
+host mutation은 없다. operational current는 `0.43.4-admin-smoke` 그대로다.
 
 ## Task 2: 계정 보관
 
