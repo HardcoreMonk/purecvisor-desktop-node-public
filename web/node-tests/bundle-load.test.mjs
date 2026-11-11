@@ -374,12 +374,16 @@ function bootFetch(log, loopbackStatus) {
   };
 }
 
-async function bootUntilSettled(sandbox) {
-  sandbox.document.dispatch("DOMContentLoaded");
+async function waitUntilBootSettled(sandbox) {
   for (let attempt = 0; attempt < 40; attempt += 1) {
     await new Promise((resolve) => setTimeout(resolve, 25));
     if (sandbox.state && sandbox.state.loading === false && sandbox.state.connectionState && sandbox.state.connectionState !== "idle") return;
   }
+}
+
+async function bootUntilSettled(sandbox) {
+  sandbox.document.dispatch("DOMContentLoaded");
+  await waitUntilBootSettled(sandbox);
 }
 
 test("first load shares one loopback session across refreshAll and restoreSession", async () => {
@@ -412,4 +416,133 @@ test("account mode 409 still shows the login screen from one loopback attempt", 
   assert.equal(summary.length, 0);
   assert.equal(sandbox.authToken || "", "");
   assert.equal(sandbox.document.getElementById("login-page").style.display, "flex");
+});
+
+function delayedLoopbackFetch(log, gate) {
+  return (url, init) => {
+    const href = String(url);
+    const signal = init && init.signal;
+    const entry = { url: href, method: (init && init.method) || "GET", signal };
+    log.push(entry);
+    const respond = (body, status) => Promise.resolve(new Response(JSON.stringify(body), {
+      status,
+      headers: { "Content-Type": "application/json" }
+    }));
+    if (href.includes("/api/v1/auth/loopback-session")) {
+      return gate.then(() => respond({
+        ok: true,
+        data: {
+          access_token: "loop-token",
+          refresh_token: "loop-refresh",
+          session: { username: "loopback-session", role: "admin", permissions: ["*"] }
+        }
+      }, 200));
+    }
+    let data = {};
+    if (href.endsWith("/vms") || href.includes("/accounts") || href.includes("/jobs") || href.includes("/diagnostics/bundles")) data = [];
+    else if (href.includes("/ops/summary")) data = { errors: [], signals: [] };
+    return respond({ ok: true, data }, 200);
+  };
+}
+
+function trackRefreshCalls(sandbox) {
+  const calls = [];
+  const wrap = (name, fn) => function tracked(options) {
+    const auth = String((sandbox.state && sandbox.state.authAccessToken) || "");
+    calls.push({
+      name,
+      force: Boolean(options && options.force === true),
+      authEmpty: auth.trim() === "",
+      stack: String(new Error().stack || "")
+    });
+    return fn.apply(this, arguments);
+  };
+  sandbox.refreshAll = wrap("refreshAll", sandbox.refreshAll);
+  sandbox.loadAll = wrap("loadAll", sandbox.loadAll);
+  return calls;
+}
+
+function installServiceWorkerStub(sandbox, controller) {
+  const listeners = [];
+  sandbox.navigator.serviceWorker = {
+    controller,
+    addEventListener(type, fn) { if (type === "controllerchange") listeners.push(fn); },
+    register() {
+      return Promise.resolve({
+        waiting: null,
+        installing: null,
+        addEventListener() {},
+        update() { return Promise.resolve(); }
+      });
+    }
+  };
+  return listeners;
+}
+
+test("delayed loopback boot joins init and restoreSession into one ops summary", async () => {
+  const { sandbox } = createSandbox();
+  const log = [];
+  let releaseLoopback = null;
+  const gate = new Promise((resolve) => { releaseLoopback = resolve; });
+  sandbox.fetch = delayedLoopbackFetch(log, gate);
+  loadBundle(sandbox);
+  const calls = trackRefreshCalls(sandbox);
+  sandbox.authToken = "";
+  sandbox.document.dispatch("DOMContentLoaded");
+  if (typeof sandbox.updateVersionBadge === "function") sandbox.updateVersionBadge();
+  await new Promise((resolve) => setTimeout(resolve, 40));
+  assert.equal(log.filter((entry) => entry.url.includes("/ops/summary")).length, 0);
+  releaseLoopback();
+  await waitUntilBootSettled(sandbox);
+  const summary = log.filter((entry) => entry.url.includes("/ops/summary"));
+  const cancelled = log.filter((entry) => entry.signal && entry.signal.aborted);
+  const loopback = log.filter((entry) => entry.url.includes("/api/v1/auth/loopback-session") && entry.method === "POST");
+  assert.equal(loopback.length, 1);
+  assert.equal(summary.length, 1, JSON.stringify(calls.map((call) => ({ name: call.name, force: call.force, authEmpty: call.authEmpty }))));
+  assert.equal(cancelled.length, 0);
+  assert.equal(calls.filter((call) => call.name === "refreshAll").length, 1);
+  assert.equal(calls.filter((call) => call.name === "loadAll" && call.force).length, 0);
+  assert.ok(calls.some((call) => call.name === "loadAll" && call.force === false && call.authEmpty === false));
+  assert.equal(sandbox.state.connectionState, "connected");
+});
+
+test("first service worker claim does not reload or cancel the first ops summary", async () => {
+  const { sandbox } = createSandbox();
+  const log = [];
+  let releaseLoopback = null;
+  const gate = new Promise((resolve) => { releaseLoopback = resolve; });
+  sandbox.fetch = delayedLoopbackFetch(log, gate);
+  let reloads = 0;
+  sandbox.location.reload = () => { reloads += 1; };
+  const listeners = installServiceWorkerStub(sandbox, null);
+  loadBundle(sandbox);
+  sandbox.authToken = "";
+  sandbox.document.dispatch("DOMContentLoaded");
+  sandbox.__dispatchWindow("load");
+  await Promise.resolve();
+  for (const listener of listeners) listener();
+  assert.equal(reloads, 0);
+  releaseLoopback();
+  await waitUntilBootSettled(sandbox);
+  const summary = log.filter((entry) => entry.url.includes("/ops/summary"));
+  const cancelled = log.filter((entry) => entry.signal && entry.signal.aborted);
+  assert.equal(summary.length, 1);
+  assert.equal(cancelled.length, 0);
+  assert.equal(reloads, 0);
+});
+
+test("service worker controllerchange reloads when a controller was already active", async () => {
+  const { sandbox } = createSandbox();
+  sandbox.fetch = () => Promise.resolve(new Response(JSON.stringify({ ok: true, data: {} }), { status: 200, headers: { "Content-Type": "application/json" } }));
+  let reloads = 0;
+  sandbox.location.reload = () => { reloads += 1; };
+  const listeners = installServiceWorkerStub(sandbox, { scriptURL: "sw.js" });
+  loadBundle(sandbox);
+  sandbox.authToken = "";
+  sandbox.document.dispatch("DOMContentLoaded");
+  sandbox.__dispatchWindow("load");
+  await Promise.resolve();
+  assert.equal(listeners.length, 1);
+  listeners[0]();
+  assert.equal(reloads, 1);
 });

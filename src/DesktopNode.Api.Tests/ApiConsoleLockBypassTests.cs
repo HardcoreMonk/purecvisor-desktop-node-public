@@ -117,7 +117,7 @@ public sealed class ApiConsoleLockBypassTests : IDisposable
     }
 
     [Fact]
-    public void ConsoleInputStillUsesTheGlobalRequestRateLimit()
+    public void ConsoleInputIgnoresTheGlobalRequestRateLimit()
     {
         var clock = new DateTimeOffset(2026, 11, 11, 0, 0, 0, TimeSpan.Zero);
         var processor = CreateProcessor(
@@ -132,10 +132,49 @@ public sealed class ApiConsoleLockBypassTests : IDisposable
         var second = Send(processor, """{"kind":"key","action":"type","key_code":13}""", clientIdentity: "console-client");
 
         Assert.Equal(200, first.StatusCode);
-        Assert.Equal(429, second.StatusCode);
-        Assert.Equal("application/problem+json", second.ContentType);
-        Assert.Contains("PCV_RATE_LIMIT_EXCEEDED", second.Body, StringComparison.Ordinal);
+        Assert.Equal(200, second.StatusCode);
+        Assert.DoesNotContain("PCV_RATE_LIMIT_EXCEEDED", first.Body, StringComparison.Ordinal);
+        Assert.DoesNotContain("PCV_RATE_LIMIT_EXCEEDED", second.Body, StringComparison.Ordinal);
         Assert.DoesNotContain("PCV_CONSOLE_RATE_LIMITED", second.Body, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void ConsoleRequestsDoNotConsumeAnotherRoutesGlobalBudget()
+    {
+        var clock = new DateTimeOffset(2026, 11, 11, 0, 0, 0, TimeSpan.Zero);
+        var processor = CreateProcessor(
+            new AcceptingInputAdapter(),
+            new DesktopNodeApiHardeningOptions(
+                RequestLimitPerMinute: 1,
+                BurstLimit: 0,
+                RetryAfterSeconds: 7,
+                Clock: () => clock));
+
+        for (var i = 0; i < 5; i++)
+        {
+            var input = Send(processor, """{"kind":"key","action":"type","key_code":13}""", clientIdentity: "console-client");
+            Assert.Equal(200, input.StatusCode);
+            Assert.DoesNotContain("PCV_RATE_LIMIT_EXCEEDED", input.Body, StringComparison.Ordinal);
+        }
+
+        var summary = processor.Handle(new DesktopNodeApiRequest(
+            "GET",
+            "/api/v1/ops/summary",
+            ServiceBearerAccepted: true,
+            RemoteIsLoopback: true,
+            ClientIdentity: "console-client"));
+        Assert.Equal(200, summary.StatusCode);
+        Assert.DoesNotContain("PCV_RATE_LIMIT_EXCEEDED", summary.Body, StringComparison.Ordinal);
+
+        var policy = processor.Handle(new DesktopNodeApiRequest(
+            "GET",
+            "/api/v1/runtime/policy",
+            ServiceBearerAccepted: true,
+            RemoteIsLoopback: true,
+            ClientIdentity: "console-client"));
+        Assert.Equal(429, policy.StatusCode);
+        Assert.Equal("application/problem+json", policy.ContentType);
+        Assert.Contains("PCV_RATE_LIMIT_EXCEEDED", policy.Body, StringComparison.Ordinal);
     }
 
     private DesktopNodeApiRequestProcessor CreateProcessor(

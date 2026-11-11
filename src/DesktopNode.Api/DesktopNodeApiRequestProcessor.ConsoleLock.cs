@@ -3,7 +3,7 @@ using DesktopNode.Runtime;
 namespace DesktopNode.Api;
 
 // BL-0048: 콘솔 frame 과 input 은 전역 sync 를 요청 전체 동안 잡지 않는다.
-// throttle.Enforce 만 짧게 lock 하고, 인증과 route 처리는 밖에서 한다.
+// BL-0050: 이 둘은 전역 요청 한도를 소비하거나 그 한도로 거절되지 않는다. VM별 한도만 적용한다.
 public sealed partial class DesktopNodeApiRequestProcessor
 {
     private static bool IsUnlockedConsoleRoute(DesktopNodeApiRequest request)
@@ -16,17 +16,6 @@ public sealed partial class DesktopNodeApiRequestProcessor
 
     private DesktopNodeApiResponse HandleUnlockedConsoleRoute(DesktopNodeApiRequest request)
     {
-        DesktopNodeApiResponse? rateLimitResponse;
-        lock (sync)
-        {
-            rateLimitResponse = throttle.Enforce(request);
-        }
-
-        if (rateLimitResponse is not null)
-        {
-            return DesktopNodeApiResponseFactory.AttachRequestId(rateLimitResponse, request.RequestId!);
-        }
-
         DesktopNodeApiResponse response;
         try
         {
