@@ -80,11 +80,29 @@
 
 ## Task 3: 수정 (grok 구현, Claude 리뷰)
 
-- [ ] Task 2의 원인에 맞춰 고친다.
+- [x] Task 2의 원인에 맞춰 고친다.
   - 대시보드: 설치본에서 본 실제 호출 순서를 node 시험으로 재현한다(같은 순서, 같은 취소). 고친 뒤 그 시험에서 `ops/summary`가 한 번이고 화면이 더 빨리 차야 한다.
   - 콘솔 입력: 키당 반복되는 비용(연결, VM 목록 등)을 없앤다. 단위 시험으로 키 N개에 비싼 단계가 몇 번 일어나는지 센다.
   - 제품 payload가 바뀌므로 `release-train.json` queue에 행을 더한다.
   - 검증: 해당 C# 시험(`-c Release`), `npm run test:required --prefix web`, web Pester, `git diff --check`. 로컬 commit.
+
+실행 기록(2026-11-11 17:18~17:50 KST): grok이 구현했고 Claude가 리뷰했다. commit `39976fd`.
+- 원인 1(전역 lock)
+  - 콘솔 frame(`GetVmConsoleFrame`)과 input(`SendVmConsoleInput`)은 rate limit(`throttle.Enforce`)만 전역 `sync` 안에서 하고, 인증과 route 처리는 밖에서 한다(`DesktopNodeApiRequestProcessor.ConsoleLock.cs`). 다른 route는 그대로 lock 안이다.
+  - frame 간격과 input 창 사전은 `TryAdd`/`TryUpdate`로 갱신한다. 감사 기록은 기존 lock 그대로다.
+  - 리뷰: 우회 경로가 원래 경로와 같은 검사를 하는 것을 확인했다. method, 인증 `TryHandle`/`Authorize`, 요청 id, job store 예외 처리다. frame 최소 간격 100ms는 그대로다.
+- 원인 2(loopback 세션 중복): `api.ts`의 공유 진행 중 요청(`_sharedLoopbackPayload`)을 `desktop-api.ts` `createLoopbackSession`도 쓴다. 한 페이지에서 POST는 한 번이고 token은 하나다.
+- 원인 3: 콘솔 입력은 `FindVmRunState`(VM 하나 찾기와 `EnabledState`, template 잠금은 그 VM `Notes`)로 본다. 키마다 전체 VM 요약을 읽지 않는다. frame은 여전히 `GetVms`다(report-only).
+- 남는 위험(report-only)
+  - 콘솔 인증이 전역 lock 밖에서 계정 저장소를 읽는다. 계정 변경은 lock을 그대로 잡는다.
+  - 다른 route가 lock을 오래 잡으면 콘솔 요청은 rate limit 확인에서만 기다린다.
+- 결과
+  - Api 549/549(콘솔 lock 우회 4건: frame 중 input 200, input이 lock을 잡지 않음, VM별 순서, rate limit 그대로)
+  - HyperV 293/293
+  - `npm run test:required --prefix web` exit 0(node 430/430, browser gate `ok=true` violations 0, 기준선 변화 없음)
+  - web Pester 50/50, `git diff --check` clean
+  - module 줄 상한 안이다.
+- 제품 payload가 바뀌어 `release-train.json` queue에 PR #157 행을 더했다(queue 3행).
 
 ## Task 4: PR
 
