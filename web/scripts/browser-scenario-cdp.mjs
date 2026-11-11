@@ -140,6 +140,81 @@ function readEvaluate(result) {
   return result.result?.value;
 }
 
+export const PRESS_KEY_GAP_MS = 120;
+export const EDGE_PROFILE_CLOSE_WAIT_MS = 500;
+
+export function pressKeyEvents(key) {
+  const named = {
+    Enter: { key: "Enter", code: "Enter", windowsVirtualKeyCode: 13, nativeVirtualKeyCode: 13 },
+    Escape: { key: "Escape", code: "Escape", windowsVirtualKeyCode: 27, nativeVirtualKeyCode: 27 },
+    Tab: { key: "Tab", code: "Tab", windowsVirtualKeyCode: 9, nativeVirtualKeyCode: 9 }
+  };
+  const event = named[key] || {
+    key,
+    code: key.length === 1 ? `Key${key.toUpperCase()}` : key,
+    windowsVirtualKeyCode: key.length === 1 ? key.toUpperCase().charCodeAt(0) : 0,
+    nativeVirtualKeyCode: key.length === 1 ? key.toUpperCase().charCodeAt(0) : 0
+  };
+  const down = { type: "keyDown", ...event };
+  const up = { type: "keyUp", ...event };
+  if (key.length === 1 && !named[key]) {
+    down.text = key;
+    up.text = key;
+  }
+  return { down, up };
+}
+
+export async function dispatchPressKey(send, key, sleepFn = sleep) {
+  const { down, up } = pressKeyEvents(key);
+  await send("Input.dispatchKeyEvent", down);
+  await sleepFn(PRESS_KEY_GAP_MS);
+  await send("Input.dispatchKeyEvent", up);
+}
+
+export function listEdgeProfileProcesses(profileDir) {
+  if (!profileDir || process.platform !== "win32") return [];
+  const command = `$marker = ${JSON.stringify(profileDir)}; @(Get-CimInstance Win32_Process -Filter "Name = 'msedge.exe'" | Where-Object { $_.CommandLine -and $_.CommandLine.Contains($marker) } | ForEach-Object { $_.ProcessId }) -join ","`;
+  const result = spawnSync("powershell.exe", ["-NoProfile", "-Command", command], { encoding: "utf8" });
+  return String(result.stdout || "").split(",").map((item) => item.trim()).filter((item) => item.length > 0);
+}
+
+async function waitForProfileExit(listProcesses, profileDir, sleepFn, waitMs) {
+  const deadline = Date.now() + waitMs;
+  let left = await listProcesses(profileDir);
+  left = Array.isArray(left) ? left.filter(Boolean) : [];
+  while (left.length > 0 && Date.now() < deadline) {
+    await sleepFn(50);
+    const listed = await listProcesses(profileDir);
+    left = Array.isArray(listed) ? listed.filter(Boolean) : [];
+  }
+  return left;
+}
+
+// Kill the scenario Edge by process tree and by the profile marker, then check none remain.
+export async function ensureEdgeProfileClosed({
+  child = null,
+  profileDir = "",
+  killProcesses = killProcessTree,
+  listProcesses = listEdgeProfileProcesses,
+  sleep: sleepFn = sleep,
+  warn = (message) => process.stderr.write(`${message}\n`),
+  waitMs = EDGE_PROFILE_CLOSE_WAIT_MS
+} = {}) {
+  const kill = () => {
+    try { killProcesses(child, profileDir); } catch { /* already exited */ }
+  };
+  kill();
+  let left = await waitForProfileExit(listProcesses, profileDir, sleepFn, waitMs);
+  if (left.length > 0) {
+    kill();
+    left = await waitForProfileExit(listProcesses, profileDir, sleepFn, waitMs);
+  }
+  if (left.length > 0) {
+    warn(`browser scenario: ${left.length} msedge process(es) still use the scenario profile`);
+  }
+  return left.length;
+}
+
 function killProcessTree(child, profileDir) {
   if (process.platform === "win32") {
     if (child && child.pid != null) spawnSync("taskkill.exe", ["/PID", String(child.pid), "/T", "/F"], { stdio: "ignore" });
@@ -254,25 +329,7 @@ export class BrowserScenarioCdp {
   }
 
   async pressKey(key) {
-    const named = {
-      Enter: { key: "Enter", code: "Enter", windowsVirtualKeyCode: 13, nativeVirtualKeyCode: 13 },
-      Escape: { key: "Escape", code: "Escape", windowsVirtualKeyCode: 27, nativeVirtualKeyCode: 27 },
-      Tab: { key: "Tab", code: "Tab", windowsVirtualKeyCode: 9, nativeVirtualKeyCode: 9 }
-    };
-    const event = named[key] || {
-      key,
-      code: key.length === 1 ? `Key${key.toUpperCase()}` : key,
-      windowsVirtualKeyCode: key.length === 1 ? key.toUpperCase().charCodeAt(0) : 0,
-      nativeVirtualKeyCode: key.length === 1 ? key.toUpperCase().charCodeAt(0) : 0
-    };
-    const down = { type: "keyDown", ...event };
-    const up = { type: "keyUp", ...event };
-    if (key.length === 1 && !named[key]) {
-      down.text = key;
-      up.text = key;
-    }
-    await this.client.send("Input.dispatchKeyEvent", down);
-    await this.client.send("Input.dispatchKeyEvent", up);
+    await dispatchPressKey((method, params) => this.client.send(method, params), key);
   }
 
   async screenshot(filePath) {
@@ -296,7 +353,7 @@ export class BrowserScenarioCdp {
     if (this.closed) return;
     this.closed = true;
     try { this.client.close(); } catch { /* socket already closed */ }
-    killProcessTree(this.child, this.profileDir);
+    await ensureEdgeProfileClosed({ child: this.child, profileDir: this.profileDir });
   }
 }
 

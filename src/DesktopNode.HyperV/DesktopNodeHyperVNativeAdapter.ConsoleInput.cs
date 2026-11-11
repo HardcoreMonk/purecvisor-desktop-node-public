@@ -30,6 +30,8 @@ public sealed partial class DesktopNodeHyperVNativeAdapter
         try
         {
             ThrowIfNativeCanceled(cancellationToken, operation);
+            // 재고 조회보다 먼저 줄을 선다. 그래야 같은 VM의 press가 release보다 늦게 실행되지 않는다.
+            using var consoleLane = DesktopNodeHyperVConsoleInputLane.Shared.Enter(vmName, cancellationToken);
             var vm = FindVm(vmProvider.GetVms(cancellationToken), vmName);
             if (vm is null)
             {

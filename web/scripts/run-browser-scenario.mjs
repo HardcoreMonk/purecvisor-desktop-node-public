@@ -117,6 +117,19 @@ export function judgeShellReady(snapshot) {
 
 // succeeded is the only success. Empty and unknown statuses are failures.
 // The job waiter treats a blank status as still in flight until the timeout.
+// The shell badge is the installed version. A hidden or empty badge is not a version.
+export function installedVersionFromBadge(snapshot) {
+  if (!snapshot || snapshot.found !== true) return "";
+  return String(snapshot.text || "").replace(/\s+/g, " ").trim();
+}
+
+// A finished create leaves the wizard open. Close it. If a discard confirm is up, cancel that confirm.
+export function createWizardClosePlan(dialogOpen, confirmOpen) {
+  if (confirmOpen) return "cancel";
+  if (!dialogOpen) return "already-closed";
+  return "close";
+}
+
 export function classifyJobStatus(status) {
   const value = String(status ?? "");
   if (value === "queued" || value === "running" || value === "pending" || value === "accepted") return "in-flight";
@@ -465,6 +478,37 @@ async function acceptConfirm(browser, typedName, { required = false } = {}) {
   return "confirm=accepted";
 }
 
+async function readCreateWizardCloseState(browser) {
+  return browser.callFunction(`function () {
+    const dialog = document.getElementById("create-vm-dialog");
+    return {
+      open: !!(dialog && dialog.open),
+      confirm: !!document.querySelector("[data-pcv-confirm='cancel']")
+    };
+  }`);
+}
+
+async function closeCreateWizardAfterJob(browser) {
+  const state = await readCreateWizardCloseState(browser);
+  const plan = createWizardClosePlan(!!(state && state.open), !!(state && state.confirm));
+  if (plan === "already-closed") return "wizard=closed";
+  if (plan === "cancel") {
+    await browser.click("[data-pcv-confirm='cancel']");
+    return "wizard=discard-cancelled";
+  }
+  await browser.click("#close-create-vm");
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const after = await readCreateWizardCloseState(browser);
+    if (after && after.confirm) {
+      await browser.click("[data-pcv-confirm='cancel']");
+      return "wizard=discard-cancelled";
+    }
+    if (!after || after.open !== true) return "wizard=closed";
+    await sleep(100);
+  }
+  return "wizard=open";
+}
+
 async function readVm(browser, name) {
   return browser.callFunction(READ_VM, name);
 }
@@ -664,7 +708,7 @@ async function runCheck(options) {
       if (version && version.found) break;
       await sleep(200);
     }
-    installedVersion = version && version.found ? String(version.text || "") : "";
+    installedVersion = installedVersionFromBadge(version);
     const versionShot = await shot(browser, outDir, repoRoot, "02-version.png");
     steps.push(stepResult("version-badge", versionStarted, version && version.found ? "pass" : "fail", installedVersion || "missing", versionShot));
 
@@ -864,7 +908,8 @@ async function runS1(ctx, args) {
   await runNamedStep(ctx, "accept-create-confirm", async () => acceptConfirm(ctx.browser, vmName));
   await runNamedStep(ctx, "wait-create-job", async () => {
     const job = await waitForNewJob(ctx.browser, ctx.jobIds || new Set());
-    return jobDetail("create", job);
+    const closed = await closeCreateWizardAfterJob(ctx.browser);
+    return `${jobDetail("create", job)} ${closed}`;
   });
   await runNamedStep(ctx, "connect-switch", async () => {
     assertScenarioVmName(vmName);
@@ -1253,7 +1298,8 @@ async function runExecute(options) {
     steps: [],
     secrets,
     failed: false,
-    summary: {}
+    summary: {},
+    installedVersion: ""
   };
   const startedAt = new Date().toISOString();
   try {
@@ -1270,7 +1316,14 @@ async function runExecute(options) {
     }
     ctx.failed = true;
   } finally {
-    if (ctx.browser) await ctx.browser.close();
+    if (ctx.browser) {
+      try {
+        ctx.installedVersion = installedVersionFromBadge(await ctx.browser.callFunction(VERSION_TEXT));
+      } catch {
+        ctx.installedVersion = ctx.installedVersion || "";
+      }
+      await ctx.browser.close();
+    }
   }
   const result = ctx.failed || ctx.steps.length === 0 || ctx.steps.some((item) => item.status !== "pass") ? "fail" : "pass";
   const summary = {
@@ -1278,6 +1331,7 @@ async function runExecute(options) {
     scenario: cleanup ? "cleanup" : scenario,
     mode: "execute",
     web,
+    installed_version: ctx.installedVersion || "",
     profile: displayRepoPath(repoRoot, profileDir),
     started_at: startedAt,
     finished_at: new Date().toISOString(),

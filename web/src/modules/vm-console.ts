@@ -990,17 +990,85 @@ function getVmConsoleVirtualKey(code) {
   return VM_CONSOLE_VIRTUAL_KEYS[code] || null;
 }
 
-async function sendVmConsoleKeyboard(vmId, payload) {
-  requireRbac('console.input', t('vm.rbac.input'));
+const VM_CONSOLE_INPUT_QUEUE_WARN = 64;
+const VM_CONSOLE_INPUT_RETRY_MS = 200;
+const vmConsoleInputQueues = new Map();
+
+function waitMs(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function reportVmConsoleInputError(vmId, error) {
+  const normalized = normalizeError(error);
+  const control = getVmConsoleFrameControl(vmId);
+  if (control) control.error = normalized;
+  setVmConsoleFrameStatus(`${normalized.code}: ${normalized.message}`);
+}
+
+async function deliverVmConsoleKeyboard(vmId, payload) {
   try {
     await desktopApi.sendVmConsoleInput(vmId, payload);
   } catch (error) {
     const normalized = normalizeError(error);
-    if (normalized.code === 'PCV_CONSOLE_RATE_LIMITED') return;
-    const control = getVmConsoleFrameControl(vmId);
-    if (control) control.error = normalized;
-    setVmConsoleFrameStatus(`${normalized.code}: ${normalized.message}`);
+    if (normalized.code !== 'PCV_CONSOLE_RATE_LIMITED') {
+      reportVmConsoleInputError(vmId, error);
+      return;
+    }
+    await waitMs(VM_CONSOLE_INPUT_RETRY_MS);
+    try {
+      await desktopApi.sendVmConsoleInput(vmId, payload);
+    } catch (retryError) {
+      reportVmConsoleInputError(vmId, retryError);
+    }
   }
+}
+
+function enqueueVmConsoleInput(vmId, payload) {
+  let queue = vmConsoleInputQueues.get(vmId);
+  if (!queue) {
+    queue = { items: [], depth: 0, draining: false };
+    vmConsoleInputQueues.set(vmId, queue);
+  }
+  let resolveItem;
+  let rejectItem;
+  const done = new Promise((resolve, reject) => {
+    resolveItem = resolve;
+    rejectItem = reject;
+  });
+  queue.depth += 1;
+  if (queue.depth > VM_CONSOLE_INPUT_QUEUE_WARN) {
+    setVmConsoleFrameStatus(t('vm.console.input.queue_full'));
+  }
+  queue.items.push({ payload, resolve: resolveItem, reject: rejectItem });
+  if (!queue.draining) {
+    queue.draining = true;
+    drainVmConsoleInput(queue, vmId);
+  }
+  return done;
+}
+
+async function drainVmConsoleInput(queue, vmId) {
+  while (queue.items.length > 0) {
+    const item = queue.items.shift();
+    try {
+      await deliverVmConsoleKeyboard(vmId, item.payload);
+      item.resolve();
+    } catch (error) {
+      item.reject(error);
+    } finally {
+      queue.depth = Math.max(0, queue.depth - 1);
+    }
+  }
+  queue.draining = false;
+  if (queue.items.length > 0) {
+    queue.draining = true;
+    drainVmConsoleInput(queue, vmId);
+  }
+}
+
+async function sendVmConsoleKeyboard(vmId, payload) {
+  requireRbac('console.input', t('vm.rbac.input'));
+  return enqueueVmConsoleInput(vmId, payload);
 }
 
 function handleVmConsoleKeyEvent(event) {

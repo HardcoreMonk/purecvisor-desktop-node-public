@@ -55,12 +55,19 @@ public sealed class DesktopNodeHyperVDvdMediaPlanTests
     private static string FindRepoRoot()
     {
         var directory = new DirectoryInfo(AppContext.BaseDirectory);
-        while (directory is not null && !Directory.Exists(Path.Combine(directory.FullName, ".git")))
+        while (directory is not null && !RepoRootMarker(directory))
         {
             directory = directory.Parent;
         }
 
         Assert.NotNull(directory);
         return directory!.FullName;
+    }
+
+    // A git worktree stores .git as a file. A normal clone stores it as a directory.
+    private static bool RepoRootMarker(DirectoryInfo directory)
+    {
+        var git = Path.Combine(directory.FullName, ".git");
+        return Directory.Exists(git) || File.Exists(git);
     }
 }

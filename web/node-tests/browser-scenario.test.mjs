@@ -10,9 +10,17 @@ import {
   assertScenarioProfile,
   assertScenarioVmName,
   classifyJobStatus,
+  createWizardClosePlan,
+  installedVersionFromBadge,
   judgeShellReady,
   serializeScenarioSummary
 } from "../scripts/run-browser-scenario.mjs";
+import {
+  PRESS_KEY_GAP_MS,
+  dispatchPressKey,
+  ensureEdgeProfileClosed,
+  pressKeyEvents
+} from "../scripts/browser-scenario-cdp.mjs";
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const script = resolve(repoRoot, "web", "scripts", "run-browser-scenario.mjs");
@@ -215,4 +223,69 @@ test("execute rejects a non-numeric argument and a profile outside artifacts", (
   assert.match(absolute.stderr, /argument error: invalid --profile/);
   assert.equal(profile.stderr.includes("../outside"), false);
   assert.equal(absolute.stderr.includes("C:\\outside"), false);
+});
+
+test("installed version comes from the shell badge", () => {
+  assert.equal(installedVersionFromBadge({ found: true, text: "0.43.4-admin-smoke" }), "0.43.4-admin-smoke");
+  assert.equal(installedVersionFromBadge({ found: false, text: "hidden" }), "");
+  assert.equal(installedVersionFromBadge(null), "");
+});
+
+test("create wizard close cancels a discard confirm and otherwise just closes", () => {
+  assert.equal(createWizardClosePlan(true, false), "close");
+  assert.equal(createWizardClosePlan(true, true), "cancel");
+  assert.equal(createWizardClosePlan(false, false), "already-closed");
+});
+
+test("pressKey waits between keyDown and keyUp", async () => {
+  const events = [];
+  const gaps = [];
+  await dispatchPressKey((method, params) => {
+    events.push(params.type);
+    return Promise.resolve({});
+  }, "a", (ms) => {
+    gaps.push(ms);
+    return Promise.resolve();
+  });
+  assert.equal(PRESS_KEY_GAP_MS, 120);
+  assert.deepEqual(gaps, [120]);
+  assert.deepEqual(events, ["keyDown", "keyUp"]);
+  assert.equal(pressKeyEvents("a").down.text, "a");
+});
+
+test("edge close kills again when the profile is still in use and warns if it remains", async () => {
+  const kills = [];
+  const warnings = [];
+  let listed = 0;
+  const stillThere = await ensureEdgeProfileClosed({
+    child: { pid: 1 },
+    profileDir: "artifacts/browser-scenario-profile",
+    killProcesses: (_child, profileDir) => { kills.push(profileDir); },
+    listProcesses: async () => {
+      listed += 1;
+      return ["11"];
+    },
+    sleep: async () => {},
+    warn: (message) => warnings.push(message),
+    waitMs: 0
+  });
+  assert.equal(stillThere, 1);
+  assert.equal(kills.length, 2);
+  assert.equal(listed >= 2, true);
+  assert.equal(warnings.length, 1);
+  assert.match(warnings[0], /1 msedge/);
+  assert.equal(warnings[0].includes("artifacts/browser-scenario-profile"), false);
+
+  const gone = [];
+  const quiet = await ensureEdgeProfileClosed({
+    child: null,
+    profileDir: "artifacts/browser-scenario-profile",
+    killProcesses: () => { gone.push("kill"); },
+    listProcesses: async () => [],
+    sleep: async () => {},
+    warn: () => { gone.push("warn"); },
+    waitMs: 0
+  });
+  assert.equal(quiet, 0);
+  assert.deepEqual(gone, ["kill"]);
 });

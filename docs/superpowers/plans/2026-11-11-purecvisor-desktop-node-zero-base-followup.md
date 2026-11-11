@@ -257,16 +257,53 @@ Task 4는 grok 지시 크기(약 20분) 때문에 4a와 4b로 나눴다(2026-11-
 
 ## Task 12b: 브라우저 콘솔 입력 결함과 시나리오 도우미 (사용자 결정 `S1 중단`)
 
-- [ ] BL-0046·BL-0047을 고친다(grok 구현, Claude 리뷰).
+- [x] BL-0046·BL-0047을 고친다(grok 구현, Claude 리뷰).
   - 서버 `console.input`이 요청당 약 2초인 원인을 측정하고 줄인다.
   - 키 이벤트가 순서대로 정확히 guest에 들어가게 한다. 예: Web Console이 키마다 press와 release를 따로 보내는 방식, 요청이 겹칠 때의 순서, 텍스트 입력 속도.
   - 시나리오 CDP 도우미의 결함도 고친다: Edge 종료 누수, 키 누름과 뗌 사이 간격, execute summary의 설치 버전, 생성 뒤 마법사 닫기.
   - 제품 payload가 바뀌므로 `release-train.json` queue에 한 행을 더한다.
   - 검증: 해당 C# 시험 프로젝트(`-c Release`), `npm run test:required --prefix web`, web Pester, `git diff --check`. 로컬 commit.
 
+실행 기록(2026-11-11): grok이 별도 worktree에서 10:23~10:50에 구현했고 Claude가 리뷰했다. commit `2570919`(PR #152 merge 위로 rebase, 생성물은 합쳐진 소스에서 다시 만들었다).
+- 원인 판단
+  - (가) WMI provider가 요청마다 VM을 찾고 `Msvm_Keyboard` 관계를 따라갔다(요청당 약 2초의 주된 후보).
+  - (나) Web Console은 keydown의 press와 keyup의 release를 기다리지 않고 보냈고, service도 같은 VM 요청을 동시에 처리할 수 있었다. release가 press보다 먼저 실행될 수 있다.
+  - (다) `TypeText`가 문자열을 한꺼번에 넣었다.
+- 고친 것
+  - service
+    - 같은 VM 입력은 도착 순서대로 하나씩 처리한다(adapter 레인과 provider 세션).
+    - `Msvm_Keyboard` path를 VM id(WMI `Name`, GUID)로 캐시하고, 실패하면 한 번만 다시 찾는다.
+    - `kind=text`는 글자마다 `TypeText`를 부르고 글자 사이를 50ms 띄운다.
+    - 응답 계약, 길이 256, printable ASCII, 초당 50 제한은 그대로다.
+  - Web Console
+    - VM별 입력 큐로 앞 요청이 끝난 뒤 다음을 보낸다.
+    - 429는 200ms 뒤 한 번 다시 보낸다.
+    - 64개를 넘게 쌓이면 상태 줄에 알린다(i18n `vm.console.input.queue_full`).
+  - 시나리오 도우미: Edge 종료 확인과 재종료, keyDown과 keyUp 사이 120ms, execute summary `installed_version`, S1 생성 뒤 마법사 닫기
+  - HyperV 시험 두 건의 저장소 루트 찾기가 git worktree(`.git` 파일)에서도 된다.
+- 리뷰
+  - 캐시 키가 VM 이름이 아니라 GUID라서, 이름을 바꾸거나 같은 이름으로 다시 만든 VM에 입력이 잘못 가지 않는다(확인).
+  - 키마다 adapter의 `GetVms()` 조회는 남는다. 설치본에서 키당 시간이 크게 남으면 다음 후보다(report-only).
+- 결과
+  - HyperV 292/292(새 키보드 시험 4건)
+  - `npm run test:required --prefix web` exit 0(node 422, 콘솔 큐 4건·도우미 4건 포함, browser gate `ok=true` violations 0, 기준선 변화 없음)
+  - web Pester 50/50, `git diff --check` clean
+- 설치본에서 확인할 항목(다음 train probe): 키 하나에 걸리는 시간, 20자 비밀번호 두 칸 입력 일치, 텍스트 폼
+- PR #153 첫 CI에서 새 순서 시험 두 건이 `dotnet` shard에서 실패했다(로컬에서는 통과).
+  - 원인: 시험이 일부러 막아 둔 작업과 다른 작업을 공유 thread pool(`Task.Run`)에서 5초 안에 돌리려 했다. 작은 CI runner에서 병렬 시험과 겹치면 모자랄 수 있다.
+  - 작업을 전용 스레드(`TaskCreationOptions.LongRunning`)로 돌리고 대기 한도를 30초로 늘렸다(시험만 바꿨다).
+  - HyperV 292/292. 키보드 시험만 열 번 반복해 모두 4/4였다.
+- 제품 payload가 바뀌어 `release-train.json` queue에 PR #153 행을 더했다.
+
 ## Task 13: PR D와 마무리
 
-- [ ] Task 12b를 PR로 merge하고 campaign을 닫는다(`next_approval_required`에 다음 승인 문장: train 출발, S1~S3 재시연). clean HEAD 종료 검증 뒤 push, PR, green CI 뒤 merge, main push run 확인.
+- [x] Task 12b를 PR로 merge하고 campaign을 닫는다(`next_approval_required`에 다음 승인 문장: train 출발, S1~S3 재시연). clean HEAD 종료 검증 뒤 push, PR, green CI 뒤 merge, main push run 확인.
+
+실행 기록(Task 13, 2026-11-11): Task 12b와 같은 branch에서 campaign을 닫았다. 다음 승인은 세 가지다.
+- release train `0.43.5` 출발: queue #152·#153. 시연할 수 있는 동작을 바꾸는 행이라 §10 묶음 출발 기준 3에 맞는다.
+- 그 설치본에서 S1~S3 재시연
+- BL-0045 분류
+clean HEAD 종료 검증과 PR merge 결과는 PR 본문과 다음 campaign 기록에 남는다.
 
 ## Nonclaims
 
