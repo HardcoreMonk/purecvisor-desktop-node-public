@@ -541,7 +541,7 @@
       "out_of_scope_ref": null,
       "needs_design": false,
       "status": "closed",
-      "closed_by": "PR #155 (commit b3be320)"
+      "closed_by": "PR #155 (commit b3be320), PR #156 (commit c9f3220)"
     },
     {
       "id": "BL-0046",
