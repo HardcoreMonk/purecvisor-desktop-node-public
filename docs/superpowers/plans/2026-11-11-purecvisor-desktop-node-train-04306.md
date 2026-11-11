@@ -105,9 +105,19 @@ host mutation은 없다. operational current는 `0.43.4-admin-smoke` 그대로�
 
 ## Task 2: 계정 보관
 
-- [ ] Lane 2. 설치본 version, 계정 이름과 상태, service, 방화벽 규칙, 보존 VM을 먼저 실측한다. data root의 `accounts.json`을 보호 위치에 백업하고 SHA-256을 비교한다. 그다음 data root에서 치우고 service를 다시 시작한다.
+- [x] Lane 2. 설치본 version, 계정 이름과 상태, service, 방화벽 규칙, 보존 VM을 먼저 실측한다. data root의 `accounts.json`을 보호 위치에 백업하고 SHA-256을 비교한다. 그다음 data root에서 치우고 service를 다시 시작한다.
   - 확인: `POST /api/v1/auth/loopback-session` 200, Web `http://127.0.0.1/` 200, service Running/Automatic, 보존 VM 둘 그대로.
   - 계정 이름과 상태만 적고 해시와 경로는 적지 않는다. 로컬 commit.
+
+실행 기록(2026-11-11, 18:28 KST):
+- 실측(전): 설치본 Host `0.43.5-admin-smoke+8173777`(승격하지 않은 train `0.43.5` fullgate build), ARP `{BF412A3E…}` `0.43.5` 1개, service Running/Automatic, PureCVisor 방화벽 규칙 0, Web `200`, loopback 세션 `409` `PCV_LOOPBACK_SESSION_DISABLED`.
+- VM: `pcv-guest-installed-04253-r1` Off, `pcv-it-s2-source` Off, `pcv-it-s1r-ubuntu` Running(Task 6 대상).
+- 계정 4개: `pcv-admin` admin disabled, `pcv-admin2` admin enabled, `pcv-s13-operator` operator enabled, `pcv-s4-operator` operator disabled.
+- 백업: data root `accounts.json`(1,421 bytes)을 사용자 프로필 아래 보호 위치로 복사했다. 그 위치는 상속을 끊었고 사용자·SYSTEM·Administrators만 접근한다. 원본 ACL 표기도 같은 위치에 두었다. 복사본 SHA-256은 원본과 같다.
+- 원본을 data root에서 지우고 service를 다시 시작했다.
+- 확인: loopback 세션 `200`, Web `200`, service Running, data root에 계정 파일 없음.
+
+operational current는 `0.43.4-admin-smoke` 그대로다.
 
 ## Task 3: pair
 
