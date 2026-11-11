@@ -280,7 +280,7 @@ operational current는 `0.43.4-admin-smoke` 그대로다.
 
 ## Task 10: train PR
 
-- [ ] clean HEAD 종료 검증을 한다.
+- [x] clean HEAD 종료 검증을 한다.
   - `dotnet build src/DesktopNode.sln -c Release`
   - `Invoke-PcvPrGate.ps1`
   - Pester 4종
@@ -297,37 +297,73 @@ operational current는 `0.43.4-admin-smoke` 그대로다.
 - `train-path-check --payload bf5c214 --head ec62a83`: `ok=true`, 바뀐 경로 40개, `product_paths` 없음, `allowed_pin_paths` 6개(config spec 3개, Delivery verifier 3개)
 - Task 8·9 실행 기록의 시각은 처음에 추정값으로 적었다가 commit 시각으로 고쳤다.
 
+실행 기록(2026-11-12 00:49~00:55 KST, PR): PR #161(head `921c457`)의 Required CI 다섯 개(`dotnet`, `web`, `delivery`, `installer-policy`, `public-boundary-ci-required`)가 pass였다. base가 `origin/main`인 것을 확인하고 `--match-head-commit`으로 merge했다. merge commit `cb52d33`의 main push run Public Boundary `43052723883`과 Development Gates `43052723918`이 success다. operational current는 `0.43.7-admin-smoke`가 됐다.
+
 ## Task 11: 판정
 
-- [ ] clean `main`에서 `pcvverify completion`을 돌린다. `complete=true`이고 hygiene C2가 queue 0·train promoted로 충족되는지 본다. 결과는 이 plan에 적고 Task 17의 PR로 남긴다. 새 감사 문서는 쓰지 않는다.
+- [x] clean `main`에서 `pcvverify completion`을 돌린다. `complete=true`이고 hygiene C2가 queue 0·train promoted로 충족되는지 본다. 결과는 이 plan에 적고 Task 17의 PR로 남긴다. 새 감사 문서는 쓰지 않는다.
+
+실행 기록(2026-11-12 00:57 KST): clean `main` `cb52d33`에서 `pcvverify completion`을 돌렸다(`artifacts/completion/20261112/`).
+- `completion: complete=true met=7/7 gaps=0 head=cb52d3330d51ddb51b4df34b9068ec6580f21ea9`
+- hygiene C2 `met=true`(current `0.43.7-admin-smoke`, train promoted, queue 0, unfinished train 0), C3 `met=true`, C4 `met=true`
+- hygiene C7 `met=false`(open 3: BL-0047, BL-0048, BL-0049). BL-0048(대시보드 첫 로드)과 BL-0049(콘솔 입력 요청 시간)는 PR #157·#159로 고쳤고 이번 train probe(`lane2-dashboard-console-probe-2026-11-11-04307`)가 설치본에서 확인했으므로 닫았다. BL-0047은 Task 18에서 다룬다.
+- `complete=true`는 판정 입력의 정적 상태다. 현행 설치본의 S1~S3 시연은 Task 12~16에서 다시 한다.
 
 ## Task 12: S1 재시연 시작 (승인 2)
 
-- [ ] Lane 2. 설치본 `0.43.7`(승격 뒤)에서 한다.
+- [x] Lane 2. 설치본 `0.43.7`(승격 뒤)에서 한다.
   - `pcv-s13-operator` 비밀번호를 실행 경계에서 새로 만들어 `pcvcli account reset-password --password-env`로 바꾼다.
   - 브라우저 시나리오 스크립트 S1 `--execute`로 `pcv-it-s1r2-ubuntu`(Ubuntu ISO, vCPU 2, 4096MB, 32GB, Default Switch)를 만들고 시작한다.
   - 브라우저 콘솔 키보드 입력으로 Ubuntu Server 설치를 진행한다.
+
+실행 기록(2026-11-12 00:57~01:04 KST): 설치본 `0.43.7-admin-smoke+3898139`(operational current)에서 했다.
+- `pcv-s13-operator` 비밀번호를 실행 경계에서 새로 만들어 `pcvcli account reset-password --password-env`로 바꿨다(exit 0). 값은 기록하지 않았고 저장소 밖 DPAPI 파일에만 있다. 계정은 `pcv-admin2` admin과 `pcv-s13-operator` operator가 enabled다.
+- 브라우저 시나리오 S1 `--execute`(`--username pcv-s13-operator --vm pcv-it-s1r2-ubuntu --cpu 2 --memory 4096 --disk 32`, ISO `ubuntu-26.04.1-live-server-amd64.iso`): **pass**, 56초. 로그인, 생성 마법사, 생성 job, Default Switch 연결, 시작, 콘솔 frame, 키 입력과 화면 변화까지 12단계다(`artifacts/browser-scenario-20261112/s1-005745`).
+- 브라우저 콘솔 키보드 입력(Web Console canvas 키 처리기, `pcv-s13-operator` 로그인)으로 설치 프로그램을 진행했다. 화면마다 `[ Done ]`에 기본 초점이 있어 Enter로 넘어갔다.
+  - 언어 English → 키보드 English (US) → 설치 유형 Ubuntu Server → 네트워크(eth0 DHCPv4 `172.21.65.89/20`, Default Switch NAT) → 프록시 없음 → 미러(`archive.ubuntu.com`, 시험 통과) → 설치 프로그램 업데이트 확인 화면
+  - 입력 오류 코드 0건. 캡처는 `artifacts/s1r2-04307-20261112/console/`(커밋하지 않음)에 있다.
+- 남은 시나리오 Edge 0개. 설치본·service·MSI는 바꾸지 않았다.
 
 ## Task 13: S1 설치 완료와 네트워크 (승인 2)
 
 - [ ] Lane 2. 브라우저 콘솔 키보드 입력으로 사용자 정보(게스트 비밀번호는 실행 경계에서 만들고 기록하지 않음), OpenSSH, 설치 완료, 재부팅, 로그인을 한다. `ip -4 addr`와 `ping`(주소와 이름)으로 네트워크를 확인한다.
 
+실행 기록(2026-11-12 01:04~01:14 KST, **중단**): 브라우저 콘솔 키 입력으로 설치를 이어 갔다.
+- 업데이트 없이 계속 → 저장소(디스크 전체, LVM. 첫 초점이 디스크 선택이라 아래 방향키 다섯 번으로 `[ Done ]`) → 요약 → 파괴적 작업 확인 Continue → 사용자 정보(이름 `pcv`, 서버 이름 `pcvs1r2`, 사용자 이름 `pcv`, 게스트 비밀번호 20자 두 칸 일치) → Ubuntu Pro 건너뜀 → OpenSSH server 선택 → 설치 시작
+- 사용자 정보 입력: 키 요청 144건, 중앙값 169ms, 거절 0건. 첫 S1 시도(`0.43.4`)가 멈춘 화면을 넘었다.
+- 이 checkpoint의 tool batch 12회를 다 써서 회로를 열고 멈췄다. 화면 하나마다 키 실행과 캡처 확인에 batch 두 번이 들었다. 재부팅, 로그인, 네트워크 확인은 하지 않았다.
+- helper로 Space를 `" "`로 보내 체크박스가 바뀌지 않았다. helper 키 이름은 `Space`다(제품 결함 아님). Enter로 체크했다.
+- 사용자 결정 `"2"`(2026-11-12, 재시연 중단: 정리와 기록 PR만)로 Task 13을 끝냈다.
+
 ## Task 14: S2 설치된 VM 복제 (승인 2)
 
 - [ ] Lane 2. 스크립트 S2로 `pcv-it-s1r2-ubuntu`를 끄고 template으로 잠근 뒤 `pcv-it-s2r-clone`을 복제한다(`clone_seconds`를 60초 기준과 비교). 복제본을 시작해 브라우저 콘솔에서 로그인 화면을 확인한다.
+
+실행 기록(2026-11-12): 사용자 결정 `"2"`로 하지 않았다.
 
 ## Task 15: S3 checkpoint (승인 2)
 
 - [ ] Lane 2. 스크립트 S3로 `pcv-it-s2r-clone`에서 checkpoint를 만들고 복원한다. 예약을 저장하고 첫 예약 실행을 기다린 뒤 지운다(`--wait-schedule`).
 
+실행 기록(2026-11-12): 사용자 결정 `"2"`로 하지 않았다.
+
 ## Task 16: 정리 (승인 2)
 
-- [ ] Lane 2. 스크립트 `--cleanup`으로 `pcv-it-s2r-clone`, `pcv-it-s1r2-ubuntu`(template 잠금을 먼저 푼다), `pcv-it-s1r-ubuntu`를 지운다. `pcv-s13-operator`를 끄고 저장소 밖 임시 비밀 파일을 지운다.
+- [x] Lane 2. 스크립트 `--cleanup`으로 `pcv-it-s2r-clone`, `pcv-it-s1r2-ubuntu`(template 잠금을 먼저 푼다), `pcv-it-s1r-ubuntu`를 지운다. `pcv-s13-operator`를 끄고 저장소 밖 임시 비밀 파일을 지운다.
   - 끝 상태: 이번 `pcv-it-` VM 0개, 보존 VM 두 개 그대로, 계정은 `pcv-admin2`만 enabled, 설치본·service 그대로
+
+실행 기록(2026-11-12 01:18~01:19 KST): 사용자 결정 `"2"`의 정리다.
+- `pcv-it-s1r2-ubuntu`와 `pcv-it-s1r-ubuntu`를 PCVCLI `vm stop`(둘 다 Off) 뒤 `vm delete --yes`(managed delete, exit 0)로 지웠다. 두 VM 폴더도 남지 않았다. S2 복제본은 만들지 않았다.
+- `pcv-s13-operator`를 disable했다(exit 0). 계정은 `pcv-admin2` admin만 enabled다.
+- 저장소 밖 임시 비밀 파일(operator 비밀번호, 두 게스트 비밀번호)을 지웠다. 남은 시나리오 Edge 0개.
+- 끝 상태: VM은 보존 VM `pcv-guest-installed-04253-r1`과 `pcv-it-s2-source`(둘 다 Off)뿐이다. 설치본 `0.43.7`, service 그대로.
+- train 계정 백업(저장소 밖 보호 위치)은 지우지 않았다. 다음 승인으로 묻는다.
 
 ## Task 17: 재시연 기록
 
-- [ ] `docs/ga-ready/demo/s1-s3-browser-reproof-2026-11-11-04307.md`에 Task 12~16 결과를 쓴다. 판정 입력(`config/project-completion-criteria.json`)은 바꾸지 않는다. push, PR, green CI 뒤 merge.
+- [x] `docs/ga-ready/demo/s1-s3-browser-reproof-2026-11-11-04307.md`에 Task 12~16 결과를 쓴다. 판정 입력(`config/project-completion-criteria.json`)은 바꾸지 않는다. push, PR, green CI 뒤 merge.
+
+실행 기록(2026-11-12): `docs/ga-ready/demo/s1-s3-browser-reproof-2026-11-12-04307.md`에 S1 진행(중단), S2·S3 미실행, 정리를 썼다. 판정 입력은 바꾸지 않았다. campaign을 닫는다.
 
 ## Task 18: BL-0047 텍스트 보내기 폼 (승인 3)
 
@@ -336,6 +372,14 @@ operational current는 `0.43.4-admin-smoke` 그대로다.
   - 수정은 단위 시험으로 덮는다. 같은 PR에 `release-train.json` `queue` 행과 backlog BL-0047 `closed_by`(설치본 확인은 다음 probe로 남긴다)를 더한다.
   - `origin/main`(train merge 뒤)으로 rebase하고, main checkout에서 그 commit을 detached로 PR gate를 돈다. push, PR, green CI 뒤 merge, main push run 확인.
   - 이 PR에서 campaign을 닫는다.
+
+실행 기록(2026-11-12): 사용자 결정 `"2"`(정리와 기록 PR만)로 이 campaign에서는 하지 않았다. grok의 조사·구현은 저장소 밖 worktree `pcv-wt-bl0047`(branch `lane1/bl0047-text-keys-20261111`, commit 없음)에 남아 있고 검토하지 않았다. 다음 승인으로 넘긴다.
+
+## 마무리 (2026-11-12)
+
+- train `0.43.7-admin-smoke`는 승격했다(PR #161, merge `cb52d33`). operational current는 `0.43.7-admin-smoke`다.
+- S1~S3 재시연은 S1 설치 도중 checkpoint 예산으로 멈췄고, 사용자 결정 `"2"`로 중단했다. 정리와 기록만 했다.
+- BL-0047(Task 18)은 다음 승인으로 넘긴다.
 
 ## Nonclaims
 

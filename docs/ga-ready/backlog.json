@@ -576,8 +576,8 @@
       "basis": "2026-11-11 사용자 결정 \"1,2 counts , 3\"(campaign train-04305-20261111 마무리 보고의 다음 승인 2에 대한 답 counts): 고칠 대상이다. 원인 수정은 campaign bl0048-bl0049-fix-20261111에서 한다.",
       "out_of_scope_ref": null,
       "needs_design": false,
-      "status": "open",
-      "closed_by": null
+      "status": "closed",
+      "closed_by": "PR #157 (commit 39976fd2) and PR #159 (commit 04b1a91b), train probe lane2-dashboard-console-probe-2026-11-11-04307 (ops/summary once, no cancel, list at 4.9-5.7 s)"
     },
     {
       "id": "BL-0049",
@@ -588,8 +588,8 @@
       "basis": "2026-11-11 사용자 결정 \"1,2 counts , 3\"(campaign train-04305-20261111 마무리 보고의 다음 승인 2에 대한 답 counts): 고칠 대상이다. 원인 수정은 campaign bl0048-bl0049-fix-20261111에서 한다.",
       "out_of_scope_ref": null,
       "needs_design": false,
-      "status": "open",
-      "closed_by": null
+      "status": "closed",
+      "closed_by": "PR #157 (commit 39976fd2) and PR #159 (commit 04b1a91b), train probe lane2-dashboard-console-probe-2026-11-11-04307 (console input median 176 ms, no rejections)"
     },
     {
       "id": "BL-0050",
