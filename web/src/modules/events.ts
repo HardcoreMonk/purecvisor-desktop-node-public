@@ -4,15 +4,71 @@
 window.PCV = window.PCV || {};
 (function (PCV) {
 // --- legacy job-polling.ts ---
-async function refreshAll() {
-  if (state.refreshController) {
-    state.refreshController.abort();
+// 자동 호출(init, 로그인 완료)은 이미 도는 첫 갱신을 취소하지 않고 같은 Promise를 기다린다.
+// token 검사를 통과한 뒤 인증 값이 바뀌면 그 갱신은 옛 자격으로 끝나므로 새로 시작한다.
+// force는 사용자가 누른 새로 고침, 연결 변경, token 지우기처럼 새 갱신을 시작한다.
+let refreshFlight = null;
+let refreshFlightAuth = null;
+
+function refreshAuthValue() {
+  return state.authAccessToken.trim() || state.apiToken.trim();
+}
+
+function refreshLocalErrors() {
+  return {
+    summaryError: state.summaryError,
+    networkError: state.networkError,
+    activityError: state.activityError
+  };
+}
+
+function refreshLocalAuthStarted(before) {
+  return [state.summaryError, state.networkError, state.activityError].some((failure, index) => {
+    const previous = index === 0 ? before.summaryError : index === 1 ? before.networkError : before.activityError;
+    return Boolean(failure && failure !== previous && isAuthError(failure));
+  });
+}
+
+async function runRefreshStep(step, requestId, controller, stepFailures) {
+  if (requestId !== state.refreshRequestId || controller.signal.aborted) return;
+  try {
+    await step.run();
+  } catch (error) {
+    const normalized = normalizeError(error);
+    if (normalized.code === 'PCV_REQUEST_ABORTED') return;
+    normalized.operation = normalized.operation || step.label;
+    stepFailures.push(normalized);
+    if (isAuthError(normalized)) controller.abort();
   }
-  const requestId = state.refreshRequestId + 1;
-  const controller = new AbortController();
-  state.refreshRequestId = requestId;
-  state.refreshController = controller;
-  const requestOptions = { signal: controller.signal };
+}
+
+async function runRefreshWave(wave, requestId, controller, stepFailures) {
+  if (requestId !== state.refreshRequestId) return true;
+  const before = refreshLocalErrors();
+  await Promise.allSettled(wave.map((step) => runRefreshStep(step, requestId, controller, stepFailures)));
+  if (requestId !== state.refreshRequestId) return true;
+  if (stepFailures.some(isAuthError) || refreshLocalAuthStarted(before)) {
+    if (!controller.signal.aborted) controller.abort();
+    return true;
+  }
+  return false;
+}
+
+function publishRefreshResult(stepFailures) {
+  const failures = collectRefreshFailures(stepFailures)
+    .filter((failure) => failure.code !== 'PCV_REQUEST_ABORTED');
+  state.lastRefreshedAt = Date.now();
+  state.partialFailures = failures;
+  if (failures.length > 0) {
+    state.error = buildPartialRefreshError(failures);
+    state.connectionState = failures.some(isAuthError) ? 'auth' : 'degraded';
+  } else {
+    state.error = null;
+    state.connectionState = 'connected';
+  }
+}
+
+async function runRefreshAll(requestId, controller, requestOptions) {
   state.loading = true;
   state.error = null;
   state.partialFailures = [];
@@ -20,7 +76,8 @@ async function refreshAll() {
   try {
     await pcvEnsureLoopbackSession();
     if (requestId !== state.refreshRequestId) return;
-    if (!state.authAccessToken.trim() && !state.apiToken.trim()) {
+    const authValue = refreshAuthValue();
+    if (!authValue) {
       state.connectionState = 'auth';
       state.lastRefreshedAt = Date.now();
       state.loading = false;
@@ -28,6 +85,7 @@ async function refreshAll() {
       render();
       return;
     }
+    if (requestId === state.refreshRequestId) refreshFlightAuth = authValue;
 
     const steps = [
       { label: 'ops.summary', run: () => loadOpsSummary(requestOptions) },
@@ -43,38 +101,16 @@ async function refreshAll() {
       { label: 'job.poll', run: () => pollTrackedJobs(requestOptions) },
       { label: 'vm.selected.refresh', run: () => refreshSelectedVm(requestOptions) }
     ];
-
     const stepFailures = [];
-    for (const step of steps) {
-      if (requestId !== state.refreshRequestId) return;
-      try {
-        await step.run();
-      } catch (error) {
-        const normalized = normalizeError(error);
-        if (normalized.code === 'PCV_REQUEST_ABORTED') {
-          continue;
-        }
-        normalized.operation = normalized.operation || step.label;
-        stepFailures.push(normalized);
-        if (isAuthError(normalized)) {
-          controller.abort();
-          break;
-        }
-      }
-    }
-
+    const dashboardAuth = await runRefreshWave(steps.slice(0, 3), requestId, controller, stepFailures);
     if (requestId !== state.refreshRequestId) return;
-    const failures = collectRefreshFailures(stepFailures)
-      .filter((failure) => failure.code !== 'PCV_REQUEST_ABORTED');
-    state.lastRefreshedAt = Date.now();
-    state.partialFailures = failures;
-    if (failures.length > 0) {
-      state.error = buildPartialRefreshError(failures);
-      state.connectionState = failures.some(isAuthError) ? 'auth' : 'degraded';
-    } else {
-      state.error = null;
-      state.connectionState = 'connected';
+    if (!dashboardAuth) {
+      publishRefreshResult(stepFailures);
+      render();
+      await runRefreshWave(steps.slice(3), requestId, controller, stepFailures);
+      if (requestId !== state.refreshRequestId) return;
     }
+    publishRefreshResult(stepFailures);
   } catch (error) {
     if (requestId !== state.refreshRequestId) return;
     state.error = normalizeError(error);
@@ -86,6 +122,27 @@ async function refreshAll() {
       render();
     }
   }
+}
+
+async function refreshAll(options) {
+  const force = Boolean(options && options.force === true);
+  const authValue = refreshAuthValue();
+  const sameAuth = refreshFlightAuth === null || refreshFlightAuth === authValue;
+  if (!force && refreshFlight && sameAuth) return refreshFlight;
+  if (state.refreshController) state.refreshController.abort();
+  refreshFlightAuth = null;
+  const requestId = state.refreshRequestId + 1;
+  const controller = new AbortController();
+  state.refreshRequestId = requestId;
+  state.refreshController = controller;
+  const flight = runRefreshAll(requestId, controller, { signal: controller.signal });
+  refreshFlight = flight;
+  return flight.finally(() => {
+    if (refreshFlight === flight) {
+      refreshFlight = null;
+      refreshFlightAuth = null;
+    }
+  });
 }
 
 function pcvTrackJob(job) {

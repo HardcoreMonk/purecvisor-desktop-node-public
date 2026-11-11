@@ -167,7 +167,7 @@ async function loginAccountFromForm(event) {
     const passwordInput = byId('account-password');
     if (passwordInput) passwordInput.value = '';
     state.connectionState = 'connected';
-    await refreshAll();
+    await refreshAll({ force: true });
   } catch (error) {
     state.authError = normalizeError(error);
     state.connectionState = isAuthError(state.authError) ? 'auth' : 'degraded';
@@ -196,7 +196,7 @@ async function refreshAccountSession(options = {}) {
     const result = await desktopApi.refreshAccount({ refresh_token: state.authRefreshToken });
     applyAccountSessionPayload(result);
     state.connectionState = 'connected';
-    if (!silent) await refreshAll();
+    if (!silent) await refreshAll({ force: true });
   } catch (error) {
     state.authError = normalizeError(error);
     clearAccountSessionState();
@@ -222,7 +222,7 @@ async function logoutAccount() {
     clearAccountSessionState();
     state.authPending = false;
     state.tokenActionMessage = t('account.diag.jwt_cleared');
-    await refreshAll();
+    await refreshAll({ force: true });
     render();
   }
 }
@@ -422,7 +422,7 @@ async function createAccountFromForm(event) {
       applyAccountSessionPayload(result);
       state.connectionState = 'connected';
     }
-    await refreshAll();
+    await refreshAll({ force: true });
   } catch (error) {
     state.accountDirectoryError = scrubAccountSecret(normalizeError(error), password);
   } finally {
@@ -452,7 +452,7 @@ async function disableAccountFromButton(username) {
   render();
   try {
     await desktopApi.disableAccount(name, { confirm_username: name });
-    await refreshAll();
+    await refreshAll({ force: true });
   } catch (error) {
     state.accountDirectoryError = normalizeError(error);
   } finally {
@@ -512,7 +512,7 @@ async function resetAccountFromForm(event) {
       state.tokenActionMessage = t('account.reset.self_relogin');
       clearAccountSessionState();
     } else {
-      await refreshAll();
+      await refreshAll({ force: true });
     }
   } catch (error) {
     state.accountDirectoryError = scrubAccountSecret(normalizeError(error), password);
@@ -577,7 +577,7 @@ async function changeAccountFromForm(event) {
       new_password: password
     });
     applyAccountSessionPayload(result);
-    await refreshAll();
+    await refreshAll({ force: true });
   } catch (error) {
     state.accountDirectoryError = scrubAccountSecret(scrubAccountSecret(normalizeError(error), password), current);
   } finally {
@@ -619,7 +619,7 @@ function clearBrowserToken() {
   state.tokenActionMessage = t('account.token.cleared');
   state.diagnosticBundleError = null;
   state.partialFailures = [];
-  refreshAll();
+  refreshAll({ force: true });
 }
 
 function clearBrowserState() {
@@ -645,7 +645,7 @@ function clearBrowserState() {
   } catch (_) {
     // Browser storage can be unavailable; the visible session still clears.
   }
-  refreshAll();
+  refreshAll({ force: true });
 }
 
 function navigateToView(view) {
@@ -661,7 +661,7 @@ function navigateToView(view) {
 function handleShellCommand(command) {
   if (!command) return;
   if (command === 'refresh') {
-    refreshAll();
+    refreshAll({ force: true });
     return;
   }
   if (command === 'open-create-vm') {

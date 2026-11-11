@@ -1188,11 +1188,17 @@ function applyAccountSessionPayload(payload) {
 
 // --- legacy load.ts ---
 async function loadHost(options = {}) {
-  state.host = await desktopApi.getHostStatus(options);
+  if (isSupersededRequest(null, options)) return;
+  const host = await desktopApi.getHostStatus(options);
+  if (isSupersededRequest(null, options)) return;
+  state.host = host;
 }
 
 async function loadVms(options = {}) {
-  state.vms = await desktopApi.listVms(options);
+  if (isSupersededRequest(null, options)) return;
+  const vms = await desktopApi.listVms(options);
+  if (isSupersededRequest(null, options)) return;
+  state.vms = vms;
   reconcileSelectedVm();
 }
 
@@ -1219,7 +1225,10 @@ async function loadNetworkInventory(options = {}) {
 }
 
 async function loadRuntimePolicy(options = {}) {
-  state.runtimePolicy = await desktopApi.getRuntimePolicy(options);
+  if (isSupersededRequest(null, options)) return;
+  const policy = await desktopApi.getRuntimePolicy(options);
+  if (isSupersededRequest(null, options)) return;
+  state.runtimePolicy = policy;
 }
 
 async function loadAccountSession(options = {}) {
@@ -1486,9 +1495,11 @@ async function loadCheckpoints(vmId, options = {}) {
 
 async function refreshSelectedVm(options = {}) {
   if (!state.selectedVmId) return;
+  if (isSupersededRequest(null, options)) return;
   const vmId = state.selectedVmId;
   try {
     const vm = await desktopApi.getVm(vmId, options);
+    if (isSupersededRequest(null, options)) return;
     if (state.selectedVmId === vmId) {
       state.selectedVm = vm;
     }

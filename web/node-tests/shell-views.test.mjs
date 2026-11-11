@@ -3072,6 +3072,341 @@ test("logout closes open modals", async () => {
   assert.equal(openCount(), 0);
 });
 
+function t12AbortError(operation) {
+  return {
+    normalized: true,
+    status: 0,
+    operation,
+    code: "PCV_REQUEST_ABORTED",
+    message: "aborted",
+    detail: "aborted",
+    retryable: false
+  };
+}
+
+function t12Delay(ms, signal, operation) {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => resolve(undefined), ms);
+    if (!signal) return;
+    const onAbort = () => {
+      clearTimeout(timer);
+      reject(t12AbortError(operation));
+    };
+    if (signal.aborted) onAbort();
+    else signal.addEventListener("abort", onAbort, { once: true });
+  });
+}
+
+const T12_STEP_DELAY_MS = {
+  "ops.summary": 1500,
+  "host.status": 1200,
+  "vm.list": 500
+};
+
+function t12Signal(args, index) {
+  const options = args[index];
+  return options && options.signal ? options.signal : null;
+}
+
+function t12Payload(label) {
+  if (label === "vm.list") return [{ id: "vm-1", name: "vm-1", state: "Running" }];
+  if (label === "host.status") return { supported: true, name: "measured-host" };
+  if (label === "ops.summary") {
+    return {
+      errors: [],
+      signals: [],
+      host: { supported: true },
+      vm_counts: { total: 1, running: 1, checkpoint_warnings: 0 }
+    };
+  }
+  if (label === "job.list" || label === "diagnostic.bundle.list" || label === "account.list") return [];
+  return {};
+}
+
+function t12InstallDelayedApi(calls, onRest) {
+  const tally = (label, args, signalIndex) => {
+    calls.push({ label, at: Date.now() });
+    if (onRest && label !== "ops.summary" && label !== "host.status" && label !== "vm.list") onRest(label);
+    const ms = T12_STEP_DELAY_MS[label] || 100;
+    return t12Delay(ms, t12Signal(args, signalIndex), label).then(() => t12Payload(label));
+  };
+  stubDesktopApi(env, {
+    getOpsSummary: (...args) => tally("ops.summary", args, 0),
+    getHostStatus: (...args) => tally("host.status", args, 0),
+    listVms: (...args) => tally("vm.list", args, 0),
+    getNetworkInventory: (...args) => tally("network.inventory", args, 0),
+    getRuntimePolicy: (...args) => tally("runtime.policy", args, 0),
+    getAccountSession: (...args) => tally("auth.session", args, 0),
+    getAccountRbac: (...args) => tally("auth.rbac", args, 0),
+    listAccounts: (...args) => tally("account.list", args, 0),
+    getConsoleCapabilities: (...args) => tally("console.capabilities", args, 0),
+    listJobs: (...args) => tally("job.list", args, 2),
+    listDiagnosticBundles: (...args) => tally("diagnostic.bundle.list", args, 2),
+    getJob: (...args) => tally("job.poll", args, 1),
+    getVm: (...args) => tally("vm.selected.refresh", args, 1)
+  });
+}
+
+function t12ResetRefreshState() {
+  env.state.apiToken = "measure-token";
+  env.state.authAccessToken = "";
+  env.state.trackedJobs = [];
+  env.state.selectedVmId = "";
+  env.state.host = null;
+  env.state.vms = [];
+  env.state.opsSummary = null;
+  env.state.summaryError = null;
+  env.state.partialFailures = [];
+  env.state.lastRefreshedAt = null;
+  env.state.loading = false;
+  env.state.connectionState = "idle";
+}
+
+test("T12 first-load refresh joins an in-flight call and paints dashboard steps first", async () => {
+  const savedApi = env.desktopApi;
+  const saved = {
+    apiToken: env.state.apiToken,
+    authAccessToken: env.state.authAccessToken,
+    trackedJobs: env.state.trackedJobs.slice(),
+    selectedVmId: env.state.selectedVmId,
+    host: env.state.host,
+    vms: env.state.vms,
+    opsSummary: env.state.opsSummary,
+    summaryError: env.state.summaryError,
+    partialFailures: env.state.partialFailures,
+    lastRefreshedAt: env.state.lastRefreshedAt,
+    loading: env.state.loading,
+    connectionState: env.state.connectionState
+  };
+  const calls = [];
+  let painted = null;
+  try {
+    t12ResetRefreshState();
+    t12InstallDelayedApi(calls, () => {
+      if (painted) return;
+      painted = {
+        lastRefreshedAt: env.state.lastRefreshedAt,
+        loading: env.state.loading,
+        vms: env.state.vms.length,
+        host: env.state.host && env.state.host.name
+      };
+    });
+    const singleStarted = Date.now();
+    await env.loadAll();
+    const singleMs = Date.now() - singleStarted;
+    const singleOrder = calls.map((call) => call.label);
+    const serialSumMs = singleCallsDelay(calls);
+    assert.equal(singleOrder[0], "ops.summary");
+    assert.equal(painted && painted.vms, 1);
+    assert.equal(painted && painted.host, "measured-host");
+    assert.equal(typeof (painted && painted.lastRefreshedAt), "number");
+    assert.equal(painted && painted.loading, true);
+    assert.ok(singleMs < serialSumMs, `wall ${singleMs}ms is not under serial sum ${serialSumMs}ms`);
+    calls.length = 0;
+    painted = null;
+    const first = env.loadAll();
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    const second = env.loadAll();
+    await Promise.all([first, second]);
+    const overlapOps = calls.filter((call) => call.label === "ops.summary").length;
+    console.log("T12-AFTER " + JSON.stringify({
+      singleMs,
+      serialSumMs,
+      singleOrder,
+      overlapOps,
+      overlapOrder: calls.map((call) => call.label)
+    }));
+    assert.equal(overlapOps, 1);
+    assert.equal(env.state.connectionState, "connected");
+    assert.equal(env.state.loading, false);
+  } finally {
+    env.desktopApi = savedApi;
+    env.state.apiToken = saved.apiToken;
+    env.state.authAccessToken = saved.authAccessToken;
+    env.state.trackedJobs = saved.trackedJobs;
+    env.state.selectedVmId = saved.selectedVmId;
+    env.state.host = saved.host;
+    env.state.vms = saved.vms;
+    env.state.opsSummary = saved.opsSummary;
+    env.state.summaryError = saved.summaryError;
+    env.state.partialFailures = saved.partialFailures;
+    env.state.lastRefreshedAt = saved.lastRefreshedAt;
+    env.state.loading = saved.loading;
+    env.state.connectionState = saved.connectionState;
+  }
+});
+
+test("T12 a forced refresh still starts a new ops summary request", async () => {
+  const savedApi = env.desktopApi;
+  const calls = [];
+  try {
+    t12ResetRefreshState();
+    t12InstallDelayedApi(calls);
+    const first = env.loadAll();
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    const second = env.loadAll({ force: true });
+    await Promise.all([first, second]);
+    assert.equal(calls.filter((call) => call.label === "ops.summary").length, 2);
+  } finally {
+    env.desktopApi = savedApi;
+  }
+});
+
+test("T12 an auth error cancels the rest of the refresh", async () => {
+  const savedApi = env.desktopApi;
+  const calls = [];
+  try {
+    t12ResetRefreshState();
+    t12InstallDelayedApi(calls);
+    stubDesktopApi(env, {
+      getHostStatus: async () => {
+        calls.push({ label: "host.status", at: Date.now() });
+        throw {
+          normalized: true,
+          status: 401,
+          operation: "host.status",
+          code: "PCV_AUTH_REQUIRED",
+          message: "auth",
+          detail: "auth",
+          retryable: false
+        };
+      }
+    });
+    await env.loadAll({ force: true });
+    assert.equal(env.state.connectionState, "auth");
+    assert.equal(calls.some((call) => call.label === "network.inventory"), false);
+    assert.equal(calls.some((call) => call.label === "ops.summary"), true);
+  } finally {
+    env.desktopApi = savedApi;
+  }
+});
+
+test("T12 a late aborted host result does not overwrite the newer host", async () => {
+  const savedApi = env.desktopApi;
+  let releaseOld = null;
+  let hostCalls = 0;
+  try {
+    t12ResetRefreshState();
+    stubDesktopApi(env, {
+      getOpsSummary: async () => ({ errors: [], signals: [] }),
+      getHostStatus: (options) => {
+        hostCalls += 1;
+        if (hostCalls === 1) {
+          return new Promise((resolve) => {
+            releaseOld = () => resolve({ name: "old-host", supported: true });
+          });
+        }
+        assert.equal(options && options.signal && options.signal.aborted, false);
+        return Promise.resolve({ name: "new-host", supported: true });
+      },
+      listVms: async () => [],
+      getNetworkInventory: async () => ({}),
+      getRuntimePolicy: async () => ({}),
+      listAccounts: async () => [],
+      getConsoleCapabilities: async () => ({}),
+      listJobs: async () => [],
+      listDiagnosticBundles: async () => []
+    });
+    const first = env.loadAll({ force: true });
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    assert.equal(typeof releaseOld, "function");
+    const second = env.loadAll({ force: true });
+    await second;
+    assert.equal(env.state.host && env.state.host.name, "new-host");
+    releaseOld();
+    await first;
+    assert.equal(env.state.host && env.state.host.name, "new-host");
+  } finally {
+    if (releaseOld) releaseOld();
+    env.desktopApi = savedApi;
+  }
+});
+
+test("T12 an automatic refresh after the token check starts again for the new token", async () => {
+  const savedApi = env.desktopApi;
+  const savedToken = env.state.apiToken;
+  const savedAccess = env.state.authAccessToken;
+  const calls = [];
+  let generation = 0;
+  try {
+    t12ResetRefreshState();
+    t12InstallDelayedApi(calls);
+    stubDesktopApi(env, {
+      getOpsSummary: (...args) => {
+        generation += 1;
+        const current = generation;
+        calls.push({ label: "ops.summary", at: Date.now() });
+        return t12Delay(T12_STEP_DELAY_MS["ops.summary"], t12Signal(args, 0), "ops.summary").then(() => ({
+          errors: [],
+          signals: [],
+          generation: current
+        }));
+      }
+    });
+    const first = env.loadAll();
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    assert.equal(calls.filter((call) => call.label === "ops.summary").length, 1);
+    env.state.authAccessToken = "replacement-access";
+    const second = env.loadAll();
+    await Promise.all([first, second]);
+    assert.equal(calls.filter((call) => call.label === "ops.summary").length, 2);
+    assert.equal(env.state.opsSummary && env.state.opsSummary.generation, 2);
+    assert.equal(env.state.connectionState, "connected");
+  } finally {
+    env.desktopApi = savedApi;
+    env.state.apiToken = savedToken;
+    env.state.authAccessToken = savedAccess;
+  }
+});
+
+test("T12 a refresh still waiting on the loopback session joins the same ops summary", async () => {
+  const savedApi = env.desktopApi;
+  const savedToken = env.state.apiToken;
+  const savedAccess = env.state.authAccessToken;
+  const calls = [];
+  let releaseSession = null;
+  try {
+    t12ResetRefreshState();
+    env.state.apiToken = "";
+    env.state.authAccessToken = "";
+    t12InstallDelayedApi(calls);
+    stubDesktopApi(env, {
+      createLoopbackSession: () => new Promise((resolve) => {
+        releaseSession = () => resolve({
+          access_token: "loopback-session",
+          session: { role: "operator" }
+        });
+      })
+    });
+    const first = env.loadAll();
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    assert.equal(typeof releaseSession, "function");
+    assert.equal(calls.filter((call) => call.label === "ops.summary").length, 0);
+    const second = env.loadAll();
+    releaseSession();
+    releaseSession = null;
+    await Promise.all([first, second]);
+    assert.equal(calls.filter((call) => call.label === "ops.summary").length, 1);
+    assert.equal(env.state.connectionState, "connected");
+  } finally {
+    if (releaseSession) releaseSession();
+    env.desktopApi = savedApi;
+    env.state.apiToken = savedToken;
+    env.state.authAccessToken = savedAccess;
+  }
+});
+
+function singleCallsDelay(calls) {
+  const seen = new Set();
+  let sum = 0;
+  for (const call of calls) {
+    if (seen.has(call.label)) continue;
+    seen.add(call.label);
+    sum += T12_STEP_DELAY_MS[call.label] || 100;
+  }
+  return sum;
+}
+
 test("troubleshooting cards show Hyper-V states, session logout, bundle action, and closed advanced section", () => {
   const section = env.document.querySelector('.app-view[data-view="troubleshooting"]');
   const index = fs.readFileSync(webRoot + "index.html", "utf8");
