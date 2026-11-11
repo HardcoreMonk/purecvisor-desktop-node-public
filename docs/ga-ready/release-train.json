@@ -3,32 +3,7 @@
   "contract": "pcv-release-train-v1",
   "design": "docs/superpowers/specs/2026-10-04-purecvisor-desktop-node-release-train-design.md",
   "operational_current": "0.43.4-admin-smoke",
-  "queue": [
-    {
-      "pr": 152,
-      "merge_commit": "ff40acd7",
-      "area": "web",
-      "summary": "zero-base audit follow-up: the dashboard first load runs one refresh (automatic calls join the running refresh with the same credential, user refresh forces a new one), renders the dashboard steps ops.summary, host.status and vm.list first and runs the other steps in parallel",
-      "lane2_probe": null,
-      "risk_tier": "M"
-    },
-    {
-      "pr": 153,
-      "merge_commit": "25709198",
-      "area": "hyperv+web",
-      "summary": "backlog BL-0046 and BL-0047: browser console input for one VM runs in arrival order (service lane and Web Console queue), the Msvm_Keyboard path is cached by VM id, kind=text goes one character per TypeText, and a 429 is retried once",
-      "lane2_probe": null,
-      "risk_tier": "M"
-    },
-    {
-      "pr": 157,
-      "merge_commit": "39976fd2",
-      "area": "api+hyperv+web",
-      "summary": "backlog BL-0048 and BL-0049 from the installed-flow trace: console frame and input requests run outside the global Local API request lock (rate limit still inside), one shared loopback session request per page, and console input checks one VM's run state instead of every VM summary per key",
-      "lane2_probe": null,
-      "risk_tier": "M"
-    }
-  ],
+  "queue": [],
   "trains": [
     {
       "version": "0.42.89-admin-smoke",
@@ -172,6 +147,17 @@
         146
       ],
       "status": "promoted"
+    },
+    {
+      "version": "0.43.6-admin-smoke",
+      "departed_at": "2026-11-11T18:26:00+09:00",
+      "source_commit": "ee821cbd19478169c176a186a2db78cffffcf08c",
+      "carriages": [
+        152,
+        153,
+        157
+      ],
+      "status": "running"
     }
   ]
 }
