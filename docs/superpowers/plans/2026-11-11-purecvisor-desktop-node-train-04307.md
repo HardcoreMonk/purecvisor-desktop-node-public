@@ -311,10 +311,18 @@ operational current는 `0.43.4-admin-smoke` 그대로다.
 
 ## Task 12: S1 재시연 시작 (승인 2)
 
-- [ ] Lane 2. 설치본 `0.43.7`(승격 뒤)에서 한다.
+- [x] Lane 2. 설치본 `0.43.7`(승격 뒤)에서 한다.
   - `pcv-s13-operator` 비밀번호를 실행 경계에서 새로 만들어 `pcvcli account reset-password --password-env`로 바꾼다.
   - 브라우저 시나리오 스크립트 S1 `--execute`로 `pcv-it-s1r2-ubuntu`(Ubuntu ISO, vCPU 2, 4096MB, 32GB, Default Switch)를 만들고 시작한다.
   - 브라우저 콘솔 키보드 입력으로 Ubuntu Server 설치를 진행한다.
+
+실행 기록(2026-11-12 00:57~01:04 KST): 설치본 `0.43.7-admin-smoke+3898139`(operational current)에서 했다.
+- `pcv-s13-operator` 비밀번호를 실행 경계에서 새로 만들어 `pcvcli account reset-password --password-env`로 바꿨다(exit 0). 값은 기록하지 않았고 저장소 밖 DPAPI 파일에만 있다. 계정은 `pcv-admin2` admin과 `pcv-s13-operator` operator가 enabled다.
+- 브라우저 시나리오 S1 `--execute`(`--username pcv-s13-operator --vm pcv-it-s1r2-ubuntu --cpu 2 --memory 4096 --disk 32`, ISO `ubuntu-26.04.1-live-server-amd64.iso`): **pass**, 56초. 로그인, 생성 마법사, 생성 job, Default Switch 연결, 시작, 콘솔 frame, 키 입력과 화면 변화까지 12단계다(`artifacts/browser-scenario-20261112/s1-005745`).
+- 브라우저 콘솔 키보드 입력(Web Console canvas 키 처리기, `pcv-s13-operator` 로그인)으로 설치 프로그램을 진행했다. 화면마다 `[ Done ]`에 기본 초점이 있어 Enter로 넘어갔다.
+  - 언어 English → 키보드 English (US) → 설치 유형 Ubuntu Server → 네트워크(eth0 DHCPv4 `172.21.65.89/20`, Default Switch NAT) → 프록시 없음 → 미러(`archive.ubuntu.com`, 시험 통과) → 설치 프로그램 업데이트 확인 화면
+  - 입력 오류 코드 0건. 캡처는 `artifacts/s1r2-04307-20261112/console/`(커밋하지 않음)에 있다.
+- 남은 시나리오 Edge 0개. 설치본·service·MSI는 바꾸지 않았다.
 
 ## Task 13: S1 설치 완료와 네트워크 (승인 2)
 
