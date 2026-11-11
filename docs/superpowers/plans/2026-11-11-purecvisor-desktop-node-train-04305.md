@@ -284,6 +284,10 @@ operational current는 `0.43.4-admin-smoke` 그대로다.
 - 남는 위험(report-only): 다른 시험 assembly(별도 프로세스)와의 포트 경합은 이 수정 밖이다.
 - 결과: `dotnet test src/DesktopNode.Host.Tests -c Release` 다섯 번 모두 246/246(각 24초). 해당 시험만 20번 반복 모두 통과. `git diff --check` clean.
 - backlog BL-0045를 `counts`(사용자 결정 `fix`)로 분류하고 이 PR로 닫았다.
+- 후속(2026-11-11): PR #155 merge 뒤 main CI에서 같은 시험이 다른 이유로 실패했다.
+  - 실패 위치: 마지막 `Assert.Empty`(user-data-dir을 쓰는 브라우저 프로세스 1개가 남음)
+  - 붐비는 runner에서는 kill 한 번 뒤에도 msedge가 아직 끝나는 중이거나 보조 프로세스를 띄운다. 정리 단계가 남은 프로세스를 최대 20초 동안 다시 끄고 확인한 뒤 판정하게 고쳤다(commit `c9f3220`, 시험만).
+  - Host 246/246 세 번, 해당 시험만 8번 반복 모두 통과
 
 ## 마무리 (2026-11-11)
 
