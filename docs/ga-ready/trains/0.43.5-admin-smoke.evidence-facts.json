@@ -31,6 +31,146 @@
         "train_carriages": "`PR #152` (변경 `ff40acd7`, web), `PR #153` (변경 `25709198`, hyperv+web); payload: PR #153 merge",
         "lane2_probes": "설치본 대시보드 첫 로드와 브라우저 콘솔 입력(queue 152·153, 승인의 probe: 키 하나 시간, 20자 두 칸 입력 일치, 텍스트 폼)"
       }
+    },
+    {
+      "template": "ops-summary",
+      "path": "docs/ga-ready/evidence/installed-runtime-ops-summary-2026-11-11-04305.md",
+      "values": {
+        "evidence_id": "installed-runtime-ops-summary-2026-11-11-04305",
+        "canonical_current_evidence": "0.43.4-admin-smoke",
+        "date": "2026-11-11",
+        "installed_version": "0.43.5-admin-smoke",
+        "artifact_root": "artifacts/manual-admin-campaign-20261111-04304-04305/installed-runtime-ops-summary",
+        "summary_sha256": "ca42b06f84d61ec6dcab76d6d661d4406dda7d09a5894aaff5d727542f1185bd",
+        "context": "release train `0.43.5`의 `0.43.4 -> 0.43.5` pair orchestrator가 마지막 bucket으로 runtime ops를 캡처했다. target `0.43.5-admin-smoke`(Host `+884d442`)가 설치된 상태다.",
+        "capture_note": "설치본 `pcvcli.exe`가 기본 보호 token 파일로 `ops summary`를 읽었다. 결과는 CLI exit `0`, 응답 `ok=true`, operation `ops.summary`, stderr `0` byte다. token 값은 출력하거나 기록하지 않았고, summary에 token 형태 문자열은 `0`개다.",
+        "installed_product_version": "0.43.5-admin-smoke+884d442ef0a30079b70061ab0b0cae82c1de4e9b",
+        "vm_summary": "`3` (`pcv-guest-installed-04253-r1` Off, `pcv-it-s1r-ubuntu` Running, `pcv-it-s2-source` Off)"
+      }
+    },
+    {
+      "template": "update-rollback",
+      "path": "docs/ga-ready/evidence/product-update-rollback-2026-11-11-04304-04305.md",
+      "values": {
+        "evidence_id": "product-update-rollback-2026-11-11-04304-04305",
+        "canonical_current_evidence": "0.43.4-admin-smoke",
+        "version": "0.43.5-admin-smoke",
+        "baseline_version": "0.43.4-admin-smoke",
+        "artifact_root": "artifacts/manual-admin-campaign-20261111-04304-04305/lifecycle/product-update-rollback",
+        "source_payload": "artifacts/admin-smoke-package-20261111-04305/PureCVisorDesktopNode-0.43.5-admin-smoke-update-catalog.json",
+        "target_msi_sha256": "5f4699097d267ef3bddda081d0351f5f14ae286803d1447ce1eeeba5ef727d8d",
+        "target_provenance_commit": "884d442ef0a30079b70061ab0b0cae82c1de4e9b",
+        "update_summary_sha256": "d27cf297c70c65712f887b7375c4fd0904bee71810c3a926439650e62bb18bbd",
+        "rollback_summary_sha256": "7e4a61e06d9501015a48791b1c8300882c02bd0e57fb41fe1bc9126de5918560",
+        "prestate": "release train `0.43.5` pair orchestrator의 update/rollback bucket이다. 시작 전 설치본은 baseline `0.43.4-admin-smoke`(Host `+7b929ec`)였다. `DesktopNode.previous`: `0.43.3-admin-smoke`, `DesktopNode.failed`: `0.43.4-admin-smoke`, service Running/Automatic, VM `pcv-guest-installed-04253-r1` Off, `pcv-it-s1r-ubuntu` Running, `pcv-it-s2-source` Off.",
+        "update_command": "command: Invoke-PcvDesktopNodeProduct.ps1 -Action Update -UpdateCatalogUri artifacts/admin-smoke-package-20261111-04305/PureCVisorDesktopNode-0.43.5-admin-smoke-update-catalog.json -UpdateChannel admin-smoke",
+        "update_executed": "summary: update-summary.json",
+        "host_after_update": "0.43.5-admin-smoke+884d442ef0a30079b70061ab0b0cae82c1de4e9b",
+        "rollback_command": "command: Invoke-PcvDesktopNodeProduct.ps1 -Action Rollback",
+        "rollback_executed": "summary: rollback-summary.json",
+        "final_update_command": "command: Invoke-PcvDesktopNodeProduct.ps1 -Action Update -UpdateCatalogUri artifacts/admin-smoke-package-20261111-04305/PureCVisorDesktopNode-0.43.5-admin-smoke-update-catalog.json -UpdateChannel admin-smoke",
+        "final_update_state": "summary: final-update-summary.json, manifest 0.43.5-admin-smoke",
+        "final_manifest_version": "0.43.5-admin-smoke",
+        "final_host_product_version": "0.43.5-admin-smoke+884d442ef0a30079b70061ab0b0cae82c1de4e9b",
+        "final_failed_version": "0.43.5-admin-smoke",
+        "final_previous_cell": "`0.43.4-admin-smoke`",
+        "vm_cell": "변화 없음"
+      }
+    },
+    {
+      "template": "clean-host",
+      "path": "docs/ga-ready/evidence/internal-clean-host-install-update-rollback-smoke-2026-11-11-04304-04305.md",
+      "values": {
+        "evidence_id": "internal-clean-host-install-update-rollback-smoke-2026-11-11-04304-04305",
+        "canonical_current_evidence": "0.43.4-admin-smoke",
+        "date": "2026-11-11",
+        "version": "0.43.5-admin-smoke",
+        "baseline_version": "0.43.4-admin-smoke",
+        "artifact_root": "artifacts/manual-admin-campaign-20261111-04304-04305/clean-host-windows-update",
+        "summary_sha256": "e0d0552b365d60d4dd156cf806a4a5fb91e1ba76837313bb9e409f34e37d7696",
+        "vm_name": "pcv-manual-admin-campaign-20261111-04304-04305",
+        "base_vhd_source": "explicit",
+        "base_vhd_file": "20348.5761-20261108.vhd",
+        "baseline_msi_sha256": "c24ef8317c838d659834b7e77446625d9377e5774f9057fedc813318a739fccb",
+        "update_package_sha256": "a302528b383a9a29f81eb2506fdd5b26b8db751a6a4d61b2c0217c00c0ac6e4b",
+        "context": "release train `0.43.5` pair orchestrator의 clean-host bucket이다. runner는 `packaging/windows-desktop-node/tools/Invoke-PcvInternalCleanHostInstallUpdateRollbackSmoke.ps1`이고 약 1851초 걸렸다.",
+        "baseline_msi_path": "artifacts/admin-smoke-package-20261111-04304/PureCVisorDesktopNode-0.43.4-admin-smoke-windows-x64.msi",
+        "update_package_path": "artifacts/admin-smoke-package-20261111-04305/PureCVisorDesktopNode-0.43.5-admin-smoke-update.zip",
+        "runner_extra_line": "-VmRoot artifacts/manual-admin-campaign-20261111-04304-04305/clean-host-windows-update/vm -BaseVhdPath <image-cache>/20348.5761-20261108.vhd -VMSwitchName Default Switch",
+        "runner_flags_line": "-UpdateChannel admin-smoke -TargetSigningMode AllowUnsignedDev -InstallWindowsUpdates -RemoveVmOnSuccess -RemoveVmOnFailure",
+        "base_note": "base VHD는 pair orchestrator가 `-BaseVhdPath`로 넘겼다(UBR `5761`). guest 인증 정보는 실행 경계에서 만들어 넘겼고 기록하지 않았다.",
+        "psdirect_attempts": "2",
+        "windows_update_row": "| Windows Update | 대상 `1`개, 재부팅 있음 |",
+        "host_state_note": "이 호스트의 설치본은 `0.43.5-admin-smoke`로 남았다. VM은 `pcv-guest-installed-04253-r1` Off, `pcv-it-s1r-ubuntu` Running, `pcv-it-s2-source` Off다."
+      }
+    },
+    {
+      "template": "burn",
+      "path": "docs/ga-ready/evidence/burn-bootstrapper-lifecycle-smoke-2026-11-11-04305.md",
+      "values": {
+        "evidence_id": "burn-bootstrapper-lifecycle-smoke-2026-11-11-04305",
+        "canonical_current_evidence": "0.43.4-admin-smoke",
+        "date": "2026-11-11",
+        "version": "0.43.5-admin-smoke",
+        "artifact_root": "artifacts/manual-admin-campaign-20261111-04304-04305/burn-bootstrapper-lifecycle",
+        "bundle": "artifacts/manual-admin-campaign-20261111-04304-04305/burn-bootstrapper-lifecycle/PureCVisorDesktopNode-0.43.5-admin-smoke-bootstrapper.exe",
+        "bundle_sha256": "5c6cb48c9a2e0bf6a7b9c4c2764e19c8de3d50785eb1e6345aef70eef00e4b9f",
+        "bundle_bytes": "62176635",
+        "summary_sha256": "b23084defadd74895121a6c7f3996c1a9670de232e81073a85b8429e5cb7e6bb",
+        "wix_version": "5.0.2+aa65968c",
+        "context": "release train `0.43.5` pair orchestrator의 Burn bucket이다. 직전 update/rollback bucket이 target `0.43.5-admin-smoke`로 끝나 사전 Update 없이 `Invoke-PcvBurnBootstrapperLifecycle.ps1 -Execute`를 실행했다(약 `39`초).",
+        "target_msi_path": "artifacts/admin-smoke-package-20261111-04305/PureCVisorDesktopNode-0.43.5-admin-smoke-windows-x64.msi",
+        "runner_tail_line": "-ProductHelperPath packaging/windows-desktop-node/Invoke-PcvDesktopNodeProduct.ps1 -InstalledManifestPath <installed product-manifest.json> -ServiceName PureCVisorDesktopNode -Execute",
+        "arp_entry": "`{E5963E51-A9BD-489E-A4C9-C6C370922F9C}` `0.43.5` (1개)",
+        "installed_product_version": "0.43.5-admin-smoke+884d442ef0a30079b70061ab0b0cae82c1de4e9b",
+        "vm_summary": "`pcv-guest-installed-04253-r1` Off, `pcv-it-s1r-ubuntu` Running, `pcv-it-s2-source` Off"
+      }
+    },
+    {
+      "template": "msix",
+      "path": "docs/ga-ready/evidence/msix-package-lifecycle-smoke-2026-11-11-04304-04305.md",
+      "values": {
+        "evidence_id": "msix-package-lifecycle-smoke-2026-11-11-04304-04305",
+        "canonical_current_evidence": "0.43.4-admin-smoke",
+        "date": "2026-11-11",
+        "baseline_display_version": "0.43.4",
+        "display_version": "0.43.5",
+        "artifact_root": "artifacts/manual-admin-campaign-20261111-04304-04305/msix-package-lifecycle-smoke",
+        "summary_sha256": "6ad0f713ce5b72408e0700afdaba5dea819a0c12ab9dbdf1e94ea9874f9d7066",
+        "baseline_msix_sha256": "9c09a7fb1e5dc70e1c9a4fa9a0a27d50977c6005191ddd5a0cc0801bb864087d",
+        "baseline_msix_bytes": "71699567",
+        "target_msix_sha256": "339c0e9b53b0853e60016dd6831f6ea9ef06a247c3fbdbc5b32e33446d7d10e2",
+        "target_msix_bytes": "71703744",
+        "signer_thumbprint": "8C5F3B5030D3A54B1150C2C30CFD9868800DF0C6",
+        "context": "release train `0.43.5` pair orchestrator의 MSIX bucket이다. 분리된 패키지 ID `PureCVisor.DesktopNode.MsixSmoke`로 두 버전을 pack했다. 내부 코드 서명 인증서로 서명·검증한 뒤 설치, 갱신, 제거했다. 약 `25`초.",
+        "baseline_line": "- baseline `0.43.4.0`: `admin-smoke-package-20261111-04304/payload`",
+        "target_line": "- target `0.43.5.0`: `admin-smoke-package-20261111-04305/payload`",
+        "summary_note": "summary는 상태 필드만 담는다. MSIX 바이트 SHA는 이번 payload로 새로 계산한 값이다.",
+        "version": "0.43.5-admin-smoke"
+      }
+    },
+    {
+      "template": "pair-descriptor",
+      "path": "docs/ga-ready/evidence/manual-admin-campaign-descriptor-2026-11-11-04304-04305.md",
+      "values": {
+        "evidence_id": "manual-admin-campaign-descriptor-2026-11-11-04304-04305",
+        "canonical_current_evidence": "0.43.4-admin-smoke",
+        "version": "0.43.5-admin-smoke",
+        "baseline_version": "0.43.4-admin-smoke",
+        "descriptor_batch_id": "manual-admin-campaign-20261111-04304-04305-closed",
+        "artifact_root": "artifacts/manual-admin-campaign-20261111-04304-04305/manual-admin-campaign-descriptor",
+        "descriptor_path": "artifacts/manual-admin-campaign-20261111-04304-04305/manual-admin-campaign-descriptor/manual-admin-campaign.descriptor.json",
+        "descriptor_sha256": "f218968d1fff75a32fb55ff696a1e45582bc06bb84557df4f7d1eef3e845bf66",
+        "summary_sha256": "f0c3be062a5ce181397c06804b3e7e9c4229f606c499658f12a159c867d846fc",
+        "readiness_root": "artifacts/manual-admin-campaign-20261111-04304-04305/manual-admin-rebaseline-readiness",
+        "readiness_summary_sha256": "498dd73bec11c8a2d9ac9c0e343d4dbdf51eb96216373032c81977266b2d0d6c",
+        "context": "release train `0.43.5` pair orchestrator가 여섯 bucket을 돈 뒤 닫은 descriptor다.",
+        "update_rollback_evidence": "product-update-rollback-2026-11-11-04304-04305",
+        "clean_host_evidence": "internal-clean-host-install-update-rollback-smoke-2026-11-11-04304-04305",
+        "burn_evidence": "burn-bootstrapper-lifecycle-smoke-2026-11-11-04305",
+        "msix_evidence": "msix-package-lifecycle-smoke-2026-11-11-04304-04305",
+        "ops_summary_evidence": "installed-runtime-ops-summary-2026-11-11-04305"
+      }
     }
   ]
 }
