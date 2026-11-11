@@ -270,11 +270,25 @@ operational current는 `0.43.4-admin-smoke` 그대로다.
 
 ## Task 12: BL-0045 Host 시험 포트 경합 (승인 3)
 
-- [ ] Lane 1. grok이 별도 worktree에서 고치고 Claude가 리뷰한다. 재시연(Task 13~)과 병렬이다.
+- [x] Lane 1. grok이 별도 worktree에서 고치고 Claude가 리뷰한다. 재시연(Task 13~)과 병렬이다.
   - 대상: `DesktopNodeHostLoopbackBootstrapBrowserTests.ChromiumOpensLoopbackConsoleWithoutServiceTokenPaste`. 원인은 `http://127.0.0.1:0/`으로 고른 포트를 등록하기 전에 병렬 시험이 같은 포트를 먼저 쓰는 경합이다.
   - 시험 쪽에서만 고친다. 예: 시험 host 시작을 포트 충돌(`HttpListenerException`) 때 새 포트로 몇 번 다시 시도한다. 제품 코드(`src/DesktopNode.Host`)는 바꾸지 않는다. 바꿔야 하면 멈추고 보고한다.
   - backlog BL-0045를 `counts`(근거: 사용자 결정 `fix`)로 하고, merge 뒤 닫는다.
   - 검증: `dotnet test src/DesktopNode.Host.Tests -c Release`(그 시험을 여러 번), PR gate(원래 checkout에서 detached로). push, PR, green CI 뒤 merge.
+
+실행 기록(2026-11-11): grok이 별도 worktree에서 train과 병렬로 구현했고 Claude가 리뷰했다. commit `b3be320`.
+- 원인: `NormalizePrefix`가 포트 0이면 `GetFreeLoopbackPort`로 포트를 고른다. 그 함수는 확인용 소켓을 닫은 뒤에 HttpListener가 prefix를 등록한다. 그 틈에 같은 assembly의 다른 시험 class(xUnit 기본은 class마다 병렬)가 같은 포트를 먼저 등록할 수 있다.
+- 고친 것: 포트 0 host를 여는 시험 class 다섯 개를 xUnit collection `DesktopNode host listener` 하나로 묶었다. 한 collection 안에서는 병렬로 돌지 않는다. 다른 시험은 그대로 병렬이다.
+  - 재시도 방식은 경합을 가리고 46곳을 고쳐야 해서 쓰지 않았다.
+  - 제품 코드(`src/DesktopNode.Host`)는 바꾸지 않았다.
+- 남는 위험(report-only): 다른 시험 assembly(별도 프로세스)와의 포트 경합은 이 수정 밖이다.
+- 결과: `dotnet test src/DesktopNode.Host.Tests -c Release` 다섯 번 모두 246/246(각 24초). 해당 시험만 20번 반복 모두 통과. `git diff --check` clean.
+- backlog BL-0045를 `counts`(사용자 결정 `fix`)로 분류하고 이 PR로 닫았다.
+
+## 마무리 (2026-11-11)
+
+- train `0.43.5`는 Task 6에서 정차했고(PR #154), Task 12(BL-0045)로 campaign을 닫는다.
+- 승인 2(S1~S3 재시연)는 승격된 설치본이 없어 하지 않았다. 다시 하려면 BL-0048·BL-0049를 고친 뒤 새 train을 출발해야 한다.
 
 ## Task 13: S1 재시연 시작 (승인 2)
 
