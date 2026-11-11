@@ -12,7 +12,8 @@
     "clean-host": "docs/ga-ready/evidence/internal-clean-host-install-update-rollback-smoke-2026-11-11-04305-04306.md",
     "burn": "docs/ga-ready/evidence/burn-bootstrapper-lifecycle-smoke-2026-11-11-04306.md",
     "msix": "docs/ga-ready/evidence/msix-package-lifecycle-smoke-2026-11-11-04305-04306.md",
-    "pair-descriptor": "docs/ga-ready/evidence/manual-admin-campaign-descriptor-2026-11-11-04305-04306.md"
+    "pair-descriptor": "docs/ga-ready/evidence/manual-admin-campaign-descriptor-2026-11-11-04305-04306.md",
+    "fullgate": "docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-11-11-04306-hostmutation.md"
   },
   "sources": {
     "package_root": "artifacts/admin-smoke-package-20261111-04306",
@@ -30,6 +31,10 @@
       "background": "release train `0.43.6`의 package다. queue 세 행을 싣는다(campaign `train-04306-20261111`). 적재는 152(대시보드 첫 로드), 153(BL-0046·BL-0047: 콘솔 입력 순서, 키보드 경로 캐시, 텍스트 글자마다), 157(BL-0048·BL-0049: 콘솔 frame·input을 전역 API lock 밖에서, loopback 세션 하나, 키마다 VM 하나 상태)이다. payload 파일은 `0.43.5`와 같은 31개다(`web/app.js`·`web/styles.css` 호환 파일 포함, BL-0030 fixture). build 49초. pair baseline은 정차한 train `0.43.5` Task 1 package이고, operational current는 `0.43.4`다.",
       "train_carriages": "`PR #152` (변경 `ff40acd7`, web), `PR #153` (변경 `25709198`, hyperv+web), `PR #157` (변경 `39976fd2`, api+hyperv+web); payload: PR #157 merge",
       "lane2_probes": "설치본 대시보드 첫 로드와 브라우저 콘솔 입력(queue 152·153·157, 승인의 probe: loopback 세션·ops/summary 횟수와 취소, frame 중 키 하나 시간, 20자 두 칸 입력 일치, 텍스트 폼)"
+    },
+    "fullgate": {
+      "run_context": "gate는 branch `lane1/train-04306-20261111`의 HEAD `bfb30c1`에서 실행했다(product source는 payload `ee821cbd`와 같고, 그 뒤 commit은 문서뿐이다). manifest는 `pcvverify train-host-inputs --kind fullgate-manifest`로 `docs/ga-ready/trains/0.43.6-admin-smoke.host-inputs.json`에서 만들었다. LAN prefix는 직전 train manifest의 값을 이 호스트의 Up 어댑터 주소인지 확인한 뒤 실행 경계에서 환경 변수로만 넘겼다. 설치본은 pair 직후 `0.43.6`(ARP 1개)였고, 계정은 Task 2에서 data root 밖에 보관했다.",
+      "vm_summary": "`pcv-guest-installed-04253-r1` Off, `pcv-it-s2-source` Off(S2 template), `pcv-it-s1r-ubuntu` Running(직전 S1 시도 VM)로 그대로다"
     }
   }
 }

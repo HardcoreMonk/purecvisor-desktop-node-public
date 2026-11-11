@@ -143,10 +143,25 @@ operational current는 `0.43.4-admin-smoke` 그대로다.
 
 ## Task 4: fullgate
 
-- [ ] Lane 2. `pcvverify train-host-inputs --kind fullgate-manifest --write`로 manifest를 만든다. LAN prefix가 필요하면 지금 호스트 주소에서 실행 경계로 만들고 환경 변수 `PCV_TRAIN_LAN_PREFIX`로만 넘긴다.
+- [x] Lane 2. `pcvverify train-host-inputs --kind fullgate-manifest --write`로 manifest를 만든다. LAN prefix가 필요하면 지금 호스트 주소에서 실행 경계로 만들고 환경 변수 `PCV_TRAIN_LAN_PREFIX`로만 넘긴다.
   - supervisor를 `-DryRun -AllowHostMutation`으로 돌린 뒤 `full-admin-host-mutation-gate-20261111-04306`을 돌린다.
   - 사후 검사: 설치본 Host/CLI ProductVersion == gate build commit, 같은 version ARP 1개, PureCVisor firewall 규칙 0, service Running/Automatic, Web 200, 보존 VM 둘 그대로.
   - `train-facts`로 fullgate 문서를 쓴다. 로컬 commit.
+
+실행 기록(2026-11-11):
+- manifest: `train-host-inputs --kind fullgate-manifest --write`로 만들었다(SHA-256 `84cd89cb0bb0f55dfeaaa997df3e728d2d4947f51bd9ce2a962a6bf6ac9cb462`).
+  - LAN prefix는 직전 train manifest의 값을 쓰되, 그 주소가 지금 이 호스트의 Up 어댑터에 있는지 확인한 뒤 실행 경계에서 환경 변수 `PCV_TRAIN_LAN_PREFIX`로만 넘겼다.
+- supervisor `-DryRun -AllowHostMutation`은 `ok=true`였다. 실행 전 ARP는 1개였다.
+- 실행: 19:08:12부터 19:14:47 KST까지 돌았다. `ok=true`, `status=completed`이고 stderr는 0 byte다.
+- step: `service-msi-hyperv-admin-smoke` exit 0(시도 1), `os-mutation-gate` exit 0(시도 1)
+- 사후 검사
+  - 설치본 Host/CLI `0.43.6-admin-smoke+bfb30c1`는 gate build HEAD `bfb30c1`(Task 3 commit)와 같다. product source는 payload `ee821cbd`와 같다.
+  - ARP `{9BDBAE31…}` `0.43.6` 1개, PureCVisor 방화벽 규칙 `0`, listener `127.0.0.1:7777`·`127.0.0.1:80`
+  - service Running/Automatic, Web `200`, loopback 세션 `200`
+  - 보존 VM 둘 Off, `pcv-it-s1r-ubuntu` Running(그대로)
+- 문서: `train-facts`로 fullgate 문서 `docs/ga-ready/evidence/full-admin-host-mutation-gate-2026-11-11-04306-hostmutation.md`를 썼다. 문서에는 LAN 주소가 없다(`[redacted-private-endpoint]`).
+
+operational current는 `0.43.4-admin-smoke` 그대로다.
 
 ## Task 5: installed current-card
 
