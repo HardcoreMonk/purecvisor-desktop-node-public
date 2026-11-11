@@ -27,6 +27,14 @@
       "summary": "backlog BL-0048 and BL-0049 from the installed-flow trace: console frame and input requests run outside the global Local API request lock (rate limit still inside), one shared loopback session request per page, and console input checks one VM's run state instead of every VM summary per key",
       "lane2_probe": null,
       "risk_tier": "M"
+    },
+    {
+      "pr": 159,
+      "merge_commit": "04b1a91b",
+      "area": "api+web",
+      "summary": "backlog BL-0050 and BL-0051: console frame and input requests skip the global Local API request limit (per-VM limits stay), and the Web Console no longer reloads on the service worker's first claim, which cancelled the first ops/summary",
+      "lane2_probe": null,
+      "risk_tier": "M"
     }
   ],
   "trains": [

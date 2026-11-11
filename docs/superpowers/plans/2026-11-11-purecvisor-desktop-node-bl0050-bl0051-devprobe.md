@@ -44,9 +44,24 @@
 
 ## Task 2: 수정 (grok 구현, Claude 리뷰)
 
-- [ ] BL-0050: 콘솔 frame·input 요청을 전역 요청 한도에서 뺀다. 콘솔 route는 VM별 한도(frame 간격, 입력 초당 50)를 그대로 쓴다. 다른 route의 전역 한도는 그대로다.
-- [ ] BL-0051: loopback 모드 첫 방문에서 두 번째 갱신을 시작시키는 호출을 찾아 없앤다. node 시험으로 설치본 trace의 순서를 재현하고, `ops/summary` 1회·취소 0회를 확인한다.
-- [ ] 시험: Api 시험(콘솔 요청이 전역 한도를 소비하지 않고, 다른 route는 그대로 429), node 시험, 기존 시험 유지. `release-train.json` queue에 행을 더한다. 로컬 commit.
+- [x] BL-0050: 콘솔 frame·input 요청을 전역 요청 한도에서 뺀다. 콘솔 route는 VM별 한도(frame 간격, 입력 초당 50)를 그대로 쓴다. 다른 route의 전역 한도는 그대로다.
+- [x] BL-0051: loopback 모드 첫 방문에서 두 번째 갱신을 시작시키는 호출을 찾아 없앤다. node 시험으로 설치본 trace의 순서를 재현하고, `ops/summary` 1회·취소 0회를 확인한다.
+- [x] 시험: Api 시험(콘솔 요청이 전역 한도를 소비하지 않고, 다른 route는 그대로 429), node 시험, 기존 시험 유지. `release-train.json` queue에 행을 더한다. 로컬 commit.
+
+실행 기록(2026-11-11 20:17~20:45 KST): grok이 구현했고 Claude가 리뷰했다. commit `04b1a91`.
+- BL-0051 원인: 갱신을 두 번 부르는 코드가 아니라 page reload였다.
+  - `web/sw.js`의 첫 `clients.claim`이 `controllerchange`를 일으켰고, `pcvRegisterServiceWorker`가 controller 유무와 관계없이 `location.reload()`를 했다.
+  - reload가 진행 중인 첫 `ops/summary`를 취소했고, 다시 로드된 문서가 두 번째 요청을 보냈다(trace 478~479ms).
+  - node 시험으로 재현하면 `refreshAll`은 `init`에서 한 번이다. `_finishLogin`의 `loadAll` 두 번은 진행 중인 갱신에 합류한다(`ops/summary` 1회, 취소 0회).
+- BL-0051 수정: 등록 전에 controller가 이미 있던 탭에서만 `controllerchange`에 reload한다(worker 교체). 첫 claim은 reload하지 않는다.
+  - 남는 영향(report-only): 처음 방문한 탭은 이후 worker가 바뀌어도 다음 탐색 때까지 기존 JS를 쓴다.
+- BL-0050 수정: `HandleUnlockedConsoleRoute`에서 `throttle.Enforce`를 뺐다. 콘솔 frame·input은 전역 한도를 소비하지도, 그 한도로 거절되지도 않는다. VM별 한도(입력 초당 50, frame 100ms)는 그대로다. 다른 route는 그대로 전역 한도다.
+  - 남는 위험(report-only): 콘솔 경로의 전체 상한은 VM 수에 비례한다. loopback 전용 내부 서비스라 받아들인다.
+- 결과
+  - Api 550/550(콘솔이 전역 한도를 소비하지 않음, 다른 route 예산과 분리, 다른 route는 여전히 `PCV_RATE_LIMIT_EXCEEDED`, VM별 한도 시험 유지)
+  - `npm run test:required --prefix web` exit 0(node 433/433, 첫 claim reload 없음과 기존 controller reload 시험 포함, browser gate `ok=true` violations 0)
+  - web Pester 50/50, `git diff --check` clean
+- `release-train.json` queue에 PR #159 행을 더했다(queue 4행).
 
 ## Task 3: PR
 
