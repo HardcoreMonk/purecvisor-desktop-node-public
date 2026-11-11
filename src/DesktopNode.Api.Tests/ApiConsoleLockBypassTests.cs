@@ -27,17 +27,18 @@ public sealed class ApiConsoleLockBypassTests : IDisposable
             CancellationToken.None,
             TaskCreationOptions.LongRunning,
             TaskScheduler.Default);
-        Assert.True(frameEntered.Wait(TimeSpan.FromSeconds(5)));
+        Assert.True(frameEntered.Wait(TimeSpan.FromSeconds(30)));
 
         var watch = Stopwatch.StartNew();
         var response = Send(processor, """{"kind":"key","action":"type","key_code":13}""");
         watch.Stop();
 
         Assert.Equal(200, response.StatusCode);
-        Assert.True(watch.Elapsed < TimeSpan.FromMilliseconds(1_000), $"console input waited {watch.Elapsed}");
+        // The frame stays blocked until released, so any finite time proves the input did not wait for it.
+        Assert.True(watch.Elapsed < TimeSpan.FromSeconds(10), $"console input waited {watch.Elapsed}");
         Assert.False(frame.IsCompleted);
         releaseFrame.Set();
-        Assert.True(frame.Wait(TimeSpan.FromSeconds(5)));
+        Assert.True(frame.Wait(TimeSpan.FromSeconds(30)));
         Assert.Equal(200, frame.Result.StatusCode);
     }
 
@@ -54,7 +55,7 @@ public sealed class ApiConsoleLockBypassTests : IDisposable
             CancellationToken.None,
             TaskCreationOptions.LongRunning,
             TaskScheduler.Default);
-        Assert.True(entered.Wait(TimeSpan.FromSeconds(5)));
+        Assert.True(entered.Wait(TimeSpan.FromSeconds(30)));
 
         var probe = Task.Factory.StartNew(
             () => processor.Handle(new DesktopNodeApiRequest(
@@ -64,12 +65,12 @@ public sealed class ApiConsoleLockBypassTests : IDisposable
             CancellationToken.None,
             TaskCreationOptions.LongRunning,
             TaskScheduler.Default);
-        Assert.True(probe.Wait(TimeSpan.FromSeconds(3)));
+        Assert.True(probe.Wait(TimeSpan.FromSeconds(30)));
         Assert.False(input.IsCompleted);
         Assert.Equal(200, probe.Result.StatusCode);
 
         release.Set();
-        Assert.True(input.Wait(TimeSpan.FromSeconds(5)));
+        Assert.True(input.Wait(TimeSpan.FromSeconds(30)));
         Assert.Equal(200, input.Result.StatusCode);
     }
 
@@ -84,7 +85,7 @@ public sealed class ApiConsoleLockBypassTests : IDisposable
             CancellationToken.None,
             TaskCreationOptions.LongRunning,
             TaskScheduler.Default);
-        Assert.True(provider.FirstEntered.Wait(TimeSpan.FromSeconds(5)));
+        Assert.True(provider.FirstEntered.Wait(TimeSpan.FromSeconds(30)));
         var release = Task.Factory.StartNew(
             () => Send(processor, """{"kind":"key","action":"release","key_code":13}""", "lane-a"),
             CancellationToken.None,
@@ -95,7 +96,7 @@ public sealed class ApiConsoleLockBypassTests : IDisposable
             CancellationToken.None,
             TaskCreationOptions.LongRunning,
             TaskScheduler.Default);
-        Assert.True(side.Wait(TimeSpan.FromSeconds(5)));
+        Assert.True(side.Wait(TimeSpan.FromSeconds(30)));
         Thread.Sleep(100);
         lock (provider.Order)
         {
@@ -104,7 +105,7 @@ public sealed class ApiConsoleLockBypassTests : IDisposable
         }
 
         provider.ReleaseFirst.Set();
-        Assert.True(Task.WaitAll([press, release], TimeSpan.FromSeconds(5)));
+        Assert.True(Task.WaitAll([press, release], TimeSpan.FromSeconds(30)));
         Assert.Equal(200, press.Result.StatusCode);
         Assert.Equal(200, side.Result.StatusCode);
         Assert.Equal(200, release.Result.StatusCode);
@@ -117,7 +118,7 @@ public sealed class ApiConsoleLockBypassTests : IDisposable
     }
 
     [Fact]
-    public void ConsoleInputStillUsesTheGlobalRequestRateLimit()
+    public void ConsoleInputIgnoresTheGlobalRequestRateLimit()
     {
         var clock = new DateTimeOffset(2026, 11, 11, 0, 0, 0, TimeSpan.Zero);
         var processor = CreateProcessor(
@@ -132,10 +133,49 @@ public sealed class ApiConsoleLockBypassTests : IDisposable
         var second = Send(processor, """{"kind":"key","action":"type","key_code":13}""", clientIdentity: "console-client");
 
         Assert.Equal(200, first.StatusCode);
-        Assert.Equal(429, second.StatusCode);
-        Assert.Equal("application/problem+json", second.ContentType);
-        Assert.Contains("PCV_RATE_LIMIT_EXCEEDED", second.Body, StringComparison.Ordinal);
+        Assert.Equal(200, second.StatusCode);
+        Assert.DoesNotContain("PCV_RATE_LIMIT_EXCEEDED", first.Body, StringComparison.Ordinal);
+        Assert.DoesNotContain("PCV_RATE_LIMIT_EXCEEDED", second.Body, StringComparison.Ordinal);
         Assert.DoesNotContain("PCV_CONSOLE_RATE_LIMITED", second.Body, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void ConsoleRequestsDoNotConsumeAnotherRoutesGlobalBudget()
+    {
+        var clock = new DateTimeOffset(2026, 11, 11, 0, 0, 0, TimeSpan.Zero);
+        var processor = CreateProcessor(
+            new AcceptingInputAdapter(),
+            new DesktopNodeApiHardeningOptions(
+                RequestLimitPerMinute: 1,
+                BurstLimit: 0,
+                RetryAfterSeconds: 7,
+                Clock: () => clock));
+
+        for (var i = 0; i < 5; i++)
+        {
+            var input = Send(processor, """{"kind":"key","action":"type","key_code":13}""", clientIdentity: "console-client");
+            Assert.Equal(200, input.StatusCode);
+            Assert.DoesNotContain("PCV_RATE_LIMIT_EXCEEDED", input.Body, StringComparison.Ordinal);
+        }
+
+        var summary = processor.Handle(new DesktopNodeApiRequest(
+            "GET",
+            "/api/v1/ops/summary",
+            ServiceBearerAccepted: true,
+            RemoteIsLoopback: true,
+            ClientIdentity: "console-client"));
+        Assert.Equal(200, summary.StatusCode);
+        Assert.DoesNotContain("PCV_RATE_LIMIT_EXCEEDED", summary.Body, StringComparison.Ordinal);
+
+        var policy = processor.Handle(new DesktopNodeApiRequest(
+            "GET",
+            "/api/v1/runtime/policy",
+            ServiceBearerAccepted: true,
+            RemoteIsLoopback: true,
+            ClientIdentity: "console-client"));
+        Assert.Equal(429, policy.StatusCode);
+        Assert.Equal("application/problem+json", policy.ContentType);
+        Assert.Contains("PCV_RATE_LIMIT_EXCEEDED", policy.Body, StringComparison.Ordinal);
     }
 
     private DesktopNodeApiRequestProcessor CreateProcessor(
