@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "contract": "pcv-train-lane3-spec-input-v1",
+  "version": "0.43.7-admin-smoke",
+  "previous_spec": "packaging/windows-desktop-node/tests/fixtures/lane3-promotion-docs-spec-04304.json",
+  "facts": "docs/ga-ready/trains/0.43.7-admin-smoke.evidence-facts.json",
+  "output": "packaging/windows-desktop-node/tests/fixtures/lane3-promotion-docs-spec-04307.json",
+  "narrative": {
+    "updated_at": "2026-11-12T00:45:00+09:00",
+    "functional_note": "04275 PASS를 04277, 04278, 04283, 04284, 04286, 04287, 04288, 04289, 04290, 04291, 04292, 04293, 04296, 04298, 04299, 04300, 04301, 04302, 04303, 04304에 이어 carry-forward한다. SERVICE_PLAN P0 actual-VM은 04275 evidence를 유지한다. 04307 대시보드 첫 로드와 브라우저 콘솔 입력 경로 변경(PR 152, 153, 157, 159)은 candidate gate를 다시 열지 않는다.",
+    "rules": {
+      "full-admin-host-mutation-current": "Elevated Service/MSI/Hyper-V route와 OS mutation `2/2`가 재시도 없이 PASS했다. gate는 pair가 남긴 clean `0.43.7` 위에서 시작해 같은 version major upgrade로 교체했고, 끝난 뒤 ARP는 1개이며 설치본 Host/CLI가 gate build `3898139`와 같다. pair target은 clean MSI `a808cda4…`이며 operational MSI와 identity가 다르다. 직전 anchor는 `0.43.4-admin-smoke`였다.",
+      "manual-admin-package-pair-current": "release train `0.43.7`의 pair다. 첫 실행은 clean-host guest의 Windows Update 다운로드 실패로 FAIL이었고, 새 root `-r2`로 한 번 다시 돌려 여섯 bucket PASS를 한 root에 썼다. 닫을 때 descriptor가 `missing_count=0`, `not_pass_count=0`이다. baseline은 정차한 train `0.43.6`의 Task 1 package다(직전 승격은 `0.43.4`). clean-host bucket은 guest `0.43.6` 설치본의 제품 Update가 `0.43.7` payload를 받는 것을 확인했고, 이번 guest는 적용할 누적 업데이트를 0개 찾았다. 이 Lane 3는 host mutation을 하지 않았다. 직전 closure는 `0.43.3-admin-smoke -> 0.43.4-admin-smoke`였다.",
+      "package-build-current": "CLI/Web-only payload package이며 release train `0.43.7`의 package다. source commit `74b9562`는 PR #152, #153, #157, #159를 포함한다. fullgate provenance는 `3898139`이고 product payload는 payload commit `bf5c214`와 같다. functional은 04275 carry-forward이고 설치본 Lane 2 확인(내주는 파일, 대시보드 첫 로드 `ops/summary` 1회·취소 0회, 콘솔 키 입력 중앙값 176ms·거절 0건)은 PASS다.",
+      "installed-operator-surface-smoke-latest": "CLI 3개 exit `0`, Web 2개 HTTP `200`, service `Running/Automatic`, `tui_present=false`, secret observation false이며 04272 token R4를 carry-forward한다. 캡처 artifact는 `not-promoted`다. 설치본 Host/CLI는 gate build(`3898139`)이고 clean package hash와는 다르다. 04304는 immediate predecessor다(04305·04306은 승격하지 않았다).",
+      "latest-product-payload-smoke": "CLI/Web-only package, actual-host fullgate, pair descriptor consume, installed surface current-card가 PASS했다. functional QoS/disk는 04275 carry-forward다. 설치본 대시보드 첫 로드가 `ops/summary` 한 번으로 4.9~5.7초에 목록을 그리고, 브라우저 콘솔 키 입력이 중앙값 176ms·거절 0건으로 두 비밀번호 칸에 같은 20자를 넣으며, version 표시가 `v0.43.7-admin-smoke`를 보인다.",
+      "functional-correctness-actual-host-latest": "04307 Lane 3는 QoS/disk suite를 재실행하지 않고 04275 actual-VM PASS를 04277, 04278, 04283, 04284, 04286, 04287, 04288, 04289, 04290, 04291, 04292, 04293, 04296, 04298, 04299, 04300, 04301, 04302, 04303, 04304에 이어 carry-forward한다.",
+      "manual-admin-package-pair-next": "`0.43.6-admin-smoke -> 0.43.7-admin-smoke` pair는 current closure다. 04307 fullgate build(`3898139`) 뒤 제품 source 변경은 없다. 다음 pair는 release train 대기열의 다음 train에서 연다."
+    }
+  }
+}

@@ -236,11 +236,23 @@ operational current는 `0.43.4-admin-smoke` 그대로다.
 
 ## Task 8: Lane 3 데이터와 lane3-spec
 
-- [ ] Lane 3. 같은 train branch에서 한다.
+- [x] Lane 3. 같은 train branch에서 한다.
   - consume manifest, functional carry-forward·pair consume·`main-push-payload`(payload `bf5c214`의 main push run 인용, `train_pr_head`, `path_check_line`) facts를 쓴다. `main-push` 템플릿과 함께 쓰지 않는다.
   - 그 뒤 `train-evidence --write`, current-card `promoted-current`(`--write --allow-update`), `--check`를 돈다.
   - `current-evidence.json`과 `lane3-spec --write`를 쓴다. `index_sections.previous_version`은 직전 승격 `0.43.4-admin-smoke`, `previous_spec`은 `lane3-promotion-docs-spec-04304.json`이다(직전 train `0.43.5`·`0.43.6` 정차, BL-0021).
   - `update-preflight-compatibility.json` fixture의 `operational-current` 행을 새 version으로 고친다(DEVELOPMENT_PROCEDURE §10, BL-0030). 로컬 commit.
+
+실행 기록(2026-11-12 00:40~00:46 KST): train branch `776e495`에서 했다. Lane 3 문서 세 개는 실제로 쓴 날짜(`2026-11-12`)로 이름을 붙였다.
+- consume manifest: `artifacts/manual-admin-campaign-20261111-04306-04307-r2/consume-manifest.json`을 새로 썼다(SHA-256 앞 `866a4dd3`). closed descriptor `manual-admin-campaign-20261111-04306-04307-r2-closed`가 읽은 summary 7개의 SHA-256과 byte 수를 담고, 파일은 복사하지 않았다. 첫 실행(FAIL) root는 consume하지 않았다.
+- facts: functional carry-forward(04304 다음, 변경 commit `ff40acd7`, `25709198`, `39976fd2`, `04b1a91b`), pair consume, 단일 PR train용 `main-push-payload`를 더했다.
+  - `main-push-payload`는 payload `bf5c214`(PR #160 merge)의 Public Boundary `43017019394`, Development Gates `43017019405`(shard job 4개, 모두 success)를 인용한다.
+  - `train_pr_head`는 `776e495`이고, 그때 `train-path-check --payload bf5c214`는 `ok=true`, 바뀐 경로 17개, `product_paths`·`allowed_pin_paths` 없음이다.
+  - feature evidence ledger의 마지막 변경은 그대로 `bb15f66`이다. current-card는 `promoted-current`로 바꿨다.
+- `train-evidence --write --allow-update <current-card>` 결과 새 문서 3개, current-card updated. `--check`는 열두 문서 모두 current다.
+- `current-evidence.json` current는 `0.43.7-admin-smoke`다. provenance `3898139`, clean MSI `a808cda4…`, operational MSI `e6a89367…`, payload `a2dba459…`, manual_admin은 `0.43.6 -> 0.43.7`(`manual-admin-campaign-20261111-04306-04307-r2-closed`)이다.
+- `update-preflight-compatibility.json`: `0.43.7-admin-smoke` `operational-current` 행(source `bf5c214`, 파일 목록은 `0.43.4`와 같음)을 더했다. `0.43.4`는 `retained-older-install`로 남겼다.
+- `lane3-spec --write`로 `packaging/windows-desktop-node/tests/fixtures/lane3-promotion-docs-spec-04307.json`을 만들었다(입력 `docs/ga-ready/trains/0.43.7-admin-smoke.lane3-spec-input.json`, `previous_spec` 04304, 직전 두 train 정차). `narrative.functional_note`에는 backtick이 없다.
+- 시험: Verification(lane3, train evidence, facts, host-inputs, path check) `97/97`, `UpdatePreflightCompatibilityContractTests` `3/3`. current evidence 문서 시험과 D2 시험은 Task 9를 기다린다.
 
 ## Task 9: 승격 문서와 release-train 승격
 
