@@ -289,6 +289,10 @@ Task 4는 grok 지시 크기(약 20분) 때문에 4a와 4b로 나눴다(2026-11-
   - `npm run test:required --prefix web` exit 0(node 422, 콘솔 큐 4건·도우미 4건 포함, browser gate `ok=true` violations 0, 기준선 변화 없음)
   - web Pester 50/50, `git diff --check` clean
 - 설치본에서 확인할 항목(다음 train probe): 키 하나에 걸리는 시간, 20자 비밀번호 두 칸 입력 일치, 텍스트 폼
+- PR #153 첫 CI에서 새 순서 시험 두 건이 `dotnet` shard에서 실패했다(로컬에서는 통과).
+  - 원인: 시험이 일부러 막아 둔 작업과 다른 작업을 공유 thread pool(`Task.Run`)에서 5초 안에 돌리려 했다. 작은 CI runner에서 병렬 시험과 겹치면 모자랄 수 있다.
+  - 작업을 전용 스레드(`TaskCreationOptions.LongRunning`)로 돌리고 대기 한도를 30초로 늘렸다(시험만 바꿨다).
+  - HyperV 292/292. 키보드 시험만 열 번 반복해 모두 4/4였다.
 - 제품 payload가 바뀌어 `release-train.json` queue에 PR #153 행을 더했다.
 
 ## Task 13: PR D와 마무리

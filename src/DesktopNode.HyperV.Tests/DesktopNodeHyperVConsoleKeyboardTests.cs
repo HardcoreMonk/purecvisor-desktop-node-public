@@ -4,6 +4,16 @@ namespace DesktopNode.HyperV.Tests;
 
 public sealed class DesktopNodeHyperVConsoleKeyboardTests
 {
+    // The ordering tests block worker threads on purpose. On a small CI runner the shared thread pool can be
+    // starved by parallel tests, so each worker gets its own thread and the waits allow a slow machine.
+    private static readonly TimeSpan WaitLimit = TimeSpan.FromSeconds(30);
+
+    private static Task<T> RunDedicated<T>(Func<T> work) =>
+        Task.Factory.StartNew(work, CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Default);
+
+    private static Task RunDedicated(Action work) =>
+        Task.Factory.StartNew(work, CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Default);
+
     [Fact]
     public void KeyboardPathIsResolvedOnceAndLookedUpAgainOnlyAfterTheCachedPathFails()
     {
@@ -67,7 +77,7 @@ public sealed class DesktopNodeHyperVConsoleKeyboardTests
         var releaseFirst = new ManualResetEventSlim(false);
         var otherDone = new ManualResetEventSlim(false);
 
-        var first = Task.Run(() => session.Send(
+        var first = RunDedicated(() => session.Send(
             "vm-a",
             "PressKey",
             13u,
@@ -81,9 +91,9 @@ public sealed class DesktopNodeHyperVConsoleKeyboardTests
             },
             CancellationToken.None));
 
-        Assert.True(firstEntered.Wait(TimeSpan.FromSeconds(5)));
+        Assert.True(firstEntered.Wait(WaitLimit));
         var secondStarted = new ManualResetEventSlim(false);
-        var second = Task.Run(() =>
+        var second = RunDedicated(() =>
         {
             secondStarted.Set();
             return session.Send(
@@ -98,14 +108,14 @@ public sealed class DesktopNodeHyperVConsoleKeyboardTests
                 },
                 CancellationToken.None);
         });
-        Assert.True(secondStarted.Wait(TimeSpan.FromSeconds(5)));
+        Assert.True(secondStarted.Wait(WaitLimit));
         Thread.Sleep(100);
         lock (order)
         {
             Assert.Equal(new[] { "PressKey" }, order);
         }
 
-        var other = Task.Run(() => session.Send(
+        var other = RunDedicated(() => session.Send(
             "vm-b",
             "PressKey",
             1u,
@@ -116,9 +126,9 @@ public sealed class DesktopNodeHyperVConsoleKeyboardTests
                 return 0u;
             },
             CancellationToken.None));
-        Assert.True(otherDone.Wait(TimeSpan.FromSeconds(5)));
+        Assert.True(otherDone.Wait(WaitLimit));
         releaseFirst.Set();
-        Assert.True(Task.WaitAll([first, second, other], TimeSpan.FromSeconds(5)));
+        Assert.True(Task.WaitAll([first, second, other], WaitLimit));
         lock (order)
         {
             Assert.Equal(new[] { "PressKey", "ReleaseKey" }, order);
@@ -184,11 +194,11 @@ public sealed class DesktopNodeHyperVConsoleKeyboardTests
         using var release = JsonDocument.Parse("""{"name":"lane-a","kind":"key","action":"release","key_code":13}""");
         using var other = JsonDocument.Parse("""{"name":"lane-b","kind":"key","action":"press","key_code":1}""");
 
-        var first = Task.Run(() => adapter.TryInvoke("vm.console.input", press.RootElement, CancellationToken.None, out _));
-        Assert.True(provider.FirstEntered.Wait(TimeSpan.FromSeconds(5)));
-        var second = Task.Run(() => adapter.TryInvoke("vm.console.input", release.RootElement, CancellationToken.None, out _));
-        var side = Task.Run(() => adapter.TryInvoke("vm.console.input", other.RootElement, CancellationToken.None, out _));
-        Assert.True(side.Wait(TimeSpan.FromSeconds(5)));
+        var first = RunDedicated(() => adapter.TryInvoke("vm.console.input", press.RootElement, CancellationToken.None, out _));
+        Assert.True(provider.FirstEntered.Wait(WaitLimit));
+        var second = RunDedicated(() => adapter.TryInvoke("vm.console.input", release.RootElement, CancellationToken.None, out _));
+        var side = RunDedicated(() => adapter.TryInvoke("vm.console.input", other.RootElement, CancellationToken.None, out _));
+        Assert.True(side.Wait(WaitLimit));
         Thread.Sleep(100);
         lock (provider.Order)
         {
@@ -197,7 +207,7 @@ public sealed class DesktopNodeHyperVConsoleKeyboardTests
         }
 
         provider.ReleaseFirst.Set();
-        Assert.True(Task.WaitAll([first, second], TimeSpan.FromSeconds(5)));
+        Assert.True(Task.WaitAll([first, second], WaitLimit));
         lock (provider.Order)
         {
             Assert.Equal(new[] { "lane-a:PressKey", "lane-b:PressKey", "lane-a:ReleaseKey" }, provider.Order);
