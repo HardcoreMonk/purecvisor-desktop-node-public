@@ -5,6 +5,7 @@ using DesktopNode.Host;
 
 namespace DesktopNode.Host.Tests;
 
+[Collection(DesktopNodeHostListenerCollection.Name)]
 public sealed class DesktopNodeHostLoopbackSessionTests
 {
     private const string ServiceTokenValue = "loopback-session-service-secret";

@@ -11,6 +11,7 @@ using DesktopNode.Host;
 
 namespace DesktopNode.Host.Tests;
 
+[Collection(DesktopNodeHostListenerCollection.Name)]
 public sealed class DesktopNodeHostLoopbackBootstrapBrowserTests
 {
     private const string ServiceTokenValue = "loopback-browser-gate-service-secret";

@@ -9,6 +9,7 @@ using DesktopNode.Host;
 
 namespace DesktopNode.Host.Tests;
 
+[Collection(DesktopNodeHostListenerCollection.Name)]
 public sealed class DesktopNodeHttpTransportContractTests
 {
     private const string ServiceToken = "transport-service-secret";

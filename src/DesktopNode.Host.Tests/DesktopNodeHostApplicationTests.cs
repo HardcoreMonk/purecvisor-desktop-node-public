@@ -9,6 +9,7 @@ using DesktopNode.Host;
 
 namespace DesktopNode.Host.Tests;
 
+[Collection(DesktopNodeHostListenerCollection.Name)]
 public sealed class DesktopNodeHostApplicationTests
 {
     [Fact]
