@@ -185,7 +185,7 @@ operational current는 `0.43.4-admin-smoke` 그대로다.
 
 ## Task 6: probe 대시보드 첫 로드와 브라우저 콘솔 입력 (queue 152, 153)
 
-- [ ] Lane 2. 설치본 `0.43.5`가 loopback(`http://127.0.0.1/`)으로 내주는 Web Console을 확인한다. 계정은 Task 2에서 보관 중이라 loopback 세션이다.
+- [x] Lane 2. 설치본 `0.43.5`가 loopback(`http://127.0.0.1/`)으로 내주는 Web Console을 확인한다. 계정은 Task 2에서 보관 중이라 loopback 세션이다.
   - 내주는 파일: `app.bundle.js`, `index.html`, `style.css`, `sw.js`, `i18n.js`의 SHA-256이 Task 1 package payload의 같은 파일과 같은지, `sw.js` CACHE_NAME이 payload commit 소스와 같은지 본다.
   - 대시보드(#152)
     - 1440×900과 768×1024에서 새 context를 세 번씩 연다. `#/dashboard`가 다 차는 시각(경고 카드 목록 또는 empty, VM 수)과 `ops/summary` 요청 수(취소 포함)를 잰다.
@@ -199,11 +199,41 @@ operational current는 `0.43.4-admin-smoke` 그대로다.
   - 캡처는 `artifacts/lane2-04305-probe-20261111/`에 둔다(커밋하지 않음).
   - evidence: `docs/ga-ready/evidence/lane2-dashboard-console-probe-2026-11-11-04305.md`. FAIL이면 정차한다. 로컬 commit.
 
+실행 기록(2026-11-11 16:07~16:16 KST): **FAIL**. 상세는 evidence `docs/ga-ready/evidence/lane2-dashboard-console-probe-2026-11-11-04305.md`에 있다.
+- 내주는 파일 다섯 개와 CACHE_NAME `pcv-ui-vb668651a`는 payload와 같다.
+- 대시보드(#152)
+  - 새 context 여섯 번 모두 `ops/summary` 3회 요청, 그중 2회 취소였다.
+  - 첫 `200`은 10.0~10.3초, 목록은 약 12.1초, 첫 갱신 끝은 12.9~13.2초였다. train 0.43.4의 목록 9.2~10.2초보다 늦다.
+  - 회귀는 없다(version, 4xx 0, console error 0, "읽지 못했습니다" 0).
+- 콘솔 입력(#153, `pcv-it-s1r-ubuntu`)
+  - `console/input` 요청이 중앙값 2,429ms, p95 2,666ms였다(n=55). `0.43.4`의 요청당 약 2초에서 줄지 않았다.
+  - 사람이 치는 속도로 보내면 처리하지 못한 입력이 Web Console 큐에 쌓였다가 브라우저를 닫을 때 사라졌다.
+  - 20자 두 칸 일치와 텍스트 폼은 판단하지 못했다.
+- 두 변경 모두 설치본에서 목표한 개선을 보이지 않아 정차한다(Global Constraints, 승인 1은 정차로 끝난다). backlog BL-0048(대시보드)과 BL-0049(콘솔 입력 요청 시간)를 `undecided`로 더했다.
+
 ## Task 7: 계정 복원
 
-- [ ] Lane 2. Task 2 백업의 `accounts.json`을 data root에 되돌리고 SHA-256을 비교한다. fullgate 재설치가 만든 빈 저장소는 지우지 않고 백업 위치로 옮긴다. 파일 ACL은 train 전 원본 표기와 같게 맞추고 service를 다시 시작한다.
+- [x] Lane 2. Task 2 백업의 `accounts.json`을 data root에 되돌리고 SHA-256을 비교한다. fullgate 재설치가 만든 빈 저장소는 지우지 않고 백업 위치로 옮긴다. 파일 ACL은 train 전 원본 표기와 같게 맞추고 service를 다시 시작한다.
   - 확인: 계정 이름과 상태가 Task 2와 같다, loopback 세션 `409`, Web 200, service Running/Automatic.
   - 이름과 상태만 기록한다. 로컬 commit.
+
+실행 기록(2026-11-11 16:16 KST, 정차 절차의 첫 단계):
+- 백업 `accounts.json`(1,421 bytes)을 data root에 되돌렸다. SHA-256과 ACL 표기가 백업 기록과 같다.
+- fullgate 재설치가 만든 빈 저장소(174 bytes)는 지우지 않고 백업 위치로 옮겼다.
+- service를 다시 시작했다.
+- 확인: 계정 4개가 Task 2와 같다(`pcv-admin` disabled, `pcv-admin2` enabled, `pcv-s13-operator` enabled, `pcv-s4-operator` disabled). loopback 세션 `409` `PCV_LOOPBACK_SESSION_DISABLED`, Web `200`, service Running/Automatic.
+
+## 정차 (2026-11-11)
+
+- train `0.43.5-admin-smoke`는 Task 6 probe FAIL로 정차했다. 승인 1은 여기서 끝난다.
+- `release-train.json`: 출발 commit의 `0.43.5` 항목을 지우고 queue를 출발 전 상태(PR #152, #153)로 되돌렸다. 이 항목은 `main`에 merge된 적이 없다.
+- 설치본은 fullgate build `0.43.5-admin-smoke+8173777`이다. 승격하지 않았으므로 operational current는 `0.43.4-admin-smoke`다.
+- 하지 않은 task
+  - Task 8~11(Lane 3, train PR, 판정)
+  - Task 13~18(재시연과 정리, 승격된 설치본이 필요하다)
+  - 재시연은 다음 승인으로 넘긴다.
+- 남은 task: Task 12(BL-0045, 승인 3)는 train과 무관하므로 이 campaign에서 이어 한다.
+- 이 기록(Task 0~7 evidence와 정차)은 문서 PR 하나로 merge한다.
 
 ## Task 8: Lane 3 데이터와 lane3-spec
 
