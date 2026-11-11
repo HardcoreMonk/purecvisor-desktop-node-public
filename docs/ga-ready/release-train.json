@@ -2,41 +2,8 @@
   "schema_version": 1,
   "contract": "pcv-release-train-v1",
   "design": "docs/superpowers/specs/2026-10-04-purecvisor-desktop-node-release-train-design.md",
-  "operational_current": "0.43.4-admin-smoke",
-  "queue": [
-    {
-      "pr": 152,
-      "merge_commit": "ff40acd7",
-      "area": "web",
-      "summary": "zero-base audit follow-up: the dashboard first load runs one refresh (automatic calls join the running refresh with the same credential, user refresh forces a new one), renders the dashboard steps ops.summary, host.status and vm.list first and runs the other steps in parallel",
-      "lane2_probe": null,
-      "risk_tier": "M"
-    },
-    {
-      "pr": 153,
-      "merge_commit": "25709198",
-      "area": "hyperv+web",
-      "summary": "backlog BL-0046 and BL-0047: browser console input for one VM runs in arrival order (service lane and Web Console queue), the Msvm_Keyboard path is cached by VM id, kind=text goes one character per TypeText, and a 429 is retried once",
-      "lane2_probe": null,
-      "risk_tier": "M"
-    },
-    {
-      "pr": 157,
-      "merge_commit": "39976fd2",
-      "area": "api+hyperv+web",
-      "summary": "backlog BL-0048 and BL-0049 from the installed-flow trace: console frame and input requests run outside the global Local API request lock (rate limit still inside), one shared loopback session request per page, and console input checks one VM's run state instead of every VM summary per key",
-      "lane2_probe": null,
-      "risk_tier": "M"
-    },
-    {
-      "pr": 159,
-      "merge_commit": "04b1a91b",
-      "area": "api+web",
-      "summary": "backlog BL-0050 and BL-0051: console frame and input requests skip the global Local API request limit (per-VM limits stay), and the Web Console no longer reloads on the service worker's first claim, which cancelled the first ops/summary",
-      "lane2_probe": null,
-      "risk_tier": "M"
-    }
-  ],
+  "operational_current": "0.43.7-admin-smoke",
+  "queue": [],
   "trains": [
     {
       "version": "0.42.89-admin-smoke",
@@ -178,6 +145,18 @@
       "source_commit": "e957f15b08e233ce9faffa809a178056c6b0e952",
       "carriages": [
         146
+      ],
+      "status": "promoted"
+    },
+    {
+      "version": "0.43.7-admin-smoke",
+      "departed_at": "2026-11-11T21:43:00+09:00",
+      "source_commit": "bf5c2143e9e8ea90809b529dbf49805dd61c0a15",
+      "carriages": [
+        152,
+        153,
+        157,
+        159
       ],
       "status": "promoted"
     }

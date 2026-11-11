@@ -14,7 +14,7 @@
     },
     {
       "path": "AGENTS.md",
-      "sha256": "793a7084efcca72a7c1f9fea5535c4f9cdc61d9a2468e0d7cf997ec72fc1bdb5"
+      "sha256": "eb9949a97f6a282c400bb72bd1b1b7d7db46fab8ee86124753bd504b086e202a"
     },
     {
       "path": "packaging/windows-desktop-node/tests/fixtures/csharp-architecture-test-migration.json",
