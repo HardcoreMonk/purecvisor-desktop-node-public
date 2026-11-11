@@ -542,6 +542,30 @@
       "needs_design": false,
       "status": "open",
       "closed_by": null
+    },
+    {
+      "id": "BL-0046",
+      "found_on": "2026-11-11",
+      "source": "docs/superpowers/plans/2026-11-11-purecvisor-desktop-node-zero-base-followup.md Task 7",
+      "summary": "설치본 `0.43.4` 브라우저 콘솔의 키 입력이 느리고 글자가 틀린다. 서버가 `console.input` 요청(press와 release 각각)을 약 2초씩 처리해 글자 하나에 약 4.4초가 걸린다. 키를 보통 속도로 보내면 요청이 쌓여 일부가 빠진다(Ubuntu 설치 프로그램 비밀번호 20자 중 약 12자). 요청마다 끝나기를 기다려 보내도 같은 20자를 두 칸에 넣은 결과가 달랐다(\"Passwords do not match\"). 서버 감사 기록에는 키 이벤트가 모두 순서대로 도착했다. S1(브라우저 콘솔로 OS 설치)을 끝내지 못한 원인이다(`docs/ga-ready/demo/s1-browser-reproof-2026-11-11.md`).",
+      "classification": "counts",
+      "basis": "2026-11-11 사용자 결정 \"1\"(campaign zero-base-followup-20261111 Task 7 세 번째 재개 중단 보고의 다음 승인 1): S1 브라우저 설치를 멈추고 콘솔 입력 결함부터 Lane 1로 고친다. 고친 버전은 train으로 설치한 뒤 S1~S3를 다시 시연한다.",
+      "out_of_scope_ref": null,
+      "needs_design": false,
+      "status": "open",
+      "closed_by": null
+    },
+    {
+      "id": "BL-0047",
+      "found_on": "2026-11-11",
+      "source": "docs/superpowers/plans/2026-11-11-purecvisor-desktop-node-zero-base-followup.md Task 7",
+      "summary": "설치본 `0.43.4` 브라우저 콘솔의 텍스트 보내기 폼(`kind=text`)이 Ubuntu 설치 프로그램에서 글자를 대부분 잃는다. `pcv`는 빈 칸, `pcvs1r`는 `n`, 23자는 9자와 4자로 들어갔다. 같은 칸에 키 이벤트로 한 글자씩 보낸 짧은 값(`pcv`, `pcvs1r`)은 정확히 들어갔다.",
+      "classification": "counts",
+      "basis": "2026-11-11 사용자 결정 \"1\"(campaign zero-base-followup-20261111 Task 7 세 번째 재개 중단 보고의 다음 승인 1): S1 브라우저 설치를 멈추고 콘솔 입력 결함부터 Lane 1로 고친다. 고친 버전은 train으로 설치한 뒤 S1~S3를 다시 시연한다.",
+      "out_of_scope_ref": null,
+      "needs_design": false,
+      "status": "open",
+      "closed_by": null
     }
   ]
 }

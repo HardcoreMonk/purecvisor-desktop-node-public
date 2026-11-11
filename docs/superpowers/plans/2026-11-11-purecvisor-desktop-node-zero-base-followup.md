@@ -26,6 +26,8 @@
 | 4 | "대시보드 첫 로드 시간: Lane 1 개발(ops/summary 응답 시간과 Web 첫 갱신 취소 경로, 지연 mock 시험), host mutation 없음. push, PR, green CI 뒤 merge. 설치본 반영은 다음 train 출발 승인으로." Task 12, 13 |
 | merge | 2026-11-09 상시 승인 `"앞으로 Required CI가 green이면 PR merge도 자동 승인"`(`merge_policy=after-green-ci`). merge 뒤 main push run을 확인한다 |
 | 계정 | 사용자 결정 `"임시 operator 계정 (권장)"`(2026-11-11, 로그인 방법 질문에 대한 답)으로 연다. 처음에는 권장안 자동 승인으로 열려 했으나 auto mode가 승인 2 문장 밖이라며 막아 사용자에게 물었다. 설치본은 계정 모드라 loopback 세션이 `409`다. 브라우저 시나리오는 이번에만 쓸 operator 계정 `pcv-s13-operator`로 로그인한다. 계정은 `pcvcli account create --password-env`(service bearer, protected token file)로 만들고, 끝나면 `pcvcli account disable`로 끈다. 비밀번호는 실행 경계에서 만들어 환경 변수로만 넘긴다. 실행 사이에는 저장소 밖 DPAPI 보호 임시 파일에만 두고, 계정을 끈 뒤 지운다. 기존 계정 세 개(`pcv-admin`, `pcv-admin2`, `pcv-s4-operator`)는 바꾸지 않는다. 계정 파일을 옮기거나 service를 다시 시작하지 않는다 |
+| Task 7 재개 | Task 6~7 중단 보고마다 사용자가 다음 승인 1번에 `"1"`로 답했다(2026-11-11, 세 번). 첫째는 새 예산(45분·12회)으로 키마다 화면 변화를 확인하며 설치를 마친다, 둘째는 글자마다 키 이벤트로 사용자 정보를 다시 넣는다, 셋째는 frame 읽기 속도를 따로 재고 640×480으로 낮춰 마친다(화면이 멈추면 멈춤)였다 |
+| S1 중단 | 네 번째 중단 보고의 다음 승인 1에 대한 답 `"1"`(2026-11-11): S1 브라우저 설치를 멈추고 콘솔 입력 결함(BL-0046·BL-0047)부터 Lane 1로 고친다(host mutation 없음, grok 구현). 시나리오 CDP 도우미 결함도 함께 고치고, Task 12(대시보드)도 이 campaign에서 PR로 merge한다. `pcv-it-s1r-ubuntu`는 그대로 두고 S1~S3 재시연은 고친 버전이 train으로 설치된 뒤 한다. 그래서 Task 8~10은 다음 승인으로 넘긴다 |
 | ADR-0016 | standing approval(2026-10-07)은 `pcv-it-` 접두사 VM의 생성·구성·삭제로 한정한다. 이번 VM은 `pcv-it-s1r-*`, `pcv-it-s2r-*`이고 disk는 Local API가 정하는 기본 위치에 둔다 |
 
 ## Global Constraints
@@ -175,26 +177,49 @@ Task 4는 grok 지시 크기(약 20분) 때문에 4a와 4b로 나눴다(2026-11-
   - 게스트 비밀번호는 실행 경계에서 만들어 저장소 밖 DPAPI 보호 임시 파일에 두었다.
 - Lane 2 예산(12회)에 닿아 여기서 Task 6을 닫고, 설치 마무리는 Task 7에서 잇는다.
 
-## Task 7: S1 설치 완료와 네트워크 (Lane 2)
+## Task 7: S1 설치 시도 기록과 결함 분류 (Lane 2 시도, Lane 1 기록)
 
-- [ ] 브라우저 콘솔로 설치를 끝내고 재부팅한다. 로그인한 뒤 `ip -4 addr`와 `ping`(주소와 이름)으로 네트워크를 확인한다. guest 비밀번호는 실행 경계에서 만들고 남기지 않는다. 화면 캡처는 `artifacts/` 아래에 둔다.
+- [x] 브라우저 콘솔로 설치를 끝내고 재부팅한 뒤, 로그인해서 네트워크를 확인하려 했다. 설치를 끝내지 못해 시도와 결함을 기록하는 task로 바꿨다(사용자 결정 `S1 중단`).
+
+실행 기록(2026-11-11 09:01~10:12 KST, Lane 2 checkpoint 네 번):
+- 상세는 시도 기록 `docs/ga-ready/demo/s1-browser-reproof-2026-11-11.md`에 있다.
+- 설치 진행: 저장소 요약 확인 → 확인 대화상자 Continue → 사용자 정보 화면. 이름·서버 이름·사용자 이름은 정확히 들어갔다. 비밀번호 두 칸이 일치하지 않아 Done을 누르지 못했다.
+- 원인 조사
+  - 서버 감사 기록상 키 이벤트는 모두 순서대로 서버에 도착했다.
+  - 경합이 없을 때 frame route는 장당 0.82~0.95초로 정상이다.
+  - 브라우저 화면이 멈춘 것은 저장소 밖 도우미가 남긴 Edge들(한때 62개)이 같은 VM 화면을 동시에 요청했기 때문이다.
+  - 남은 결함은 콘솔 입력이다. 요청 처리가 press·release 각각 약 2초다. 키를 보통 속도로 보내면 일부가 빠진다. 요청마다 기다려도 비밀번호 두 칸이 달랐다. 텍스트 보내기 폼은 글자가 더 많이 빠진다.
+- 첫 세 checkpoint는 Lane 2 예산(12회)을 넘겨 멈췄다. 첫 번째는 약 16회에서 멈췄고 70% 진행 보고를 빠뜨렸다. 세 번 모두 사용자 승인으로 다시 열었다.
+- backlog에 BL-0046(콘솔 키 입력 느림·불일치)과 BL-0047(텍스트 폼 글자 누락)을 `counts`로 더했다(사용자 결정 `S1 중단`).
+- 끝 상태
+  - `pcv-it-s1r-ubuntu` Running(설치 프로그램 사용자 정보 화면)
+  - 보존 VM 두 개 Off, 바뀌지 않음
+  - 계정 `pcv-s13-operator` enabled
+  - 남은 시나리오 Edge 0개
+  - 설치본·service·MSI 변경 없음
 
 ## Task 8: S2 설치된 VM 복제 (Lane 2)
+
+이 campaign에서 하지 않는다(사용자 결정 `S1 중단`). 다음 승인 "S1~S3 재시연"으로 넘긴다.
 
 - [ ] `pcv-it-s1r-ubuntu`를 끄고 template으로 잠근다. 스크립트 S2로 `pcv-it-s2r-clone`을 복제한다(복제 시간을 기록하고 60초 기준과 비교). 복제본을 시작해 브라우저 콘솔에서 로그인 화면과 네트워크를 확인한다.
 
 ## Task 9: S3 checkpoint (Lane 2)
 
+이 campaign에서 하지 않는다(사용자 결정 `S1 중단`). 다음 승인 "S1~S3 재시연"으로 넘긴다.
+
 - [ ] 스크립트 S3로 `pcv-it-s2r-clone`에서 checkpoint를 만들고 복원한다. 예약을 미리 보고 저장한 뒤, 첫 예약 실행을 확인하고 예약을 지운다.
 
 ## Task 10: 정리 (Lane 2)
 
+이 campaign에서 하지 않는다(사용자 결정 `S1 중단`). 다음 승인 "S1~S3 재시연"으로 넘긴다.
+
 - [ ] 이번에 만든 `pcv-it-` VM을 브라우저로 지운다(template 잠금을 먼저 푼다). `pcv-s13-operator`를 끈다.
   - 끝 상태 확인: `pcv-it-` VM은 이번 것이 없고 보존 VM 둘만 남는다. 계정은 `pcv-admin2`만 enabled다. 설치본·service·listener·방화벽은 그대로다.
 
-## Task 11: PR C (재시연 기록)
+## Task 11: PR C (시도 기록)
 
-- [ ] `docs/ga-ready/demo/s1-s3-browser-reproof-2026-11-11.md`에 Task 6~10 결과(설치본, 단계별 시각·job·캡처 경로, S2 복제 시간, FAIL과 관찰)를 쓴다. 판정 입력(`config/project-completion-criteria.json`)은 바꾸지 않는다. 종료 검증, push, PR, green CI 뒤 merge.
+- [ ] Task 5~7 기록, 시도 기록 문서 `docs/ga-ready/demo/s1-browser-reproof-2026-11-11.md`, backlog BL-0046·BL-0047을 PR 하나로 merge한다. 판정 입력(`config/project-completion-criteria.json`)은 바꾸지 않는다. 종료 검증(Delivery, public source safety), push, PR, green CI 뒤 merge.
 
 ## Task 12: 대시보드 첫 로드 시간 (승인 4)
 
@@ -205,9 +230,18 @@ Task 4는 grok 지시 크기(약 20분) 때문에 4a와 4b로 나눴다(2026-11-
   - 제품 payload가 바뀌므로 `release-train.json` queue에 한 행을 더한다. train 출발은 하지 않는다.
   - 검증: `dotnet test src/DesktopNode.sln -c Release`(clean HEAD), `npm run test:required --prefix web`, web Pester, `git diff --check`. 로컬 commit.
 
+## Task 12b: 브라우저 콘솔 입력 결함과 시나리오 도우미 (사용자 결정 `S1 중단`)
+
+- [ ] BL-0046·BL-0047을 고친다(grok 구현, Claude 리뷰).
+  - 서버 `console.input`이 요청당 약 2초인 원인을 측정하고 줄인다.
+  - 키 이벤트가 순서대로 정확히 guest에 들어가게 한다. 예: Web Console이 키마다 press와 release를 따로 보내는 방식, 요청이 겹칠 때의 순서, 텍스트 입력 속도.
+  - 시나리오 CDP 도우미의 결함도 고친다: Edge 종료 누수, 키 누름과 뗌 사이 간격, execute summary의 설치 버전, 생성 뒤 마법사 닫기.
+  - 제품 payload가 바뀌므로 `release-train.json` queue에 한 행을 더한다.
+  - 검증: 해당 C# 시험 프로젝트(`-c Release`), `npm run test:required --prefix web`, web Pester, `git diff --check`. 로컬 commit.
+
 ## Task 13: PR D와 마무리
 
-- [ ] campaign을 닫는다(`next_approval_required`에 다음 승인 문장). clean HEAD 종료 검증 뒤 push, PR, green CI 뒤 merge, main push run 확인.
+- [ ] Task 12b를 PR로 merge하고 campaign을 닫는다(`next_approval_required`에 다음 승인 문장: train 출발, S1~S3 재시연). clean HEAD 종료 검증 뒤 push, PR, green CI 뒤 merge, main push run 확인.
 
 ## Nonclaims
 
