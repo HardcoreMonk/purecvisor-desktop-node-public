@@ -121,11 +121,25 @@ operational current는 `0.43.4-admin-smoke` 그대로다.
 
 ## Task 3: pair
 
-- [ ] Lane 2. orchestrator를 `-PlanOnly`로 돌린 뒤 `-Execute`로 돌린다.
+- [x] Lane 2. orchestrator를 `-PlanOnly`로 돌린 뒤 `-Execute`로 돌린다.
   - 입력: campaign `manual-admin-campaign-20261111-04305-04306`, baseline `artifacts/admin-smoke-package-20261111-04305`, target Task 1 package, base VHD `20348.5761-20261108.vhd`.
   - 통과 조건: 여섯 bucket PASS, closed descriptor, `observation_error` 없음.
   - 끝 상태: 설치본 `0.43.6`·ARP 1개·service Running/Automatic·Web 200·보존 VM 둘 그대로.
   - `train-facts`로 pair 문서를 쓴다. 로컬 commit.
+
+실행 기록(2026-11-11): orchestrator `-PlanOnly`는 `ok=true`였다(host mutation 없음). 실행 전 ARP는 `0.43.5` 1개였다.
+- guest 인증 정보는 실행 스크립트 안에서 무작위로 만들어 `pscredential`로만 넘겼다. 출력하거나 저장하지 않았다.
+- `-Execute`는 root `artifacts/manual-admin-campaign-20261111-04305-04306`에서 18:29:24부터 19:07:07 KST까지 돌았다(`2267`초).
+  - 대부분은 clean-host bucket(18:29:47~19:05:52, 약 36분)이다. 나머지 다섯 bucket은 각각 1분 안에 끝났다.
+- 여섯 bucket이 모두 PASS다: `manual-admin-rebaseline-readiness`, `lifecycle-product-update-rollback`, `clean-host-windows-update`, `burn-bootstrapper-lifecycle`, `msix-package-lifecycle-smoke`, `installed-runtime-ops-summary`.
+- descriptor: closed descriptor를 냈다(SHA-256 `b24f2204b33568fcf7c612101331fdc2dde6276a587d97081e48a9259a447cdc`). observation은 15개이고 `observation_error`는 0이다. restoration은 시도하지 않았다.
+- clean-host: blocker는 `none`이다.
+- 끝 상태
+  - 설치본 `0.43.6-admin-smoke+5758b54…`, ARP `{DA8E27F5…}` `0.43.6` 1개, service Running
+  - `pcv-guest-installed-04253-r1` Off·`pcv-it-s2-source` Off(그대로), `pcv-it-s1r-ubuntu` Running(그대로)
+- 문서: `train-facts`로 pair 문서 여섯 개를 썼다. `train-evidence --check`는 일곱 문서 모두 `current`다.
+
+operational current는 `0.43.4-admin-smoke` 그대로다.
 
 ## Task 4: fullgate
 
