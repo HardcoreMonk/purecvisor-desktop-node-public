@@ -4,6 +4,7 @@ using DesktopNode.Runtime;
 
 namespace DesktopNode.Host.Tests;
 
+[Collection(DesktopNodeHostListenerCollection.Name)]
 public sealed class DesktopNodeHostJobRuntimeEventSinkTests
 {
     [Theory]
