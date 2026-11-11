@@ -148,14 +148,32 @@ Task 4는 grok 지시 크기(약 20분) 때문에 4a와 4b로 나눴다(2026-11-
   - PR #149 CI에서 실패한 것과 같은 시험이다. 이 PR은 `web/scripts`와 문서만 바꿨다.
   - 범위 밖 발견으로 backlog BL-0045(`undecided`)에 적었다.
 - 두 번째 실행은 `ok=True`다(`artifacts/pr-gate/` build, `dotnet-test-release`, module-size-ratchet). assembly별 시험 수: Service 11, Contracts 201, Cli 186, Runtime 129, HyperV 288, Delivery 785, Host 246, Api 545, Verification 691.
+- PR #150(`lane1/browser-scenario-20261111`)의 Required CI 다섯 개가 green이었다. `--match-head-commit 17658ec`로 merge했다(merge commit `6da5c47`). main push run Development Gates `42927035425`와 Public Boundary `42927035387`이 success다.
 
 ## Task 6: 계정 준비와 S1 시작 (Lane 2)
 
-- [ ] 사전 확인: 설치본 version, service, 계정 목록, `pcv-it-` VM 0개, 보존 VM 상태를 확인한다.
+- [x] 사전 확인: 설치본 version, service, 계정 목록, `pcv-it-` VM 0개, 보존 VM 상태를 확인한다.
   - `pcv-s13-operator`를 만든다(위 `계정` 행).
   - 스크립트 `--check`로 화면을 확인한다.
   - S1을 `--execute`로 돌린다: Ubuntu ISO(`ubuntu-26.04.1-live-server-amd64.iso`)로 `pcv-it-s1r-ubuntu`(Gen 2, vCPU 2, 4096MB, 32GB, Default Switch)를 만들고 시작한다.
   - 그 뒤 브라우저 콘솔(키보드 입력과 텍스트 보내기)로 Ubuntu Server 설치를 시작한다.
+
+실행 기록(2026-11-11 08:55~09:00 KST, `main` `6da5c47`의 스크립트):
+- 사전 확인: 설치본 ARP 1개(`0.43.4`), service Running/Automatic, VM은 보존 VM 두 개(Off)뿐이었다. 시나리오 계정은 Task 4b에서 만들었고, Task 4b `--check`로 화면을 확인했다.
+- S1 `--execute`(`npm run scenario:browser` 같은 스크립트, `--vm pcv-it-s1r-ubuntu --cpu 2 --memory 4096 --disk 32`, Ubuntu `ubuntu-26.04.1-live-server-amd64.iso`)는 77초에 `result=pass`다(`artifacts/browser-scenario-20261111/s1-execute/`).
+  - 로그인 9.3초(계정)
+  - 마법사 생성 job `succeeded`, 확인 대화상자는 없다.
+  - `Default Switch` 연결 job `succeeded`(확인 수락)
+  - 시작 job `succeeded`
+  - 콘솔 frame 5.4초 뒤 보임. Enter 뒤 7.5초에 화면이 바뀌었다(hash `3460962542`→`3849845320`). 화면에는 Ubuntu 커널 부팅 로그가 보였다.
+- summary에 비밀 값이 없다.
+- 관찰(Task 11에서 고친다): execute summary의 `installed_version`이 비어 있다. 생성 뒤 마법사 대화상자가 "완료" 상태로 열린 채 남는다(화면 표시).
+- Ubuntu 설치는 scratchpad 도우미가 이어서 한다. 도우미는 저장소에 넣지 않는다.
+  - 도우미가 하는 일: 같은 CDP 도우미로 로그인한다. VM을 고르고 콘솔 탭을 연다. canvas에 포커스를 두고 키를 보내거나 텍스트 보내기 폼을 쓴다. canvas를 PNG로 저장한다.
+  - 언어 English → 키보드 English (US) → 설치 유형 Ubuntu Server 화면까지 왔다(`artifacts/browser-scenario-20261111/s1-install/i01`~`i03`).
+  - 로그인 직후 바로 보낸 키는 한 번 반영되지 않았다. 1.5초 기다린 뒤 보내니 반영됐다.
+  - 게스트 비밀번호는 실행 경계에서 만들어 저장소 밖 DPAPI 보호 임시 파일에 두었다.
+- Lane 2 예산(12회)에 닿아 여기서 Task 6을 닫고, 설치 마무리는 Task 7에서 잇는다.
 
 ## Task 7: S1 설치 완료와 네트워크 (Lane 2)
 

@@ -37,13 +37,15 @@
     "Task 9": "2",
     "Task 10": "2"
   },
-  "next_task": "Task 5",
+  "next_task": "Task 7",
   "completed_tasks": [
     "Task 1",
     "Task 2",
     "Task 3",
     "Task 4a",
-    "Task 4b"
+    "Task 4b",
+    "Task 5",
+    "Task 6"
   ],
   "commit_policy": "local-commit-per-task",
   "push_allowed": true,
